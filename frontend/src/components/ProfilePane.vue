@@ -1,6 +1,6 @@
 <template>
   <transition name="slide-down">
-    <div v-if="isVisible" class="profile-pane">
+    <div v-if="isVisible" class="profile-pane" ref="profilePane">
       <button class="close-button" @click="$emit('close')" :title="$t('common.close')">
         <i class="fas fa-times"></i>
       </button>
@@ -58,7 +58,29 @@ export default {
     changeLanguage() {
       this.locale = this.currentLanguage;
       this.$emit('language-changed', this.currentLanguage);
+    },
+    handleClickOutside(event) {
+      if (this.$refs.profilePane && !this.$refs.profilePane.contains(event.target)) {
+        this.$emit('close');
+      }
     }
+  },
+  watch: {
+    isVisible(newValue) {
+      if (newValue) {
+        // Ajouter l'écouteur d'événement quand le panneau est visible
+        setTimeout(() => {
+          document.addEventListener('mousedown', this.handleClickOutside);
+        }, 0);
+      } else {
+        // Retirer l'écouteur d'événement quand le panneau est caché
+        document.removeEventListener('mousedown', this.handleClickOutside);
+      }
+    }
+  },
+  beforeUnmount() {
+    // Nettoyage de l'écouteur d'événement lors de la destruction du composant
+    document.removeEventListener('mousedown', this.handleClickOutside);
   },
   created() {
     // Initialiser la langue actuelle
