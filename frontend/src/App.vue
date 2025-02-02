@@ -10,7 +10,7 @@
       </div>
       <div class="right-section">
         <div class="search-bar">
-          <input type="text" :placeholder="$t('nav.search')" />
+          <input type="text" :placeholder="$t('nav.search')" class="search-input" />
         </div>
         <button class="info-button" @click="toggleProfilePane">
           <i class="fas fa-info-circle"></i>
@@ -134,13 +134,26 @@ export default {
   background-color: var(--primary-hover);
 }
 
-.search-bar input {
-  background-color: var(--input-bg);
-  border: 1px solid var(--input-border);
-  color: var(--text-color);
-  padding: 0.5rem;
+.search-bar {
+  position: relative;
+  margin-right: 1rem;
+}
+
+.search-input {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
   width: 200px;
+  transition: width 0.3s ease-in-out;
+}
+
+.search-input:focus {
+  width: 400px;
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
 }
 
 .info-button, .logout-button {
