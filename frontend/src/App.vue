@@ -24,7 +24,7 @@
     <div class="main-content">
       <nav class="side-menu">
         <ul>
-          <li><router-link to="/service-hub">{{ $t('nav.serviceHub') }}</router-link></li>
+          <li><router-link to="/service-hub" @click.native.prevent="toggleServiceHub">{{ $t('nav.serviceHub') }}</router-link></li>
           <li><router-link to="/sprint-center">{{ $t('nav.sprintCenter') }}</router-link></li>
           <li><router-link to="/mail">{{ $t('nav.mail') }}</router-link></li>
           <li><router-link to="/portals-builder">{{ $t('nav.portalsBuilder') }}</router-link></li>
@@ -47,6 +47,11 @@
       @close="closeProfilePane"
     />
 
+    <ServiceHubPane
+      :is-visible="isServiceHubVisible"
+      @close="closeServiceHub"
+    />
+
     <footer class="status-bar">
       <div class="status-info">
         <!-- Status information will be displayed here -->
@@ -57,15 +62,18 @@
 
 <script>
 import ProfilePane from './components/ProfilePane.vue'
+import ServiceHubPane from './components/ServiceHubPane.vue'
 
 export default {
   name: 'App',
   components: {
-    ProfilePane
+    ProfilePane,
+    ServiceHubPane
   },
   data() {
     return {
-      isProfilePaneVisible: false
+      isProfilePaneVisible: false,
+      isServiceHubVisible: false
     }
   },
   methods: {
@@ -74,6 +82,12 @@ export default {
     },
     closeProfilePane() {
       this.isProfilePaneVisible = false
+    },
+    toggleServiceHub() {
+      this.isServiceHubVisible = !this.isServiceHubVisible
+    },
+    closeServiceHub() {
+      this.isServiceHubVisible = false
     },
     handleThemeChange(theme) {
       // Implémenter la logique de changement de thème

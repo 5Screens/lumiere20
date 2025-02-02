@@ -23,5 +23,10 @@ export default {
     tableaux: 'Tableaux',
     configuration: 'Configuration',
     administration: 'Administration'
+  },
+  serviceHub: {
+    title: 'Hub de Services',
+    incidents: 'Incidents',
+    tickets: 'Tickets'
   }
 }
