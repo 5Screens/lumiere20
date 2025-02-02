@@ -12,7 +12,7 @@
         <div class="search-bar">
           <input type="text" placeholder="Search..." />
         </div>
-        <button class="info-button">
+        <button class="info-button" @click="toggleProfilePane">
           <i class="fas fa-info-circle"></i>
         </button>
         <button class="logout-button">
@@ -40,6 +40,12 @@
       </main>
     </div>
 
+    <ProfilePane 
+      :is-visible="isProfilePaneVisible"
+      @theme-changed="handleThemeChange"
+      @language-changed="handleLanguageChange"
+    />
+
     <footer class="status-bar">
       <div class="status-info">
         <!-- Status information will be displayed here -->
@@ -49,8 +55,31 @@
 </template>
 
 <script>
+import ProfilePane from './components/ProfilePane.vue'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    ProfilePane
+  },
+  data() {
+    return {
+      isProfilePaneVisible: false
+    }
+  },
+  methods: {
+    toggleProfilePane() {
+      this.isProfilePaneVisible = !this.isProfilePaneVisible
+    },
+    handleThemeChange(theme) {
+      // Implémenter la logique de changement de thème
+      console.log('Theme changed to:', theme)
+    },
+    handleLanguageChange(language) {
+      // Implémenter la logique de changement de langue
+      console.log('Language changed to:', language)
+    }
+  }
 }
 </script>
 
