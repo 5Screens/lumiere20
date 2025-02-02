@@ -29,6 +29,71 @@ export default {
     incidents: 'Incidentes',
     tickets: 'Tickets'
   },
+  dataPane: {
+    title: 'Datos',
+    applications: {
+      title: 'Aplicaciones',
+      deployed: 'Aplicación Desplegada',
+      application: 'Aplicación',
+      virtualClient: 'Entorno de Cliente Virtual'
+    },
+    hardware: {
+      title: 'Infraestructura de Hardware',
+      hardware: 'Hardware',
+      deployedHardware: 'Hardware Desplegado',
+      workstation: 'Estación de Trabajo',
+      server: 'Servidor',
+      storage: 'Dispositivo de Almacenamiento Masivo',
+      rack: 'Rack',
+      ups: 'UPS'
+    },
+    network: {
+      title: 'Red y Comunicaciones',
+      firewall: 'Cortafuegos',
+      switch: 'Conmutador',
+      router: 'Enrutador',
+      routingRule: 'Regla de Enrutamiento',
+      printer: 'Impresora',
+      zoneCluster: 'Clúster de Zona'
+    },
+    virtualization: {
+      title: 'Virtualización',
+      billing: 'Facturación de Rack Virtual',
+      farm: 'Granja'
+    },
+    database: {
+      title: 'Bases de Datos',
+      catalog: 'Catálogo de Base de Datos',
+      instance: 'Instancia de Base de Datos'
+    },
+    contracts: {
+      title: 'Contratos y Licencias',
+      contract: 'Contrato',
+      license: 'Licencia de Software',
+      counter: 'Contador de Software'
+    },
+    userDevice: {
+      title: 'Dispositivo de Usuario',
+      mobile: 'Móvil',
+      laptop: 'Portátil',
+      printer: 'Impresora'
+    },
+    cloud: {
+      title: 'Infraestructura en la Nube',
+      vm: 'Máquina Virtual',
+      service: 'Servicio en la Nube',
+      storage: 'Almacenamiento en la Nube'
+    },
+    container: {
+      title: 'Contenedorización',
+      container: 'Contenedor'
+    },
+    security: {
+      title: 'Seguridad',
+      antivirus: 'Antivirus',
+      endpoint: 'Protección de Endpoints'
+    }
+  },
   sprintCenter: {
     title: 'Centro Sprint',
     tickets: 'Tickets',

@@ -28,7 +28,7 @@
           <li><a href="#" @click.prevent="toggleSprintCenter" data-sprint-center-toggle>{{ $t('nav.sprintCenter') }}</a></li>
           <li><router-link to="/mail">{{ $t('nav.mail') }}</router-link></li>
           <li><router-link to="/portals-builder">{{ $t('nav.portalsBuilder') }}</router-link></li>
-          <li><router-link to="/data">{{ $t('nav.data') }}</router-link></li>
+          <li><a href="#" @click.prevent="toggleDataPane" data-data-pane-toggle>{{ $t('nav.data') }}</a></li>
           <li><router-link to="/tableaux">{{ $t('nav.tableaux') }}</router-link></li>
           <li><router-link to="/configuration">{{ $t('nav.configuration') }}</router-link></li>
           <li><router-link to="/administration">{{ $t('nav.administration') }}</router-link></li>
@@ -57,6 +57,11 @@
       @close="closeSprintCenter"
     />
 
+    <DataPane
+      :is-visible="isDataPaneVisible"
+      @close="closeDataPane"
+    />
+
     <footer class="status-bar">
       <div class="status-info">
         <!-- Status information will be displayed here -->
@@ -69,19 +74,22 @@
 import ProfilePane from './components/ProfilePane.vue'
 import ServiceHubPane from './components/ServiceHubPane.vue'
 import SprintCenterPane from './components/SprintCenterPane.vue'
+import DataPane from './components/DataPane.vue'
 
 export default {
   name: 'App',
   components: {
     ProfilePane,
     ServiceHubPane,
-    SprintCenterPane
+    SprintCenterPane,
+    DataPane
   },
   data() {
     return {
       isProfilePaneVisible: false,
       isServiceHubVisible: false,
-      isSprintCenterVisible: false
+      isSprintCenterVisible: false,
+      isDataPaneVisible: false
     }
   },
   methods: {
@@ -102,6 +110,12 @@ export default {
     },
     closeSprintCenter() {
       this.isSprintCenterVisible = false
+    },
+    toggleDataPane() {
+      this.isDataPaneVisible = !this.isDataPaneVisible
+    },
+    closeDataPane() {
+      this.isDataPaneVisible = false
     },
     handleThemeChange(theme) {
       // Implémenter la logique de changement de thème
