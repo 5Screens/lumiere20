@@ -44,6 +44,7 @@
       :is-visible="isProfilePaneVisible"
       @theme-changed="handleThemeChange"
       @language-changed="handleLanguageChange"
+      @close="closeProfilePane"
     />
 
     <footer class="status-bar">
@@ -70,6 +71,9 @@ export default {
   methods: {
     toggleProfilePane() {
       this.isProfilePaneVisible = !this.isProfilePaneVisible
+    },
+    closeProfilePane() {
+      this.isProfilePaneVisible = false
     },
     handleThemeChange(theme) {
       // Implémenter la logique de changement de thème

@@ -1,6 +1,9 @@
 <template>
   <transition name="slide-down">
     <div v-if="isVisible" class="profile-pane">
+      <button class="close-button" @click="$emit('close')" :title="$t('common.close')">
+        <i class="fas fa-times"></i>
+      </button>
       <div class="theme-section">
         <h3>{{ $t('theme.title') }}</h3>
         <div class="theme-buttons">
@@ -77,6 +80,24 @@ export default {
   box-shadow: 0 4px 6px var(--shadow-color);
   padding: 1rem;
   z-index: 1000;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 1.1rem;
+  color: var(--text-color);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.close-button:hover {
+  transform: scale(1.1);
+  color: var(--error-color);
 }
 
 .slide-down-enter-active {
