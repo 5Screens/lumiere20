@@ -1,5 +1,10 @@
 <template>
-  <div class="service-hub-pane" :class="{ 'is-visible': isVisible }">
+  <div 
+    class="service-hub-pane" 
+    :class="{ 'is-visible': isVisible }" 
+    @click.stop
+    ref="serviceHubPane"
+  >
     <div class="service-hub-header">
       <h2>{{ $t('serviceHub.title') }}</h2>
       <button class="close-button" @click="$emit('close')">
@@ -31,6 +36,31 @@ export default {
       type: Boolean,
       default: false
     }
+  },
+  watch: {
+    isVisible(newValue) {
+      if (newValue) {
+        document.addEventListener('click', this.handleClickOutside)
+      } else {
+        document.removeEventListener('click', this.handleClickOutside)
+      }
+    }
+  },
+  methods: {
+    handleClickOutside(event) {
+      // Vérifier si le clic est sur le bouton toggle du ServiceHub
+      const toggleButton = document.querySelector('[data-service-hub-toggle]')
+      if (toggleButton && toggleButton.contains(event.target)) {
+        return
+      }
+      
+      if (this.isVisible && !this.$refs.serviceHubPane.contains(event.target)) {
+        this.$emit('close')
+      }
+    }
+  },
+  beforeDestroy() {
+    document.removeEventListener('click', this.handleClickOutside)
   }
 }
 </script>

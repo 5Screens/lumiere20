@@ -24,7 +24,7 @@
     <div class="main-content">
       <nav class="side-menu">
         <ul>
-          <li><router-link to="/service-hub" @click.native.prevent="toggleServiceHub">{{ $t('nav.serviceHub') }}</router-link></li>
+          <li><a href="#" @click.prevent="toggleServiceHub" data-service-hub-toggle>{{ $t('nav.serviceHub') }}</a></li>
           <li><router-link to="/sprint-center">{{ $t('nav.sprintCenter') }}</router-link></li>
           <li><router-link to="/mail">{{ $t('nav.mail') }}</router-link></li>
           <li><router-link to="/portals-builder">{{ $t('nav.portalsBuilder') }}</router-link></li>
