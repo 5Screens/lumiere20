@@ -71,9 +71,10 @@ export default {
   right: 20px;
   width: 250px;
   height: 200px;
-  background: var(--bg-color);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--shadow-color);
   padding: 1rem;
   z-index: 1000;
 }
@@ -98,11 +99,11 @@ export default {
 }
 
 .theme-section, .language-section {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 h3 {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-size: 1rem;
   color: var(--text-color);
 }
@@ -114,20 +115,23 @@ h3 {
 
 button {
   padding: 0.5rem;
-  border: none;
-  background: transparent;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-color);
   cursor: pointer;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 button:hover {
   background: var(--hover-color);
+  border-color: var(--primary-color);
 }
 
 button.active {
   background: var(--primary-color);
   color: white;
+  border-color: var(--primary-color);
 }
 
 select {
@@ -135,7 +139,18 @@ select {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid var(--border-color);
-  background: var(--bg-color);
+  background: var(--input-bg);
   color: var(--text-color);
+  cursor: pointer;
+}
+
+select:hover {
+  border-color: var(--primary-color);
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color);
 }
 </style>

@@ -84,22 +84,22 @@ export default {
 </script>
 
 <style>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+@import './assets/styles/themes.css';
 
 #app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  font-family: Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
 }
 
 .header {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .left-section, .right-section {
@@ -113,54 +113,55 @@ export default {
   align-items: center;
   gap: 0.5rem;
   text-decoration: none;
-  color: #333;
+  color: var(--text-color);
 }
 
 .create-button {
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: white;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
 }
 
 .create-button:hover {
-  background-color: #0056b3;
+  background-color: var(--primary-hover);
 }
 
 .search-bar input {
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-color);
   padding: 0.5rem;
-  border: 1px solid #dee2e6;
   border-radius: 4px;
   width: 200px;
 }
 
 .info-button, .logout-button {
-  background: none;
+  background: transparent;
   border: none;
-  cursor: pointer;
+  color: var(--text-color);
   padding: 0.5rem;
-  color: #6c757d;
-  transition: color 0.3s;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
 .info-button:hover, .logout-button:hover {
-  color: #343a40;
+  background-color: var(--hover-color);
 }
 
 .main-content {
   display: flex;
-  flex: 1;
-  overflow: hidden;
+  min-height: calc(100vh - 60px);
 }
 
 .side-menu {
+  background-color: var(--sidebar-bg);
   width: 250px;
-  background-color: #f8f9fa;
-  border-right: 1px solid #dee2e6;
   padding: 1rem;
+  border-right: 1px solid var(--border-color);
 }
 
 .side-menu ul {
@@ -174,29 +175,20 @@ export default {
 }
 
 .side-menu a {
+  color: var(--text-color);
+  text-decoration: none;
   display: block;
   padding: 0.5rem;
-  color: #333;
-  text-decoration: none;
   border-radius: 4px;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
 }
 
 .side-menu a:hover {
-  background-color: #e9ecef;
+  background-color: var(--hover-color);
 }
 
-.content-area {
-  flex: 1;
-  padding: 1rem;
-  overflow-y: auto;
-}
-
-.status-bar {
-  padding: 0.5rem;
-  background-color: #f8f9fa;
-  border-top: 1px solid #dee2e6;
-  font-size: 0.875rem;
-  color: #6c757d;
+.side-menu a.router-link-active {
+  background-color: var(--primary-color);
+  color: white;
 }
 </style>

@@ -18,7 +18,7 @@ export default {
     serviceHub: 'Hub de Services',
     sprintCenter: 'Centre Sprint',
     mail: 'Messagerie',
-    portalsBuilder: 'Constructeur de Portails',
+    portalsBuilder: 'Constructeur de portails',
     data: 'Données',
     tableaux: 'Tableaux',
     configuration: 'Configuration',
