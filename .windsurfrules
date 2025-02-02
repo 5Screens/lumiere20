@@ -1,0 +1,37 @@
+use command compatible with windows 
+use english in all your code
+speak to me in french
+use a .gitignore pour ne pas stocker de données sensibles dans Git
+use frontend directory to store all the frontend sources
+use backend directory to store all the backend sources
+use database directory to store all the database sources
+
+--frontend rules:
+use Vue.js for the frond end
+do not use typescript
+use Vue-i18n for internationalization of the front end
+use modern UI
+use subtle animations during transitions (example : hover over menus, content appearance).
+use AG Grid Community to display data in grids
+use the Infinite Row model when displaying data in grids  
+set quick filter to all grids
+set cell editing to all grids
+set csv export to all grids
+set text basic filtering to all column that displays text 
+set number basic filtering to all column that displays number
+set date basic filtering to all column that displays date
+set column resizing to all grids
+set column sorting to all grids
+set row selection to all grids
+set pagination to all grids
+set Drag & Drop to all grids
+
+--backend rules :
+use node.js for the back end
+use winston for logging with format YYYY-MM-DD HH:mm:ss'
+do not use i18n in the back end 
+
+--database rules :
+use sql for the database
+all objects in database have a uuid primary key
+do not use serial id as primary key in the database
