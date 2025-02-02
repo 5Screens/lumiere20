@@ -1,26 +1,12 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import { createI18n } from 'vue-i18n'
 import App from './App.vue'
+import i18n from './i18n'
 
 // Router configuration
 const router = createRouter({
   history: createWebHistory(),
   routes: [] // Routes will be added later
-})
-
-// i18n configuration
-const i18n = createI18n({
-  locale: 'fr',
-  fallbackLocale: 'en',
-  messages: {
-    fr: {
-      // Messages will be added later
-    },
-    en: {
-      // Messages will be added later
-    }
-  }
 })
 
 const app = createApp(App)

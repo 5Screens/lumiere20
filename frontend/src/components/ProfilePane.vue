@@ -2,23 +2,23 @@
   <transition name="slide-down">
     <div v-if="isVisible" class="profile-pane">
       <div class="theme-section">
-        <h3>Theme</h3>
+        <h3>{{ $t('theme.title') }}</h3>
         <div class="theme-buttons">
-          <button @click="setTheme('light')" :class="{ active: currentTheme === 'light' }">
+          <button @click="setTheme('light')" :class="{ active: currentTheme === 'light' }" :title="$t('theme.light')">
             <i class="fas fa-sun"></i>
           </button>
-          <button @click="setTheme('dark')" :class="{ active: currentTheme === 'dark' }">
+          <button @click="setTheme('dark')" :class="{ active: currentTheme === 'dark' }" :title="$t('theme.dark')">
             <i class="fas fa-moon"></i>
           </button>
         </div>
       </div>
       <div class="language-section">
-        <h3>Langue</h3>
+        <h3>{{ $t('language.title') }}</h3>
         <select v-model="currentLanguage" @change="changeLanguage">
-          <option value="fr">Français</option>
-          <option value="en">English</option>
-          <option value="pt">Português</option>
-          <option value="es">Español</option>
+          <option value="fr">{{ $t('language.fr') }}</option>
+          <option value="en">{{ $t('language.en') }}</option>
+          <option value="pt">{{ $t('language.pt') }}</option>
+          <option value="es">{{ $t('language.es') }}</option>
         </select>
       </div>
     </div>
@@ -26,6 +26,8 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n'
+
 export default {
   name: 'ProfilePane',
   props: {
@@ -34,23 +36,30 @@ export default {
       default: false
     }
   },
+  setup() {
+    const { locale } = useI18n()
+    return { locale }
+  },
   data() {
     return {
       currentTheme: 'light',
-      currentLanguage: 'fr'
+      currentLanguage: this.locale
     }
   },
   methods: {
     setTheme(theme) {
       this.currentTheme = theme;
       document.body.setAttribute('data-theme', theme);
-      // Émettre un événement pour informer le parent
       this.$emit('theme-changed', theme);
     },
     changeLanguage() {
-      // Émettre un événement pour informer le parent
+      this.locale = this.currentLanguage;
       this.$emit('language-changed', this.currentLanguage);
     }
+  },
+  created() {
+    // Initialiser la langue actuelle
+    this.currentLanguage = this.locale;
   }
 }
 </script>

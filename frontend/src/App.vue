@@ -4,13 +4,13 @@
       <div class="left-section">
         <router-link to="/" class="home-icon">
           <i class="fas fa-home"></i>
-          <span>My Work</span>
+          <span>{{ $t('nav.myWork') }}</span>
         </router-link>
-        <button class="create-button">Create</button>
+        <button class="create-button">{{ $t('nav.create') }}</button>
       </div>
       <div class="right-section">
         <div class="search-bar">
-          <input type="text" placeholder="Search..." />
+          <input type="text" :placeholder="$t('nav.search')" />
         </div>
         <button class="info-button" @click="toggleProfilePane">
           <i class="fas fa-info-circle"></i>
@@ -24,14 +24,14 @@
     <div class="main-content">
       <nav class="side-menu">
         <ul>
-          <li><router-link to="/service-hub">Service Hub</router-link></li>
-          <li><router-link to="/sprint-center">Sprint Center</router-link></li>
-          <li><router-link to="/mail">Mail</router-link></li>
-          <li><router-link to="/portals-builder">Portals Builder</router-link></li>
-          <li><router-link to="/data">Data</router-link></li>
-          <li><router-link to="/tableaux">Tableaux</router-link></li>
-          <li><router-link to="/configuration">Configuration</router-link></li>
-          <li><router-link to="/administration">Administration</router-link></li>
+          <li><router-link to="/service-hub">{{ $t('nav.serviceHub') }}</router-link></li>
+          <li><router-link to="/sprint-center">{{ $t('nav.sprintCenter') }}</router-link></li>
+          <li><router-link to="/mail">{{ $t('nav.mail') }}</router-link></li>
+          <li><router-link to="/portals-builder">{{ $t('nav.portalsBuilder') }}</router-link></li>
+          <li><router-link to="/data">{{ $t('nav.data') }}</router-link></li>
+          <li><router-link to="/tableaux">{{ $t('nav.tableaux') }}</router-link></li>
+          <li><router-link to="/configuration">{{ $t('nav.configuration') }}</router-link></li>
+          <li><router-link to="/administration">{{ $t('nav.administration') }}</router-link></li>
         </ul>
       </nav>
 
