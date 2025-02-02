@@ -56,7 +56,7 @@ export default {
       this.$emit('theme-changed', theme);
     },
     changeLanguage() {
-      this.locale = this.currentLanguage;
+      this.$i18n.locale = this.currentLanguage;
       this.$emit('language-changed', this.currentLanguage);
     },
     handleClickOutside(event) {
