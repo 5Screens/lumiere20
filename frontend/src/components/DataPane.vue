@@ -18,7 +18,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.applications }"></i>
           <span>{{ $t('dataPane.applications.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.applications">
+        <div class="data-section-content" :class="{ 'expanded': openSections.applications }">
           <div class="data-item">
             <router-link to="/data/deployed-applications">
               <i class="fas fa-rocket"></i>
@@ -46,7 +46,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.hardware }"></i>
           <span>{{ $t('dataPane.hardware.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.hardware">
+        <div class="data-section-content" :class="{ 'expanded': openSections.hardware }">
           <div class="data-item">
             <router-link to="/data/hardware">
               <i class="fas fa-microchip"></i>
@@ -98,7 +98,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.network }"></i>
           <span>{{ $t('dataPane.network.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.network">
+        <div class="data-section-content" :class="{ 'expanded': openSections.network }">
           <div class="data-item">
             <router-link to="/data/firewall">
               <i class="fas fa-shield-alt"></i>
@@ -144,7 +144,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.virtualization }"></i>
           <span>{{ $t('dataPane.virtualization.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.virtualization">
+        <div class="data-section-content" :class="{ 'expanded': openSections.virtualization }">
           <div class="data-item">
             <router-link to="/data/virtual-rack-billing">
               <i class="fas fa-file-invoice-dollar"></i>
@@ -166,7 +166,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.database }"></i>
           <span>{{ $t('dataPane.database.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.database">
+        <div class="data-section-content" :class="{ 'expanded': openSections.database }">
           <div class="data-item">
             <router-link to="/data/database-catalog">
               <i class="fas fa-database"></i>
@@ -188,7 +188,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.contracts }"></i>
           <span>{{ $t('dataPane.contracts.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.contracts">
+        <div class="data-section-content" :class="{ 'expanded': openSections.contracts }">
           <div class="data-item">
             <router-link to="/data/contract">
               <i class="fas fa-file-contract"></i>
@@ -216,7 +216,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.userDevice }"></i>
           <span>{{ $t('dataPane.userDevice.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.userDevice">
+        <div class="data-section-content" :class="{ 'expanded': openSections.userDevice }">
           <div class="data-item">
             <router-link to="/data/mobile">
               <i class="fas fa-mobile-alt"></i>
@@ -244,7 +244,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.cloud }"></i>
           <span>{{ $t('dataPane.cloud.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.cloud">
+        <div class="data-section-content" :class="{ 'expanded': openSections.cloud }">
           <div class="data-item">
             <router-link to="/data/virtual-machine">
               <i class="fas fa-cloud"></i>
@@ -272,7 +272,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.container }"></i>
           <span>{{ $t('dataPane.container.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.container">
+        <div class="data-section-content" :class="{ 'expanded': openSections.container }">
           <div class="data-item">
             <router-link to="/data/container">
               <i class="fas fa-box"></i>
@@ -288,7 +288,7 @@
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.security }"></i>
           <span>{{ $t('dataPane.security.title') }}</span>
         </div>
-        <div class="data-section-content" v-show="openSections.security">
+        <div class="data-section-content" :class="{ 'expanded': openSections.security }">
           <div class="data-item">
             <router-link to="/data/antivirus">
               <i class="fas fa-virus-slash"></i>
@@ -308,6 +308,8 @@
 </template>
 
 <script>
+import { reactive } from 'vue'
+
 export default {
   name: 'DataPane',
   props: {
@@ -318,7 +320,7 @@ export default {
   },
   data() {
     return {
-      openSections: {
+      openSections: reactive({
         applications: false,
         hardware: false,
         network: false,
@@ -329,7 +331,7 @@ export default {
         cloud: false,
         container: false,
         security: false
-      }
+      })
     }
   },
   watch: {
@@ -343,7 +345,7 @@ export default {
   },
   methods: {
     toggleSection(section) {
-      this.$set(this.openSections, section, !this.openSections[section])
+      this.openSections[section] = !this.openSections[section]
     },
     handleClickOutside(event) {
       const toggleButton = document.querySelector('[data-data-pane-toggle]')
@@ -424,6 +426,7 @@ export default {
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.2s;
+  user-select: none;
 }
 
 .data-section-header:hover {
@@ -432,7 +435,8 @@ export default {
 
 .data-section-header i {
   margin-right: 0.75rem;
-  transition: transform 0.2s;
+  transition: transform 0.3s ease;
+  width: 12px;
 }
 
 .data-section-header i.rotated {
@@ -440,11 +444,20 @@ export default {
 }
 
 .data-section-content {
-  padding-left: 1.5rem;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.3s ease-out;
+}
+
+.data-section-content.expanded {
+  max-height: 500px;
+  opacity: 1;
 }
 
 .data-item {
   margin: 0.25rem 0;
+  padding-left: 1.5rem;
 }
 
 .data-item a {
