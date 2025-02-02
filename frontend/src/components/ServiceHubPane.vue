@@ -39,7 +39,7 @@ export default {
 .service-hub-pane {
   position: fixed;
   top: 60px;
-  left: 0;
+  left: 293px;
   width: 250px;
   height: calc(100vh - 60px);
   background-color: var(--sidebar-bg);
