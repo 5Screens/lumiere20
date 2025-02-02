@@ -28,5 +28,10 @@ export default {
     title: 'Hub de Services',
     incidents: 'Incidents',
     tickets: 'Tickets'
+  },
+  sprintCenter: {
+    title: 'Centre Sprint',
+    tickets: 'Tickets',
+    userStories: 'User Stories'
   }
 }

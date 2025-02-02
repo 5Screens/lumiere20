@@ -25,7 +25,7 @@
       <nav class="side-menu">
         <ul>
           <li><a href="#" @click.prevent="toggleServiceHub" data-service-hub-toggle>{{ $t('nav.serviceHub') }}</a></li>
-          <li><router-link to="/sprint-center">{{ $t('nav.sprintCenter') }}</router-link></li>
+          <li><a href="#" @click.prevent="toggleSprintCenter" data-sprint-center-toggle>{{ $t('nav.sprintCenter') }}</a></li>
           <li><router-link to="/mail">{{ $t('nav.mail') }}</router-link></li>
           <li><router-link to="/portals-builder">{{ $t('nav.portalsBuilder') }}</router-link></li>
           <li><router-link to="/data">{{ $t('nav.data') }}</router-link></li>
@@ -52,6 +52,11 @@
       @close="closeServiceHub"
     />
 
+    <SprintCenterPane
+      :is-visible="isSprintCenterVisible"
+      @close="closeSprintCenter"
+    />
+
     <footer class="status-bar">
       <div class="status-info">
         <!-- Status information will be displayed here -->
@@ -63,17 +68,20 @@
 <script>
 import ProfilePane from './components/ProfilePane.vue'
 import ServiceHubPane from './components/ServiceHubPane.vue'
+import SprintCenterPane from './components/SprintCenterPane.vue'
 
 export default {
   name: 'App',
   components: {
     ProfilePane,
-    ServiceHubPane
+    ServiceHubPane,
+    SprintCenterPane
   },
   data() {
     return {
       isProfilePaneVisible: false,
-      isServiceHubVisible: false
+      isServiceHubVisible: false,
+      isSprintCenterVisible: false
     }
   },
   methods: {
@@ -88,6 +96,12 @@ export default {
     },
     closeServiceHub() {
       this.isServiceHubVisible = false
+    },
+    toggleSprintCenter() {
+      this.isSprintCenterVisible = !this.isSprintCenterVisible
+    },
+    closeSprintCenter() {
+      this.isSprintCenterVisible = false
     },
     handleThemeChange(theme) {
       // Implémenter la logique de changement de thème
