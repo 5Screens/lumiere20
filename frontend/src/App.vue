@@ -150,7 +150,7 @@ export default {
 }
 
 .search-input:focus {
-  width: 400px;
+  width: 800px;
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
