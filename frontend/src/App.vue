@@ -36,7 +36,18 @@
       </nav>
 
       <main class="content-area">
-        <router-view></router-view>
+        <div class="tabs" v-if="tabs.length > 0">
+          <div v-for="tab in tabs" :key="tab.id" class="tab" :class="{ active: activeTab === tab.id }">
+            <span @click="switchTab(tab.id)">{{ tab.title }}</span>
+            <button class="close-tab" @click="closeTab(tab.id)">×</button>
+          </div>
+        </div>
+        <div class="tab-content">
+          <div v-if="activeTab">
+            <component :is="getTabComponent(activeTab)" :data="getTabData(activeTab)" />
+          </div>
+          <router-view v-else></router-view>
+        </div>
       </main>
     </div>
 
@@ -65,6 +76,7 @@
     <ConfigurationPane
       :is-visible="isConfigurationVisible"
       @close="closeConfiguration"
+      @open-tab="handleOpenTab"
     />
 
     <AdminPane
@@ -87,6 +99,7 @@ import SprintCenterPane from './components/SprintCenterPane.vue'
 import DataPane from './components/DataPane.vue'
 import ConfigurationPane from './components/ConfigurationPane.vue'
 import AdminPane from './components/AdminPane.vue'
+import SymptomsGrid from './components/SymptomsGrid.vue'
 
 export default {
   name: 'App',
@@ -96,7 +109,8 @@ export default {
     SprintCenterPane,
     DataPane,
     ConfigurationPane,
-    AdminPane
+    AdminPane,
+    SymptomsGrid
   },
   data() {
     return {
@@ -105,7 +119,9 @@ export default {
       isSprintCenterVisible: false,
       isDataPaneVisible: false,
       isConfigurationVisible: false,
-      isAdminVisible: false
+      isAdminVisible: false,
+      tabs: [],
+      activeTab: null
     }
   },
   methods: {
@@ -152,6 +168,50 @@ export default {
     handleLanguageChange(language) {
       // Implémenter la logique de changement de langue
       console.log('Language changed to:', language)
+    },
+    handleOpenTab({ id, title, data, type }) {
+      const existingTabIndex = this.tabs.findIndex(tab => tab.id === id)
+      
+      if (existingTabIndex !== -1) {
+        // Update existing tab
+        this.tabs[existingTabIndex].data = data
+        this.activeTab = id
+      } else {
+        // Create new tab
+        this.tabs.push({ id, title, data, type })
+        this.activeTab = id
+      }
+    },
+    
+    switchTab(tabId) {
+      this.activeTab = tabId
+    },
+    
+    closeTab(tabId) {
+      const index = this.tabs.findIndex(tab => tab.id === tabId)
+      if (index !== -1) {
+        this.tabs.splice(index, 1)
+        if (this.activeTab === tabId) {
+          this.activeTab = this.tabs.length > 0 ? this.tabs[this.tabs.length - 1].id : null
+        }
+      }
+    },
+    
+    getTabComponent(tabId) {
+      const tab = this.tabs.find(t => t.id === tabId)
+      if (!tab) return null
+      
+      switch (tab.type) {
+        case 'symptoms':
+          return 'SymptomsGrid'
+        default:
+          return null
+      }
+    },
+    
+    getTabData(tabId) {
+      const tab = this.tabs.find(t => t.id === tabId)
+      return tab ? tab.data : null
     }
   }
 }
@@ -277,5 +337,45 @@ export default {
 .side-menu a.router-link-active {
   background-color: var(--primary-color);
   color: white;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tab.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.close-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.close-tab:hover {
+  background-color: var(--hover-color);
+}
+
+.tab-content {
+  padding: 1rem;
 }
 </style>

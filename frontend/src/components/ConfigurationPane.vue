@@ -13,16 +13,18 @@
     </div>
     <div class="configuration-content">
       <div class="configuration-item" v-for="(item, index) in configItems" :key="index">
-        <router-link :to="item.route">
+        <a href="#" @click.prevent="handleItemClick(item)">
           <i :class="item.icon"></i>
           {{ $t(item.label) }}
-        </router-link>
+        </a>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'ConfigurationPane',
   props: {
@@ -59,6 +61,44 @@ export default {
     }
   },
   methods: {
+    async handleItemClick(item) {
+      if (item.route === '/symptoms') {
+        try {
+          const locale = this.$i18n.locale || 'fr'
+          const response = await axios.get(`http://localhost:3000/api/v1/symptoms?langue=${locale}`)
+          
+          this.$emit('open-tab', {
+            id: 'symptoms',
+            title: this.$t('configuration.symptoms'),
+            data: response.data || [],
+            type: 'symptoms'
+          })
+        } catch (error) {
+          console.error('Erreur lors de la récupération des symptômes:', error)
+          this.$toast.error(this.$t('errors.fetchSymptoms'))
+        }
+        return
+      }
+      this.$router.push(item.route)
+    },
+    
+    async handleSymptomsClick() {
+      try {
+        const locale = this.$i18n.locale || 'fr'
+        const response = await axios.get(`http://localhost:3000/api/v1/symptoms?langue=${locale}`)
+        
+        this.$emit('open-tab', {
+          id: 'symptoms',
+          title: this.$t('configuration.symptoms'),
+          data: response.data,
+          type: 'symptoms'
+        })
+      } catch (error) {
+        console.error('Erreur lors de la récupération des symptômes:', error)
+        this.$toast.error(this.$t('errors.fetchSymptoms'))
+      }
+    },
+    
     handleClickOutside(event) {
       const toggleButton = document.querySelector('[data-configuration-toggle]')
       if (toggleButton && toggleButton.contains(event.target)) {
