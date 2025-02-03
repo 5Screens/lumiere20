@@ -375,7 +375,26 @@ export default {
   background-color: var(--hover-color);
 }
 
+.content-area {
+  flex: 1;
+  padding: 20px;
+  width: 100%;
+  overflow-x: hidden;
+}
+
 .tab-content {
-  padding: 1rem;
+  width: 100%;
+  height: 100%;
+}
+
+.status-bar {
+  background-color: var(--footer-bg);
+  padding: 0.5rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.status-info {
+  color: var(--text-color);
 }
 </style>
