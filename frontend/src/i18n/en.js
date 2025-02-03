@@ -113,5 +113,22 @@ export default {
     title: 'Sprint Center',
     tickets: 'Tickets',
     userStories: 'User Stories'
+  },
+  admin: {
+    title: 'Administration',
+    rolesAndPermissions: 'Roles and Permissions',
+    ticketTypes: 'Ticket Types',
+    mailServers: 'Mail Servers',
+    emailNotifications: 'Email Notifications',
+    smsNotifications: 'SMS Notifications',
+    authentication: 'Authentication',
+    sslCertificates: 'SSL/TLS Certificates',
+    mfa: 'MFA',
+    ipRestrictions: 'IP Restrictions',
+    auditLogs: 'Audit Logs',
+    apiTokens: 'API Tokens and Secrets',
+    connectors: 'Connectors',
+    performance: 'Platform Performance',
+    backup: 'Backup and Restore'
   }
 }

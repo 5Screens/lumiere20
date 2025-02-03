@@ -44,6 +44,23 @@ export default {
     ticketTypes: 'Tipos de Tickets',
     workflows: 'Flujos de Trabajo'
   },
+  admin: {
+    title: 'Administración',
+    rolesAndPermissions: 'Roles y Permisos',
+    ticketTypes: 'Tipos de Tickets',
+    mailServers: 'Servidores de Correo',
+    emailNotifications: 'Notificaciones de Email',
+    smsNotifications: 'Notificaciones SMS',
+    authentication: 'Autenticación',
+    sslCertificates: 'Certificados SSL/TLS',
+    mfa: 'MFA',
+    ipRestrictions: 'Restricciones IP',
+    auditLogs: 'Registros de Auditoría',
+    apiTokens: 'Tokens API y Secretos',
+    connectors: 'Conectores',
+    performance: 'Rendimiento de la Plataforma',
+    backup: 'Copia de Seguridad y Restauración'
+  },
   dataPane: {
     title: 'Datos',
     applications: {

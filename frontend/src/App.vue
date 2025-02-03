@@ -31,7 +31,7 @@
           <li><a href="#" @click.prevent="toggleDataPane" data-data-pane-toggle>{{ $t('nav.data') }}</a></li>
           <li><router-link to="/tableaux">{{ $t('nav.tableaux') }}</router-link></li>
           <li><a href="#" @click.prevent="toggleConfiguration" data-configuration-toggle>{{ $t('nav.configuration') }}</a></li>
-          <li><router-link to="/administration">{{ $t('nav.administration') }}</router-link></li>
+          <li><a href="#" @click.prevent="toggleAdmin" data-admin-toggle>{{ $t('nav.administration') }}</a></li>
         </ul>
       </nav>
 
@@ -67,6 +67,11 @@
       @close="closeConfiguration"
     />
 
+    <AdminPane
+      :is-visible="isAdminVisible"
+      @close="closeAdmin"
+    />
+
     <footer class="status-bar">
       <div class="status-info">
         <!-- Status information will be displayed here -->
@@ -81,6 +86,7 @@ import ServiceHubPane from './components/ServiceHubPane.vue'
 import SprintCenterPane from './components/SprintCenterPane.vue'
 import DataPane from './components/DataPane.vue'
 import ConfigurationPane from './components/ConfigurationPane.vue'
+import AdminPane from './components/AdminPane.vue'
 
 export default {
   name: 'App',
@@ -89,7 +95,8 @@ export default {
     ServiceHubPane,
     SprintCenterPane,
     DataPane,
-    ConfigurationPane
+    ConfigurationPane,
+    AdminPane
   },
   data() {
     return {
@@ -97,7 +104,8 @@ export default {
       isServiceHubVisible: false,
       isSprintCenterVisible: false,
       isDataPaneVisible: false,
-      isConfigurationVisible: false
+      isConfigurationVisible: false,
+      isAdminVisible: false
     }
   },
   methods: {
@@ -130,6 +138,12 @@ export default {
     },
     closeConfiguration() {
       this.isConfigurationVisible = false
+    },
+    toggleAdmin() {
+      this.isAdminVisible = !this.isAdminVisible
+    },
+    closeAdmin() {
+      this.isAdminVisible = false
     },
     handleThemeChange(theme) {
       // Implémenter la logique de changement de thème

@@ -48,5 +48,22 @@ export default {
     symptoms: 'Symptômes',
     ticketTypes: 'Types de tickets',
     workflows: 'Workflows'
+  },
+  admin: {
+    title: 'Administration',
+    rolesAndPermissions: 'Rôles et permissions',
+    ticketTypes: 'Types de tickets',
+    mailServers: 'Serveurs de messagerie',
+    emailNotifications: 'Notifications email',
+    smsNotifications: 'Notifications SMS',
+    authentication: 'Authentification',
+    sslCertificates: 'Certificats SSL/TLS',
+    mfa: 'MFA',
+    ipRestrictions: 'Restrictions IP',
+    auditLogs: "Logs d'audit",
+    apiTokens: "Tokens d'API et secrets",
+    connectors: 'Connecteurs',
+    performance: 'Performances de la plateforme',
+    backup: 'Sauvegarde et restauration'
   }
 }
