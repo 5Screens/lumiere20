@@ -29,6 +29,21 @@ export default {
     incidents: 'Incidentes',
     tickets: 'Tickets'
   },
+  configuration: {
+    title: 'Configuración',
+    companies: 'Empresas',
+    locations: 'Ubicaciones',
+    sites: 'Sitios',
+    entities: 'Entidades',
+    departments: 'Departamentos',
+    persons: 'Personas',
+    supportGroups: 'Grupos de Soporte',
+    roles: 'Roles y Permisos',
+    ticketStatus: 'Estados de Tickets',
+    symptoms: 'Síntomas',
+    ticketTypes: 'Tipos de Tickets',
+    workflows: 'Flujos de Trabajo'
+  },
   dataPane: {
     title: 'Datos',
     applications: {

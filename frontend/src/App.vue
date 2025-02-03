@@ -30,7 +30,7 @@
           <li><router-link to="/portals-builder">{{ $t('nav.portalsBuilder') }}</router-link></li>
           <li><a href="#" @click.prevent="toggleDataPane" data-data-pane-toggle>{{ $t('nav.data') }}</a></li>
           <li><router-link to="/tableaux">{{ $t('nav.tableaux') }}</router-link></li>
-          <li><router-link to="/configuration">{{ $t('nav.configuration') }}</router-link></li>
+          <li><a href="#" @click.prevent="toggleConfiguration" data-configuration-toggle>{{ $t('nav.configuration') }}</a></li>
           <li><router-link to="/administration">{{ $t('nav.administration') }}</router-link></li>
         </ul>
       </nav>
@@ -62,6 +62,11 @@
       @close="closeDataPane"
     />
 
+    <ConfigurationPane
+      :is-visible="isConfigurationVisible"
+      @close="closeConfiguration"
+    />
+
     <footer class="status-bar">
       <div class="status-info">
         <!-- Status information will be displayed here -->
@@ -75,6 +80,7 @@ import ProfilePane from './components/ProfilePane.vue'
 import ServiceHubPane from './components/ServiceHubPane.vue'
 import SprintCenterPane from './components/SprintCenterPane.vue'
 import DataPane from './components/DataPane.vue'
+import ConfigurationPane from './components/ConfigurationPane.vue'
 
 export default {
   name: 'App',
@@ -82,14 +88,16 @@ export default {
     ProfilePane,
     ServiceHubPane,
     SprintCenterPane,
-    DataPane
+    DataPane,
+    ConfigurationPane
   },
   data() {
     return {
       isProfilePaneVisible: false,
       isServiceHubVisible: false,
       isSprintCenterVisible: false,
-      isDataPaneVisible: false
+      isDataPaneVisible: false,
+      isConfigurationVisible: false
     }
   },
   methods: {
@@ -116,6 +124,12 @@ export default {
     },
     closeDataPane() {
       this.isDataPaneVisible = false
+    },
+    toggleConfiguration() {
+      this.isConfigurationVisible = !this.isConfigurationVisible
+    },
+    closeConfiguration() {
+      this.isConfigurationVisible = false
     },
     handleThemeChange(theme) {
       // Implémenter la logique de changement de thème
