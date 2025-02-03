@@ -66,11 +66,12 @@ export default {
         try {
           const locale = this.$i18n.locale || 'fr'
           const response = await axios.get(`http://localhost:3000/api/v1/symptoms?langue=${locale}`)
+          console.log('Données des symptômes:', response.data.data || [])
           
           this.$emit('open-tab', {
             id: 'symptoms',
             title: this.$t('configuration.symptoms'),
-            data: response.data || [],
+            data: response.data.data || [],
             type: 'symptoms'
           })
         } catch (error) {

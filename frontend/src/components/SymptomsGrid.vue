@@ -37,28 +37,37 @@ export default {
       gridApi: null,
       columnDefs: [
         {
-          field: 'id',
-          headerName: this.$t('symptoms.id'),
+          field: 'uuid',
+          headerName: this.$t('symptoms.uuid'),
           sortable: true,
           filter: 'agTextColumnFilter',
           resizable: true
         },
         {
-          field: 'name',
-          headerName: this.$t('symptoms.name'),
+          field: 'code',
+          headerName: this.$t('symptoms.code'),
           sortable: true,
           filter: 'agTextColumnFilter',
           resizable: true,
           editable: true
         },
         {
-          field: 'description',
-          headerName: this.$t('symptoms.description'),
+          field: 'libelle',
+          headerName: this.$t('symptoms.libelle'),
           sortable: true,
           filter: 'agTextColumnFilter',
           resizable: true,
           editable: true
-        }
+        },
+        {
+          field: 'langue',
+          headerName: this.$t('symptoms.langue'),
+          sortable: true,
+          filter: 'agTextColumnFilter',
+          resizable: true,
+          editable: true
+        },
+
       ],
       defaultColDef: {
         flex: 1,
