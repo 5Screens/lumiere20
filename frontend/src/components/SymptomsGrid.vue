@@ -1,4 +1,10 @@
 <template>
+  <!--
+  A wrapper div containing the symptoms grid.
+  The ag-grid-vue component is styled with the 'ag-theme-alpine' class.
+  The grid is configured for multiple row selection, cell text selection, and row drag management.
+  The grid is also configured to animate rows when they are inserted, updated, or deleted.
+  -->
   <div class="symptoms-grid">
     <ag-grid-vue
       class="ag-theme-alpine"

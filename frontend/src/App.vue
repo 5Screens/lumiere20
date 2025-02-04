@@ -22,6 +22,11 @@
     </header>
 
     <div class="main-content">
+        <!--
+          This is the side menu that appears on the left side of the window. It
+          contains links to various features of the application. The links
+          themselves are determined by the "nav" section of the i18n messages.
+        -->
       <nav class="side-menu">
         <ul>
           <li><a href="#" @click.prevent="toggleServiceHub" data-service-hub-toggle>{{ $t('nav.serviceHub') }}</a></li>
@@ -35,6 +40,18 @@
         </ul>
       </nav>
 
+        <!--
+          The main content area of the application. It contains a tabbed interface
+          with each tab representing a separate component. The component to be
+          rendered is determined by the "activeTab" property.
+
+          The tabs are rendered as a horizontal list of buttons, with the active
+          tab highlighted. Clicking on a tab will switch the active tab to the
+          one clicked.
+
+          The content of the tab is rendered below the tabs, and is determined
+          by the "activeTab" property.
+        -->
       <main class="content-area">
         <div class="tabs" v-if="tabs.length > 0">
           <div v-for="tab in tabs" :key="tab.id" class="tab" :class="{ active: activeTab === tab.id }">
@@ -51,6 +68,21 @@
       </main>
     </div>
 
+    <!--
+      A component that renders a pane on the right side of the screen, containing
+      options to change the theme and language of the application. When the pane
+      is closed, the "close" event is emitted.
+
+      Props:
+        isVisible: A boolean indicating whether the pane should be visible or not.
+
+      Events:
+        theme-changed: Emitted when the theme of the application is changed. The
+          event payload is the new theme.
+        language-changed: Emitted when the language of the application is changed.
+          The event payload is the new language.
+        close: Emitted when the pane is closed.
+    -->
     <ProfilePane 
       :is-visible="isProfilePaneVisible"
       @theme-changed="handleThemeChange"
@@ -92,6 +124,14 @@
   </div>
 </template>
 
+/**
+ * This script defines the main application component for a Vue.js app, including 
+ * several child components such as ProfilePane, ServiceHubPane, SprintCenterPane, 
+ * DataPane, ConfigurationPane, AdminPane, and SymptomsGrid. It manages the visibility 
+ * of these panes and handles various user interactions like toggling panes, switching 
+ * tabs, and handling theme and language changes. The script also manages a tabbed 
+ * interface allowing dynamic content to be rendered based on user interaction.
+ */
 <script>
 import ProfilePane from './components/ProfilePane.vue'
 import ServiceHubPane from './components/ServiceHubPane.vue'
@@ -125,6 +165,9 @@ export default {
     }
   },
   methods: {
+    /**
+     * Toggles the visibility of the profile pane
+     */
     toggleProfilePane() {
       this.isProfilePaneVisible = !this.isProfilePaneVisible
     },
