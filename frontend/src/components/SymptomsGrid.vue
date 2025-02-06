@@ -21,7 +21,15 @@
         :rowDragManaged="true"
         :animateRows="true"
         @grid-ready="onGridReady"
+        @cellContextMenu="handleContextMenu"
+        @contextmenu.prevent
       />
+      <!-- Menu contextuel -->
+      <div v-if="showContextMenu" class="context-menu" :style="contextMenuStyle">
+        <div class="context-menu-item" @click="copyCell">
+          <i class="fas fa-copy"></i> Copier
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -89,7 +97,13 @@ export default {
         enablePivot: true,
         sortable: true,
         filter: true
-      }
+      },
+      showContextMenu: false,
+      contextMenuStyle: {
+        top: '0px',
+        left: '0px'
+      },
+      selectedCellContent: ''
     }
   },
   computed: {
@@ -134,6 +148,7 @@ export default {
         addButton.style.opacity = '0'
         this.currentRowIndex = null
       }
+      this.showContextMenu = false
     },
 
     addNewRow() {
@@ -166,7 +181,35 @@ export default {
       if (this.gridApi) {
         this.gridApi.exportDataAsCsv()
       }
-    }
+    },
+
+    handleContextMenu(params) {
+      params.event.preventDefault()
+      this.selectedCellContent = params.value
+      this.showContextMenu = true
+      this.contextMenuStyle = {
+        top: `${params.event.clientY}px`,
+        left: `${params.event.clientX}px`
+      }
+
+      // Ferme le menu contextuel lors d'un clic en dehors
+      const closeContextMenu = (event) => {
+        if (!event.target.closest('.context-menu')) {
+          this.showContextMenu = false
+          document.removeEventListener('click', closeContextMenu)
+        }
+      }
+      document.addEventListener('click', closeContextMenu)
+    },
+
+    async copyCell() {
+      try {
+        await navigator.clipboard.writeText(this.selectedCellContent)
+        this.showContextMenu = false
+      } catch (err) {
+        console.error('Erreur lors de la copie:', err)
+      }
+    },
   }
 }
 </script>
@@ -222,5 +265,32 @@ export default {
 
 :deep(.ag-row:hover) {
   border-bottom: 2px solid #4285f4;
+}
+
+/* Style pour le menu contextuel */
+.context-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-menu-item:hover {
+  background-color: #f5f5f5;
+}
+
+.context-menu-item i {
+  font-size: 14px;
+  color: #666;
 }
 </style>
