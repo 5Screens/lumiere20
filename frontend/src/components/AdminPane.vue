@@ -3,6 +3,8 @@
     class="admin-pane" 
     :class="{ 'is-visible': isVisible }" 
     @click.stop
+    @mouseenter="$emit('mouse-enter')"
+    @mouseleave="$emit('mouse-leave')"
     ref="adminPane"
   >
     <div class="admin-header">

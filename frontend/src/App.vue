@@ -93,27 +93,37 @@
     <ServiceHubPane
       :is-visible="isServiceHubVisible"
       @close="closeServiceHub"
+      @mouse-enter="handleServiceHubMouseEnter"
+      @mouse-leave="handleServiceHubMouseLeave"
     />
 
     <SprintCenterPane
       :is-visible="isSprintCenterVisible"
       @close="closeSprintCenter"
+      @mouse-enter="handleSprintCenterMouseEnter"
+      @mouse-leave="handleSprintCenterMouseLeave"
     />
 
     <DataPane
       :is-visible="isDataPaneVisible"
       @close="closeDataPane"
+      @mouse-enter="handleDataMouseEnter"
+      @mouse-leave="handleDataMouseLeave"
     />
 
     <ConfigurationPane
       :is-visible="isConfigurationVisible"
       @close="closeConfiguration"
+      @mouse-enter="handleConfigurationMouseEnter"
+      @mouse-leave="handleConfigurationMouseLeave"
       @open-tab="handleOpenTab"
     />
 
     <AdminPane
       :is-visible="isAdminVisible"
       @close="closeAdmin"
+      @mouse-enter="handleAdminMouseEnter"
+      @mouse-leave="handleAdminMouseLeave"
     />
 
     <footer class="status-bar">
@@ -161,7 +171,12 @@ export default {
       isConfigurationVisible: false,
       isAdminVisible: false,
       tabs: [],
-      activeTab: null
+      activeTab: null,
+      configurationCloseTimeout: null,
+      adminCloseTimeout: null,
+      dataCloseTimeout: null,
+      serviceHubCloseTimeout: null,
+      sprintCenterCloseTimeout: null
     }
   },
   methods: {
@@ -255,6 +270,66 @@ export default {
     getTabData(tabId) {
       const tab = this.tabs.find(t => t.id === tabId)
       return tab ? tab.data : null
+    },
+    handleConfigurationMouseEnter() {
+      if (this.configurationCloseTimeout) {
+        clearTimeout(this.configurationCloseTimeout);
+        this.configurationCloseTimeout = null;
+      }
+    },
+
+    handleConfigurationMouseLeave() {
+      this.configurationCloseTimeout = setTimeout(() => {
+        this.closeConfiguration();
+      }, 300); // Délai de 300ms avant la fermeture
+    },
+    handleAdminMouseEnter() {
+      if (this.adminCloseTimeout) {
+        clearTimeout(this.adminCloseTimeout);
+        this.adminCloseTimeout = null;
+      }
+    },
+
+    handleAdminMouseLeave() {
+      this.adminCloseTimeout = setTimeout(() => {
+        this.closeAdmin();
+      }, 300);
+    },
+    handleDataMouseEnter() {
+      if (this.dataCloseTimeout) {
+        clearTimeout(this.dataCloseTimeout);
+        this.dataCloseTimeout = null;
+      }
+    },
+
+    handleDataMouseLeave() {
+      this.dataCloseTimeout = setTimeout(() => {
+        this.closeDataPane();
+      }, 300);
+    },
+    handleServiceHubMouseEnter() {
+      if (this.serviceHubCloseTimeout) {
+        clearTimeout(this.serviceHubCloseTimeout);
+        this.serviceHubCloseTimeout = null;
+      }
+    },
+
+    handleServiceHubMouseLeave() {
+      this.serviceHubCloseTimeout = setTimeout(() => {
+        this.closeServiceHub();
+      }, 300);
+    },
+    handleSprintCenterMouseEnter() {
+      if (this.sprintCenterCloseTimeout) {
+        clearTimeout(this.sprintCenterCloseTimeout);
+        this.sprintCenterCloseTimeout = null;
+      }
+    },
+
+    handleSprintCenterMouseLeave() {
+      this.sprintCenterCloseTimeout = setTimeout(() => {
+        this.closeSprintCenter();
+      }, 300);
     }
   }
 }

@@ -3,6 +3,8 @@
     class="data-pane" 
     :class="{ 'is-visible': isVisible }" 
     @click.stop
+    @mouseenter="$emit('mouse-enter')"
+    @mouseleave="$emit('mouse-leave')"
     ref="dataPane"
   >
     <div class="data-header">

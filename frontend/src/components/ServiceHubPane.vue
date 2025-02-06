@@ -3,6 +3,8 @@
     class="service-hub-pane" 
     :class="{ 'is-visible': isVisible }" 
     @click.stop
+    @mouseenter="$emit('mouse-enter')"
+    @mouseleave="$emit('mouse-leave')"
     ref="serviceHubPane"
   >
     <div class="service-hub-header">

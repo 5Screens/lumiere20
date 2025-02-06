@@ -3,6 +3,8 @@
     class="configuration-pane" 
     :class="{ 'is-visible': isVisible }" 
     @click.stop
+    @mouseenter="$emit('mouse-enter')"
+    @mouseleave="$emit('mouse-leave')"
     ref="configurationPane"
   >
     <div class="configuration-header">
