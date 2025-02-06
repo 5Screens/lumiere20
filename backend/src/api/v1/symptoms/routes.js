@@ -10,4 +10,10 @@ router.get(
     symptomsController.getSymptoms
 );
 
+router.put(
+    '/',
+    validate(symptomsValidation.createSymptom),
+    symptomsController.createSymptom
+);
+
 module.exports = router;

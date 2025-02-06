@@ -23,6 +23,51 @@ class SymptomsService {
             throw error;
         }
     }
+
+    async createSymptom(symptomData) {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // Création du symptôme dans la table configuration.symptoms
+            const symptomQuery = `
+                INSERT INTO configuration.symptoms (code)
+                VALUES ($1)
+                RETURNING code`;
+            logger.info(`Exécution de la requête symptôme: ${symptomQuery.replace(/\s+/g, ' ')}`);
+            logger.info(`Paramètres de la requête symptôme: $1=${symptomData.code}`);
+            
+            const symptomResult = await client.query(symptomQuery, [symptomData.code]);
+            const symptomCode = symptomResult.rows[0].code;
+
+            // Création des traductions
+            const translationQuery = `
+                INSERT INTO translations.symptoms_translation
+                (symptom_code, langue, libelle)
+                VALUES ($1, $2, $3)`;
+            
+            for (const translation of symptomData.translations) {
+                logger.info(`Exécution de la requête traduction: ${translationQuery.replace(/\s+/g, ' ')}`);
+                logger.info(`Paramètres de la requête traduction: $1=${symptomCode}, $2=${translation.langue}, $3=${translation.libelle}`);
+                
+                await client.query(translationQuery, [
+                    symptomCode,
+                    translation.langue,
+                    translation.libelle
+                ]);
+            }
+
+            await client.query('COMMIT');
+            logger.info(`Symptôme créé avec succès: ${symptomData.code}`);
+            return { code: symptomCode, ...symptomData };
+        } catch (error) {
+            await client.query('ROLLBACK');
+            logger.error(`Erreur lors de la création du symptôme: ${error.message}`);
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
 }
 
 module.exports = new SymptomsService();

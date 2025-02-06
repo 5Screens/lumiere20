@@ -98,12 +98,12 @@ CREATE TABLE translations.ticket_status_translation (
 -- Symptoms Translation
 CREATE TABLE translations.symptoms_translation (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    symptom_uuid UUID NOT NULL REFERENCES configuration.symptoms(uuid) ON DELETE RESTRICT,
+    symptom_code VARCHAR(50) NOT NULL REFERENCES configuration.symptoms(code) ON DELETE RESTRICT,
     langue VARCHAR(5) NOT NULL,
     libelle VARCHAR(255) NOT NULL,
     date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(symptom_uuid, langue)
+    UNIQUE(symptom_code, langue)
 );
 
 -- Tables de Relations --

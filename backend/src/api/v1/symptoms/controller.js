@@ -19,6 +19,33 @@ class SymptomsController {
             });
         }
     }
+
+    async createSymptom(req, res) {
+        try {
+            const symptomData = req.body;
+            const newSymptom = await symptomsService.createSymptom(symptomData);
+            
+            return res.status(201).json({
+                success: true,
+                data: newSymptom,
+                message: 'Symptôme créé avec succès'
+            });
+        } catch (error) {
+            logger.error(`Erreur dans createSymptom: ${error.message}`);
+            
+            if (error.code === '23505') { // Code d'erreur PostgreSQL pour violation de contrainte unique
+                return res.status(409).json({
+                    success: false,
+                    message: 'Un symptôme avec ce code existe déjà'
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Une erreur est survenue lors de la création du symptôme'
+            });
+        }
+    }
 }
 
 module.exports = new SymptomsController();
