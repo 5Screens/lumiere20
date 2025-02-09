@@ -10,76 +10,78 @@
 
     <!-- Tableau des symptômes -->
     <div class="tab-symptom-table">
-      <table>
-        <thead>
-          <tr>
-            <th><input type="checkbox" @change="toggleAllRows" v-model="selectAll" /></th>
-            <th>
-              <div class="header-content">
-                Id
-                <input type="text" v-model="filters.id" placeholder="Filter Id..." class="column-filter" />
-              </div>
-            </th>
-            <th>
-              <div class="header-content">
-                Created date
-                <input type="date" v-model="filters.createdDate" class="column-filter" />
-              </div>
-            </th>
-            <th>
-              <div class="header-content">
-                Update date
-                <input type="date" v-model="filters.updateDate" class="column-filter" />
-              </div>
-            </th>
-            <th>
-              <div class="header-content">
-                Symptom Code
-                <input type="text" v-model="filters.symptomCode" placeholder="Filter Code..." class="column-filter" />
-              </div>
-            </th>
-            <th>
-              <div class="header-content">
-                Symptom label
-                <input type="text" v-model="filters.symptomLabel" placeholder="Filter Label..." class="column-filter" />
-              </div>
-            </th>
-            <th>
-              <div class="header-content">
-                Symptom language
-                <div class="custom-multiselect">
-                  <div class="multiselect-header" @click="toggleLanguageDropdown">
-                    <span v-if="filters.symptomLanguages.length === 0">Sélectionner les langues</span>
-                    <span v-else>{{ filters.symptomLanguages.length }} langue(s) sélectionnée(s)</span>
-                    <span class="dropdown-arrow">▼</span>
-                  </div>
-                  <div class="multiselect-dropdown" v-show="isLanguageDropdownOpen">
-                    <div class="multiselect-option" v-for="lang in availableLanguages" :key="lang">
-                      <label>
-                        <input type="checkbox" 
-                               :value="lang" 
-                               v-model="filters.symptomLanguages">
-                        {{ lang.toUpperCase() }}
-                      </label>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" @change="toggleAllRows" v-model="selectAll" /></th>
+              <th>
+                <div class="header-content">
+                  Id
+                  <input type="text" v-model="filters.id" placeholder="Filter Id..." class="column-filter" />
+                </div>
+              </th>
+              <th>
+                <div class="header-content">
+                  Created date
+                  <input type="date" v-model="filters.createdDate" class="column-filter" />
+                </div>
+              </th>
+              <th>
+                <div class="header-content">
+                  Update date
+                  <input type="date" v-model="filters.updateDate" class="column-filter" />
+                </div>
+              </th>
+              <th>
+                <div class="header-content">
+                  Symptom Code
+                  <input type="text" v-model="filters.symptomCode" placeholder="Filter Code..." class="column-filter" />
+                </div>
+              </th>
+              <th>
+                <div class="header-content">
+                  Symptom label
+                  <input type="text" v-model="filters.symptomLabel" placeholder="Filter Label..." class="column-filter" />
+                </div>
+              </th>
+              <th>
+                <div class="header-content">
+                  Symptom language
+                  <div class="custom-multiselect">
+                    <div class="multiselect-header" @click="toggleLanguageDropdown">
+                      <span v-if="filters.symptomLanguages.length === 0">Sélectionner les langues</span>
+                      <span v-else>{{ filters.symptomLanguages.length }} langue(s) sélectionnée(s)</span>
+                      <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="multiselect-dropdown" v-show="isLanguageDropdownOpen">
+                      <div class="multiselect-option" v-for="lang in availableLanguages" :key="lang">
+                        <label>
+                          <input type="checkbox" 
+                                 :value="lang" 
+                                 v-model="filters.symptomLanguages">
+                          {{ lang.toUpperCase() }}
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in paginatedData" :key="row.id">
-            <td><input type="checkbox" v-model="row.selected" /></td>
-            <td>{{ row.id }}</td>
-            <td>{{ row.createdDate }}</td>
-            <td>{{ row.updateDate }}</td>
-            <td>{{ row.symptomCode }}</td>
-            <td>{{ row.symptomLabel }}</td>
-            <td>{{ row.symptomLanguage }}</td>
-          </tr>
-        </tbody>
-      </table>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in paginatedData" :key="row.id">
+              <td><input type="checkbox" v-model="row.selected" /></td>
+              <td>{{ row.id }}</td>
+              <td>{{ row.createdDate }}</td>
+              <td>{{ row.updateDate }}</td>
+              <td>{{ row.symptomCode }}</td>
+              <td>{{ row.symptomLabel }}</td>
+              <td>{{ row.symptomLanguage }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Table footer -->
       <div class="table-footer">
@@ -251,13 +253,68 @@ export default {
 
 <style scoped>
 .symptoms-tab {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .tab-symptom-button {
-  margin-bottom: 20px;
+  padding: 10px;
+  background-color: var(--background-color);
+}
+
+.tab-symptom-table {
+  flex: 1;
   display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  position: sticky;
+  top: 0;
+  background-color: var(--background-color);
+  z-index: 1;
+}
+
+tbody {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.table-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: var(--background-color);
+  padding: 10px;
+  border-top: 1px solid var(--border-color);
+  z-index: 1;
+}
+
+.pagination {
+  position: sticky;
+  bottom: 0;
+  background-color: var(--background-color);
+  padding: 10px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 10px;
+  z-index: 1;
 }
 
 .control-button {
@@ -276,12 +333,6 @@ export default {
 .tab-symptom-table {
   width: 100%;
   overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  border: 1px solid #ddd;
 }
 
 th, td {
