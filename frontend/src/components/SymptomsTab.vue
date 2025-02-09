@@ -91,6 +91,13 @@
         <button @click="previousPage" :disabled="currentPage === 1">&lt;</button>
         <span>Page {{ currentPage }} of {{ totalPages }}</span>
         <button @click="nextPage" :disabled="currentPage === totalPages">&gt;</button>
+        <div class="items-per-page">
+          <select v-model="itemsPerPage" @change="handleItemsPerPageChange">
+            <option v-for="n in [5, 10, 20, 50, 100]" :key="n" :value="n">
+              {{ n }} éléments
+            </option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -232,6 +239,9 @@ export default {
     toggleLanguageDropdown() {
       this.isLanguageDropdownOpen = !this.isLanguageDropdownOpen;
     },
+    handleItemsPerPageChange() {
+      this.currentPage = 1;
+    },
   },
   async mounted() {
     await this.handleRefresh();
@@ -325,10 +335,26 @@ select.column-filter:focus {
 
 .pagination {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 10px;
-  margin-top: 20px;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.items-per-page {
+  margin-left: 1rem;
+}
+
+.items-per-page select {
+  padding: 0.25rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.items-per-page select:hover {
+  border-color: #666;
 }
 
 .pagination button {
