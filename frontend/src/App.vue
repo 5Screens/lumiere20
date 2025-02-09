@@ -224,8 +224,8 @@ export default {
       console.log('Theme changed to:', theme)
     },
     handleLanguageChange(language) {
-      // Implémenter la logique de changement de langue
-      console.log('Language changed to:', language)
+      this.$i18n.locale = language;
+      this.updateTabTitles();
     },
     /**
      * Handles the opening of a new tab in the application.
@@ -380,6 +380,57 @@ export default {
       this.sprintCenterCloseTimeout = setTimeout(() => {
         this.closeSprintCenter();
       }, 300);
+    },
+
+    /**
+     * Met à jour les titres des onglets ouverts en fonction de la langue actuelle.
+     * Pour chaque onglet, récupère la traduction correspondante à son type.
+     */
+    updateTabTitles() {
+      this.tabs = this.tabs.map(tab => {
+        let newTitle;
+        switch (tab.type) {
+          case 'companies':
+            newTitle = this.$t('configuration.companies');
+            break;
+          case 'locations':
+            newTitle = this.$t('configuration.locations');
+            break;
+          case 'sites':
+            newTitle = this.$t('configuration.sites');
+            break;
+          case 'entities':
+            newTitle = this.$t('configuration.entities');
+            break;
+          case 'departments':
+            newTitle = this.$t('configuration.departments');
+            break;
+          case 'persons':
+            newTitle = this.$t('configuration.persons');
+            break;
+          case 'support-groups':
+            newTitle = this.$t('configuration.supportGroups');
+            break;
+          case 'roles':
+            newTitle = this.$t('configuration.roles');
+            break;
+          case 'ticket-status':
+            newTitle = this.$t('configuration.ticketStatus');
+            break;
+          case 'symptoms':
+            newTitle = this.$t('configuration.symptoms');
+            break;
+          case 'ticket-types':
+            newTitle = this.$t('configuration.ticketTypes');
+            break;
+          case 'workflows':
+            newTitle = this.$t('configuration.workflows');
+            break;
+          default:
+            newTitle = tab.title;
+        }
+        return { ...tab, title: newTitle };
+      });
     }
   }
 }
