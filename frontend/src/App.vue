@@ -149,7 +149,7 @@ import SprintCenterPane from './components/SprintCenterPane.vue'
 import DataPane from './components/DataPane.vue'
 import ConfigurationPane from './components/ConfigurationPane.vue'
 import AdminPane from './components/AdminPane.vue'
-import SymptomsGrid from './components/SymptomsGrid.vue'
+import SymptomsTab from './components/SymptomsTab.vue'
 
 export default {
   name: 'App',
@@ -160,7 +160,7 @@ export default {
     DataPane,
     ConfigurationPane,
     AdminPane,
-    SymptomsGrid
+    SymptomsTab
   },
   data() {
     return {
@@ -288,7 +288,7 @@ export default {
       
       switch (tab.type) {
         case 'symptoms':
-          return 'SymptomsGrid'
+          return 'SymptomsTab'
         default:
           return null
       }
