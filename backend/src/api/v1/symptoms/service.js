@@ -24,6 +24,28 @@ class SymptomsService {
         }
     }
 
+    async getAllSymptomsAllLanguages() {
+        try {
+            const query = `
+                SELECT 
+                    st.uuid,
+                    st.symptom_code,
+                    st.libelle,
+                    st.langue,
+                    st.date_creation,
+                    st.date_modification
+                FROM translations.symptoms_translation st
+                ORDER BY st.langue, st.libelle ASC
+            `;
+            
+            const result = await pool.query(query);
+            return result.rows;
+        } catch (error) {
+            logger.error(`Erreur lors de la récupération de tous les symptômes: ${error.message}`);
+            throw error;
+        }
+    }
+
     async createSymptom(symptomData) {
         const client = await pool.connect();
         try {

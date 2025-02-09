@@ -5,9 +5,14 @@ const validate = require('../../../middleware/validate');
 const symptomsValidation = require('./validation');
 
 router.get(
-    '/',
+    '/language/:langue',
     validate(symptomsValidation.getSymptoms),
     symptomsController.getSymptoms
+);
+
+router.get(
+    '/',
+    symptomsController.getAllSymptoms
 );
 
 router.put(

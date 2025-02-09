@@ -20,6 +20,23 @@ class SymptomsController {
         }
     }
 
+    async getAllSymptoms(req, res) {
+        try {
+            const symptoms = await symptomsService.getAllSymptomsAllLanguages();
+            
+            return res.status(200).json({
+                success: true,
+                data: symptoms
+            });
+        } catch (error) {
+            logger.error(`Erreur dans getAllSymptoms: ${error.message}`);
+            return res.status(500).json({
+                success: false,
+                message: 'Une erreur est survenue lors de la récupération de tous les symptômes'
+            });
+        }
+    }
+
     async createSymptom(req, res) {
         try {
             const symptomData = req.body;
