@@ -47,7 +47,23 @@
             <th>
               <div class="header-content">
                 Symptom language
-                <input type="text" v-model="filters.symptomLanguage" placeholder="Filter Language..." class="column-filter" />
+                <div class="custom-multiselect">
+                  <div class="multiselect-header" @click="toggleLanguageDropdown">
+                    <span v-if="filters.symptomLanguages.length === 0">Sélectionner les langues</span>
+                    <span v-else>{{ filters.symptomLanguages.length }} langue(s) sélectionnée(s)</span>
+                    <span class="dropdown-arrow">▼</span>
+                  </div>
+                  <div class="multiselect-dropdown" v-show="isLanguageDropdownOpen">
+                    <div class="multiselect-option" v-for="lang in availableLanguages" :key="lang">
+                      <label>
+                        <input type="checkbox" 
+                               :value="lang" 
+                               v-model="filters.symptomLanguages">
+                        {{ lang.toUpperCase() }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
             </th>
           </tr>
@@ -83,13 +99,15 @@ export default {
       selectAll: false,
       currentPage: 1,
       itemsPerPage: 10,
+      isLanguageDropdownOpen: false,
+      availableLanguages: ['fr', 'en', 'es', 'de', 'it'],
       filters: {
         id: '',
         createdDate: '',
         updateDate: '',
         symptomCode: '',
         symptomLabel: '',
-        symptomLanguage: ''
+        symptomLanguages: []
       },
       symptoms: [] // Les données seront chargées depuis l'API
     }
@@ -103,7 +121,7 @@ export default {
           (!this.filters.updateDate || item.updateDate.includes(this.filters.updateDate)) &&
           (!this.filters.symptomCode || item.symptomCode.toLowerCase().includes(this.filters.symptomCode.toLowerCase())) &&
           (!this.filters.symptomLabel || item.symptomLabel.toLowerCase().includes(this.filters.symptomLabel.toLowerCase())) &&
-          (!this.filters.symptomLanguage || item.symptomLanguage.toLowerCase().includes(this.filters.symptomLanguage.toLowerCase()))
+          (this.filters.symptomLanguages.length === 0 || this.filters.symptomLanguages.includes(item.symptomLanguage))
         )
       })
     },
@@ -205,7 +223,13 @@ export default {
       if (this.currentPage < this.totalPages) {
         this.currentPage++
       }
-    }
+    },
+    toggleLanguageDropdown() {
+      this.isLanguageDropdownOpen = !this.isLanguageDropdownOpen;
+    },
+  },
+  async mounted() {
+    await this.handleRefresh();
   }
 }
 </script>
@@ -262,10 +286,28 @@ th {
 }
 
 .column-filter {
+  width: 100%;
   padding: 4px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  width: 100%;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+select.column-filter {
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+select.column-filter:hover {
+  border-color: #999;
+}
+
+select.column-filter:focus {
+  outline: none;
+  border-color: #666;
+  box-shadow: 0 0 3px rgba(0,0,0,0.1);
 }
 
 .pagination {
@@ -290,6 +332,49 @@ th {
 }
 
 tr:hover {
+  background-color: #f5f5f5;
+}
+
+.custom-multiselect {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.multiselect-header {
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.multiselect-header:hover {
+  background-color: #f0f0f0;
+}
+
+.dropdown-arrow {
+  margin-left: 8px;
+}
+
+.multiselect-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 8px;
+  z-index: 1;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.multiselect-option {
+  padding: 4px;
+  cursor: pointer;
+}
+
+.multiselect-option:hover {
   background-color: #f5f5f5;
 }
 </style>
