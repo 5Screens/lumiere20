@@ -68,5 +68,15 @@ export default {
     connectors: 'Connecteurs',
     performance: 'Performances de la plateforme',
     backup: 'Sauvegarde et restauration'
+  },
+  symptomsTable: {
+    headers: {
+      id: 'Id',
+      createdDate: 'Date de création',
+      updateDate: 'Date de modification',
+      symptomCode: 'Code symptôme',
+      symptomLabel: 'Libellé symptôme',
+      symptomLanguage: 'Langue'
+    }
   }
 }

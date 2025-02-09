@@ -133,5 +133,15 @@ export default {
     connectors: 'Connectors',
     performance: 'Platform Performance',
     backup: 'Backup and Restore'
+  },
+  symptomsTable: {
+    headers: {
+      id: 'Id',
+      createdDate: 'Created Date',
+      updateDate: 'Update Date',
+      symptomCode: 'Symptom Code',
+      symptomLabel: 'Symptom Label',
+      symptomLanguage: 'Language'
+    }
   }
 }

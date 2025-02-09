@@ -27,54 +27,45 @@
           <thead>
             <tr>
               <th><input type="checkbox" @change="toggleAllRows" v-model="selectAll" /></th>
+              <th>{{ $t('symptomsTable.headers.id') }}</th>
+              <th>{{ $t('symptomsTable.headers.createdDate') }}</th>
+              <th>{{ $t('symptomsTable.headers.updateDate') }}</th>
+              <th>{{ $t('symptomsTable.headers.symptomCode') }}</th>
+              <th>{{ $t('symptomsTable.headers.symptomLabel') }}</th>
+              <th>{{ $t('symptomsTable.headers.symptomLanguage') }}</th>
+            </tr>
+            <tr class="filter-row">
+              <th></th>
               <th>
-                <div class="header-content">
-                  Id
-                  <input type="text" v-model="filters.id" placeholder="Filter Id..." class="column-filter" />
-                </div>
+                <input type="text" v-model="filters.id" placeholder="Filter Id..." class="column-filter" />
               </th>
               <th>
-                <div class="header-content">
-                  Created date
-                  <input type="date" v-model="filters.createdDate" class="column-filter" />
-                </div>
+                <input type="date" v-model="filters.createdDate" class="column-filter" />
               </th>
               <th>
-                <div class="header-content">
-                  Update date
-                  <input type="date" v-model="filters.updateDate" class="column-filter" />
-                </div>
+                <input type="date" v-model="filters.updateDate" class="column-filter" />
               </th>
               <th>
-                <div class="header-content">
-                  Symptom Code
-                  <input type="text" v-model="filters.symptomCode" placeholder="Filter Code..." class="column-filter" />
-                </div>
+                <input type="text" v-model="filters.symptomCode" placeholder="Filter Code..." class="column-filter" />
               </th>
               <th>
-                <div class="header-content">
-                  Symptom label
-                  <input type="text" v-model="filters.symptomLabel" placeholder="Filter Label..." class="column-filter" />
-                </div>
+                <input type="text" v-model="filters.symptomLabel" placeholder="Filter Label..." class="column-filter" />
               </th>
               <th>
-                <div class="header-content">
-                  Symptom language
-                  <div class="custom-multiselect">
-                    <div class="multiselect-header" @click="toggleLanguageDropdown">
-                      <span v-if="filters.symptomLanguages.length === 0">Sélectionner les langues</span>
-                      <span v-else>{{ filters.symptomLanguages.length }} langue(s) sélectionnée(s)</span>
-                      <span class="dropdown-arrow">▼</span>
-                    </div>
-                    <div class="multiselect-dropdown" v-show="isLanguageDropdownOpen">
-                      <div class="multiselect-option" v-for="lang in availableLanguages" :key="lang">
-                        <label>
-                          <input type="checkbox" 
-                                 :value="lang" 
-                                 v-model="filters.symptomLanguages">
-                          {{ lang.toUpperCase() }}
-                        </label>
-                      </div>
+                <div class="custom-multiselect">
+                  <div class="multiselect-header" @click="toggleLanguageDropdown">
+                    <span v-if="filters.symptomLanguages.length === 0">Sélectionner les langues</span>
+                    <span v-else>{{ filters.symptomLanguages.length }} langue(s) sélectionnée(s)</span>
+                    <span class="dropdown-arrow">▼</span>
+                  </div>
+                  <div class="multiselect-dropdown" v-show="isLanguageDropdownOpen">
+                    <div class="multiselect-option" v-for="lang in availableLanguages" :key="lang">
+                      <label>
+                        <input type="checkbox" 
+                               :value="lang" 
+                               v-model="filters.symptomLanguages">
+                        {{ lang.toUpperCase() }}
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -337,8 +328,8 @@ export default {
 .symptoms-tab {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  height: 100%;
+  padding: 20px;
 }
 
 .tab-symptom-button {
@@ -477,7 +468,7 @@ tr:hover {
 .column-filter {
   width: 100%;
   padding: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid #dee2e6;
   border-radius: 4px;
   margin-top: 4px;
   font-size: 14px;
@@ -583,5 +574,25 @@ select.column-filter:focus {
   padding: 10px;
   text-align: left;
   border-top: 1px solid #ddd;
+}
+
+.filter-row th {
+  font-weight: normal;
+  padding: 8px;
+  background-color: #f8f9fa;
+}
+
+.filter-row input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.filter-row input:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 </style>

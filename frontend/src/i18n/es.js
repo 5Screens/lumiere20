@@ -133,5 +133,15 @@ export default {
     title: 'Centro Sprint',
     tickets: 'Tickets',
     userStories: 'Historias de Usuario'
+  },
+  symptomsTable: {
+    headers: {
+      id: 'Id',
+      createdDate: 'Fecha de creación',
+      updateDate: 'Fecha de actualización',
+      symptomCode: 'Código de síntoma',
+      symptomLabel: 'Etiqueta de síntoma',
+      symptomLanguage: 'Idioma'
+    }
   }
 }
