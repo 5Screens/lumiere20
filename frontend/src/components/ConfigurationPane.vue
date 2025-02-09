@@ -60,123 +60,41 @@ export default {
     /**
      * Contains the items to be displayed in the configuration pane. Each item
      * is an object with the following properties:
-     * - route: The route to navigate to when the item is clicked.
+     * - tabToOpen: The tab to open when the item is clicked.
      * - icon: The icon to display for the item.
      * - label: The label to display for the item.
      */
   data() {
     return {
       configItems: [
-        { route: '/companies', icon: 'fas fa-building', label: 'configuration.companies' },
-        { route: '/locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },
-        { route: '/sites', icon: 'fas fa-sitemap', label: 'configuration.sites' },
-        { route: '/entities', icon: 'fas fa-cube', label: 'configuration.entities' },
-        { route: '/departments', icon: 'fas fa-users', label: 'configuration.departments' },
-        { route: '/persons', icon: 'fas fa-user', label: 'configuration.persons' },
-        { route: '/support-groups', icon: 'fas fa-user-friends', label: 'configuration.supportGroups' },
-        { route: '/roles', icon: 'fas fa-user-shield', label: 'configuration.roles' },
-        { route: '/ticket-status', icon: 'fas fa-tasks', label: 'configuration.ticketStatus' },
-        { route: '/symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms' },
-        { route: '/ticket-types', icon: 'fas fa-ticket-alt', label: 'configuration.ticketTypes' },
-        { route: '/workflows', icon: 'fas fa-project-diagram', label: 'configuration.workflows' }
+        { tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
+        { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },
+        { tabToOpen: 'sites', icon: 'fas fa-sitemap', label: 'configuration.sites' },
+        { tabToOpen: 'entities', icon: 'fas fa-cube', label: 'configuration.entities' },
+        { tabToOpen: 'departments', icon: 'fas fa-users', label: 'configuration.departments' },
+        { tabToOpen: 'persons', icon: 'fas fa-user', label: 'configuration.persons' },
+        { tabToOpen: 'support-groups', icon: 'fas fa-user-friends', label: 'configuration.supportGroups' },
+        { tabToOpen: 'roles', icon: 'fas fa-user-shield', label: 'configuration.roles' },
+        { tabToOpen: 'ticket-status', icon: 'fas fa-tasks', label: 'configuration.ticketStatus' },
+        { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms' },
+        { tabToOpen: 'ticket-types', icon: 'fas fa-ticket-alt', label: 'configuration.ticketTypes' },
+        { tabToOpen: 'workflows', icon: 'fas fa-project-diagram', label: 'configuration.workflows' }
       ]
     }
   },
     /**
-     * Watcher for the isVisible property. When the property is set to true,
-     * add an event listener to the document to listen for clicks outside
-     * of the component. When the property is set to false, remove the event
-     * listener.
-     */
-  watch: {
-    isVisible(newValue) {
-      if (newValue) {
-        document.addEventListener('click', this.handleClickOutside)
-      } else {
-        document.removeEventListener('click', this.handleClickOutside)
-      }
-    }
-  },
-    /**
-     * Handles the click event on a configuration item. If the item is the
-     * "symptoms" item, it fetches the symptoms data and emits an "open-tab"
-     * event with the data. Otherwise, it navigates to the route associated with
-     * the item.
+     * Handles the click event on a configuration item. Emits an "open-tab" event
+     * with the appropriate data for the content area to display.
      * @param {Object} item - The configuration item that was clicked.
      */
   methods: {
-    async handleItemClick(item) {
-      if (item.route === '/symptoms') {
-        try {
-          const locale = this.$i18n.locale || 'fr'
-          const response = await axios.get(`http://localhost:3000/api/v1/symptoms?langue=${locale}`)
-            
-          this.$emit('open-tab', {
-            id: 'symptoms',
-            title: this.$t('configuration.symptoms'),
-            data: response.data.data || [],
-            type: 'symptoms'
-          })
-        } catch (error) {
-          console.error('Erreur lors de la récupération des symptômes:', error)
-          this.$toast.error(this.$t('errors.fetchSymptoms'))
-        }
-        return
-      }
-      this.$router.push(item.route)
-    },
-    
-    /**
-     * Handles the click event on the "symptoms" item. Fetches the symptoms
-     * data and emits an "open-tab" event with the data.
-     * @async
-     * @emits {Object} open-tab - The data fetched from the API is passed as an
-     * argument in the following shape: {
-     *   id: 'symptoms',
-     *   title: string,
-     *   data: Array<Object>,
-     *   type: 'symptoms'
-     * }
-     */
-    async handleSymptomsClick() {
-      try {
-        const locale = this.$i18n.locale || 'fr'
-        const response = await axios.get(`http://localhost:3000/api/v1/symptoms?langue=${locale}`)
-        
-        this.$emit('open-tab', {
-          id: 'symptoms',
-          title: this.$t('configuration.symptoms'),
-          data: response.data,
-          type: 'symptoms'
-        })
-      } catch (error) {
-        console.error('Erreur lors de la récupération des symptômes:', error)
-        this.$toast.error(this.$t('errors.fetchSymptoms'))
-      }
-    },
-    
-    /**
-     * Handles the click event on the document when the configuration pane is
-     * visible. If the click is not on the configuration pane itself or the
-     * toggle button, the pane is closed by emitting a "close" event.
-     * @param {Event} event - The click event.
-     */
-    handleClickOutside(event) {
-      const toggleButton = document.querySelector('[data-configuration-toggle]')
-      if (toggleButton && toggleButton.contains(event.target)) {
-        return
-      }
-      
-      if (this.isVisible && !this.$refs.configurationPane.contains(event.target)) {
-        this.$emit('close')
-      }
+    handleItemClick(item) {
+      this.$emit('open-tab', {
+        id: item.tabToOpen,
+        title: this.$t(item.label),
+        type: item.tabToOpen
+      })
     }
-  },
-  /**
-   * Removes the global click event listener when the component is destroyed.
-   */
-  beforeDestroy() {
-    document.removeEventListener('click', this.handleClickOutside)
   }
 }
 </script>
