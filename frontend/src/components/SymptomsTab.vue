@@ -284,6 +284,14 @@ th {
   background-color: #f8f9fa;
 }
 
+tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+tr:hover {
+  background-color: #f5f5f5;
+}
+
 .header-content {
   display: flex;
   flex-direction: column;
@@ -334,10 +342,6 @@ select.column-filter:focus {
 .pagination button:disabled {
   background-color: #f0f0f0;
   cursor: not-allowed;
-}
-
-tr:hover {
-  background-color: #f5f5f5;
 }
 
 .custom-multiselect {
