@@ -102,7 +102,7 @@
               <th>
                 <div class="custom-multiselect">
                   <div class="multiselect-header" @click="toggleLanguageDropdown">
-                    <span v-if="filters.symptomLanguages.length === 0">Sélectionner les langues</span>
+                    <span v-if="filters.symptomLanguages.length === 0">All</span>
                     <span v-else>{{ filters.symptomLanguages.length }} langue(s) sélectionnée(s)</span>
                     <span class="dropdown-arrow">▼</span>
                   </div>
@@ -625,72 +625,103 @@ select.column-filter:focus {
 }
 
 .custom-multiselect {
-  position: relative;
-  display: inline-block;
   width: 100%;
+  position: relative;
 }
 
 .multiselect-header {
-  padding: 4px;
-  border: 1px solid #ddd;
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #dee2e6;
   border-radius: 4px;
-  background-color: #fff;
+  background-color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
 }
 
-.multiselect-header:hover {
-  background-color: #f0f0f0;
+.multiselect-dropdown {
+  position: absolute;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  margin-top: 2px;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.multiselect-option {
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.multiselect-option label {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.multiselect-option input[type="checkbox"] {
+  margin: 0 8px 0 0;
+  cursor: pointer;
+}
+
+.multiselect-option:focus-within {
+  outline: none;
+  background-color: #f8f9fa;
+}
+
+.multiselect-option:hover {
+  background-color: #f8f9fa;
 }
 
 .dropdown-arrow {
   margin-left: 8px;
 }
 
-.multiselect-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  padding: 8px;
-  z-index: 1;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.multiselect-option {
-  padding: 4px;
-  cursor: pointer;
-}
-
-.multiselect-option:hover {
-  background-color: #f5f5f5;
-}
-
-.table-footer {
-  padding: 10px;
-  text-align: left;
-  border-top: 1px solid #ddd;
-}
-
-.filter-row th {
-  font-weight: normal;
-  padding: 8px;
-  background-color: #f8f9fa;
-}
-
-.filter-row input {
-  width: 100%;
-  padding: 4px 8px;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-
-.filter-row input:focus {
+/* Supprimer la bordure bleue sur focus */
+.multiselect-option input[type="checkbox"]:focus {
   outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+  box-shadow: none;
+}
+
+/* Style personnalisé pour les cases à cocher */
+.multiselect-option input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #dee2e6;
+  border-radius: 3px;
+  position: relative;
+  background: white;
+}
+
+.multiselect-option input[type="checkbox"]:checked {
+  background: #2196F3;
+  border-color: #2196F3;
+}
+
+.multiselect-option input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .sortable {
@@ -719,5 +750,31 @@ select.column-filter:focus {
 
 th[class="sortable"] .sort-icon template:last-child {
   opacity: 0.3;
+}
+
+.table-footer {
+  padding: 10px;
+  text-align: left;
+  border-top: 1px solid #ddd;
+}
+
+.filter-row th {
+  font-weight: normal;
+  padding: 8px;
+  background-color: #f8f9fa;
+}
+
+.filter-row input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.filter-row input:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 </style>
