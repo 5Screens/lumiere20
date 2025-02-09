@@ -81,6 +81,11 @@
         </tbody>
       </table>
 
+      <!-- Table footer -->
+      <div class="table-footer">
+        Total éléments trouvés : {{ filteredData.length }}
+      </div>
+
       <!-- Pagination -->
       <div class="pagination">
         <button @click="previousPage" :disabled="currentPage === 1">&lt;</button>
@@ -376,5 +381,11 @@ tr:hover {
 
 .multiselect-option:hover {
   background-color: #f5f5f5;
+}
+
+.table-footer {
+  padding: 10px;
+  text-align: left;
+  border-top: 1px solid #ddd;
 }
 </style>
