@@ -227,6 +227,13 @@ export default {
       // Implémenter la logique de changement de langue
       console.log('Language changed to:', language)
     },
+    /**
+     * Handles the opening of a new tab in the application.
+     * If the tab already exists, its data is updated.
+     * If the tab does not exist, it is created and added to the list of tabs.
+     * The currently active tab is then set to the newly opened tab.
+     * @param {object} payload - The payload of the tab to open, containing its id, title, data, and type.
+     */
     handleOpenTab({ id, title, data, type }) {
       const existingTabIndex = this.tabs.findIndex(tab => tab.id === id)
       
@@ -241,10 +248,20 @@ export default {
       }
     },
     
+    /**
+     * Switches the active tab to the tab with the specified id.
+     * @param {string} tabId - The id of the tab to switch to.
+     */
     switchTab(tabId) {
       this.activeTab = tabId
     },
     
+    /**
+     * Closes the specified tab and removes it from the list of tabs.
+     * If the closed tab is the currently active tab, the active tab is set to the
+     * previous tab in the list of tabs, or null if there are no tabs left.
+     * @param {string} tabId - The id of the tab to close.
+     */
     closeTab(tabId) {
       const index = this.tabs.findIndex(tab => tab.id === tabId)
       if (index !== -1) {
@@ -255,6 +272,16 @@ export default {
       }
     },
     
+    /**
+     * Returns the component name associated with the specified tab id.
+     * Searches for a tab with the given id and returns the component
+     * name based on the tab's type. If no tab is found, or if the tab type
+     * is not recognized, it returns null.
+     * 
+     * @param {string} tabId - The id of the tab whose component is to be retrieved.
+     * @returns {string|null} The name of the component corresponding to the tab type,
+     * or null if not found or type is unrecognized.
+     */
     getTabComponent(tabId) {
       const tab = this.tabs.find(t => t.id === tabId)
       if (!tab) return null
@@ -267,10 +294,23 @@ export default {
       }
     },
     
+    /**
+     * Retrieves the data associated with the specified tab id.
+     * Searches for a tab with the given id and returns its data.
+     * If no tab is found, it returns null.
+     * 
+     * @param {string} tabId - The id of the tab whose data is to be retrieved.
+     * @returns {object|null} The data of the tab if found, otherwise null.
+     */
     getTabData(tabId) {
       const tab = this.tabs.find(t => t.id === tabId)
       return tab ? tab.data : null
     },
+    /**
+     * Cancels the configuration pane close timeout when the mouse enters the
+     * configuration pane. This prevents the pane from closing when the user
+     * moves the mouse back into the pane while the timeout is still active.
+     */
     handleConfigurationMouseEnter() {
       if (this.configurationCloseTimeout) {
         clearTimeout(this.configurationCloseTimeout);
@@ -278,11 +318,21 @@ export default {
       }
     },
 
+    /**
+     * Sets a timeout to close the configuration pane after a 300ms delay when
+     * the mouse leaves the pane. This allows the user to quickly move the mouse
+     * out and back into the pane without it closing.
+     */
     handleConfigurationMouseLeave() {
       this.configurationCloseTimeout = setTimeout(() => {
         this.closeConfiguration();
       }, 300); // Délai de 300ms avant la fermeture
     },
+    /**
+     * Cancels the administration pane close timeout when the mouse enters the
+     * administration pane. This prevents the pane from closing when the user
+     * moves the mouse back into the pane while the timeout is still active.
+     */
     handleAdminMouseEnter() {
       if (this.adminCloseTimeout) {
         clearTimeout(this.adminCloseTimeout);
