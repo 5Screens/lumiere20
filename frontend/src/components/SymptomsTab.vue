@@ -27,12 +27,60 @@
           <thead>
             <tr>
               <th><input type="checkbox" @change="toggleAllRows" v-model="selectAll" /></th>
-              <th>{{ $t('symptomsTable.headers.id') }}</th>
-              <th>{{ $t('symptomsTable.headers.createdDate') }}</th>
-              <th>{{ $t('symptomsTable.headers.updateDate') }}</th>
-              <th>{{ $t('symptomsTable.headers.symptomCode') }}</th>
-              <th>{{ $t('symptomsTable.headers.symptomLabel') }}</th>
-              <th>{{ $t('symptomsTable.headers.symptomLanguage') }}</th>
+              <th @click="sortBy('id')" class="sortable">
+                {{ $t('symptomsTable.headers.id') }}
+                <span class="sort-icon">
+                  <template v-if="sortColumn === 'id'">
+                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                  </template>
+                  <template v-else>▲▼</template>
+                </span>
+              </th>
+              <th @click="sortBy('createdDate')" class="sortable">
+                {{ $t('symptomsTable.headers.createdDate') }}
+                <span class="sort-icon">
+                  <template v-if="sortColumn === 'createdDate'">
+                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                  </template>
+                  <template v-else>▲▼</template>
+                </span>
+              </th>
+              <th @click="sortBy('updateDate')" class="sortable">
+                {{ $t('symptomsTable.headers.updateDate') }}
+                <span class="sort-icon">
+                  <template v-if="sortColumn === 'updateDate'">
+                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                  </template>
+                  <template v-else>▲▼</template>
+                </span>
+              </th>
+              <th @click="sortBy('symptomCode')" class="sortable">
+                {{ $t('symptomsTable.headers.symptomCode') }}
+                <span class="sort-icon">
+                  <template v-if="sortColumn === 'symptomCode'">
+                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                  </template>
+                  <template v-else>▲▼</template>
+                </span>
+              </th>
+              <th @click="sortBy('symptomLabel')" class="sortable">
+                {{ $t('symptomsTable.headers.symptomLabel') }}
+                <span class="sort-icon">
+                  <template v-if="sortColumn === 'symptomLabel'">
+                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                  </template>
+                  <template v-else>▲▼</template>
+                </span>
+              </th>
+              <th @click="sortBy('symptomLanguage')" class="sortable">
+                {{ $t('symptomsTable.headers.symptomLanguage') }}
+                <span class="sort-icon">
+                  <template v-if="sortColumn === 'symptomLanguage'">
+                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                  </template>
+                  <template v-else>▲▼</template>
+                </span>
+              </th>
             </tr>
             <tr class="filter-row">
               <th></th>
@@ -113,10 +161,13 @@ export default {
   name: 'SymptomsTab',
   data() {
     return {
+      symptoms: [],
       selectAll: false,
       currentPage: 1,
       itemsPerPage: 10,
       isLanguageDropdownOpen: false,
+      sortColumn: null,
+      sortDirection: null,
       availableLanguages: ['fr', 'en', 'es', 'de', 'it'],
       filters: {
         id: '',
@@ -126,21 +177,51 @@ export default {
         symptomLabel: '',
         symptomLanguages: []
       },
-      symptoms: [] // Les données seront chargées depuis l'API
     }
   },
   computed: {
     filteredData() {
-      return this.symptoms.filter(item => {
-        return (
-          (!this.filters.id || item.id.toLowerCase().includes(this.filters.id.toLowerCase())) &&
-          (!this.filters.createdDate || item.createdDate.includes(this.filters.createdDate)) &&
-          (!this.filters.updateDate || item.updateDate.includes(this.filters.updateDate)) &&
-          (!this.filters.symptomCode || item.symptomCode.toLowerCase().includes(this.filters.symptomCode.toLowerCase())) &&
-          (!this.filters.symptomLabel || item.symptomLabel.toLowerCase().includes(this.filters.symptomLabel.toLowerCase())) &&
-          (this.filters.symptomLanguages.length === 0 || this.filters.symptomLanguages.includes(item.symptomLanguage))
-        )
-      })
+      let data = [...this.symptoms];
+
+      // Appliquer les filtres existants...
+      if (this.filters.id) {
+        data = data.filter(item => item.id.toLowerCase().includes(this.filters.id.toLowerCase()));
+      }
+      if (this.filters.createdDate) {
+        data = data.filter(item => item.createdDate.includes(this.filters.createdDate));
+      }
+      if (this.filters.updateDate) {
+        data = data.filter(item => item.updateDate.includes(this.filters.updateDate));
+      }
+      if (this.filters.symptomCode) {
+        data = data.filter(item => item.symptomCode.toLowerCase().includes(this.filters.symptomCode.toLowerCase()));
+      }
+      if (this.filters.symptomLabel) {
+        data = data.filter(item => item.symptomLabel.toLowerCase().includes(this.filters.symptomLabel.toLowerCase()));
+      }
+      if (this.filters.symptomLanguages.length > 0) {
+        data = data.filter(item => this.filters.symptomLanguages.includes(item.symptomLanguage));
+      }
+
+      // Appliquer le tri si une colonne est sélectionnée
+      if (this.sortColumn) {
+        data.sort((a, b) => {
+          let compareA = a[this.sortColumn];
+          let compareB = b[this.sortColumn];
+
+          // Convertir en minuscules pour les chaînes
+          if (typeof compareA === 'string') {
+            compareA = compareA.toLowerCase();
+            compareB = compareB.toLowerCase();
+          }
+
+          if (compareA < compareB) return this.sortDirection === 'asc' ? -1 : 1;
+          if (compareA > compareB) return this.sortDirection === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+
+      return data;
     },
     paginatedData() {
       const start = (this.currentPage - 1) * this.itemsPerPage
@@ -317,6 +398,22 @@ export default {
       }
     },
     
+    sortBy(column) {
+      if (this.sortColumn === column) {
+        // Si on clique sur la même colonne, on change la direction
+        if (this.sortDirection === 'asc') {
+          this.sortDirection = 'desc';
+        } else if (this.sortDirection === 'desc') {
+          // Si on était en desc, on réinitialise
+          this.sortColumn = null;
+          this.sortDirection = null;
+        }
+      } else {
+        // Nouvelle colonne, on commence par asc
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
+      }
+    },
   },
   async mounted() {
     await this.handleRefresh();
@@ -594,5 +691,33 @@ select.column-filter:focus {
   outline: none;
   border-color: #80bdff;
   box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 20px;
+}
+
+.sortable:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sort-icon {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.5;
+  font-size: 0.8em;
+}
+
+.sortable:hover .sort-icon {
+  opacity: 0.8;
+}
+
+th[class="sortable"] .sort-icon template:last-child {
+  opacity: 0.3;
 }
 </style>
