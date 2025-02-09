@@ -2,10 +2,22 @@
   <div class="symptoms-tab">
     <!-- Boutons de contrôle -->
     <div class="tab-symptom-button">
-      <button class="control-button create" @click="handleCreate">Create</button>
-      <button class="control-button refresh" @click="handleRefresh">Refresh</button>
-      <button class="control-button update" @click="handleUpdate">Update</button>
-      <button class="control-button delete" @click="handleDelete">Delete</button>
+      <div class="left-buttons">
+        <button class="control-button create" @click="handleCreate">Create</button>
+        <button class="control-button update" @click="handleUpdate">Update</button>
+        <button class="control-button delete" @click="handleDelete">Delete</button>
+      </div>
+      <div class="right-buttons">
+        <button class="control-button import" @click="handleImport" :title="$t('configuration.import')">
+          <i class="fas fa-file-import"></i>
+        </button>
+        <button class="control-button export" @click="handleExport" :title="$t('configuration.export')">
+          <i class="fas fa-file-export"></i>
+        </button>
+        <button class="control-button refresh" @click="handleRefresh" :title="$t('configuration.refresh')">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Tableau des symptômes -->
@@ -244,6 +256,76 @@ export default {
     handleItemsPerPageChange() {
       this.currentPage = 1;
     },
+    async handleImport() {
+      try {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json,.csv';
+        
+        input.onchange = async (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            try {
+              const content = e.target.result;
+              let data;
+              
+              if (file.name.endsWith('.json')) {
+                data = JSON.parse(content);
+              } else if (file.name.endsWith('.csv')) {
+                // Implémentation de l'import CSV à faire
+                alert('L\'import CSV sera bientôt disponible');
+                return;
+              }
+
+              // TODO: Appeler l'API backend pour importer les données
+              console.log('Données à importer:', data);
+              await this.handleRefresh();
+            } catch (error) {
+              console.error('Erreur lors du traitement du fichier:', error);
+              alert('Erreur lors du traitement du fichier. Veuillez vérifier le format.');
+            }
+          };
+          reader.readAsText(file);
+        };
+        
+        input.click();
+      } catch (error) {
+        console.error('Erreur lors de l\'import:', error);
+        alert('Une erreur est survenue lors de l\'import.');
+      }
+    },
+
+    /**
+     * Exports the filtered data as a JSON file.
+     * The file is named with a timestamp to ensure unique filenames.
+     * If an error occurs during the export process, an error message is logged
+     * and an alert is shown to the user.
+     */
+    async handleExport() {
+      try {
+        const data = this.filteredData;
+        const jsonString = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        
+        a.href = url;
+        a.download = `symptoms-export-${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } catch (error) {
+        console.error('Erreur lors de l\'export:', error);
+        alert('Une erreur est survenue lors de l\'export.');
+      }
+    },
+    
   },
   async mounted() {
     await this.handleRefresh();
@@ -260,8 +342,59 @@ export default {
 }
 
 .tab-symptom-button {
-  padding: 10px;
-  background-color: var(--background-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.left-buttons, .right-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.control-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.control-button.import {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.control-button.export {
+  background-color: #2196F3;
+  color: white;
+}
+
+.control-button.refresh {
+  background-color: #9C27B0;
+  color: white;
+}
+
+.control-button i {
+  font-size: 0.9rem;
+}
+
+.control-button.refresh i {
+  transition: transform 0.3s ease-in-out;
+}
+
+.control-button.refresh:hover i {
+  transform: rotate(180deg);
 }
 
 .tab-symptom-table {
@@ -315,24 +448,6 @@ tbody {
   align-items: center;
   gap: 10px;
   z-index: 1;
-}
-
-.control-button {
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: #fff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.control-button:hover {
-  background-color: #f0f0f0;
-}
-
-.tab-symptom-table {
-  width: 100%;
-  overflow-x: auto;
 }
 
 th, td {

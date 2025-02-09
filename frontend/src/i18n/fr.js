@@ -47,7 +47,10 @@ export default {
     ticketStatus: 'Statuts des tickets',
     symptoms: 'Symptômes',
     ticketTypes: 'Types de tickets',
-    workflows: 'Workflows'
+    workflows: 'Workflows',
+    import: 'Importer',
+    export: 'Exporter',
+    refresh: 'Rafraîchir'
   },
   admin: {
     title: 'Administration',

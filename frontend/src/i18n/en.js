@@ -42,7 +42,10 @@ export default {
     ticketStatus: 'Ticket Status',
     symptoms: 'Symptoms',
     ticketTypes: 'Ticket Types',
-    workflows: 'Workflows'
+    workflows: 'Workflows',
+    import: 'Import',
+    export: 'Export',
+    refresh: 'Refresh'
   },
   dataPane: {
     title: 'Data',

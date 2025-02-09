@@ -37,12 +37,15 @@ export default {
     entities: 'Entidades',
     departments: 'Departamentos',
     persons: 'Personas',
-    supportGroups: 'Grupos de Soporte',
-    roles: 'Roles y Permisos',
-    ticketStatus: 'Estados de Tickets',
+    supportGroups: 'Grupos de soporte',
+    roles: 'Roles y permisos',
+    ticketStatus: 'Estados de tickets',
     symptoms: 'Síntomas',
-    ticketTypes: 'Tipos de Tickets',
-    workflows: 'Flujos de Trabajo'
+    ticketTypes: 'Tipos de tickets',
+    workflows: 'Flujos de trabajo',
+    import: 'Importar',
+    export: 'Exportar',
+    refresh: 'Actualizar'
   },
   admin: {
     title: 'Administración',
