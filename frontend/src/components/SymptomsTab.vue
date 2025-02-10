@@ -123,12 +123,12 @@
           <tbody>
             <tr v-for="row in paginatedData" :key="row.id">
               <td><input type="checkbox" v-model="row.selected" /></td>
-              <td :title="row.id">...{{ row.id.slice(-5) }}</td>
-              <td>{{ row.createdDate }}</td>
-              <td>{{ row.updateDate }}</td>
-              <td>{{ row.symptomCode }}</td>
-              <td>{{ row.symptomLabel }}</td>
-              <td>{{ row.symptomLanguage }}</td>
+              <td :title="row.id" @contextmenu.prevent="showCopyIcon($event, row.id)">...{{ row.id.slice(-5) }}</td>
+              <td @contextmenu.prevent="showCopyIcon($event, row.createdDate)">{{ row.createdDate }}</td>
+              <td @contextmenu.prevent="showCopyIcon($event, row.updateDate)">{{ row.updateDate }}</td>
+              <td @contextmenu.prevent="showCopyIcon($event, row.symptomCode)">{{ row.symptomCode }}</td>
+              <td @contextmenu.prevent="showCopyIcon($event, row.symptomLabel)">{{ row.symptomLabel }}</td>
+              <td @contextmenu.prevent="showCopyIcon($event, row.symptomLanguage)">{{ row.symptomLanguage }}</td>
             </tr>
           </tbody>
         </table>
@@ -154,6 +154,9 @@
       </div>
     </div>
   </div>
+  <div class="copy-icon" v-if="showCopyIconAt" :style="copyIconStyle" @click="copyToClipboard" :class="{ 'fade-out': isFading }">
+    <i class="fas fa-copy"></i>
+  </div>
 </template>
 
 <script>
@@ -177,6 +180,16 @@ export default {
         symptomLabel: '',
         symptomLanguages: []
       },
+      showCopyIconAt: null,
+      copyContent: '',
+      copyIconStyle: {
+        position: 'fixed',
+        left: '0px',
+        top: '0px',
+        display: 'none'
+      },
+      isFading: false,
+      hideTimeout: null
     }
   },
   computed: {
@@ -414,6 +427,61 @@ export default {
         this.sortDirection = 'asc';
       }
     },
+    showCopyIcon(event, content) {
+      // Nettoyer le timeout précédent si il existe
+      if (this.hideTimeout) {
+        clearTimeout(this.hideTimeout);
+      }
+      
+      this.isFading = false;
+      event.preventDefault();
+      this.copyContent = content;
+      this.copyIconStyle = {
+        position: 'fixed',
+        left: event.clientX + 'px',
+        top: event.clientY + 'px',
+        display: 'block',
+        backgroundColor: '#fff',
+        padding: '8px',
+        borderRadius: '4px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        cursor: 'pointer',
+        zIndex: 1000
+      };
+      this.showCopyIconAt = { x: event.clientX, y: event.clientY };
+
+      // Masquer l'icône après un clic ailleurs dans la page
+      const hideIcon = () => {
+        this.hideIconWithFade();
+        document.removeEventListener('click', hideIcon);
+      };
+      setTimeout(() => {
+        document.addEventListener('click', hideIcon);
+      }, 0);
+
+      // Masquer l'icône après 3 secondes avec animation
+      this.hideTimeout = setTimeout(() => {
+        this.hideIconWithFade();
+      }, 3000);
+    },
+
+    hideIconWithFade() {
+      this.isFading = true;
+      setTimeout(() => {
+        this.showCopyIconAt = null;
+        this.copyIconStyle.display = 'none';
+        this.isFading = false;
+      }, 500); // Durée de l'animation
+    },
+
+    async copyToClipboard() {
+      try {
+        await navigator.clipboard.writeText(this.copyContent);
+        this.hideIconWithFade();
+      } catch (err) {
+        console.error('Erreur lors de la copie:', err);
+      }
+    },
   },
   async mounted() {
     await this.handleRefresh();
@@ -421,9 +489,23 @@ export default {
 }
 </script>
 
-  <!--
-  Importation des styles pour le composant SymptomsTab
-  -->
 <style>
 @import '@/assets/styles/symptoms-tab.css';
+
+.copy-icon {
+  position: fixed;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 1000;
+  opacity: 1;
+}
+
+.copy-icon.fade-out {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+.copy-icon:hover {
+  transform: scale(1.1);
+}
 </style>
