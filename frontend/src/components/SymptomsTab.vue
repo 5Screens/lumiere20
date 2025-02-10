@@ -123,7 +123,7 @@
           <tbody>
             <tr v-for="row in paginatedData" :key="row.id">
               <td><input type="checkbox" v-model="row.selected" /></td>
-              <td>{{ row.id }}</td>
+              <td :title="row.id">...{{ row.id.slice(-5) }}</td>
               <td>{{ row.createdDate }}</td>
               <td>{{ row.updateDate }}</td>
               <td>{{ row.symptomCode }}</td>
