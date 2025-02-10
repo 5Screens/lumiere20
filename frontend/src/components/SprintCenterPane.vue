@@ -72,7 +72,7 @@ export default {
   top: 60px;
   left: 293px;
   width: 250px;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 120px);
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--border-color);
   transition: all 0.3s ease-in-out;

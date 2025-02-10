@@ -68,21 +68,6 @@
       </main>
     </div>
 
-    <!--
-      A component that renders a pane on the right side of the screen, containing
-      options to change the theme and language of the application. When the pane
-      is closed, the "close" event is emitted.
-
-      Props:
-        isVisible: A boolean indicating whether the pane should be visible or not.
-
-      Events:
-        theme-changed: Emitted when the theme of the application is changed. The
-          event payload is the new theme.
-        language-changed: Emitted when the language of the application is changed.
-          The event payload is the new language.
-        close: Emitted when the pane is closed.
-    -->
     <ProfilePane 
       :is-visible="isProfilePaneVisible"
       @theme-changed="handleThemeChange"
@@ -434,6 +419,8 @@ export default {
     }
   }
 }
+
+
 </script>
 
 <style>
@@ -525,6 +512,7 @@ export default {
 
 .side-menu {
   background-color: var(--sidebar-bg);
+  height: calc(100vh - var(--header-height) - var(--status-bar-height) - var(--tabs-height) - 35px);
   width: 250px;
   padding: 1rem;
   border-right: 1px solid var(--border-color);
@@ -603,7 +591,9 @@ export default {
 
 .tab-content {
   width: 100%;
-  height: 100%;
+  /*height: calc(100vh - 66px); /* Déduit la hauteur de .tabs */
+  height: calc(100vh - var(--header-height) - var(--status-bar-height) - var(--tabs-height));
+  overflow-y: auto; /* Ajoute un scroll seulement si nécessaire */
 }
 
 .status-bar {
