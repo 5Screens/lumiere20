@@ -155,7 +155,7 @@
               </th>
             </tr>
           </thead>
-          <tbody>
+          <transition-group name="list" tag="tbody">
             <tr v-for="row in paginatedData" :key="row.id">
               <td><input type="checkbox" v-model="row.selected" /></td>
               <td :title="row.id" @contextmenu.prevent="showCopyIcon($event, row.id)">...{{ row.id.slice(-5) }}</td>
@@ -165,7 +165,7 @@
               <td @contextmenu.prevent="showCopyIcon($event, row.symptomLabel)">{{ row.symptomLabel }}</td>
               <td @contextmenu.prevent="showCopyIcon($event, row.symptomLanguage)">{{ row.symptomLanguage }}</td>
             </tr>
-          </tbody>
+          </transition-group>
         </table>
       </div>
 
