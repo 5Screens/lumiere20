@@ -417,3 +417,15 @@ td:nth-child(2) {
   opacity: 0;
   transform: translateX(30px);
 }
+
+/* Ajustement de la largeur de la première colonne */
+th:first-child,
+td:first-child {
+  width: 20px;
+  min-width: 20px;
+  max-width: 20px;
+}
+
+th:first-child .th-content {
+  justify-content: center;
+}
