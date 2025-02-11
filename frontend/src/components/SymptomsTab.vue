@@ -26,60 +26,95 @@
         <table>
           <thead>
             <tr>
-              <th><input type="checkbox" @change="toggleAllRows" v-model="selectAll" /></th>
-              <th @click="sortBy('id')" class="sortable">
-                {{ $t('symptomsTable.headers.id') }}
-                <span class="sort-icon">
-                  <template v-if="sortColumn === 'id'">
-                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                  </template>
-                  <template v-else>▲▼</template>
-                </span>
+              <th class="resizable">
+                <div class="th-content">
+                  <input type="checkbox" @change="toggleAllRows" v-model="selectAll" />
+                  <div class="resize-handle" @mousedown="startResize($event, 0)"></div>
+                </div>
               </th>
-              <th @click="sortBy('createdDate')" class="sortable">
-                {{ $t('symptomsTable.headers.createdDate') }}
-                <span class="sort-icon">
-                  <template v-if="sortColumn === 'createdDate'">
-                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                  </template>
-                  <template v-else>▲▼</template>
-                </span>
+              <th class="resizable">
+                <div class="th-content">
+                  <div @click="sortBy('id')" class="sortable">
+                    {{ $t('symptomsTable.headers.id') }}
+                    <span class="sort-icon">
+                      <template v-if="sortColumn === 'id'">
+                        {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                      </template>
+                      <template v-else>▲▼</template>
+                    </span>
+                  </div>
+                  <div class="resize-handle" @mousedown="startResize($event, 1)"></div>
+                </div>
               </th>
-              <th @click="sortBy('updateDate')" class="sortable">
-                {{ $t('symptomsTable.headers.updateDate') }}
-                <span class="sort-icon">
-                  <template v-if="sortColumn === 'updateDate'">
-                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                  </template>
-                  <template v-else>▲▼</template>
-                </span>
+              <th class="resizable">
+                <div class="th-content">
+                  <div @click="sortBy('createdDate')" class="sortable">
+                    {{ $t('symptomsTable.headers.createdDate') }}
+                    <span class="sort-icon">
+                      <template v-if="sortColumn === 'createdDate'">
+                        {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                      </template>
+                      <template v-else>▲▼</template>
+                    </span>
+                  </div>
+                  <div class="resize-handle" @mousedown="startResize($event, 2)"></div>
+                </div>
               </th>
-              <th @click="sortBy('symptomCode')" class="sortable">
-                {{ $t('symptomsTable.headers.symptomCode') }}
-                <span class="sort-icon">
-                  <template v-if="sortColumn === 'symptomCode'">
-                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                  </template>
-                  <template v-else>▲▼</template>
-                </span>
+              <th class="resizable">
+                <div class="th-content">
+                  <div @click="sortBy('updateDate')" class="sortable">
+                    {{ $t('symptomsTable.headers.updateDate') }}
+                    <span class="sort-icon">
+                      <template v-if="sortColumn === 'updateDate'">
+                        {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                      </template>
+                      <template v-else>▲▼</template>
+                    </span>
+                  </div>
+                  <div class="resize-handle" @mousedown="startResize($event, 3)"></div>
+                </div>
               </th>
-              <th @click="sortBy('symptomLabel')" class="sortable">
-                {{ $t('symptomsTable.headers.symptomLabel') }}
-                <span class="sort-icon">
-                  <template v-if="sortColumn === 'symptomLabel'">
-                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                  </template>
-                  <template v-else>▲▼</template>
-                </span>
+              <th class="resizable">
+                <div class="th-content">
+                  <div @click="sortBy('symptomCode')" class="sortable">
+                    {{ $t('symptomsTable.headers.symptomCode') }}
+                    <span class="sort-icon">
+                      <template v-if="sortColumn === 'symptomCode'">
+                        {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                      </template>
+                      <template v-else>▲▼</template>
+                    </span>
+                  </div>
+                  <div class="resize-handle" @mousedown="startResize($event, 4)"></div>
+                </div>
               </th>
-              <th @click="sortBy('symptomLanguage')" class="sortable">
-                {{ $t('symptomsTable.headers.symptomLanguage') }}
-                <span class="sort-icon">
-                  <template v-if="sortColumn === 'symptomLanguage'">
-                    {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                  </template>
-                  <template v-else>▲▼</template>
-                </span>
+              <th class="resizable">
+                <div class="th-content">
+                  <div @click="sortBy('symptomLabel')" class="sortable">
+                    {{ $t('symptomsTable.headers.symptomLabel') }}
+                    <span class="sort-icon">
+                      <template v-if="sortColumn === 'symptomLabel'">
+                        {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                      </template>
+                      <template v-else>▲▼</template>
+                    </span>
+                  </div>
+                  <div class="resize-handle" @mousedown="startResize($event, 5)"></div>
+                </div>
+              </th>
+              <th class="resizable">
+                <div class="th-content">
+                  <div @click="sortBy('symptomLanguage')" class="sortable">
+                    {{ $t('symptomsTable.headers.symptomLanguage') }}
+                    <span class="sort-icon">
+                      <template v-if="sortColumn === 'symptomLanguage'">
+                        {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                      </template>
+                      <template v-else>▲▼</template>
+                    </span>
+                  </div>
+                  <div class="resize-handle" @mousedown="startResize($event, 6)"></div>
+                </div>
               </th>
             </tr>
             <tr class="filter-row">
@@ -189,7 +224,8 @@ export default {
         display: 'none'
       },
       isFading: false,
-      hideTimeout: null
+      hideTimeout: null,
+      columnWidths: [100, 150, 150, 150, 150, 200, 100]
     }
   },
   computed: {
@@ -482,30 +518,43 @@ export default {
         console.error('Erreur lors de la copie:', err);
       }
     },
+    startResize(event, columnIndex) {
+      const table = event.target.closest('table');
+      const column = table.querySelectorAll('th')[columnIndex];
+      const startX = event.clientX;
+      const startWidth = column.offsetWidth;
+
+      const mouseMoveHandler = (event) => {
+        const newWidth = startWidth + (event.clientX - startX);
+        column.style.width = `${newWidth}px`;
+        this.columnWidths[columnIndex] = newWidth;
+      };
+
+      const mouseUpHandler = () => {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+      };
+
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
+    },
+    initializeColumnWidths() {
+      const table = this.$el.querySelector('table');
+      const headers = table.querySelectorAll('th');
+      headers.forEach((header, index) => {
+        if (this.columnWidths[index]) {
+          header.style.width = `${this.columnWidths[index]}px`;
+        }
+      });
+    }
   },
   async mounted() {
     await this.handleRefresh();
+    this.initializeColumnWidths();
   }
 }
 </script>
 
 <style>
 @import '@/assets/styles/symptoms-tab.css';
-
-.copy-icon {
-  position: fixed;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 1000;
-  opacity: 1;
-}
-
-.copy-icon.fade-out {
-  opacity: 0;
-  transition: opacity 0.5s ease-out;
-}
-
-.copy-icon:hover {
-  transform: scale(1.1);
-}
 </style>
