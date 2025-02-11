@@ -296,7 +296,7 @@ select.column-filter:focus {
   cursor: pointer;
   user-select: none;
   position: relative;
-  padding-right: 20px;
+  padding-right: 30px;
 }
 
 .sortable:hover {
@@ -305,7 +305,7 @@ select.column-filter:focus {
 
 .sort-icon {
   position: absolute;
-  right: 5px;
+  right: 3px;
   top: 50%;
   transform: translateY(-50%);
   opacity: 0.5;
