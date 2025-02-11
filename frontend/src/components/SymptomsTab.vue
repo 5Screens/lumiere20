@@ -156,8 +156,12 @@
             </tr>
           </thead>
           <transition-group name="list" tag="tbody">
-            <tr v-for="row in paginatedData" :key="row.id">
-              <td><input type="checkbox" v-model="row.selected" /></td>
+            <tr v-for="row in paginatedData" 
+                :key="row.id" 
+                @click="toggleRowSelection(row)"
+                :class="{ 'selected-row': row.selected }"
+                style="cursor: pointer;">
+              <td @click.stop><input type="checkbox" v-model="row.selected" /></td>
               <td :title="row.id" @contextmenu.prevent="showCopyIcon($event, row.id)">...{{ row.id.slice(-5) }}</td>
               <td @contextmenu.prevent="showCopyIcon($event, row.createdDate)">{{ row.createdDate }}</td>
               <td @contextmenu.prevent="showCopyIcon($event, row.updateDate)">{{ row.updateDate }}</td>
@@ -546,7 +550,10 @@ export default {
           header.style.width = `${this.columnWidths[index]}px`;
         }
       });
-    }
+    },
+    toggleRowSelection(row) {
+      row.selected = !row.selected;
+    },
   },
   async mounted() {
     await this.handleRefresh();
@@ -557,4 +564,8 @@ export default {
 
 <style>
 @import '@/assets/styles/symptoms-tab.css';
+
+.selected-row {
+  background-color: rgba(0, 0, 0, 0.05);
+}
 </style>
