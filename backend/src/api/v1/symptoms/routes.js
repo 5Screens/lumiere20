@@ -3,11 +3,16 @@ const router = express.Router();
 const symptomsController = require('./controller');
 const validate = require('../../../middleware/validate');
 const symptomsValidation = require('./validation');
+const logger = require('../../../config/logger');
 
 // Route pour obtenir tous les symptômes
 //http://localhost:3000/api/v1/symptoms/
 router.get(
     '/',
+    (req, res, next) => {
+        logger.info('[ROUTES] GET /api/v1/symptoms - Route handler started');
+        next();
+    },
     symptomsController.getAllSymptoms
 );
 
@@ -15,12 +20,20 @@ router.get(
 //http://localhost:3000/api/v1/symptoms/by-language?langue=fr
 router.get(
     '/by-language',
+    (req, res, next) => {
+        logger.info(`[ROUTES] GET /api/v1/symptoms/by-language - Route handler started with langue=${req.query.langue}`);
+        next();
+    },
     validate(symptomsValidation.getSymptoms),
     symptomsController.getSymptoms
 );
 
 router.put(
     '/',
+    (req, res, next) => {
+        logger.info('[ROUTES] PUT /api/v1/symptoms - Route handler started');
+        next();
+    },
     validate(symptomsValidation.createSymptom),
     symptomsController.createSymptom
 );

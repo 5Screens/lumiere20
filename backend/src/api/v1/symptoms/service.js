@@ -3,6 +3,7 @@ const logger = require('../../../config/logger');
 
 class SymptomsService {
     async getAllSymptoms(langue) {
+        logger.info(`[SERVICE] getAllSymptoms - Starting database query for language: ${langue}`);
         try {
             const query = `
                 SELECT 
@@ -17,14 +18,16 @@ class SymptomsService {
             `;
             
             const result = await pool.query(query, [langue]);
+            logger.info(`[SERVICE] getAllSymptoms - Query executed successfully, found ${result.rows.length} symptoms`);
             return result.rows;
         } catch (error) {
-            logger.error(`Erreur lors de la récupération des symptômes: ${error.message}`);
+            logger.error(`[SERVICE] getAllSymptoms - Database error: ${error.message}`);
             throw error;
         }
     }
 
     async getAllSymptomsAllLanguages() {
+        logger.info('[SERVICE] getAllSymptomsAllLanguages - Starting database query');
         try {
             const query = `
                 SELECT 
@@ -39,55 +42,62 @@ class SymptomsService {
             `;
             
             const result = await pool.query(query);
+            logger.info(`[SERVICE] getAllSymptomsAllLanguages - Query executed successfully, found ${result.rows.length} symptoms`);
             return result.rows;
         } catch (error) {
-            logger.error(`Erreur lors de la récupération de tous les symptômes: ${error.message}`);
+            logger.error(`[SERVICE] getAllSymptomsAllLanguages - Database error: ${error.message}`);
             throw error;
         }
     }
 
     async createSymptom(symptomData) {
+        logger.info('[SERVICE] createSymptom - Starting transaction');
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
+            logger.info('[SERVICE] createSymptom - Transaction started');
 
-            // Création du symptôme dans la table configuration.symptoms
+            // Insérer dans la table symptoms
             const symptomQuery = `
                 INSERT INTO configuration.symptoms (code)
                 VALUES ($1)
-                RETURNING code`;
-            logger.info(`Exécution de la requête symptôme: ${symptomQuery.replace(/\s+/g, ' ')}`);
-            logger.info(`Paramètres de la requête symptôme: $1=${symptomData.code}`);
-            
+                RETURNING code
+            `;
             const symptomResult = await client.query(symptomQuery, [symptomData.code]);
-            const symptomCode = symptomResult.rows[0].code;
+            logger.info(`[SERVICE] createSymptom - Inserted into configuration.symptoms with code: ${symptomData.code}`);
 
-            // Création des traductions
+            // Insérer les traductions
             const translationQuery = `
-                INSERT INTO translations.symptoms_translation
-                (symptom_code, langue, libelle)
-                VALUES ($1, $2, $3)`;
-            
-            for (const translation of symptomData.translations) {
-                logger.info(`Exécution de la requête traduction: ${translationQuery.replace(/\s+/g, ' ')}`);
-                logger.info(`Paramètres de la requête traduction: $1=${symptomCode}, $2=${translation.langue}, $3=${translation.libelle}`);
-                
-                await client.query(translationQuery, [
-                    symptomCode,
+                INSERT INTO translations.symptoms_translation (symptom_code, langue, libelle)
+                VALUES ($1, $2, $3)
+                RETURNING *
+            `;
+
+            const translationPromises = symptomData.translations.map(translation =>
+                client.query(translationQuery, [
+                    symptomData.code,
                     translation.langue,
                     translation.libelle
-                ]);
-            }
+                ])
+            );
+
+            const translationResults = await Promise.all(translationPromises);
+            logger.info(`[SERVICE] createSymptom - Inserted ${translationResults.length} translations`);
 
             await client.query('COMMIT');
-            logger.info(`Symptôme créé avec succès: ${symptomData.code}`);
-            return { code: symptomCode, ...symptomData };
+            logger.info('[SERVICE] createSymptom - Transaction committed successfully');
+
+            return {
+                code: symptomResult.rows[0].code,
+                translations: translationResults.map(result => result.rows[0])
+            };
         } catch (error) {
             await client.query('ROLLBACK');
-            logger.error(`Erreur lors de la création du symptôme: ${error.message}`);
+            logger.error(`[SERVICE] createSymptom - Transaction rolled back due to error: ${error.message}`);
             throw error;
         } finally {
             client.release();
+            logger.info('[SERVICE] createSymptom - Database client released');
         }
     }
 }
