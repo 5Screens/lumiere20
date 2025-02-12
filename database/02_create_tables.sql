@@ -41,10 +41,47 @@ CREATE TABLE configuration.persons (
 -- Entities
 CREATE TABLE configuration.entities (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    nom VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    entity_id VARCHAR(50) NOT NULL UNIQUE,
+    external_id VARCHAR(100),
+    entity_type VARCHAR(50) NOT NULL CHECK (entity_type IN ('COMPANY', 'BRANCH', 'DEPARTMENT', 'SUPPLIER', 'CUSTOMER')), 
+    budget_approver_uuid UUID REFERENCES configuration.persons(uuid),
+    headquarters_location VARCHAR(255),
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    parent_uuid UUID REFERENCES configuration.entities(uuid),
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Business Services 12/02 : Ajout de la table business_services mais pas créée ds pgadmin
+CREATE TABLE configuration.business_services (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
     description TEXT,
     date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Entity Locations 12/02 : Ajout de la table rel_entity_locations mais pas créée ds pgadmin
+CREATE TABLE configuration.rel_entity_locations (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    entity_uuid UUID NOT NULL REFERENCES configuration.entities(uuid) ON DELETE CASCADE,
+    location VARCHAR(255) NOT NULL,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Entity Service Subscriptions 12/02 : Ajout de la table rel_entity_service_subscriptions mais pas créée ds pgadmin
+CREATE TABLE configuration.rel_entity_service_subscriptions (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    entity_uuid UUID NOT NULL REFERENCES configuration.entities(uuid) ON DELETE CASCADE,
+    service_uuid UUID NOT NULL REFERENCES configuration.business_services(uuid) ON DELETE CASCADE,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT valid_subscription_period CHECK (end_date IS NULL OR end_date >= start_date)
 );
 
 -- Ticket Types
@@ -109,7 +146,7 @@ CREATE TABLE translations.symptoms_translation (
 -- Tables de Relations --
 
 -- Persons Entities (relation many-to-many)
-CREATE TABLE configuration.persons_entities (
+CREATE TABLE configuration.rel_persons_entities (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     person_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
     entity_uuid UUID NOT NULL REFERENCES configuration.entities(uuid) ON DELETE RESTRICT,
