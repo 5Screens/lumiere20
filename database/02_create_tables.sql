@@ -26,6 +26,29 @@ CREATE TABLE data.configuration_items (
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Business Services
+CREATE TABLE data.business_services (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    service_provider_uuid UUID NOT NULL REFERENCES configuration.groups(uuid),
+    owing_group_uuid UUID NOT NULL REFERENCES configuration.groups(uuid),
+    owned_by_uuid UUID NOT NULL REFERENCES configuration.persons(uuid),
+    managed_by_uuid UUID NOT NULL REFERENCES configuration.persons(uuid),
+    business_criticality VARCHAR(50),
+    lifecycle_status VARCHAR(50) NOT NULL,
+    version VARCHAR(50),
+    operational_risk VARCHAR(50),
+    legal_regulatory_risk VARCHAR(50),
+    reputational_risk VARCHAR(50),
+    financial_risk VARCHAR(50),
+    comments TEXT,
+    cab_uuid UUID REFERENCES configuration.groups(uuid),
+    parent_uuid UUID REFERENCES data.business_services(uuid),
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Tables du schéma configuration --
 
 -- Persons
