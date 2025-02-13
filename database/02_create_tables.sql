@@ -31,11 +31,78 @@ CREATE TABLE data.configuration_items (
 -- Persons
 CREATE TABLE configuration.persons (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    nom VARCHAR(100) NOT NULL,
-    prenom VARCHAR(100) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    job_role VARCHAR(255),
+    entity_uuid UUID REFERENCES configuration.entities(uuid),
+    password VARCHAR(255),
+    password_needs_reset BOOLEAN DEFAULT false,
+    locked_out BOOLEAN DEFAULT false,
+    active BOOLEAN DEFAULT true,
+    critical_user BOOLEAN DEFAULT false,
+    external_user BOOLEAN DEFAULT false,
+    date_format VARCHAR(50),
+    internal_id VARCHAR(100),
     email VARCHAR(255) NOT NULL UNIQUE,
+    notification BOOLEAN DEFAULT true,
+    time_zone VARCHAR(100),
+    location VARCHAR(255),
+    floor VARCHAR(50),
+    room VARCHAR(50),
+    approving_manager_uuid UUID REFERENCES configuration.persons(uuid),
+    business_phone VARCHAR(50),
+    business_mobile_phone VARCHAR(50),
+    personal_mobile_phone VARCHAR(50),
+    language VARCHAR(10),
+    roles JSONB,
+    photo TEXT,
     date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Groups
+CREATE TABLE configuration.groups (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Person Groups (relation many-to-many)
+CREATE TABLE configuration.rel_persons_groups (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    person_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
+    group_uuid UUID NOT NULL REFERENCES configuration.groups(uuid) ON DELETE CASCADE,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(person_uuid, group_uuid)
+);
+
+-- Person Delegates (relation many-to-many)
+CREATE TABLE configuration.rel_persons_delegates (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    person_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
+    delegate_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT valid_delegation_period CHECK (end_date IS NULL OR end_date >= start_date),
+    CONSTRAINT no_self_delegation CHECK (person_uuid != delegate_uuid)
+);
+
+-- Person Service Subscriptions
+CREATE TABLE configuration.rel_persons_service_subscriptions (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    person_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
+    service_uuid UUID NOT NULL REFERENCES configuration.business_services(uuid) ON DELETE CASCADE,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT valid_subscription_period CHECK (end_date IS NULL OR end_date >= start_date)
 );
 
 -- Entities
