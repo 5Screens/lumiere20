@@ -175,6 +175,34 @@ CREATE TABLE configuration.symptoms (
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Locations
+CREATE TABLE configuration.locations (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    primary_entity_uuid UUID REFERENCES configuration.entities(uuid),
+    field_service_group_uuid UUID REFERENCES configuration.groups(uuid),
+    status VARCHAR(50),
+    site_created_on TIMESTAMP WITH TIME ZONE,
+    site_id VARCHAR(100),
+    type VARCHAR(100),
+    business_criticality VARCHAR(50),
+    opening_hours VARCHAR(255),
+    parent_uuid UUID REFERENCES configuration.locations(uuid),
+    phone VARCHAR(50),
+    time_zone VARCHAR(100),
+    street VARCHAR(255),
+    city VARCHAR(255),
+    state_province VARCHAR(255),
+    country VARCHAR(100),
+    postal_code VARCHAR(20),
+    comments TEXT,
+    alternative_site_reference VARCHAR(255),
+    wan_design TEXT,
+    network_telecom_service TEXT,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Tables du schéma translations --
 
 -- Ticket Types Translation
