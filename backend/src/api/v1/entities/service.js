@@ -8,14 +8,19 @@ class EntityService {
             const query = `
                 SELECT 
                     e.uuid, 
+                    e.entity_id,
                     e.name, 
                     parent.name as parent_entity_name,
                     e.external_id, 
                     e.entity_type,
                     e.headquarters_location,
                     e.is_active,
-                    e.parent_uuid,
-                    CONCAT(p.first_name, ' ', p.last_name) as budget_approver_name
+                    CASE 
+                        WHEN e.budget_approver_uuid IS NULL THEN NULL 
+                        ELSE CONCAT(p.first_name, ' ', p.last_name) 
+                    END as budget_approver_name,
+                    e.date_creation,
+                    e.date_modification
                 FROM configuration.entities e
                 LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
                 LEFT JOIN configuration.entities parent ON e.parent_uuid = parent.uuid
