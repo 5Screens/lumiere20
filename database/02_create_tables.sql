@@ -57,7 +57,7 @@ CREATE TABLE configuration.persons (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     job_role VARCHAR(255),
-    entity_uuid UUID REFERENCES configuration.entities(uuid),
+    ref_entity_uuid UUID REFERENCES configuration.entities(uuid),
     password VARCHAR(255),
     password_needs_reset BOOLEAN DEFAULT false,
     locked_out BOOLEAN DEFAULT false,
@@ -69,10 +69,10 @@ CREATE TABLE configuration.persons (
     email VARCHAR(255) NOT NULL UNIQUE,
     notification BOOLEAN DEFAULT true,
     time_zone VARCHAR(100),
-    location VARCHAR(255),
+    ref_location_uuid UUID REFERENCES configuration.locations,
     floor VARCHAR(50),
     room VARCHAR(50),
-    approving_manager_uuid UUID REFERENCES configuration.persons(uuid),
+    ref_approving_manager_uuid UUID REFERENCES configuration.persons(uuid),
     business_phone VARCHAR(50),
     business_mobile_phone VARCHAR(50),
     personal_mobile_phone VARCHAR(50),
@@ -119,7 +119,7 @@ CREATE TABLE configuration.rel_persons_delegates (
 CREATE TABLE configuration.rel_persons_service_subscriptions (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     person_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
-    service_uuid UUID NOT NULL REFERENCES configuration.business_services(uuid) ON DELETE CASCADE,
+    service_uuid UUID NOT NULL REFERENCES data.business_services(uuid) ON DELETE CASCADE,
     start_date DATE NOT NULL,
     end_date DATE,
     is_active BOOLEAN NOT NULL DEFAULT true,
@@ -143,15 +143,6 @@ CREATE TABLE configuration.entities (
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Business Services 12/02 : Ajout de la table business_services mais pas créée ds pgadmin
-CREATE TABLE configuration.business_services (
-    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Entity Locations 12/02 : Ajout de la table rel_entity_locations mais pas créée ds pgadmin
 CREATE TABLE configuration.rel_entity_locations (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -165,7 +156,7 @@ CREATE TABLE configuration.rel_entity_locations (
 CREATE TABLE configuration.rel_entity_service_subscriptions (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     entity_uuid UUID NOT NULL REFERENCES configuration.entities(uuid) ON DELETE CASCADE,
-    service_uuid UUID NOT NULL REFERENCES configuration.business_services(uuid) ON DELETE CASCADE,
+    service_uuid UUID NOT NULL REFERENCES data.business_services(uuid) ON DELETE CASCADE,
     start_date DATE NOT NULL,
     end_date DATE,
     is_active BOOLEAN NOT NULL DEFAULT true,
