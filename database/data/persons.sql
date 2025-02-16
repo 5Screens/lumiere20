@@ -35,7 +35,7 @@ INSERT INTO temp_job_roles (role) VALUES
     ('Scrum Master'), ('Développeur Frontend'), ('Développeur Backend'),
     ('Responsable QA'), ('Testeur'), ('Analyste Données');
 
--- Insertion de 500 personnes
+-- Insertion de 10000 personnes
 INSERT INTO configuration.persons (
     first_name,
     last_name,
@@ -68,7 +68,7 @@ WITH random_persons AS (
         WHERE entity_type IN ('DEPARTMENT', 'BRANCH')
         ORDER BY random()
     ) e
-    LIMIT 500
+    LIMIT 10000
 )
 SELECT
     p.first_name,
@@ -98,7 +98,7 @@ SELECT
     'Europe/Paris' as time_zone,
     CASE WHEN random() < 0.8 THEN 'fr' ELSE 'en' END as language,
     CASE 
-        WHEN rn <= 50 THEN NULL  -- Les 50 premiers n'ont pas de manager
+        WHEN rn <= 1000 THEN NULL  -- Les 50 premiers n'ont pas de manager
         ELSE (
             SELECT uuid 
             FROM configuration.persons 
