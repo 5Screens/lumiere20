@@ -135,6 +135,7 @@ import DataPane from './components/DataPane.vue'
 import ConfigurationPane from './components/ConfigurationPane.vue'
 import AdminPane from './components/AdminPane.vue'
 import SymptomsTab from './components/SymptomsTab.vue'
+import EntitiesTab from '@/components/entitiesTab.vue'
 
 export default {
   name: 'App',
@@ -145,7 +146,8 @@ export default {
     DataPane,
     ConfigurationPane,
     AdminPane,
-    SymptomsTab
+    SymptomsTab,
+    EntitiesTab
   },
   data() {
     return {
@@ -274,6 +276,8 @@ export default {
       switch (tab.type) {
         case 'symptoms':
           return 'SymptomsTab'
+        case 'entities':
+          return 'EntitiesTab'
         default:
           return null
       }
