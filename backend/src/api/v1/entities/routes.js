@@ -20,4 +20,10 @@ router.get('/', (req, res, next) => {
     next();
 }, entityController.getAllEntities.bind(entityController));
 
+// GET /api/v1/entities/childentities
+router.get('/childentities', (req, res) => {
+    logger.info('[ROUTES] GET /api/v1/entities/childentities - Route handler started');
+    return entityController.getChildEntities(req, res);
+});
+
 module.exports = router;

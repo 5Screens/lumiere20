@@ -71,6 +71,42 @@ class EntityController {
             });
         }
     }
+
+    async getChildEntities(req, res) {
+        const parentEntityId = req.query.entity_id;
+        logger.info(`[CONTROLLER] getChildEntities - Processing request for parent entity_id: ${parentEntityId}`);
+        
+        if (!parentEntityId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Le paramètre entity_id est requis'
+            });
+        }
+
+        try {
+            const result = await entityService.getChildEntities(parentEntityId);
+            
+            if (!result) {
+                logger.warn(`[CONTROLLER] getChildEntities - Parent entity not found with entity_id: ${parentEntityId}`);
+                return res.status(404).json({
+                    success: false,
+                    message: 'Entité parent non trouvée'
+                });
+            }
+            
+            logger.info(`[CONTROLLER] getChildEntities - Successfully retrieved child entities for parent entity_id: ${parentEntityId}`);
+            return res.status(200).json({
+                success: true,
+                data: result
+            });
+        } catch (error) {
+            logger.error(`[CONTROLLER] getChildEntities - Error: ${error.message}`);
+            return res.status(500).json({
+                success: false,
+                message: 'Erreur lors de la récupération des entités enfants'
+            });
+        }
+    }
 }
 
 module.exports = new EntityController();

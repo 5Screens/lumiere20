@@ -108,6 +108,56 @@ class EntityService {
             throw error;
         }
     }
+
+    async getChildEntities(parentEntityId) {
+        logger.info(`[SERVICE] getChildEntities - Starting database query for parent entity_id: ${parentEntityId}`);
+        try {
+            // D'abord, on récupère l'UUID de l'entité parent
+            const parentQuery = `
+                SELECT uuid 
+                FROM configuration.entities 
+                WHERE entity_id = $1`;
+            
+            const parentResult = await pool.query(parentQuery, [parentEntityId]);
+            
+            if (parentResult.rows.length === 0) {
+                return null; // Parent non trouvé
+            }
+            
+            const parentUuid = parentResult.rows[0].uuid;
+            
+            // Ensuite, on récupère toutes les entités enfants
+            const childrenQuery = `
+                SELECT 
+                    e.uuid, 
+                    e.entity_id,
+                    e.name, 
+                    e.external_id, 
+                    e.entity_type,
+                    e.headquarters_location,
+                    e.is_active,
+                    CASE 
+                        WHEN e.budget_approver_uuid IS NULL THEN NULL 
+                        ELSE CONCAT(p.first_name, ' ', p.last_name) 
+                    END as budget_approver_name,
+                    e.date_creation,
+                    e.date_modification
+                FROM configuration.entities e
+                LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
+                WHERE e.parent_uuid = $1
+                ORDER BY e.name ASC`;
+            
+            const childrenResult = await pool.query(childrenQuery, [parentUuid]);
+            
+            return {
+                parent_entity_id: parentEntityId,
+                children: childrenResult.rows
+            };
+        } catch (error) {
+            logger.error(`[SERVICE] getChildEntities - Error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new EntityService();
