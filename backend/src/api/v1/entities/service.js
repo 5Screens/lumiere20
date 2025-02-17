@@ -34,6 +34,80 @@ class EntityService {
             throw error;
         }
     }
+
+    async getEntityByUuid(uuid) {
+        logger.info(`[SERVICE] getEntityByUuid - Starting database query for UUID: ${uuid}`);
+        try {
+            const query = `
+                SELECT 
+                    e.uuid, 
+                    e.entity_id,
+                    e.name, 
+                    parent.name as parent_entity_name,
+                    e.external_id, 
+                    e.entity_type,
+                    e.headquarters_location,
+                    e.is_active,
+                    CASE 
+                        WHEN e.budget_approver_uuid IS NULL THEN NULL 
+                        ELSE CONCAT(p.first_name, ' ', p.last_name) 
+                    END as budget_approver_name,
+                    e.date_creation,
+                    e.date_modification
+                FROM configuration.entities e
+                LEFT JOIN configuration.entities parent ON e.parent_uuid = parent.uuid
+                LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
+                WHERE e.uuid = $1`;
+            
+            const result = await pool.query(query, [uuid]);
+            
+            if (result.rows.length === 0) {
+                return null;
+            }
+            
+            return result.rows[0];
+        } catch (error) {
+            logger.error(`[SERVICE] getEntityByUuid - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getEntityByEntityId(entityId) {
+        logger.info(`[SERVICE] getEntityByEntityId - Starting database query for entity_id: ${entityId}`);
+        try {
+            const query = `
+                SELECT 
+                    e.uuid, 
+                    e.entity_id,
+                    e.name, 
+                    parent.name as parent_entity_name,
+                    e.external_id, 
+                    e.entity_type,
+                    e.headquarters_location,
+                    e.is_active,
+                    CASE 
+                        WHEN e.budget_approver_uuid IS NULL THEN NULL 
+                        ELSE CONCAT(p.first_name, ' ', p.last_name) 
+                    END as budget_approver_name,
+                    e.date_creation,
+                    e.date_modification
+                FROM configuration.entities e
+                LEFT JOIN configuration.entities parent ON e.parent_uuid = parent.uuid
+                LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
+                WHERE e.entity_id = $1`;
+            
+            const result = await pool.query(query, [entityId]);
+            
+            if (result.rows.length === 0) {
+                return null;
+            }
+            
+            return result.rows[0];
+        } catch (error) {
+            logger.error(`[SERVICE] getEntityByEntityId - Error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new EntityService();

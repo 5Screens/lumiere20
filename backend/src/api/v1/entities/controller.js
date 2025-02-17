@@ -15,6 +15,62 @@ class EntityController {
             });
         }
     }
+
+    async getEntityByUuid(req, res) {
+        const uuid = req.query.uuid;
+        logger.info(`[CONTROLLER] getEntityByUuid - Processing request for UUID: ${uuid}`);
+        try {
+            const entity = await entityService.getEntityByUuid(uuid);
+            
+            if (!entity) {
+                logger.warn(`[CONTROLLER] getEntityByUuid - Entity not found with UUID: ${uuid}`);
+                return res.status(404).json({
+                    success: false,
+                    message: 'Entité non trouvée'
+                });
+            }
+            
+            logger.info(`[CONTROLLER] getEntityByUuid - Successfully retrieved entity with UUID: ${uuid}`);
+            return res.status(200).json({
+                success: true,
+                data: entity
+            });
+        } catch (error) {
+            logger.error(`[CONTROLLER] getEntityByUuid - Error: ${error.message}`);
+            return res.status(500).json({
+                success: false,
+                message: 'Erreur lors de la récupération de l\'entité'
+            });
+        }
+    }
+
+    async getEntityByEntityId(req, res) {
+        const entityId = req.query.entity_id;
+        logger.info(`[CONTROLLER] getEntityByEntityId - Processing request for entity_id: ${entityId}`);
+        try {
+            const entity = await entityService.getEntityByEntityId(entityId);
+            
+            if (!entity) {
+                logger.warn(`[CONTROLLER] getEntityByEntityId - Entity not found with entity_id: ${entityId}`);
+                return res.status(404).json({
+                    success: false,
+                    message: 'Entité non trouvée'
+                });
+            }
+            
+            logger.info(`[CONTROLLER] getEntityByEntityId - Successfully retrieved entity with entity_id: ${entityId}`);
+            return res.status(200).json({
+                success: true,
+                data: entity
+            });
+        } catch (error) {
+            logger.error(`[CONTROLLER] getEntityByEntityId - Error: ${error.message}`);
+            return res.status(500).json({
+                success: false,
+                message: 'Erreur lors de la récupération de l\'entité'
+            });
+        }
+    }
 }
 
 module.exports = new EntityController();
