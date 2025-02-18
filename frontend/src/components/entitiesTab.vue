@@ -33,6 +33,7 @@
 
 <script>
 import ReusableTableTab from './common/reusableTableTab.vue'
+import { API_BASE_URL } from '@/config/config'
 
 export default {
   name: 'EntitiesTab',
@@ -41,7 +42,7 @@ export default {
   },
   data() {
     return {
-      apiUrl: 'http://localhost:3000/api/v1/entities',
+      apiUrl: `${API_BASE_URL}/entities`,
       columns: [
         { key: 'uuid', label: this.$t('entitiesTable.headers.uuid'), type: 'uuid' },
         { key: 'entity_id', label: this.$t('entitiesTable.headers.entity_id'), type: 'text' },
@@ -98,7 +99,7 @@ export default {
             reader.onload = async (event) => {
               try {
                 const jsonData = JSON.parse(event.target.result)
-                const response = await fetch('http://localhost:3000/api/v1/entities/import', {
+                const response = await fetch(`${API_BASE_URL}/entities/import`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'

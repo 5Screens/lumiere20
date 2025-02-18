@@ -199,6 +199,8 @@
 </template>
 
 <script>
+import { API_BASE_URL } from '@/config/config'
+
 export default {
   name: 'SymptomsTab',
   data() {
@@ -288,7 +290,7 @@ export default {
   methods: {
     async getAllSymptomsFromServer() {
       try {
-        const response = await fetch('http://localhost:3000/api/v1/symptoms', {
+        const response = await fetch(`${API_BASE_URL}/symptoms`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
