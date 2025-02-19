@@ -244,7 +244,12 @@ export default {
     },
     sortBy(column) {
       if (this.sortColumn === column) {
-        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc'
+        if (this.sortDirection === 'asc') {
+          this.sortDirection = 'desc'
+        } else if (this.sortDirection === 'desc') {
+          this.sortColumn = ''
+          this.sortDirection = 'asc'
+        }
       } else {
         this.sortColumn = column
         this.sortDirection = 'asc'
@@ -330,4 +335,3 @@ export default {
 <style scoped>
 @import "@/assets/styles/reusableTableTab.css";
 </style>
-
