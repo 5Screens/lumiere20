@@ -2,13 +2,13 @@
   <div class="tab-control-buttons">
     <div class="left-buttons">
       <button class="control-button create" @click="handleCreate">
-        <i class="fas fa-plus"></i> Créer
+        <i class="fas fa-plus"></i> 
       </button>
-      <button class="control-button update" @click="handleUpdate" :disabled="!hasSelection">
-        <i class="fas fa-edit"></i> Modifier
+      <button class="control-button update" @click="handleUpdate" v-show="hasSelection">
+        <i class="fas fa-edit"></i> 
       </button>
-      <button class="control-button delete" @click="handleDelete" :disabled="!hasSelection">
-        <i class="fas fa-trash"></i> Supprimer
+      <button class="control-button delete" @click="handleDelete" v-show="hasSelection">
+        <i class="fas fa-trash"></i> 
       </button>
     </div>
     <div class="right-buttons">

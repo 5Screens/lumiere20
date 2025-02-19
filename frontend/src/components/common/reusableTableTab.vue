@@ -7,7 +7,10 @@
           <tr>
             <th class="resizable" v-if="selectable">
               <div class="th-content">
-                <input type="checkbox" @change="toggleAllRows" v-model="selectAll" />
+                <input type="checkbox" 
+                       @change="toggleAllRows" 
+                       :checked="filteredData.length > 0 && filteredData.every(row => row.selected)"
+                       :indeterminate.prop="filteredData.some(row => row.selected) && !filteredData.every(row => row.selected)" />
                 <div class="resize-handle" @mousedown="startResize($event, 0)"></div>
               </div>
             </th>
@@ -221,10 +224,16 @@ export default {
       return content
     },
     toggleAllRows() {
+      // Détermine si toutes les lignes sont sélectionnées
+      const allSelected = this.filteredData.every(row => row.selected);
+      
+      // Mise à jour de toutes les lignes du tableau
       this.tableData = this.tableData.map(row => ({
         ...row,
-        selected: this.selectAll
-      }))
+        selected: !allSelected
+      }));
+      
+      this.$emit('row-selected');
     },
     previousPage() {
       if (this.currentPage > 1) {
@@ -309,8 +318,8 @@ export default {
       document.removeEventListener('mouseup', this.stopResize)
     },
     toggleRowSelection(row) {
-      row.selected = !row.selected
-      this.$emit('row-selected', row)
+      row.selected = !row.selected;
+      this.$emit('row-selected');
     },
     initializeColumnWidths() {
       this.columnWidths = new Array(this.columns.length + (this.selectable ? 1 : 0)).fill(100)
