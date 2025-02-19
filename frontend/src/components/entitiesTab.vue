@@ -1,25 +1,15 @@
 <template>
   <div class="entities-tab">
     <!-- Boutons de contrôle -->
-    <div class="tab-control-buttons">
-      <div class="left-buttons">
-        <button class="control-button create" @click="handleCreate">Create</button>
-        <button class="control-button update" @click="handleUpdate">Update</button>
-        <button class="control-button delete" @click="handleDelete">Delete</button>
-      </div>
-      <div class="right-buttons">
-        <button class="control-button import" @click="handleImport" :title="$t('configuration.import')">
-          <i class="fas fa-file-import"></i>
-        </button>
-        <button class="control-button export" @click="handleExport" :title="$t('configuration.export')">
-          <i class="fas fa-file-export"></i>
-        </button>
-        <button class="control-button refresh" @click="handleRefresh" :title="$t('configuration.refresh')">
-          <i class="fas fa-sync-alt"></i>
-        </button>
-      </div>
-    </div>
-
+    <tab-control-buttons
+      :has-selection="selectedRow !== null"
+      @create="handleCreate"
+      @update="handleUpdate"
+      @delete="handleDelete"
+      @import="handleImport"
+      @export="handleExport"
+      @refresh="handleRefresh"
+    />
     <!-- Tableau réutilisable -->
     <reusable-table-tab
       ref="table"
@@ -33,16 +23,19 @@
 
 <script>
 import ReusableTableTab from './common/reusableTableTab.vue'
+import TabControlButtons from './common/tabControlButtons.vue'
 import { API_BASE_URL } from '@/config/config'
 
 export default {
   name: 'EntitiesTab',
   components: {
-    ReusableTableTab
+    ReusableTableTab,
+    TabControlButtons
   },
   data() {
     return {
       apiUrl: `${API_BASE_URL}/entities`,
+      selectedRow: null
     }
   },
   computed: {
@@ -158,6 +151,7 @@ export default {
       }
     },
     onRowSelected(row) {
+      this.selectedRow = row
       this.$emit('row-selected', row)
     },
     handleError(error) {
@@ -170,57 +164,5 @@ export default {
 <style>
 .entities-tab {
   padding: 1rem;
-}
-
-.tab-control-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.left-buttons, .right-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.control-button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.control-button.create {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.control-button.update {
-  background-color: #2196F3;
-  color: white;
-}
-
-.control-button.delete {
-  background-color: #f44336;
-  color: white;
-}
-
-.control-button.import,
-.control-button.export,
-.control-button.refresh {
-  background-color: #757575;
-  color: white;
-}
-
-.control-button:hover {
-  filter: brightness(1.1);
-}
-
-.control-button:active {
-  filter: brightness(0.9);
 }
 </style>
