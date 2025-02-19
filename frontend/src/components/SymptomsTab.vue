@@ -2,7 +2,7 @@
   <div class="symptoms-tab">
     <!-- Boutons de contrôle -->
     <tab-control-buttons
-      :has-selection="selectedRow !== null"
+      :has-selection="selectedRows.length > 0"
       @create="handleCreate"
       @update="handleUpdate"
       @delete="handleDelete"
@@ -225,7 +225,8 @@ export default {
       },
       isFading: false,
       hideTimeout: null,
-      columnWidths: [100, 150, 150, 150, 150, 200, 100]
+      columnWidths: [100, 150, 150, 150, 150, 200, 100],
+      selectedRows: []
     }
   },
   computed: {
@@ -308,10 +309,19 @@ export default {
       return new Date(date).toISOString().split('T')[0]
     },
     toggleAllRows() {
-      this.symptoms = this.symptoms.map(row => ({
-        ...row,
-        selected: this.selectAll
-      }))
+      const allSelected = this.paginatedData.every(row => row.selected);
+      if (allSelected) {
+        this.selectedRows = [];
+        this.paginatedData.forEach(row => {
+          row.selected = false;
+        });
+      } else {
+        this.selectedRows = [...this.paginatedData];
+        this.paginatedData.forEach(row => {
+          row.selected = true;
+        });
+      }
+      this.selectAll = !allSelected;
     },
     handleCreate() {
       // À implémenter
@@ -548,7 +558,14 @@ export default {
       });
     },
     toggleRowSelection(row) {
-      row.selected = !row.selected;
+      const index = this.selectedRows.indexOf(row);
+      if (index === -1) {
+        this.selectedRows.push(row);
+        row.selected = true;
+      } else {
+        this.selectedRows.splice(index, 1);
+        row.selected = false;
+      }
     },
   },
   async mounted() {
