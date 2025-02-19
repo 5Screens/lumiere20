@@ -564,7 +564,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 @import '@/assets/styles/symptoms-tab.css';
 
 .selected-row {
