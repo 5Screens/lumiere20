@@ -134,6 +134,21 @@ export default {
     tickets: 'Tickets',
     userStories: 'Histórias de Usuário'
   },
+  entitiesTable: {
+    headers: {
+      uuid: 'Id',
+      entity_id: 'ID da Entidade',
+      name: 'Nome',
+      parent_entity_name: 'Nome da Entidade Pai',
+      external_id: 'ID Externo',
+      entity_type: 'Tipo de Entidade',
+      headquarters_location: 'Localização da Sede',
+      is_active: 'Ativo',
+      budget_approver_name: 'Aprovador de Orçamento',
+      date_creation: 'Data de Criação',
+      date_modification: 'Data de Modificação'
+    }
+  },
   symptomsTable: {
     headers: {
       id: 'Id',

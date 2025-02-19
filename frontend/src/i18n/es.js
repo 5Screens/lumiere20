@@ -129,6 +129,21 @@ export default {
       endpoint: 'Protección de Endpoints'
     }
   },
+  entitiesTable: {
+    headers: {
+      uuid: 'ID',
+      entity_id: 'ID de Entidad',
+      name: 'Nombre',
+      parent_entity_name: 'Nombre de Entidad Padre',
+      external_id: 'ID Externo',
+      entity_type: 'Tipo de Entidad',
+      headquarters_location: 'Ubicación de la Sede',
+      is_active: 'Activo',
+      budget_approver_name: 'Aprobador de Presupuesto',
+      date_creation: 'Fecha de Creación',
+      date_modification: 'Fecha de Modificación'
+    }
+  },
   sprintCenter: {
     title: 'Centro Sprint',
     tickets: 'Tickets',

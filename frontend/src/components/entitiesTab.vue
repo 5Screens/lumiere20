@@ -43,7 +43,11 @@ export default {
   data() {
     return {
       apiUrl: `${API_BASE_URL}/entities`,
-      columns: [
+    }
+  },
+  computed: {
+    columns() {
+      return [
         { key: 'uuid', label: this.$t('entitiesTable.headers.uuid'), type: 'uuid' },
         { key: 'entity_id', label: this.$t('entitiesTable.headers.entity_id'), type: 'text' },
         { key: 'name', label: this.$t('entitiesTable.headers.name'), type: 'text' },

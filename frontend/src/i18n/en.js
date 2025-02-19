@@ -134,6 +134,21 @@ export default {
     performance: 'Platform Performance',
     backup: 'Backup and Restore'
   },
+  entitiesTable: {
+    headers: {
+      uuid: 'ID',
+      entity_id: 'Entity ID',
+      name: 'Name',
+      parent_entity_name: 'Parent Entity Name',
+      external_id: 'External ID',
+      entity_type: 'Entity Type',
+      headquarters_location: 'Headquarters Location',
+      is_active: 'Active',
+      budget_approver_name: 'Budget Approver',
+      date_creation: 'Creation Date',
+      date_modification: 'Modification Date'
+    }
+  },
   symptomsTable: {
     headers: {
       id: 'Id',
