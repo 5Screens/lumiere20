@@ -1,25 +1,15 @@
 <template>
   <div class="symptoms-tab">
     <!-- Boutons de contrôle -->
-    <div class="tab-symptom-button">
-      <div class="left-buttons">
-        <button class="control-button create" @click="handleCreate">Create</button>
-        <button class="control-button update" @click="handleUpdate">Update</button>
-        <button class="control-button delete" @click="handleDelete">Delete</button>
-      </div>
-      <div class="right-buttons">
-        <button class="control-button import" @click="handleImport" :title="$t('configuration.import')">
-          <i class="fas fa-file-import"></i>
-        </button>
-        <button class="control-button export" @click="handleExport" :title="$t('configuration.export')">
-          <i class="fas fa-file-export"></i>
-        </button>
-        <button class="control-button refresh" @click="handleRefresh" :title="$t('configuration.refresh')">
-          <i class="fas fa-sync-alt"></i>
-        </button>
-      </div>
-    </div>
-
+    <tab-control-buttons
+      :has-selection="selectedRow !== null"
+      @create="handleCreate"
+      @update="handleUpdate"
+      @delete="handleDelete"
+      @import="handleImport"
+      @export="handleExport"
+      @refresh="handleRefresh"
+    />
     <!-- Tableau des symptômes -->
     <div class="tab-symptom-table">
       <div class="table-container">
@@ -200,9 +190,13 @@
 
 <script>
 import { API_BASE_URL } from '@/config/config'
+import TabControlButtons from '@/components/common/tabControlButtons.vue'
 
 export default {
   name: 'SymptomsTab',
+  components: {
+    TabControlButtons
+  },
   data() {
     return {
       symptoms: [],

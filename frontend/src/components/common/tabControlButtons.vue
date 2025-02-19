@@ -13,13 +13,13 @@
     </div>
     <div class="right-buttons">
       <button class="control-button import" @click="handleImport">
-        <i class="fas fa-file-import"></i> Importer
+        <i class="fas fa-file-import"></i> 
       </button>
       <button class="control-button export" @click="handleExport">
-        <i class="fas fa-file-export"></i> Exporter
+        <i class="fas fa-file-export"></i> 
       </button>
       <button class="control-button refresh" @click="handleRefresh">
-        <i class="fas fa-sync"></i> Rafraîchir
+        <i class="fas fa-sync"></i> 
       </button>
     </div>
   </div>
