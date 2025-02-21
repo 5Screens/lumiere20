@@ -94,6 +94,7 @@
       @close="closeDataPane"
       @mouse-enter="handleDataMouseEnter"
       @mouse-leave="handleDataMouseLeave"
+      @open-tab="handleOpenTab"
     />
 
     <ConfigurationPane
@@ -109,6 +110,7 @@
       @close="closeAdmin"
       @mouse-enter="handleAdminMouseEnter"
       @mouse-leave="handleAdminMouseLeave"
+      @open-tab="handleOpenTab"
     />
 
     <footer class="status-bar">

@@ -21,23 +21,11 @@
           <span>{{ $t('dataPane.applications.title') }}</span>
         </div>
         <div class="data-section-content" :class="{ 'expanded': openSections.applications }">
-          <div class="data-item">
-            <router-link to="/data/deployed-applications">
-              <i class="fas fa-rocket"></i>
-              {{ $t('dataPane.applications.deployed') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/applications">
-              <i class="fas fa-cube"></i>
-              {{ $t('dataPane.applications.application') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/virtual-client">
-              <i class="fas fa-desktop"></i>
-              {{ $t('dataPane.applications.virtualClient') }}
-            </router-link>
+          <div class="data-item" v-for="item in applicationItems" :key="item.tabToOpen">
+            <a href="#" @click.prevent="handleItemClick(item)">
+              <i :class="item.icon"></i>
+              {{ $t(item.label) }}
+            </a>
           </div>
         </div>
       </div>
@@ -49,47 +37,11 @@
           <span>{{ $t('dataPane.hardware.title') }}</span>
         </div>
         <div class="data-section-content" :class="{ 'expanded': openSections.hardware }">
-          <div class="data-item">
-            <router-link to="/data/hardware">
-              <i class="fas fa-microchip"></i>
-              {{ $t('dataPane.hardware.hardware') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/deployed-hardware">
-              <i class="fas fa-server"></i>
-              {{ $t('dataPane.hardware.deployedHardware') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/workstation">
-              <i class="fas fa-desktop"></i>
-              {{ $t('dataPane.hardware.workstation') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/server">
-              <i class="fas fa-server"></i>
-              {{ $t('dataPane.hardware.server') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/storage">
-              <i class="fas fa-hdd"></i>
-              {{ $t('dataPane.hardware.storage') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/rack">
-              <i class="fas fa-layer-group"></i>
-              {{ $t('dataPane.hardware.rack') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/ups">
-              <i class="fas fa-plug"></i>
-              {{ $t('dataPane.hardware.ups') }}
-            </router-link>
+          <div class="data-item" v-for="item in hardwareItems" :key="item.tabToOpen">
+            <a href="#" @click.prevent="handleItemClick(item)">
+              <i :class="item.icon"></i>
+              {{ $t(item.label) }}
+            </a>
           </div>
         </div>
       </div>
@@ -101,41 +53,11 @@
           <span>{{ $t('dataPane.network.title') }}</span>
         </div>
         <div class="data-section-content" :class="{ 'expanded': openSections.network }">
-          <div class="data-item">
-            <router-link to="/data/firewall">
-              <i class="fas fa-shield-alt"></i>
-              {{ $t('dataPane.network.firewall') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/switch">
-              <i class="fas fa-network-wired"></i>
-              {{ $t('dataPane.network.switch') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/router">
-              <i class="fas fa-wifi"></i>
-              {{ $t('dataPane.network.router') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/routing-rule">
-              <i class="fas fa-route"></i>
-              {{ $t('dataPane.network.routingRule') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/network-printer">
-              <i class="fas fa-print"></i>
-              {{ $t('dataPane.network.printer') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/zone-cluster">
-              <i class="fas fa-project-diagram"></i>
-              {{ $t('dataPane.network.zoneCluster') }}
-            </router-link>
+          <div class="data-item" v-for="item in networkItems" :key="item.tabToOpen">
+            <a href="#" @click.prevent="handleItemClick(item)">
+              <i :class="item.icon"></i>
+              {{ $t(item.label) }}
+            </a>
           </div>
         </div>
       </div>
@@ -147,17 +69,11 @@
           <span>{{ $t('dataPane.virtualization.title') }}</span>
         </div>
         <div class="data-section-content" :class="{ 'expanded': openSections.virtualization }">
-          <div class="data-item">
-            <router-link to="/data/virtual-rack-billing">
-              <i class="fas fa-file-invoice-dollar"></i>
-              {{ $t('dataPane.virtualization.billing') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/farm">
-              <i class="fas fa-server"></i>
-              {{ $t('dataPane.virtualization.farm') }}
-            </router-link>
+          <div class="data-item" v-for="item in virtualizationItems" :key="item.tabToOpen">
+            <a href="#" @click.prevent="handleItemClick(item)">
+              <i :class="item.icon"></i>
+              {{ $t(item.label) }}
+            </a>
           </div>
         </div>
       </div>
@@ -169,17 +85,11 @@
           <span>{{ $t('dataPane.database.title') }}</span>
         </div>
         <div class="data-section-content" :class="{ 'expanded': openSections.database }">
-          <div class="data-item">
-            <router-link to="/data/database-catalog">
-              <i class="fas fa-database"></i>
-              {{ $t('dataPane.database.catalog') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/database-instance">
-              <i class="fas fa-database"></i>
-              {{ $t('dataPane.database.instance') }}
-            </router-link>
+          <div class="data-item" v-for="item in databaseItems" :key="item.tabToOpen">
+            <a href="#" @click.prevent="handleItemClick(item)">
+              <i :class="item.icon"></i>
+              {{ $t(item.label) }}
+            </a>
           </div>
         </div>
       </div>
@@ -191,117 +101,27 @@
           <span>{{ $t('dataPane.contracts.title') }}</span>
         </div>
         <div class="data-section-content" :class="{ 'expanded': openSections.contracts }">
-          <div class="data-item">
-            <router-link to="/data/contract">
-              <i class="fas fa-file-contract"></i>
-              {{ $t('dataPane.contracts.contract') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/software-license">
-              <i class="fas fa-key"></i>
-              {{ $t('dataPane.contracts.license') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/software-counter">
-              <i class="fas fa-calculator"></i>
-              {{ $t('dataPane.contracts.counter') }}
-            </router-link>
+          <div class="data-item" v-for="item in contractItems" :key="item.tabToOpen">
+            <a href="#" @click.prevent="handleItemClick(item)">
+              <i :class="item.icon"></i>
+              {{ $t(item.label) }}
+            </a>
           </div>
         </div>
       </div>
 
-      <!-- User Device -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('userDevice')">
-          <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.userDevice }"></i>
-          <span>{{ $t('dataPane.userDevice.title') }}</span>
-        </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.userDevice }">
-          <div class="data-item">
-            <router-link to="/data/mobile">
-              <i class="fas fa-mobile-alt"></i>
-              {{ $t('dataPane.userDevice.mobile') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/laptop">
-              <i class="fas fa-laptop"></i>
-              {{ $t('dataPane.userDevice.laptop') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/user-printer">
-              <i class="fas fa-print"></i>
-              {{ $t('dataPane.userDevice.printer') }}
-            </router-link>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cloud Infrastructure -->
+      <!-- Cloud -->
       <div class="data-section">
         <div class="data-section-header" @click="toggleSection('cloud')">
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.cloud }"></i>
           <span>{{ $t('dataPane.cloud.title') }}</span>
         </div>
         <div class="data-section-content" :class="{ 'expanded': openSections.cloud }">
-          <div class="data-item">
-            <router-link to="/data/virtual-machine">
-              <i class="fas fa-cloud"></i>
-              {{ $t('dataPane.cloud.vm') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/cloud-service">
-              <i class="fas fa-cloud-upload-alt"></i>
-              {{ $t('dataPane.cloud.service') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/cloud-storage">
-              <i class="fas fa-cloud-download-alt"></i>
-              {{ $t('dataPane.cloud.storage') }}
-            </router-link>
-          </div>
-        </div>
-      </div>
-
-      <!-- Containerization -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('container')">
-          <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.container }"></i>
-          <span>{{ $t('dataPane.container.title') }}</span>
-        </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.container }">
-          <div class="data-item">
-            <router-link to="/data/container">
-              <i class="fas fa-box"></i>
-              {{ $t('dataPane.container.container') }}
-            </router-link>
-          </div>
-        </div>
-      </div>
-
-      <!-- Security -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('security')">
-          <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.security }"></i>
-          <span>{{ $t('dataPane.security.title') }}</span>
-        </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.security }">
-          <div class="data-item">
-            <router-link to="/data/antivirus">
-              <i class="fas fa-virus-slash"></i>
-              {{ $t('dataPane.security.antivirus') }}
-            </router-link>
-          </div>
-          <div class="data-item">
-            <router-link to="/data/endpoint-protection">
-              <i class="fas fa-shield-virus"></i>
-              {{ $t('dataPane.security.endpoint') }}
-            </router-link>
+          <div class="data-item" v-for="item in cloudItems" :key="item.tabToOpen">
+            <a href="#" @click.prevent="handleItemClick(item)">
+              <i :class="item.icon"></i>
+              {{ $t(item.label) }}
+            </a>
           </div>
         </div>
       </div>
@@ -329,11 +149,46 @@ export default {
         virtualization: false,
         database: false,
         contracts: false,
-        userDevice: false,
-        cloud: false,
-        container: false,
-        security: false
-      })
+        cloud: false
+      }),
+      applicationItems: [
+        { tabToOpen: 'deployed-applications', icon: 'fas fa-rocket', label: 'dataPane.applications.deployed' },
+        { tabToOpen: 'applications', icon: 'fas fa-cube', label: 'dataPane.applications.application' },
+        { tabToOpen: 'virtual-client', icon: 'fas fa-desktop', label: 'dataPane.applications.virtualClient' }
+      ],
+      hardwareItems: [
+        { tabToOpen: 'hardware', icon: 'fas fa-microchip', label: 'dataPane.hardware.hardware' },
+        { tabToOpen: 'deployed-hardware', icon: 'fas fa-server', label: 'dataPane.hardware.deployedHardware' },
+        { tabToOpen: 'workstation', icon: 'fas fa-desktop', label: 'dataPane.hardware.workstation' },
+        { tabToOpen: 'server', icon: 'fas fa-server', label: 'dataPane.hardware.server' },
+        { tabToOpen: 'storage', icon: 'fas fa-hdd', label: 'dataPane.hardware.storage' },
+        { tabToOpen: 'rack', icon: 'fas fa-layer-group', label: 'dataPane.hardware.rack' },
+        { tabToOpen: 'ups', icon: 'fas fa-plug', label: 'dataPane.hardware.ups' }
+      ],
+      networkItems: [
+        { tabToOpen: 'firewall', icon: 'fas fa-shield-alt', label: 'dataPane.network.firewall' },
+        { tabToOpen: 'switch', icon: 'fas fa-network-wired', label: 'dataPane.network.switch' },
+        { tabToOpen: 'router', icon: 'fas fa-wifi', label: 'dataPane.network.router' },
+        { tabToOpen: 'routing-rule', icon: 'fas fa-route', label: 'dataPane.network.routingRule' },
+        { tabToOpen: 'network-printer', icon: 'fas fa-print', label: 'dataPane.network.printer' },
+        { tabToOpen: 'zone-cluster', icon: 'fas fa-project-diagram', label: 'dataPane.network.zoneCluster' }
+      ],
+      virtualizationItems: [
+        { tabToOpen: 'virtual-rack-billing', icon: 'fas fa-file-invoice-dollar', label: 'dataPane.virtualization.billing' },
+        { tabToOpen: 'farm', icon: 'fas fa-server', label: 'dataPane.virtualization.farm' }
+      ],
+      databaseItems: [
+        { tabToOpen: 'database-catalog', icon: 'fas fa-database', label: 'dataPane.database.catalog' },
+        { tabToOpen: 'database-instance', icon: 'fas fa-database', label: 'dataPane.database.instance' }
+      ],
+      contractItems: [
+        { tabToOpen: 'contract', icon: 'fas fa-file-contract', label: 'dataPane.contracts.contract' },
+        { tabToOpen: 'software-license', icon: 'fas fa-key', label: 'dataPane.contracts.softwareLicense' }
+      ],
+      cloudItems: [
+        { tabToOpen: 'cloud-provider', icon: 'fas fa-cloud', label: 'dataPane.cloud.provider' },
+        { tabToOpen: 'cloud-service', icon: 'fas fa-cloud-upload-alt', label: 'dataPane.cloud.service' }
+      ]
     }
   },
   watch: {
@@ -347,13 +202,7 @@ export default {
   },
   methods: {
     toggleSection(section) {
-      // Fermer toutes les autres sections
-      Object.keys(this.openSections).forEach(key => {
-        if (key !== section) {
-          this.openSections[key] = false
-        }
-      })
-      // Basculer l'état de la section cliquée
+      // Basculer l'état de la section cliquée sans fermer les autres
       this.openSections[section] = !this.openSections[section]
     },
     handleClickOutside(event) {
@@ -365,6 +214,13 @@ export default {
       if (this.isVisible && !this.$refs.dataPane.contains(event.target)) {
         this.$emit('close')
       }
+    },
+    handleItemClick(item) {
+      this.$emit('open-tab', {
+        id: item.tabToOpen,
+        title: this.$t(item.label),
+        type: item.tabToOpen
+      })
     }
   },
   beforeDestroy() {
