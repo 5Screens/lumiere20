@@ -58,7 +58,7 @@
                 <div class="filter-container">
                   <input type="text" v-model="filters[column.key]" class="column-filter" />
                   <div class="filter-icon" 
-                       @click="openAdvancedFilter(column)"
+                       @click="openAdvancedFilter(column, $event)"
                        :class="{ 'active': hasActiveAdvancedFilter(column.key) }">
                     <i class="fas fa-filter"></i>
                   </div>
@@ -109,7 +109,7 @@
   </div>
 
   <!-- Fenêtre contextuelle de filtrage avancé -->
-  <div v-if="showAdvancedFilter" class="advanced-filter-modal" @click.self="closeAdvancedFilter">
+  <div v-if="showAdvancedFilter" class="advanced-filter-modal" :style="filterPositionStyle" @click.self="closeAdvancedFilter">
     <div class="advanced-filter-content">
       <!-- Zone A -->
       <div class="filter-search">
@@ -209,7 +209,11 @@ export default {
       advancedFilterBlanks: true,
       selectedAdvancedFilterValues: [],
       uniqueColumnValues: {},
-      advancedFilters: {}
+      advancedFilters: {},
+      filterPosition: {
+        x: 0,
+        y: 0
+      }
     }
   },
   computed: {
@@ -294,6 +298,12 @@ export default {
       return {
         top: `${this.showCopyIconAt.y}px`,
         left: `${this.showCopyIconAt.x}px`
+      }
+    },
+    filterPositionStyle() {
+      return {
+        top: `${this.filterPosition.y}px`,
+        left: `${this.filterPosition.x}px`
       }
     }
   },
@@ -423,7 +433,14 @@ export default {
       this.columnWidths = new Array(this.columns.length + (this.selectable ? 1 : 0)).fill(100)
     },
     // Nouvelles méthodes pour le filtrage avancé
-    openAdvancedFilter(column) {
+    openAdvancedFilter(column, event) {
+      const iconElement = event.currentTarget
+      const rect = iconElement.getBoundingClientRect()
+      this.filterPosition = {
+        x: rect.left,
+        y: rect.bottom
+      }
+      
       this.currentFilterColumn = column
       this.showAdvancedFilter = true
       
@@ -495,96 +512,4 @@ export default {
 <style scoped>
 @import "@/assets/styles/reusableTableTab.css";
 
-.filter-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filter-icon {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-icon:hover {
-  background-color: #f0f0f0;
-}
-
-.filter-icon.active {
-  color: #2196F3;
-  border-color: #2196F3;
-}
-
-.advanced-filter-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.advanced-filter-content {
-  background: white;
-  border-radius: 8px;
-  width: 300px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.filter-search {
-  padding: 16px;
-  border-bottom: 1px solid #ddd;
-}
-
-.filter-search input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.filter-values {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 0;
-}
-
-.filter-value-item {
-  display: flex;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.filter-value-item:hover {
-  background-color: #f5f5f5;
-}
-
-.checkbox-container {
-  width: 15px;
-  margin-right: 8px;
-  display: flex;
-  align-items: center;
-}
-
-.value-label {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 </style>
