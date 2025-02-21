@@ -415,15 +415,17 @@ th:first-child .th-content {
 }
 
 .filter-search {
-  padding: 16px;
-  border-bottom: 1px solid #ddd;
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 .filter-search input {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
+  padding: 6px;
+  border: 1px solid #dee2e6;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 .filter-values {
