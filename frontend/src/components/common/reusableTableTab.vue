@@ -302,8 +302,8 @@ export default {
     },
     filterPositionStyle() {
       return {
-        top: `${this.filterPosition.y}px`,
-        left: `${this.filterPosition.x}px`
+        left: `${this.filterPosition.x}px`,
+        top: `${this.filterPosition.y}px`
       }
     }
   },
@@ -439,21 +439,27 @@ export default {
     },
     // Nouvelles méthodes pour le filtrage avancé
     openAdvancedFilter(column, event) {
-      const iconElement = event.currentTarget
-      const rect = iconElement.getBoundingClientRect()
-      this.filterPosition = {
-        x: rect.left,
-        y: rect.bottom
+      // Vérifier si la fenêtre est déjà ouverte sur la même colonne
+      if (this.showAdvancedFilter && this.currentFilterColumn && this.currentFilterColumn.key === column.key) {
+        this.closeAdvancedFilter()
+        return
       }
-      
+
+      // Définir d'abord la colonne courante
       this.currentFilterColumn = column
-      this.showAdvancedFilter = true
+      
+      // Calculer la position de la fenêtre de filtre
+      const rect = event.target.getBoundingClientRect()
+      this.filterPosition = {
+        x: rect.left + window.scrollX,
+        y: rect.bottom + window.scrollY
+      }
       
       // Initialiser les valeurs du filtre
       if (!this.advancedFilters[column.key]) {
         this.advancedFilters[column.key] = {
           blanks: true,
-          values: this.uniqueValues
+          values: [...this.uniqueValues]  // Utiliser le spread operator pour créer une copie
         }
       }
       
@@ -461,6 +467,9 @@ export default {
       this.selectedAdvancedFilterValues = [...this.advancedFilters[column.key].values]
       this.advancedFilterSelectAll = this.selectedAdvancedFilterValues.length === this.uniqueValues.length
       this.advancedFilterSearch = ''
+      
+      // Afficher la fenêtre après avoir tout initialisé
+      this.showAdvancedFilter = true
     },
     
     closeAdvancedFilter() {
