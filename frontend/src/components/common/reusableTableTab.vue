@@ -55,7 +55,14 @@
                 </div>
               </template>
               <template v-else>
-                <input type="text" v-model="filters[column.key]" :placeholder="'Filter ' + column.label + '...'" class="column-filter" />
+                <div class="filter-container">
+                  <input type="text" v-model="filters[column.key]" class="column-filter" />
+                  <div class="filter-icon" 
+                       @click="openAdvancedFilter(column)"
+                       :class="{ 'active': hasActiveAdvancedFilter(column.key) }">
+                    <i class="fas fa-filter"></i>
+                  </div>
+                </div>
               </template>
             </th>
           </tr>
@@ -99,6 +106,52 @@
   </div>
   <div class="copy-icon" v-if="showCopyIconAt" :style="copyIconStyle" @click="copyToClipboard" :class="{ 'fade-out': isFading }">
     <i class="fas fa-copy"></i>
+  </div>
+
+  <!-- Fenêtre contextuelle de filtrage avancé -->
+  <div v-if="showAdvancedFilter" class="advanced-filter-modal" @click.self="closeAdvancedFilter">
+    <div class="advanced-filter-content">
+      <!-- Zone A -->
+      <div class="filter-search">
+        <input type="text" v-model="advancedFilterSearch" placeholder="Rechercher des valeurs..." />
+      </div>
+      
+      <!-- Zone B -->
+      <div class="filter-values">
+        <!-- Select All Option -->
+        <div class="filter-value-item">
+          <div class="checkbox-container">
+            <input type="checkbox" 
+                   v-model="advancedFilterSelectAll" 
+                   @change="toggleAdvancedFilterAll" />
+          </div>
+          <div class="value-label">(select all)</div>
+        </div>
+        
+        <!-- Blanks Option -->
+        <div v-if="hasBlankValues" class="filter-value-item">
+          <div class="checkbox-container">
+            <input type="checkbox" 
+                   v-model="advancedFilterBlanks" 
+                   @change="updateAdvancedFilter" />
+          </div>
+          <div class="value-label">(blanks)</div>
+        </div>
+        
+        <!-- Unique Values -->
+        <div v-for="value in filteredUniqueValues" 
+             :key="value" 
+             class="filter-value-item">
+          <div class="checkbox-container">
+            <input type="checkbox" 
+                   v-model="selectedAdvancedFilterValues" 
+                   :value="value"
+                   @change="updateAdvancedFilter" />
+          </div>
+          <div class="value-label">{{ value }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -147,40 +200,85 @@ export default {
       isFading: false,
       isResizing: false,
       startX: 0,
-      currentColumnIndex: -1
+      currentColumnIndex: -1,
+      // Nouvelles propriétés pour le filtrage avancé
+      showAdvancedFilter: false,
+      currentFilterColumn: null,
+      advancedFilterSearch: '',
+      advancedFilterSelectAll: true,
+      advancedFilterBlanks: true,
+      selectedAdvancedFilterValues: [],
+      uniqueColumnValues: {},
+      advancedFilters: {}
     }
   },
   computed: {
     filteredData() {
       return this.tableData.filter(row => {
         return Object.keys(this.filters).every(key => {
-          if (!this.filters[key]) return true
-          
           const column = this.columns.find(col => col.key === key)
           const value = row[key]
+          const filterValue = this.filters[key]
           
-          if (column.type === 'date') {
-            return !this.filters[key] || value.includes(this.filters[key])
+          // Vérification du filtre primaire
+          if (filterValue && filterValue.trim() !== '') {
+            const normalizedFilter = filterValue.toLowerCase()
+            const normalizedValue = (value?.toString() || '').toLowerCase()
+            if (!normalizedValue.includes(normalizedFilter)) {
+              return false
+            }
           }
           
-          if (column.type === 'select') {
-            return this.filters[key].length === 0 || this.filters[key].includes(value)
+          // Vérification du filtre avancé
+          if (this.advancedFilters[key]) {
+            const filter = this.advancedFilters[key]
+            const isBlank = value === null || value === undefined || value === ''
+            
+            if (isBlank) {
+              return filter.blanks
+            }
+            
+            return filter.values.includes(value.toString())
           }
           
-          return value.toString().toLowerCase()
-            .includes(this.filters[key].toLowerCase())
+          return true
         })
       }).sort((a, b) => {
         if (!this.sortColumn) return 0
-        
         const aVal = a[this.sortColumn]
         const bVal = b[this.sortColumn]
-        
         if (this.sortDirection === 'asc') {
           return aVal > bVal ? 1 : -1
         }
         return aVal < bVal ? 1 : -1
       })
+    },
+    
+    hasBlankValues() {
+      if (!this.currentFilterColumn) return false
+      return this.tableData.some(row => {
+        const value = row[this.currentFilterColumn.key]
+        return value === null || value === undefined || value === ''
+      })
+    },
+    
+    uniqueValues() {
+      if (!this.currentFilterColumn) return []
+      const values = new Set()
+      this.tableData.forEach(row => {
+        const value = row[this.currentFilterColumn.key]
+        if (value !== null && value !== undefined && value !== '') {
+          values.add(value.toString())
+        }
+      })
+      return Array.from(values).sort()
+    },
+    
+    filteredUniqueValues() {
+      if (!this.advancedFilterSearch) return this.uniqueValues
+      return this.uniqueValues.filter(value => 
+        value.toLowerCase().includes(this.advancedFilterSearch.toLowerCase())
+      )
     },
     paginatedData() {
       if (!this.paginated) return this.filteredData
@@ -323,19 +421,72 @@ export default {
     },
     initializeColumnWidths() {
       this.columnWidths = new Array(this.columns.length + (this.selectable ? 1 : 0)).fill(100)
+    },
+    // Nouvelles méthodes pour le filtrage avancé
+    openAdvancedFilter(column) {
+      this.currentFilterColumn = column
+      this.showAdvancedFilter = true
+      
+      // Initialiser les valeurs du filtre
+      if (!this.advancedFilters[column.key]) {
+        this.advancedFilters[column.key] = {
+          blanks: true,
+          values: this.uniqueValues
+        }
+      }
+      
+      this.advancedFilterBlanks = this.advancedFilters[column.key].blanks
+      this.selectedAdvancedFilterValues = [...this.advancedFilters[column.key].values]
+      this.advancedFilterSelectAll = this.selectedAdvancedFilterValues.length === this.uniqueValues.length
+      this.advancedFilterSearch = ''
+    },
+    
+    closeAdvancedFilter() {
+      this.showAdvancedFilter = false
+      this.currentFilterColumn = null
+      this.advancedFilterSearch = ''
+    },
+    
+    toggleAdvancedFilterAll() {
+      if (this.advancedFilterSelectAll) {
+        this.selectedAdvancedFilterValues = [...this.uniqueValues]
+      } else {
+        this.selectedAdvancedFilterValues = []
+      }
+      this.updateAdvancedFilter()
+    },
+    
+    updateAdvancedFilter() {
+      if (!this.currentFilterColumn) return
+      
+      const key = this.currentFilterColumn.key
+      this.advancedFilters[key] = {
+        blanks: this.advancedFilterBlanks,
+        values: [...this.selectedAdvancedFilterValues]
+      }
+      
+      // Mettre à jour l'état "select all" en fonction des valeurs sélectionnées
+      this.advancedFilterSelectAll = 
+        this.selectedAdvancedFilterValues.length === this.uniqueValues.length
+    },
+    
+    hasActiveAdvancedFilter(columnKey) {
+      const filter = this.advancedFilters[columnKey]
+      if (!filter) return false
+      
+      // Vérifier si tous les filtres sont actifs (équivalent à aucun filtre)
+      const allValuesSelected = filter.values.length === this.uniqueValues.length
+      return !allValuesSelected || !filter.blanks
     }
   },
   created() {
-    this.filters = {}
-    this.dropdowns = {}
-    
+    // Initialiser les filtres pour chaque colonne
     this.columns.forEach(column => {
-      this.filters[column.key] = column.type === 'select' ? [] : ''
-      this.dropdowns[column.key] = false
+      this.filters[column.key] = ''
     })
+    this.fetchData()
   },
   mounted() {
-    this.fetchData()
     this.initializeColumnWidths()
   }
 }
@@ -343,4 +494,97 @@ export default {
 
 <style scoped>
 @import "@/assets/styles/reusableTableTab.css";
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-icon:hover {
+  background-color: #f0f0f0;
+}
+
+.filter-icon.active {
+  color: #2196F3;
+  border-color: #2196F3;
+}
+
+.advanced-filter-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.advanced-filter-content {
+  background: white;
+  border-radius: 8px;
+  width: 300px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.filter-search {
+  padding: 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.filter-search input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.filter-values {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.filter-value-item {
+  display: flex;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.filter-value-item:hover {
+  background-color: #f5f5f5;
+}
+
+.checkbox-container {
+  width: 15px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.value-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 </style>
