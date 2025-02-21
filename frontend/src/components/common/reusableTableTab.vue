@@ -449,7 +449,8 @@ export default {
       this.currentFilterColumn = column
       
       // Calculer la position de la fenêtre de filtre
-      const rect = event.target.getBoundingClientRect()
+      const filterIcon = event.target.closest('.filter-icon')
+      const rect = filterIcon.getBoundingClientRect()
       this.filterPosition = {
         x: rect.left + window.scrollX,
         y: rect.bottom + window.scrollY
