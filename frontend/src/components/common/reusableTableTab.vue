@@ -311,7 +311,12 @@ export default {
     async fetchData() {
       try {
         const response = await axios.get(this.apiUrl)
-        this.tableData = response.data.map(item => ({
+        // Vérifier si la réponse a une propriété data qui contient le tableau
+        const dataArray = Array.isArray(response.data) ? response.data : 
+                         (response.data && response.data.data) ? response.data.data :
+                         []
+        
+        this.tableData = dataArray.map(item => ({
           ...item,
           selected: false
         }))
