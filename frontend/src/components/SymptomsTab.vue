@@ -42,11 +42,11 @@ export default {
     columns() {
       return [
         { key: 'uuid', label: this.$t('symptomsTable.headers.id'), type: 'uuid' },
-        { key: 'created_date', label: this.$t('symptomsTable.headers.createdDate'), type: 'date', format: 'YYYY-MM-DD' },
-        { key: 'update_date', label: this.$t('symptomsTable.headers.updateDate'), type: 'date', format: 'YYYY-MM-DD' },
+        { key: 'date_creation', label: this.$t('symptomsTable.headers.createdDate'), type: 'date', format: 'YYYY-MM-DD' },
+        { key: 'date_modification', label: this.$t('symptomsTable.headers.updateDate'), type: 'date', format: 'YYYY-MM-DD' },
         { key: 'symptom_code', label: this.$t('symptomsTable.headers.symptomCode'), type: 'text' },
-        { key: 'symptom_label', label: this.$t('symptomsTable.headers.symptomLabel'), type: 'text' },
-        { key: 'symptom_language', label: this.$t('symptomsTable.headers.symptomLanguage'), type: 'text' }
+        { key: 'libelle', label: this.$t('symptomsTable.headers.symptomLabel'), type: 'text' },
+        { key: 'langue', label: this.$t('symptomsTable.headers.symptomLanguage'), type: 'text' }
       ]
     }
   },
