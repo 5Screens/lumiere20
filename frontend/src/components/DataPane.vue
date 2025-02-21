@@ -202,7 +202,13 @@ export default {
   },
   methods: {
     toggleSection(section) {
-      // Basculer l'état de la section cliquée sans fermer les autres
+      // Fermer toutes les autres sections
+      Object.keys(this.openSections).forEach(key => {
+        if (key !== section) {
+          this.openSections[key] = false
+        }
+      })
+      // Basculer l'état de la section cliquée
       this.openSections[section] = !this.openSections[section]
     },
     handleClickOutside(event) {
