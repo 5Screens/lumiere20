@@ -152,7 +152,9 @@ export default {
       }
     },
     onRowSelected(row) {
-      this.selectedRow = row
+      // Mettre à jour selectedRow en fonction de l'état de sélection de la ligne
+      const selectedRows = this.$refs.table.filteredData.filter(r => r.selected);
+      this.selectedRow = selectedRows.length > 0 ? selectedRows[0] : null;
     },
     handleError(error) {
       this.$emit('error', error)
