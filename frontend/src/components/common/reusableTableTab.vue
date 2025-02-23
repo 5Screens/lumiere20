@@ -160,6 +160,7 @@ import axios from 'axios'
 
 export default {
   name: 'ReusableTableTab',
+  emits: ['row-selected', 'error'],
   props: {
     apiUrl: {
       type: String,

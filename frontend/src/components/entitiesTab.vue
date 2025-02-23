@@ -17,6 +17,9 @@
       :columns="columns"
       @row-selected="onRowSelected"
       @error="handleError"
+      :selectable="true"
+      :filterable="true"
+      :paginated="true"
     />
   </div>
 </template>
