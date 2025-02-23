@@ -183,7 +183,7 @@ export default {
       ],
       contractItems: [
         { tabToOpen: 'contract', icon: 'fas fa-file-contract', label: 'dataPane.contracts.contract' },
-        { tabToOpen: 'software-license', icon: 'fas fa-key', label: 'dataPane.contracts.softwareLicense' }
+        { tabToOpen: 'software-license', icon: 'fas fa-key', label: 'dataPane.contracts.license' }
       ],
       cloudItems: [
         { tabToOpen: 'cloud-provider', icon: 'fas fa-cloud', label: 'dataPane.cloud.provider' },

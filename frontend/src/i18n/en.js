@@ -134,6 +134,22 @@ export default {
     performance: 'Platform Performance',
     backup: 'Backup and Restore'
   },
+  common: {
+    close: 'Close'
+  },
+  nav: {
+    myWork: 'My Work',
+    create: 'Create',
+    search: 'Search...',
+    serviceHub: 'Service Hub',
+    sprintCenter: 'Sprint Center',
+    mail: 'Mail',
+    portalsBuilder: 'Portals Builder',
+    data: 'Data',
+    tableaux: 'Tables',
+    configuration: 'Configuration',
+    administration: 'Administration'
+  },
   entitiesTable: {
     headers: {
       uuid: 'ID',

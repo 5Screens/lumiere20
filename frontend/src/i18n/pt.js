@@ -158,5 +158,21 @@ export default {
       symptomLabel: 'Rótulo do sintoma',
       symptomLanguage: 'Idioma'
     }
+  },
+  common: {
+    close: 'Fechar'
+  },
+  nav: {
+    myWork: 'Meu Trabalho',
+    create: 'Criar',
+    search: 'Pesquisar...',
+    serviceHub: 'Central de Serviços',
+    sprintCenter: 'Centro Sprint',
+    mail: 'E-mail',
+    portalsBuilder: 'Construtor de Portais',
+    data: 'Dados',
+    tableaux: 'Tabelas',
+    configuration: 'Configuração',
+    administration: 'Administração'
   }
 }

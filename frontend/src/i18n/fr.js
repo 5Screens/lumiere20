@@ -158,5 +158,21 @@ export default {
       antivirus: 'Antivirus',
       endpoint: 'Protection des Terminaux'
     }
+  },
+  common: {
+    close: 'Fermer'
+  },
+  nav: {
+    myWork: 'Mon Travail',
+    create: 'Créer',
+    search: 'Rechercher...',
+    serviceHub: 'Hub de Services',
+    sprintCenter: 'Centre Sprint',
+    mail: 'Messagerie',
+    portalsBuilder: 'Constructeur de portails',
+    data: 'Données',
+    tableaux: 'Tableaux',
+    configuration: 'Configuration',
+    administration: 'Administration'
   }
 }
