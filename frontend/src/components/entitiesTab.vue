@@ -41,15 +41,15 @@ export default {
   computed: {
     columns() {
       return [
-        { key: 'uuid', label: this.$t('entitiesTable.headers.uuid'), type: 'uuid' },
-        { key: 'entity_id', label: this.$t('entitiesTable.headers.entity_id'), type: 'text' },
-        { key: 'name', label: this.$t('entitiesTable.headers.name'), type: 'text' },
-        { key: 'parent_entity_name', label: this.$t('entitiesTable.headers.parent_entity_name'), type: 'text' },
-        { key: 'external_id', label: this.$t('entitiesTable.headers.external_id'), type: 'text' },
-        { key: 'entity_type', label: this.$t('entitiesTable.headers.entity_type'), type: 'text' },
-        { key: 'headquarters_location', label: this.$t('entitiesTable.headers.headquarters_location'), type: 'text' },
-        { key: 'is_active', label: this.$t('entitiesTable.headers.is_active'), type: 'select', options: ['Yes', 'No'] },
-        { key: 'budget_approver_name', label: this.$t('entitiesTable.headers.budget_approver_name'), type: 'text' },
+        { key: 'uuid', label: this.$t('entitiesTable.headers.uuid'), type: 'uuid', format: 'text' },
+        { key: 'entity_id', label: this.$t('entitiesTable.headers.entity_id'), type: 'text', format: 'text' },
+        { key: 'name', label: this.$t('entitiesTable.headers.name'), type: 'text', format: 'text' },
+        { key: 'parent_entity_name', label: this.$t('entitiesTable.headers.parent_entity_name'), type: 'text', format: 'text' },
+        { key: 'external_id', label: this.$t('entitiesTable.headers.external_id'), type: 'text', format: 'text' },
+        { key: 'entity_type', label: this.$t('entitiesTable.headers.entity_type'), type: 'text', format: 'text' },
+        { key: 'headquarters_location', label: this.$t('entitiesTable.headers.headquarters_location'), type: 'text', format: 'text' },
+        { key: 'is_active', label: this.$t('entitiesTable.headers.is_active'), type: 'select', options: ['Yes', 'No'], format: 'text' },
+        { key: 'budget_approver_name', label: this.$t('entitiesTable.headers.budget_approver_name'), type: 'text', format: 'text' },
         { key: 'date_creation', label: this.$t('entitiesTable.headers.date_creation'), type: 'date', format: 'YYYY-MM-DD' },
         { key: 'date_modification', label: this.$t('entitiesTable.headers.date_modification'), type: 'date', format: 'YYYY-MM-DD' }
       ]

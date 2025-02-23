@@ -69,7 +69,7 @@
         </thead>
         <transition-group name="list" tag="tbody">
           <tr v-for="row in paginatedData" 
-              :key="row.id" 
+              :key="row.uuid" 
               @click="toggleRowSelection(row)"
               :class="{ 'selected-row': row.selected }"
               style="cursor: pointer;">
