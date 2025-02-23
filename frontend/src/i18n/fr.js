@@ -93,5 +93,70 @@ export default {
       symptomLabel: 'Libellé symptôme',
       symptomLanguage: 'Langue'
     }
+  },
+  dataPane: {
+    title: 'Données',
+    applications: {
+      title: 'Applications',
+      deployed: 'Application Déployée',
+      application: 'Application',
+      virtualClient: 'Environnement Client Virtuel'
+    },
+    hardware: {
+      title: 'Infrastructure Matérielle',
+      hardware: 'Matériel',
+      deployedHardware: 'Matériel Déployé',
+      workstation: 'Poste de Travail',
+      server: 'Serveur',
+      storage: 'Périphérique de Stockage de Masse',
+      rack: 'Rack',
+      ups: 'Onduleur'
+    },
+    network: {
+      title: 'Réseau et Communications',
+      firewall: 'Pare-feu',
+      switch: 'Commutateur',
+      router: 'Routeur',
+      routingRule: 'Règle de Routage',
+      printer: 'Imprimante',
+      zoneCluster: 'Zone Cluster'
+    },
+    virtualization: {
+      title: 'Virtualisation',
+      billing: 'Facturation Rack Virtuel',
+      farm: 'Ferme'
+    },
+    database: {
+      title: 'Bases de Données',
+      catalog: 'Catalogue de Base de Données',
+      instance: 'Instance de Base de Données'
+    },
+    contracts: {
+      title: 'Contrats et Licences',
+      contract: 'Contrat',
+      license: 'Licence Logicielle',
+      counter: 'Compteur Logiciel'
+    },
+    userDevice: {
+      title: 'Appareils Utilisateur',
+      mobile: 'Mobile',
+      laptop: 'Ordinateur Portable',
+      printer: 'Imprimante'
+    },
+    cloud: {
+      title: 'Infrastructure Cloud',
+      vm: 'Machine Virtuelle',
+      service: 'Service Cloud',
+      storage: 'Stockage Cloud'
+    },
+    container: {
+      title: 'Conteneurisation',
+      container: 'Conteneur'
+    },
+    security: {
+      title: 'Sécurité',
+      antivirus: 'Antivirus',
+      endpoint: 'Protection des Terminaux'
+    }
   }
 }
