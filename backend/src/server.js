@@ -9,6 +9,7 @@ const port = process.env.PORT || 3000;
 // Routes
 const symptomsRoutes = require('./api/v1/symptoms/routes');
 const entitiesRoutes = require('./api/v1/entities/routes');
+const languagesRoutes = require('./api/v1/languages/routes');
 
 // Middleware
 app.use(cors());
@@ -23,6 +24,7 @@ app.use((req, res, next) => {
 // API Routes
 app.use('/api/v1/symptoms', symptomsRoutes);
 app.use('/api/v1/entities', entitiesRoutes);
+app.use('/api/v1/languages', languagesRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

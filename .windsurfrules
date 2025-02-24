@@ -7,8 +7,9 @@ use backend directory to store all the backend sources
 use database directory to store all the database sources
 
 --frontend rules:
-use Vue.js for the frond end
-do not use typescript
+use Vue.js V3 for the frond end
+don't use vue.js 2
+don't use typescript
 use Vue-i18n for internationalization of the front end
 use modern UI
 use subtle animations during transitions (example : hover over menus, content appearance).
