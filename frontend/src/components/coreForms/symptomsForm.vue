@@ -65,7 +65,7 @@ const title = computed(() => props.data?.title || 'Symptôme');
 const symptomId = computed(() => props.data?.symptomId || null);
 
 // Emits
-const emit = defineEmits(['cancel', 'saved', 'error']);
+const emit = defineEmits(['cancel', 'saved', 'error', 'close-tab']);
 
 // État local
 const symptomData = ref({
@@ -165,8 +165,8 @@ const fetchSymptomData = async () => {
 
 // Gestion de l'annulation
 const handleCancel = () => {
-  // Retour à l'écran précédent
-  emit('cancel');
+  // Émettre un événement pour fermer l'onglet actuel
+  emit('close-tab', props.data.symptomId);
 };
 
 // Gestion de la sauvegarde

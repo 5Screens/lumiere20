@@ -65,6 +65,7 @@
               :is="getTabComponent(activeTab)" 
               :data="getTabData(activeTab)" 
               @open-tab="handleOpenTab"
+              @close-tab="closeTab(activeTab)"
             />
           </div>
           <router-view v-else></router-view>
