@@ -135,7 +135,14 @@ export default {
     backup: 'Backup and Restore'
   },
   common: {
-    close: 'Close'
+    close: 'Close',
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    create: 'Create',
+    update: 'Update',
+    export: 'Export',
+    refresh: 'Refresh'
   },
   nav: {
     myWork: 'My Work',
@@ -174,5 +181,27 @@ export default {
       symptomLabel: 'Symptom Label',
       symptomLanguage: 'Language'
     }
+  },
+  symptoms: {
+    createTitle: 'Create Symptom',
+    updateTitle: 'Update Symptom',
+    name: 'Symptom Name',
+    code: 'Symptom Code',
+    saveSuccess: 'Symptom saved successfully',
+    saveError: 'Error saving symptom'
+  },
+  errors: {
+    badRequest: 'Bad Request (400)',
+    unauthorized: 'Unauthorized (401)',
+    forbidden: 'Forbidden (403)',
+    notFound: 'Resource not found (404)',
+    conflict: 'Conflict with current state of the resource (409)',
+    validationError: 'Data validation error (422)',
+    serverError: 'Internal server error (500)',
+    serviceUnavailable: 'Service temporarily unavailable (503)',
+    fetchActiveLanguages: 'Unable to load active languages',
+    fetchSymptomData: 'Unable to load symptom data',
+    defaultError: 'An error occurred',
+    noTranslations: 'Please enter at least one translation for the symptom'
   }
 }

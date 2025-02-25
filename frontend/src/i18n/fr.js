@@ -102,6 +102,20 @@ export default {
     saveSuccess: 'Symptôme enregistré avec succès',
     saveError: 'Erreur lors de l\'enregistrement du symptôme'
   },
+  errors: {
+    badRequest: 'Requête incorrecte (400)',
+    unauthorized: 'Non autorisé (401)',
+    forbidden: 'Accès interdit (403)',
+    notFound: 'Ressource non trouvée (404)',
+    conflict: 'Conflit avec l\'état actuel de la ressource (409)',
+    validationError: 'Erreur de validation des données (422)',
+    serverError: 'Erreur interne du serveur (500)',
+    serviceUnavailable: 'Service temporairement indisponible (503)',
+    fetchActiveLanguages: 'Impossible de charger les langues actives',
+    fetchSymptomData: 'Impossible de charger les données du symptôme',
+    defaultError: 'Une erreur est survenue',
+    noTranslations: 'Veuillez saisir au moins une traduction pour le symptôme'
+  },
   common: {
     close: 'Fermer',
     save: 'Enregistrer',
@@ -112,10 +126,6 @@ export default {
     import: 'Importer',
     export: 'Exporter',
     refresh: 'Rafraîchir'
-  },
-  errors: {
-    selectOneRowForUpdate: 'Veuillez sélectionner une ligne pour la modification',
-    selectRowsForDelete: 'Veuillez sélectionner au moins une ligne pour la suppression'
   },
   dataPane: {
     title: 'Données',
