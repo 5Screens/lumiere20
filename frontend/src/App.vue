@@ -61,7 +61,11 @@
         </div>
         <div class="tab-content">
           <div v-if="activeTab">
-            <component :is="getTabComponent(activeTab)" :data="getTabData(activeTab)" />
+            <component 
+              :is="getTabComponent(activeTab)" 
+              :data="getTabData(activeTab)" 
+              @open-tab="handleOpenTab"
+            />
           </div>
           <router-view v-else></router-view>
         </div>
@@ -138,6 +142,7 @@ import ConfigurationPane from './components/ConfigurationPane.vue'
 import AdminPane from './components/AdminPane.vue'
 import SymptomsTab from './components/SymptomsTab.vue'
 import EntitiesTab from '@/components/entitiesTab.vue'
+import SymptomsForm from '@/components/coreForms/symptomsForm.vue'
 
 export default {
   name: 'App',
@@ -149,7 +154,8 @@ export default {
     ConfigurationPane,
     AdminPane,
     SymptomsTab,
-    EntitiesTab
+    EntitiesTab,
+    SymptomsForm
   },
   data() {
     return {
@@ -280,6 +286,8 @@ export default {
           return 'SymptomsTab'
         case 'entities':
           return 'EntitiesTab'
+        case 'symptomForm':
+          return 'SymptomsForm'
         default:
           return null
       }

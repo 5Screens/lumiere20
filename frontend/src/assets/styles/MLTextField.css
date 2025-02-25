@@ -1,0 +1,66 @@
+.ml-text-field {
+  margin-bottom: 16px;
+}
+
+.ml-text-field__label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.ml-text-field__required {
+  color: red;
+  margin-left: 4px;
+}
+
+.ml-text-field__container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: #f9f9f9;
+}
+
+.ml-text-field__input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ml-text-field__input-group:last-child {
+  margin-bottom: 0;
+}
+
+.ml-text-field__flag {
+  font-size: 24px;
+  margin-right: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ml-text-field__input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.ml-text-field__input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.ml-text-field__input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.ml-text-field__input:read-only {
+  background-color: #f5f5f5;
+  cursor: default;
+}

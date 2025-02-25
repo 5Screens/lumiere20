@@ -55,7 +55,19 @@ export default {
   },
   methods: {
     handleCreate() {
-      this.$emit('create')
+      // Générer un ID unique pour le nouvel onglet
+      const tabId = 'symptom-form-' + Date.now()
+      
+      // Émettre un événement pour ouvrir un nouvel onglet avec le formulaire de création
+      this.$emit('open-tab', {
+        id: tabId,
+        title: this.$t('symptoms.createTitle'),
+        type: 'symptomForm',
+        data: {
+          title: this.$t('symptoms.createTitle'),
+          symptomId: null // Pas d'ID car c'est une création
+        }
+      })
     },
     handleUpdate() {
       const selectedRows = this.$refs.table.filteredData.filter(row => row.selected)

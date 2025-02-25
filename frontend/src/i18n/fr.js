@@ -94,6 +94,29 @@ export default {
       symptomLanguage: 'Langue'
     }
   },
+  symptoms: {
+    createTitle: 'Créer un symptôme',
+    updateTitle: 'Modifier un symptôme',
+    name: 'Nom du symptôme',
+    code: 'Code du symptôme',
+    saveSuccess: 'Symptôme enregistré avec succès',
+    saveError: 'Erreur lors de l\'enregistrement du symptôme'
+  },
+  common: {
+    close: 'Fermer',
+    save: 'Enregistrer',
+    cancel: 'Annuler',
+    delete: 'Supprimer',
+    create: 'Créer',
+    update: 'Modifier',
+    import: 'Importer',
+    export: 'Exporter',
+    refresh: 'Rafraîchir'
+  },
+  errors: {
+    selectOneRowForUpdate: 'Veuillez sélectionner une ligne pour la modification',
+    selectRowsForDelete: 'Veuillez sélectionner au moins une ligne pour la suppression'
+  },
   dataPane: {
     title: 'Données',
     applications: {
@@ -158,9 +181,6 @@ export default {
       antivirus: 'Antivirus',
       endpoint: 'Protection des Terminaux'
     }
-  },
-  common: {
-    close: 'Fermer'
   },
   nav: {
     myWork: 'Mon Travail',
