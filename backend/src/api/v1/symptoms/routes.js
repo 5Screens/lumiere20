@@ -40,12 +40,12 @@ router.get(
     symptomsController.getSymptomByCode
 );
 
-// Route pour créer un nouveau symptôme via un PUT
+// Route pour créer un nouveau symptôme via un POST
 //http://localhost:3000/api/v1/symptoms
-router.put(
+router.post(
     '/',
     (req, res, next) => {
-        logger.info('[ROUTES] PUT /api/v1/symptoms - Route handler started');
+        logger.info('[ROUTES] POST /api/v1/symptoms - Route handler started');
         next();
     },
     validate(symptomsValidation.createSymptom),

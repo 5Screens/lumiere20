@@ -197,9 +197,9 @@ const handleSave = async () => {
       throw new Error(t('errors.noTranslations'));
     }
     
-    // Appel API PUT pour créer/mettre à jour le symptôme
+    // Appel API POST pour créer/mettre à jour le symptôme
     const response = await fetch(`${API_BASE_URL}/symptoms`, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
