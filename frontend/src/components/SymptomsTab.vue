@@ -72,19 +72,26 @@ export default {
     handleUpdate() {
       const selectedRows = this.$refs.table.filteredData.filter(row => row.selected)
       if (selectedRows.length >= 1) {
-        // Pour chaque ligne sélectionnée, ouvrir un onglet avec le formulaire
-        selectedRows.forEach(row => {
+        // Récupérer les codes de symptômes uniques
+        const uniqueSymptomCodes = [...new Set(selectedRows.map(row => row.symptom_code))]
+        
+        // Pour chaque code de symptôme unique, ouvrir un onglet avec le formulaire
+        uniqueSymptomCodes.forEach(symptomCode => {
+          if (!symptomCode) {
+            return // Ignorer les lignes sans code de symptôme
+          }
+          
           // Générer un ID unique pour le nouvel onglet
-          const tabId = 'symptom-form-' + row.uuid + '-' + Date.now()
+          const tabId = 'symptom-form-' + symptomCode + '-' + Date.now()
           
           // Émettre un événement pour ouvrir un nouvel onglet avec le formulaire de modification
           this.$emit('open-tab', {
             id: tabId,
-            title: this.$t('symptoms.updateTitle', { code: row.symptom_code || row.uuid }),
+            title: this.$t('symptoms.updateTitle', { code: symptomCode }),
             type: 'symptomForm',
             data: {
-              title: this.$t('symptoms.updateTitle', { code: row.symptom_code || row.uuid }),
-              symptomId: row.uuid // ID du symptôme à modifier
+              title: this.$t('symptoms.updateTitle', { code: symptomCode }),
+              symptomCode: symptomCode // Code du symptôme à modifier (au lieu de l'UUID)
             }
           })
         })

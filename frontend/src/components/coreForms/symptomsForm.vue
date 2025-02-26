@@ -55,14 +55,14 @@ const props = defineProps({
     type: Object,
     default: () => ({
       title: 'Symptôme',
-      symptomId: null
+      symptomCode: null
     })
   }
 });
 
 // Computed properties pour extraire les données du props data
 const title = computed(() => props.data?.title || 'Symptôme');
-const symptomId = computed(() => props.data?.symptomId || null);
+const symptomCode = computed(() => props.data?.symptomCode || null);
 
 // Emits
 const emit = defineEmits(['cancel', 'saved', 'error', 'close-tab']);
@@ -110,11 +110,11 @@ const fetchActiveLanguages = async () => {
 
 // Chargement des données du symptôme si on est en mode édition
 const fetchSymptomData = async () => {
-  if (!symptomId.value) return;
+  if (!symptomCode.value) return;
   
   try {
     loading.value = true;
-    const response = await fetch(`${API_BASE_URL}/symptoms/${symptomId.value}`);
+    const response = await fetch(`${API_BASE_URL}/symptoms/by-scode?scode=${encodeURIComponent(symptomCode.value)}`);
     
     // Vérifier si la réponse est OK (statut 2xx)
     if (!response.ok) {
@@ -150,10 +150,12 @@ const fetchSymptomData = async () => {
       });
     }
     
+    // Mettre à jour les données du formulaire
     symptomData.value = transformedData;
+    
   } catch (err) {
     console.error('Erreur lors de la récupération des données du symptôme:', err);
-    error.value = err.message || 'Impossible de charger les données du symptôme';
+    error.value = err.message || t('errors.fetchSymptomData');
     emit('error', error.value);
     
     // Afficher un message d'erreur à l'utilisateur
@@ -166,7 +168,7 @@ const fetchSymptomData = async () => {
 // Gestion de l'annulation
 const handleCancel = () => {
   // Émettre un événement pour fermer l'onglet actuel
-  emit('close-tab', props.data.symptomId);
+  emit('close-tab', props.data.symptomCode);
 };
 
 // Gestion de la sauvegarde
@@ -265,7 +267,7 @@ const getHttpErrorMessage = (statusCode) => {
 // Initialisation du composant
 onMounted(async () => {
   await fetchActiveLanguages();
-  if (symptomId.value) {
+  if (symptomCode.value) {
     await fetchSymptomData();
   } else {
     // Initialisation des champs multilingues avec les langues actives

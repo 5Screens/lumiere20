@@ -29,7 +29,7 @@ router.get(
 );
 
 // Route pour obtenir un symptôme par son code
-//http://localhost:3000/api/v1/symptoms/by-scode?scode=SYMP_001
+//http://localhost:3000/api/v1/symptoms/by-scode?scode=VPN_CONNECTION_FAILED
 router.get(
     '/by-scode',
     (req, res, next) => {
