@@ -40,12 +40,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { API_BASE_URL } from '@/config/config';
 
 // Import des composants
 import TextField from '@/components/common/TextField.vue';
 import MLTextField from '@/components/common/MLTextField.vue';
 import ButtonStandard from '@/components/common/ButtonStandard.vue';
+
+// Import du service API
+import apiService from '@/services/apiService';
 
 // Import des styles
 import '@/assets/styles/symptomsForm.css';
@@ -84,24 +86,7 @@ const error = ref(null);
 // Récupération des langues actives depuis l'API
 const fetchActiveLanguages = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/languages?is_active=yes`);
-    
-    // Vérifier si la réponse est OK (statut 2xx)
-    if (!response.ok) {
-      // Essayer de récupérer le message d'erreur du serveur
-      let errorMessage;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || `Erreur ${response.status}`;
-      } catch (e) {
-        // Si on ne peut pas parser la réponse JSON, utiliser un message basé sur le code HTTP
-        errorMessage = getHttpErrorMessage(response.status);
-      }
-      
-      throw new Error(errorMessage);
-    }
-    
-    const data = await response.json();
+    const data = await apiService.get('languages', { is_active: 'yes' });
     activeLanguages.value = data.map(lang => lang.code);
   } catch (err) {
     console.error('Erreur lors de la récupération des langues actives:', err);
@@ -119,24 +104,7 @@ const fetchSymptomData = async () => {
   
   try {
     loading.value = true;
-    const response = await fetch(`${API_BASE_URL}/symptoms/by-scode?scode=${encodeURIComponent(symptomCode.value)}`);
-    
-    // Vérifier si la réponse est OK (statut 2xx)
-    if (!response.ok) {
-      // Essayer de récupérer le message d'erreur du serveur
-      let errorMessage;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || `Erreur ${response.status}`;
-      } catch (e) {
-        // Si on ne peut pas parser la réponse JSON, utiliser un message basé sur le code HTTP
-        errorMessage = getHttpErrorMessage(response.status);
-      }
-      
-      throw new Error(errorMessage);
-    }
-    
-    const data = await response.json();
+    const data = await apiService.get('symptoms/by-scode', { scode: symptomCode.value });
     
     // Transformer les données reçues du backend au format attendu par le frontend
     // Le backend renvoie { code, translations: [{ uuid, langue, libelle }] }
@@ -207,30 +175,7 @@ const handleSave = async () => {
     }
     
     // Appel API POST pour créer un nouveau symptôme
-    const response = await fetch(`${API_BASE_URL}/symptoms`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(transformedData)
-    });
-    
-    // Vérifier si la réponse est OK (statut 2xx)
-    if (!response.ok) {
-      // Essayer de récupérer le message d'erreur du serveur
-      let errorMessage;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || `Erreur ${response.status}`;
-      } catch (e) {
-        // Si on ne peut pas parser la réponse JSON, utiliser un message basé sur le code HTTP
-        errorMessage = getHttpErrorMessage(response.status);
-      }
-      
-      throw new Error(errorMessage);
-    }
-    
-    const data = await response.json();
+    const data = await apiService.post('symptoms', transformedData);
     
     // Si succès, émission de l'événement saved
     emit('saved', data);
@@ -274,13 +219,7 @@ const handleUpdate = async () => {
           modifiedCount++;
           
           updatePromises.push(
-            fetch(`${API_BASE_URL}/symptoms_translations/${uuid}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ libelle })
-            })
+            apiService.put(`symptoms_translations/${uuid}`, { libelle })
           );
         } 
         // Si on a un UUID mais que la valeur n'a pas changé, on ne fait rien
@@ -304,24 +243,7 @@ const handleUpdate = async () => {
     }
     
     // Attendre que toutes les mises à jour soient terminées
-    const results = await Promise.all(updatePromises);
-    
-    // Vérifier si toutes les réponses sont OK
-    for (const response of results) {
-      if (!response.ok) {
-        // Essayer de récupérer le message d'erreur du serveur
-        let errorMessage;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || `Erreur ${response.status}`;
-        } catch (e) {
-          // Si on ne peut pas parser la réponse JSON, utiliser un message basé sur le code HTTP
-          errorMessage = getHttpErrorMessage(response.status);
-        }
-        
-        throw new Error(errorMessage);
-      }
-    }
+    await Promise.all(updatePromises);
     
     // Mettre à jour les valeurs originales avec les nouvelles valeurs
     for (const [langue, libelle] of Object.entries(symptomData.value.name)) {
@@ -358,29 +280,6 @@ const handleAction = () => {
   }
 };
 
-// Fonction utilitaire pour obtenir un message d'erreur basé sur le code HTTP
-const getHttpErrorMessage = (statusCode) => {
-  switch (statusCode) {
-    case 400:
-      return t('errors.badRequest');
-    case 401:
-      return t('errors.unauthorized');
-    case 403:
-      return t('errors.forbidden');
-    case 404:
-      return t('errors.notFound');
-    case 409:
-      return t('errors.conflict');
-    case 422:
-      return t('errors.validationError');
-    case 500:
-      return t('errors.serverError');
-    case 503:
-      return t('errors.serviceUnavailable');
-    default:
-      return `Erreur HTTP: ${statusCode}`;
-  }
-};
 
 // Initialisation du composant
 onMounted(async () => {
