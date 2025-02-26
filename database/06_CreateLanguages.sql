@@ -1,7 +1,5 @@
 -- Create languages table
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
-CREATE TABLE languages (
+CREATE TABLE translations.languages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(5) NOT NULL,                     -- Ex : 'en', 'fr', 'es'
     locale VARCHAR(10) NOT NULL UNIQUE,           -- Ex : 'en-US', 'fr-FR', 'pt-BR'
