@@ -100,7 +100,11 @@ export default {
     name: 'Nom du symptôme',
     code: 'Code du symptôme',
     saveSuccess: 'Symptôme enregistré avec succès',
-    saveError: 'Erreur lors de l\'enregistrement du symptôme'
+    saveError: 'Erreur lors de l\'enregistrement du symptôme',
+    updateSuccess: 'Traductions mises à jour avec succès',
+    translationUpdated: 'traduction mise à jour avec succès',
+    translationsUpdated: 'traductions mises à jour avec succès',
+    noChanges: 'Aucune modification détectée'
   },
   errors: {
     badRequest: 'Requête incorrecte (400)',

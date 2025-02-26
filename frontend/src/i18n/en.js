@@ -184,11 +184,15 @@ export default {
   },
   symptoms: {
     createTitle: 'Create Symptom',
-    updateTitle: 'Update Symptom',
+    updateTitle: 'Update Symptom {code}',
     name: 'Symptom Name',
     code: 'Symptom Code',
     saveSuccess: 'Symptom saved successfully',
-    saveError: 'Error saving symptom'
+    saveError: 'Error saving symptom',
+    updateSuccess: 'Translations updated successfully',
+    translationUpdated: 'translation updated successfully',
+    translationsUpdated: 'translations updated successfully',
+    noChanges: 'No changes detected'
   },
   errors: {
     badRequest: 'Bad Request (400)',

@@ -71,7 +71,8 @@ const emit = defineEmits(['cancel', 'saved', 'error', 'close-tab']);
 const symptomData = ref({
   name: {},
   code: '',
-  translationUuids: {} // Ajout d'un objet pour stocker les UUIDs des traductions par langue
+  translationUuids: {}, // Stockage des UUIDs par langue
+  originalValues: {}    // Stockage des valeurs originales pour détecter les changements
 });
 const activeLanguages = ref([]);
 const loading = ref(false);
@@ -136,11 +137,12 @@ const fetchSymptomData = async () => {
     
     // Transformer les données reçues du backend au format attendu par le frontend
     // Le backend renvoie { code, translations: [{ uuid, langue, libelle }] }
-    // Le frontend attend { code, name: { fr: "libellé", en: "label" }, translationUuids: { fr: "uuid1", en: "uuid2" } }
+    // Le frontend attend { code, name: { fr: "libellé", en: "label" }, translationUuids: { fr: "uuid1", en: "uuid2" }, originalValues: { fr: "libellé", en: "label" } }
     const transformedData = {
       code: data.code || '',
       name: {},
-      translationUuids: {} // Stockage des UUIDs par langue
+      translationUuids: {}, // Stockage des UUIDs par langue
+      originalValues: {}    // Stockage des valeurs originales pour détecter les changements
     };
     
     // Convertir les traductions en format attendu par le frontend
@@ -149,6 +151,7 @@ const fetchSymptomData = async () => {
         if (translation.langue && translation.libelle) {
           transformedData.name[translation.langue] = translation.libelle;
           transformedData.translationUuids[translation.langue] = translation.uuid; // Stocker l'UUID
+          transformedData.originalValues[translation.langue] = translation.libelle; // Stocker la valeur originale
         }
       });
     }
@@ -253,15 +256,20 @@ const handleUpdate = async () => {
       throw new Error(t('errors.noTranslations'));
     }
     
-    // Pour chaque langue, mettre à jour la traduction si l'UUID existe
+    // Pour chaque langue, mettre à jour la traduction si l'UUID existe ET si la valeur a changé
     const updatePromises = [];
+    let modifiedCount = 0;
     
     for (const [langue, libelle] of Object.entries(symptomData.value.name)) {
       if (libelle && libelle.trim() !== '') {
         const uuid = symptomData.value.translationUuids[langue];
+        const originalValue = symptomData.value.originalValues[langue];
         
-        // Si on a un UUID pour cette langue, on met à jour la traduction existante
-        if (uuid) {
+        // Si on a un UUID pour cette langue ET que la valeur a changé, on met à jour la traduction
+        if (uuid && libelle !== originalValue) {
+          console.log(`Mise à jour de la traduction pour la langue ${langue}: "${originalValue}" -> "${libelle}"`);
+          modifiedCount++;
+          
           updatePromises.push(
             fetch(`${API_BASE_URL}/symptoms_translations/${uuid}`, {
               method: 'PUT',
@@ -272,6 +280,10 @@ const handleUpdate = async () => {
             })
           );
         } 
+        // Si on a un UUID mais que la valeur n'a pas changé, on ne fait rien
+        else if (uuid) {
+          console.log(`Aucun changement pour la traduction en ${langue}, pas de mise à jour nécessaire`);
+        }
         // Sinon, c'est une nouvelle traduction, on la crée via l'API POST
         else {
           // Créer une nouvelle traduction pour cette langue
@@ -279,6 +291,13 @@ const handleUpdate = async () => {
           console.warn(`Pas d'UUID pour la langue ${langue}, la création de nouvelles traductions n'est pas encore implémentée`);
         }
       }
+    }
+    
+    // Si aucune traduction n'a été modifiée, on informe l'utilisateur et on termine
+    if (modifiedCount === 0) {
+      loading.value = false;
+      alert(t('symptoms.noChanges'));
+      return;
     }
     
     // Attendre que toutes les mises à jour soient terminées
@@ -301,11 +320,18 @@ const handleUpdate = async () => {
       }
     }
     
+    // Mettre à jour les valeurs originales avec les nouvelles valeurs
+    for (const [langue, libelle] of Object.entries(symptomData.value.name)) {
+      if (symptomData.value.translationUuids[langue]) {
+        symptomData.value.originalValues[langue] = libelle;
+      }
+    }
+    
     // Si succès, émission de l'événement saved
-    emit('saved', { success: true });
+    emit('saved', { success: true, modifiedCount });
     
     // Message de confirmation
-    alert(t('symptoms.updateSuccess') || t('symptoms.saveSuccess'));
+    alert(`${modifiedCount} ${modifiedCount > 1 ? t('symptoms.translationsUpdated') : t('symptoms.translationUpdated')}`);
   } catch (err) {
     console.error('Erreur lors de la mise à jour des traductions:', err);
     error.value = err.message || 'Erreur lors de la mise à jour';
