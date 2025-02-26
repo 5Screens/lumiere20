@@ -47,6 +47,9 @@ import TextField from '@/components/common/TextField.vue';
 import MLTextField from '@/components/common/MLTextField.vue';
 import ButtonStandard from '@/components/common/ButtonStandard.vue';
 
+// Import des styles
+import '@/assets/styles/symptomsForm.css';
+
 const { t } = useI18n();
 
 // Props
@@ -394,59 +397,3 @@ onMounted(async () => {
   }
 });
 </script>
-
-<style scoped>
-.symptoms-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background-color: var(--background-color);
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.symptoms-form__header {
-  margin-bottom: 1rem;
-}
-
-.symptoms-form__content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.symptoms-form__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color-light);
-}
-
-h2 {
-  font-size: 1.5rem;
-  color: var(--text-color-primary);
-  margin: 0;
-}
-
-/* Animations de transition */
-.symptoms-form__content > * {
-  transition: all 0.3s ease;
-}
-
-.symptoms-form__content > *:hover {
-  transform: translateY(-2px);
-}
-
-.symptoms-form__footer button {
-  transition: all 0.2s ease;
-}
-
-.symptoms-form__footer button:hover {
-  transform: scale(1.05);
-}
-</style>
