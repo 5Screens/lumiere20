@@ -64,6 +64,7 @@
             <component 
               :is="getTabComponent(activeTab)" 
               :data="getTabData(activeTab)" 
+              :key="getTabData(activeTab)?._instanceId"
               @open-tab="handleOpenTab"
               @close-tab="closeTab(activeTab)"
             />
@@ -238,8 +239,12 @@ export default {
         this.tabs[existingTabIndex].data = data
         this.activeTab = id
       } else {
+        // Create new tab with a unique instance identifier for component types that need unique instances
+        const instanceId = Date.now().toString()
+        const tabData = { ...data, _instanceId: instanceId }
+        
         // Create new tab
-        this.tabs.push({ id, title, data, type })
+        this.tabs.push({ id, title, data: tabData, type })
         this.activeTab = id
       }
     },
