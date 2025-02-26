@@ -28,6 +28,20 @@ router.get(
     symptomsController.getSymptoms
 );
 
+// Route pour obtenir un symptôme par son code
+//http://localhost:3000/api/v1/symptoms/by-scode?scode=SYMP_001
+router.get(
+    '/by-scode',
+    (req, res, next) => {
+        logger.info(`[ROUTES] GET /api/v1/symptoms/by-scode - Route handler started with scode=${req.query.scode}`);
+        next();
+    },
+    validate(symptomsValidation.getSymptomByCode),
+    symptomsController.getSymptomByCode
+);
+
+// Route pour créer un nouveau symptôme via un PUT
+//http://localhost:3000/api/v1/symptoms
 router.put(
     '/',
     (req, res, next) => {

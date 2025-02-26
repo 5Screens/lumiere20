@@ -96,7 +96,7 @@ export default {
   },
   symptoms: {
     createTitle: 'Créer un symptôme',
-    updateTitle: 'Modifier un symptôme',
+    updateTitle: 'Modifier le symptôme {code}',
     name: 'Nom du symptôme',
     code: 'Code du symptôme',
     saveSuccess: 'Symptôme enregistré avec succès',
@@ -114,6 +114,9 @@ export default {
     fetchActiveLanguages: 'Impossible de charger les langues actives',
     fetchSymptomData: 'Impossible de charger les données du symptôme',
     defaultError: 'Une erreur est survenue',
+    selectOneRowForUpdate: 'Veuillez sélectionner une ligne à modifier',
+    selectRowsForUpdate: 'Veuillez sélectionner au moins une ligne à modifier',
+    selectRowsForDelete: 'Veuillez sélectionner au moins une ligne à supprimer',
     noTranslations: 'Veuillez saisir au moins une traduction pour le symptôme'
   },
   common: {

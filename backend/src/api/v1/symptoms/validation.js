@@ -10,6 +10,15 @@ const getSymptoms = {
     })
 };
 
+const getSymptomByCode = {
+    query: Joi.object({
+        scode: Joi.string().required()
+    }).options({ 
+        abortEarly: false,
+        stripUnknown: true 
+    })
+};
+
 const createSymptom = {
     body: Joi.object({
         code: Joi.string().max(50).required(),
@@ -38,6 +47,7 @@ const validateSymptom = (schema, data) => {
 
 module.exports = {
     getSymptoms,
+    getSymptomByCode,
     createSymptom,
     validateSymptom
 };

@@ -50,6 +50,46 @@ class SymptomsService {
         }
     }
 
+    async getSymptomByCode(scode) {
+        logger.info(`[SERVICE] getSymptomByCode - Starting database query for symptom code: ${scode}`);
+        try {
+            const query = `
+                SELECT 
+                    s.code,
+                    st.uuid,
+                    st.langue,
+                    st.libelle
+                FROM configuration.symptoms s
+                JOIN translations.symptoms_translation st ON s.code = st.symptom_code
+                WHERE s.code = $1
+                ORDER BY st.langue ASC
+            `;
+            
+            const result = await pool.query(query, [scode]);
+            
+            if (result.rows.length === 0) {
+                logger.info(`[SERVICE] getSymptomByCode - No symptom found with code: ${scode}`);
+                return null;
+            }
+            
+            // Formatage de la réponse selon le format demandé
+            const symptom = {
+                code: result.rows[0].code,
+                translations: result.rows.map(row => ({
+                    uuid: row.uuid,
+                    langue: row.langue,
+                    libelle: row.libelle
+                }))
+            };
+            
+            logger.info(`[SERVICE] getSymptomByCode - Query executed successfully, found symptom with ${symptom.translations.length} translations`);
+            return symptom;
+        } catch (error) {
+            logger.error(`[SERVICE] getSymptomByCode - Database error: ${error.message}`);
+            throw error;
+        }
+    }
+
     async createSymptom(symptomData) {
         logger.info('[SERVICE] createSymptom - Starting transaction');
         const client = await pool.connect();

@@ -71,11 +71,26 @@ export default {
     },
     handleUpdate() {
       const selectedRows = this.$refs.table.filteredData.filter(row => row.selected)
-      if (selectedRows.length === 1) {
-        this.$emit('update', selectedRows[0])
+      if (selectedRows.length >= 1) {
+        // Pour chaque ligne sélectionnée, ouvrir un onglet avec le formulaire
+        selectedRows.forEach(row => {
+          // Générer un ID unique pour le nouvel onglet
+          const tabId = 'symptom-form-' + row.uuid + '-' + Date.now()
+          
+          // Émettre un événement pour ouvrir un nouvel onglet avec le formulaire de modification
+          this.$emit('open-tab', {
+            id: tabId,
+            title: this.$t('symptoms.updateTitle', { code: row.symptom_code || row.uuid }),
+            type: 'symptomForm',
+            data: {
+              title: this.$t('symptoms.updateTitle', { code: row.symptom_code || row.uuid }),
+              symptomId: row.uuid // ID du symptôme à modifier
+            }
+          })
+        })
       } else {
         this.$emit('error', {
-          message: this.$t('errors.selectOneRowForUpdate')
+          message: this.$t('errors.selectRowsForUpdate')
         })
       }
     },

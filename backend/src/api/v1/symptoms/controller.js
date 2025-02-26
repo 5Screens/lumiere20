@@ -42,6 +42,33 @@ class SymptomsController {
         }
     }
 
+    async getSymptomByCode(req, res) {
+        logger.info('[CONTROLLER] getSymptomByCode - Starting to process request');
+        try {
+            const { scode } = req.query;
+            logger.info(`[CONTROLLER] getSymptomByCode - Fetching symptom with code: ${scode}`);
+            
+            const symptom = await symptomsService.getSymptomByCode(scode);
+            
+            if (!symptom) {
+                logger.info(`[CONTROLLER] getSymptomByCode - No symptom found with code: ${scode}`);
+                return res.status(404).json({
+                    success: false,
+                    message: `Aucun symptôme trouvé avec le code: ${scode}`
+                });
+            }
+            
+            logger.info(`[CONTROLLER] getSymptomByCode - Successfully retrieved symptom with code: ${scode}`);
+            return res.status(200).json(symptom);
+        } catch (error) {
+            logger.error(`[CONTROLLER] getSymptomByCode - Error: ${error.message}`);
+            return res.status(500).json({
+                success: false,
+                message: 'Une erreur est survenue lors de la récupération du symptôme'
+            });
+        }
+    }
+
     async createSymptom(req, res) {
         logger.info('[CONTROLLER] createSymptom - Starting to process request');
         try {
