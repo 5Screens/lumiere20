@@ -27,7 +27,6 @@
 <script>
 import ReusableTableTab from './common/reusableTableTab.vue'
 import TabControlButtons from './common/tabControlButtons.vue'
-import { API_BASE_URL } from '@/config/config'
 
 export default {
   name: 'EntitiesTab',
@@ -37,7 +36,7 @@ export default {
   },
   data() {
     return {
-      apiUrl: `${API_BASE_URL}/entities`,
+      apiUrl: `entities`,
       selectedRow: null
     }
   },

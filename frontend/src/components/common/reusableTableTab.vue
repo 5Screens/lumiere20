@@ -156,7 +156,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+// Import du service API centralisé pour gérer les appels HTTP
+import apiService from '@/services/apiService'
 
 export default {
   name: 'ReusableTableTab',
@@ -309,21 +310,28 @@ export default {
     }
   },
   methods: {
+    /**
+     * Récupère les données depuis l'API en utilisant le service API centralisé
+     * Gère différentes structures de réponse possibles
+     */
     async fetchData() {
       try {
-        const response = await axios.get(this.apiUrl)
-        // Vérifier si la réponse a une propriété data qui contient le tableau
-        const dataArray = Array.isArray(response.data) ? response.data : 
-                         (response.data && response.data.data) ? response.data.data :
+        const response = await apiService.get(this.apiUrl);
+        
+        // Vérifier si la réponse a une structure spécifique ou est directement un tableau
+        const dataArray = Array.isArray(response) ? response : 
+                         (response && response.data) ? response.data :
                          []
         
-        this.tableData = dataArray.map(item => ({
-          ...item,
-          selected: false
-        }))
+        this.tableData = dataArray.map(item => {
+          return {
+            ...item,
+            selected: false
+          };
+        });
       } catch (error) {
-        console.error('Error fetching data:', error)
-        this.$emit('error', error)
+        console.error('Erreur lors de la récupération des données:', error);
+        this.$emit('error', error.message || 'Erreur lors de la récupération des données');
       }
     },
     formatCellContent(content, format) {
