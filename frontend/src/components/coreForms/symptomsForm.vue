@@ -31,7 +31,7 @@
         :label="$t('common.save')"
         variant="primary"
         :loading="loading"
-        @click="handleSave"
+        @click="handleAction"
       />
     </div>
   </div>
@@ -70,7 +70,8 @@ const emit = defineEmits(['cancel', 'saved', 'error', 'close-tab']);
 // État local
 const symptomData = ref({
   name: {},
-  code: ''
+  code: '',
+  translationUuids: {} // Ajout d'un objet pour stocker les UUIDs des traductions par langue
 });
 const activeLanguages = ref([]);
 const loading = ref(false);
@@ -134,11 +135,12 @@ const fetchSymptomData = async () => {
     const data = await response.json();
     
     // Transformer les données reçues du backend au format attendu par le frontend
-    // Le backend renvoie { code, translations: [{ langue, libelle }] }
-    // Le frontend attend { code, name: { fr: "libellé", en: "label" } }
+    // Le backend renvoie { code, translations: [{ uuid, langue, libelle }] }
+    // Le frontend attend { code, name: { fr: "libellé", en: "label" }, translationUuids: { fr: "uuid1", en: "uuid2" } }
     const transformedData = {
       code: data.code || '',
-      name: {}
+      name: {},
+      translationUuids: {} // Stockage des UUIDs par langue
     };
     
     // Convertir les traductions en format attendu par le frontend
@@ -146,6 +148,7 @@ const fetchSymptomData = async () => {
       data.translations.forEach(translation => {
         if (translation.langue && translation.libelle) {
           transformedData.name[translation.langue] = translation.libelle;
+          transformedData.translationUuids[translation.langue] = translation.uuid; // Stocker l'UUID
         }
       });
     }
@@ -171,7 +174,7 @@ const handleCancel = () => {
   emit('close-tab', props.data.symptomCode);
 };
 
-// Gestion de la sauvegarde
+// Gestion de la sauvegarde (création d'un nouveau symptôme uniquement)
 const handleSave = async () => {
   try {
     loading.value = true;
@@ -197,7 +200,7 @@ const handleSave = async () => {
       throw new Error(t('errors.noTranslations'));
     }
     
-    // Appel API POST pour créer/mettre à jour le symptôme
+    // Appel API POST pour créer un nouveau symptôme
     const response = await fetch(`${API_BASE_URL}/symptoms`, {
       method: 'POST',
       headers: {
@@ -237,6 +240,92 @@ const handleSave = async () => {
     alert(error.value);
   } finally {
     loading.value = false;
+  }
+};
+
+// Gestion de la mise à jour des traductions d'un symptôme existant
+const handleUpdate = async () => {
+  try {
+    loading.value = true;
+    
+    // Vérifier qu'il y a au moins une traduction
+    if (Object.keys(symptomData.value.name).length === 0) {
+      throw new Error(t('errors.noTranslations'));
+    }
+    
+    // Pour chaque langue, mettre à jour la traduction si l'UUID existe
+    const updatePromises = [];
+    
+    for (const [langue, libelle] of Object.entries(symptomData.value.name)) {
+      if (libelle && libelle.trim() !== '') {
+        const uuid = symptomData.value.translationUuids[langue];
+        
+        // Si on a un UUID pour cette langue, on met à jour la traduction existante
+        if (uuid) {
+          updatePromises.push(
+            fetch(`${API_BASE_URL}/symptoms_translations/${uuid}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ libelle })
+            })
+          );
+        } 
+        // Sinon, c'est une nouvelle traduction, on la crée via l'API POST
+        else {
+          // Créer une nouvelle traduction pour cette langue
+          // Cette fonctionnalité n'est pas encore implémentée
+          console.warn(`Pas d'UUID pour la langue ${langue}, la création de nouvelles traductions n'est pas encore implémentée`);
+        }
+      }
+    }
+    
+    // Attendre que toutes les mises à jour soient terminées
+    const results = await Promise.all(updatePromises);
+    
+    // Vérifier si toutes les réponses sont OK
+    for (const response of results) {
+      if (!response.ok) {
+        // Essayer de récupérer le message d'erreur du serveur
+        let errorMessage;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || `Erreur ${response.status}`;
+        } catch (e) {
+          // Si on ne peut pas parser la réponse JSON, utiliser un message basé sur le code HTTP
+          errorMessage = getHttpErrorMessage(response.status);
+        }
+        
+        throw new Error(errorMessage);
+      }
+    }
+    
+    // Si succès, émission de l'événement saved
+    emit('saved', { success: true });
+    
+    // Message de confirmation
+    alert(t('symptoms.updateSuccess') || t('symptoms.saveSuccess'));
+  } catch (err) {
+    console.error('Erreur lors de la mise à jour des traductions:', err);
+    error.value = err.message || 'Erreur lors de la mise à jour';
+    emit('error', error.value);
+    
+    // Message d'erreur
+    alert(error.value);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Fonction qui détermine quelle action effectuer en fonction du mode (création ou édition)
+const handleAction = () => {
+  if (symptomCode.value) {
+    // Mode édition
+    handleUpdate();
+  } else {
+    // Mode création
+    handleSave();
   }
 };
 
