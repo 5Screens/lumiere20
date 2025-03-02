@@ -10,10 +10,7 @@ class SymptomsController {
             const symptoms = await symptomsService.getAllSymptoms(langue);
             
             logger.info(`[CONTROLLER] getSymptoms - Successfully retrieved ${symptoms.length} symptoms`);
-            return res.status(200).json({
-                success: true,
-                data: symptoms
-            });
+            return res.status(200).json(symptoms);
         } catch (error) {
             logger.error(`[CONTROLLER] getSymptoms - Error: ${error.message}`);
             return res.status(500).json({
@@ -29,10 +26,7 @@ class SymptomsController {
             const symptoms = await symptomsService.getAllSymptomsAllLanguages();
             
             logger.info(`[CONTROLLER] getAllSymptoms - Successfully retrieved ${symptoms.length} symptoms`);
-            return res.status(200).json({
-                success: true,
-                data: symptoms
-            });
+            return res.status(200).json(symptoms);
         } catch (error) {
             logger.error(`[CONTROLLER] getAllSymptoms - Error: ${error.message}`);
             return res.status(500).json({
@@ -77,11 +71,7 @@ class SymptomsController {
             const newSymptom = await symptomsService.createSymptom(symptomData);
             
             logger.info('[CONTROLLER] createSymptom - Symptom created successfully');
-            return res.status(201).json({
-                success: true,
-                data: newSymptom,
-                message: 'Symptôme créé avec succès'
-            });
+            return res.status(201).json(newSymptom);
         } catch (error) {
             logger.error(`[CONTROLLER] createSymptom - Error: ${error.message}`);
             

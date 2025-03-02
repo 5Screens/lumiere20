@@ -312,18 +312,13 @@ export default {
   methods: {
     /**
      * Récupère les données depuis l'API en utilisant le service API centralisé
-     * Gère différentes structures de réponse possibles
      */
     async fetchData() {
       try {
         const response = await apiService.get(this.apiUrl);
         
-        // Vérifier si la réponse a une structure spécifique ou est directement un tableau
-        const dataArray = Array.isArray(response) ? response : 
-                         (response && response.data) ? response.data :
-                         []
-        
-        this.tableData = dataArray.map(item => {
+        // Traiter directement la réponse comme un tableau
+        this.tableData = response.map(item => {
           return {
             ...item,
             selected: false
