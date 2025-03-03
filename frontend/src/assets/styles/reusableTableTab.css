@@ -6,12 +6,13 @@
 table {
   width: 100%;
   border-collapse: collapse;
+  color: var(--text-color);
 }
 
 thead {
   position: sticky;
   top: 0;
-  background-color: var(--background-color);
+  background-color: var(--bg-secondary);
   z-index: 1;
 }
 
@@ -24,6 +25,7 @@ tbody tr {
   transition: transform 0.3s ease-out, background-color 0.2s ease;
   transform-origin: center;
   position: relative;
+  background-color: var(--bg-color);
 }
 
 tbody tr:hover {
@@ -39,7 +41,7 @@ tbody tr:hover {
 .table-footer {
   position: sticky;
   bottom: 0;
-  background-color: var(--background-color);
+  background-color: var(--bg-secondary);
   padding: 10px;
   border-top: 1px solid var(--border-color);
   z-index: 1;
@@ -48,7 +50,7 @@ tbody tr:hover {
 .pagination {
   position: sticky;
   bottom: 0;
-  background-color: var(--background-color);
+  background-color: var(--bg-secondary);
   padding: 10px;
   border-top: 1px solid var(--border-color);
   display: flex;
@@ -61,19 +63,24 @@ tbody tr:hover {
 th, td {
   padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
 }
 
 th {
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
+  color: var(--text-color);
 }
 
 tr:nth-child(even) {
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
 }
 
 tr:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hover-color);
+}
+
+.selected-row {
+  background-color: var(--hover-color) !important;
 }
 
 .header-content {
@@ -85,26 +92,28 @@ tr:hover {
 .column-filter {
   width: 100%;
   padding: 4px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   margin-top: 4px;
   font-size: 14px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 select.column-filter {
-  background-color: white;
+  background-color: var(--input-bg);
   cursor: pointer;
   transition: border-color 0.2s ease;
 }
 
 select.column-filter:hover {
-  border-color: #999;
+  border-color: var(--primary-color);
 }
 
 select.column-filter:focus {
   outline: none;
-  border-color: #666;
-  box-shadow: 0 0 3px rgba(0,0,0,0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 3px var(--shadow-color);
 }
 
 .items-per-page {
@@ -113,27 +122,30 @@ select.column-filter:focus {
 
 .items-per-page select {
   padding: 0.25rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--input-bg);
+  color: var(--text-color);
   cursor: pointer;
 }
 
 .items-per-page select:hover {
-  border-color: #666;
+  border-color: var(--primary-color);
 }
 
 .pagination button {
   padding: 5px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: #fff;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   cursor: pointer;
 }
 
 .pagination button:disabled {
-  background-color: #f0f0f0;
+  background-color: var(--bg-secondary);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .custom-multiselect {
@@ -144,9 +156,10 @@ select.column-filter:focus {
 .multiselect-header {
   width: 100%;
   padding: 4px 8px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--input-bg);
+  color: var(--text-color);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -159,18 +172,19 @@ select.column-filter:focus {
   width: 100%;
   max-height: 200px;
   overflow-y: auto;
-  background-color: white;
-  border: 1px solid #dee2e6;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   margin-top: 2px;
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .multiselect-option {
   padding: 6px 8px;
   cursor: pointer;
   font-size: 14px;
+  color: var(--text-color);
 }
 
 .multiselect-option label {
@@ -189,11 +203,11 @@ select.column-filter:focus {
 
 .multiselect-option:focus-within {
   outline: none;
-  background-color: #f8f9fa;
+  background-color: var(--hover-color);
 }
 
 .multiselect-option:hover {
-  background-color: #f8f9fa;
+  background-color: var(--hover-color);
 }
 
 .dropdown-arrow {
@@ -213,15 +227,15 @@ select.column-filter:focus {
   appearance: none;
   width: 16px;
   height: 16px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
   border-radius: 3px;
   position: relative;
-  background: white;
+  background: var(--input-bg);
 }
 
 .multiselect-option input[type="checkbox"]:checked {
-  background: #2196F3;
-  border-color: #2196F3;
+  background: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .multiselect-option input[type="checkbox"]:checked::after {
@@ -254,6 +268,7 @@ select.column-filter:focus {
   transform: translateY(-50%);
   opacity: 0.5;
   font-size: 0.8em;
+  color: var(--text-color);
 }
 
 .sortable:hover .sort-icon {
@@ -267,15 +282,18 @@ th[class="sortable"] .sort-icon template:last-child {
 .filter-row th {
   font-weight: normal;
   padding: 8px;
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
+  color: var(--text-color);
 }
 
 .filter-row input {
   width: 100%;
   padding: 4px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 14px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 /* Style pour la colonne ID */
@@ -288,10 +306,11 @@ td:nth-child(2) {
 
 .copy-icon {
   position: fixed;
-  background-color: white;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   padding: 0.5rem;
   border-radius: 0.25rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--shadow-color);
   cursor: pointer;
   z-index: 1000;
   transition: opacity 0.3s;
@@ -381,19 +400,21 @@ th:first-child .th-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 .filter-icon:hover {
-  background-color: #f0f0f0;
+  background-color: var(--hover-color);
 }
 
 .filter-icon.active {
-  color: #2196F3;
-  border-color: #2196F3;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .advanced-filter-modal {
@@ -403,35 +424,40 @@ th:first-child .th-content {
 }
 
 .advanced-filter-content {
-  background: white;
+  background: var(--bg-color);
   border-radius: 8px;
   width: 300px;
   max-height: 300px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  border: 1px solid var(--border-color);
 }
 
 .filter-search {
   width: 100%;
   padding: 8px;
   box-sizing: border-box;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 .filter-search input {
   width: 100%;
   padding: 6px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   box-sizing: border-box;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 .filter-values {
   flex: 1;
   overflow-y: auto;
   padding: 8px 0;
+  background-color: var(--bg-color);
 }
 
 .filter-value-item {
@@ -439,10 +465,12 @@ th:first-child .th-content {
   padding: 2px 16px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .filter-value-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hover-color);
 }
 
 .checkbox-container {
@@ -457,4 +485,5 @@ th:first-child .th-content {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text-color);
 }
