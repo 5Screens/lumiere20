@@ -6,9 +6,10 @@
   padding: 1.5rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background-color: var(--background-color);
+  background-color: var(--bg-color);
   max-width: 800px;
   margin: 0 auto;
+  color: var(--text-color);
 }
 
 .symptoms-form__header {
@@ -27,12 +28,12 @@
   gap: 1rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--border-color-light);
+  border-top: 1px solid var(--border-color);
 }
 
 .symptoms-form h2 {
   font-size: 1.5rem;
-  color: var(--text-color-primary);
+  color: var(--text-color);
   margin: 0;
 }
 
