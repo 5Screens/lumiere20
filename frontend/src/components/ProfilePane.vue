@@ -45,14 +45,15 @@ export default {
   },
   data() {
     return {
-      currentTheme: 'light',
+      currentTheme: localStorage.getItem('theme') || 'light',
       currentLanguage: this.locale
     }
   },
   methods: {
     setTheme(theme) {
       this.currentTheme = theme;
-      document.body.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
       this.$emit('theme-changed', theme);
     },
     changeLanguage() {
@@ -85,6 +86,8 @@ export default {
   created() {
     // Initialiser la langue actuelle
     this.currentLanguage = this.locale;
+    // Appliquer le thème sauvegardé
+    this.setTheme(this.currentTheme);
   }
 }
 </script>
