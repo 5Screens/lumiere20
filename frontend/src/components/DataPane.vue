@@ -140,6 +140,7 @@ export default {
       default: false
     }
   },
+  emits: ['close', 'mouse-enter', 'mouse-leave', 'open-tab'],
   data() {
     return {
       openSections: reactive({
@@ -222,6 +223,7 @@ export default {
       }
     },
     handleItemClick(item) {
+      // Utiliser le système d'onglets hiérarchiques
       this.$emit('open-tab', {
         id: item.tabToOpen,
         title: this.$t(item.label),

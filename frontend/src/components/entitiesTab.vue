@@ -59,12 +59,36 @@ export default {
   },
   methods: {
     handleCreate() {
-      this.$emit('create')
+      // Générer un ID unique pour le nouvel onglet
+      const tabId = 'entity-form-' + Date.now()
+      
+      // Émettre un événement pour ouvrir un nouvel onglet enfant avec le formulaire de création
+      this.$emit('open-child-tab', {
+        id: tabId,
+        title: this.$t('entities.createTitle'),
+        type: 'entityForm',
+        data: {
+          title: this.$t('entities.createTitle'),
+          entityId: null // Pas d'ID car c'est une création
+        }
+      })
     },
     handleUpdate() {
       const selectedRows = this.$refs.table.filteredData.filter(row => row.selected)
       if (selectedRows.length === 1) {
-        this.$emit('update', selectedRows[0])
+        // Générer un ID unique pour le nouvel onglet
+        const tabId = 'entity-form-' + selectedRows[0].uuid + '-' + Date.now()
+        
+        // Émettre un événement pour ouvrir un nouvel onglet enfant avec le formulaire de modification
+        this.$emit('open-child-tab', {
+          id: tabId,
+          title: this.$t('entities.updateTitle', { name: selectedRows[0].name }),
+          type: 'entityForm',
+          data: {
+            title: this.$t('entities.updateTitle', { name: selectedRows[0].name }),
+            entityId: selectedRows[0].uuid
+          }
+        })
       } else {
         // Gérer le cas où aucune ligne ou plusieurs lignes sont sélectionnées
         this.$emit('error', {
@@ -167,5 +191,6 @@ export default {
 <style>
 .entities-tab {
   padding: 1rem;
+  height: 100%;
 }
 </style>

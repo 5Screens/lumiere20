@@ -53,24 +53,18 @@
           by the "activeTab" property.
         -->
       <main class="content-area">
-        <div class="tabs" v-if="tabs.length > 0">
-          <div v-for="tab in tabs" :key="tab.id" class="tab" :class="{ active: activeTab === tab.id }">
-            <span @click="switchTab(tab.id)">{{ tab.title }}</span>
-            <button class="close-tab" @click="closeTab(tab.id)">×</button>
-          </div>
-        </div>
-        <div class="tab-content">
-          <div v-if="activeTab">
-            <component 
-              :is="getTabComponent(activeTab)" 
-              :data="getTabData(activeTab)" 
-              :key="getTabData(activeTab)?._instanceId"
-              @open-tab="handleOpenTab"
-              @close-tab="closeTab(activeTab)"
-            />
-          </div>
-          <router-view v-else></router-view>
-        </div>
+ <!-- Utilisation du nouveau composant d'onglets hiérarchiques -->
+ <hierarchical-tabs
+          v-if="tabs.length > 0"
+          :tabs="tabs"
+          :active-tab-id="activeTab"
+          @update:active-tab-id="activeTab = $event"
+          @open-tab="handleOpenTab"
+          @open-child-tab="handleOpenChildTab"
+          @close-tab="handleCloseTab"
+          @close-child-tab="handleCloseChildTab"
+        />
+        <router-view v-else></router-view>
       </main>
     </div>
 
@@ -145,6 +139,8 @@ import AdminPane from './components/AdminPane.vue'
 import SymptomsTab from './components/SymptomsTab.vue'
 import EntitiesTab from '@/components/entitiesTab.vue'
 import SymptomsForm from '@/components/coreForms/symptomsForm.vue'
+import EntityForm from '@/components/coreForms/entityForm.vue'
+import HierarchicalTabs from '@/components/common/hierarchicalTabs.vue'
 
 export default {
   name: 'App',
@@ -156,8 +152,10 @@ export default {
     ConfigurationPane,
     AdminPane,
     SymptomsTab,
+    HierarchicalTabs,
     EntitiesTab,
-    SymptomsForm
+    SymptomsForm,
+    EntityForm
   },
   data() {
     return {
@@ -274,6 +272,71 @@ export default {
     },
     
     /**
+     * Gère l'ouverture d'un onglet enfant
+     * @param {object} payload - Les données de l'onglet enfant
+     */
+    handleOpenChildTab({ id, title, type, data, parentId }) {
+      // Vérifier si l'onglet enfant existe déjà
+      const existingTabIndex = this.tabs.findIndex(tab => tab.id === id)
+      
+      if (existingTabIndex !== -1) {
+        // Mettre à jour les données de l'onglet existant
+        this.tabs[existingTabIndex].data = {
+          ...this.tabs[existingTabIndex].data,
+          ...data,
+          _instanceId: Date.now() // Pour forcer la réinitialisation du composant
+        }
+      } else {
+        // Créer un nouvel onglet enfant
+        this.tabs.push({
+          id,
+          title,
+          type,
+          data: {
+            ...data,
+            _instanceId: Date.now()
+          },
+          parentId: parentId || this.activeTab // Utiliser parentId s'il est fourni, sinon l'onglet actif
+        })
+      }
+    },
+    
+    /**
+     * Gère la fermeture d'un onglet et de tous ses onglets enfants
+     * @param {object} payload - Contient l'ID de l'onglet à fermer et les IDs de ses enfants
+     */
+    handleCloseTab({ tabId, childTabIds }) {
+      // Supprimer tous les onglets enfants
+      if (childTabIds && childTabIds.length > 0) {
+        this.tabs = this.tabs.filter(tab => !childTabIds.includes(tab.id))
+      }
+      
+      // Supprimer l'onglet parent
+      const tabIndex = this.tabs.findIndex(tab => tab.id === tabId)
+      if (tabIndex !== -1) {
+        this.tabs.splice(tabIndex, 1)
+      }
+      
+      // Si l'onglet fermé était l'onglet actif, passer à un autre onglet
+      if (this.activeTab === tabId) {
+        // Trouver le prochain onglet de premier niveau
+        const nextTab = this.tabs.find(tab => !tab.parentId)
+        this.activeTab = nextTab ? nextTab.id : null
+      }
+    },
+    
+    /**
+     * Gère la fermeture d'un onglet enfant
+     * @param {string} tabId - L'ID de l'onglet enfant à fermer
+     */
+    handleCloseChildTab(tabId) {
+      const tabIndex = this.tabs.findIndex(tab => tab.id === tabId)
+      if (tabIndex !== -1) {
+        this.tabs.splice(tabIndex, 1)
+      }
+    },
+    
+    /**
      * Returns the component name associated with the specified tab id.
      * Searches for a tab with the given id and returns the component
      * name based on the tab's type. If no tab is found, or if the tab type
@@ -294,6 +357,8 @@ export default {
           return 'EntitiesTab'
         case 'symptomForm':
           return 'SymptomsForm'
+        case 'entityForm':
+          return 'EntityForm'
         default:
           return null
       }

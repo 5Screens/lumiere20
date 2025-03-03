@@ -57,8 +57,8 @@ export default {
       // Générer un ID unique pour le nouvel onglet
       const tabId = 'symptom-form-' + Date.now()
       
-      // Émettre un événement pour ouvrir un nouvel onglet avec le formulaire de création
-      this.$emit('open-tab', {
+      // Émettre un événement pour ouvrir un nouvel onglet enfant avec le formulaire de création
+      this.$emit('open-child-tab', {
         id: tabId,
         title: this.$t('symptoms.createTitle'),
         type: 'symptomForm',
@@ -83,8 +83,8 @@ export default {
           // Générer un ID unique pour le nouvel onglet
           const tabId = 'symptom-form-' + symptomCode + '-' + Date.now()
           
-          // Émettre un événement pour ouvrir un nouvel onglet avec le formulaire de modification
-          this.$emit('open-tab', {
+          // Émettre un événement pour ouvrir un nouvel onglet enfant avec le formulaire de modification
+          this.$emit('open-child-tab', {
             id: tabId,
             title: this.$t('symptoms.updateTitle', { code: symptomCode }),
             type: 'symptomForm',
@@ -200,5 +200,8 @@ export default {
 </script>
 
 <style>
-@import '@/assets/styles/symptoms-tab.css';
+.symptoms-tab {
+  padding: 1rem;
+  height: 100%;
+}
 </style>

@@ -70,7 +70,7 @@ const title = computed(() => props.data?.title || 'Symptôme');
 const symptomCode = computed(() => props.data?.symptomCode || null);
 
 // Emits
-const emit = defineEmits(['cancel', 'saved', 'error', 'close-tab']);
+const emit = defineEmits(['cancel', 'saved', 'error', 'close-tab', 'close-child-tab']);
 
 // État local
 const symptomData = ref({
@@ -144,8 +144,8 @@ const fetchSymptomData = async () => {
 
 // Gestion de l'annulation
 const handleCancel = () => {
-  // Émettre un événement pour fermer l'onglet actuel
-  emit('close-tab', props.data.symptomCode);
+  // Émettre un événement pour fermer l'onglet enfant actuel
+  emit('close-child-tab');
 };
 
 // Gestion de la sauvegarde (création d'un nouveau symptôme uniquement)
@@ -182,6 +182,9 @@ const handleSave = async () => {
     
     // Message de confirmation
     alert(t('symptoms.saveSuccess'));
+    
+    // Fermer l'onglet enfant après la sauvegarde
+    emit('close-child-tab');
   } catch (err) {
     console.error('Erreur lors de la sauvegarde du symptôme:', err);
     error.value = err.message || 'Erreur lors de la sauvegarde';
@@ -199,66 +202,66 @@ const handleUpdate = async () => {
   try {
     loading.value = true;
     
-    // Vérifier qu'il y a au moins une traduction
-    if (Object.keys(symptomData.value.name).length === 0) {
-      throw new Error(t('errors.noTranslations'));
-    }
+    // Transformer les données au format attendu par le backend
+    const transformedData = {
+      code: symptomData.value.code,
+      translations: []
+    };
     
-    // Pour chaque langue, mettre à jour la traduction si l'UUID existe ET si la valeur a changé
-    const updatePromises = [];
-    let modifiedCount = 0;
+    // Préparer les mises à jour de traductions
+    const translationUpdates = [];
     
-    for (const [langue, libelle] of Object.entries(symptomData.value.name)) {
+    // Parcourir toutes les langues actives
+    Object.entries(symptomData.value.name).forEach(([langue, libelle]) => {
+      // Vérifier si la langue a une valeur
       if (libelle && libelle.trim() !== '') {
+        // Vérifier si cette langue avait déjà une traduction (a un UUID)
         const uuid = symptomData.value.translationUuids[langue];
         const originalValue = symptomData.value.originalValues[langue];
         
-        // Si on a un UUID pour cette langue ET que la valeur a changé, on met à jour la traduction
+        // Si la traduction existe déjà et a été modifiée, on l'ajoute aux mises à jour
         if (uuid && libelle !== originalValue) {
-          console.log(`Mise à jour de la traduction pour la langue ${langue}: "${originalValue}" -> "${libelle}"`);
-          modifiedCount++;
-          
-          updatePromises.push(
-            apiService.put(`symptoms_translations/${uuid}`, { libelle })
-          );
+          translationUpdates.push({
+            uuid,
+            langue,
+            libelle
+          });
         } 
-        // Si on a un UUID mais que la valeur n'a pas changé, on ne fait rien
-        else if (uuid) {
-          console.log(`Aucun changement pour la traduction en ${langue}, pas de mise à jour nécessaire`);
-        }
-        // Sinon, c'est une nouvelle traduction, on la crée via l'API POST
-        else {
-          // Créer une nouvelle traduction pour cette langue
-          // Cette fonctionnalité n'est pas encore implémentée
-          console.warn(`Pas d'UUID pour la langue ${langue}, la création de nouvelles traductions n'est pas encore implémentée`);
+        // Si la traduction n'existe pas encore, on l'ajoute aux nouvelles traductions
+        else if (!uuid) {
+          transformedData.translations.push({
+            langue,
+            libelle
+          });
         }
       }
+    });
+    
+    // Effectuer les mises à jour de traductions existantes
+    if (translationUpdates.length > 0) {
+      await Promise.all(translationUpdates.map(update => 
+        apiService.put(`symptoms/translations/${update.uuid}`, {
+          langue: update.langue,
+          libelle: update.libelle
+        })
+      ));
     }
     
-    // Si aucune traduction n'a été modifiée, on informe l'utilisateur et on termine
-    if (modifiedCount === 0) {
-      loading.value = false;
-      alert(t('symptoms.noChanges'));
-      return;
-    }
-    
-    // Attendre que toutes les mises à jour soient terminées
-    await Promise.all(updatePromises);
-    
-    // Mettre à jour les valeurs originales avec les nouvelles valeurs
-    for (const [langue, libelle] of Object.entries(symptomData.value.name)) {
-      if (symptomData.value.translationUuids[langue]) {
-        symptomData.value.originalValues[langue] = libelle;
-      }
+    // Ajouter de nouvelles traductions si nécessaire
+    if (transformedData.translations.length > 0) {
+      await apiService.post(`symptoms/${symptomCode.value}/translations`, transformedData);
     }
     
     // Si succès, émission de l'événement saved
-    emit('saved', { success: true, modifiedCount });
+    emit('saved', { code: symptomCode.value });
     
     // Message de confirmation
-    alert(`${modifiedCount} ${modifiedCount > 1 ? t('symptoms.translationsUpdated') : t('symptoms.translationUpdated')}`);
+    alert(t('symptoms.updateSuccess'));
+    
+    // Fermer l'onglet enfant après la mise à jour
+    emit('close-child-tab');
   } catch (err) {
-    console.error('Erreur lors de la mise à jour des traductions:', err);
+    console.error('Erreur lors de la mise à jour du symptôme:', err);
     error.value = err.message || 'Erreur lors de la mise à jour';
     emit('error', error.value);
     
@@ -272,27 +275,21 @@ const handleUpdate = async () => {
 // Fonction qui détermine quelle action effectuer en fonction du mode (création ou édition)
 const handleAction = () => {
   if (symptomCode.value) {
-    // Mode édition
     handleUpdate();
   } else {
-    // Mode création
     handleSave();
   }
 };
-
 
 // Initialisation du composant
 onMounted(async () => {
   await fetchActiveLanguages();
   if (symptomCode.value) {
     await fetchSymptomData();
-  } else {
-    // Initialisation des champs multilingues avec les langues actives
-    const initialName = {};
-    activeLanguages.value.forEach(lang => {
-      initialName[lang] = '';
-    });
-    symptomData.value.name = initialName;
   }
 });
 </script>
+
+<style scoped>
+@import '@/assets/styles/symptomsForm.css';
+</style>
