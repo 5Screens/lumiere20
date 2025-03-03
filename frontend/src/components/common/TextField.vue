@@ -10,23 +10,25 @@
       {{ label }}
     </label>
     
-    <input
-      type="text"
-      :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
-      :placeholder="placeholder"
-      :disabled="disabled"
-      :readonly="readonly"
-      :class="[
-        'text-field__input',
-        { 'text-field__input--error': error }
-      ]"
-    />
-    
-    <span v-if="error" class="text-field__error">{{ error }}</span>
-    
-    <div v-if="$slots.default" class="text-field__slot">
-      <slot />
+    <div class="text-field__input-container">
+      <input
+        type="text"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :readonly="readonly"
+        :class="[
+          'text-field__input',
+          { 'text-field__input--error': error }
+        ]"
+      />
+      
+      <span v-if="error" class="text-field__error">{{ error }}</span>
+      
+      <div v-if="$slots.default" class="text-field__slot">
+        <slot />
+      </div>
     </div>
   </div>
 </template>
