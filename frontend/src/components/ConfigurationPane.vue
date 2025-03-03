@@ -13,7 +13,7 @@
       mouse-leave: Emitted when the mouse leaves the pane.
   -->
   <div 
-    class="configuration-pane" 
+    class="side-pane configuration-pane" 
     :class="{ 'is-visible': isVisible }" 
     @click.stop
     @mouseenter="$emit('mouse-enter')"
@@ -24,7 +24,7 @@
       A header for the configuration pane, containing the title of the pane
       and a button to close the pane.
     -->
-    <div class="configuration-header">
+    <div class="side-pane-header configuration-header">
       <h2>{{ $t('configuration.title') }}</h2>
       <button class="close-button" @click="$emit('close')">
         <i class="fas fa-times"></i>
@@ -35,8 +35,8 @@
       rendered as a link with an icon and a label. When the link is clicked,
       the handleItemClick method is called with the item as an argument.
     -->
-    <div class="configuration-content">
-      <div class="configuration-item" v-for="(item, index) in configItems" :key="index">
+    <div class="side-pane-content configuration-content">
+      <div class="side-pane-item configuration-item" v-for="(item, index) in configItems" :key="index">
         <a href="#" @click.prevent="handleItemClick(item)">
           <i :class="item.icon"></i>
           {{ $t(item.label) }}
@@ -100,84 +100,11 @@ export default {
 </script>
 
 <style scoped>
-.configuration-pane {
-  position: fixed;
-  top: 60px;
-  left: 293px;
-  width: 250px;
-  height: calc(100vh - 120px);
-  background-color: var(--sidebar-bg);
-  border-right: 1px solid var(--border-color);
-  transition: all 0.3s ease-in-out;
-  z-index: 100;
-  padding: 1rem;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(-250px);
-}
+@import '../assets/styles/sidePane.css';
 
-.configuration-pane.is-visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(0);
-}
-
-.configuration-header {
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.configuration-header h2 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: normal;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  color: var(--text-color);
-  cursor: pointer;
-  padding: 0.5rem;
-}
-
-.close-button:hover {
-  color: var(--primary-color);
-}
-
+/* Styles spécifiques à ce composant */
 .configuration-content {
   overflow-y: auto;
   height: calc(100% - 3rem);
-}
-
-.configuration-item {
-  margin-bottom: 0.5rem;
-}
-
-.configuration-item a {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem;
-  color: var(--text-color);
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.configuration-item a:hover {
-  background-color: var(--hover-color);
-}
-
-.configuration-item a.router-link-active {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-.configuration-item i {
-  margin-right: 0.75rem;
-  width: 20px;
-  text-align: center;
 }
 </style>

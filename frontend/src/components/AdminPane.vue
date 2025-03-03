@@ -1,20 +1,20 @@
 <template>
   <div 
-    class="admin-pane" 
+    class="side-pane admin-pane" 
     :class="{ 'is-visible': isVisible }" 
     @click.stop
     @mouseenter="$emit('mouse-enter')"
     @mouseleave="$emit('mouse-leave')"
     ref="adminPane"
   >
-    <div class="admin-header">
+    <div class="side-pane-header admin-header">
       <h2>{{ $t('admin.title') }}</h2>
       <button class="close-button" @click="$emit('close')">
         <i class="fas fa-times"></i>
       </button>
     </div>
-    <div class="admin-content">
-      <div class="admin-item" v-for="(item, index) in adminItems" :key="index">
+    <div class="side-pane-content admin-content">
+      <div class="side-pane-item admin-item" v-for="(item, index) in adminItems" :key="index">
         <a href="#" @click.prevent="handleItemClick(item)">
           <i :class="item.icon"></i>
           {{ $t(item.label) }}
@@ -86,92 +86,14 @@ export default {
 </script>
 
 <style scoped>
-.admin-pane {
-  position: fixed;
-  top: 60px;
-  left: 293px;
-  width: 250px;
-  height: calc(100vh - 120px);
-  background-color: var(--sidebar-bg);
-  border-right: 1px solid var(--border-color);
-  transition: all 0.3s ease-in-out;
-  z-index: 100;
-  padding: 1rem;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(-250px);
-  overflow-y: auto;
-}
+@import '../assets/styles/sidePane.css';
 
-.admin-pane.is-visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(0);
-}
-
+/* Styles spécifiques à ce composant */
 .admin-header {
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   position: sticky;
   top: 0;
   background-color: var(--sidebar-bg);
   padding: 0.5rem 0;
   z-index: 1;
-}
-
-.admin-header h2 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: normal;
-  color: var(--text-color);
-}
-
-.close-button {
-  background: transparent;
-  border: none;
-  color: var(--text-color);
-  padding: 0.5rem;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.close-button:hover {
-  background-color: var(--hover-color);
-}
-
-.admin-content {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.admin-item {
-  margin-bottom: 0.5rem;
-}
-
-.admin-item a {
-  color: var(--text-color);
-  text-decoration: none;
-  display: block;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.admin-item a:hover {
-  background-color: var(--hover-color);
-}
-
-.admin-item a.router-link-active {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-.admin-item i {
-  margin-right: 0.75rem;
-  width: 1.25rem;
-  text-align: center;
 }
 </style>

@@ -1,13 +1,13 @@
 <template>
   <div 
-    class="data-pane" 
+    class="side-pane data-pane" 
     :class="{ 'is-visible': isVisible }" 
     @click.stop
     @mouseenter="$emit('mouse-enter')"
     @mouseleave="$emit('mouse-leave')"
     ref="dataPane"
   >
-    <div class="data-header">
+    <div class="side-pane-header data-header">
       <h2>{{ $t('dataPane.title') }}</h2>
       <button class="close-button" @click="$emit('close')">
         <i class="fas fa-times"></i>
@@ -15,13 +15,13 @@
     </div>
     <div class="data-content">
       <!-- Applications -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('applications')">
+      <div class="side-pane-section data-section">
+        <div class="side-pane-section-header data-section-header" @click="toggleSection('applications')">
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.applications }"></i>
           <span>{{ $t('dataPane.applications.title') }}</span>
         </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.applications }">
-          <div class="data-item" v-for="item in applicationItems" :key="item.tabToOpen">
+        <div class="side-pane-section-content data-section-content" :class="{ 'expanded': openSections.applications }">
+          <div class="side-pane-item data-item" v-for="item in applicationItems" :key="item.tabToOpen">
             <a href="#" @click.prevent="handleItemClick(item)">
               <i :class="item.icon"></i>
               {{ $t(item.label) }}
@@ -31,13 +31,13 @@
       </div>
 
       <!-- Hardware Infrastructure -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('hardware')">
+      <div class="side-pane-section data-section">
+        <div class="side-pane-section-header data-section-header" @click="toggleSection('hardware')">
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.hardware }"></i>
           <span>{{ $t('dataPane.hardware.title') }}</span>
         </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.hardware }">
-          <div class="data-item" v-for="item in hardwareItems" :key="item.tabToOpen">
+        <div class="side-pane-section-content data-section-content" :class="{ 'expanded': openSections.hardware }">
+          <div class="side-pane-item data-item" v-for="item in hardwareItems" :key="item.tabToOpen">
             <a href="#" @click.prevent="handleItemClick(item)">
               <i :class="item.icon"></i>
               {{ $t(item.label) }}
@@ -47,13 +47,13 @@
       </div>
 
       <!-- Network and Communications -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('network')">
+      <div class="side-pane-section data-section">
+        <div class="side-pane-section-header data-section-header" @click="toggleSection('network')">
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.network }"></i>
           <span>{{ $t('dataPane.network.title') }}</span>
         </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.network }">
-          <div class="data-item" v-for="item in networkItems" :key="item.tabToOpen">
+        <div class="side-pane-section-content data-section-content" :class="{ 'expanded': openSections.network }">
+          <div class="side-pane-item data-item" v-for="item in networkItems" :key="item.tabToOpen">
             <a href="#" @click.prevent="handleItemClick(item)">
               <i :class="item.icon"></i>
               {{ $t(item.label) }}
@@ -63,13 +63,13 @@
       </div>
 
       <!-- Virtualization -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('virtualization')">
+      <div class="side-pane-section data-section">
+        <div class="side-pane-section-header data-section-header" @click="toggleSection('virtualization')">
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.virtualization }"></i>
           <span>{{ $t('dataPane.virtualization.title') }}</span>
         </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.virtualization }">
-          <div class="data-item" v-for="item in virtualizationItems" :key="item.tabToOpen">
+        <div class="side-pane-section-content data-section-content" :class="{ 'expanded': openSections.virtualization }">
+          <div class="side-pane-item data-item" v-for="item in virtualizationItems" :key="item.tabToOpen">
             <a href="#" @click.prevent="handleItemClick(item)">
               <i :class="item.icon"></i>
               {{ $t(item.label) }}
@@ -79,13 +79,13 @@
       </div>
 
       <!-- Database -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('database')">
+      <div class="side-pane-section data-section">
+        <div class="side-pane-section-header data-section-header" @click="toggleSection('database')">
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.database }"></i>
           <span>{{ $t('dataPane.database.title') }}</span>
         </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.database }">
-          <div class="data-item" v-for="item in databaseItems" :key="item.tabToOpen">
+        <div class="side-pane-section-content data-section-content" :class="{ 'expanded': openSections.database }">
+          <div class="side-pane-item data-item" v-for="item in databaseItems" :key="item.tabToOpen">
             <a href="#" @click.prevent="handleItemClick(item)">
               <i :class="item.icon"></i>
               {{ $t(item.label) }}
@@ -95,13 +95,13 @@
       </div>
 
       <!-- Contracts and Licenses -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('contracts')">
+      <div class="side-pane-section data-section">
+        <div class="side-pane-section-header data-section-header" @click="toggleSection('contracts')">
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.contracts }"></i>
           <span>{{ $t('dataPane.contracts.title') }}</span>
         </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.contracts }">
-          <div class="data-item" v-for="item in contractItems" :key="item.tabToOpen">
+        <div class="side-pane-section-content data-section-content" :class="{ 'expanded': openSections.contracts }">
+          <div class="side-pane-item data-item" v-for="item in contractItems" :key="item.tabToOpen">
             <a href="#" @click.prevent="handleItemClick(item)">
               <i :class="item.icon"></i>
               {{ $t(item.label) }}
@@ -111,13 +111,13 @@
       </div>
 
       <!-- Cloud -->
-      <div class="data-section">
-        <div class="data-section-header" @click="toggleSection('cloud')">
+      <div class="side-pane-section data-section">
+        <div class="side-pane-section-header data-section-header" @click="toggleSection('cloud')">
           <i class="fas fa-chevron-right" :class="{ 'rotated': openSections.cloud }"></i>
           <span>{{ $t('dataPane.cloud.title') }}</span>
         </div>
-        <div class="data-section-content" :class="{ 'expanded': openSections.cloud }">
-          <div class="data-item" v-for="item in cloudItems" :key="item.tabToOpen">
+        <div class="side-pane-section-content data-section-content" :class="{ 'expanded': openSections.cloud }">
+          <div class="side-pane-item data-item" v-for="item in cloudItems" :key="item.tabToOpen">
             <a href="#" @click.prevent="handleItemClick(item)">
               <i :class="item.icon"></i>
               {{ $t(item.label) }}
@@ -203,13 +203,6 @@ export default {
   },
   methods: {
     toggleSection(section) {
-      // Fermer toutes les autres sections
-      Object.keys(this.openSections).forEach(key => {
-        if (key !== section) {
-          this.openSections[key] = false
-        }
-      })
-      // Basculer l'état de la section cliquée
       this.openSections[section] = !this.openSections[section]
     },
     handleClickOutside(event) {
@@ -223,7 +216,6 @@ export default {
       }
     },
     handleItemClick(item) {
-      // Utiliser le système d'onglets hiérarchiques
       this.$emit('open-tab', {
         id: item.tabToOpen,
         title: this.$t(item.label),
@@ -238,122 +230,15 @@ export default {
 </script>
 
 <style scoped>
+@import '../assets/styles/sidePane.css';
+
+/* Styles spécifiques à ce composant */
 .data-pane {
-  position: fixed;
-  top: 60px;
-  left: 293px;
   width: 300px;
-  height: calc(100vh - 120px);
-  background-color: var(--sidebar-bg);
-  border-right: 1px solid var(--border-color);
-  transition: all 0.3s ease-in-out;
-  z-index: 100;
-  padding: 1rem;
-  opacity: 0;
-  visibility: hidden;
   transform: translateX(-300px);
+}
+
+.data-content {
   overflow-y: auto;
-}
-
-.data-pane.is-visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(0);
-}
-
-.data-header {
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.data-header h2 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: normal;
-  color: var(--text-color);
-}
-
-.close-button {
-  background: transparent;
-  border: none;
-  color: var(--text-color);
-  padding: 0.5rem;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.close-button:hover {
-  background-color: var(--hover-color);
-}
-
-.data-section {
-  margin-bottom: 0.5rem;
-}
-
-.data-section-header {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  user-select: none;
-}
-
-.data-section-header:hover {
-  background-color: var(--hover-color);
-}
-
-.data-section-header i {
-  margin-right: 0.75rem;
-  transition: transform 0.3s ease;
-  width: 12px;
-}
-
-.data-section-header i.rotated {
-  transform: rotate(90deg);
-}
-
-.data-section-content {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: all 0.3s ease-out;
-}
-
-.data-section-content.expanded {
-  max-height: 500px;
-  opacity: 1;
-}
-
-.data-item {
-  margin: 0.25rem 0;
-  padding-left: 1.5rem;
-}
-
-.data-item a {
-  color: var(--text-color);
-  text-decoration: none;
-  display: block;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.data-item a:hover {
-  background-color: var(--hover-color);
-}
-
-.data-item a.router-link-active {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-.data-item i {
-  margin-right: 0.75rem;
-  width: 1rem;
-  text-align: center;
 }
 </style>
