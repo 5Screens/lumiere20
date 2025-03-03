@@ -27,7 +27,7 @@
 <script>
 import ReusableTableTab from './common/reusableTableTab.vue'
 import TabControlButtons from './common/tabControlButtons.vue'
-import '../assets/styles/symptoms-tab.css'
+import '../assets/styles/tab.css'
 
 export default {
   name: 'SymptomsTab',

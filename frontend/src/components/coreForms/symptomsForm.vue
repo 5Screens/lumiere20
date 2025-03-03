@@ -50,7 +50,7 @@ import ButtonStandard from '@/components/common/ButtonStandard.vue';
 import apiService from '@/services/apiService';
 
 // Import des styles
-import '@/assets/styles/symptomsForm.css';
+import '@/assets/styles/forms.css';
 
 const { t } = useI18n();
 
@@ -291,5 +291,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-@import '@/assets/styles/symptomsForm.css';
+@import '@/assets/styles/forms.css';
 </style>
