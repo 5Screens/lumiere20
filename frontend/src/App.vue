@@ -179,36 +179,78 @@ export default {
      * Toggles the visibility of the profile pane
      */
     toggleProfilePane() {
+      // Fermer tous les autres panneaux
+      this.isServiceHubVisible = false
+      this.isSprintCenterVisible = false
+      this.isDataPaneVisible = false
+      this.isConfigurationVisible = false
+      this.isAdminVisible = false
+      // Basculer l'état du panneau demandé
       this.isProfilePaneVisible = !this.isProfilePaneVisible
     },
     closeProfilePane() {
       this.isProfilePaneVisible = false
     },
     toggleServiceHub() {
+      // Fermer tous les autres panneaux
+      this.isProfilePaneVisible = false
+      this.isSprintCenterVisible = false
+      this.isDataPaneVisible = false
+      this.isConfigurationVisible = false
+      this.isAdminVisible = false
+      // Basculer l'état du panneau demandé
       this.isServiceHubVisible = !this.isServiceHubVisible
     },
     closeServiceHub() {
       this.isServiceHubVisible = false
     },
     toggleSprintCenter() {
+      // Fermer tous les autres panneaux
+      this.isProfilePaneVisible = false
+      this.isServiceHubVisible = false
+      this.isDataPaneVisible = false
+      this.isConfigurationVisible = false
+      this.isAdminVisible = false
+      // Basculer l'état du panneau demandé
       this.isSprintCenterVisible = !this.isSprintCenterVisible
     },
     closeSprintCenter() {
       this.isSprintCenterVisible = false
     },
     toggleDataPane() {
+      // Fermer tous les autres panneaux
+      this.isProfilePaneVisible = false
+      this.isServiceHubVisible = false
+      this.isSprintCenterVisible = false
+      this.isConfigurationVisible = false
+      this.isAdminVisible = false
+      // Basculer l'état du panneau demandé
       this.isDataPaneVisible = !this.isDataPaneVisible
     },
     closeDataPane() {
       this.isDataPaneVisible = false
     },
     toggleConfiguration() {
+      // Fermer tous les autres panneaux
+      this.isProfilePaneVisible = false
+      this.isServiceHubVisible = false
+      this.isSprintCenterVisible = false
+      this.isDataPaneVisible = false
+      this.isAdminVisible = false
+      // Basculer l'état du panneau demandé
       this.isConfigurationVisible = !this.isConfigurationVisible
     },
     closeConfiguration() {
       this.isConfigurationVisible = false
     },
     toggleAdmin() {
+      // Fermer tous les autres panneaux
+      this.isProfilePaneVisible = false
+      this.isServiceHubVisible = false
+      this.isSprintCenterVisible = false
+      this.isDataPaneVisible = false
+      this.isConfigurationVisible = false
+      // Basculer l'état du panneau demandé
       this.isAdminVisible = !this.isAdminVisible
     },
     closeAdmin() {
