@@ -26,8 +26,8 @@ CREATE TABLE data.configuration_items (
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Business Services
-CREATE TABLE data.business_services (
+-- Services
+CREATE TABLE data.services (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -44,7 +44,7 @@ CREATE TABLE data.business_services (
     financial_risk VARCHAR(50),
     comments TEXT,
     cab_uuid UUID REFERENCES configuration.groups(uuid),
-    parent_uuid UUID REFERENCES data.business_services(uuid),
+    parent_uuid UUID REFERENCES data.services(uuid),
     date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -119,7 +119,7 @@ CREATE TABLE configuration.rel_persons_delegates (
 CREATE TABLE configuration.rel_persons_service_subscriptions (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     person_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
-    service_uuid UUID NOT NULL REFERENCES data.business_services(uuid) ON DELETE CASCADE,
+    service_uuid UUID NOT NULL REFERENCES data.services(uuid) ON DELETE CASCADE,
     start_date DATE NOT NULL,
     end_date DATE,
     is_active BOOLEAN NOT NULL DEFAULT true,
@@ -143,23 +143,42 @@ CREATE TABLE configuration.entities (
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Entity Locations 12/02 : Ajout de la table rel_entity_locations mais pas créée ds pgadmin
-CREATE TABLE configuration.rel_entity_locations (
+-- Entity Locations 05/03 : Ajout de la table rel_entities_locations
+CREATE TABLE configuration.rel_entities_locations (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     entity_uuid UUID NOT NULL REFERENCES configuration.entities(uuid) ON DELETE CASCADE,
-    location VARCHAR(255) NOT NULL,
+    location_uuid UUID NOT NULL REFERENCES configuration.locations(uuid) ON DELETE CASCADE,
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    end_date DATE,
     date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Entity Service Subscriptions 12/02 : Ajout de la table rel_entity_service_subscriptions mais pas créée ds pgadmin
-CREATE TABLE configuration.rel_entity_service_subscriptions (
+-- Service Offerings
+CREATE TABLE data.service_offerings (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    entity_uuid UUID NOT NULL REFERENCES configuration.entities(uuid) ON DELETE CASCADE,
-    service_uuid UUID NOT NULL REFERENCES data.business_services(uuid) ON DELETE CASCADE,
-    start_date DATE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
     end_date DATE,
-    is_active BOOLEAN NOT NULL DEFAULT true,
+    business_criticality VARCHAR(50),
+    environment VARCHAR(100),
+    price_model VARCHAR(100),
+    currency VARCHAR(3),
+    service_uuid UUID NOT NULL REFERENCES data.services(uuid) ON DELETE CASCADE,
+    operator_entity_uuid UUID NOT NULL REFERENCES configuration.entities(uuid) ON DELETE CASCADE,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT valid_offering_period CHECK (end_date IS NULL OR end_date >= start_date)
+);
+
+-- Service Subscriptions 05/03 : Ajout de la table 
+CREATE TABLE data.rel_subscribers_serviceofferings (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    subscriber_uuid UUID NOT NULL,
+    service_offering_uuid UUID NOT NULL REFERENCES data.service_offerings(uuid) ON DELETE CASCADE,
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    end_date DATE,
     date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT valid_subscription_period CHECK (end_date IS NULL OR end_date >= start_date)

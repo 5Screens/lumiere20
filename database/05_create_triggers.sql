@@ -6,6 +6,12 @@ CREATE TRIGGER update_configuration_items_date_modification
     FOR EACH ROW
     EXECUTE FUNCTION update_date_modification();
 
+-- Services
+CREATE TRIGGER update_services_date_modification
+    BEFORE UPDATE ON data.services
+    FOR EACH ROW
+    EXECUTE FUNCTION update_date_modification();
+
 -- Persons
 CREATE TRIGGER update_persons_date_modification
     BEFORE UPDATE ON configuration.persons
@@ -144,5 +150,15 @@ CREATE TRIGGER validate_symptoms_translation_dates
 
 CREATE TRIGGER validate_persons_entities_dates
     BEFORE UPDATE ON configuration.persons_entities
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_modification_date();
+
+CREATE TRIGGER validate_services_dates
+    BEFORE UPDATE ON data.services
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_modification_date();
+
+CREATE TRIGGER validate_services_date_creation
+    BEFORE INSERT OR UPDATE ON data.services
     FOR EACH ROW
     EXECUTE FUNCTION validate_modification_date();

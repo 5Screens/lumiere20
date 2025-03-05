@@ -4,25 +4,45 @@ data,configuration_items,nom,VARCHAR(255)
 data,configuration_items,description,TEXT
 data,configuration_items,date_creation,TIMESTAMP WITH TIME ZONE
 data,configuration_items,date_modification,TIMESTAMP WITH TIME ZONE
-data,business_services,uuid,UUID
-data,business_services,name,VARCHAR(255)
-data,business_services,description,TEXT
-data,business_services,service_provider_uuid,UUID
-data,business_services,owing_group_uuid,UUID
-data,business_services,owned_by_uuid,UUID
-data,business_services,managed_by_uuid,UUID
-data,business_services,business_criticality,VARCHAR(50)
-data,business_services,lifecycle_status,VARCHAR(50)
-data,business_services,version,VARCHAR(50)
-data,business_services,operational_risk,VARCHAR(50)
-data,business_services,legal_regulatory_risk,VARCHAR(50)
-data,business_services,reputational_risk,VARCHAR(50)
-data,business_services,financial_risk,VARCHAR(50)
-data,business_services,comments,TEXT
-data,business_services,cab_uuid,UUID
-data,business_services,parent_uuid,UUID
-data,business_services,date_creation,TIMESTAMP WITH TIME ZONE
-data,business_services,date_modification,TIMESTAMP WITH TIME ZONE
+data,services,uuid,UUID
+data,services,name,VARCHAR(255)
+data,services,description,TEXT
+data,services,service_provider_uuid,UUID
+data,services,owing_group_uuid,UUID
+data,services,owned_by_uuid,UUID
+data,services,managed_by_uuid,UUID
+data,services,business_criticality,VARCHAR(50)
+data,services,lifecycle_status,VARCHAR(50)
+data,services,version,VARCHAR(50)
+data,services,operational_risk,VARCHAR(50)
+data,services,legal_regulatory_risk,VARCHAR(50)
+data,services,reputational_risk,VARCHAR(50)
+data,services,financial_risk,VARCHAR(50)
+data,services,comments,TEXT
+data,services,cab_uuid,UUID
+data,services,parent_uuid,UUID
+data,services,date_creation,TIMESTAMP WITH TIME ZONE
+data,services,date_modification,TIMESTAMP WITH TIME ZONE
+data,service_offerings,uuid,UUID
+data,service_offerings,name,VARCHAR(255)
+data,service_offerings,description,TEXT
+data,service_offerings,start_date,DATE
+data,service_offerings,end_date,DATE
+data,service_offerings,business_criticality,VARCHAR(50)
+data,service_offerings,environment,VARCHAR(100)
+data,service_offerings,price_model,VARCHAR(100)
+data,service_offerings,currency,VARCHAR(3)
+data,service_offerings,service_uuid,UUID
+data,service_offerings,operator_entity_uuid,UUID
+data,service_offerings,date_creation,TIMESTAMP WITH TIME ZONE
+data,service_offerings,date_modification,TIMESTAMP WITH TIME ZONE
+data,rel_subscribers_serviceofferings,uuid,UUID
+data,rel_subscribers_serviceofferings,subscriber_uuid,UUID
+data,rel_subscribers_serviceofferings,service_offering_uuid,UUID
+data,rel_subscribers_serviceofferings,start_date,DATE
+data,rel_subscribers_serviceofferings,end_date,DATE
+data,rel_subscribers_serviceofferings,date_creation,TIMESTAMP WITH TIME ZONE
+data,rel_subscribers_serviceofferings,date_modification,TIMESTAMP WITH TIME ZONE
 configuration,persons,uuid,UUID
 configuration,persons,first_name,VARCHAR(100)
 configuration,persons,last_name,VARCHAR(100)
@@ -87,19 +107,6 @@ configuration,entities,is_active,BOOLEAN
 configuration,entities,parent_uuid,UUID
 configuration,entities,date_creation,TIMESTAMP WITH TIME ZONE
 configuration,entities,date_modification,TIMESTAMP WITH TIME ZONE
-configuration,rel_entity_locations,uuid,UUID
-configuration,rel_entity_locations,entity_uuid,UUID
-configuration,rel_entity_locations,location,VARCHAR(255)
-configuration,rel_entity_locations,date_creation,TIMESTAMP WITH TIME ZONE
-configuration,rel_entity_locations,date_modification,TIMESTAMP WITH TIME ZONE
-configuration,rel_entity_service_subscriptions,uuid,UUID
-configuration,rel_entity_service_subscriptions,entity_uuid,UUID
-configuration,rel_entity_service_subscriptions,service_uuid,UUID
-configuration,rel_entity_service_subscriptions,start_date,DATE
-configuration,rel_entity_service_subscriptions,end_date,DATE
-configuration,rel_entity_service_subscriptions,is_active,BOOLEAN
-configuration,rel_entity_service_subscriptions,date_creation,TIMESTAMP WITH TIME ZONE
-configuration,rel_entity_service_subscriptions,date_modification,TIMESTAMP WITH TIME ZONE
 configuration,ticket_types,uuid,UUID
 configuration,ticket_types,code,VARCHAR(50)
 configuration,ticket_types,date_creation,TIMESTAMP WITH TIME ZONE
