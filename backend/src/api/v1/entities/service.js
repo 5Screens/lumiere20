@@ -158,6 +158,100 @@ class EntityService {
             throw error;
         }
     }
+
+    async createEntity(entityData) {
+        logger.info('[SERVICE] createEntity - Starting database operation');
+        try {
+            const {
+                name,
+                entity_id,
+                external_id,
+                entity_type,
+                budget_approver_uuid,
+                headquarters_location,
+                is_active,
+                parent_uuid
+            } = entityData;
+
+            const query = `
+                INSERT INTO configuration.entities (
+                    name,
+                    entity_id,
+                    external_id,
+                    entity_type,
+                    budget_approver_uuid,
+                    headquarters_location,
+                    is_active,
+                    parent_uuid
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                RETURNING 
+                    uuid,
+                    name,
+                    entity_id,
+                    external_id,
+                    entity_type,
+                    budget_approver_uuid,
+                    headquarters_location,
+                    is_active,
+                    parent_uuid,
+                    date_creation,
+                    date_modification`;
+
+            const values = [
+                name,
+                entity_id,
+                external_id,
+                entity_type,
+                budget_approver_uuid,
+                headquarters_location,
+                is_active !== undefined ? is_active : true,
+                parent_uuid
+            ];
+
+            logger.info(`[SERVICE] createEntity - Executing query with values: ${JSON.stringify(values)}`);
+            const result = await pool.query(query, values);
+            
+            if (result.rows.length === 0) {
+                throw new Error('Erreur lors de la création de l\'entité');
+            }
+            
+            const newEntity = result.rows[0];
+            logger.info(`[SERVICE] createEntity - Entity created successfully with UUID: ${newEntity.uuid}`);
+            
+            // Si l'entité a un parent, récupérons le nom du parent pour l'inclure dans la réponse
+            if (newEntity.parent_uuid) {
+                const parentQuery = `
+                    SELECT name 
+                    FROM configuration.entities 
+                    WHERE uuid = $1`;
+                
+                const parentResult = await pool.query(parentQuery, [newEntity.parent_uuid]);
+                
+                if (parentResult.rows.length > 0) {
+                    newEntity.parent_entity_name = parentResult.rows[0].name;
+                }
+            }
+            
+            // Si l'entité a un budget_approver, récupérons son nom pour l'inclure dans la réponse
+            if (newEntity.budget_approver_uuid) {
+                const approverQuery = `
+                    SELECT CONCAT(first_name, ' ', last_name) as budget_approver_name
+                    FROM configuration.persons 
+                    WHERE uuid = $1`;
+                
+                const approverResult = await pool.query(approverQuery, [newEntity.budget_approver_uuid]);
+                
+                if (approverResult.rows.length > 0) {
+                    newEntity.budget_approver_name = approverResult.rows[0].budget_approver_name;
+                }
+            }
+            
+            return newEntity;
+        } catch (error) {
+            logger.error(`[SERVICE] createEntity - Database error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new EntityService();

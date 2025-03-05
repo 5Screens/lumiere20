@@ -26,4 +26,10 @@ router.get('/childentities', (req, res) => {
     return entityController.getChildEntities(req, res);
 });
 
+// POST /api/v1/entities
+router.post('/', (req, res) => {
+    logger.info('[ROUTES] POST /api/v1/entities - Route handler started');
+    return entityController.createEntity(req, res);
+});
+
 module.exports = router;

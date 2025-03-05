@@ -1,5 +1,6 @@
 const entityService = require('./service');
 const logger = require('../../../config/logger');
+const { validateEntity } = require('./validation');
 
 class EntityController {
     async getAllEntities(req, res) {
@@ -104,6 +105,61 @@ class EntityController {
             return res.status(500).json({
                 success: false,
                 message: 'Erreur lors de la récupération des entités enfants'
+            });
+        }
+    }
+
+    async createEntity(req, res) {
+        logger.info('[CONTROLLER] createEntity - Starting to process request');
+        try {
+            const entityData = req.body;
+            logger.info('[CONTROLLER] createEntity - Validating entity data');
+            
+            // Validation des données
+            const { error, value } = validateEntity(entityData);
+            if (error) {
+                logger.warn(`[CONTROLLER] createEntity - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Données d\'entité invalides',
+                    errors: error.details.map(d => d.message)
+                });
+            }
+            
+            // Vérification si l'entity_id existe déjà
+            if (entityData.entity_id) {
+                const existingEntity = await entityService.getEntityByEntityId(entityData.entity_id);
+                if (existingEntity) {
+                    logger.warn(`[CONTROLLER] createEntity - Entity with entity_id ${entityData.entity_id} already exists`);
+                    return res.status(409).json({
+                        success: false,
+                        message: `Une entité avec l'identifiant ${entityData.entity_id} existe déjà`
+                    });
+                }
+            }
+            
+            logger.info('[CONTROLLER] createEntity - Creating new entity');
+            const newEntity = await entityService.createEntity(value);
+            
+            logger.info(`[CONTROLLER] createEntity - Entity created successfully with UUID: ${newEntity.uuid}`);
+            return res.status(201).json({
+                success: true,
+                message: 'Entité créée avec succès',
+                data: newEntity
+            });
+        } catch (error) {
+            logger.error(`[CONTROLLER] createEntity - Error: ${error.message}`);
+            
+            if (error.code === '23505') { // Code d'erreur PostgreSQL pour violation de contrainte unique
+                return res.status(409).json({
+                    success: false,
+                    message: 'Une entité avec cet identifiant existe déjà'
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Une erreur est survenue lors de la création de l\'entité'
             });
         }
     }
