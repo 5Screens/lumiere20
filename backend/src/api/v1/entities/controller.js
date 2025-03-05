@@ -163,6 +163,20 @@ class EntityController {
             });
         }
     }
+
+    async getActiveEntities(req, res) {
+        logger.info('[CONTROLLER] getActiveEntities - Starting to process request');
+        try {
+            const activeEntities = await entityService.getActiveEntities();
+            logger.info(`[CONTROLLER] getActiveEntities - Successfully retrieved ${activeEntities.length} active entities`);
+            res.json(activeEntities);
+        } catch (error) {
+            logger.error(`[CONTROLLER] getActiveEntities - Error: ${error.message}`);
+            res.status(500).json({ 
+                error: 'An error occurred while retrieving active entities' 
+            });
+        }
+    }
 }
 
 module.exports = new EntityController();
