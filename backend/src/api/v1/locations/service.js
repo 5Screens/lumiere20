@@ -141,6 +141,39 @@ class LocationService {
             throw error;
         }
     }
+
+    async getChildLocationsCount(uuid) {
+        logger.info(`[SERVICE] getChildLocationsCount - Starting database query for UUID: ${uuid}`);
+        try {
+            // First check if the parent location exists
+            const checkParentQuery = `
+                SELECT uuid FROM configuration.locations WHERE uuid = $1
+            `;
+            const parentResult = await pool.query(checkParentQuery, [uuid]);
+            
+            if (parentResult.rows.length === 0) {
+                return null; // Parent location not found
+            }
+            
+            // Count child locations
+            const countQuery = `
+                SELECT COUNT(*) as child_count
+                FROM configuration.locations
+                WHERE parent_uuid = $1
+            `;
+            
+            const countResult = await pool.query(countQuery, [uuid]);
+            logger.info(`[SERVICE] getChildLocationsCount - Query executed successfully, found ${countResult.rows[0].child_count} child locations`);
+            
+            return {
+                location_uuid: uuid,
+                child_count: parseInt(countResult.rows[0].child_count)
+            };
+        } catch (error) {
+            logger.error(`[SERVICE] getChildLocationsCount - Database error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new LocationService();

@@ -19,12 +19,18 @@ router.get('/', (req, res, next) => {
         } else {
             logger.warn(`[ROUTES] GET /api/v1/locations - Invalid active parameter value: ${req.query.active}`);
             return res.status(400).json({
-                error: 'Valeur invalide pour le paramètre active. Utilisez "yes" pour filtrer les locations actives.'
+                error: 'Invalid value for active parameter. Use "yes" to filter active locations.'
             });
         }
     }
     
     next();
 }, locationController.getAllLocations.bind(locationController));
+
+// GET /api/v1/locations/getChildLocations/count
+router.get('/getChildLocations/count', (req, res) => {
+    logger.info('[ROUTES] GET /api/v1/locations/getChildLocations/count - Route handler started');
+    return locationController.getChildLocationsCount(req, res);
+});
 
 module.exports = router;

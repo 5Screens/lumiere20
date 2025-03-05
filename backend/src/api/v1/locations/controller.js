@@ -11,7 +11,7 @@ class LocationController {
         } catch (error) {
             logger.error(`[CONTROLLER] getAllLocations - Error: ${error.message}`);
             res.status(500).json({ 
-                error: 'Une erreur est survenue lors de la récupération des emplacements' 
+                error: 'An error occurred while retrieving locations' 
             });
         }
     }
@@ -25,7 +25,7 @@ class LocationController {
             if (!location) {
                 logger.warn(`[CONTROLLER] getLocationByUuid - Location not found with UUID: ${uuid}`);
                 return res.status(404).json({
-                    error: 'Emplacement non trouvé'
+                    error: 'Location not found'
                 });
             }
             
@@ -34,7 +34,7 @@ class LocationController {
         } catch (error) {
             logger.error(`[CONTROLLER] getLocationByUuid - Error: ${error.message}`);
             return res.status(500).json({
-                error: 'Erreur lors de la récupération de l\'emplacement'
+                error: 'Error while retrieving location'
             });
         }
     }
@@ -48,7 +48,56 @@ class LocationController {
         } catch (error) {
             logger.error(`[CONTROLLER] getActiveLocations - Error: ${error.message}`);
             res.status(500).json({ 
-                error: 'Une erreur est survenue lors de la récupération des emplacements actifs' 
+                error: 'An error occurred while retrieving active locations' 
+            });
+        }
+    }
+
+    async getChildLocationsCount(req, res) {
+        const uuid = req.query.uuid;
+        
+        if (!uuid) {
+            logger.warn('[CONTROLLER] getChildLocationsCount - Missing UUID parameter');
+            return res.status(400).json({
+                error: 'UUID parameter is required'
+            });
+        }
+        
+        // UUID format validation
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(uuid)) {
+            logger.warn(`[CONTROLLER] getChildLocationsCount - Invalid UUID format: ${uuid}`);
+            return res.status(400).json({
+                error: `Invalid UUID format: "${uuid}". UUID must be in the format of 8-4-4-4-12 hexadecimal characters.`
+            });
+        }
+        
+        logger.info(`[CONTROLLER] getChildLocationsCount - Processing request for UUID: ${uuid}`);
+        try {
+            const result = await locationService.getChildLocationsCount(uuid);
+            
+            if (result === null) {
+                logger.warn(`[CONTROLLER] getChildLocationsCount - Location not found with UUID: ${uuid}`);
+                return res.status(404).json({
+                    error: 'Location not found'
+                });
+            }
+            
+            logger.info(`[CONTROLLER] getChildLocationsCount - Successfully retrieved child count for location UUID: ${uuid}`);
+            return res.json(result);
+        } catch (error) {
+            logger.error(`[CONTROLLER] getChildLocationsCount - Error: ${error.message}`);
+            
+            // Specific handling for UUID format errors
+            if (error.message.includes('uuid')) {
+                return res.status(400).json({
+                    error: `Invalid UUID format: "${uuid}". The following error occurred: ${error.message}`
+                });
+            }
+            
+            return res.status(500).json({
+                error: 'Error while counting child locations',
+                details: error.message
             });
         }
     }
