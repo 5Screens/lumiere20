@@ -18,6 +18,7 @@ use subtle animations during transitions (example : hover over menus, content ap
 use node.js for the back end
 use winston for logging with format YYYY-MM-DD HH:mm:ss
 do not use i18n in the back end 
+les api renvoient l'objet directement et sans ajouter de meta données  success
 
 --database rules :
 use sql for the database
