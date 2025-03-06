@@ -15,6 +15,7 @@ const entitiesTypesRoutes = require('./api/v1/entities_types/routes');
 const locationsRoutes = require('./api/v1/locations/routes');
 const serviceOfferingsRoutes = require('./api/v1/service_offerings/routes');
 const servicesRoutes = require('./api/v1/services/routes');
+const auditChangesRoutes = require('./api/v1/audit_changes/routes');
 
 // Middleware
 app.use(cors());
@@ -35,6 +36,7 @@ app.use('/api/v1/entities_types', entitiesTypesRoutes);
 app.use('/api/v1/locations', locationsRoutes);
 app.use('/api/v1/service_offerings', serviceOfferingsRoutes);
 app.use('/api/v1/service', servicesRoutes);
+app.use('/api/v1/audit_changes', auditChangesRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
