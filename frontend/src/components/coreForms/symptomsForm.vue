@@ -22,8 +22,9 @@
       
       <!-- Tableau d'audit pour afficher l'historique des modifications -->
       <AuditTable 
-        v-if="symptomData.uuid" 
+        v-if="symptomData.uuid || hasTranslationUuids" 
         :objectUuid="symptomData.uuid"
+        :objectUuids="translationUuidsArray"
       />
     </div>
     
@@ -90,6 +91,12 @@ const symptomData = ref({
 const activeLanguages = ref([]);
 const loading = ref(false);
 const error = ref(null);
+
+// Computed property pour vérifier si des UUID de traductions existent
+const hasTranslationUuids = computed(() => Object.keys(symptomData.value.translationUuids).length > 0);
+
+// Computed property pour convertir les UUID de traductions en tableau
+const translationUuidsArray = computed(() => Object.values(symptomData.value.translationUuids));
 
 // Récupération des langues actives depuis l'API
 const fetchActiveLanguages = async () => {

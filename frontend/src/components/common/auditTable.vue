@@ -44,9 +44,13 @@ import apiService from '@/services/apiService'
 export default {
   name: 'AuditTable',
   props: {
+    objectUuids: {
+      type: Array,
+      default: () => []
+    },
     objectUuid: {
       type: String,
-      required: true
+      default: ''
     }
   },
   data() {
@@ -56,17 +60,53 @@ export default {
       error: null
     }
   },
+  computed: {
+    // Combine les deux props pour avoir une liste complète d'UUIDs
+    allUuids() {
+      const uuids = [...this.objectUuids]
+      if (this.objectUuid && !uuids.includes(this.objectUuid)) {
+        uuids.push(this.objectUuid)
+      }
+      return uuids.filter(uuid => uuid) // Filtre les valeurs vides
+    }
+  },
   methods: {
     /**
-     * Fetch audit data from API
+     * Fetch audit data from API for all UUIDs
      */
     async fetchAuditData() {
+      if (this.allUuids.length === 0) {
+        this.auditData = []
+        return
+      }
+      
       this.loading = true
       this.error = null
+      this.auditData = []
       
       try {
-        const response = await apiService.get(`audit_changes?uuid=${this.objectUuid}`)
-        this.auditData = response
+        // Fetch data for each UUID
+        const promises = this.allUuids.map(uuid => 
+          apiService.get(`audit_changes?uuid=${uuid}`)
+        )
+        
+        // Wait for all requests to complete
+        const results = await Promise.all(promises)
+        
+        // Combine all results into one array
+        let combinedData = []
+        results.forEach(result => {
+          if (Array.isArray(result)) {
+            combinedData = [...combinedData, ...result]
+          }
+        })
+        
+        // Sort by event date, most recent first
+        combinedData.sort((a, b) => {
+          return new Date(b.event_date) - new Date(a.event_date)
+        })
+        
+        this.auditData = combinedData
       } catch (err) {
         console.error('Error fetching audit data:', err)
         this.error = 'Failed to load audit data'
@@ -164,10 +204,11 @@ export default {
     this.fetchAuditData()
   },
   watch: {
-    objectUuid: {
+    allUuids: {
       handler() {
         this.fetchAuditData()
       },
+      deep: true,
       immediate: true
     }
   }
