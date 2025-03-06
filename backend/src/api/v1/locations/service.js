@@ -174,6 +174,39 @@ class LocationService {
             throw error;
         }
     }
+
+    async getEntityLocationsCount(entityUuid) {
+        logger.info(`[SERVICE] getEntityLocationsCount - Starting database query for entity UUID: ${entityUuid}`);
+        try {
+            // First check if the entity exists
+            const checkEntityQuery = `
+                SELECT uuid FROM configuration.entities WHERE uuid = $1
+            `;
+            const entityResult = await pool.query(checkEntityQuery, [entityUuid]);
+            
+            if (entityResult.rows.length === 0) {
+                return null; // Entity not found
+            }
+            
+            // Count locations associated with the entity
+            const countQuery = `
+                SELECT COUNT(*) as locations_count
+                FROM configuration.rel_entities_locations
+                WHERE entity_uuid = $1
+            `;
+            
+            const countResult = await pool.query(countQuery, [entityUuid]);
+            logger.info(`[SERVICE] getEntityLocationsCount - Query executed successfully, found ${countResult.rows[0].locations_count} locations for entity`);
+            
+            return {
+                entity_uuid: entityUuid,
+                locations_count: parseInt(countResult.rows[0].locations_count)
+            };
+        } catch (error) {
+            logger.error(`[SERVICE] getEntityLocationsCount - Database error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new LocationService();

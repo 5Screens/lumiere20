@@ -33,4 +33,10 @@ router.get('/getChildLocations/count', (req, res) => {
     return locationController.getChildLocationsCount(req, res);
 });
 
+// GET /api/v1/locations/getEntityLocations/count
+router.get('/getEntityLocations/count', (req, res) => {
+    logger.info('[ROUTES] GET /api/v1/locations/getEntityLocations/count - Route handler started');
+    return locationController.getEntityLocationsCount(req, res);
+});
+
 module.exports = router;

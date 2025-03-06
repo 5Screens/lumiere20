@@ -101,6 +101,55 @@ class LocationController {
             });
         }
     }
+
+    async getEntityLocationsCount(req, res) {
+        const entityUuid = req.query.entityUuid;
+        
+        if (!entityUuid) {
+            logger.warn('[CONTROLLER] getEntityLocationsCount - Missing entityUuid parameter');
+            return res.status(400).json({
+                error: 'entityUuid parameter is required'
+            });
+        }
+        
+        // UUID format validation
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(entityUuid)) {
+            logger.warn(`[CONTROLLER] getEntityLocationsCount - Invalid UUID format: ${entityUuid}`);
+            return res.status(400).json({
+                error: `Invalid UUID format: "${entityUuid}". UUID must be in the format of 8-4-4-4-12 hexadecimal characters.`
+            });
+        }
+        
+        logger.info(`[CONTROLLER] getEntityLocationsCount - Processing request for entity UUID: ${entityUuid}`);
+        try {
+            const result = await locationService.getEntityLocationsCount(entityUuid);
+            
+            if (result === null) {
+                logger.warn(`[CONTROLLER] getEntityLocationsCount - Entity not found with UUID: ${entityUuid}`);
+                return res.status(404).json({
+                    error: 'Entity not found'
+                });
+            }
+            
+            logger.info(`[CONTROLLER] getEntityLocationsCount - Successfully retrieved locations count for entity UUID: ${entityUuid}`);
+            return res.json(result);
+        } catch (error) {
+            logger.error(`[CONTROLLER] getEntityLocationsCount - Error: ${error.message}`);
+            
+            // Specific handling for UUID format errors
+            if (error.message.includes('uuid')) {
+                return res.status(400).json({
+                    error: `Invalid UUID format: "${entityUuid}". The following error occurred: ${error.message}`
+                });
+            }
+            
+            return res.status(500).json({
+                error: 'Error while counting entity locations',
+                details: error.message
+            });
+        }
+    }
 }
 
 module.exports = new LocationController();
