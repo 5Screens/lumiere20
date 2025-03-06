@@ -13,6 +13,7 @@ const languagesRoutes = require('./api/v1/languages/routes');
 const symptomsTranslationsRoutes = require('./api/v1/symptoms_translations/routes');
 const entitiesTypesRoutes = require('./api/v1/entities_types/routes');
 const locationsRoutes = require('./api/v1/locations/routes');
+const serviceOfferingsRoutes = require('./api/v1/service_offerings/routes');
 
 // Middleware
 app.use(cors());
@@ -31,6 +32,7 @@ app.use('/api/v1/languages', languagesRoutes);
 app.use('/api/v1/symptoms_translations', symptomsTranslationsRoutes);
 app.use('/api/v1/entities_types', entitiesTypesRoutes);
 app.use('/api/v1/locations', locationsRoutes);
+app.use('/api/v1/service_offerings', serviceOfferingsRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

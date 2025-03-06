@@ -1,4 +1,4 @@
--- Script: 04_insert_entities_locations.sql
+-- Script: rel_entities_locations.sql
 -- Description: Test data for configuration.rel_entities_locations table
 -- Date: 2025-03-06
 

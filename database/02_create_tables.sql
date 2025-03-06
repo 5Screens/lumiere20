@@ -115,19 +115,6 @@ CREATE TABLE configuration.rel_persons_delegates (
     CONSTRAINT no_self_delegation CHECK (person_uuid != delegate_uuid)
 );
 
--- Person Service Subscriptions
-CREATE TABLE configuration.rel_persons_service_subscriptions (
-    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    person_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
-    service_uuid UUID NOT NULL REFERENCES data.services(uuid) ON DELETE CASCADE,
-    start_date DATE NOT NULL,
-    end_date DATE,
-    is_active BOOLEAN NOT NULL DEFAULT true,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT valid_subscription_period CHECK (end_date IS NULL OR end_date >= start_date)
-);
-
 -- Entities
 CREATE TABLE configuration.entities (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
