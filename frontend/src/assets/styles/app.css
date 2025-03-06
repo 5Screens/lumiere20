@@ -159,9 +159,10 @@
 
 .content-area {
   flex: 1;
-  padding: 20px;
+  padding: 0;
   width: 100%;
   overflow-x: hidden;
+  position: relative;
 }
 
 .tab-content {

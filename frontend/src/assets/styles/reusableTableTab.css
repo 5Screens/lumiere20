@@ -1,6 +1,10 @@
 .reusable-table-tab {
   width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 table {
@@ -36,6 +40,8 @@ tbody tr:hover {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  width: 100%;
+  position: relative;
 }
 
 .table-footer {
