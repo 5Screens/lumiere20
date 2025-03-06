@@ -200,22 +200,19 @@ export default {
       showCopyIconAt: null,
       copyContent: '',
       isFading: false,
-      isResizing: false,
+      resizing: false,
+      currentResizingColumn: null,
       startX: 0,
-      currentColumnIndex: -1,
-      // Nouvelles propriétés pour le filtrage avancé
+      startWidth: 0,
       showAdvancedFilter: false,
       currentFilterColumn: null,
+      filterPosition: { x: 0, y: 0 },
       advancedFilterSearch: '',
-      advancedFilterSelectAll: true,
+      advancedFilterSelectAll: false,
       advancedFilterBlanks: true,
       selectedAdvancedFilterValues: [],
-      uniqueColumnValues: {},
       advancedFilters: {},
-      filterPosition: {
-        x: 0,
-        y: 0
-      }
+      scrollListener: null
     }
   },
   computed: {
@@ -411,26 +408,26 @@ export default {
       }
     },
     startResize(event, columnIndex) {
-      this.isResizing = true
+      this.resizing = true
       this.startX = event.pageX
-      this.currentColumnIndex = columnIndex
+      this.currentResizingColumn = columnIndex
       
       document.addEventListener('mousemove', this.handleResize)
       document.addEventListener('mouseup', this.stopResize)
     },
     handleResize(event) {
-      if (!this.isResizing) return
+      if (!this.resizing) return
       
       const dx = event.pageX - this.startX
-      const newWidth = (this.columnWidths[this.currentColumnIndex] || 100) + dx
+      const newWidth = (this.columnWidths[this.currentResizingColumn] || 100) + dx
       
       if (newWidth >= 50) {
-        this.columnWidths[this.currentColumnIndex] = newWidth
+        this.columnWidths[this.currentResizingColumn] = newWidth
         this.startX = event.pageX
       }
     },
     stopResize() {
-      this.isResizing = false
+      this.resizing = false
       document.removeEventListener('mousemove', this.handleResize)
       document.removeEventListener('mouseup', this.stopResize)
     },
@@ -499,12 +496,38 @@ export default {
       
       // Afficher la fenêtre après avoir tout initialisé
       this.showAdvancedFilter = true
+      
+      // Ajouter des écouteurs d'événements pour suivre le défilement
+      const tableContainer = document.querySelector('.table-container')
+      if (tableContainer) {
+        this.scrollListener = () => {
+          if (!this.showAdvancedFilter) return
+          
+          const newRect = filterIcon.getBoundingClientRect()
+          this.filterPosition = {
+            x: newRect.right + window.scrollX,
+            y: newRect.bottom + window.scrollY
+          }
+        }
+        
+        tableContainer.addEventListener('scroll', this.scrollListener)
+        window.addEventListener('scroll', this.scrollListener)
+        window.addEventListener('resize', this.scrollListener)
+      }
     },
     
     closeAdvancedFilter() {
       this.showAdvancedFilter = false
       this.currentFilterColumn = null
       this.advancedFilterSearch = ''
+      
+      // Supprimer les écouteurs d'événements
+      const tableContainer = document.querySelector('.table-container')
+      if (tableContainer && this.scrollListener) {
+        tableContainer.removeEventListener('scroll', this.scrollListener)
+        window.removeEventListener('scroll', this.scrollListener)
+        window.removeEventListener('resize', this.scrollListener)
+      }
     },
     
     toggleAdvancedFilterAll() {
