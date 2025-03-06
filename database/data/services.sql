@@ -7,63 +7,63 @@ BEGIN;
 -- Declare variables for UUIDs
 DO $$
 DECLARE
-    service_provider_uuid UUID;
-    owing_group_uuid UUID;
+    owning_entity_uuid UUID;
     owned_by_uuid UUID;
     managed_by_uuid UUID;
     cab_uuid UUID;
     parent_service_uuid UUID;
 BEGIN
     -- Get UUIDs from existing data
-    SELECT uuid INTO service_provider_uuid FROM configuration.groups WHERE name = 'IT Operations' LIMIT 1;
-    SELECT uuid INTO owing_group_uuid FROM configuration.groups WHERE name = 'Service Management' LIMIT 1;
+    SELECT uuid INTO owning_entity_uuid FROM configuration.entities WHERE name = 'IT Department' LIMIT 1;
     SELECT uuid INTO owned_by_uuid FROM configuration.persons WHERE email = 'john.doe@lumiere.com' LIMIT 1;
     SELECT uuid INTO managed_by_uuid FROM configuration.persons WHERE email = 'jane.smith@lumiere.com' LIMIT 1;
     SELECT uuid INTO cab_uuid FROM configuration.groups WHERE name = 'Change Advisory Board' LIMIT 1;
     
     -- If UUIDs don't exist, create default ones
-    IF service_provider_uuid IS NULL THEN
-        INSERT INTO configuration.groups (name, description) VALUES ('IT Operations', 'IT Operations Team') RETURNING uuid INTO service_provider_uuid;
-    END IF;
-    
-    IF owing_group_uuid IS NULL THEN
-        INSERT INTO configuration.groups (name, description) VALUES ('Service Management', 'Service Management Team') RETURNING uuid INTO owing_group_uuid;
+    IF owning_entity_uuid IS NULL THEN
+        INSERT INTO configuration.entities (name, entity_id, entity_type) 
+        VALUES ('IT Department', 'IT-DEPT', 'DEPARTMENT') 
+        RETURNING uuid INTO owning_entity_uuid;
     END IF;
     
     IF owned_by_uuid IS NULL THEN
-        INSERT INTO configuration.persons (first_name, last_name, email) VALUES ('John', 'Doe', 'john.doe@lumiere.com') RETURNING uuid INTO owned_by_uuid;
+        INSERT INTO configuration.persons (first_name, last_name, email) 
+        VALUES ('John', 'Doe', 'john.doe@lumiere.com') 
+        RETURNING uuid INTO owned_by_uuid;
     END IF;
     
     IF managed_by_uuid IS NULL THEN
-        INSERT INTO configuration.persons (first_name, last_name, email) VALUES ('Jane', 'Smith', 'jane.smith@lumiere.com') RETURNING uuid INTO managed_by_uuid;
+        INSERT INTO configuration.persons (first_name, last_name, email) 
+        VALUES ('Jane', 'Smith', 'jane.smith@lumiere.com') 
+        RETURNING uuid INTO managed_by_uuid;
     END IF;
     
     IF cab_uuid IS NULL THEN
-        INSERT INTO configuration.groups (name, description) VALUES ('Change Advisory Board', 'CAB Team') RETURNING uuid INTO cab_uuid;
+        INSERT INTO configuration.groups (name, description) 
+        VALUES ('Change Advisory Board', 'CAB Team') 
+        RETURNING uuid INTO cab_uuid;
     END IF;
     
     -- Insert parent services
     INSERT INTO data.services (
         name, 
         description, 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         business_criticality, 
         lifecycle_status, 
         version, 
-        operational_risk, 
-        legal_regulatory_risk, 
-        reputational_risk, 
-        financial_risk, 
+        operational, 
+        legal_regulatory, 
+        reputational, 
+        financial, 
         comments, 
         cab_uuid
     ) VALUES (
         'IT Infrastructure Services', 
         'Core IT infrastructure services including network, servers, and storage', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         'High', 
@@ -81,17 +81,16 @@ BEGIN
     INSERT INTO data.services (
         name, 
         description, 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         business_criticality, 
         lifecycle_status, 
         version, 
-        operational_risk, 
-        legal_regulatory_risk, 
-        reputational_risk, 
-        financial_risk, 
+        operational, 
+        legal_regulatory, 
+        reputational, 
+        financial, 
         comments, 
         cab_uuid, 
         parent_uuid
@@ -99,8 +98,7 @@ BEGIN
     (
         'Network Services', 
         'Network connectivity, firewalls, and security services', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         'High', 
@@ -117,8 +115,7 @@ BEGIN
     (
         'Server Hosting', 
         'Physical and virtual server hosting services', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         'High', 
@@ -135,8 +132,7 @@ BEGIN
     (
         'Storage Services', 
         'Data storage and backup services', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         'High', 
@@ -153,8 +149,7 @@ BEGIN
     (
         'Email Services', 
         'Corporate email and messaging services', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         'High', 
@@ -171,8 +166,7 @@ BEGIN
     (
         'Collaboration Tools', 
         'Team collaboration and document sharing services', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         'Medium', 
@@ -189,8 +183,7 @@ BEGIN
     (
         'Help Desk', 
         'IT support and help desk services', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         'Medium', 
@@ -199,80 +192,76 @@ BEGIN
         'Low', 
         'Low', 
         'High', 
-        'Low', 
-        'Help desk services for all employees', 
+        'Medium', 
+        'Support services for all employees', 
         cab_uuid, 
         parent_service_uuid
     ),
     (
         'Security Services', 
-        'IT security monitoring and management', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        'Information security and compliance services', 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         'Critical', 
         'Production', 
-        '5.0', 
+        '2.3', 
         'High', 
         'High', 
         'High', 
         'High', 
-        'Security services protecting all IT assets', 
+        'Security services for all systems and data', 
         cab_uuid, 
         parent_service_uuid
     ),
     (
-        'Database Services', 
-        'Database hosting and management', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        'Business Applications', 
+        'Core business application hosting and support', 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
-        'High', 
+        'Critical', 
         'Production', 
-        '3.5', 
-        'Medium', 
+        '1.5', 
         'High', 
-        'Medium', 
         'High', 
-        'Database services for all applications', 
+        'High', 
+        'Critical', 
+        'Business-critical applications', 
         cab_uuid, 
         parent_service_uuid
     ),
     (
-        'Printing Services', 
-        'Corporate printing and scanning services', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        'Disaster Recovery', 
+        'Disaster recovery and business continuity services', 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
-        'Low', 
+        'Critical', 
         'Production', 
         '2.0', 
-        'Low', 
-        'Low', 
-        'Low', 
-        'Low', 
-        'Printing services for all locations', 
+        'Critical', 
+        'High', 
+        'High', 
+        'High', 
+        'DR services for all critical systems', 
         cab_uuid, 
         parent_service_uuid
     ),
     (
-        'Mobile Device Management', 
-        'Management of corporate mobile devices', 
-        service_provider_uuid, 
-        owing_group_uuid, 
+        'Desktop Support', 
+        'Desktop and laptop support services', 
+        owning_entity_uuid, 
         owned_by_uuid, 
         managed_by_uuid, 
         'Medium', 
         'Production', 
-        '2.3', 
-        'Medium', 
-        'Medium', 
-        'Medium', 
+        '3.0', 
         'Low', 
-        'Mobile device management for all corporate devices', 
+        'Low', 
+        'Medium', 
+        'Medium', 
+        'Desktop support for all employees', 
         cab_uuid, 
         parent_service_uuid
     );
