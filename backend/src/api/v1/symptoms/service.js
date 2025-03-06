@@ -56,6 +56,7 @@ class SymptomsService {
             const query = `
                 SELECT 
                     s.code,
+                    s.uuid as symptom_uuid,
                     st.uuid,
                     st.langue,
                     st.libelle
@@ -75,6 +76,7 @@ class SymptomsService {
             // Formatage de la réponse selon le format demandé
             const symptom = {
                 code: result.rows[0].code,
+                uuid: result.rows[0].symptom_uuid,
                 translations: result.rows.map(row => ({
                     uuid: row.uuid,
                     langue: row.langue,

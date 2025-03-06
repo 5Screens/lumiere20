@@ -1,0 +1,110 @@
+.audit-table {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.audit-table table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-color);
+  table-layout: fixed;
+}
+
+.audit-table thead {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-secondary);
+  z-index: 1;
+}
+
+.audit-table tbody {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.audit-table tbody tr {
+  transition: background-color 0.2s ease;
+  background-color: var(--bg-color);
+}
+
+.audit-table tbody tr:hover {
+  background-color: var(--hover-color);
+}
+
+.audit-table .table-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.audit-table th, .audit-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-table th {
+  background-color: var(--bg-secondary);
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+.audit-table tr:nth-child(even) {
+  background-color: var(--bg-secondary);
+}
+
+.audit-table .event-type {
+  font-weight: bold;
+}
+
+.audit-table .event-type-updated {
+  color: var(--primary-color);
+}
+
+.audit-table .event-type-created {
+  color: #4CAF50;
+}
+
+.audit-table .event-type-deleted {
+  color: #F44336;
+}
+
+.audit-table .old-value, .audit-table .new-value {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-table .old-value {
+  text-decoration: line-through;
+  color: #F44336;
+}
+
+.audit-table .new-value {
+  color: #4CAF50;
+}
+
+.audit-table .time-ago {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.audit-table .empty-table {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.audit-table .table-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: var(--bg-secondary);
+  padding: 10px;
+  border-top: 1px solid var(--border-color);
+  z-index: 1;
+}

@@ -19,6 +19,12 @@
         :label="$t('symptoms.code')"
         :required="true"
       />
+      
+      <!-- Tableau d'audit pour afficher l'historique des modifications -->
+      <AuditTable 
+        v-if="symptomData.uuid" 
+        :objectUuid="symptomData.uuid"
+      />
     </div>
     
     <div class="symptoms-form__footer">
@@ -45,6 +51,7 @@ import { useI18n } from 'vue-i18n';
 import TextField from '@/components/common/TextField.vue';
 import MLTextField from '@/components/common/MLTextField.vue';
 import ButtonStandard from '@/components/common/ButtonStandard.vue';
+import AuditTable from '@/components/common/auditTable.vue';
 
 // Import du service API
 import apiService from '@/services/apiService';
@@ -74,6 +81,7 @@ const emit = defineEmits(['cancel', 'saved', 'error', 'close-tab', 'close-child-
 
 // État local
 const symptomData = ref({
+  uuid: '',
   name: {},
   code: '',
   translationUuids: {}, // Stockage des UUIDs par langue
@@ -107,10 +115,11 @@ const fetchSymptomData = async () => {
     const data = await apiService.get('symptoms/by-scode', { scode: symptomCode.value });
     
     // Transformer les données reçues du backend au format attendu par le frontend
-    // Le backend renvoie { code, translations: [{ uuid, langue, libelle }] }
-    // Le frontend attend { code, name: { fr: "libellé", en: "label" }, translationUuids: { fr: "uuid1", en: "uuid2" }, originalValues: { fr: "libellé", en: "label" } }
+    // Le backend renvoie { code, uuid, translations: [{ uuid, langue, libelle }] }
+    // Le frontend attend { code, uuid, name: { fr: "libellé", en: "label" }, translationUuids: { fr: "uuid1", en: "uuid2" }, originalValues: { fr: "libellé", en: "label" } }
     const transformedData = {
       code: data.code || '',
+      uuid: data.uuid || '', // Stocker l'UUID du symptôme
       name: {},
       translationUuids: {}, // Stockage des UUIDs par langue
       originalValues: {}    // Stockage des valeurs originales pour détecter les changements
@@ -240,7 +249,7 @@ const handleUpdate = async () => {
     // Effectuer les mises à jour de traductions existantes
     if (translationUpdates.length > 0) {
       await Promise.all(translationUpdates.map(update => 
-        apiService.put(`symptoms/translations/${update.uuid}`, {
+        apiService.put(`symptoms_translations/${update.uuid}`, {
           langue: update.langue,
           libelle: update.libelle
         })
