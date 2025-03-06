@@ -211,5 +211,29 @@ export default {
     tableaux: 'Tableaux',
     configuration: 'Configuration',
     administration: 'Administration'
+  },
+  audit: {
+    eventType: 'Type d\'événement',
+    objectType: 'Type d\'objet',
+    oldValue: 'Ancienne valeur',
+    newValue: 'Nouvelle valeur',
+    user: 'Utilisateur',
+    time: 'Temps',
+    totalChanges: 'Total des modifications',
+    noData: 'Aucune donnée d\'audit disponible',
+    timeAgo: {
+      justNow: 'à l\'instant',
+      seconds: 'il y a quelques secondes',
+      minute: 'il y a 1 minute',
+      minutes: 'il y a {count} minutes',
+      hour: 'il y a 1 heure',
+      hours: 'il y a {count} heures',
+      day: 'il y a 1 jour',
+      days: 'il y a {count} jours',
+      month: 'il y a 1 mois',
+      months: 'il y a {count} mois',
+      year: 'il y a 1 an',
+      years: 'il y a {count} ans'
+    }
   }
 }

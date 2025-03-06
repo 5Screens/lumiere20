@@ -42,15 +42,16 @@
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  vertical-align: top;
 }
 
 .audit-table th {
   background-color: var(--bg-secondary);
   color: var(--text-color);
   font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .audit-table tr:nth-child(even) {
@@ -75,9 +76,8 @@
 
 .audit-table .old-value, .audit-table .new-value {
   max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .audit-table .old-value {
@@ -92,6 +92,7 @@
 .audit-table .time-ago {
   font-style: italic;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .audit-table .empty-table {

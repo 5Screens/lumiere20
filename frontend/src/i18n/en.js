@@ -194,6 +194,30 @@ export default {
     translationsUpdated: 'translations updated successfully',
     noChanges: 'No changes detected'
   },
+  audit: {
+    eventType: 'Event Type',
+    objectType: 'Object Type',
+    oldValue: 'Old Value',
+    newValue: 'New Value',
+    user: 'User',
+    time: 'Time',
+    totalChanges: 'Total Changes',
+    noData: 'No audit data available',
+    timeAgo: {
+      justNow: 'just now',
+      seconds: 'a few seconds ago',
+      minute: '1 minute ago',
+      minutes: '{count} minutes ago',
+      hour: '1 hour ago',
+      hours: '{count} hours ago',
+      day: '1 day ago',
+      days: '{count} days ago',
+      month: '1 month ago',
+      months: '{count} months ago',
+      year: '1 year ago',
+      years: '{count} years ago'
+    }
+  },
   errors: {
     badRequest: 'Bad Request (400)',
     unauthorized: 'Unauthorized (401)',

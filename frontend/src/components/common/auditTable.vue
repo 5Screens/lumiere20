@@ -4,12 +4,12 @@
       <table v-if="auditData.length > 0">
         <thead>
           <tr>
-            <th>Event Type</th>
-            <th>Object Type</th>
-            <th>Old Value</th>
-            <th>New Value</th>
-            <th>User</th>
-            <th>Time</th>
+            <th>{{ $t('audit.eventType') }}</th>
+            <th>{{ $t('audit.objectType') }}</th>
+            <th>{{ $t('audit.oldValue') }}</th>
+            <th>{{ $t('audit.newValue') }}</th>
+            <th>{{ $t('audit.user') }}</th>
+            <th>{{ $t('audit.time') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -20,19 +20,19 @@
               </span>
             </td>
             <td>{{ formatObjectType(item.object_type) }}</td>
-            <td class="old-value" :title="item.old_value">{{ item.old_value }}</td>
-            <td class="new-value" :title="item.new_value">{{ item.new_value }}</td>
+            <td class="old-value">{{ item.old_value }}</td>
+            <td class="new-value">{{ item.new_value }}</td>
             <td>{{ getUserName(item.user_id) }}</td>
             <td class="time-ago">{{ getTimeAgo(item.event_date) }}</td>
           </tr>
         </tbody>
       </table>
       <div v-else class="empty-table">
-        No audit data available
+        {{ $t('audit.noData') }}
       </div>
     </div>
     <div class="table-footer" v-if="auditData.length > 0">
-      Total changes: {{ auditData.length }}
+      {{ $t('audit.totalChanges') }}: {{ auditData.length }}
     </div>
   </div>
 </template>
@@ -186,17 +186,29 @@ export default {
       const years = Math.floor(months / 12)
       
       if (years > 0) {
-        return years === 1 ? 'il y a 1 an' : `il y a ${years} ans`
+        return years === 1 
+          ? this.$t('audit.timeAgo.year')
+          : this.$t('audit.timeAgo.years', { count: years })
       } else if (months > 0) {
-        return months === 1 ? 'il y a 1 mois' : `il y a ${months} mois`
+        return months === 1 
+          ? this.$t('audit.timeAgo.month')
+          : this.$t('audit.timeAgo.months', { count: months })
       } else if (days > 0) {
-        return days === 1 ? 'il y a 1 jour' : `il y a ${days} jours`
+        return days === 1 
+          ? this.$t('audit.timeAgo.day')
+          : this.$t('audit.timeAgo.days', { count: days })
       } else if (hours > 0) {
-        return hours === 1 ? 'il y a 1 heure' : `il y a ${hours} heures`
+        return hours === 1 
+          ? this.$t('audit.timeAgo.hour')
+          : this.$t('audit.timeAgo.hours', { count: hours })
       } else if (minutes > 0) {
-        return minutes === 1 ? 'il y a 1 minute' : `il y a ${minutes} minutes`
+        return minutes === 1 
+          ? this.$t('audit.timeAgo.minute')
+          : this.$t('audit.timeAgo.minutes', { count: minutes })
+      } else if (seconds > 10) {
+        return this.$t('audit.timeAgo.seconds')
       } else {
-        return 'il y a quelques secondes'
+        return this.$t('audit.timeAgo.justNow')
       }
     }
   },
@@ -217,4 +229,9 @@ export default {
 
 <style scoped>
 @import "@/assets/styles/auditTable.css";
+
+.old-value, .new-value {
+  white-space: normal;
+  word-break: break-all;
+}
 </style>

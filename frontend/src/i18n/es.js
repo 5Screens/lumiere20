@@ -159,6 +159,30 @@ export default {
       symptomLanguage: 'Idioma'
     }
   },
+  audit: {
+    eventType: 'Tipo de Evento',
+    objectType: 'Tipo de Objeto',
+    oldValue: 'Valor Anterior',
+    newValue: 'Valor Nuevo',
+    user: 'Usuario',
+    time: 'Tiempo',
+    totalChanges: 'Total de Cambios',
+    noData: 'No hay datos de auditoría disponibles',
+    timeAgo: {
+      justNow: 'ahora mismo',
+      seconds: 'hace unos segundos',
+      minute: 'hace 1 minuto',
+      minutes: 'hace {count} minutos',
+      hour: 'hace 1 hora',
+      hours: 'hace {count} horas',
+      day: 'hace 1 día',
+      days: 'hace {count} días',
+      month: 'hace 1 mes',
+      months: 'hace {count} meses',
+      year: 'hace 1 año',
+      years: 'hace {count} años'
+    }
+  },
   common: {
     close: 'Cerrar'
   },
