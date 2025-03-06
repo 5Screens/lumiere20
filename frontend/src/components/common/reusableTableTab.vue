@@ -455,10 +455,34 @@ export default {
       // Calculer la position de la fenêtre de filtre
       const filterIcon = event.target.closest('.filter-icon')
       const rect = filterIcon.getBoundingClientRect()
+      
+      // Positionner le filtre avancé pour que son coin supérieur gauche
+      // soit adjacent au coin inférieur droit du bouton de filtre
       this.filterPosition = {
-        x: rect.left + window.scrollX,
+        x: rect.right + window.scrollX,
         y: rect.bottom + window.scrollY
       }
+      
+      // Ajouter un petit délai pour s'assurer que le DOM est mis à jour
+      setTimeout(() => {
+        // Ajuster la position si le filtre dépasse de l'écran
+        const filterModal = document.querySelector('.advanced-filter-modal')
+        if (filterModal) {
+          const modalRect = filterModal.getBoundingClientRect()
+          const viewportWidth = window.innerWidth
+          const viewportHeight = window.innerHeight
+          
+          // Ajuster horizontalement si nécessaire
+          if (modalRect.right > viewportWidth) {
+            this.filterPosition.x = viewportWidth - modalRect.width - 10
+          }
+          
+          // Ajuster verticalement si nécessaire
+          if (modalRect.bottom > viewportHeight) {
+            this.filterPosition.y = viewportHeight - modalRect.height - 10
+          }
+        }
+      }, 0)
       
       // Initialiser les valeurs du filtre
       if (!this.advancedFilters[column.key]) {

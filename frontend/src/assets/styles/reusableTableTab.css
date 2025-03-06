@@ -424,9 +424,12 @@ th:first-child .th-content {
 }
 
 .advanced-filter-modal {
-  position: absolute;
+  position: fixed;
   background-color: transparent;
   z-index: 1000;
+  margin: 0;
+  padding: 0;
+  transform-origin: top left;
 }
 
 .advanced-filter-content {
