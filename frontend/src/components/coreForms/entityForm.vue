@@ -41,7 +41,7 @@
         v-model="entityData.entity_type"
         :label="$t('entities.entity_type')"
         :required="true"
-        :options-endpoint="`entities_types?langue=${currentLanguage}`"
+        :options-endpoint="`entities_types?langue=${currentLanguage}&toSelect=yes`"
         :edit-mode="true"
         :uuid="entityData.uuid"
         field-name="entity_type"

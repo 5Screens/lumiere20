@@ -4,20 +4,20 @@ const { validateLanguageParam } = require('./validation');
 
 class EntitiesTypesController {
     /**
-     * Récupère tous les types d'entités avec leurs libellés dans la langue spécifiée
-     * @param {Object} req - Requête Express
-     * @param {Object} res - Réponse Express
-     * @returns {Object} Réponse JSON
+     * Get all entity types with their labels in the specified language
+     * @param {Object} req - Express Request
+     * @param {Object} res - Express Response
+     * @returns {Object} JSON Response
      */
     async getEntityTypesByLanguage(req, res) {
         logger.info('[CONTROLLER] getEntityTypesByLanguage - Starting to process request');
         
-        // Validation du paramètre de langue
+        // Validate language parameter
         const validation = validateLanguageParam(req);
         if (validation.error) {
             logger.warn(`[CONTROLLER] getEntityTypesByLanguage - Validation error: ${validation.error.message}`);
             return res.status(400).json({
-                message: `Paramètre de langue invalide: ${validation.error.message}`
+                message: `Invalid language parameter: ${validation.error.message}`
             });
         }
         
@@ -30,7 +30,7 @@ class EntitiesTypesController {
             if (entityTypes.length === 0) {
                 logger.warn(`[CONTROLLER] getEntityTypesByLanguage - No entity types found for language: ${langue}`);
                 return res.status(404).json({
-                    message: `Aucun type d'entité trouvé pour la langue: ${langue}`
+                    message: `No entity types found for language: ${langue}`
                 });
             }
             
@@ -39,7 +39,54 @@ class EntitiesTypesController {
         } catch (error) {
             logger.error(`[CONTROLLER] getEntityTypesByLanguage - Error: ${error.message}`);
             return res.status(500).json({
-                message: `Erreur lors de la récupération des types d'entités: ${error.message}`
+                message: `Error retrieving entity types: ${error.message}`
+            });
+        }
+    }
+
+    /**
+     * Get all entity types formatted for select field component
+     * @param {Object} req - Express Request
+     * @param {Object} res - Express Response
+     * @returns {Object} JSON Response with label/value format
+     */
+    async getEntityTypesForSelect(req, res) {
+        logger.info('[CONTROLLER] getEntityTypesForSelect - Starting to process request');
+        
+        // Validate language parameter
+        const validation = validateLanguageParam(req);
+        if (validation.error) {
+            logger.warn(`[CONTROLLER] getEntityTypesForSelect - Validation error: ${validation.error.message}`);
+            return res.status(400).json({
+                message: `Invalid language parameter: ${validation.error.message}`
+            });
+        }
+        
+        const langue = req.query.langue;
+        logger.info(`[CONTROLLER] getEntityTypesForSelect - Processing request for language: ${langue}`);
+        
+        try {
+            const entityTypes = await entitiesTypesService.getEntityTypesByLanguage(langue);
+            
+            if (entityTypes.length === 0) {
+                logger.warn(`[CONTROLLER] getEntityTypesForSelect - No entity types found for language: ${langue}`);
+                return res.status(404).json({
+                    message: `No entity types found for language: ${langue}`
+                });
+            }
+            
+            // Transform data to label/value format for select field
+            const formattedTypes = entityTypes.map(type => ({
+                label: type.libelle,
+                value: type.entity_type
+            }));
+            
+            logger.info(`[CONTROLLER] getEntityTypesForSelect - Successfully formatted ${formattedTypes.length} entity types for select field`);
+            return res.status(200).json(formattedTypes);
+        } catch (error) {
+            logger.error(`[CONTROLLER] getEntityTypesForSelect - Error: ${error.message}`);
+            return res.status(500).json({
+                message: `Error retrieving entity types: ${error.message}`
             });
         }
     }
