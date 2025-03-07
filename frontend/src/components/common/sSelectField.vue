@@ -1,270 +1,181 @@
 <template>
-  <div 
-    :class="[
-      's-select-field', 
-      { 
-        's-select-field--editing': isEditing && valueChanged,
-        's-select-field--loading': isLoading
-      }
-    ]"
-  >
-    <label 
-      v-if="label" 
-      :class="[
-        's-select-field__label',
-        { 's-select-field__label--required': required }
-      ]"
-    >
-      {{ label }}
-    </label>
+  <div class="s-select-field" :class="{ 'editing': editing }">
+    <div class="s-select-field__label-container" v-if="label">
+      <label class="s-select-field__label" :class="{ 's-select-field__label--required': required }">
+        {{ label }}
+      </label>
+    </div>
     
     <div class="s-select-field__input-container">
       <select
-        :value="modelValue"
+        v-model="selectedValue"
+        @focus="handleFirstFocus"
         @change="handleChange"
-        @focus="onFocus"
-        @blur="onBlur"
-        @click="loadOptions"
-        :disabled="disabled || isLoading"
-        :class="[
-          's-select-field__select',
-          { 's-select-field__select--error': error }
-        ]"
+        :disabled="loadingOptions"
       >
-        <option value="" disabled>{{ placeholder || 'Select an option' }}</option>
-        <option 
-          v-for="option in options" 
-          :key="option.value" 
+        <option value="" disabled>{{ loadingOptions ? 'Chargement...' : 'Sélectionner une option' }}</option>
+        <option
+          v-for="option in options"
+          :key="option.value"
           :value="option.value"
         >
           {{ option.label }}
         </option>
       </select>
-      
-      <div v-if="isLoading" class="s-select-field__loading"></div>
-      
-      <div class="s-select-field__actions">
-        <template v-if="editMode && isEditing && valueChanged">
-          <button 
-            type="button" 
-            class="s-select-field__action-btn s-select-field__action-btn--confirm"
-            @click="confirmChange"
-            title="Confirm"
-          >
-            <svg class="s-select-field__action-icon" viewBox="0 0 24 24">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"></path>
-            </svg>
-          </button>
-          <button 
-            type="button" 
-            class="s-select-field__action-btn s-select-field__action-btn--cancel"
-            @click="cancelChange"
-            title="Cancel"
-          >
-            <svg class="s-select-field__action-icon" viewBox="0 0 24 24">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path>
-            </svg>
-          </button>
-        </template>
-        <slot name="actions" v-else></slot>
+
+      <div v-if="loadingOptions" class="spinner" aria-label="Chargement en cours"></div>
+
+      <div v-if="editing && mode === 'edition'" class="s-select-field__actions">
+        <button
+          class="s-select-field__action-btn s-select-field__action-btn--confirm"
+          @click="handleConfirmEdit"
+          :disabled="isUpdating"
+          aria-label="Confirmer la modification"
+        >
+          ✓
+        </button>
+        <button
+          class="s-select-field__action-btn s-select-field__action-btn--cancel"
+          @click="handleCancelEdit"
+          :disabled="isUpdating"
+          aria-label="Annuler la modification"
+        >
+          ✕
+        </button>
       </div>
-      
-      <span v-if="error" class="s-select-field__error">{{ error }}</span>
-      <span v-else-if="helperText" class="s-select-field__helper">{{ helperText }}</span>
     </div>
   </div>
 </template>
 
-<script setup>
-import { defineProps, defineEmits, ref, watch } from 'vue'
+<script>
+import { ref, onMounted } from 'vue'
 import '@/assets/styles/sSelectField.css'
 import apiService from '@/services/apiService'
 
-const isEditing = ref(false)
-const isLoading = ref(false)
-const options = ref([])
-const internalValue = ref('')
-const originalValue = ref('')
-const valueChanged = ref(false)
-const optionsLoaded = ref(false)
-
-const props = defineProps({
-  label: {
-    type: String,
-    default: ''
-  },
-  modelValue: {
-    type: [String, Number],
-    required: true
-  },
-  placeholder: {
-    type: String,
-    default: ''
-  },
-  disabled: {
-    type: Boolean,
-    default: false
-  },
-  required: {
-    type: Boolean,
-    default: false
-  },
-  error: {
-    type: String,
-    default: ''
-  },
-  helperText: {
-    type: String,
-    default: ''
-  },
-  uuid: {
-    type: String,
-    default: ''
-  },
-  fieldName: {
-    type: String,
-    default: ''
-  },
-  apiEndpoint: {
-    type: String,
-    default: ''
-  },
-  optionsEndpoint: {
-    type: String,
-    required: true
-  },
-  editMode: {
-    type: Boolean,
-    default: false
-  }
-})
-
-const emit = defineEmits(['update:modelValue', 'field-updated', 'field-change-cancelled', 'options-loaded'])
-
-// Watch for external changes to modelValue
-watch(() => props.modelValue, (newValue) => {
-  originalValue.value = newValue
-  internalValue.value = newValue
-})
-
-// Initialize values
-internalValue.value = props.modelValue
-originalValue.value = props.modelValue
-
-const loadOptions = async () => {
-  // Only load options once or if they haven't been loaded yet
-  if (optionsLoaded.value) {
-    console.info('[SSelectField] Options already loaded, skipping loadOptions()');
-    return;
-  }
-  
-  console.info('[SSelectField] Starting to load options from endpoint:', props.optionsEndpoint);
-  isLoading.value = true;
-  
-  try {
-    console.info('[SSelectField] Making API request...');
-    const data = await apiService.get(props.optionsEndpoint);
-    console.info('[SSelectField] API response received:', data);
-    
-    // Assuming the API returns an array of objects with value and label properties
-    // If the API returns a different format, you may need to transform the data here
-    options.value = Array.isArray(data) ? data : [];
-    console.info('[SSelectField] Options processed. Total options:', options.value.length);
-    
-    optionsLoaded.value = true;
-    emit('options-loaded', options.value);
-  } catch (error) {
-    console.error('[SSelectField] Error loading options:', error);
-    console.error('[SSelectField] Error details:', {
-      endpoint: props.optionsEndpoint,
-      error: error.message,
-      status: error.response?.status
-    });
-    options.value = [];
-  } finally {
-    console.info('[SSelectField] Finished loading options. Loading state set to false');
-    isLoading.value = false;
-  }
-}
-
-const handleChange = (event) => {
-  const value = event.target.value
-  
-  internalValue.value = value
-  emit('update:modelValue', value)
-  
-  // Check if value has changed
-  valueChanged.value = value !== originalValue.value
-}
-
-const onFocus = () => {
-  isEditing.value = true
-  originalValue.value = props.modelValue
-}
-
-const onBlur = () => {
-  // Don't reset isEditing here to allow clicking on action buttons
-  // Will be reset in cancelChange or after API call
-}
-
-const confirmChange = async () => {
-  if (!props.uuid || !props.apiEndpoint) {
-    console.error('UUID or API endpoint not provided for field update')
-    emit('field-updated', {
-      success: false,
-      fieldName: props.fieldName,
-      value: internalValue.value,
-      error: 'UUID or API endpoint not provided'
-    })
-    return
-  }
-  
-  try {
-    // Prepare data for PATCH request
-    const data = {
-      [props.fieldName]: internalValue.value
+export default {
+  name: 'SSelectField',
+  props: {
+    mode: {
+      type: String,
+      required: true,
+      validator: value => ['creation', 'edition'].includes(value)
+    },
+    initialValue: {
+      type: String,
+      default: ''
+    },
+    uuid: {
+      type: String,
+      required: false
+    },
+    optionsEndpoint: {
+      type: String,
+      required: true
+    },
+    patchEndpoint: {
+      type: String,
+      required: false
+    },
+    label: {
+      type: String,
+      default: ''
+    },
+    required: {
+      type: Boolean,
+      default: false
     }
-    
-    await apiService.put(`${props.apiEndpoint}/${props.uuid}`, data)
-    
-    // Update original value to match the new value
-    originalValue.value = internalValue.value
-    valueChanged.value = false
-    
-    // Emit success event
-    emit('field-updated', {
-      success: true,
-      fieldName: props.fieldName,
-      value: internalValue.value
-    })
-  } catch (error) {
-    console.error('Error updating field:', error)
-    
-    // Emit error event
-    emit('field-updated', {
-      success: false,
-      fieldName: props.fieldName,
-      value: internalValue.value,
-      error: error.message
-    })
-  } finally {
-    isEditing.value = false
-  }
-}
+  },
+  setup(props, { emit }) {
+    const options = ref([])
+    const selectedValue = ref(props.initialValue)
+    const originalValue = ref(props.initialValue)
+    const loadingOptions = ref(false)
+    const editing = ref(false)
+    const isUpdating = ref(false)
+    const optionsLoaded = ref(false)
 
-const cancelChange = () => {
-  // Reset to original value
-  internalValue.value = originalValue.value
-  emit('update:modelValue', originalValue.value)
-  
-  // Reset state
-  valueChanged.value = false
-  isEditing.value = false
-  
-  // Emit cancel event
-  emit('field-change-cancelled', {
-    fieldName: props.fieldName,
-    originalValue: originalValue.value
-  })
+    const fetchOptions = async () => {
+      if (optionsLoaded.value) return
+
+      try {
+        loadingOptions.value = true
+        const response = await apiService.get(props.optionsEndpoint)
+        options.value = response
+        optionsLoaded.value = true
+      } catch (error) {
+        console.error('Error loading options:', error)
+        emit('error', 'Failed to load options')
+      } finally {
+        loadingOptions.value = false
+      }
+    }
+
+    const handleFirstFocus = () => {
+      if (!optionsLoaded.value) {
+        fetchOptions()
+      }
+    }
+
+    const handleChange = () => {
+      if (props.mode === 'edition' && selectedValue.value !== originalValue.value) {
+        editing.value = true
+      }
+      emit('change', selectedValue.value)
+    }
+
+    const handleConfirmEdit = async () => {
+      if (!props.uuid || !props.patchEndpoint) {
+        console.error('Missing uuid or patchEndpoint for edit mode')
+        return
+      }
+
+      try {
+        isUpdating.value = true
+        await apiService.patch(props.patchEndpoint, props.uuid, {
+          value: selectedValue.value
+        })
+        
+        originalValue.value = selectedValue.value
+        editing.value = false
+        emit('update:success')
+      } catch (error) {
+        console.error('Error updating value:', error)
+        selectedValue.value = originalValue.value
+        editing.value = false
+        emit('update:error', error)
+      } finally {
+        isUpdating.value = false
+      }
+    }
+
+    const handleCancelEdit = () => {
+      selectedValue.value = originalValue.value
+      editing.value = false
+      emit('update:cancelled')
+    }
+
+    onMounted(() => {
+      if (props.initialValue) {
+        selectedValue.value = props.initialValue
+        originalValue.value = props.initialValue
+      }
+    })
+
+    return {
+      options,
+      selectedValue,
+      loadingOptions,
+      editing,
+      isUpdating,
+      handleFirstFocus,
+      handleChange,
+      handleConfirmEdit,
+      handleCancelEdit
+    }
+  }
 }
 </script>
+
+<style scoped>
+/* Styles are imported from sSelectField.css */
+</style>

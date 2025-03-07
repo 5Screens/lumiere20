@@ -6,6 +6,11 @@
   width: 100%;
 }
 
+.s-select-field__label-container {
+  display: flex;
+  align-items: center;
+}
+
 .s-select-field__label {
   font-size: 0.875rem;
   color: var(--text-color);
@@ -32,10 +37,9 @@
   width: 100%;
 }
 
-.s-select-field__select {
+.s-select-field select {
   width: 100%;
   padding: 0.625rem;
-  padding-right: 2rem; /* Space for dropdown arrow */
   border: 1px solid var(--border-color);
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -43,88 +47,44 @@
   outline: none;
   background-color: var(--input-bg);
   color: var(--text-color);
-  appearance: none; /* Remove default arrow */
   cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.5rem center;
-  background-size: 1rem;
+  padding-right: 2.5rem;
 }
 
-.s-select-field__select:focus:not(:disabled) {
+.s-select-field select:focus:not(:disabled) {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px var(--primary-color-alpha);
 }
 
-.s-select-field__select:hover:not(:disabled) {
+.s-select-field select:hover:not(:disabled) {
   border-color: var(--primary-hover);
 }
 
-.s-select-field__select--error {
-  border-color: var(--error-color) !important;
-}
-
-.s-select-field__select--error:focus {
-  border-color: var(--error-color) !important;
-  box-shadow: 0 0 0 2px var(--error-color-alpha) !important;
-}
-
-.s-select-field__select:disabled {
+.s-select-field select:disabled {
   background-color: var(--bg-secondary);
   cursor: not-allowed;
   opacity: 0.7;
 }
 
-.s-select-field__error {
-  font-size: 0.75rem;
-  color: var(--error-color);
-  margin-top: 0.25rem;
-}
-
-.s-select-field__helper {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-top: 0.25rem;
-}
-
-/* Loading spinner */
-.s-select-field__loading {
-  position: absolute;
-  right: 2rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid rgba(var(--primary-color-rgb), 0.2);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: s-select-field-spin 0.8s linear infinite;
-}
-
-@keyframes s-select-field-spin {
-  to {
-    transform: translateY(-50%) rotate(360deg);
-  }
-}
-
-/* Styles for action buttons */
-.s-select-field__actions {
-  position: absolute;
-  right: 2rem; /* Position to the left of the dropdown arrow */
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  z-index: 1;
-}
-
-/* Style for highlighting the field during editing */
-.s-select-field--editing .s-select-field__select {
+.s-select-field.editing select {
   background-color: var(--input-bg);
 }
 
-/* Styles for confirm and cancel buttons */
+.s-select-field__actions {
+  position: absolute;
+  right: -70px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.s-select-field.editing .s-select-field__actions {
+  opacity: 1;
+}
+
 .s-select-field__action-btn {
   display: flex;
   align-items: center;
@@ -135,12 +95,10 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  opacity: 0;
   transform: scale(0.8);
 }
 
-.s-select-field--editing .s-select-field__action-btn {
-  opacity: 1;
+.s-select-field.editing .s-select-field__action-btn {
   transform: scale(1);
 }
 
@@ -156,32 +114,32 @@
 .s-select-field__action-btn--cancel {
   background-color: var(--error-color, #f44336);
   color: white;
-  margin-left: 4px;
 }
 
 .s-select-field__action-btn--cancel:hover {
   background-color: var(--error-hover, #d32f2f);
 }
 
-.s-select-field__action-icon {
+.spinner {
   width: 16px;
   height: 16px;
-  fill: currentColor;
+  border: 2px solid var(--bg-secondary);
+  border-top: 2px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s ease-in-out infinite;
+  position: absolute;
+  left: 110px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 
-/* When loading, hide the dropdown arrow */
-.s-select-field--loading .s-select-field__select {
-  background-image: none;
+.s-select-field select:disabled + .spinner {
+  opacity: 1;
 }
 
-/* Placeholder style */
-.s-select-field__select option[value=""] {
-  color: var(--text-secondary);
-}
-
-/* Dropdown options styling */
-.s-select-field__select option {
-  padding: 0.5rem;
-  background-color: var(--input-bg);
-  color: var(--text-color);
+@keyframes spin {
+  0% { transform: translateY(-50%) rotate(0deg); }
+  100% { transform: translateY(-50%) rotate(360deg); }
 }
