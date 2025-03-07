@@ -42,11 +42,11 @@
         :label="$t('entities.entity_type')"
         :required="true"
         :options-endpoint="`entities_types?langue=${currentLanguage}&toSelect=yes`"
-        :edit-mode="true"
+        :mode="'edition'"
+        :initial-value="entityData.entity_type"
         :uuid="entityData.uuid"
-        field-name="entity_type"
-        api-endpoint="entities"
-        @field-updated="handleFieldUpdated"
+        :patch-endpoint="'entities'"
+        @update:success="handleFieldUpdated('entity_type', $event)"
       />
       
       <!-- Tableau d'audit pour afficher l'historique des modifications -->

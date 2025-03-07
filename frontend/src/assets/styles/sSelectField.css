@@ -72,13 +72,14 @@
 
 .s-select-field__actions {
   position: absolute;
-  right: -70px;
+  right: 20px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   gap: 0.5rem;
   opacity: 0;
   transition: opacity 0.3s ease;
+  z-index: 1;
 }
 
 .s-select-field.editing .s-select-field__actions {
