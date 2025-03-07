@@ -55,6 +55,10 @@ import apiService from '@/services/apiService'
 export default {
   name: 'SSelectField',
   props: {
+    modelValue: {
+      type: String,
+      default: ''
+    },
     mode: {
       type: String,
       required: true,
@@ -88,8 +92,8 @@ export default {
   setup(props, { emit }) {
     const { t } = useI18n()
     const options = ref([])
-    const selectedValue = ref(props.initialValue)
-    const originalValue = ref(props.initialValue)
+    const selectedValue = ref(props.modelValue)
+    const originalValue = ref(props.modelValue)
     const loadingOptions = ref(false)
     const editing = ref(false)
     const isUpdating = ref(false)
@@ -115,6 +119,7 @@ export default {
       if (props.mode === 'edition' && selectedValue.value !== originalValue.value) {
         editing.value = true
       }
+      emit('update:modelValue', selectedValue.value)
       emit('change', selectedValue.value)
     }
 
@@ -150,9 +155,9 @@ export default {
     }
 
     onMounted(() => {
-      if (props.initialValue) {
-        selectedValue.value = props.initialValue
-        originalValue.value = props.initialValue
+      if (props.modelValue) {
+        selectedValue.value = props.modelValue
+        originalValue.value = props.modelValue
       }
       fetchOptions()
     })

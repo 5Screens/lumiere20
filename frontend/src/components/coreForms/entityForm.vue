@@ -43,7 +43,6 @@
         :required="true"
         :options-endpoint="`entities_types?langue=${currentLanguage}&toSelect=yes`"
         :mode="entityId ? 'edition' : 'creation'"
-        :initial-value="entityData.entity_type"
         :uuid="entityData.uuid"
         :patch-endpoint="'entities'"
         @update:success="handleFieldUpdated('entity_type', $event)"
@@ -181,8 +180,18 @@ const handleSave = async () => {
       entity_type: entityData.value.entity_type // Ajout du champ entity_type
     };
     
-    // Vérifier que les champs obligatoires sont remplis
+    console.log('Form data before validation:', {
+      name: transformedData.name,
+      entity_id: transformedData.entity_id,
+      entity_type: transformedData.entity_type
+    });
+    
     if (!transformedData.name || !transformedData.entity_id || !transformedData.entity_type) {
+      console.error('Missing required fields:', {
+        name: !transformedData.name,
+        entity_id: !transformedData.entity_id,
+        entity_type: !transformedData.entity_type
+      });
       throw new Error(t('errors.requiredFields'));
     }
     
