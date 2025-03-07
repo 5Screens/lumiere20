@@ -194,6 +194,15 @@ export default {
     translationsUpdated: 'translations updated successfully',
     noChanges: 'No changes detected'
   },
+  entities: {
+    name: 'Entity Name',
+    entity_id: 'Entity ID',
+    external_id: 'External ID',
+    entity_type: 'Entity Type',
+    saveSuccess: 'Entity saved successfully',
+    saveError: 'Error saving entity',
+    updateSuccess: 'Entity updated successfully'
+  },
   audit: {
     eventType: 'Event Type',
     objectType: 'Object Type',

@@ -183,6 +183,15 @@ export default {
       years: 'hace {count} años'
     }
   },
+  entities: {
+    name: 'Nombre de la Entidad',
+    entity_id: 'ID de Entidad',
+    external_id: 'ID Externo',
+    entity_type: 'Tipo de Entidad',
+    saveSuccess: 'Entidad guardada con éxito',
+    saveError: 'Error al guardar la entidad',
+    updateSuccess: 'Entidad actualizada con éxito'
+  },
   common: {
     close: 'Cerrar'
   },

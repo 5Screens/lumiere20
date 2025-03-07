@@ -36,6 +36,19 @@
         api-endpoint="entities"
       />
       
+      <!-- Champ de sélection pour le type d'entité -->
+      <SSelectField
+        v-model="entityData.entity_type"
+        :label="$t('entities.entity_type')"
+        :required="true"
+        :options-endpoint="`entities_types?langue=${currentLanguage}`"
+        :edit-mode="true"
+        :uuid="entityData.uuid"
+        field-name="entity_type"
+        api-endpoint="entities"
+        @field-updated="handleFieldUpdated"
+      />
+      
       <!-- Tableau d'audit pour afficher l'historique des modifications -->
       <AuditTable 
         v-if="entityData.uuid" 
@@ -67,6 +80,7 @@ import { useI18n } from 'vue-i18n';
 import STextField from '@/components/common/sTextField.vue';
 import ButtonStandard from '@/components/common/ButtonStandard.vue';
 import AuditTable from '@/components/common/auditTable.vue';
+import SSelectField from '@/components/common/sSelectField.vue'; // Import du composant SSelectField
 
 // Import du service API
 import apiService from '@/services/apiService';
@@ -74,7 +88,8 @@ import apiService from '@/services/apiService';
 // Import des styles
 import '@/assets/styles/forms.css';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const currentLanguage = computed(() => locale.value);
 
 // Props
 const props = defineProps({
@@ -100,6 +115,7 @@ const entityData = ref({
   name: '',
   entity_id: '',
   external_id: '',
+  entity_type: '', // Ajout du champ entity_type
   originalValues: {} // Stockage des valeurs originales pour détecter les changements
 });
 const loading = ref(false);
@@ -119,10 +135,12 @@ const fetchEntityData = async () => {
       name: data.name || '',
       entity_id: data.entity_id || '',
       external_id: data.external_id || '',
+      entity_type: data.entity_type || '', // Ajout du champ entity_type
       originalValues: {
         name: data.name || '',
         entity_id: data.entity_id || '',
-        external_id: data.external_id || ''
+        external_id: data.external_id || '',
+        entity_type: data.entity_type || '' // Ajout du champ entity_type
       }
     };
     
@@ -156,11 +174,12 @@ const handleSave = async () => {
     const transformedData = {
       name: entityData.value.name,
       entity_id: entityData.value.entity_id,
-      external_id: entityData.value.external_id
+      external_id: entityData.value.external_id,
+      entity_type: entityData.value.entity_type // Ajout du champ entity_type
     };
     
     // Vérifier que les champs obligatoires sont remplis
-    if (!transformedData.name || !transformedData.entity_id) {
+    if (!transformedData.name || !transformedData.entity_id || !transformedData.entity_type) {
       throw new Error(t('errors.requiredFields'));
     }
     
@@ -207,6 +226,10 @@ const handleUpdate = async () => {
       changedFields.external_id = entityData.value.external_id;
     }
     
+    if (entityData.value.entity_type !== entityData.value.originalValues.entity_type) {
+      changedFields.entity_type = entityData.value.entity_type;
+    }
+    
     // Si aucun champ n'a été modifié, ne rien faire
     if (Object.keys(changedFields).length === 0) {
       alert(t('common.noChanges'));
@@ -221,6 +244,10 @@ const handleUpdate = async () => {
     
     if (changedFields.hasOwnProperty('entity_id') && !changedFields.entity_id) {
       throw new Error(t('errors.entityIdRequired'));
+    }
+    
+    if (changedFields.hasOwnProperty('entity_type') && !changedFields.entity_type) {
+      throw new Error(t('errors.entityTypeRequired'));
     }
     
     // Appel API PUT pour mettre à jour l'entité
@@ -243,6 +270,16 @@ const handleUpdate = async () => {
     alert(error.value);
   } finally {
     loading.value = false;
+  }
+};
+
+// Gestion des mises à jour de champs individuels
+const handleFieldUpdated = (field, value) => {
+  console.info(`Field ${field} updated with value: ${value}`);
+  
+  // Mettre à jour la valeur originale pour éviter des mises à jour multiples
+  if (entityData.value.originalValues) {
+    entityData.value.originalValues[field] = value;
   }
 };
 

@@ -106,6 +106,15 @@ export default {
     translationsUpdated: 'traductions mises à jour avec succès',
     noChanges: 'Aucune modification détectée'
   },
+  entities: {
+    name: 'Nom de l\'entité',
+    entity_id: 'ID Entité',
+    external_id: 'ID Externe',
+    entity_type: 'Type d\'Entité',
+    saveSuccess: 'Entité enregistrée avec succès',
+    saveError: 'Erreur lors de l\'enregistrement de l\'entité',
+    updateSuccess: 'Entité mise à jour avec succès'
+  },
   errors: {
     badRequest: 'Requête incorrecte (400)',
     unauthorized: 'Non autorisé (401)',
