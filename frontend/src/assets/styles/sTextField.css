@@ -1,20 +1,26 @@
 .s-text-field {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
   width: 100%;
-  margin-bottom: 1rem;
 }
 
 .s-text-field__label-container {
   display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
 }
 
 .s-text-field__label {
   font-size: 0.875rem;
   color: var(--text-color);
   font-weight: 500;
+  width: 180px;
+  min-width: 180px;
+  flex-shrink: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .s-text-field__label--required::after {
@@ -25,6 +31,9 @@
 
 .s-text-field__input-container {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
   width: 100%;
 }
 
@@ -103,7 +112,7 @@
 
 /* Style pour mettre en évidence le champ lors de la modification */
 .s-text-field--editing .s-text-field__input {
-  background-color: var(--highlight-bg, #ffefee);
+  background-color: var(--input-bg);
 }
 
 /* Style pour les champs numériques */

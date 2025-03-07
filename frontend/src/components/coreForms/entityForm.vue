@@ -1,9 +1,5 @@
 <template>
   <div class="symptoms-form">
-    <div class="symptoms-form__header">
-      <h2>{{ title }}</h2>
-    </div>
-    
     <div class="symptoms-form__content">
       <!-- Champ Global Information avec UUID -->
       <div class="form-section">

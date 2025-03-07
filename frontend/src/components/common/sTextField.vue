@@ -5,16 +5,15 @@
       { 's-text-field--editing': isEditing && valueChanged }
     ]"
   >
-    <div class="s-text-field__label-container" v-if="label">
-      <label 
-        :class="[
-          's-text-field__label',
-          { 's-text-field__label--required': required }
-        ]"
-      >
-        {{ label }}
-      </label>
-    </div>
+    <label 
+      v-if="label" 
+      :class="[
+        's-text-field__label',
+        { 's-text-field__label--required': required }
+      ]"
+    >
+      {{ label }}
+    </label>
     
     <div class="s-text-field__input-container">
       <input
@@ -36,7 +35,7 @@
       />
       
       <div class="s-text-field__actions">
-        <template v-if="isEditing && valueChanged">
+        <template v-if="editMode && isEditing && valueChanged">
           <button 
             type="button" 
             class="s-text-field__action-btn s-text-field__action-btn--confirm"
@@ -137,6 +136,10 @@ const props = defineProps({
   apiEndpoint: {
     type: String,
     default: ''
+  },
+  editMode: {
+    type: Boolean,
+    default: false
   }
 })
 
