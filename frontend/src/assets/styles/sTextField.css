@@ -117,7 +117,9 @@
 
 /* Style pour les champs numériques */
 .s-text-field__input[type="number"] {
+  -webkit-appearance: textfield;
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .s-text-field__input[type="number"]::-webkit-outer-spin-button,
