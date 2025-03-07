@@ -192,6 +192,24 @@ export default {
     saveError: 'Erro ao salvar entidade',
     updateSuccess: 'Entidade atualizada com sucesso'
   },
+  errors: {
+    badRequest: 'Requisição inválida (400)',
+    unauthorized: 'Não autorizado (401)',
+    forbidden: 'Acesso proibido (403)',
+    notFound: 'Recurso não encontrado (404)',
+    conflict: 'Conflito com o estado atual (409)',
+    validationError: 'Erro de validação de dados (422)',
+    serverError: 'Erro interno do servidor (500)',
+    serviceUnavailable: 'Serviço temporariamente indisponível (503)',
+    fetchActiveLanguages: 'Não foi possível carregar os idiomas ativos',
+    fetchSymptomData: 'Não foi possível carregar os dados do sintoma',
+    defaultError: 'Ocorreu um erro',
+    selectOneRowForUpdate: 'Por favor, selecione uma linha para atualizar',
+    selectRowsForUpdate: 'Por favor, selecione pelo menos uma linha para atualizar',
+    selectRowsForDelete: 'Por favor, selecione pelo menos uma linha para excluir',
+    noTranslations: 'Por favor, insira pelo menos uma tradução para o sintoma',
+    requiredFields: 'Por favor, preencha todos os campos obrigatórios'
+  },
   common: {
     close: 'Fechar',
     save: 'Salvar',

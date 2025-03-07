@@ -192,6 +192,24 @@ export default {
     saveError: 'Error al guardar la entidad',
     updateSuccess: 'Entidad actualizada con éxito'
   },
+  errors: {
+    badRequest: 'Solicitud incorrecta (400)',
+    unauthorized: 'No autorizado (401)',
+    forbidden: 'Acceso prohibido (403)',
+    notFound: 'Recurso no encontrado (404)',
+    conflict: 'Conflicto con el estado actual (409)',
+    validationError: 'Error de validación de datos (422)',
+    serverError: 'Error interno del servidor (500)',
+    serviceUnavailable: 'Servicio temporalmente no disponible (503)',
+    fetchActiveLanguages: 'No se pudieron cargar los idiomas activos',
+    fetchSymptomData: 'No se pudieron cargar los datos del síntoma',
+    defaultError: 'Ha ocurrido un error',
+    selectOneRowForUpdate: 'Por favor, seleccione una fila para actualizar',
+    selectRowsForUpdate: 'Por favor, seleccione al menos una fila para actualizar',
+    selectRowsForDelete: 'Por favor, seleccione al menos una fila para eliminar',
+    noTranslations: 'Por favor, ingrese al menos una traducción para el síntoma',
+    requiredFields: 'Por favor, complete todos los campos obligatorios'
+  },
   common: {
     close: 'Cerrar',
     save: 'Guardar',
@@ -202,7 +220,7 @@ export default {
     export: 'Exportar',
     refresh: 'Actualizar',
     loading: 'Cargando...',
-    selectOption: 'Seleccionar una opción',
+    selectOption: 'Seleccione una opción',
     loading_in_progress: 'Carga en progreso',
     confirm_edit: 'Confirmar edición',
     cancel_edit: 'Cancelar edición'

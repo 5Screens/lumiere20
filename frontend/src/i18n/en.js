@@ -237,13 +237,17 @@ export default {
     unauthorized: 'Unauthorized (401)',
     forbidden: 'Forbidden (403)',
     notFound: 'Resource not found (404)',
-    conflict: 'Conflict with current state of the resource (409)',
+    conflict: 'Conflict with current state (409)',
     validationError: 'Data validation error (422)',
     serverError: 'Internal server error (500)',
     serviceUnavailable: 'Service temporarily unavailable (503)',
     fetchActiveLanguages: 'Unable to load active languages',
     fetchSymptomData: 'Unable to load symptom data',
-    defaultError: 'An error occurred',
-    noTranslations: 'Please enter at least one translation for the symptom'
+    defaultError: 'An error has occurred',
+    selectOneRowForUpdate: 'Please select a row to update',
+    selectRowsForUpdate: 'Please select at least one row to update',
+    selectRowsForDelete: 'Please select at least one row to delete',
+    noTranslations: 'Please enter at least one translation for the symptom',
+    requiredFields: 'Please fill in all required fields'
   }
 }

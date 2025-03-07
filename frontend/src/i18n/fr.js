@@ -130,7 +130,8 @@ export default {
     selectOneRowForUpdate: 'Veuillez sélectionner une ligne à modifier',
     selectRowsForUpdate: 'Veuillez sélectionner au moins une ligne à modifier',
     selectRowsForDelete: 'Veuillez sélectionner au moins une ligne à supprimer',
-    noTranslations: 'Veuillez saisir au moins une traduction pour le symptôme'
+    noTranslations: 'Veuillez saisir au moins une traduction pour le symptôme',
+    requiredFields: 'Veuillez saisir tous les champs obligatoires'
   },
   common: {
     close: 'Fermer',
