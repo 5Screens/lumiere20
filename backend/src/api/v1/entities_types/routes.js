@@ -23,10 +23,6 @@ router.get('/', async (req, res) => {
     
     logger.info(`[ROUTES] GET /api/v1/entities_types - langue parameter detected: ${req.query.langue}`);
     
-    // Add a 5 second delay
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    logger.info('[ROUTES] GET /api/v1/entities_types - Continuing after 5 second delay');
-    
     const { toSelect } = req.query;
     if (toSelect === 'yes') {
         logger.info('[ROUTES] GET /api/v1/entities_types - toSelect format requested');

@@ -9,11 +9,10 @@
     <div class="s-select-field__input-container">
       <select
         v-model="selectedValue"
-        @focus="handleFirstFocus"
         @change="handleChange"
         :disabled="loadingOptions"
       >
-        <option value="" disabled>{{ loadingOptions ? 'Chargement...' : 'Sélectionner une option' }}</option>
+        <option value="" disabled>{{ loadingOptions ? t('common.loading') : t('common.selectOption') }}</option>
         <option
           v-for="option in options"
           :key="option.value"
@@ -23,14 +22,14 @@
         </option>
       </select>
 
-      <div v-if="loadingOptions" class="spinner" aria-label="Chargement en cours"></div>
+      <div v-if="loadingOptions" class="spinner" :aria-label="t('common.loading_in_progress')"></div>
 
       <div v-if="editing && mode === 'edition'" class="s-select-field__actions">
         <button
           class="s-select-field__action-btn s-select-field__action-btn--confirm"
           @click="handleConfirmEdit"
           :disabled="isUpdating"
-          aria-label="Confirmer la modification"
+          :aria-label="t('common.confirm_edit')"
         >
           ✓
         </button>
@@ -38,7 +37,7 @@
           class="s-select-field__action-btn s-select-field__action-btn--cancel"
           @click="handleCancelEdit"
           :disabled="isUpdating"
-          aria-label="Annuler la modification"
+          :aria-label="t('common.cancel_edit')"
         >
           ✕
         </button>
@@ -49,6 +48,7 @@
 
 <script>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import '@/assets/styles/sSelectField.css'
 import apiService from '@/services/apiService'
 
@@ -86,6 +86,7 @@ export default {
     }
   },
   setup(props, { emit }) {
+    const { t } = useI18n()
     const options = ref([])
     const selectedValue = ref(props.initialValue)
     const originalValue = ref(props.initialValue)
@@ -107,12 +108,6 @@ export default {
         emit('error', 'Failed to load options')
       } finally {
         loadingOptions.value = false
-      }
-    }
-
-    const handleFirstFocus = () => {
-      if (!optionsLoaded.value) {
-        fetchOptions()
       }
     }
 
@@ -159,6 +154,7 @@ export default {
         selectedValue.value = props.initialValue
         originalValue.value = props.initialValue
       }
+      fetchOptions()
     })
 
     return {
@@ -167,10 +163,10 @@ export default {
       loadingOptions,
       editing,
       isUpdating,
-      handleFirstFocus,
       handleChange,
       handleConfirmEdit,
-      handleCancelEdit
+      handleCancelEdit,
+      t
     }
   }
 }

@@ -142,7 +142,12 @@ export default {
     create: 'Create',
     update: 'Update',
     export: 'Export',
-    refresh: 'Refresh'
+    refresh: 'Refresh',
+    loading: 'Loading...',
+    selectOption: 'Select an option',
+    loading_in_progress: 'Loading in progress',
+    confirm_edit: 'Confirm edit',
+    cancel_edit: 'Cancel edit'
   },
   nav: {
     myWork: 'My Work',

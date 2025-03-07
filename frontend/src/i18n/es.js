@@ -193,7 +193,19 @@ export default {
     updateSuccess: 'Entidad actualizada con éxito'
   },
   common: {
-    close: 'Cerrar'
+    close: 'Cerrar',
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    delete: 'Eliminar',
+    create: 'Crear',
+    update: 'Actualizar',
+    export: 'Exportar',
+    refresh: 'Actualizar',
+    loading: 'Cargando...',
+    selectOption: 'Seleccionar una opción',
+    loading_in_progress: 'Carga en progreso',
+    confirm_edit: 'Confirmar edición',
+    cancel_edit: 'Cancelar edición'
   },
   nav: {
     myWork: 'Mi Trabajo',

@@ -141,7 +141,12 @@ export default {
     update: 'Modifier',
     import: 'Importer',
     export: 'Exporter',
-    refresh: 'Rafraîchir'
+    refresh: 'Rafraîchir',
+    loading: 'Chargement...',
+    selectOption: 'Sélectionner une option',
+    loading_in_progress: 'Chargement en cours',
+    confirm_edit: 'Confirmer la modification',
+    cancel_edit: 'Annuler la modification'
   },
   dataPane: {
     title: 'Données',
