@@ -10,7 +10,7 @@ const logger = require('../../../config/logger');
  * @param {string} [toSelect] - If 'yes', formats output for select field usage
  * @access Public
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     logger.info('[ROUTES] GET /api/v1/entities_types - Route handler started');
     
     if (!req.query.langue) {
@@ -22,6 +22,10 @@ router.get('/', (req, res) => {
     }
     
     logger.info(`[ROUTES] GET /api/v1/entities_types - langue parameter detected: ${req.query.langue}`);
+    
+    // Add a 5 second delay
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    logger.info('[ROUTES] GET /api/v1/entities_types - Continuing after 5 second delay');
     
     const { toSelect } = req.query;
     if (toSelect === 'yes') {

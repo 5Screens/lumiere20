@@ -153,24 +153,37 @@ originalValue.value = props.modelValue
 
 const loadOptions = async () => {
   // Only load options once or if they haven't been loaded yet
-  if (optionsLoaded.value) return
+  if (optionsLoaded.value) {
+    console.info('[SSelectField] Options already loaded, skipping loadOptions()');
+    return;
+  }
   
-  isLoading.value = true
+  console.info('[SSelectField] Starting to load options from endpoint:', props.optionsEndpoint);
+  isLoading.value = true;
   
   try {
-    const data = await apiService.get(props.optionsEndpoint)
+    console.info('[SSelectField] Making API request...');
+    const data = await apiService.get(props.optionsEndpoint);
+    console.info('[SSelectField] API response received:', data);
     
     // Assuming the API returns an array of objects with value and label properties
     // If the API returns a different format, you may need to transform the data here
-    options.value = Array.isArray(data) ? data : []
+    options.value = Array.isArray(data) ? data : [];
+    console.info('[SSelectField] Options processed. Total options:', options.value.length);
     
-    optionsLoaded.value = true
-    emit('options-loaded', options.value)
+    optionsLoaded.value = true;
+    emit('options-loaded', options.value);
   } catch (error) {
-    console.error('Error loading options:', error)
-    options.value = []
+    console.error('[SSelectField] Error loading options:', error);
+    console.error('[SSelectField] Error details:', {
+      endpoint: props.optionsEndpoint,
+      error: error.message,
+      status: error.response?.status
+    });
+    options.value = [];
   } finally {
-    isLoading.value = false
+    console.info('[SSelectField] Finished loading options. Loading state set to false');
+    isLoading.value = false;
   }
 }
 
