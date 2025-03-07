@@ -1,0 +1,163 @@
+.s-text-field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.s-text-field__label-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.s-text-field__label {
+  font-size: 0.875rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.s-text-field__label--required::after {
+  content: '*';
+  color: var(--error-color);
+  margin-left: 0.25rem;
+}
+
+.s-text-field__input-container {
+  position: relative;
+  width: 100%;
+}
+
+.s-text-field__input {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+}
+
+.s-text-field__input:focus:not(:disabled):not([readonly]) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-alpha);
+}
+
+.s-text-field__input:hover:not(:disabled):not([readonly]) {
+  border-color: var(--primary-hover);
+}
+
+.s-text-field__input--error {
+  border-color: var(--error-color) !important;
+}
+
+.s-text-field__input--error:focus {
+  border-color: var(--error-color) !important;
+  box-shadow: 0 0 0 2px var(--error-color-alpha) !important;
+}
+
+.s-text-field__input:disabled {
+  background-color: var(--bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.s-text-field__input[readonly] {
+  background-color: var(--bg-secondary);
+  cursor: default;
+}
+
+.s-text-field__error {
+  font-size: 0.75rem;
+  color: var(--error-color);
+  margin-top: 0.25rem;
+}
+
+.s-text-field__helper {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* Ajout de styles pour les boutons d'action */
+.s-text-field__actions {
+  position: absolute;
+  right: 0.625rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Animation pour les transitions */
+.s-text-field__input-container {
+  transition: all 0.3s ease;
+}
+
+.s-text-field__input {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+/* Style pour mettre en évidence le champ lors de la modification */
+.s-text-field--editing .s-text-field__input {
+  background-color: var(--highlight-bg, #ffefee);
+}
+
+/* Style pour les champs numériques */
+.s-text-field__input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.s-text-field__input[type="number"]::-webkit-outer-spin-button,
+.s-text-field__input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Styles pour les boutons de validation et d'annulation */
+.s-text-field__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.s-text-field--editing .s-text-field__action-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.s-text-field__action-btn--confirm {
+  background-color: var(--success-color, #4caf50);
+  color: white;
+}
+
+.s-text-field__action-btn--confirm:hover {
+  background-color: var(--success-hover, #45a049);
+}
+
+.s-text-field__action-btn--cancel {
+  background-color: var(--error-color, #f44336);
+  color: white;
+  margin-left: 4px;
+}
+
+.s-text-field__action-btn--cancel:hover {
+  background-color: var(--error-hover, #d32f2f);
+}
+
+.s-text-field__action-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
