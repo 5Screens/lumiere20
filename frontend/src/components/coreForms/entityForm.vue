@@ -127,7 +127,10 @@ const fetchEntityData = async () => {
   
   try {
     loading.value = true;
-    const data = await apiService.get('entities/by-id', { entity_id: entityId.value });
+    const response = await apiService.get('entities', { uuid: entityId.value });
+    
+    // Extraire les données de la réponse
+    const data = response.data;
     
     // Transformer les données reçues du backend au format attendu par le frontend
     const transformedData = {
@@ -135,12 +138,12 @@ const fetchEntityData = async () => {
       name: data.name || '',
       entity_id: data.entity_id || '',
       external_id: data.external_id || '',
-      entity_type: data.entity_type || '', // Ajout du champ entity_type
+      entity_type: data.entity_type || '',
       originalValues: {
         name: data.name || '',
         entity_id: data.entity_id || '',
         external_id: data.external_id || '',
-        entity_type: data.entity_type || '' // Ajout du champ entity_type
+        entity_type: data.entity_type || ''
       }
     };
     
