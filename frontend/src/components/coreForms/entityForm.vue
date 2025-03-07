@@ -42,7 +42,7 @@
         :label="$t('entities.entity_type')"
         :required="true"
         :options-endpoint="`entities_types?langue=${currentLanguage}&toSelect=yes`"
-        :mode="'edition'"
+        :mode="entityId ? 'edition' : 'creation'"
         :initial-value="entityData.entity_type"
         :uuid="entityData.uuid"
         :patch-endpoint="'entities'"
