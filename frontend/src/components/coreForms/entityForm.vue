@@ -1,6 +1,6 @@
 <template>
-  <div class="symptoms-form">
-    <div class="symptoms-form__content">
+  <div class="form">
+    <div class="form__content">
       <!-- Champ Global Information avec UUID -->
       <div class="form-section">
         <h3>Global information (uuid: {{ entityData.uuid || 'New entity' }})</h3>
@@ -55,7 +55,7 @@
       />
     </div>
     
-    <div class="symptoms-form__footer">
+    <div class="form__footer">
       <ButtonStandard
         :label="$t('common.cancel')"
         variant="secondary"

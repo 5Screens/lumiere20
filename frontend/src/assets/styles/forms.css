@@ -1,5 +1,5 @@
 /* Styles pour les formulaires */
-.symptoms-form {
+.form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -14,17 +14,17 @@
   box-sizing: border-box;
 }
 
-.symptoms-form__header {
+.form__header {
   margin-bottom: 1rem;
 }
 
-.symptoms-form__content {
+.form__content {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.symptoms-form__footer {
+.form__footer {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
@@ -33,21 +33,21 @@
   border-top: 1px solid var(--border-color);
 }
 
-.symptoms-form h2 {
+.form h2 {
   font-size: 1.5rem;
   color: var(--text-color);
   margin: 0;
 }
 
 /* Animations de transition */
-.symptoms-form__content > * {
+.form__content > * {
   transition: all 0.3s ease;
 }
 
-.symptoms-form__footer button {
+.form__footer button {
   transition: all 0.2s ease;
 }
 
-.symptoms-form__footer button:hover {
+.form__footer button:hover {
   transform: scale(1.05);
 }

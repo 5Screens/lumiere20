@@ -4,6 +4,7 @@
   align-items: center;
   gap: 1rem;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .text-field__label {
@@ -37,6 +38,7 @@
   outline: none;
   background-color: var(--input-bg);
   color: var(--text-color);
+  box-sizing: border-box;
 }
 
 .text-field__input:focus:not(:disabled):not([readonly]) {

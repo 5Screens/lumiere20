@@ -1,10 +1,10 @@
 <template>
-  <div class="symptoms-form">
-    <div class="symptoms-form__header">
+  <div class="form">
+    <div class="form__header">
       <h2>{{ title }}</h2>
     </div>
     
-    <div class="symptoms-form__content">
+    <div class="form__content">
       <!-- Champ libre avec langue active -->
       <MLTextField
         v-model="symptomData.name"
@@ -28,7 +28,7 @@
       />
     </div>
     
-    <div class="symptoms-form__footer">
+    <div class="form__footer">
       <ButtonStandard
         :label="$t('common.cancel')"
         variant="secondary"
