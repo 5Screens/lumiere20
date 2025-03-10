@@ -14,6 +14,7 @@
         :uuid="entityData.uuid"
         field-name="name"
         api-endpoint="entities"
+        :edit-mode="!!entityData.uuid"
       />
       
       <!-- Champ libre pour entity_id -->
@@ -24,6 +25,7 @@
         :uuid="entityData.uuid"
         field-name="entity_id"
         api-endpoint="entities"
+        :edit-mode="!!entityData.uuid"
       />
       
       <!-- Champ libre pour external_id -->
@@ -34,6 +36,7 @@
         :uuid="entityData.uuid"
         field-name="external_id"
         api-endpoint="entities"
+        :edit-mode="!!entityData.uuid"
       />
       
       <!-- Champ de sélection pour le type d'entité -->

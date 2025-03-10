@@ -43,6 +43,11 @@
         />
       </div>
       
+      <!-- Debug info -->
+      <div v-if="false" class="s-text-field__debug" style="font-size: 10px; color: #666; margin-top: 4px;">
+        Debug: isEditing={{ isEditing }}, valueChanged={{ valueChanged }}, editMode={{ editMode }}
+      </div>
+      
       <span v-if="error" class="s-text-field__error">{{ error }}</span>
       <span v-else-if="helperText" class="s-text-field__helper">{{ helperText }}</span>
     </div>
