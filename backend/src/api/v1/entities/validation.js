@@ -5,7 +5,7 @@ const entitySchema = Joi.object({
     uuid: Joi.string().uuid(),
     name: Joi.string().required(),
     entity_id: Joi.string().required(),
-    external_id: Joi.string().allow(null),
+    external_id: Joi.string().allow(null, ''),
     entity_type: Joi.string().valid('COMPANY', 'BRANCH', 'DEPARTMENT', 'SUPPLIER', 'CUSTOMER').required(),
     budget_approver_uuid: Joi.string().uuid().allow(null),
     headquarters_location: Joi.string().allow(null),
