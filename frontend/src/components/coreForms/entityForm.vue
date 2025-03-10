@@ -51,6 +51,19 @@
         @update:success="handleFieldUpdated('entity_type', $event)"
       />
       
+      <!-- Champ de recherche filtré pour la localisation -->
+      <SFilteredSearchField
+        v-model="entityData.rel_location"
+        :label="$t('entities.location')"
+        :required="false"
+        :endpoint="'locations'"
+        :edit-mode="!!entityData.uuid"
+        :uuid="entityData.uuid"
+        field-name="rel_location"
+        :patch-endpoint="'entities'"
+        @update:success="handleFieldUpdated('rel_location', $event)"
+      />
+      
       <!-- Tableau d'audit pour afficher l'historique des modifications -->
       <AuditTable 
         v-if="entityData.uuid" 
@@ -83,6 +96,7 @@ import STextField from '@/components/common/sTextField.vue';
 import ButtonStandard from '@/components/common/ButtonStandard.vue';
 import AuditTable from '@/components/common/auditTable.vue';
 import SSelectField from '@/components/common/sSelectField.vue'; // Import du composant SSelectField
+import SFilteredSearchField from '@/components/common/sFilteredSearchField.vue'; // Import du composant SFilteredSearchField
 
 // Import du service API
 import apiService from '@/services/apiService';
@@ -118,6 +132,7 @@ const entityData = ref({
   entity_id: '',
   external_id: '',
   entity_type: '', // Ajout du champ entity_type
+  rel_location: null, // Ajout du champ rel_location
   originalValues: {} // Stockage des valeurs originales pour détecter les changements
 });
 const loading = ref(false);
@@ -141,11 +156,13 @@ const fetchEntityData = async () => {
       entity_id: data.entity_id || '',
       external_id: data.external_id || '',
       entity_type: data.entity_type || '',
+      rel_location: data.rel_location || null,
       originalValues: {
         name: data.name || '',
         entity_id: data.entity_id || '',
         external_id: data.external_id || '',
-        entity_type: data.entity_type || ''
+        entity_type: data.entity_type || '',
+        rel_location: data.rel_location || null
       }
     };
     
@@ -180,7 +197,8 @@ const handleSave = async () => {
       name: entityData.value.name,
       entity_id: entityData.value.entity_id,
       external_id: entityData.value.external_id,
-      entity_type: entityData.value.entity_type // Ajout du champ entity_type
+      entity_type: entityData.value.entity_type, // Ajout du champ entity_type
+      rel_location: entityData.value.rel_location // Ajout du champ rel_location
     };
     
     console.log('Form data before validation:', {
@@ -243,6 +261,10 @@ const handleUpdate = async () => {
     
     if (entityData.value.entity_type !== entityData.value.originalValues.entity_type) {
       changedFields.entity_type = entityData.value.entity_type;
+    }
+    
+    if (entityData.value.rel_location !== entityData.value.originalValues.rel_location) {
+      changedFields.rel_location = entityData.value.rel_location;
     }
     
     // Si aucun champ n'a été modifié, ne rien faire
