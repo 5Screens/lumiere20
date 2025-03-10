@@ -65,7 +65,7 @@
             <table class="s-filtered-search-field__table">
               <thead>
                 <tr>
-                  <th v-for="(column, index) in columns" :key="index">{{ column.label }}</th>
+                  <th v-for="column in visibleColumns" :key="column.field">{{ column.label }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -75,8 +75,8 @@
                   :class="{ 'selected': isItemSelected(item) }"
                   @click.stop="selectItem(item)"
                 >
-                  <td v-for="(column, index) in columns" :key="index">
-                    {{ getItemValue(item, column.field) }}
+                  <td v-for="column in visibleColumns" :key="column.field">
+                    {{ getItemValue(item, column.field || column.key) }}
                   </td>
                 </tr>
               </tbody>
@@ -113,6 +113,19 @@ const selectedItem = ref(null)
 const originalItem = ref(null)
 const valueChanged = ref(false)
 const columns = ref([])
+const visibleColumns = computed(() => {
+  // Si une configuration de colonnes est fournie, l'utiliser
+  if (props.columnsConfig && props.columnsConfig.length > 0) {
+    return props.columnsConfig
+      .filter(column => column.visible !== false)
+      .map(column => ({
+        field: column.key,
+        label: column.label
+      }));
+  }
+  // Sinon, utiliser les colonnes détectées automatiquement
+  return columns.value.filter(column => column.isVisible !== false);
+})
 const error = ref('')
 const searchInput = ref(null)
 
@@ -169,6 +182,10 @@ const props = defineProps({
   editMode: {
     type: Boolean,
     default: false
+  },
+  columnsConfig: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -182,8 +199,8 @@ const filteredItems = computed(() => {
   const query = searchQuery.value.toLowerCase()
   return items.value.filter(item => {
     // Check if any column value contains the search query
-    return columns.value.some(column => {
-      const value = getItemValue(item, column.field)
+    return visibleColumns.value.some(column => {
+      const value = getItemValue(item, column.field || column.key)
       return value && value.toString().toLowerCase().includes(query)
     })
   })
@@ -198,22 +215,30 @@ const fetchItems = async () => {
     const data = await apiService.get(props.endpoint)
     items.value = Array.isArray(data) ? data : []
     
-    // Determine columns automatically from the first item
-    if (items.value.length > 0) {
-      const firstItem = items.value[0]
-      columns.value = Object.keys(firstItem)
-        .filter(key => !key.startsWith('_') && key !== 'uuid')
-        .map(key => ({
-          field: key,
-          label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
-        }))
-      
-      // Always add uuid as the first column if it exists
-      if ('uuid' in firstItem) {
-        columns.value.unshift({
-          field: 'uuid',
-          label: 'ID'
-        })
+    // Si une configuration de colonnes est fournie, l'utiliser
+    if (props.columnsConfig && props.columnsConfig.length > 0) {
+      // Pas besoin de déterminer les colonnes automatiquement
+      // car elles sont déjà définies dans columnsConfig
+    } else {
+      // Determine columns automatically from the first item
+      if (items.value.length > 0) {
+        const firstItem = items.value[0]
+        columns.value = Object.keys(firstItem)
+          .filter(key => !key.startsWith('_') && key !== 'uuid')
+          .map(key => ({
+            field: key,
+            label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+            isVisible: true
+          }))
+        
+        // Always add uuid as the first column if it exists
+        if ('uuid' in firstItem) {
+          columns.value.unshift({
+            field: 'uuid',
+            label: 'ID',
+            isVisible: true
+          })
+        }
       }
     }
     
@@ -288,7 +313,10 @@ const isItemSelected = (item) => {
 
 const getItemValue = (item, field) => {
   if (!item) return ''
-  return item[field] !== undefined ? item[field] : ''
+  
+  // Handle both field and key properties (for compatibility with columnsConfig)
+  const fieldName = field
+  return item[fieldName] !== undefined ? item[fieldName] : ''
 }
 
 const getDisplayValue = (item) => {

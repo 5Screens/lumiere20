@@ -61,6 +61,30 @@
         :uuid="entityData.uuid"
         field-name="rel_location"
         :patch-endpoint="'entities'"
+        :columns-config="[
+          { key: 'uuid', label: 'ID', visible: false },
+          { key: 'name', label: 'Name', visible: true },
+          { key: 'status', label: 'Status', visible: true },
+          { key: 'type', label: 'Type', visible: true },
+          { key: 'city', label: 'City', visible: true },
+          { key: 'state_province', label: 'State/Province', visible: true },
+          { key: 'country', label: 'Country', visible: true },
+          { key: 'postal_code', label: 'Postal Code', visible: false },
+          { key: 'street', label: 'Street', visible: false },
+          { key: 'phone', label: 'Phone', visible: false },
+          { key: 'time_zone', label: 'Time Zone', visible: false },
+          { key: 'business_criticality', label: 'Business Criticality', visible: false },
+          { key: 'opening_hours', label: 'Opening Hours', visible: false },
+          { key: 'site_id', label: 'Site ID', visible: false },
+          { key: 'site_created_on', label: 'Site Created On', visible: false },
+          { key: 'alternative_site_reference', label: 'Alt. Site Ref.', visible: false },
+          { key: 'wan_design', label: 'WAN Design', visible: false },
+          { key: 'network_telecom_service', label: 'Network Service', visible: true },
+          { key: 'comments', label: 'Comments', visible: false },
+          { key: 'primary_entity_uuid', label: 'Primary Entity', visible: false },
+          { key: 'field_service_group_uuid', label: 'Field Service Group', visible: false },
+          { key: 'parent_uuid', label: 'Parent Location', visible: false }
+        ]"
         @update:success="handleFieldUpdated('rel_location', $event)"
       />
       
