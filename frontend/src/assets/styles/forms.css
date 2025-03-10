@@ -11,6 +11,7 @@
   max-width: none;
   margin: 0;
   color: var(--text-color);
+  box-sizing: border-box;
 }
 
 .symptoms-form__header {

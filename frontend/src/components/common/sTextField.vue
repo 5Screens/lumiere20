@@ -2,18 +2,19 @@
   <div 
     :class="[
       's-text-field', 
-      { 's-text-field--editing': isEditing && valueChanged }
+      { 's-text-field--editing': isEditing }
     ]"
   >
-    <label 
-      v-if="label" 
-      :class="[
-        's-text-field__label',
-        { 's-text-field__label--required': required }
-      ]"
-    >
-      {{ label }}
-    </label>
+    <div class="s-text-field__label-container" v-if="label">
+      <label 
+        :class="[
+          's-text-field__label',
+          { 's-text-field__label--required': required }
+        ]"
+      >
+        {{ label }}
+      </label>
+    </div>
     
     <div class="s-text-field__input-container">
       <input
@@ -34,30 +35,12 @@
         ]"
       />
       
-      <div class="s-text-field__actions">
-        <template v-if="editMode && isEditing && valueChanged">
-          <button 
-            type="button" 
-            class="s-text-field__action-btn s-text-field__action-btn--confirm"
-            @click="confirmChange"
-            title="Confirm"
-          >
-            <svg class="s-text-field__action-icon" viewBox="0 0 24 24">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"></path>
-            </svg>
-          </button>
-          <button 
-            type="button" 
-            class="s-text-field__action-btn s-text-field__action-btn--cancel"
-            @click="cancelChange"
-            title="Cancel"
-          >
-            <svg class="s-text-field__action-icon" viewBox="0 0 24 24">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path>
-            </svg>
-          </button>
-        </template>
-        <slot name="actions" v-else></slot>
+      <div v-if="isEditing && valueChanged && editMode" class="s-text-field__actions">
+        <RgButton
+          @confirm="confirmChange"
+          @cancel="cancelChange"
+          :disabled="disabled"
+        />
       </div>
       
       <span v-if="error" class="s-text-field__error">{{ error }}</span>
@@ -68,6 +51,7 @@
 
 <script setup>
 import { defineProps, defineEmits, ref, watch } from 'vue'
+import RgButton from './rgButton.vue'
 import '@/assets/styles/sTextField.css'
 
 const isEditing = ref(false)

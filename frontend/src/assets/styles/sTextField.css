@@ -1,23 +1,23 @@
 .s-text-field {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   width: 100%;
 }
 
 .s-text-field__label-container {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  width: 180px;
+  min-width: 180px;
+  flex-shrink: 0;
 }
 
 .s-text-field__label {
   font-size: 0.875rem;
   color: var(--text-color);
   font-weight: 500;
-  width: 180px;
-  min-width: 180px;
-  flex-shrink: 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
@@ -40,6 +40,7 @@
 .s-text-field__input {
   width: 100%;
   padding: 0.625rem;
+  padding-right: 4.5rem;
   border: 1px solid var(--border-color);
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -47,7 +48,8 @@
   outline: none;
   background-color: var(--input-bg);
   color: var(--text-color);
-}
+  box-sizing: border-box;
+  }
 
 .s-text-field__input:focus:not(:disabled):not([readonly]) {
   border-color: var(--primary-color);
@@ -90,15 +92,19 @@
   margin-top: 0.25rem;
 }
 
-/* Ajout de styles pour les boutons d'action */
+/* Styles pour le conteneur des actions */
 .s-text-field__actions {
   position: absolute;
-  right: 0.625rem;
+  right: 0.5rem;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  z-index: 2;
+  height: 100%;
+  padding: 0 0.25rem;
+  background: var(--input-bg);
 }
 
 /* Animation pour les transitions */
@@ -126,49 +132,4 @@
 .s-text-field__input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
-}
-
-/* Styles pour les boutons de validation et d'annulation */
-.s-text-field__action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-.s-text-field--editing .s-text-field__action-btn {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.s-text-field__action-btn--confirm {
-  background-color: var(--success-color, #4caf50);
-  color: white;
-}
-
-.s-text-field__action-btn--confirm:hover {
-  background-color: var(--success-hover, #45a049);
-}
-
-.s-text-field__action-btn--cancel {
-  background-color: var(--error-color, #f44336);
-  color: white;
-  margin-left: 4px;
-}
-
-.s-text-field__action-btn--cancel:hover {
-  background-color: var(--error-hover, #d32f2f);
-}
-
-.s-text-field__action-icon {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
 }
