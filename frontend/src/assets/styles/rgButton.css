@@ -1,0 +1,40 @@
+.rg-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  transform: scale(1);
+}
+
+.rg-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.rg-button--confirm {
+  background-color: var(--success-color, #4caf50);
+  color: white;
+}
+
+.rg-button--confirm:hover:not(:disabled) {
+  background-color: var(--success-hover, #45a049);
+}
+
+.rg-button--cancel {
+  background-color: var(--error-color, #f44336);
+  color: white;
+}
+
+.rg-button--cancel:hover:not(:disabled) {
+  background-color: var(--error-hover, #d32f2f);
+}
+
+.rg-button-container {
+  display: flex;
+  gap: 0.5rem;
+}

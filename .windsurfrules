@@ -26,3 +26,4 @@ les api renvoient l'objet directement et sans ajouter de meta données  success
 use sql for the database
 all objects in database have a uuid primary key
 do not use serial id as primary key in the database
+all attributes must start by rel_ when it refers to a key of an external object

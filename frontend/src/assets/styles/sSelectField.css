@@ -86,41 +86,6 @@
   opacity: 1;
 }
 
-.s-select-field__action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  transform: scale(0.8);
-}
-
-.s-select-field.editing .s-select-field__action-btn {
-  transform: scale(1);
-}
-
-.s-select-field__action-btn--confirm {
-  background-color: var(--success-color, #4caf50);
-  color: white;
-}
-
-.s-select-field__action-btn--confirm:hover {
-  background-color: var(--success-hover, #45a049);
-}
-
-.s-select-field__action-btn--cancel {
-  background-color: var(--error-color, #f44336);
-  color: white;
-}
-
-.s-select-field__action-btn--cancel:hover {
-  background-color: var(--error-hover, #d32f2f);
-}
-
 .spinner {
   width: 16px;
   height: 16px;

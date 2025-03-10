@@ -25,22 +25,11 @@
       <div v-if="loadingOptions" class="spinner" :aria-label="t('common.loading_in_progress')"></div>
 
       <div v-if="editing && mode === 'edition'" class="s-select-field__actions">
-        <button
-          class="s-select-field__action-btn s-select-field__action-btn--confirm"
-          @click="handleConfirmEdit"
+        <RgButton
+          @confirm="handleConfirmEdit"
+          @cancel="handleCancelEdit"
           :disabled="isUpdating"
-          :aria-label="t('common.confirm_edit')"
-        >
-          ✓
-        </button>
-        <button
-          class="s-select-field__action-btn s-select-field__action-btn--cancel"
-          @click="handleCancelEdit"
-          :disabled="isUpdating"
-          :aria-label="t('common.cancel_edit')"
-        >
-          ✕
-        </button>
+        />
       </div>
     </div>
   </div>
@@ -51,9 +40,13 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import '@/assets/styles/sSelectField.css'
 import apiService from '@/services/apiService'
+import RgButton from './rgButton.vue'
 
 export default {
   name: 'SSelectField',
+  components: {
+    RgButton
+  },
   props: {
     modelValue: {
       type: String,
