@@ -13,7 +13,7 @@ class EntityService {
                     parent.name as parent_entity_name,
                     e.external_id, 
                     e.entity_type,
-                    e.headquarters_location,
+                    e.rel_headquarters_location,
                     e.is_active,
                     CASE 
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
@@ -46,7 +46,7 @@ class EntityService {
                     parent.name as parent_entity_name,
                     e.external_id, 
                     e.entity_type,
-                    e.headquarters_location,
+                    e.rel_headquarters_location,
                     e.is_active,
                     CASE 
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
@@ -83,7 +83,7 @@ class EntityService {
                     parent.name as parent_entity_name,
                     e.external_id, 
                     e.entity_type,
-                    e.headquarters_location,
+                    e.rel_headquarters_location,
                     e.is_active,
                     CASE 
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
@@ -134,7 +134,7 @@ class EntityService {
                     e.name, 
                     e.external_id, 
                     e.entity_type,
-                    e.headquarters_location,
+                    e.rel_headquarters_location,
                     e.is_active,
                     CASE 
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
@@ -168,7 +168,7 @@ class EntityService {
                 external_id,
                 entity_type,
                 budget_approver_uuid,
-                headquarters_location,
+                rel_headquarters_location,
                 is_active,
                 parent_uuid
             } = entityData;
@@ -180,7 +180,7 @@ class EntityService {
                     external_id,
                     entity_type,
                     budget_approver_uuid,
-                    headquarters_location,
+                    rel_headquarters_location,
                     is_active,
                     parent_uuid
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -191,7 +191,7 @@ class EntityService {
                     external_id,
                     entity_type,
                     budget_approver_uuid,
-                    headquarters_location,
+                    rel_headquarters_location,
                     is_active,
                     parent_uuid,
                     date_creation,
@@ -203,7 +203,7 @@ class EntityService {
                 external_id,
                 entity_type,
                 budget_approver_uuid,
-                headquarters_location,
+                rel_headquarters_location,
                 is_active !== undefined ? is_active : true,
                 parent_uuid
             ];
@@ -264,7 +264,7 @@ class EntityService {
                     parent.name as parent_entity_name,
                     e.external_id, 
                     e.entity_type,
-                    e.headquarters_location,
+                    e.rel_headquarters_location,
                     e.is_active,
                     CASE 
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 

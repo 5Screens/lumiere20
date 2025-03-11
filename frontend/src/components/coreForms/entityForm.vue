@@ -53,13 +53,13 @@
       
       <!-- Champ de recherche filtré pour la localisation -->
       <SFilteredSearchField
-        v-model="entityData.rel_location"
+        v-model="entityData.rel_headquarters_location"
         :label="$t('entities.location')"
         :required="false"
         :endpoint="'locations'"
         :edit-mode="!!entityData.uuid"
         :uuid="entityData.uuid"
-        field-name="rel_location"
+        field-name="rel_headquarters_location"
         :patch-endpoint="'entities'"
         :columns-config="[
           { key: 'uuid', label: 'ID', visible: false },
@@ -85,7 +85,7 @@
           { key: 'field_service_group_uuid', label: 'Field Service Group', visible: false },
           { key: 'parent_uuid', label: 'Parent Location', visible: false }
         ]"
-        @update:success="handleFieldUpdated('rel_location', $event)"
+        @update:success="handleFieldUpdated('rel_headquarters_location', $event)"
       />
       
       <!-- Tableau d'audit pour afficher l'historique des modifications -->
@@ -156,7 +156,7 @@ const entityData = ref({
   entity_id: '',
   external_id: '',
   entity_type: '', // Ajout du champ entity_type
-  rel_location: null, // Ajout du champ rel_location
+  rel_headquarters_location: null, // Ajout du champ rel_headquarters_location
   originalValues: {} // Stockage des valeurs originales pour détecter les changements
 });
 const loading = ref(false);
@@ -180,13 +180,13 @@ const fetchEntityData = async () => {
       entity_id: data.entity_id || '',
       external_id: data.external_id || '',
       entity_type: data.entity_type || '',
-      rel_location: data.rel_location || null,
+      rel_headquarters_location: data.rel_headquarters_location || null,
       originalValues: {
         name: data.name || '',
         entity_id: data.entity_id || '',
         external_id: data.external_id || '',
         entity_type: data.entity_type || '',
-        rel_location: data.rel_location || null
+        rel_headquarters_location: data.rel_headquarters_location || null
       }
     };
     
@@ -222,7 +222,7 @@ const handleSave = async () => {
       entity_id: entityData.value.entity_id,
       external_id: entityData.value.external_id,
       entity_type: entityData.value.entity_type, // Ajout du champ entity_type
-      rel_location: entityData.value.rel_location // Ajout du champ rel_location
+      rel_headquarters_location: entityData.value.rel_headquarters_location // Ajout du champ rel_headquarters_location
     };
     
     console.log('Form data before validation:', {
@@ -287,8 +287,8 @@ const handleUpdate = async () => {
       changedFields.entity_type = entityData.value.entity_type;
     }
     
-    if (entityData.value.rel_location !== entityData.value.originalValues.rel_location) {
-      changedFields.rel_location = entityData.value.rel_location;
+    if (entityData.value.rel_headquarters_location !== entityData.value.originalValues.rel_headquarters_location) {
+      changedFields.rel_headquarters_location = entityData.value.rel_headquarters_location;
     }
     
     // Si aucun champ n'a été modifié, ne rien faire

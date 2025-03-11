@@ -8,7 +8,7 @@ const entitySchema = Joi.object({
     external_id: Joi.string().allow(null, ''),
     entity_type: Joi.string().valid('COMPANY', 'BRANCH', 'DEPARTMENT', 'SUPPLIER', 'CUSTOMER').required(),
     budget_approver_uuid: Joi.string().uuid().allow(null),
-    headquarters_location: Joi.string().allow(null),
+    rel_headquarters_location: Joi.string().uuid().allow(null),
     is_active: Joi.boolean().default(true),
     parent_uuid: Joi.string().uuid().allow(null)
 }).options({ 
