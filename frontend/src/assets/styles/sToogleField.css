@@ -79,11 +79,11 @@
 
 input:checked + .s-toogle-field__slider {
   background-color: var(--input-bg);
-  border-color: var(--primary-color);
 }
 
 input:focus + .s-toogle-field__slider {
-  box-shadow: 0 0 0 2px var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-alpha);
 }
 
 input:checked + .s-toogle-field__slider:before {
