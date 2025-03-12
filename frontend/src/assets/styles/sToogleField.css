@@ -58,7 +58,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--bg-secondary);
+  background-color: var(--input-bg);
   transition: .3s ease-in-out;
   border-radius: 2rem;
   border: 1px solid var(--border-color);
@@ -71,23 +71,24 @@
   width: 1.5rem;
   left: 0.25rem;
   bottom: 0.25rem;
-  background-color: white;
+  background-color: var(--text-color);
   transition: .3s ease-in-out;
   border-radius: 50%;
   box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 input:checked + .s-toogle-field__slider {
-  background-color: var(--primary-color);
+  background-color: var(--input-bg);
   border-color: var(--primary-color);
 }
 
 input:focus + .s-toogle-field__slider {
-  box-shadow: 0 0 0 2px var(--primary-color-alpha);
+  box-shadow: 0 0 0 2px var(--primary-color);
 }
 
 input:checked + .s-toogle-field__slider:before {
   transform: translateX(1.5rem);
+  background-color: var(--text-color);
 }
 
 .s-toogle-field__switch:hover .s-toogle-field__slider:not(:disabled) {
