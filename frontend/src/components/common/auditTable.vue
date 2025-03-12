@@ -19,7 +19,7 @@
                 {{ formatEventType(item.event_type) }}
               </span>
             </td>
-            <td>{{ formatObjectType(item.object_type) }}</td>
+            <td>{{ formatObjectType(item.object_type, item.attribute_name) }}</td>
             <td class="old-value">{{ item.old_value }}</td>
             <td class="new-value">{{ item.new_value }}</td>
             <td>{{ getUserName(item.user_id) }}</td>
@@ -147,14 +147,21 @@ export default {
     /**
      * Format object type for display
      */
-    formatObjectType(objectType) {
+    formatObjectType(objectType, attributeName) {
       if (!objectType) return ''
       
-      // Convert snake_case to Title Case
-      return objectType
+      // Convert snake_case to Title Case for object_type
+      const formattedObjectType = objectType
         .split('_')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ')
+      
+      // If attribute_name exists, concatenate with object_type
+      if (attributeName) {
+        return `${objectType}/${attributeName}`
+      }
+      
+      return formattedObjectType
     },
     
     /**
