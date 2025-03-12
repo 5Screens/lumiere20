@@ -321,6 +321,22 @@ export default {
       // Vérifier si l'onglet enfant existe déjà
       const existingTabIndex = this.tabs.findIndex(tab => tab.id === id)
       
+      // Déterminer le titre traduit en fonction du type d'onglet
+      let translatedTitle = title;
+      if (type === 'entityForm') {
+        if (data && data.entityId) {
+          translatedTitle = this.$t('entities.updateTitle', { name: data.title ? data.title.split(' - ')[1] : '' });
+        } else {
+          translatedTitle = this.$t('entities.createTitle');
+        }
+      } else if (type === 'symptomForm') {
+        if (data && data.symptomId) {
+          translatedTitle = this.$t('symptoms.updateTitle', { name: data.title ? data.title.split(' - ')[1] : '' });
+        } else {
+          translatedTitle = this.$t('symptoms.createTitle');
+        }
+      }
+      
       if (existingTabIndex !== -1) {
         // Mettre à jour les données de l'onglet existant
         this.tabs[existingTabIndex].data = {
@@ -328,11 +344,13 @@ export default {
           ...data,
           _instanceId: Date.now() // Pour forcer la réinitialisation du composant
         }
+        // Mettre à jour le titre avec la traduction actuelle
+        this.tabs[existingTabIndex].title = translatedTitle;
       } else {
-        // Créer un nouvel onglet enfant
+        // Créer un nouvel onglet enfant avec le titre traduit
         this.tabs.push({
           id,
-          title,
+          title: translatedTitle,
           type,
           data: {
             ...data,
@@ -537,6 +555,22 @@ export default {
             break;
           case 'workflows':
             newTitle = this.$t('configuration.workflows');
+            break;
+          case 'entityForm':
+            // Pour les formulaires d'entités, utiliser les données pour déterminer le titre
+            if (tab.data && tab.data.entityId) {
+              newTitle = this.$t('entities.updateTitle', { name: tab.data.title ? tab.data.title.split(' - ')[1] : '' });
+            } else {
+              newTitle = this.$t('entities.createTitle');
+            }
+            break;
+          case 'symptomForm':
+            // Pour les formulaires de symptômes, utiliser les données pour déterminer le titre
+            if (tab.data && tab.data.symptomId) {
+              newTitle = this.$t('symptoms.updateTitle', { name: tab.data.title ? tab.data.title.split(' - ')[1] : '' });
+            } else {
+              newTitle = this.$t('symptoms.createTitle');
+            }
             break;
           default:
             newTitle = tab.title;
