@@ -25,21 +25,10 @@
       <!-- Actions buttons in edit mode -->
       <div v-if="mode === 'edit' && isEditing" class="s-toogle-field__actions">
         <RgButton
-          :title="t('common.confirm')"
-          variant="primary"
-          size="small"
-          @click="handleConfirm"
-        >
-          <template #icon>✓</template>
-        </RgButton>
-        <RgButton
-          :title="t('common.cancel')"
-          variant="secondary"
-          size="small"
-          @click="handleCancel"
-        >
-          <template #icon>✕</template>
-        </RgButton>
+          @confirm="handleConfirm"
+          @cancel="handleCancel"
+          :disabled="disabled"
+        />
       </div>
     </div>
 
