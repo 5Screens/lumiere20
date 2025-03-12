@@ -26,7 +26,7 @@
 
       <div v-if="editing && mode === 'edition'" class="s-select-field__actions">
         <RgButton
-          @confirm="handleConfirmEdit"
+          @confirm="confirmChange"
           @cancel="handleCancelEdit"
           :disabled="isUpdating"
         />
@@ -116,26 +116,42 @@ export default {
       emit('change', selectedValue.value)
     }
 
-    const handleConfirmEdit = async () => {
+    const confirmChange = async () => {
       if (!props.uuid || !props.patchEndpoint) {
         console.error('Missing uuid or patchEndpoint for edit mode')
+        emit('update:error', {
+          success: false,
+          error: 'Missing uuid or patchEndpoint'
+        })
         return
       }
 
       try {
         isUpdating.value = true
-        await apiService.patch(props.patchEndpoint, props.uuid, {
+        // Préparer les paramètres pour la requête PATCH
+        const params = {
+          uuid: props.uuid,
           value: selectedValue.value
-        })
+        }
+        
+        // Utiliser apiService pour effectuer la requête PATCH
+        await apiService.patch(props.patchEndpoint, params)
         
         originalValue.value = selectedValue.value
         editing.value = false
-        emit('update:success')
+        emit('update:success', {
+          success: true,
+          value: selectedValue.value
+        })
       } catch (error) {
         console.error('Error updating value:', error)
         selectedValue.value = originalValue.value
         editing.value = false
-        emit('update:error', error)
+        emit('update:error', {
+          success: false,
+          value: selectedValue.value,
+          error: error.message
+        })
       } finally {
         isUpdating.value = false
       }
@@ -162,7 +178,7 @@ export default {
       editing,
       isUpdating,
       handleChange,
-      handleConfirmEdit,
+      confirmChange,
       handleCancelEdit,
       t
     }
