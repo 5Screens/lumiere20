@@ -1,6 +1,6 @@
 const entityService = require('./service');
 const logger = require('../../../config/logger');
-const { validateEntity } = require('./validation');
+const { validateEntity, validateEntityPatch } = require('./validation');
 
 class EntityController {
     async getAllEntities(req, res) {
@@ -174,6 +174,85 @@ class EntityController {
             logger.error(`[CONTROLLER] getActiveEntities - Error: ${error.message}`);
             res.status(500).json({ 
                 error: 'An error occurred while retrieving active entities' 
+            });
+        }
+    }
+
+    async updateEntityField(req, res) {
+        const uuid = req.query.uuid;
+        logger.info(`[CONTROLLER] updateEntityField - Processing request for UUID: ${uuid}`);
+        
+        if (!uuid) {
+            logger.warn('[CONTROLLER] updateEntityField - Missing UUID parameter');
+            return res.status(400).json({
+                success: false,
+                message: 'UUID parameter is required'
+            });
+        }
+
+        // Récupérer les champs à mettre à jour depuis les paramètres de requête
+        const allowedFields = ['name', 'entity_id', 'external_id', 'entity_type', 'rel_headquarters_location', 'is_active', 'parent_uuid'];
+        const fieldData = {};
+        
+        // Parcourir les paramètres de requête et extraire les champs autorisés
+        for (const field of allowedFields) {
+            if (req.query[field] !== undefined) {
+                // Conversion spéciale pour le champ booléen is_active
+                if (field === 'is_active') {
+                    fieldData[field] = req.query[field] === 'true';
+                } else {
+                    fieldData[field] = req.query[field];
+                }
+            }
+        }
+
+        // Vérifier si des champs à mettre à jour ont été fournis
+        if (Object.keys(fieldData).length === 0) {
+            logger.warn('[CONTROLLER] updateEntityField - No valid fields to update');
+            return res.status(400).json({
+                success: false,
+                message: 'No valid fields to update'
+            });
+        }
+
+        try {
+            // Validation des données
+            const { error, value } = validateEntityPatch(fieldData);
+            if (error) {
+                logger.warn(`[CONTROLLER] updateEntityField - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid entity data',
+                    errors: error.details.map(d => d.message)
+                });
+            }
+
+            // Mise à jour de l'entité
+            const updatedEntity = await entityService.updateEntityField(uuid, value);
+            
+            if (!updatedEntity) {
+                logger.warn(`[CONTROLLER] updateEntityField - Entity not found with UUID: ${uuid}`);
+                return res.status(404).json({
+                    success: false,
+                    message: 'Entity not found'
+                });
+            }
+            
+            logger.info(`[CONTROLLER] updateEntityField - Successfully updated entity with UUID: ${uuid}`);
+            return res.status(200).json(updatedEntity);
+        } catch (error) {
+            logger.error(`[CONTROLLER] updateEntityField - Error: ${error.message}`);
+            
+            if (error.message.includes('existe déjà')) {
+                return res.status(409).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'An error occurred while updating the entity'
             });
         }
     }

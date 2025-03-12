@@ -56,4 +56,24 @@ router.post('/', (req, res) => {
     return entityController.createEntity(req, res);
 });
 
+// PATCH /api/v1/entities
+router.patch('/', (req, res) => {
+    logger.info('[ROUTES] PATCH /api/v1/entities - Route handler started');
+    
+    // Vérifier si des paramètres de requête non reconnus sont présents
+    const allowedParams = ['uuid', 'name', 'entity_id', 'external_id', 'entity_type', 'rel_headquarters_location', 'is_active', 'parent_uuid'];
+    const queryParams = Object.keys(req.query);
+    
+    const invalidParams = queryParams.filter(param => !allowedParams.includes(param));
+    if (invalidParams.length > 0) {
+        logger.warn(`[ROUTES] PATCH /api/v1/entities - Invalid query parameters detected: ${invalidParams.join(', ')}`);
+        return res.status(400).json({
+            error: 'Invalid query parameters',
+            invalidParams: invalidParams
+        });
+    }
+    
+    return entityController.updateEntityField(req, res);
+});
+
 module.exports = router;
