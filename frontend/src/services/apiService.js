@@ -116,6 +116,41 @@ export default {
   },
 
   /**
+   * Effectue une requête PATCH avec des paramètres dans l'URL
+   * @param {string} endpoint - Point d'accès API (sans l'URL de base)
+   * @param {Object} params - Paramètres à inclure dans l'URL
+   * @returns {Promise<any>} - Données de réponse
+   */
+  async patch(endpoint, params = {}) {
+    try {
+      // Construire l'URL avec les paramètres de requête
+      const url = new URL(`${API_BASE_URL}/${endpoint}`);
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined) {
+          url.searchParams.append(key, params[key]);
+        }
+      });
+
+      const response = await fetch(url.toString(), {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Vérifier si la réponse est OK (statut 2xx)
+      if (!response.ok) {
+        throw await this.handleErrorResponse(response);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error(`Erreur lors de la requête PATCH à ${endpoint}:`, error);
+      throw error;
+    }
+  },
+
+  /**
    * Gère les réponses d'erreur de l'API
    * @param {Response} response - Réponse de l'API
    * @returns {Error} - Erreur avec message approprié

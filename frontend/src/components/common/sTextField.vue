@@ -57,6 +57,7 @@
 <script setup>
 import { defineProps, defineEmits, ref, watch } from 'vue'
 import RgButton from './rgButton.vue'
+import apiService from '@/services/apiService'
 import '@/assets/styles/sTextField.css'
 
 const isEditing = ref(false)
@@ -184,23 +185,14 @@ const confirmChange = async () => {
   }
   
   try {
-    // Prepare data for PATCH request
-    const data = {
+    // Préparer les paramètres pour la requête PATCH
+    const params = {
+      uuid: props.uuid,
       [props.fieldName]: internalValue.value
     }
     
-    // Make API PATCH request
-    const response = await fetch(`${props.apiEndpoint}/${props.uuid}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`)
-    }
+    // Utiliser apiService pour effectuer la requête PATCH
+    const response = await apiService.patch(props.apiEndpoint, params)
     
     // Update original value after successful update
     originalValue.value = internalValue.value
