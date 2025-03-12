@@ -12,7 +12,7 @@
           type="checkbox"
           :id="uuid"
           v-model="localValue"
-          :disabled="disabled || (!isEditing && mode === 'edit')"
+          :disabled="disabled"
           @change="handleChange"
         >
         <span class="s-toogle-field__slider"></span>
