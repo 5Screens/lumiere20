@@ -99,6 +99,27 @@
         @update:success="handleFieldUpdated('rel_headquarters_location', $event)"
       />
       
+      <!-- Champ de recherche filtré pour l'entité parente -->
+      <SFilteredSearchField
+        v-model="entityData.parent_uuid"
+        :label="$t('entities.parent')"
+        :required="false"
+        :endpoint="'entities'"
+        :edit-mode="!!entityData.uuid"
+        :uuid="entityData.uuid"
+        field-name="parent_uuid"
+        :patch-endpoint="'entities'"
+        :columns-config="[
+          { key: 'uuid', label: 'ID', visible: false },
+          { key: 'name', label: 'Name', visible: true },
+          { key: 'entity_id', label: 'Entity ID', visible: true },
+          { key: 'external_id', label: 'External ID', visible: true },
+          { key: 'entity_type', label: 'Type', visible: true },
+          { key: 'is_active', label: 'Active', visible: true }
+        ]"
+        @update:success="handleFieldUpdated('parent_uuid', $event)"
+      />
+      
       <!-- Tableau d'audit pour afficher l'historique des modifications -->
       <AuditTable 
         v-if="entityData.uuid" 
@@ -169,6 +190,7 @@ const entityData = ref({
   external_id: '',
   entity_type: '', // Ajout du champ entity_type
   rel_headquarters_location: null, // Ajout du champ rel_headquarters_location
+  parent_uuid: null, // Ajout du champ parent_uuid
   is_active: true, // Ajout du champ is_active avec valeur par défaut true
   originalValues: {} // Stockage des valeurs originales pour détecter les changements
 });
@@ -194,6 +216,7 @@ const fetchEntityData = async () => {
       external_id: data.external_id || '',
       entity_type: data.entity_type || '',
       rel_headquarters_location: data.rel_headquarters_location || null,
+      parent_uuid: data.parent_uuid || null,
       is_active: data.is_active !== undefined ? data.is_active : true,
       originalValues: {
         name: data.name || '',
@@ -201,6 +224,7 @@ const fetchEntityData = async () => {
         external_id: data.external_id || '',
         entity_type: data.entity_type || '',
         rel_headquarters_location: data.rel_headquarters_location || null,
+        parent_uuid: data.parent_uuid || null,
         is_active: data.is_active !== undefined ? data.is_active : true
       }
     };
@@ -238,6 +262,7 @@ const handleSave = async () => {
       external_id: entityData.value.external_id,
       entity_type: entityData.value.entity_type, // Ajout du champ entity_type
       rel_headquarters_location: entityData.value.rel_headquarters_location, // Ajout du champ rel_headquarters_location
+      parent_uuid: entityData.value.parent_uuid, // Ajout du champ parent_uuid
       is_active: entityData.value.is_active // Ajout du champ is_active
     };
     
@@ -305,6 +330,10 @@ const handleUpdate = async () => {
     
     if (entityData.value.rel_headquarters_location !== entityData.value.originalValues.rel_headquarters_location) {
       changedFields.rel_headquarters_location = entityData.value.rel_headquarters_location;
+    }
+    
+    if (entityData.value.parent_uuid !== entityData.value.originalValues.parent_uuid) {
+      changedFields.parent_uuid = entityData.value.parent_uuid;
     }
     
     if (entityData.value.is_active !== entityData.value.originalValues.is_active) {

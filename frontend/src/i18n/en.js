@@ -207,6 +207,8 @@ export default {
     external_id: 'External ID',
     entity_type: 'Entity Type',
     is_active: 'Active',
+    location: 'Headquarters Location',
+    parent: 'Parent Entity',
     saveSuccess: 'Entity saved successfully',
     saveError: 'Error saving entity',
     updateSuccess: 'Entity updated successfully'

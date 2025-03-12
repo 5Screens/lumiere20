@@ -189,6 +189,8 @@ export default {
     external_id: 'ID Externo',
     entity_type: 'Tipo de Entidad',
     is_active: 'Activo',
+    location: 'Ubicación de la Sede',
+    parent: 'Entidad Padre',
     saveSuccess: 'Entidad guardada con éxito',
     saveError: 'Error al guardar la entidad',
     updateSuccess: 'Entidad actualizada con éxito'
