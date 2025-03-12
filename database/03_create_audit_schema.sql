@@ -44,15 +44,15 @@ COMMENT ON COLUMN audit.audit_changes.new_value IS 'Valeur après modification, 
 COMMENT ON COLUMN audit.audit_changes.user_id IS 'UUID de l''utilisateur ayant effectué la modification';
 COMMENT ON COLUMN audit.audit_changes.event_date IS 'Date et heure de l''événement';
 
--- Création d'une fonction générique pour l'audit
+-- Création de la nouvelle fonction d'audit qui exclut les champs date_modification
 CREATE OR REPLACE FUNCTION audit.log_changes()
 RETURNS TRIGGER AS $$
 DECLARE
     current_user_id UUID;
+    object_type TEXT;
     col_name TEXT;
     old_val TEXT;
     new_val TEXT;
-    object_type TEXT;
     record_json TEXT := '';
 BEGIN
     -- Récupération de l'ID utilisateur actuel (à implémenter selon votre système d'authentification)
@@ -118,18 +118,21 @@ BEGIN
             WHERE c.table_schema = TG_TABLE_SCHEMA 
             AND c.table_name = TG_TABLE_NAME
         LOOP
-            -- Récupération des valeurs avant et après modification
-            EXECUTE format('SELECT $1.%I::TEXT, $2.%I::TEXT', col_name, col_name) 
-            INTO old_val, new_val
-            USING OLD, NEW;
-            
-            -- Si la valeur a changé, enregistrer la modification
-            IF old_val IS DISTINCT FROM new_val THEN
-                INSERT INTO audit.audit_changes (
-                    object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
-                ) VALUES (
-                    object_type, NEW.uuid, 'Field_UPDATED', col_name, old_val, new_val, current_user_id
-                );
+            -- Ignorer explicitement les colonnes date_modification
+            IF col_name <> 'date_modification' THEN
+                -- Récupération des valeurs avant et après modification
+                EXECUTE format('SELECT $1.%I::TEXT, $2.%I::TEXT', col_name, col_name) 
+                INTO old_val, new_val
+                USING OLD, NEW;
+                
+                -- Si la valeur a changé, enregistrer la modification
+                IF old_val IS DISTINCT FROM new_val THEN
+                    INSERT INTO audit.audit_changes (
+                        object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
+                    ) VALUES (
+                        object_type, NEW.uuid, 'Field_UPDATED', col_name, old_val, new_val, current_user_id
+                    );
+                END IF;
             END IF;
         END LOOP;
         RETURN NEW;
@@ -169,6 +172,7 @@ BEGIN
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
+
 
 -- Création des déclencheurs pour les tables à auditer
 
