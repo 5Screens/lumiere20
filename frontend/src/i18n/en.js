@@ -147,7 +147,9 @@ export default {
     selectOption: 'Select an option',
     loading_in_progress: 'Loading in progress',
     confirm_edit: 'Confirm edit',
-    cancel_edit: 'Cancel edit'
+    cancel_edit: 'Cancel edit',
+    yes: 'Yes',
+    no: 'No'
   },
   nav: {
     myWork: 'My Work',

@@ -224,7 +224,9 @@ export default {
     selectOption: 'Seleccione una opción',
     loading_in_progress: 'Carga en progreso',
     confirm_edit: 'Confirmar edición',
-    cancel_edit: 'Cancelar edición'
+    cancel_edit: 'Cancelar edición',
+    yes: 'Sí',
+    no: 'No'
   },
   nav: {
     myWork: 'Mi Trabajo',

@@ -112,6 +112,7 @@ export default {
     external_id: 'ID Externe',
     entity_type: 'Type d\'Entité',
     is_active: 'Actif',
+    location:"Localisation du siège",
     saveSuccess: 'Entité enregistrée avec succès',
     saveError: 'Erreur lors de l\'enregistrement de l\'entité',
     updateSuccess: 'Entité mise à jour avec succès'
@@ -148,7 +149,9 @@ export default {
     selectOption: 'Sélectionner une option',
     loading_in_progress: 'Chargement en cours',
     confirm_edit: 'Confirmer la modification',
-    cancel_edit: 'Annuler la modification'
+    cancel_edit: 'Annuler la modification',
+    yes: 'Oui',
+    no: 'Non'
   },
   dataPane: {
     title: 'Données',
