@@ -193,7 +193,8 @@ export default {
     parent: 'Entidad Padre',
     saveSuccess: 'Entidad guardada con éxito',
     saveError: 'Error al guardar la entidad',
-    updateSuccess: 'Entidad actualizada con éxito'
+    updateSuccess: 'Entidad actualizada con éxito',
+    createTitle: 'Nueva Entidad'
   },
   errors: {
     badRequest: 'Solicitud incorrecta (400)',
