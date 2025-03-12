@@ -51,6 +51,17 @@
         @update:success="handleFieldUpdated('entity_type', $event)"
       />
       
+      <!-- Champ toggle pour is_active -->
+      <sToogleField
+        v-model="entityData.is_active"
+        :label="$t('entities.is_active')"
+        :required="false"
+        :mode="entityId ? 'edit' : 'create'"
+        :uuid="entityData.uuid"
+        patch-endpoint="entities"
+        @update:success="handleFieldUpdated('is_active', $event)"
+      />
+      
       <!-- Champ de recherche filtré pour la localisation -->
       <SFilteredSearchField
         v-model="entityData.rel_headquarters_location"
@@ -121,6 +132,7 @@ import ButtonStandard from '@/components/common/ButtonStandard.vue';
 import AuditTable from '@/components/common/auditTable.vue';
 import SSelectField from '@/components/common/sSelectField.vue'; // Import du composant SSelectField
 import SFilteredSearchField from '@/components/common/sFilteredSearchField.vue'; // Import du composant SFilteredSearchField
+import sToogleField from '@/components/common/sToogleField.vue'; // Import du composant sToogleField
 
 // Import du service API
 import apiService from '@/services/apiService';
@@ -157,6 +169,7 @@ const entityData = ref({
   external_id: '',
   entity_type: '', // Ajout du champ entity_type
   rel_headquarters_location: null, // Ajout du champ rel_headquarters_location
+  is_active: true, // Ajout du champ is_active avec valeur par défaut true
   originalValues: {} // Stockage des valeurs originales pour détecter les changements
 });
 const loading = ref(false);
@@ -181,12 +194,14 @@ const fetchEntityData = async () => {
       external_id: data.external_id || '',
       entity_type: data.entity_type || '',
       rel_headquarters_location: data.rel_headquarters_location || null,
+      is_active: data.is_active !== undefined ? data.is_active : true,
       originalValues: {
         name: data.name || '',
         entity_id: data.entity_id || '',
         external_id: data.external_id || '',
         entity_type: data.entity_type || '',
-        rel_headquarters_location: data.rel_headquarters_location || null
+        rel_headquarters_location: data.rel_headquarters_location || null,
+        is_active: data.is_active !== undefined ? data.is_active : true
       }
     };
     
@@ -222,7 +237,8 @@ const handleSave = async () => {
       entity_id: entityData.value.entity_id,
       external_id: entityData.value.external_id,
       entity_type: entityData.value.entity_type, // Ajout du champ entity_type
-      rel_headquarters_location: entityData.value.rel_headquarters_location // Ajout du champ rel_headquarters_location
+      rel_headquarters_location: entityData.value.rel_headquarters_location, // Ajout du champ rel_headquarters_location
+      is_active: entityData.value.is_active // Ajout du champ is_active
     };
     
     console.log('Form data before validation:', {
@@ -289,6 +305,10 @@ const handleUpdate = async () => {
     
     if (entityData.value.rel_headquarters_location !== entityData.value.originalValues.rel_headquarters_location) {
       changedFields.rel_headquarters_location = entityData.value.rel_headquarters_location;
+    }
+    
+    if (entityData.value.is_active !== entityData.value.originalValues.is_active) {
+      changedFields.is_active = entityData.value.is_active;
     }
     
     // Si aucun champ n'a été modifié, ne rien faire

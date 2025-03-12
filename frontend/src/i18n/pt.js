@@ -188,6 +188,7 @@ export default {
     entity_id: 'ID da Entidade',
     external_id: 'ID Externo',
     entity_type: 'Tipo de Entidade',
+    is_active: 'Ativo',
     saveSuccess: 'Entidade salva com sucesso',
     saveError: 'Erro ao salvar entidade',
     updateSuccess: 'Entidade atualizada com sucesso'

@@ -204,6 +204,7 @@ export default {
     entity_id: 'Entity ID',
     external_id: 'External ID',
     entity_type: 'Entity Type',
+    is_active: 'Active',
     saveSuccess: 'Entity saved successfully',
     saveError: 'Error saving entity',
     updateSuccess: 'Entity updated successfully'

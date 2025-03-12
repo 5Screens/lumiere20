@@ -111,6 +111,7 @@ export default {
     entity_id: 'ID Entité',
     external_id: 'ID Externe',
     entity_type: 'Type d\'Entité',
+    is_active: 'Actif',
     saveSuccess: 'Entité enregistrée avec succès',
     saveError: 'Erreur lors de l\'enregistrement de l\'entité',
     updateSuccess: 'Entité mise à jour avec succès'
