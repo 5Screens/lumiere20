@@ -335,22 +335,15 @@ const confirmChange = async () => {
   
   try {
     // Prepare data for PATCH request
-    const data = {
-      [props.fieldName]: selectedItem.value.uuid
+    const params = {
+      uuid: props.uuid
     }
     
-    // Make API PATCH request
-    const response = await fetch(`${props.patchEndpoint}/${props.uuid}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
+    // Add the field to update
+    params[props.fieldName] = selectedItem.value.uuid
     
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`)
-    }
+    // Use apiService to make the PATCH request
+    await apiService.patch(props.patchEndpoint, params)
     
     // Update original value after successful update
     originalItem.value = { ...selectedItem.value }
