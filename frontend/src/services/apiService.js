@@ -22,16 +22,27 @@ export default {
         }
       });
 
+      // Log request details
+      console.info(`[API Request] GET ${url.toString()}`);
+      if (Object.keys(params).length > 0) {
+        console.info('[API Request] Query params:', params);
+      }
+
       const response = await fetch(url.toString());
+      
+      // Log response status
+      console.info(`[API Response] GET ${endpoint} - Status: ${response.status}`);
       
       // Vérifier si la réponse est OK (statut 2xx)
       if (!response.ok) {
         throw await this.handleErrorResponse(response);
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.info(`[API Response] GET ${endpoint} - Success`);
+      return data;
     } catch (error) {
-      console.error(`Erreur lors de la requête GET à ${endpoint}:`, error);
+      console.error(`[API Error] GET ${endpoint}:`, error);
       throw error;
     }
   },
