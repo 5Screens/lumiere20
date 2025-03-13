@@ -97,17 +97,24 @@ export default {
     const optionsLoaded = ref(false)
 
     const fetchOptions = async () => {
-      if (optionsLoaded.value) return
+      if (optionsLoaded.value) {
+        console.info('Options already loaded, skipping fetch')
+        return
+      }
 
+      console.info('Fetching options from endpoint:', props.optionsEndpoint)
       try {
         loadingOptions.value = true
         const response = await apiService.get(props.optionsEndpoint)
+        console.info('Successfully fetched options:', response)
         options.value = response
         optionsLoaded.value = true
       } catch (error) {
         console.error('Error loading options:', error)
+        console.warn('Failed to load options from endpoint:', props.optionsEndpoint)
         emit('error', 'Failed to load options')
       } finally {
+        console.info('Options loading state set to:', loadingOptions.value)
         loadingOptions.value = false
       }
     }
@@ -174,10 +181,23 @@ export default {
     }
 
     onMounted(() => {
+      console.info('SSelectField mounted with props:', {
+        modelValue: props.modelValue,
+        mode: props.mode,
+        uuid: props.uuid,
+        optionsEndpoint: props.optionsEndpoint,
+        fieldName: props.fieldName
+      })
+
       if (props.modelValue) {
+        console.info('Initializing with modelValue:', props.modelValue)
         selectedValue.value = props.modelValue
         originalValue.value = props.modelValue
+      } else {
+        console.info('No initial modelValue provided')
       }
+      
+      console.info('Starting options fetch...')
       fetchOptions()
     })
 
