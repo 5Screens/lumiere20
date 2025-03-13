@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import '@/assets/styles/sSelectField.css'
 import apiService from '@/services/apiService'
@@ -95,6 +95,16 @@ export default {
     const editing = ref(false)
     const isUpdating = ref(false)
     const optionsLoaded = ref(false)
+
+    // Ajouter un watcher sur modelValue pour mettre à jour selectedValue et originalValue
+    // lorsque modelValue change (par exemple lors du chargement asynchrone des données)
+    watch(() => props.modelValue, (newValue) => {
+      console.info('modelValue changed to:', newValue)
+      if (newValue !== undefined && newValue !== null) {
+        selectedValue.value = newValue
+        originalValue.value = newValue
+      }
+    })
 
     const fetchOptions = async () => {
       if (optionsLoaded.value) {
