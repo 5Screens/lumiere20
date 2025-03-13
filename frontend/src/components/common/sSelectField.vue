@@ -80,6 +80,10 @@ export default {
     required: {
       type: Boolean,
       default: false
+    },
+    fieldName: {
+      type: String,
+      default: 'entity_type'
     }
   },
   setup(props, { emit }) {
@@ -128,11 +132,17 @@ export default {
 
       try {
         isUpdating.value = true
+        // Déterminer le nom du champ à partir du label ou utiliser un nom par défaut
+        // Cette approche est générique et fonctionne pour différents types de champs
+        const fieldName = props.fieldName || 'entity_type'
+        
         // Préparer les paramètres pour la requête PATCH
         const params = {
-          uuid: props.uuid,
-          value: selectedValue.value
+          uuid: props.uuid
         }
+        
+        // Ajouter dynamiquement le champ à mettre à jour
+        params[fieldName] = selectedValue.value
         
         // Utiliser apiService pour effectuer la requête PATCH
         await apiService.patch(props.patchEndpoint, params)

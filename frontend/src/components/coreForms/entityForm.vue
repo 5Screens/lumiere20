@@ -48,6 +48,7 @@
         :mode="entityId ? 'edition' : 'creation'"
         :uuid="entityData.uuid"
         :patch-endpoint="'entities'"
+        :field-name="'entity_type'"
         @update:success="handleFieldUpdated('entity_type', $event)"
       />
       
