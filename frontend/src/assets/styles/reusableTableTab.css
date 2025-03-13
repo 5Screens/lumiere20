@@ -1,3 +1,6 @@
+/* Styles pour le composant de tableau réutilisable - permet d'afficher des données en lignes et colonnes avec fonctionnalités avancées */
+
+/* Conteneur principal du tableau - organise tous les éléments en colonne */
 .reusable-table-tab {
   width: 100%;
   height: 100%;
@@ -7,12 +10,14 @@
   position: relative;
 }
 
+/* Élément table - structure les données en lignes et colonnes */
 table {
   width: 100%;
   border-collapse: collapse;
   color: var(--text-color);
 }
 
+/* En-tête du tableau - reste visible même lors du défilement du contenu */
 thead {
   position: sticky;
   top: 0;
@@ -20,11 +25,13 @@ thead {
   z-index: 1;
 }
 
+/* Corps du tableau - contient toutes les lignes de données avec défilement vertical */
 tbody {
   overflow-y: auto;
   height: 100%;
 }
 
+/* Ligne individuelle dans le corps du tableau - avec effet de transition au survol */
 tbody tr {
   transition: transform 0.3s ease-out, background-color 0.2s ease;
   transform-origin: center;
@@ -32,10 +39,12 @@ tbody tr {
   background-color: var(--bg-color);
 }
 
+/* Effet au survol d'une ligne - la met en évidence pour faciliter la lecture */
 tbody tr:hover {
   background-color: var(--hover-color);
 }
 
+/* Conteneur interne du tableau - permet le défilement vertical */
 .table-container {
   flex: 1;
   overflow-y: auto;
@@ -44,6 +53,7 @@ tbody tr:hover {
   position: relative;
 }
 
+/* Pied de tableau - reste visible en bas même lors du défilement */
 .table-footer {
   position: sticky;
   bottom: 0;
@@ -53,6 +63,7 @@ tbody tr:hover {
   z-index: 1;
 }
 
+/* Zone de pagination - permet de naviguer entre les pages de résultats */
 .pagination {
   position: sticky;
   bottom: 0;
@@ -66,35 +77,42 @@ tbody tr:hover {
   z-index: 1;
 }
 
+/* Cellules d'en-tête et de données - définit l'espacement et les bordures */
 th, td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Cellules d'en-tête uniquement - plus foncées pour se distinguer des données */
 th {
   background-color: var(--bg-secondary);
   color: var(--text-color);
 }
 
+/* Lignes paires du tableau - légèrement plus foncées pour faciliter la lecture */
 tr:nth-child(even) {
   background-color: var(--bg-secondary);
 }
 
+/* Effet au survol d'une ligne - change légèrement la couleur de fond */
 tr:hover {
   background-color: var(--hover-color);
 }
 
+/* Style pour la ligne actuellement sélectionnée - mise en évidence */
 .selected-row {
   background-color: var(--hover-color) !important;
 }
 
+/* Contenu de l'en-tête - organise les éléments de filtre en colonne */
 .header-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+/* Champ de filtre pour les colonnes - permet de filtrer les données par colonne */
 .column-filter {
   width: 100%;
   padding: 4px;
@@ -106,26 +124,31 @@ tr:hover {
   color: var(--text-color);
 }
 
+/* Style spécifique pour les listes déroulantes de filtre */
 select.column-filter {
   background-color: var(--input-bg);
   cursor: pointer;
   transition: border-color 0.2s ease;
 }
 
+/* Effet au survol des listes déroulantes - bordure bleue */
 select.column-filter:hover {
   border-color: var(--primary-color);
 }
 
+/* Effet lorsque la liste déroulante est sélectionnée - contour bleu */
 select.column-filter:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 3px var(--shadow-color);
 }
 
+/* Sélecteur du nombre d'éléments par page - en bas du tableau */
 .items-per-page {
   margin-left: 1rem;
 }
 
+/* Liste déroulante pour choisir le nombre d'éléments par page */
 .items-per-page select {
   padding: 0.25rem;
   border: 1px solid var(--border-color);
@@ -135,10 +158,12 @@ select.column-filter:focus {
   cursor: pointer;
 }
 
+/* Effet au survol de la liste du nombre d'éléments par page */
 .items-per-page select:hover {
   border-color: var(--primary-color);
 }
 
+/* Boutons de pagination - permettent de naviguer entre les pages */
 .pagination button {
   padding: 5px 10px;
   border: 1px solid var(--border-color);
@@ -148,17 +173,20 @@ select.column-filter:focus {
   cursor: pointer;
 }
 
+/* Style pour les boutons de pagination désactivés - grisés et non cliquables */
 .pagination button:disabled {
   background-color: var(--bg-secondary);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
+/* Sélecteur multiple personnalisé - permet de sélectionner plusieurs options */
 .custom-multiselect {
   width: 100%;
   position: relative;
 }
 
+/* En-tête du sélecteur multiple - affiche les options sélectionnées */
 .multiselect-header {
   width: 100%;
   padding: 4px 8px;
@@ -173,6 +201,7 @@ select.column-filter:focus {
   font-size: 14px;
 }
 
+/* Menu déroulant du sélecteur multiple - s'ouvre en cliquant sur l'en-tête */
 .multiselect-dropdown {
   position: absolute;
   width: 100%;
@@ -186,6 +215,7 @@ select.column-filter:focus {
   box-shadow: 0 2px 4px var(--shadow-color);
 }
 
+/* Option individuelle dans le menu déroulant - peut être cochée ou décochée */
 .multiselect-option {
   padding: 6px 8px;
   cursor: pointer;
@@ -193,6 +223,7 @@ select.column-filter:focus {
   color: var(--text-color);
 }
 
+/* Étiquette de l'option - contient la case à cocher et le texte */
 .multiselect-option label {
   display: flex;
   align-items: center;
@@ -202,31 +233,35 @@ select.column-filter:focus {
   user-select: none;
 }
 
+/* Case à cocher dans les options - permet de sélectionner/désélectionner */
 .multiselect-option input[type="checkbox"] {
   margin: 0 8px 0 0;
   cursor: pointer;
 }
 
+/* Effet visuel lorsqu'une option est sélectionnée au clavier */
 .multiselect-option:focus-within {
   outline: none;
   background-color: var(--hover-color);
 }
 
+/* Effet au survol d'une option - change légèrement la couleur de fond */
 .multiselect-option:hover {
   background-color: var(--hover-color);
 }
 
+/* Petite flèche indiquant que le menu peut être déroulé */
 .dropdown-arrow {
   margin-left: 8px;
 }
 
-/* Supprimer la bordure bleue sur focus */
+/* Supprime la bordure bleue par défaut des navigateurs sur les cases à cocher */
 .multiselect-option input[type="checkbox"]:focus {
   outline: none;
   box-shadow: none;
 }
 
-/* Style personnalisé pour les cases à cocher */
+/* Style personnalisé pour les cases à cocher - remplace le style par défaut du navigateur */
 .multiselect-option input[type="checkbox"] {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -239,11 +274,13 @@ select.column-filter:focus {
   background: var(--input-bg);
 }
 
+/* Style pour les cases à cocher sélectionnées - fond bleu */
 .multiselect-option input[type="checkbox"]:checked {
   background: var(--primary-color);
   border-color: var(--primary-color);
 }
 
+/* Coche blanche qui apparaît lorsque la case est cochée */
 .multiselect-option input[type="checkbox"]:checked::after {
   content: '';
   position: absolute;
@@ -256,6 +293,7 @@ select.column-filter:focus {
   transform: rotate(45deg);
 }
 
+/* En-tête de colonne triable - permet de trier les données en cliquant */
 .sortable {
   cursor: pointer;
   user-select: none;
@@ -263,10 +301,12 @@ select.column-filter:focus {
   padding-right: 30px;
 }
 
+/* Effet au survol d'un en-tête triable - légèrement plus foncé */
 .sortable:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+/* Icône de tri (flèche) - indique la direction du tri */
 .sort-icon {
   position: absolute;
   right: 3px;
@@ -277,14 +317,17 @@ select.column-filter:focus {
   color: var(--text-color);
 }
 
+/* Effet au survol de l'icône de tri - devient plus visible */
 .sortable:hover .sort-icon {
   opacity: 0.8;
 }
 
+/* Style pour l'icône de tri lorsqu'aucun tri n'est appliqué */
 th[class="sortable"] .sort-icon template:last-child {
   opacity: 0.3;
 }
 
+/* Ligne de filtres sous les en-têtes - permet de filtrer les données */
 .filter-row th {
   font-weight: normal;
   padding: 8px;
@@ -292,6 +335,7 @@ th[class="sortable"] .sort-icon template:last-child {
   color: var(--text-color);
 }
 
+/* Champs de saisie dans la ligne de filtres */
 .filter-row input {
   width: 100%;
   padding: 4px;
@@ -302,7 +346,7 @@ th[class="sortable"] .sort-icon template:last-child {
   color: var(--text-color);
 }
 
-/* Style pour la colonne ID */
+/* Style pour la colonne ID - plus étroite pour afficher les identifiants */
 td:nth-child(2) {
   width: 80px;
   white-space: nowrap;
@@ -310,6 +354,7 @@ td:nth-child(2) {
   text-overflow: ellipsis;
 }
 
+/* Icône de copie - permet de copier le contenu de la cellule */
 .copy-icon {
   position: fixed;
   background-color: var(--bg-color);
@@ -322,20 +367,24 @@ td:nth-child(2) {
   transition: opacity 0.3s;
 }
 
+/* Effet de disparition de l'icône de copie */
 .copy-icon.fade-out {
   opacity: 0;
   transition: opacity 0.5s ease-out;
 }
 
+/* Effet au survol de l'icône de copie - agrandissement */
 .copy-icon:hover {
   transform: scale(1.1);
 }
 
+/* Colonne redimensionnable - permet de modifier la largeur de la colonne */
 .resizable {
   position: relative;
   min-width: 50px;
 }
 
+/* Contenu de l'en-tête de colonne - organise les éléments de tri et de filtre */
 .th-content {
   display: flex;
   align-items: center;
@@ -345,6 +394,7 @@ td:nth-child(2) {
   height: 100%;
 }
 
+/* Poignée de redimensionnement - permet de modifier la largeur de la colonne */
 .resize-handle {
   position: absolute;
   right: 0;
@@ -356,15 +406,17 @@ td:nth-child(2) {
   background: transparent;
 }
 
+/* Effet au survol de la poignée de redimensionnement - légèrement plus foncée */
 .resize-handle:hover {
   background: rgba(0, 0, 0, 0.1);
 }
 
+/* Effet lorsque la poignée de redimensionnement est activée - plus foncée */
 .resize-handle:active {
   background: rgba(0, 0, 0, 0.2);
 }
 
-/* Animations pour le tri des lignes */
+/* Animations pour le tri des lignes - effet de transition lors du tri */
 .list-move {
   transition: transform 0.5s ease;
 }
@@ -380,7 +432,7 @@ td:nth-child(2) {
   transform: translateX(30px);
 }
 
-/* Ajustement de la largeur de la première colonne */
+/* Ajustement de la largeur de la première colonne - plus étroite pour afficher les identifiants */
 th:first-child,
 td:first-child {
   width: 20px;
@@ -388,18 +440,21 @@ td:first-child {
   max-width: 20px;
 }
 
+/* Style pour la première colonne - contenu centré */
 th:first-child .th-content {
   justify-content: center;
 }
 
-/* Styles pour le filre avancé */
+/* Styles pour le filtre avancé */
 
+/* Conteneur du filtre avancé - organise les éléments de filtre */
 .filter-container {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+/* Icône de filtre - permet d'ouvrir le filtre avancé */
 .filter-icon {
   width: 24px;
   height: 24px;
@@ -414,15 +469,18 @@ th:first-child .th-content {
   color: var(--text-color);
 }
 
+/* Effet au survol de l'icône de filtre - fond bleu */
 .filter-icon:hover {
   background-color: var(--hover-color);
 }
 
+/* Style pour l'icône de filtre active - fond bleu et contour bleu */
 .filter-icon.active {
   color: var(--primary-color);
   border-color: var(--primary-color);
 }
 
+/* Modal du filtre avancé - s'ouvre en cliquant sur l'icône de filtre */
 .advanced-filter-modal {
   position: fixed;
   background-color: transparent;
@@ -432,6 +490,7 @@ th:first-child .th-content {
   transform-origin: top left;
 }
 
+/* Contenu du filtre avancé - organise les éléments de filtre */
 .advanced-filter-content {
   background: var(--bg-color);
   border-radius: 8px;
@@ -444,6 +503,7 @@ th:first-child .th-content {
   border: 1px solid var(--border-color);
 }
 
+/* Champ de recherche du filtre avancé - permet de rechercher des valeurs */
 .filter-search {
   width: 100%;
   padding: 8px;
@@ -452,16 +512,7 @@ th:first-child .th-content {
   color: var(--text-color);
 }
 
-.filter-search input {
-  width: 100%;
-  padding: 6px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  box-sizing: border-box;
-  background-color: var(--input-bg);
-  color: var(--text-color);
-}
-
+/* Liste des valeurs du filtre avancé - affiche les valeurs disponibles */
 .filter-values {
   flex: 1;
   overflow-y: auto;
@@ -469,6 +520,7 @@ th:first-child .th-content {
   background-color: var(--bg-color);
 }
 
+/* Élément de valeur du filtre avancé - peut être sélectionné ou désélectionné */
 .filter-value-item {
   display: flex;
   padding: 2px 16px;
@@ -478,10 +530,12 @@ th:first-child .th-content {
   color: var(--text-color);
 }
 
+/* Effet au survol d'un élément de valeur - fond bleu */
 .filter-value-item:hover {
   background-color: var(--hover-color);
 }
 
+/* Conteneur de case à cocher - contient la case à cocher et le texte */
 .checkbox-container {
   width: 15px;
   margin-right: 8px;
@@ -489,6 +543,7 @@ th:first-child .th-content {
   align-items: center;
 }
 
+/* Étiquette de valeur - affiche le texte de la valeur */
 .value-label {
   flex: 1;
   overflow: hidden;

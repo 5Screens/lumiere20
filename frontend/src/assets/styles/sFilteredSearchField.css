@@ -1,3 +1,9 @@
+/* 
+ * Styles for filtered search field component
+ * A filtered search field allows users to search and select from a dropdown list with filtering capabilities
+ */
+
+/* Main container for the filtered search field - organizes label and search component horizontally */
 .s-filtered-search-field {
   display: flex;
   flex-direction: row;
@@ -6,6 +12,7 @@
   width: 100%;
 }
 
+/* Container for the field label - fixed width to align all fields consistently */
 .s-filtered-search-field__label-container {
   display: flex;
   align-items: flex-start;
@@ -14,6 +21,7 @@
   flex-shrink: 0;
 }
 
+/* The label text - describes what the search field is for */
 .s-filtered-search-field__label {
   font-size: 0.875rem;
   color: var(--text-color);
@@ -23,12 +31,14 @@
   hyphens: auto;
 }
 
+/* Style for required field labels - adds a red asterisk to indicate required fields */
 .s-filtered-search-field__label--required::after {
   content: '*';
   color: var(--error-color);
   margin-left: 0.25rem;
 }
 
+/* Container for the search field and dropdown - holds all interactive elements */
 .s-filtered-search-field__content-container {
   position: relative;
   display: flex;
@@ -37,6 +47,7 @@
   width: 100%;
 }
 
+/* Display area showing the currently selected value - acts as a button to open the dropdown */
 .s-filtered-search-field__selected-value {
   width: 100%;
   padding: 0.625rem;
@@ -54,19 +65,23 @@
   align-items: center;
 }
 
+/* Hover effect for the selected value display */
 .s-filtered-search-field__selected-value:hover:not(:disabled) {
   border-color: var(--primary-hover);
 }
 
+/* Style for the selected value display when the dropdown is open */
 .s-filtered-search-field__selected-value--editing {
   padding-right: 4.5rem;
 }
 
+/* Style for the placeholder text when no value is selected */
 .s-filtered-search-field__selected-value--placeholder {
   color: var(--text-secondary);
   font-style: italic;
 }
 
+/* The dropdown menu that appears when the field is clicked */
 .s-filtered-search-field__dropdown {
   position: absolute;
   top: calc(100% + 4px);
@@ -83,6 +98,7 @@
   overflow: hidden;
 }
 
+/* Container for the search input at the top of the dropdown */
 .s-filtered-search-field__search-container {
   padding: 0.5rem;
   border-bottom: 1px solid var(--border-color);
@@ -92,6 +108,7 @@
   z-index: 2;
 }
 
+/* The search input field used to filter the dropdown options */
 .s-filtered-search-field__search-input {
   width: 100%;
   padding: 0.5rem;
@@ -103,23 +120,27 @@
   color: var(--text-color);
 }
 
+/* Focus style for the search input */
 .s-filtered-search-field__search-input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px var(--primary-color-alpha);
 }
 
+/* Container for the table of selectable options */
 .s-filtered-search-field__table-container {
   overflow: auto;
   max-height: 250px;
   width: 100%;
 }
 
+/* Table displaying the filtered search results */
 .s-filtered-search-field__table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
+/* Styles for table headers and cells */
 .s-filtered-search-field__table th,
 .s-filtered-search-field__table td {
   padding: 0.5rem;
@@ -130,6 +151,7 @@
   text-overflow: ellipsis;
 }
 
+/* Style for table headers - sticky positioning keeps them visible when scrolling */
 .s-filtered-search-field__table th {
   background-color: var(--bg-secondary);
   position: sticky;
@@ -139,19 +161,23 @@
   font-size: 0.875rem;
 }
 
+/* Style for table rows - makes them clickable */
 .s-filtered-search-field__table tr {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
+/* Hover effect for table rows */
 .s-filtered-search-field__table tr:hover {
   background-color: var(--hover-color);
 }
 
+/* Style for the currently selected row */
 .s-filtered-search-field__table tr.selected {
   background-color: var(--primary-color-alpha);
 }
 
+/* Container for loading indicator when data is being fetched */
 .s-filtered-search-field__loading {
   display: flex;
   justify-content: center;
@@ -160,6 +186,7 @@
   min-height: 100px;
 }
 
+/* Spinning loading indicator */
 .s-filtered-search-field__spinner {
   width: 24px;
   height: 24px;
@@ -169,12 +196,14 @@
   animation: spin 1s ease-in-out infinite;
 }
 
+/* Animation for the loading spinner */
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
+/* Message displayed when no search results are found */
 .s-filtered-search-field__no-results {
   padding: 1rem;
   text-align: center;
@@ -182,19 +211,21 @@
   font-style: italic;
 }
 
+/* Error message display - appears below the field when validation fails */
 .s-filtered-search-field__error {
   font-size: 0.75rem;
   color: var(--error-color);
   margin-top: 0.25rem;
 }
 
+/* Helper text display - provides additional information about the field */
 .s-filtered-search-field__helper {
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin-top: 0.25rem;
 }
 
-/* Styles pour le conteneur des actions */
+/* Container for action buttons that appear inside the field (clear, refresh, etc.) */
 .s-filtered-search-field__actions {
   position: absolute;
   right: 0.5rem;
@@ -211,17 +242,18 @@
   transition: opacity 0.3s ease;
 }
 
-/* Animation pour les transitions */
+/* Smooth transition effects for the content container */
 .s-filtered-search-field__content-container {
   transition: all 0.3s ease;
 }
 
-/* Fade animation for dropdown */
+/* Animation for dropdown appearance and disappearance */
 .dropdown-enter-active,
 .dropdown-leave-active {
   transition: opacity 0.3s, transform 0.3s;
 }
 
+/* Starting and ending states for dropdown animation */
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;

@@ -1,12 +1,14 @@
-/* Styles for App.vue */
+/* Styles pour App.vue - Définition des styles principaux de l'application */
 @import './themes.css';
 
+/* Conteneur principal de l'application - occupe toute la hauteur de l'écran et définit les couleurs de base */
 #app {
   background-color: var(--bg-color);
   color: var(--text-color);
   min-height: 100vh;
 }
 
+/* Barre d'en-tête en haut de l'application - contient le logo, la recherche et les boutons d'action */
 .header {
   background-color: var(--header-bg);
   border-bottom: 1px solid var(--border-color);
@@ -17,12 +19,14 @@
   box-shadow: 0 2px 4px var(--shadow-color);
 }
 
+/* Sections gauche et droite de l'en-tête - organisent les éléments horizontalement */
 .left-section, .right-section {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
+/* Lien vers la page d'accueil avec icône - généralement situé à gauche de l'en-tête */
 .home-icon {
   display: flex;
   align-items: center;
@@ -31,6 +35,7 @@
   color: var(--text-color);
 }
 
+/* Bouton pour créer un nouvel élément - généralement de couleur bleue */
 .create-button {
   background-color: var(--primary-color);
   color: white;
@@ -41,15 +46,18 @@
   transition: background-color 0.2s;
 }
 
+/* Effet au survol du bouton de création - légèrement plus foncé */
 .create-button:hover {
   background-color: var(--primary-hover);
 }
 
+/* Conteneur de la barre de recherche - positionné relativement pour les suggestions */
 .search-bar {
   position: relative;
   margin-right: 1rem;
 }
 
+/* Champ de saisie pour la recherche - s'élargit lors de la sélection */
 .search-input {
   padding: 0.5rem 1rem;
   border: 1px solid var(--border-color);
@@ -60,6 +68,7 @@
   transition: width 0.3s ease-in-out;
 }
 
+/* Effet d'élargissement de la barre de recherche lorsqu'elle est sélectionnée */
 .search-input:focus {
   width: 800px;
   outline: none;
@@ -67,6 +76,7 @@
   box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
 }
 
+/* Boutons d'information et de déconnexion - transparents avec effet au survol */
 .info-button, .logout-button {
   background: transparent;
   border: none;
@@ -76,15 +86,18 @@
   border-radius: 4px;
 }
 
+/* Effet au survol des boutons d'information et de déconnexion */
 .info-button:hover, .logout-button:hover {
   background-color: var(--hover-color);
 }
 
+/* Zone principale du contenu - occupe tout l'espace disponible */
 .main-content {
   display: flex;
   min-height: calc(100vh - 60px);
 }
 
+/* Menu latéral à gauche - contient les liens de navigation */
 .side-menu {
   background-color: var(--sidebar-bg);
   height: calc(100vh - var(--header-height) - var(--status-bar-height) - var(--tabs-height) - 35px);
@@ -93,16 +106,19 @@
   border-right: 1px solid var(--border-color);
 }
 
+/* Liste des éléments du menu latéral - sans puces et sans marge */
 .side-menu ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
+/* Élément individuel du menu latéral - avec espacement en bas */
 .side-menu li {
   margin-bottom: 0.5rem;
 }
 
+/* Lien dans le menu latéral - change de couleur au survol */
 .side-menu a {
   color: var(--text-color);
   text-decoration: none;
@@ -112,15 +128,18 @@
   transition: background-color 0.2s;
 }
 
+/* Effet au survol des liens du menu latéral */
 .side-menu a:hover {
   background-color: var(--hover-color);
 }
 
+/* Style pour le lien actif dans le menu latéral - en bleu pour indiquer la page courante */
 .side-menu a.router-link-active {
   background-color: var(--primary-color);
   color: white;
 }
 
+/* Barre d'onglets - permet de naviguer entre différentes vues ou documents ouverts */
 .tabs {
   display: flex;
   flex-wrap: wrap;
@@ -129,6 +148,7 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Onglet individuel - avec bordure et effet au clic */
 .tab {
   display: flex;
   align-items: center;
@@ -139,11 +159,13 @@
   cursor: pointer;
 }
 
+/* Style pour l'onglet actif - en bleu pour indiquer l'onglet sélectionné */
 .tab.active {
   background-color: var(--primary-color);
   color: white;
 }
 
+/* Bouton pour fermer un onglet - petit "x" à côté du titre */
 .close-tab {
   background: transparent;
   border: none;
@@ -153,10 +175,12 @@
   border-radius: 4px;
 }
 
+/* Effet au survol du bouton de fermeture d'onglet */
 .close-tab:hover {
   background-color: var(--hover-color);
 }
 
+/* Zone de contenu principal - occupe tout l'espace restant */
 .content-area {
   flex: 1;
   padding: 0;
@@ -165,6 +189,7 @@
   position: relative;
 }
 
+/* Contenu de l'onglet actif - avec défilement vertical si nécessaire */
 .tab-content {
   width: 100%;
   /*height: calc(100vh - 66px); /* Déduit la hauteur de .tabs */
@@ -172,6 +197,7 @@
   overflow-y: auto; /* Ajoute un scroll seulement si nécessaire */
 }
 
+/* Barre d'état en bas de l'application - affiche des informations sur l'état actuel */
 .status-bar {
   background-color: var(--footer-bg);
   padding: 0.5rem;
@@ -179,6 +205,7 @@
   text-align: center;
 }
 
+/* Texte d'information dans la barre d'état */
 .status-info {
   color: var(--text-color);
 }

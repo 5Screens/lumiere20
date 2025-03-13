@@ -1,3 +1,4 @@
+/* Conteneur principal du champ de texte - organise le label et la zone de saisie côte à côte */
 .text-field {
   display: flex;
   flex-direction: row;
@@ -7,6 +8,7 @@
   box-sizing: border-box;
 }
 
+/* Étiquette du champ - affiche le nom du champ à remplir avec une taille fixe */
 .text-field__label {
   font-size: 0.875rem;
   color: var(--text-color);
@@ -15,12 +17,14 @@
   flex-shrink: 0;
 }
 
+/* Ajoute un astérisque rouge après l'étiquette pour indiquer que le champ est obligatoire */
 .text-field__label--required::after {
   content: '*';
   color: var(--error-color);
   margin-left: 0.25rem;
 }
 
+/* Conteneur qui enveloppe la zone de saisie et les messages d'erreur éventuels */
 .text-field__input-container {
   display: flex;
   flex-direction: column;
@@ -28,6 +32,7 @@
   width: 100%;
 }
 
+/* Zone de saisie où l'utilisateur peut taper du texte */
 .text-field__input {
   padding: 0.625rem;
   border: 1px solid var(--border-color);
@@ -41,41 +46,49 @@
   box-sizing: border-box;
 }
 
+/* Effet visuel lorsque la zone de saisie est sélectionnée (contour bleu) */
 .text-field__input:focus:not(:disabled):not([readonly]) {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px var(--primary-color-alpha);
 }
 
+/* Effet visuel lorsque la souris passe au-dessus de la zone de saisie */
 .text-field__input:hover:not(:disabled):not([readonly]) {
   border-color: var(--primary-hover);
 }
 
+/* Style spécial pour indiquer une erreur dans la saisie (contour rouge) */
 .text-field__input--error {
   border-color: var(--error-color);
 }
 
+/* Style lorsque la zone d'erreur est sélectionnée (contour et ombre rouges) */
 .text-field__input--error:focus {
   border-color: var(--error-color);
   box-shadow: 0 0 0 2px var(--error-color-alpha);
 }
 
+/* Style pour les champs désactivés (grisés et non modifiables) */
 .text-field__input:disabled {
   background-color: var(--bg-secondary);
   cursor: not-allowed;
   opacity: 0.7;
 }
 
+/* Style pour les champs en lecture seule (non modifiables mais visibles normalement) */
 .text-field__input[readonly] {
   background-color: var(--bg-secondary);
   cursor: default;
 }
 
+/* Message d'erreur affiché sous le champ en cas de saisie incorrecte */
 .text-field__error {
   font-size: 0.75rem;
   color: var(--error-color);
   margin-top: 0.25rem;
 }
 
+/* Zone pour afficher des informations supplémentaires sous le champ */
 .text-field__slot {
   margin-top: 0.25rem;
   font-size: 0.75rem;

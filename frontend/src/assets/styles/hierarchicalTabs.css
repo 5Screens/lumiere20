@@ -1,5 +1,6 @@
-/* Styles pour les onglets hiérarchiques */
+/* Styles pour les onglets hiérarchiques - système d'organisation du contenu en niveaux (principal et secondaire) */
 
+/* Conteneur principal des onglets hiérarchiques - organise tous les éléments en colonne */
 .hierarchical-tabs {
   display: flex;
   flex-direction: column;
@@ -8,6 +9,7 @@
   overflow: hidden; /* Empêche les ascenseurs au niveau du conteneur principal */
 }
 
+/* Barre horizontale contenant les onglets - permet de faire défiler les onglets si nécessaire */
 .tabs-container {
   display: flex;
   overflow-x: auto;
@@ -19,10 +21,12 @@
   min-height: 40px; /* Hauteur minimale fixe */
 }
 
+/* Onglets de premier niveau - généralement en haut de la hiérarchie */
 .primary-tabs {
   background-color: var(--bg-secondary);
 }
 
+/* Onglets de second niveau - apparaissent sous un onglet principal sélectionné */
 .secondary-tabs {
   background-color: var(--bg-color);
   padding-left: 20px; /* Indentation pour montrer la hiérarchie */
@@ -31,6 +35,7 @@
   min-height: 36px; /* Hauteur minimale fixe */
 }
 
+/* Onglet individuel - élément cliquable qui affiche un contenu spécifique */
 .tab {
   display: flex;
   align-items: center;
@@ -44,10 +49,12 @@
   color: var(--text-color); /* Couleur par défaut du texte */
 }
 
+/* Effet au survol d'un onglet - change légèrement la couleur de fond */
 .tab:hover {
   background-color: var(--hover-color);
 }
 
+/* Style pour l'onglet actuellement sélectionné - avec une bordure bleue en bas */
 .tab.active {
   background-color: var(--bg-color);
   border-bottom: 2px solid var(--primary-color);
@@ -55,11 +62,13 @@
   font-weight: 500; /* Légèrement plus gras pour l'onglet actif */
 }
 
+/* Titre de l'onglet - texte principal affiché dans l'onglet */
 .tab-title {
   margin-right: 8px;
   color: inherit; /* Hérite la couleur du parent (.tab) */
 }
 
+/* Bouton de fermeture d'onglet - petit "x" à côté du titre */
 .close-tab {
   background: none;
   border: none;
@@ -77,11 +86,13 @@
   color: inherit; /* Hérite la couleur du parent (.tab) */
 }
 
+/* Effet au survol du bouton de fermeture - devient plus visible */
 .close-tab:hover {
   opacity: 1;
   background-color: var(--hover-color);
 }
 
+/* Zone de contenu de l'onglet actif - affiche les informations correspondant à l'onglet sélectionné */
 .tab-content {
   flex: 1;
   padding: 0;
@@ -91,23 +102,24 @@
   position: relative;
 }
 
-/* Animation pour les transitions */
+/* Animation pour les transitions - rend l'apparition et la disparition des contenus plus fluide */
 .tab-enter-active, .tab-leave-active {
   transition: opacity 0.3s, transform 0.3s;
 }
 
+/* État initial et final des animations - contenu invisible et légèrement décalé vers le bas */
 .tab-enter, .tab-leave-to {
   opacity: 0;
   transform: translateY(10px);
 }
 
-/* Styles pour les onglets désactivés */
+/* Style pour les onglets qui ne sont pas disponibles - grisés et non cliquables */
 .tab.disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Indicateur visuel pour les onglets avec des enfants */
+/* Petit triangle vers le bas pour indiquer qu'un onglet contient des sous-onglets */
 .tab.has-children::after {
   content: '▼';
   font-size: 10px;
@@ -115,7 +127,7 @@
   opacity: 0.5;
 }
 
-/* Style pour l'onglet actif avec des enfants */
+/* Triangle vers le haut pour l'onglet actif qui a ses sous-onglets affichés */
 .tab.active.has-children::after {
   content: '▲';
 }

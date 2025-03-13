@@ -1,9 +1,13 @@
+/* Styles pour le tableau d'audit - affiche l'historique des modifications apportées aux données */
+
+/* Conteneur principal du tableau d'audit - occupe toute la largeur disponible */
 .audit-table {
   width: 100%;
   position: relative;
   overflow: hidden;
 }
 
+/* Élément table à l'intérieur du conteneur - structure les données en lignes et colonnes */
 .audit-table table {
   width: 100%;
   border-collapse: collapse;
@@ -11,6 +15,7 @@
   table-layout: fixed;
 }
 
+/* En-tête du tableau - reste visible même lors du défilement du contenu */
 .audit-table thead {
   position: sticky;
   top: 0;
@@ -18,26 +23,31 @@
   z-index: 1;
 }
 
+/* Corps du tableau - contient toutes les lignes de données avec défilement vertical */
 .audit-table tbody {
   overflow-y: auto;
   height: 100%;
 }
 
+/* Ligne individuelle dans le corps du tableau - change de couleur au survol */
 .audit-table tbody tr {
   transition: background-color 0.2s ease;
   background-color: var(--bg-color);
 }
 
+/* Effet au survol d'une ligne - la met en évidence pour faciliter la lecture */
 .audit-table tbody tr:hover {
   background-color: var(--hover-color);
 }
 
+/* Conteneur interne du tableau - permet le défilement vertical */
 .audit-table .table-container {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
 }
 
+/* Cellules d'en-tête et de données - définit l'espacement et les bordures */
 .audit-table th, .audit-table td {
   padding: 12px;
   text-align: left;
@@ -45,6 +55,7 @@
   vertical-align: top;
 }
 
+/* Cellules d'en-tête uniquement - plus foncées avec texte en gras */
 .audit-table th {
   background-color: var(--bg-secondary);
   color: var(--text-color);
@@ -54,53 +65,64 @@
   white-space: nowrap;
 }
 
+/* Lignes paires du tableau - légèrement plus foncées pour faciliter la lecture */
 .audit-table tr:nth-child(even) {
   background-color: var(--bg-secondary);
 }
 
+/* Type d'événement dans le tableau d'audit - en gras pour le mettre en évidence */
 .audit-table .event-type {
   font-weight: bold;
 }
 
+/* Style pour les événements de mise à jour - en bleu */
 .audit-table .event-type-updated {
   color: var(--primary-color);
 }
 
+/* Style pour les événements de création - en vert */
 .audit-table .event-type-created {
   color: #4CAF50;
 }
 
+/* Style pour les événements de suppression - en rouge */
 .audit-table .event-type-deleted {
   color: #F44336;
 }
 
+/* Styles pour les anciennes et nouvelles valeurs - limitées en largeur avec retour à la ligne */
 .audit-table .old-value, .audit-table .new-value {
   max-width: 200px;
   word-wrap: break-word;
   white-space: pre-wrap;
 }
 
+/* Ancienne valeur - barrée et en rouge pour montrer qu'elle a été supprimée */
 .audit-table .old-value {
   text-decoration: line-through;
   color: #F44336;
 }
 
+/* Nouvelle valeur - en vert pour montrer qu'elle a été ajoutée */
 .audit-table .new-value {
   color: #4CAF50;
 }
 
+/* Indication du temps écoulé - en italique et plus claire */
 .audit-table .time-ago {
   font-style: italic;
   color: var(--text-secondary);
   white-space: nowrap;
 }
 
+/* Message affiché quand le tableau est vide - centré et plus clair */
 .audit-table .empty-table {
   padding: 20px;
   text-align: center;
   color: var(--text-secondary);
 }
 
+/* Pied de tableau - reste visible en bas même lors du défilement */
 .audit-table .table-footer {
   position: sticky;
   bottom: 0;

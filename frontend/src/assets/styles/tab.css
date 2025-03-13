@@ -1,3 +1,4 @@
+/* Styles communs pour les onglets de symptômes et d'entités - organise le contenu en colonnes */
 .symptoms-tab, .entities-tab {
   display: flex;
   flex-direction: column;
