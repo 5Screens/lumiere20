@@ -95,7 +95,7 @@
           { key: 'comments', label: 'Comments', visible: false },
           { key: 'primary_entity_uuid', label: 'Primary Entity', visible: false },
           { key: 'field_service_group_uuid', label: 'Field Service Group', visible: false },
-          { key: 'parent_uuid', label: 'Parent Location', visible: false }
+          { key: '  d', label: 'Parent Location', visible: false }
         ]"
         @update:success="handleFieldUpdated('rel_headquarters_location', $event)"
       />
@@ -204,10 +204,29 @@ const fetchEntityData = async () => {
   
   try {
     loading.value = true;
+    console.log('[fetchEntityData] Fetching data for entity ID:', entityId.value);
     const response = await apiService.get('entities', { uuid: entityId.value });
+    
+    // Log the raw API response
+    console.log('[fetchEntityData] Raw API response:', response);
     
     // Extraire les données de la réponse
     const data = response.data;
+    console.log('[fetchEntityData] API data:', {
+      uuid: data.uuid,
+      name: data.name,
+      entity_id: data.entity_id,
+      external_id: data.external_id,
+      entity_type: data.entity_type,
+      rel_headquarters_location: data.rel_headquarters_location,
+      parent_uuid: data.parent_uuid,
+      is_active: data.is_active,
+      // Log any additional fields that might be present
+      additionalFields: Object.keys(data).filter(key => 
+        !['uuid', 'name', 'entity_id', 'external_id', 'entity_type', 
+          'rel_headquarters_location', 'parent_uuid', 'is_active'].includes(key)
+      ).reduce((acc, key) => ({ ...acc, [key]: data[key] }), {})
+    });
     
     // Transformer les données reçues du backend au format attendu par le frontend
     const transformedData = {
@@ -230,11 +249,20 @@ const fetchEntityData = async () => {
       }
     };
     
+    console.log('[fetchEntityData] Transformed data:', transformedData);
+    
     // Mettre à jour les données du formulaire
     entityData.value = transformedData;
+    console.log('[fetchEntityData] Updated entity data:', entityData.value);
     
   } catch (err) {
-    console.error('Error fetching entity data:', err);
+    console.error('[fetchEntityData] Error:', err);
+    console.error('[fetchEntityData] Error details:', {
+      message: err.message,
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      responseData: err.response?.data
+    });
     error.value = err.message || t('errors.fetchEntityData');
     emit('error', error.value);
     

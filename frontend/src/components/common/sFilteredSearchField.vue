@@ -320,7 +320,11 @@ const getItemValue = (item, field) => {
 }
 
 const getDisplayValue = (item) => {
-  return getItemValue(item, props.displayField)
+  console.log('[getDisplayValue] Input item:', item);
+  console.log('[getDisplayValue] Display field:', props.displayField);
+  const value = getItemValue(item, props.displayField);
+  console.log('[getDisplayValue] Computed value:', value);
+  return value;
 }
 
 const confirmChange = async () => {
@@ -405,12 +409,20 @@ const handleClickOutside = (event) => {
 
 // Watch for modelValue changes
 watch(() => props.modelValue, (newValue) => {
+  console.log('[watch modelValue] New value:', newValue);
+  console.log('[watch modelValue] Items length:', items.value.length);
   if (newValue && items.value.length > 0) {
     findAndSelectInitialItem()
-  } else if (!newValue) {
-    selectedItem.value = null
-    originalItem.value = null
-    valueChanged.value = false
+  }
+})
+
+// Watch for items changes to handle async loading
+watch(() => items.value, (newItems) => {
+  console.log('[watch items] Items loaded, length:', newItems.length);
+  console.log('[watch items] Current modelValue:', props.modelValue);
+  if (props.modelValue && newItems.length > 0) {
+    console.log('[watch items] Attempting to select initial item');
+    findAndSelectInitialItem();
   }
 }, { immediate: true })
 

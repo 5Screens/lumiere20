@@ -14,6 +14,7 @@ class EntityService {
                     e.external_id, 
                     e.entity_type,
                     e.rel_headquarters_location,
+                    loc.name as headquarters_location_name,
                     e.is_active,
                     CASE 
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
@@ -24,6 +25,7 @@ class EntityService {
                 FROM configuration.entities e
                 LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
                 LEFT JOIN configuration.entities parent ON e.parent_uuid = parent.uuid
+                LEFT JOIN configuration.locations loc ON e.rel_headquarters_location = loc.uuid
                 ORDER BY e.name ASC`;
             
             const result = await pool.query(query);
@@ -43,10 +45,12 @@ class EntityService {
                     e.uuid, 
                     e.entity_id,
                     e.name, 
+                    e.parent_uuid as parent_uuid,
                     parent.name as parent_entity_name,
                     e.external_id, 
                     e.entity_type,
                     e.rel_headquarters_location,
+                    loc.name as headquarters_location_name,
                     e.is_active,
                     CASE 
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
@@ -57,6 +61,7 @@ class EntityService {
                 FROM configuration.entities e
                 LEFT JOIN configuration.entities parent ON e.parent_uuid = parent.uuid
                 LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
+                LEFT JOIN configuration.locations loc ON e.rel_headquarters_location = loc.uuid
                 WHERE e.uuid = $1`;
             
             const result = await pool.query(query, [uuid]);
