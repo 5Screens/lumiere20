@@ -29,7 +29,7 @@
         
         <!-- Zone des connexions (au milieu) -->
         <div class="s-relations-explorer__connections">
-          <svg class="s-relations-explorer__svg-container" ref="svgContainer">
+          <svg class="s-relations-explorer__svg-container" ref="svgContainer" viewBox="0 0 100 100" preserveAspectRatio="none">
             <path 
               v-for="(curve, index) in bezierCurves" 
               :key="index"
@@ -146,65 +146,59 @@ const calculateBezierCurves = () => {
   }
   
   const svgRect = svgContainer.value.getBoundingClientRect();
-  const sourceRect = svgContainer.value.parentElement.previousElementSibling.getBoundingClientRect();
   
-  // Calculate source point (right side of source element)
-  const sourceX = 0; // Left side of SVG
-  const sourceY = svgRect.height / 2; // Middle of SVG height
+  // Utiliser des valeurs normalisées pour le SVG (0-100)
+  const sourceX = 0; // Gauche du SVG
+  const sourceY = 50; // Milieu du SVG
+  const targetX = 100; // Droite du SVG
   
-  // Calculate target points and create bezier curves
+  // Calculer les points cibles et créer les courbes de Bézier
   const curves = [];
   const totalTargets = targetRefs.value.length;
   
   targetRefs.value.forEach((target, index) => {
     if (!target) return;
     
-    const targetRect = target.getBoundingClientRect();
-    const targetsContainerRect = targetsContainer.value.getBoundingClientRect();
-    
-    // Calculate target point (left side of target element)
-    const targetX = svgRect.width; // Right side of SVG
-    
-    // Calculate Y position based on even/odd number of targets
+    // Calculer la position Y en fonction du nombre pair/impair de cibles
     let targetY;
     
-    if (totalTargets % 2 === 0) { // Even number of targets
+    if (totalTargets % 2 === 0) { // Nombre pair de cibles
       const halfCount = totalTargets / 2;
       if (index < halfCount) {
-        // Top half
+        // Moitié supérieure
         const position = halfCount - index - 1;
-        targetY = sourceY - (position + 1) * (svgRect.height / (halfCount + 1));
+        targetY = sourceY - (position + 1) * (100 / (halfCount + 1));
       } else {
-        // Bottom half
+        // Moitié inférieure
         const position = index - halfCount;
-        targetY = sourceY + (position + 1) * (svgRect.height / (halfCount + 1));
+        targetY = sourceY + (position + 1) * (100 / (halfCount + 1));
       }
-    } else { // Odd number of targets
+    } else { // Nombre impair de cibles
       const halfCount = Math.floor(totalTargets / 2);
       if (index < halfCount) {
-        // Top half
+        // Moitié supérieure
         const position = halfCount - index - 1;
-        targetY = sourceY - (position + 1) * (svgRect.height / (halfCount + 1));
+        targetY = sourceY - (position + 1) * (100 / (halfCount + 1));
       } else if (index === halfCount) {
-        // Middle (directly across)
+        // Milieu (directement en face)
         targetY = sourceY;
       } else {
-        // Bottom half
+        // Moitié inférieure
         const position = index - halfCount - 1;
-        targetY = sourceY + (position + 1) * (svgRect.height / (halfCount + 1));
+        targetY = sourceY + (position + 1) * (100 / (halfCount + 1));
       }
     }
     
-    // Create cubic bezier curve
-    // Control points are set to create a nice curve
-    const controlPoint1X = sourceX + svgRect.width * 0.3;
+    // Créer une courbe de Bézier cubique
+    // Les points de contrôle sont définis pour créer une belle courbe
+    const controlPoint1X = sourceX + 30; // 30% de la largeur du SVG
     const controlPoint1Y = sourceY;
-    const controlPoint2X = targetX - svgRect.width * 0.3;
+    const controlPoint2X = targetX - 30; // 30% de la largeur du SVG depuis la droite
     const controlPoint2Y = targetY;
     
     const path = `M ${sourceX} ${sourceY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${targetX} ${targetY}`;
     
-    // Assign a color from our color array
+    // Assigner une couleur de notre tableau de couleurs
     const colorIndex = index % curveColors.length;
     
     curves.push({
@@ -214,6 +208,7 @@ const calculateBezierCurves = () => {
   });
   
   bezierCurves.value = curves;
+  console.info('[Relations Explorer] Bezier curves calculated:', curves);
 };
 
 // Lifecycle hooks
