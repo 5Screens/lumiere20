@@ -194,7 +194,8 @@ export default {
     saveSuccess: 'Entidade salva com sucesso',
     saveError: 'Erro ao salvar entidade',
     updateSuccess: 'Entidade atualizada com sucesso',
-    createTitle: 'Nova Entidade'
+    createTitle: 'Nova Entidade',
+    updateTitle: 'Modificar a entidade'
   },
   errors: {
     badRequest: 'Requisição inválida (400)',

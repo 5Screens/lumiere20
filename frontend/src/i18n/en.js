@@ -212,7 +212,8 @@ export default {
     saveSuccess: 'Entity saved successfully',
     saveError: 'Error saving entity',
     updateSuccess: 'Entity updated successfully',
-    createTitle: 'New Entity'
+    createTitle: 'New Entity',
+    updateTitle: 'Update Entity'
   },
   audit: {
     eventType: 'Event Type',

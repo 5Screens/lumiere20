@@ -117,7 +117,8 @@ export default {
     saveSuccess: 'Entité enregistrée avec succès',
     saveError: 'Erreur lors de l\'enregistrement de l\'entité',
     updateSuccess: 'Entité mise à jour avec succès',
-    createTitle: 'Nouvelle entité'
+    createTitle: 'Nouvelle entité',
+    updateTitle: 'Modifier l\'entité'
   },
   errors: {
     badRequest: 'Requête incorrecte (400)',

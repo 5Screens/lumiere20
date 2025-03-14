@@ -194,7 +194,8 @@ export default {
     saveSuccess: 'Entidad guardada con éxito',
     saveError: 'Error al guardar la entidad',
     updateSuccess: 'Entidad actualizada con éxito',
-    createTitle: 'Nueva Entidad'
+    createTitle: 'Nueva Entidad',
+    updateTitle: 'Modificar la entidad'
   },
   errors: {
     badRequest: 'Solicitud incorrecta (400)',
