@@ -60,6 +60,7 @@
         :mode="entityId ? 'edit' : 'create'"
         :uuid="entityData.uuid"
         patch-endpoint="entities"
+        field-name="is_active"
         @update:success="handleFieldUpdated('is_active', $event)"
       />
       

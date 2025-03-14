@@ -48,6 +48,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import RgButton from '@/components/common/rgButton.vue'
+import apiService from '@/services/apiService'
 
 // Props
 const props = defineProps({
@@ -69,6 +70,10 @@ const props = defineProps({
     required: false
   },
   patchEndpoint: {
+    type: String,
+    required: false
+  },
+  fieldName: {
     type: String,
     required: false
   },
@@ -123,17 +128,16 @@ const handleConfirm = async () => {
   }
 
   try {
-    const response = await fetch(`${props.patchEndpoint}/${props.uuid}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ value: localValue.value })
-    })
-
-    if (!response.ok) {
-      throw new Error('Update failed')
+    // Prepare the endpoint with UUID
+    const endpointWithUuid = `${props.patchEndpoint}/${props.uuid}`
+    
+    // Prepare the data object for PATCH request
+    const data = {
+      [props.fieldName || 'value']: localValue.value
     }
+    
+    // Use apiService to make the PATCH request
+    await apiService.patch(endpointWithUuid, data)
 
     originalValue.value = localValue.value
     isEditing.value = false

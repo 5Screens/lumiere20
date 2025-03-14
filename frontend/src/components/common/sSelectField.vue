@@ -149,20 +149,19 @@ export default {
 
       try {
         isUpdating.value = true
-        // Déterminer le nom du champ à partir du label ou utiliser un nom par défaut
-        // Cette approche est générique et fonctionne pour différents types de champs
+        // Determine field name from props or use default
         const fieldName = props.fieldName || 'entity_type'
         
-        // Préparer les paramètres pour la requête PATCH
-        const params = {
-          uuid: props.uuid
+        // Prepare the endpoint with UUID
+        const endpointWithUuid = `${props.patchEndpoint}/${props.uuid}`
+        
+        // Prepare the data object for PATCH request
+        const data = {
+          [fieldName]: selectedValue.value
         }
         
-        // Ajouter dynamiquement le champ à mettre à jour
-        params[fieldName] = selectedValue.value
-        
-        // Utiliser apiService pour effectuer la requête PATCH
-        await apiService.patch(props.patchEndpoint, params)
+        // Use apiService to make the PATCH request
+        await apiService.patch(endpointWithUuid, data)
         
         originalValue.value = selectedValue.value
         editing.value = false
