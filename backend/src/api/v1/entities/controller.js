@@ -18,7 +18,7 @@ class EntityController {
     }
 
     async getEntityByUuid(req, res) {
-        const uuid = req.query.uuid;
+        const uuid = req.params.uuid;
         logger.info(`[CONTROLLER] getEntityByUuid - Processing request for UUID: ${uuid}`);
         try {
             const entity = await entityService.getEntityByUuid(uuid);

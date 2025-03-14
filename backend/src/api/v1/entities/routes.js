@@ -3,12 +3,18 @@ const router = express.Router();
 const entityController = require('./controller');
 const logger = require('../../../config/logger');
 
+// GET /api/v1/entities/:uuid
+router.get('/:uuid', (req, res) => {
+    logger.info(`[ROUTES] GET /api/v1/entities/${req.params.uuid} - Route handler started`);
+    return entityController.getEntityByUuid(req, res);
+});
+
 // GET /api/v1/entities
 router.get('/', (req, res, next) => {
     logger.info('[ROUTES] GET /api/v1/entities - Route handler started');
     
-    // Vérifier si des paramètres de requête non reconnus sont présents
-    const allowedParams = ['uuid', 'entity_id', 'is_active'];
+    // Check for unrecognized query parameters
+    const allowedParams = ['entity_id', 'is_active'];
     const queryParams = Object.keys(req.query);
     
     const invalidParams = queryParams.filter(param => !allowedParams.includes(param));
@@ -18,11 +24,6 @@ router.get('/', (req, res, next) => {
             error: 'Invalid query parameters',
             invalidParams: invalidParams
         });
-    }
-    
-    if (req.query.uuid) {
-        logger.info(`[ROUTES] GET /api/v1/entities - UUID parameter detected: ${req.query.uuid}`);
-        return entityController.getEntityByUuid(req, res);
     }
     
     if (req.query.entity_id) {
