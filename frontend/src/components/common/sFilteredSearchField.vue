@@ -338,16 +338,16 @@ const confirmChange = async () => {
   }
   
   try {
-    // Prepare data for PATCH request
-    const params = {
-      uuid: props.uuid
+    // Prepare the endpoint with UUID
+    const endpointWithUuid = `${props.patchEndpoint}/${props.uuid}`
+    
+    // Prepare the data object for PATCH request
+    const data = {
+      [props.fieldName]: selectedItem.value.uuid
     }
     
-    // Add the field to update
-    params[props.fieldName] = selectedItem.value.uuid
-    
     // Use apiService to make the PATCH request
-    await apiService.patch(props.patchEndpoint, params)
+    await apiService.patch(endpointWithUuid, data)
     
     // Update original value after successful update
     originalItem.value = { ...selectedItem.value }

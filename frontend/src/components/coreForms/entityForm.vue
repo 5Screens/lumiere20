@@ -60,6 +60,7 @@
         :mode="entityId ? 'edit' : 'create'"
         :uuid="entityData.uuid"
         patch-endpoint="entities"
+        field-name="is_active"
         @update:success="handleFieldUpdated('is_active', $event)"
       />
       
@@ -205,13 +206,13 @@ const fetchEntityData = async () => {
   try {
     loading.value = true;
     console.log('[fetchEntityData] Fetching data for entity ID:', entityId.value);
-    const response = await apiService.get('entities', { uuid: entityId.value });
+    const response = await apiService.get(`entities/${entityId.value}`);
     
     // Log the raw API response
     console.log('[fetchEntityData] Raw API response:', response);
     
-    // Extraire les données de la réponse
-    const data = response.data;
+    // Les données sont maintenant directement dans la réponse, plus besoin d'accéder à response.data
+    const data = response;
     console.log('[fetchEntityData] API data:', {
       uuid: data.uuid,
       name: data.name,

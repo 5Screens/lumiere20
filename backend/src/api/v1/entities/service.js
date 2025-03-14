@@ -292,36 +292,26 @@ class EntityService {
         }
     }
 
-    async updateEntityField(uuid, fieldData) {
-        logger.info(`[SERVICE] updateEntityField - Starting database operation for UUID: ${uuid}`);
+    async updateEntity(uuid, updateData) {
+        logger.info(`[SERVICE] updateEntity - Starting database operation for UUID: ${uuid}`);
         try {
-            // Vérifier si l'entité existe
-            const entityExists = await this.getEntityByUuid(uuid);
-            if (!entityExists) {
-                logger.warn(`[SERVICE] updateEntityField - Entity with UUID ${uuid} not found`);
-                return null;
+            // Build the SET clause and values array dynamically
+            const updates = [];
+            const values = [uuid]; // First parameter is always the UUID
+            let paramCount = 1;
+
+            for (const [key, value] of Object.entries(updateData)) {
+                updates.push(`${key} = $${++paramCount}`);
+                values.push(value);
             }
 
-            // Construire la requête dynamique
-            const fields = Object.keys(fieldData);
-            const values = Object.values(fieldData);
-            
-            // Vérifier si entity_id est mis à jour et s'il existe déjà
-            if (fieldData.entity_id) {
-                const existingEntity = await this.getEntityByEntityId(fieldData.entity_id);
-                if (existingEntity && existingEntity.uuid !== uuid) {
-                    logger.warn(`[SERVICE] updateEntityField - Entity with entity_id ${fieldData.entity_id} already exists`);
-                    throw new Error(`Une entité avec l'identifiant ${fieldData.entity_id} existe déjà`);
-                }
-            }
+            // Add date_modification
+            updates.push(`date_modification = CURRENT_TIMESTAMP`);
 
-            // Construire les parties SET de la requête
-            const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
-            
             const query = `
                 UPDATE configuration.entities
-                SET ${setClause}, date_modification = NOW()
-                WHERE uuid = $${fields.length + 1}
+                SET ${updates.join(', ')}
+                WHERE uuid = $1
                 RETURNING 
                     uuid,
                     name,
@@ -335,49 +325,17 @@ class EntityService {
                     date_creation,
                     date_modification`;
 
-            const queryValues = [...values, uuid];
-            logger.info(`[SERVICE] updateEntityField - Executing query with values: ${JSON.stringify(queryValues)}`);
-            
-            const result = await pool.query(query, queryValues);
-            
+            const result = await pool.query(query, values);
+
             if (result.rows.length === 0) {
-                throw new Error('Error updating entity field');
+                logger.warn(`[SERVICE] updateEntity - No entity found with UUID: ${uuid}`);
+                return null;
             }
-            
-            const updatedEntity = result.rows[0];
-            logger.info(`[SERVICE] updateEntityField - Entity updated successfully with UUID: ${updatedEntity.uuid}`);
-            
-            // Si l'entité a un parent, récupérons le nom du parent pour l'inclure dans la réponse
-            if (updatedEntity.parent_uuid) {
-                const parentQuery = `
-                    SELECT name 
-                    FROM configuration.entities 
-                    WHERE uuid = $1`;
-                
-                const parentResult = await pool.query(parentQuery, [updatedEntity.parent_uuid]);
-                
-                if (parentResult.rows.length > 0) {
-                    updatedEntity.parent_entity_name = parentResult.rows[0].name;
-                }
-            }
-            
-            // Si l'entité a un budget_approver, récupérons son nom pour l'inclure dans la réponse
-            if (updatedEntity.budget_approver_uuid) {
-                const approverQuery = `
-                    SELECT CONCAT(first_name, ' ', last_name) as budget_approver_name
-                    FROM configuration.persons 
-                    WHERE uuid = $1`;
-                
-                const approverResult = await pool.query(approverQuery, [updatedEntity.budget_approver_uuid]);
-                
-                if (approverResult.rows.length > 0) {
-                    updatedEntity.budget_approver_name = approverResult.rows[0].budget_approver_name;
-                }
-            }
-            
-            return updatedEntity;
+
+            logger.info(`[SERVICE] updateEntity - Entity updated successfully: ${uuid}`);
+            return result.rows[0];
         } catch (error) {
-            logger.error(`[SERVICE] updateEntityField - Database error: ${error.message}`);
+            logger.error(`[SERVICE] updateEntity - Error: ${error.message}`);
             throw error;
         }
     }
