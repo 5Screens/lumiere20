@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue';
 import apiService from '@/services/apiService';
 import '@/assets/styles/sRelationsExplorer.css';
 
