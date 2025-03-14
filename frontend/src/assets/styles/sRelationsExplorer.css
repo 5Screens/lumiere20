@@ -28,15 +28,18 @@
 
 .s-relations-explorer__content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   min-height: 200px;
   position: relative;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .s-relations-explorer__source {
-  flex: 0 0 25%;
+  width: 25%;
+  max-width: 25%;
   padding: 10px;
+  margin-left: 20px;
   background-color: var(--primary-color);
   color: white;
   border-radius: 4px;
@@ -45,6 +48,7 @@
   position: relative;
   z-index: 2;
   transition: transform 0.2s ease;
+  box-sizing: border-box;
 }
 
 .s-relations-explorer__source:hover {
@@ -63,9 +67,10 @@
 }
 
 .s-relations-explorer__connections {
-  flex: 0 0 50%;
+  width: 50%;
   position: relative;
   height: 100%;
+  box-sizing: border-box;
 }
 
 .s-relations-explorer__svg-container {
@@ -78,11 +83,14 @@
 }
 
 .s-relations-explorer__targets {
-  flex: 0 0 25%;
+  width: 25%;
+  max-width: 25%;
   display: flex;
   flex-direction: column;
   gap: 10px;
   z-index: 2;
+  margin-right: 20px;
+  box-sizing: border-box;
 }
 
 .s-relations-explorer__target {
