@@ -122,6 +122,14 @@
         @update:success="handleFieldUpdated('parent_uuid', $event)"
       />
       
+      <!-- Composant d'exploration des relations -->
+      <sRelationsExplorer
+        v-if="entityData.uuid"
+        :objectType="'entities'"
+        :objectUuid="entityData.uuid"
+        :mode="entityData.uuid ? 'edition' : 'creation'"
+      />
+      
       <!-- Tableau d'audit pour afficher l'historique des modifications -->
       <AuditTable 
         v-if="entityData.uuid" 
@@ -156,6 +164,7 @@ import AuditTable from '@/components/common/auditTable.vue';
 import SSelectField from '@/components/common/sSelectField.vue'; // Import du composant SSelectField
 import SFilteredSearchField from '@/components/common/sFilteredSearchField.vue'; // Import du composant SFilteredSearchField
 import sToggleField from '@/components/common/sToggleField.vue'; // Import du composant sToggleField
+import sRelationsExplorer from '@/components/common/sRelationsExplorer.vue'; // Import du composant sRelationsExplorer
 
 // Import du service API
 import apiService from '@/services/apiService';

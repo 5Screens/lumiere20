@@ -51,6 +51,12 @@ router.get('/childentities', (req, res) => {
     return entityController.getChildEntities(req, res);
 });
 
+// GET /api/v1/entities/:uuid/relations/count
+router.get('/:uuid/relations/count', (req, res) => {
+    logger.info(`[ROUTES] GET /api/v1/entities/${req.params.uuid}/relations/count - Route handler started`);
+    return entityController.getEntityRelationsCount(req, res);
+});
+
 // POST /api/v1/entities
 router.post('/', (req, res) => {
     logger.info('[ROUTES] POST /api/v1/entities - Route handler started');

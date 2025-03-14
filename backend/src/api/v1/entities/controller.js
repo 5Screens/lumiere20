@@ -190,6 +190,30 @@ class EntityController {
             });
         }
     }
+
+    async getEntityRelationsCount(req, res) {
+        const uuid = req.params.uuid;
+        logger.info(`[CONTROLLER] getEntityRelationsCount - Processing request for UUID: ${uuid}`);
+        
+        try {
+            const relationsCount = await entityService.getEntityRelationsCount(uuid);
+            
+            if (!relationsCount) {
+                logger.warn(`[CONTROLLER] getEntityRelationsCount - Entity not found with UUID: ${uuid}`);
+                return res.status(404).json({
+                    error: 'Entity not found'
+                });
+            }
+            
+            logger.info(`[CONTROLLER] getEntityRelationsCount - Successfully retrieved relations count for entity with UUID: ${uuid}`);
+            return res.json(relationsCount);
+        } catch (error) {
+            logger.error(`[CONTROLLER] getEntityRelationsCount - Error: ${error.message}`);
+            return res.status(500).json({
+                error: 'Error while retrieving entity relations count'
+            });
+        }
+    }
 }
 
 module.exports = new EntityController();

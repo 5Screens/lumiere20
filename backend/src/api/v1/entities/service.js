@@ -339,6 +339,91 @@ class EntityService {
             throw error;
         }
     }
+
+    async getEntityRelationsCount(uuid) {
+        logger.info(`[SERVICE] getEntityRelationsCount - Starting database query for UUID: ${uuid}`);
+        try {
+            // Check if entity exists
+            const entityQuery = `
+                SELECT uuid FROM configuration.entities WHERE uuid = $1
+            `;
+            const entityResult = await pool.query(entityQuery, [uuid]);
+            
+            if (entityResult.rows.length === 0) {
+                logger.warn(`[SERVICE] getEntityRelationsCount - Entity not found with UUID: ${uuid}`);
+                return null;
+            }
+
+            // Count child entities (entities referencing this entity as parent)
+            const childEntitiesQuery = `
+                SELECT COUNT(*) as count FROM configuration.entities 
+                WHERE parent_uuid = $1
+            `;
+            const childEntitiesResult = await pool.query(childEntitiesQuery, [uuid]);
+            
+            // Count primary locations (locations referencing this entity as primary)
+            const locationsQuery = `
+                SELECT COUNT(*) as count FROM configuration.locations 
+                WHERE primary_entity_uuid = $1
+            `;
+            const locationsResult = await pool.query(locationsQuery, [uuid]);
+            
+            // Count secondary locations (locations linked through rel_entities_locations)
+            const relLocationsQuery = `
+                SELECT COUNT(*) as count FROM configuration.rel_entities_locations 
+                WHERE entity_uuid = $1
+            `;
+            const relLocationsResult = await pool.query(relLocationsQuery, [uuid]);
+            
+            // Count services owned by the entity
+            const servicesQuery = `
+                SELECT COUNT(*) as count FROM data.services 
+                WHERE owning_entity_uuid = $1
+            `;
+            const servicesResult = await pool.query(servicesQuery, [uuid]);
+            
+            // Count service offerings operated by the entity
+            const serviceOfferingsQuery = `
+                SELECT COUNT(*) as count FROM data.service_offerings 
+                WHERE operator_entity_uuid = $1
+            `;
+            const serviceOfferingsResult = await pool.query(serviceOfferingsQuery, [uuid]);
+            
+            // Count persons in the entity
+            const personsQuery = `
+                SELECT COUNT(*) as count FROM configuration.persons 
+                WHERE ref_entity_uuid = $1
+            `;
+            const personsResult = await pool.query(personsQuery, [uuid]);
+            
+            // Count persons that were in the entity
+            const relPersonsQuery = `
+                SELECT COUNT(*) as count FROM configuration.persons_entities 
+                WHERE entity_uuid = $1
+            `;
+            const relPersonsResult = await pool.query(relPersonsQuery, [uuid]);
+            
+            // Compile results
+            const result = {
+                uuid: uuid,
+                relations_count: {
+                    child_entities: parseInt(childEntitiesResult.rows[0].count),
+                    locations: parseInt(locationsResult.rows[0].count),
+                    rel_locations: parseInt(relLocationsResult.rows[0].count),
+                    services: parseInt(servicesResult.rows[0].count),
+                    service_offerings: parseInt(serviceOfferingsResult.rows[0].count),
+                    persons: parseInt(personsResult.rows[0].count),
+                    rel_person: parseInt(relPersonsResult.rows[0].count)
+                }
+            };
+            
+            logger.info(`[SERVICE] getEntityRelationsCount - Successfully retrieved relation counts for entity UUID: ${uuid}`);
+            return result;
+        } catch (error) {
+            logger.error(`[SERVICE] getEntityRelationsCount - Error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new EntityService();

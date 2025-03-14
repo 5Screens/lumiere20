@@ -1,0 +1,152 @@
+/* sRelationsExplorer.css */
+
+.s-relations-explorer {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.s-relations-explorer__title {
+  color: #2c3e50;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.s-relations-explorer__message {
+  color: #666;
+  font-style: italic;
+  padding: 15px 0;
+  text-align: center;
+}
+
+.s-relations-explorer__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 200px;
+  position: relative;
+}
+
+.s-relations-explorer__source {
+  flex: 0 0 25%;
+  padding: 10px;
+  background-color: #e1f5fe;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+
+.s-relations-explorer__source:hover {
+  transform: scale(1.02);
+}
+
+.s-relations-explorer__source-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.s-relations-explorer__source-uuid {
+  font-size: 0.8rem;
+  color: #666;
+  word-break: break-all;
+}
+
+.s-relations-explorer__connections {
+  flex: 0 0 50%;
+  position: relative;
+  height: 100%;
+}
+
+.s-relations-explorer__svg-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.s-relations-explorer__targets {
+  flex: 0 0 25%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2;
+}
+
+.s-relations-explorer__target {
+  padding: 8px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.s-relations-explorer__target:hover {
+  transform: scale(1.02);
+  background-color: #f0f7ff;
+}
+
+.s-relations-explorer__target-title {
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+}
+
+.s-relations-explorer__target-count {
+  background-color: #4caf50;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+}
+
+/* SVG Styles */
+.bezier-curve {
+  fill: none;
+  stroke-width: 2;
+  transition: stroke-width 0.2s ease;
+}
+
+.bezier-curve:hover {
+  stroke-width: 3;
+}
+
+/* Animation for loading */
+.s-relations-explorer__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.s-relations-explorer__spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #2196f3;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.s-relations-explorer__error {
+  color: #f44336;
+  text-align: center;
+  padding: 20px;
+}
