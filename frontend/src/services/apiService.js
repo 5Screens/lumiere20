@@ -127,36 +127,38 @@ export default {
   },
 
   /**
-   * Effectue une requête PATCH avec des paramètres dans l'URL
-   * @param {string} endpoint - Point d'accès API (sans l'URL de base)
-   * @param {Object} params - Paramètres à inclure dans l'URL
-   * @returns {Promise<any>} - Données de réponse
+   * Performs a PATCH request with data in the request body
+   * @param {string} endpoint - API endpoint (without base URL)
+   * @param {Object} data - Data to be sent in the request body
+   * @returns {Promise<any>} - Response data
    */
-  async patch(endpoint, params = {}) {
+  async patch(endpoint, data = {}) {
     try {
-      // Construire l'URL avec les paramètres de requête
-      const url = new URL(`${API_BASE_URL}/${endpoint}`);
-      Object.keys(params).forEach(key => {
-        if (params[key] !== null && params[key] !== undefined) {
-          url.searchParams.append(key, params[key]);
-        }
-      });
+      // Log request details
+      console.info(`[API Request] PATCH ${API_BASE_URL}/${endpoint}`);
+      console.info('[API Request] Body:', data);
 
-      const response = await fetch(url.toString(), {
+      const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify(data)
       });
       
-      // Vérifier si la réponse est OK (statut 2xx)
+      // Log response status
+      console.info(`[API Response] PATCH ${endpoint} - Status: ${response.status}`);
+      
+      // Check if response is OK (2xx status)
       if (!response.ok) {
         throw await this.handleErrorResponse(response);
       }
       
-      return await response.json();
+      const responseData = await response.json();
+      console.info(`[API Response] PATCH ${endpoint} - Success`);
+      return responseData;
     } catch (error) {
-      console.error(`Erreur lors de la requête PATCH à ${endpoint}:`, error);
+      console.error(`[API Error] PATCH ${endpoint}:`, error);
       throw error;
     }
   },
