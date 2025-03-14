@@ -4,7 +4,7 @@
  */
 
 /* Main container for the toggle field - organizes label and switch horizontally */
-.s-toogle-field {
+.s-toggle-field {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -13,7 +13,7 @@
 }
 
 /* Container for the field label - fixed width to align all fields consistently */
-.s-toogle-field__label-container {
+.s-toggle-field__label-container {
   display: flex;
   align-items: flex-start;
   width: 180px;
@@ -22,7 +22,7 @@
 }
 
 /* The label text - describes what the toggle controls */
-.s-toogle-field__label {
+.s-toggle-field__label {
   font-size: 0.875rem;
   color: var(--text-color);
   font-weight: 500;
@@ -32,14 +32,14 @@
 }
 
 /* Style for required field labels - adds a red asterisk to indicate required fields */
-.s-toogle-field__label--required::after {
+.s-toggle-field__label--required::after {
   content: '*';
   color: var(--error-color);
   margin-left: 0.25rem;
 }
 
 /* Container for the toggle switch and associated elements */
-.s-toogle-field__input-container {
+.s-toggle-field__input-container {
   position: relative;
   display: flex;
   flex-direction: row;
@@ -49,7 +49,7 @@
 }
 
 /* The toggle switch container - defines the overall size of the switch */
-.s-toogle-field__switch {
+.s-toggle-field__switch {
   position: relative;
   display: inline-block;
   width: 3.5rem;
@@ -57,14 +57,14 @@
 }
 
 /* Hides the default checkbox input while keeping it accessible for screen readers */
-.s-toogle-field__switch input {
+.s-toggle-field__switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
 /* The visual part of the switch - the background track that the knob slides on */
-.s-toogle-field__slider {
+.s-toggle-field__slider {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -78,7 +78,7 @@
 }
 
 /* The sliding knob/circle of the toggle switch */
-.s-toogle-field__slider:before {
+.s-toggle-field__slider:before {
   position: absolute;
   content: "";
   height: 1.5rem;
@@ -92,43 +92,43 @@
 }
 
 /* Background style when the toggle is in the ON position */
-input:checked + .s-toogle-field__slider {
+input:checked + .s-toggle-field__slider {
   background-color: var(--input-bg);
 }
 
 /* Highlight effect when the toggle is focused (keyboard navigation) */
-input:focus + .s-toogle-field__slider {
+input:focus + .s-toggle-field__slider {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px var(--primary-color-alpha);
 }
 
 /* Moves the knob to the right when the toggle is in the ON position */
-input:checked + .s-toogle-field__slider:before {
+input:checked + .s-toggle-field__slider:before {
   transform: translateX(1.5rem);
   background-color: var(--text-color);
 }
 
 /* Hover effect for the toggle switch - highlights the border */
-.s-toogle-field__switch:hover .s-toogle-field__slider:not(:disabled) {
+.s-toggle-field__switch:hover .s-toggle-field__slider:not(:disabled) {
   border-color: var(--primary-hover);
 }
 
 /* Style for disabled toggle switches - appears faded and non-interactive */
-.s-toogle-field__switch input:disabled + .s-toogle-field__slider {
+.s-toggle-field__switch input:disabled + .s-toggle-field__slider {
   opacity: 0.7;
   cursor: not-allowed;
   background-color: var(--bg-secondary);
 }
 
 /* Text that shows the current value (ON/OFF) next to the toggle */
-.s-toogle-field__value-text {
+.s-toggle-field__value-text {
   font-size: 0.875rem;
   color: var(--text-color);
   user-select: none;
 }
 
 /* Container for additional action buttons related to the toggle */
-.s-toogle-field__actions {
+.s-toggle-field__actions {
   position: absolute;
   right: 0;
   display: flex;
@@ -142,20 +142,20 @@ input:checked + .s-toogle-field__slider:before {
 }
 
 /* Error message display - appears below the toggle when validation fails */
-.s-toogle-field__error {
+.s-toggle-field__error {
   font-size: 0.75rem;
   color: var(--error-color);
   margin-top: 0.25rem;
 }
 
 /* Helper text display - provides additional information about the toggle */
-.s-toogle-field__helper {
+.s-toggle-field__helper {
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin-top: 0.25rem;
 }
 
 /* Animation for transitions - highlights the toggle when being edited */
-.s-toogle-field--editing .s-toogle-field__slider {
+.s-toggle-field--editing .s-toggle-field__slider {
   border-color: var(--primary-color);
 }

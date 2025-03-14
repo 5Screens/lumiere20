@@ -53,7 +53,7 @@
       />
       
       <!-- Champ toggle pour is_active -->
-      <sToogleField
+      <sToggleField
         v-model="entityData.is_active"
         :label="$t('entities.is_active')"
         :required="false"
@@ -155,7 +155,7 @@ import ButtonStandard from '@/components/common/ButtonStandard.vue';
 import AuditTable from '@/components/common/auditTable.vue';
 import SSelectField from '@/components/common/sSelectField.vue'; // Import du composant SSelectField
 import SFilteredSearchField from '@/components/common/sFilteredSearchField.vue'; // Import du composant SFilteredSearchField
-import sToogleField from '@/components/common/sToogleField.vue'; // Import du composant sToogleField
+import sToggleField from '@/components/common/sToggleField.vue'; // Import du composant sToggleField
 
 // Import du service API
 import apiService from '@/services/apiService';

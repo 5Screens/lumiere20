@@ -1,13 +1,13 @@
 <template>
-  <div class="s-toogle-field" :class="{ 's-toogle-field--editing': isEditing }">
-    <div class="s-toogle-field__label-container">
-      <label :for="uuid" class="s-toogle-field__label" :class="{ 's-toogle-field__label--required': required }">
+  <div class="s-toggle-field" :class="{ 's-toggle-field--editing': isEditing }">
+    <div class="s-toggle-field__label-container">
+      <label :for="uuid" class="s-toggle-field__label" :class="{ 's-toggle-field__label--required': required }">
         {{ label }}
       </label>
     </div>
 
-    <div class="s-toogle-field__input-container">
-      <label class="s-toogle-field__switch">
+    <div class="s-toggle-field__input-container">
+      <label class="s-toggle-field__switch">
         <input
           type="checkbox"
           :id="uuid"
@@ -15,15 +15,15 @@
           :disabled="disabled"
           @change="handleChange"
         >
-        <span class="s-toogle-field__slider"></span>
+        <span class="s-toggle-field__slider"></span>
       </label>
       
-      <span class="s-toogle-field__value-text">
+      <span class="s-toggle-field__value-text">
         {{ localValue ? t('common.yes') : t('common.no') }}
       </span>
 
       <!-- Actions buttons in edit mode -->
-      <div v-if="mode === 'edit' && isEditing" class="s-toogle-field__actions">
+      <div v-if="mode === 'edit' && isEditing" class="s-toggle-field__actions">
         <RgButton
           @confirm="handleConfirm"
           @cancel="handleCancel"
@@ -33,12 +33,12 @@
     </div>
 
     <!-- Error message -->
-    <div v-if="error" class="s-toogle-field__error">
+    <div v-if="error" class="s-toggle-field__error">
       {{ error }}
     </div>
 
     <!-- Helper text -->
-    <div v-if="helper && !error" class="s-toogle-field__helper">
+    <div v-if="helper && !error" class="s-toggle-field__helper">
       {{ helper }}
     </div>
   </div>
@@ -158,5 +158,5 @@ const handleCancel = () => {
 </script>
 
 <style scoped>
-@import '@/assets/styles/sToogleField.css';
+@import '@/assets/styles/sToggleField.css';
 </style>
