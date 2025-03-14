@@ -12,7 +12,7 @@ class EntityController {
         } catch (error) {
             logger.error(`[CONTROLLER] getAllEntities - Error: ${error.message}`);
             res.status(500).json({ 
-                error: 'Une erreur est survenue lors de la récupération des entités' 
+                error: 'An error occurred while retrieving entities' 
             });
         }
     }
@@ -26,21 +26,16 @@ class EntityController {
             if (!entity) {
                 logger.warn(`[CONTROLLER] getEntityByUuid - Entity not found with UUID: ${uuid}`);
                 return res.status(404).json({
-                    success: false,
-                    message: 'Entité non trouvée'
+                    error: 'Entity not found'
                 });
             }
             
             logger.info(`[CONTROLLER] getEntityByUuid - Successfully retrieved entity with UUID: ${uuid}`);
-            return res.status(200).json({
-                success: true,
-                data: entity
-            });
+            return res.json(entity);
         } catch (error) {
             logger.error(`[CONTROLLER] getEntityByUuid - Error: ${error.message}`);
             return res.status(500).json({
-                success: false,
-                message: 'Erreur lors de la récupération de l\'entité'
+                error: 'Error while retrieving entity'
             });
         }
     }
@@ -54,21 +49,16 @@ class EntityController {
             if (!entity) {
                 logger.warn(`[CONTROLLER] getEntityByEntityId - Entity not found with entity_id: ${entityId}`);
                 return res.status(404).json({
-                    success: false,
-                    message: 'Entité non trouvée'
+                    error: 'Entity not found'
                 });
             }
             
             logger.info(`[CONTROLLER] getEntityByEntityId - Successfully retrieved entity with entity_id: ${entityId}`);
-            return res.status(200).json({
-                success: true,
-                data: entity
-            });
+            return res.json(entity);
         } catch (error) {
             logger.error(`[CONTROLLER] getEntityByEntityId - Error: ${error.message}`);
             return res.status(500).json({
-                success: false,
-                message: 'Erreur lors de la récupération de l\'entité'
+                error: 'Error while retrieving entity'
             });
         }
     }
@@ -79,8 +69,7 @@ class EntityController {
         
         if (!parentEntityId) {
             return res.status(400).json({
-                success: false,
-                message: 'Le paramètre entity_id est requis'
+                error: 'entity_id parameter is required'
             });
         }
 
@@ -90,21 +79,16 @@ class EntityController {
             if (!result) {
                 logger.warn(`[CONTROLLER] getChildEntities - Parent entity not found with entity_id: ${parentEntityId}`);
                 return res.status(404).json({
-                    success: false,
-                    message: 'Entité parent non trouvée'
+                    error: 'Parent entity not found'
                 });
             }
             
             logger.info(`[CONTROLLER] getChildEntities - Successfully retrieved child entities for parent entity_id: ${parentEntityId}`);
-            return res.status(200).json({
-                success: true,
-                data: result
-            });
+            return res.json(result);
         } catch (error) {
             logger.error(`[CONTROLLER] getChildEntities - Error: ${error.message}`);
             return res.status(500).json({
-                success: false,
-                message: 'Erreur lors de la récupération des entités enfants'
+                error: 'Error while retrieving child entities'
             });
         }
     }
@@ -115,25 +99,23 @@ class EntityController {
             const entityData = req.body;
             logger.info('[CONTROLLER] createEntity - Validating entity data');
             
-            // Validation des données
+            // Validate data
             const { error, value } = validateEntity(entityData);
             if (error) {
                 logger.warn(`[CONTROLLER] createEntity - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
                 return res.status(400).json({
-                    success: false,
-                    message: 'Données d\'entité invalides',
-                    errors: error.details.map(d => d.message)
+                    error: 'Invalid entity data',
+                    details: error.details.map(d => d.message)
                 });
             }
             
-            // Vérification si l'entity_id existe déjà
+            // Check if entity_id already exists
             if (entityData.entity_id) {
                 const existingEntity = await entityService.getEntityByEntityId(entityData.entity_id);
                 if (existingEntity) {
                     logger.warn(`[CONTROLLER] createEntity - Entity with entity_id ${entityData.entity_id} already exists`);
                     return res.status(409).json({
-                        success: false,
-                        message: `Une entité avec l'identifiant ${entityData.entity_id} existe déjà`
+                        error: `Entity with id ${entityData.entity_id} already exists`
                     });
                 }
             }
@@ -142,24 +124,18 @@ class EntityController {
             const newEntity = await entityService.createEntity(value);
             
             logger.info(`[CONTROLLER] createEntity - Entity created successfully with UUID: ${newEntity.uuid}`);
-            return res.status(201).json({
-                success: true,
-                message: 'Entité créée avec succès',
-                data: newEntity
-            });
+            return res.status(201).json(newEntity);
         } catch (error) {
             logger.error(`[CONTROLLER] createEntity - Error: ${error.message}`);
             
-            if (error.code === '23505') { // Code d'erreur PostgreSQL pour violation de contrainte unique
+            if (error.code === '23505') { // PostgreSQL unique constraint violation code
                 return res.status(409).json({
-                    success: false,
-                    message: 'Une entité avec cet identifiant existe déjà'
+                    error: 'Entity with this identifier already exists'
                 });
             }
             
             return res.status(500).json({
-                success: false,
-                message: 'Une erreur est survenue lors de la création de l\'entité'
+                error: 'An error occurred while creating the entity'
             });
         }
     }
@@ -179,80 +155,38 @@ class EntityController {
     }
 
     async updateEntityField(req, res) {
-        const uuid = req.query.uuid;
+        const uuid = req.entityUuid;
         logger.info(`[CONTROLLER] updateEntityField - Processing request for UUID: ${uuid}`);
-        
-        if (!uuid) {
-            logger.warn('[CONTROLLER] updateEntityField - Missing UUID parameter');
-            return res.status(400).json({
-                success: false,
-                message: 'UUID parameter is required'
-            });
-        }
-
-        // Récupérer les champs à mettre à jour depuis les paramètres de requête
-        const allowedFields = ['name', 'entity_id', 'external_id', 'entity_type', 'rel_headquarters_location', 'is_active', 'parent_uuid'];
-        const fieldData = {};
-        
-        // Parcourir les paramètres de requête et extraire les champs autorisés
-        for (const field of allowedFields) {
-            if (req.query[field] !== undefined) {
-                // Conversion spéciale pour le champ booléen is_active
-                if (field === 'is_active') {
-                    fieldData[field] = req.query[field] === 'true';
-                } else {
-                    fieldData[field] = req.query[field];
-                }
-            }
-        }
-
-        // Vérifier si des champs à mettre à jour ont été fournis
-        if (Object.keys(fieldData).length === 0) {
-            logger.warn('[CONTROLLER] updateEntityField - No valid fields to update');
-            return res.status(400).json({
-                success: false,
-                message: 'No valid fields to update'
-            });
-        }
 
         try {
-            // Validation des données
-            const { error, value } = validateEntityPatch(fieldData);
+            // Validate the entity exists
+            const existingEntity = await entityService.getEntityByUuid(uuid);
+            if (!existingEntity) {
+                logger.warn(`[CONTROLLER] updateEntityField - Entity not found with UUID: ${uuid}`);
+                return res.status(404).json({
+                    error: 'Entity not found'
+                });
+            }
+
+            // Validate update data
+            const { error, value } = validateEntityPatch(req.body);
             if (error) {
                 logger.warn(`[CONTROLLER] updateEntityField - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
                 return res.status(400).json({
-                    success: false,
-                    message: 'Invalid entity data',
-                    errors: error.details.map(d => d.message)
+                    error: 'Invalid update data',
+                    details: error.details.map(d => d.message)
                 });
             }
 
-            // Mise à jour de l'entité
-            const updatedEntity = await entityService.updateEntityField(uuid, value);
+            // Update the entity
+            const updatedEntity = await entityService.updateEntity(uuid, value);
+            logger.info(`[CONTROLLER] updateEntityField - Entity updated successfully: ${uuid}`);
             
-            if (!updatedEntity) {
-                logger.warn(`[CONTROLLER] updateEntityField - Entity not found with UUID: ${uuid}`);
-                return res.status(404).json({
-                    success: false,
-                    message: 'Entity not found'
-                });
-            }
-            
-            logger.info(`[CONTROLLER] updateEntityField - Successfully updated entity with UUID: ${uuid}`);
-            return res.status(200).json(updatedEntity);
+            return res.json(updatedEntity);
         } catch (error) {
             logger.error(`[CONTROLLER] updateEntityField - Error: ${error.message}`);
-            
-            if (error.message.includes('existe déjà')) {
-                return res.status(409).json({
-                    success: false,
-                    message: error.message
-                });
-            }
-            
             return res.status(500).json({
-                success: false,
-                message: 'An error occurred while updating the entity'
+                error: 'An error occurred while updating the entity'
             });
         }
     }
