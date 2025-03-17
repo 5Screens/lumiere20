@@ -330,8 +330,8 @@ export default {
           translatedTitle = this.$t('entities.createTitle');
         }
       } else if (type === 'symptomForm') {
-        if (data && data.symptomId) {
-          translatedTitle = this.$t('symptoms.updateTitle', { name: data.title ? data.title.split(' - ')[1] : '' });
+        if (data && (data.symptomId || data.symptomCode)) {
+          translatedTitle = this.$t('symptoms.updateTitle', { code: data.symptomCode });
         } else {
           translatedTitle = this.$t('symptoms.createTitle');
         }
