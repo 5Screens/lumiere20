@@ -28,7 +28,6 @@ const props = defineProps({
    */
   label: {
     type: String,
-    default: 'Valider'
   },
   /**
    * Type HTML du bouton

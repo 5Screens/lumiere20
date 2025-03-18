@@ -1,9 +1,25 @@
 <template>
   <div class="form">
     <div class="form__header">
-      <h2>{{ title }}</h2>
+      <div class="form__header-actions">
+        <ButtonStandard
+          icon="fas fa-save"
+          variant="primary"
+          :loading="loading"
+          @click="handleAction"
+          :title="$t('common.save')"
+          label=""
+        />
+      </div>
     </div>
-    
+      
+      <!-- Champs texte standard -->
+      <TextField
+        v-model="symptomData.code"
+        :label="$t('symptoms.code')"
+        :required="true"
+      />
+          
     <div class="form__content">
       <!-- Champ libre avec langue active -->
       <MLTextField
@@ -12,13 +28,7 @@
         :label="$t('symptoms.name')"
         :required="true"
       />
-      
-      <!-- Champs texte standard -->
-      <TextField
-        v-model="symptomData.code"
-        :label="$t('symptoms.code')"
-        :required="true"
-      />
+
       
       <!-- Tableau d'audit pour afficher l'historique des modifications -->
       <AuditTable 
@@ -29,17 +39,7 @@
     </div>
     
     <div class="form__footer">
-      <ButtonStandard
-        :label="$t('common.cancel')"
-        variant="secondary"
-        @click="handleCancel"
-      />
-      <ButtonStandard
-        :label="$t('common.save')"
-        variant="primary"
-        :loading="loading"
-        @click="handleAction"
-      />
+      <!-- Le bouton Enregistrer a été déplacé dans le header et le bouton Annuler a été supprimé -->
     </div>
   </div>
 </template>
@@ -56,9 +56,6 @@ import AuditTable from '@/components/common/auditTable.vue';
 
 // Import du service API
 import apiService from '@/services/apiService';
-
-// Import des styles
-import '@/assets/styles/forms.css';
 
 const { t } = useI18n();
 
@@ -308,4 +305,16 @@ onMounted(async () => {
 
 <style scoped>
 @import '@/assets/styles/forms.css';
+
+.form__header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.form__header-actions {
+  display: flex;
+  gap: 10px;
+}
 </style>
