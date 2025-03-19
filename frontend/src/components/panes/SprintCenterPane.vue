@@ -67,6 +67,6 @@ export default {
 </script>
 
 <style scoped>
-@import '../assets/styles/sidePane.css';
+@import '../../assets/styles/sidePane.css';
 
 </style>

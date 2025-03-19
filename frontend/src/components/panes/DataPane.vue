@@ -230,7 +230,7 @@ export default {
 </script>
 
 <style scoped>
-@import '../assets/styles/sidePane.css';
+@import '../../assets/styles/sidePane.css';
 
 /* Styles spécifiques à ce composant */
 .data-pane {
