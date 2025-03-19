@@ -7,17 +7,17 @@
       <div class="theme-section">
         <h3>{{ $t('theme.title') }}</h3>
         <div class="theme-buttons">
-          <button @click="setTheme('light')" :class="{ active: currentTheme === 'light' }" :title="$t('theme.light')">
+          <button @click="userProfileStore.setTheme('light')" :class="{ active: userProfileStore.theme === 'light' }" :title="$t('theme.light')">
             <i class="fas fa-sun"></i>
           </button>
-          <button @click="setTheme('dark')" :class="{ active: currentTheme === 'dark' }" :title="$t('theme.dark')">
+          <button @click="userProfileStore.setTheme('dark')" :class="{ active: userProfileStore.theme === 'dark' }" :title="$t('theme.dark')">
             <i class="fas fa-moon"></i>
           </button>
         </div>
       </div>
       <div class="language-section">
         <h3>{{ $t('language.title') }}</h3>
-        <select v-model="currentLanguage">
+        <select v-model="userProfileStore.language" @change="$i18n.locale = userProfileStore.language">
           <option value="fr">{{ $t('language.fr') }}</option>
           <option value="en">{{ $t('language.en') }}</option>
           <option value="pt">{{ $t('language.pt') }}</option>
@@ -45,24 +45,7 @@ export default {
     const userProfileStore = useUserProfileStore()
     return { locale, userProfileStore }
   },
-  computed: {
-    currentTheme() {
-      return this.userProfileStore.theme
-    },
-    currentLanguage: {
-      get() {
-        return this.userProfileStore.language
-      },
-      set(value) {
-        this.$i18n.locale = value
-        this.userProfileStore.setLanguage(value)
-      }
-    }
-  },
   methods: {
-    setTheme(theme) {
-      this.userProfileStore.setTheme(theme)
-    },
     handleClickOutside(event) {
       if (this.$refs.profilePane && !this.$refs.profilePane.contains(event.target)) {
         this.$emit('close')
@@ -88,7 +71,7 @@ export default {
   },
   created() {
     // Initialiser la langue actuelle
-    this.currentLanguage = this.locale
+    this.userProfileStore.language = this.locale
   }
 }
 </script>

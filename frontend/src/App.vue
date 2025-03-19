@@ -43,8 +43,6 @@
 
     <ProfilePane 
       :is-visible="isProfilePaneVisible"
-      @theme-changed="handleThemeChange"
-      @language-changed="handleLanguageChange"
       @close="closeProfilePane"
     />
 
@@ -177,13 +175,6 @@ export default {
     },
     closeAdmin() {
       this.isAdminVisible = false
-    },
-    handleThemeChange(theme) {
-      // Implémentation du changement de thème
-    },
-    handleLanguageChange(language) {
-      // Implémentation du changement de langue
-      this.updateTabTitles()
     },
     handleOpenTab(tabData) {
       this.tabsStore.openTab({
