@@ -3,28 +3,28 @@
     <!-- Onglets principaux (niveau 1) -->
     <div class="tabs-container primary-tabs">
       <div 
-        v-for="tab in primaryTabs" 
-        :key="tab.id" 
+        v-for="tab in store.parentTabs" 
+        :key="tab.id_tab" 
         class="tab" 
-        :class="{ active: activeTabId === tab.id }"
-        @click="switchTab(tab.id)"
+        :class="{ active: store.activeTabId === tab.id_tab }"
+        @click="store.switchTab(tab.id_tab)"
       >
-        <span class="tab-title">{{ tab.title }}</span>
-        <button class="close-tab" @click.stop="closeTab(tab.id)">×</button>
+        <span class="tab-title">{{ tab.label }}</span>
+        <button class="close-tab" @click.stop="store.closeTab(tab.id_tab)">×</button>
       </div>
     </div>
     
     <!-- Onglets secondaires (niveau 2) si un onglet parent est actif -->
-    <div v-if="hasChildTabs" class="tabs-container secondary-tabs">
+    <div v-if="store.activeChildTabs.length > 0" class="tabs-container secondary-tabs">
       <div 
-        v-for="tab in childTabsOfActiveTab" 
-        :key="tab.id" 
+        v-for="tab in store.activeChildTabs" 
+        :key="tab.id_tab" 
         class="tab" 
-        :class="{ active: activeChildTabId === tab.id }"
-        @click="switchChildTab(tab.id)"
+        :class="{ active: store.activeChildTabId === tab.id_tab }"
+        @click="store.switchChildTab(tab.id_tab)"
       >
-        <span class="tab-title">{{ tab.title }}</span>
-        <button class="close-tab" @click.stop="closeChildTab(tab.id)">×</button>
+        <span class="tab-title">{{ tab.label }}</span>
+        <button class="close-tab" @click.stop="store.closeTab(tab.id_tab)">×</button>
       </div>
     </div>
     
@@ -34,16 +34,13 @@
         :is="activeComponent" 
         :data="activeComponentData"
         :key="activeComponentKey"
-        @open-tab="handleOpenTab"
-        @open-child-tab="handleOpenChildTab"
-        @close-tab="closeTab"
-        @close-child-tab="closeChildTab"
       />
     </div>
   </div>
 </template>
 
 <script>
+import { useTabsStore } from '@/stores/tabsStore'
 import SymptomsTab from '@/components/SymptomsTab.vue'
 import EntitiesTab from '@/components/entitiesTab.vue'
 import SymptomsForm from '@/components/coreForms/symptomsForm.vue'
@@ -57,157 +54,44 @@ export default {
     SymptomsForm,
     EntityForm
   },
-  props: {
-    tabs: {
-      type: Array,
-      required: true
-    },
-    activeTabId: {
-      type: String,
-      default: null
-    }
-  },
-  data() {
-    return {
-      activeChildTabId: null
-    };
+  setup() {
+    const store = useTabsStore()
+    return { store }
   },
   computed: {
-    // Filtrer les onglets de premier niveau (sans parentId)
-    primaryTabs() {
-      return this.tabs.filter(tab => !tab.parentId);
-    },
-    
-    // Vérifier si l'onglet actif a des onglets enfants
-    hasChildTabs() {
-      return this.childTabsOfActiveTab.length > 0;
-    },
-    
-    // Obtenir tous les onglets enfants de l'onglet actif
-    childTabsOfActiveTab() {
-      return this.tabs.filter(tab => tab.parentId === this.activeTabId);
-    },
-    
-    // Déterminer le composant à afficher en fonction de l'onglet actif et de l'onglet enfant actif
+    // Déterminer le composant à afficher en fonction de l'onglet actif
     activeComponent() {
-      if (this.activeChildTabId) {
-        const childTab = this.tabs.find(tab => tab.id === this.activeChildTabId);
-        return childTab ? this.getComponentByType(childTab.type) : null;
-      }
-      
-      const activeTab = this.tabs.find(tab => tab.id === this.activeTabId);
-      return activeTab ? this.getComponentByType(activeTab.type) : null;
+      const activeTab = this.store.activeChildTab || this.store.activeTab
+      return activeTab ? this.getComponentByType(activeTab.type) : null
     },
     
     // Obtenir les données du composant actif
     activeComponentData() {
-      if (this.activeChildTabId) {
-        const childTab = this.tabs.find(tab => tab.id === this.activeChildTabId);
-        return childTab ? childTab.data : null;
-      }
-      
-      const activeTab = this.tabs.find(tab => tab.id === this.activeTabId);
-      return activeTab ? activeTab.data : null;
+      const activeTab = this.store.activeChildTab || this.store.activeTab
+      return activeTab || null
     },
     
     // Clé unique pour forcer la réinitialisation du composant
     activeComponentKey() {
-      if (this.activeChildTabId) {
-        return `child-${this.activeChildTabId}`;
+      if (this.store.activeChildTabId) {
+        return `child-${this.store.activeChildTabId}`
       }
-      return `parent-${this.activeTabId}`;
+      return `parent-${this.store.activeTabId}`
     }
   },
   methods: {
-    // Changer l'onglet principal actif
-    switchTab(tabId) {
-      this.$emit('update:activeTabId', tabId);
-      this.activeChildTabId = null; // Réinitialiser l'onglet enfant actif
-    },
-    
-    // Changer l'onglet enfant actif
-    switchChildTab(tabId) {
-      this.activeChildTabId = tabId;
-    },
-    
-    // Fermer un onglet principal
-    closeTab(tabId) {
-      // Trouver tous les onglets enfants associés à cet onglet
-      const childTabs = this.tabs.filter(tab => tab.parentId === tabId);
-      
-      // Émettre un événement pour fermer l'onglet et tous ses enfants
-      this.$emit('close-tab', { tabId, childTabIds: childTabs.map(tab => tab.id) });
-      
-      // Si l'onglet fermé est l'onglet actif, réinitialiser l'onglet enfant actif
-      if (tabId === this.activeTabId) {
-        this.activeChildTabId = null;
-      }
-    },
-    
-    // Fermer un onglet enfant
-    closeChildTab(tabId) {
-      this.$emit('close-child-tab', tabId);
-      
-      // Si l'onglet enfant fermé est l'onglet enfant actif, réinitialiser
-      if (tabId === this.activeChildTabId) {
-        this.activeChildTabId = null;
-      }
-    },
-    
-    // Gérer l'ouverture d'un nouvel onglet principal
-    handleOpenTab(tabData) {
-      this.$emit('open-tab', tabData);
-    },
-    
-    // Gérer l'ouverture d'un nouvel onglet enfant
-    handleOpenChildTab(tabData) {
-      // Ajouter le parentId à tabData
-      const childTabData = {
-        ...tabData,
-        parentId: this.activeTabId
-      };
-      
-      this.$emit('open-child-tab', childTabData);
-      this.activeChildTabId = childTabData.id;
-    },
-    
     // Obtenir le nom du composant en fonction du type d'onglet
     getComponentByType(type) {
       const componentMap = {
         'symptoms': 'SymptomsTab',
         'entities': 'EntitiesTab',
-        'symptomForm': 'SymptomsForm',
-        'entityForm': 'EntityForm'
-        // Ajouter d'autres mappages de types vers des composants ici
-      };
-      
-      return componentMap[type] || null;
-    }
-  },
-  watch: {
-    // Surveiller les changements dans les onglets pour mettre à jour l'onglet enfant actif si nécessaire
-    tabs: {
-      handler(newTabs) {
-        // Si l'onglet enfant actif n'existe plus, le réinitialiser
-        if (this.activeChildTabId && !newTabs.some(tab => tab.id === this.activeChildTabId)) {
-          this.activeChildTabId = null;
-        }
-      },
-      deep: true
-    },
-    
-    // Surveiller les changements dans l'onglet actif pour mettre à jour l'onglet enfant actif si nécessaire
-    activeTabId(newTabId) {
-      // Vérifier si l'onglet enfant actif appartient toujours à l'onglet parent actif
-      if (this.activeChildTabId) {
-        const childTab = this.tabs.find(tab => tab.id === this.activeChildTabId);
-        if (!childTab || childTab.parentId !== newTabId) {
-          this.activeChildTabId = null;
-        }
+        'symptom': 'SymptomsForm',
+        'entity': 'EntityForm'
       }
+      return componentMap[type] || null
     }
   }
-};
+}
 </script>
 
 <style scoped src="@/assets/styles/hierarchicalTabs.css"></style>
