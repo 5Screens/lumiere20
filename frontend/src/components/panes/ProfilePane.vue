@@ -17,7 +17,7 @@
       </div>
       <div class="language-section">
         <h3>{{ $t('language.title') }}</h3>
-        <select v-model="currentLanguage" @change="changeLanguage">
+        <select v-model="currentLanguage">
           <option value="fr">{{ $t('language.fr') }}</option>
           <option value="en">{{ $t('language.en') }}</option>
           <option value="pt">{{ $t('language.pt') }}</option>
@@ -30,6 +30,7 @@
 
 <script>
 import { useI18n } from 'vue-i18n'
+import { useUserProfileStore } from '@/stores/userProfileStore'
 
 export default {
   name: 'ProfilePane',
@@ -41,28 +42,30 @@ export default {
   },
   setup() {
     const { locale } = useI18n()
-    return { locale }
+    const userProfileStore = useUserProfileStore()
+    return { locale, userProfileStore }
   },
-  data() {
-    return {
-      currentTheme: localStorage.getItem('theme') || 'light',
-      currentLanguage: this.locale
+  computed: {
+    currentTheme() {
+      return this.userProfileStore.theme
+    },
+    currentLanguage: {
+      get() {
+        return this.userProfileStore.language
+      },
+      set(value) {
+        this.$i18n.locale = value
+        this.userProfileStore.setLanguage(value)
+      }
     }
   },
   methods: {
     setTheme(theme) {
-      this.currentTheme = theme;
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);
-      this.$emit('theme-changed', theme);
-    },
-    changeLanguage() {
-      this.$i18n.locale = this.currentLanguage;
-      this.$emit('language-changed', this.currentLanguage);
+      this.userProfileStore.setTheme(theme)
     },
     handleClickOutside(event) {
       if (this.$refs.profilePane && !this.$refs.profilePane.contains(event.target)) {
-        this.$emit('close');
+        this.$emit('close')
       }
     }
   },
@@ -71,23 +74,21 @@ export default {
       if (newValue) {
         // Ajouter l'écouteur d'événement quand le panneau est visible
         setTimeout(() => {
-          document.addEventListener('mousedown', this.handleClickOutside);
-        }, 0);
+          document.addEventListener('mousedown', this.handleClickOutside)
+        }, 0)
       } else {
         // Retirer l'écouteur d'événement quand le panneau est caché
-        document.removeEventListener('mousedown', this.handleClickOutside);
+        document.removeEventListener('mousedown', this.handleClickOutside)
       }
     }
   },
   beforeUnmount() {
     // Nettoyage de l'écouteur d'événement lors de la destruction du composant
-    document.removeEventListener('mousedown', this.handleClickOutside);
+    document.removeEventListener('mousedown', this.handleClickOutside)
   },
   created() {
     // Initialiser la langue actuelle
-    this.currentLanguage = this.locale;
-    // Appliquer le thème sauvegardé
-    this.setTheme(this.currentTheme);
+    this.currentLanguage = this.locale
   }
 }
 </script>

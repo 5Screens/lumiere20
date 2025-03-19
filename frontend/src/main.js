@@ -4,6 +4,7 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import i18n from './i18n'
+import { useUserProfileStore } from './stores/userProfileStore'
 
 // Router configuration
 const router = createRouter({
@@ -19,4 +20,9 @@ const app = createApp(App)
 app.use(router)
 app.use(i18n)
 app.use(pinia)
+
+// Initialize user profile store and theme
+const userProfileStore = useUserProfileStore()
+document.documentElement.setAttribute('data-theme', userProfileStore.theme)
+
 app.mount('#app')
