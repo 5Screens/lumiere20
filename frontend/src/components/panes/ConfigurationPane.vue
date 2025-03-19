@@ -48,7 +48,6 @@
 
 <script>
 import { useTabsStore } from '@/stores/tabsStore'
-import axios from 'axios'
 
 export default {
   name: 'ConfigurationPane',

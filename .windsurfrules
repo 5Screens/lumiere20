@@ -1,8 +1,9 @@
+speak to me in french
+
 use command compatible with windows 
 use english in all your code
 use english in all the logging messages (error ,info, warn)
 use english in all the comments in your code
-speak to me in french
 use a .gitignore pour ne pas stocker de données sensibles dans Git
 use frontend directory to store all the frontend sources
 use backend directory to store all the backend sources
