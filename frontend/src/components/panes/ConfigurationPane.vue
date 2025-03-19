@@ -47,6 +47,7 @@
 </template>
 
 <script>
+import { useTabsStore } from '@/stores/tabsStore'
 import axios from 'axios'
 
 export default {
@@ -57,13 +58,10 @@ export default {
       default: false
     }
   },
-    /**
-     * Contains the items to be displayed in the configuration pane. Each item
-     * is an object with the following properties:
-     * - tabToOpen: The tab to open when the item is clicked.
-     * - icon: The icon to display for the item.
-     * - label: The label to display for the item.
-     */
+  setup() {
+    const store = useTabsStore()
+    return { store }
+  },
   data() {
     return {
       configItems: [
@@ -82,16 +80,11 @@ export default {
       ]
     }
   },
-    /**
-     * Handles the click event on a configuration item. Emits an "open-tab" event
-     * with the appropriate data for the content area to display.
-     * @param {Object} item - The configuration item that was clicked.
-     */
   methods: {
     handleItemClick(item) {
-      this.$emit('open-tab', {
+      this.store.openTab({
         id: item.tabToOpen,
-        title: this.$t(item.label),
+        label: this.$t(item.label),
         type: item.tabToOpen
       })
     }
