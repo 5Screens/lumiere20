@@ -21,8 +21,9 @@ app.use(router)
 app.use(i18n)
 app.use(pinia)
 
-// Initialize user profile store and theme
+// Initialize user profile store, theme and language
 const userProfileStore = useUserProfileStore()
 document.documentElement.setAttribute('data-theme', userProfileStore.theme)
+i18n.global.locale = userProfileStore.language
 
 app.mount('#app')
