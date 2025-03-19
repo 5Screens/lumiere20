@@ -49,6 +49,18 @@
   color: var(--text-color); /* Couleur par défaut du texte */
 }
 
+/* Style pour l'icône dans l'onglet */
+.tab i {
+  margin-right: 8px;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+/* Style pour l'icône dans l'onglet actif */
+.tab.active i {
+  color: var(--primary-color);
+}
+
 /* Effet au survol d'un onglet - change légèrement la couleur de fond */
 .tab:hover {
   background-color: var(--hover-color);

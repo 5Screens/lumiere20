@@ -9,6 +9,7 @@
         :class="{ active: store.activeTabId === tab.id_tab }"
         @click="store.switchTab(tab.id_tab)"
       >
+        <i v-if="tab.icon" :class="tab.icon"></i>
         <span class="tab-title">{{ tab.label }}</span>
         <button class="close-tab" @click.stop="store.closeTab(tab.id_tab)">×</button>
       </div>
@@ -23,6 +24,7 @@
         :class="{ active: store.activeChildTabId === tab.id_tab }"
         @click="store.switchChildTab(tab.id_tab)"
       >
+        <i v-if="tab.icon" :class="tab.icon"></i>
         <span class="tab-title">{{ tab.label }}</span>
         <button class="close-tab" @click.stop="store.closeTab(tab.id_tab)">×</button>
       </div>

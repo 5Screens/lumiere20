@@ -84,7 +84,8 @@ export default {
       this.store.openTab({
         id: item.tabToOpen,
         label: this.$t(item.label),
-        type: item.tabToOpen
+        type: item.tabToOpen,
+        icon: item.icon
       })
     }
   }
