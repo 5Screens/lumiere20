@@ -2,6 +2,7 @@
   <div class="form">
     <div class="form__header">
       <div class="form__header-actions">
+        <h3 class="header-title">Global information (uuid: {{ symptomData.uuid || 'New symptom' }})</h3>
         <ButtonStandard
           icon="fas fa-save"
           variant="primary"
@@ -13,6 +14,7 @@
       </div>
     </div>
       
+    <div class="form__content">
       <!-- Champs texte standard -->
       <TextField
         v-model="symptomData.code"
@@ -20,7 +22,6 @@
         :required="true"
       />
           
-    <div class="form__content">
       <!-- Champ libre avec langue active -->
       <MLTextField
         v-model="symptomData.name"
@@ -314,6 +315,14 @@ onMounted(async () => {
 
 .form__header-actions {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: auto;
 }
 </style>
