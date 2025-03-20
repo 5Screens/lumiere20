@@ -81,18 +81,14 @@ export default {
             return // Ignorer les lignes sans code de symptôme
           }
           
-          // Générer un ID unique pour le nouvel onglet
-          const tabId = 'symptom-form-' + symptomCode + '-' + Date.now()
-          
-          // Émettre un événement pour ouvrir un nouvel onglet enfant avec le formulaire de modification
-          this.$emit('open-child-tab', {
-            id: tabId,
-            title: this.$t('symptoms.updateTitle', { code: symptomCode }),
-            type: 'symptomForm',
-            data: {
-              title: this.$t('symptoms.updateTitle', { code: symptomCode }),
-              symptomCode: symptomCode // Code du symptôme à modifier (au lieu de l'UUID)
-            }
+          this.store.openTab({
+            id: 'symptom-form-' + symptomCode + '-' + Date.now(),
+            label: symptomCode,
+            type: 'symptom',
+            icon: 'fas fa-edit',
+            mode: 'update',
+            symptomCode: symptomCode,
+            parentId: this.store.activeTabId
           })
         })
       } else {
