@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  * Store pour la gestion des onglets hiérarchiques
@@ -22,7 +23,7 @@ export const useTabsStore = defineStore('tabs', {
     openTab(tab) {
       const newTab = {
         ...tab,
-        id_tab: Date.now(),
+        id_tab: uuidv4(),
         timestamp: new Date().toISOString(),
       }
       
