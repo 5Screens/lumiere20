@@ -27,6 +27,7 @@
 <script>
 import ReusableTableTab from './common/reusableTableTab.vue'
 import TabControlButtons from './common/tabControlButtons.vue'
+import { useTabsStore } from '@/stores/tabsStore'
 import '../assets/styles/tab.css'
 
 export default {
@@ -34,6 +35,10 @@ export default {
   components: {
     ReusableTableTab,
     TabControlButtons
+  },
+  setup() {
+    const store = useTabsStore()
+    return { store }
   },
   data() {
     return {
@@ -55,18 +60,13 @@ export default {
   },
   methods: {
     handleCreate() {
-      // Générer un ID unique pour le nouvel onglet
-      const tabId = 'symptom-form-' + Date.now()
-      
-      // Émettre un événement pour ouvrir un nouvel onglet enfant avec le formulaire de création
-      this.$emit('open-child-tab', {
-        id: tabId,
-        title: this.$t('symptoms.createTitle'),
-        type: 'symptomForm',
-        data: {
-          title: this.$t('symptoms.createTitle'),
-          symptomId: null // Pas d'ID car c'est une création
-        }
+      this.store.openTab({
+        id: 'symptom-form-' + Date.now(),
+        label: 'symptoms.createTitle',
+        type: 'symptom',
+        icon: 'fas fa-plus',
+        data: { mode: 'create' },
+        parentId: this.store.activeTabId
       })
     },
     handleUpdate() {

@@ -47,6 +47,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useTabsStore } from '@/stores/tabsStore';
 
 // Import des composants
 import TextField from '@/components/common/TextField.vue';
@@ -58,6 +59,9 @@ import AuditTable from '@/components/common/auditTable.vue';
 import apiService from '@/services/apiService';
 
 const { t } = useI18n();
+
+// Initialisation du store des onglets
+const tabsStore = useTabsStore();
 
 // Props
 const props = defineProps({
@@ -75,7 +79,7 @@ const title = computed(() => props.data?.title || 'Symptôme');
 const symptomCode = computed(() => props.data?.symptomCode || null);
 
 // Emits
-const emit = defineEmits(['cancel', 'saved', 'error', 'close-tab', 'close-child-tab']);
+const emit = defineEmits(['cancel', 'saved', 'error', 'close-tab']);
 
 // État local
 const symptomData = ref({
@@ -158,7 +162,7 @@ const fetchSymptomData = async () => {
 // Gestion de l'annulation
 const handleCancel = () => {
   // Émettre un événement pour fermer l'onglet enfant actuel
-  emit('close-child-tab');
+  emit('close-tab');
 };
 
 // Gestion de la sauvegarde (création d'un nouveau symptôme uniquement)
@@ -196,8 +200,8 @@ const handleSave = async () => {
     // Message de confirmation
     alert(t('symptoms.saveSuccess'));
     
-    // Fermer l'onglet enfant après la sauvegarde
-    emit('close-child-tab');
+    // Fermer l'onglet enfant après la sauvegarde en utilisant le store
+    tabsStore.closeTab(tabsStore.activeChildTabId);
   } catch (err) {
     console.error('Erreur lors de la sauvegarde du symptôme:', err);
     error.value = err.message || 'Erreur lors de la sauvegarde';
@@ -272,7 +276,7 @@ const handleUpdate = async () => {
     alert(t('symptoms.updateSuccess'));
     
     // Fermer l'onglet enfant après la mise à jour
-    emit('close-child-tab');
+    emit('close-tab');
   } catch (err) {
     console.error('Erreur lors de la mise à jour du symptôme:', err);
     error.value = err.message || 'Erreur lors de la mise à jour';

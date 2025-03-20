@@ -67,7 +67,7 @@ export default {
     handleCreate() {
       this.store.openTab({
         id: 'entity-form-' + Date.now(),
-        label: 'entities.form.create.title',
+        label: 'entities.createTitle',
         type: 'entity',
         icon: 'fas fa-plus',
         data: { mode: 'create' },
