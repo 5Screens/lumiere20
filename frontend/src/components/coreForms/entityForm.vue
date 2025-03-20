@@ -156,6 +156,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useUserProfileStore } from '@/stores/userProfileStore';
+import { useTabsStore } from '@/stores/tabsStore';
 
 // Import des composants
 import STextField from '@/components/common/sTextField.vue';
@@ -172,8 +174,14 @@ import apiService from '@/services/apiService';
 // Import des styles
 import '@/assets/styles/forms.css';
 
-const { t, locale } = useI18n();
-const currentLanguage = computed(() => locale.value);
+const { t } = useI18n();
+
+// Store initialization
+const userProfileStore = useUserProfileStore();
+const tabsStore = useTabsStore();
+
+// Get current language from store
+const currentLanguage = computed(() => userProfileStore.language);
 
 // Props
 const props = defineProps({
@@ -330,7 +338,7 @@ const handleSave = async () => {
     alert(t('entities.saveSuccess'));
     
     // Fermer l'onglet enfant après la sauvegarde
-    emit('close-child-tab');
+    tabsStore.closeTab(tabsStore.activeChildTabId);
   } catch (err) {
     console.error('Error saving entity:', err);
     error.value = err.message || 'Error during save';
