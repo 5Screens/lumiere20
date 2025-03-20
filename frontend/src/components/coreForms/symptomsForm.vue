@@ -159,11 +159,6 @@ const fetchSymptomData = async () => {
   }
 };
 
-// Gestion de l'annulation
-const handleCancel = () => {
-  // Émettre un événement pour fermer l'onglet enfant actuel
-  emit('close-tab');
-};
 
 // Gestion de la sauvegarde (création d'un nouveau symptôme uniquement)
 const handleSave = async () => {
@@ -276,7 +271,7 @@ const handleUpdate = async () => {
     alert(t('symptoms.updateSuccess'));
     
     // Fermer l'onglet enfant après la mise à jour
-    emit('close-tab');
+    tabsStore.closeTab(tabsStore.activeChildTabId);
   } catch (err) {
     console.error('Erreur lors de la mise à jour du symptôme:', err);
     error.value = err.message || 'Erreur lors de la mise à jour';
