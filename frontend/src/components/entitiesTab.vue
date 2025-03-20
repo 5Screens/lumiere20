@@ -76,24 +76,24 @@ export default {
     },
     handleUpdate() {
       const selectedRows = this.$refs.table.filteredData.filter(row => row.selected)
-      if (selectedRows.length === 1) {
-        // Générer un ID unique pour le nouvel onglet
-        const tabId = 'entity-form-' + selectedRows[0].uuid + '-' + Date.now()
-        
-        // Émettre un événement pour ouvrir un nouvel onglet enfant avec le formulaire de modification
-        this.$emit('open-child-tab', {
-          id: tabId,
-          title: this.$t('entities.updateTitle', { name: selectedRows[0].name }),
-          type: 'entityForm',
-          data: {
-            title: this.$t('entities.updateTitle', { name: selectedRows[0].name }),
-            entityId: selectedRows[0].uuid
-          }
+      if (selectedRows.length > 0) {
+        // Ouvrir un onglet pour chaque ligne sélectionnée
+        selectedRows.forEach(row => {
+          this.store.openTab({
+            id: 'entity-form-' + row.uuid + '-' + Date.now(),
+            label: row.name,
+            type: 'entity',
+            icon: 'fas fa-edit',
+            mode: 'update',
+            entityId: row.uuid,
+            name: row.name,
+            parentId: this.store.activeTabId
+          })
         })
       } else {
-        // Gérer le cas où aucune ligne ou plusieurs lignes sont sélectionnées
+        // Gérer le cas où aucune ligne n'est sélectionnée
         this.$emit('error', {
-          message: this.$t('errors.selectOneRowForUpdate')
+          message: this.$t('errors.selectRowsForUpdate')
         })
       }
     },
