@@ -83,7 +83,7 @@ export default {
     handleItemClick(item) {
       this.store.openTab({
         id: item.tabToOpen,
-        label: this.$t(item.label),
+        label: item.label,
         type: item.tabToOpen,
         icon: item.icon
       })
