@@ -106,12 +106,13 @@ watch(selectedType, (newType) => {
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--bg-color);
   border-radius: 10px;
   width: 90%;
   max-width: 900px;
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid var(--border-color);
 }
 
 .modal-header {
