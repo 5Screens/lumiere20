@@ -21,8 +21,17 @@
           :key="selectedType"
           :model-class="currentModelClass"
           v-model="currentModelInstance"
-          @submit="handleSubmit"
         />
+
+        <hr class="form-separator" />
+        <div class="form-actions">
+          <ButtonStandard
+            type="submit"
+            label="Enregistrer"
+            variant="primary"
+            @click="handleSubmit(currentModelInstance)"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -33,6 +42,7 @@ import { ref, computed, watch } from 'vue'
 import { Ticket } from '@/models/Ticket'
 import { Defect } from '@/models/Defect'
 import FormFields from '@/components/formFields.vue'
+import ButtonStandard from '@/components/common/ButtonStandard.vue'
 
 const props = defineProps({
   visible: {
@@ -92,7 +102,7 @@ watch(selectedType, (newType) => {
 
 .modal-content {
   background-color: white;
-  border-radius: 8px;
+  border-radius: 10px;
   width: 90%;
   max-width: 900px;
   max-height: 90vh;
@@ -119,15 +129,21 @@ watch(selectedType, (newType) => {
   padding: 0.5rem;
 }
 
-.type-selector {
-  margin-bottom: 2rem;
-}
-
 .type-select {
   margin-left: 1rem;
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.form-separator {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid #ccc;
+}
+
+.form-actions {
+  margin-top: 10px;
 }
 
 h2 {
