@@ -29,6 +29,12 @@ import sTextField from './common/sTextField.vue'
 import sFilteredSearchField from './common/sFilteredSearchField.vue'
 import sSelectField from './common/sSelectField.vue'
 
+// Import des styles des composants
+import '@/assets/styles/forms.css'
+import '@/assets/styles/sTextField.css'
+import '@/assets/styles/sFilteredSearchField.css'
+import '@/assets/styles/sSelectField.css'
+
 // Enregistrement des composants pour l'utilisation dynamique
 const components = {
   sTextField,
@@ -64,37 +70,10 @@ const handleSubmit = () => {
 </script>
 
 <style scoped>
+/* Les styles spécifiques au composant qui ne sont pas dans forms.css */
 .form-fields {
   padding: 1rem;
   max-width: 800px;
   margin: 0 auto;
-}
-
-.field-container {
-  margin-bottom: 1rem;
-}
-
-.field-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-}
-
-.form-actions {
-  margin-top: 2rem;
-  text-align: right;
-}
-
-.submit-button {
-  padding: 0.5rem 1rem;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.submit-button:hover {
-  background-color: #45a049;
 }
 </style>

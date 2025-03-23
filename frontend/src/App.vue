@@ -99,7 +99,7 @@ import SprintCenterPane from '@/components/panes/SprintCenterPane.vue'
 import DataPane from '@/components/panes/DataPane.vue'
 import ConfigurationPane from '@/components/panes/ConfigurationPane.vue'
 import AdminPane from '@/components/panes/AdminPane.vue'
-import ObjectEditView from '@/coreForms/objectEditView.vue'
+import ObjectEditView from '@/components/coreForms/objectEditView.vue'
 
 export default {
   name: 'App',
