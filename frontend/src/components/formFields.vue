@@ -18,7 +18,11 @@
     </div>
 
     <div class="form-actions">
-      <button type="submit" class="submit-button">Enregistrer</button>
+      <ButtonStandard
+        type="submit"
+        label="Enregistrer"
+        variant="primary"
+      />
     </div>
   </form>
 </template>
@@ -28,6 +32,7 @@ import { ref, onMounted } from 'vue'
 import sTextField from './common/sTextField.vue'
 import sFilteredSearchField from './common/sFilteredSearchField.vue'
 import sSelectField from './common/sSelectField.vue'
+import ButtonStandard from './common/ButtonStandard.vue'
 
 // Import des styles des composants
 import '@/assets/styles/forms.css'
