@@ -244,5 +244,25 @@ export default {
     tableaux: 'Tabelas',
     configuration: 'Configuração',
     administration: 'Administração'
+  },
+  objectEditView: {
+    title: 'Criar'
+  },
+  ticket: {
+    title: 'Título',
+    description: 'Descrição',
+    description_placeholder: 'Insira a descrição',
+    configuration_item: 'Item de Configuração',
+    configuration_item_placeholder: 'Selecione um IC',
+    requested_by: 'Solicitado por',
+    requested_by_placeholder: 'Selecione uma pessoa',
+    requested_for: 'Solicitado para',
+    requested_for_placeholder: 'Selecione uma pessoa',
+    writer: 'Redator',
+    writer_placeholder: 'Selecione uma pessoa',
+    type: 'Tipo de ticket',
+    type_placeholder: 'Selecione um tipo',
+    status: 'Status',
+    status_placeholder: 'Selecione um status'
   }
 }

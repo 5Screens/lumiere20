@@ -1,3 +1,5 @@
+import i18n from '@/i18n'
+
 export class Ticket {
   constructor(data = {}) {
     this.uuid = data.uuid || null;
@@ -14,64 +16,54 @@ export class Ticket {
   }
 
   static getRenderableFields() {
+    const { t } = i18n.global;
+    
     return {
-      uuid: {
-        label: 'UUID',
-        type: 'sTextField',
-        placeholder: 'UUID',
-        disabled: true
-      },
       titre: {
-        label: 'Titre',
+        editmode: false,
+        label: t('ticket.title'),
         type: 'sTextField',
         placeholder: 'Entrez le titre',
         required: true
       },
       description: {
-        label: 'Description',
+        label: t('ticket.description'),
         type: 'sTextField',
-        placeholder: 'Entrez la description',
+        placeholder: t('ticket.description_placeholder'),
         multiline: true
       },
       configuration_item_uuid: {
-        label: 'Configuration Item',
+        label: t('ticket.configuration_item'),
         type: 'sFilteredSearchField',
-        placeholder: 'Sélectionnez un CI',
+        placeholder: t('ticket.configuration_item_placeholder'),
         table: 'configuration_items',
         required: true
       },
       requested_by_uuid: {
-        label: 'Demandé par',
+        label: t('ticket.requested_by'),
         type: 'sFilteredSearchField',
-        placeholder: 'Sélectionnez une personne',
+        placeholder: t('ticket.requested_by_placeholder'),
         table: 'persons',
         required: true
       },
       requested_for_uuid: {
-        label: 'Demandé pour',
+        label: t('ticket.requested_for'),
         type: 'sFilteredSearchField',
-        placeholder: 'Sélectionnez une personne',
+        placeholder: t('ticket.requested_for_placeholder'),
         table: 'persons',
         required: true
       },
       writer_uuid: {
-        label: 'Rédacteur',
+        label: t('ticket.writer'),
         type: 'sFilteredSearchField',
-        placeholder: 'Sélectionnez une personne',
+        placeholder: t('ticket.writer_placeholder'),
         table: 'persons',
         required: true
       },
-      ticket_type_uuid: {
-        label: 'Type de ticket',
-        type: 'sSelectField',
-        placeholder: 'Sélectionnez un type',
-        table: 'ticket_types',
-        required: true
-      },
       ticket_status_uuid: {
-        label: 'Statut',
+        label: t('ticket.status'),
         type: 'sSelectField',
-        placeholder: 'Sélectionnez un statut',
+        placeholder: t('ticket.status_placeholder'),
         table: 'ticket_status',
         required: true
       }

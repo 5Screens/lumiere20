@@ -256,5 +256,25 @@ export default {
     selectRowsForDelete: 'Please select at least one row to delete',
     noTranslations: 'Please enter at least one translation for the symptom',
     requiredFields: 'Please fill in all required fields'
+  },
+  objectEditView: {
+    title: 'Create'
+  },
+  ticket: {
+    title: 'Title',
+    description: 'Description',
+    description_placeholder: 'Enter description',
+    configuration_item: 'Configuration Item',
+    configuration_item_placeholder: 'Select a CI',
+    requested_by: 'Requested by',
+    requested_by_placeholder: 'Select a person',
+    requested_for: 'Requested for',
+    requested_for_placeholder: 'Select a person',
+    writer: 'Writer',
+    writer_placeholder: 'Select a person',
+    type: 'Ticket type',
+    type_placeholder: 'Select a type',
+    status: 'Status',
+    status_placeholder: 'Select a status'
   }
 }

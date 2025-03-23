@@ -260,5 +260,22 @@ export default {
   },
   objectEditView: {
     title: 'Créer'
+  },
+  ticket: {
+    title: 'Titre',
+    description: 'Description',
+    description_placeholder: 'Entrez la description',
+    configuration_item: 'Configuration Item',
+    configuration_item_placeholder: 'Sélectionnez un CI',
+    requested_by: 'Demandé par',
+    requested_by_placeholder: 'Sélectionnez une personne',
+    requested_for: 'Demandé pour',
+    requested_for_placeholder: 'Sélectionnez une personne',
+    writer: 'Rédacteur',
+    writer_placeholder: 'Sélectionnez une personne',
+    type: 'Type de ticket',
+    type_placeholder: 'Sélectionnez un type',
+    status: 'Statut',
+    status_placeholder: 'Sélectionnez un statut'
   }
 }
