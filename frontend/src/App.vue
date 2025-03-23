@@ -6,7 +6,7 @@
           <i class="fas fa-home"></i>
           <span>{{ $t('nav.myWork') }}</span>
         </router-link>
-        <button class="create-button">{{ $t('nav.create') }}</button>
+        <button class="create-button" @click="showCreateModal">{{ $t('nav.create') }}</button>
       </div>
       <div class="right-section">
         <div class="search-bar">
@@ -81,6 +81,12 @@
       @mouse-enter="handleAdminMouseEnter"
       @mouse-leave="handleAdminMouseLeave"
     />
+
+    <object-edit-view
+      v-if="isCreateModalVisible"
+      @close="closeCreateModal"
+      @submit="handleCreateSubmit"
+    />
   </div>
 </template>
 
@@ -93,6 +99,7 @@ import SprintCenterPane from '@/components/panes/SprintCenterPane.vue'
 import DataPane from '@/components/panes/DataPane.vue'
 import ConfigurationPane from '@/components/panes/ConfigurationPane.vue'
 import AdminPane from '@/components/panes/AdminPane.vue'
+import ObjectEditView from '@/coreForms/objectEditView.vue'
 
 export default {
   name: 'App',
@@ -103,7 +110,8 @@ export default {
     SprintCenterPane,
     DataPane,
     ConfigurationPane,
-    AdminPane
+    AdminPane,
+    ObjectEditView
   },
   setup() {
     const tabsStore = useTabsStore()
@@ -117,6 +125,7 @@ export default {
       isDataPaneVisible: false,
       isConfigurationVisible: false,
       isAdminVisible: false,
+      isCreateModalVisible: false,
       serviceHubCloseTimeout: null,
       sprintCenterCloseTimeout: null,
       dataCloseTimeout: null,
@@ -228,6 +237,17 @@ export default {
         ...tab,
         label: this.$t(`tabs.${tab.type}`)
       }))
+    },
+    showCreateModal() {
+      this.isCreateModalVisible = true
+    },
+    closeCreateModal() {
+      this.isCreateModalVisible = false
+    },
+    handleCreateSubmit(data) {
+      console.log('Nouvel objet créé:', data)
+      // Ici, vous pouvez ajouter la logique pour traiter la création de l'objet
+      this.closeCreateModal()
     }
   }
 }
