@@ -3,7 +3,7 @@
   <div class="modal-overlay" @click.self="closeModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Créer un nouvel objet</h2>
+        <h2>{{ $t('objectEditView.title') }}</h2>
         <button class="close-button" @click="closeModal">&times;</button>
       </div>
 

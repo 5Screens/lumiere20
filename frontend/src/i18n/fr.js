@@ -257,5 +257,8 @@ export default {
       year: 'il y a 1 an',
       years: 'il y a {count} ans'
     }
+  },
+  objectEditView: {
+    title: 'Créer'
   }
 }
