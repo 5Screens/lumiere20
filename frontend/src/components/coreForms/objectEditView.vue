@@ -8,13 +8,14 @@
       </div>
 
       <div class="modal-body">
-        <div class="type-selector">
-          <label for="objectType">Type d'objet:</label>
-          <select id="objectType" v-model="selectedType" class="type-select">
-            <option value="Ticket">Ticket</option>
-            <option value="Defect">Défaut</option>
-          </select>
-        </div>
+        <SSelectField
+          :label="$t('configuration.ticketTypes')"
+          :required="true"
+          :options-endpoint="`ticket_types?lang=${currentLanguage}`"
+          :mode="'creation'"
+          :field-name="'ticket_type'"
+          v-model="selectedType"
+        />
 
         <form-fields
           v-if="currentModelClass"
@@ -43,6 +44,8 @@ import { Ticket } from '@/models/Ticket'
 import { Defect } from '@/models/Defect'
 import FormFields from '@/components/formFields.vue'
 import ButtonStandard from '@/components/common/ButtonStandard.vue'
+import SSelectField from '@/components/common/sSelectField.vue'
+import { useUserProfileStore } from '@/stores/userProfileStore'
 
 const props = defineProps({
   visible: {
@@ -52,6 +55,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'submit'])
+const userProfileStore = useUserProfileStore()
+const currentLanguage = computed(() => userProfileStore.language)
 
 const selectedType = ref('Ticket')
 
