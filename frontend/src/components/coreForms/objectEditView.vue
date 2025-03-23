@@ -11,7 +11,7 @@
         <SSelectField
           :label="$t('configuration.ticketTypes')"
           :required="true"
-          :options-endpoint="`ticket_types?lang=${currentLanguage}`"
+          :options-endpoint="`ticket_types?lang=${currentLanguage}&toSelect=yes`"
           :mode="'creation'"
           :field-name="'ticket_type'"
           v-model="selectedType"
@@ -62,9 +62,9 @@ const selectedType = ref('Ticket')
 
 const currentModelClass = computed(() => {
   switch (selectedType.value) {
-    case 'Ticket':
+    case 'TICKET':
       return Ticket
-    case 'Defect':
+    case 'DEFECT':
       return Defect
     default:
       return null
