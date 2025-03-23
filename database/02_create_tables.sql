@@ -228,33 +228,33 @@ CREATE TABLE configuration.locations (
 CREATE TABLE translations.ticket_types_translation (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     ticket_type_uuid UUID NOT NULL REFERENCES configuration.ticket_types(uuid) ON DELETE RESTRICT,
-    langue VARCHAR(5) NOT NULL,
-    libelle VARCHAR(255) NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(ticket_type_uuid, langue)
+    lang VARCHAR(5) NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(ticket_type_uuid, lang)
 );
 
 -- Ticket Status Translation
 CREATE TABLE translations.ticket_status_translation (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     ticket_status_uuid UUID NOT NULL REFERENCES configuration.ticket_status(uuid) ON DELETE RESTRICT,
-    langue VARCHAR(5) NOT NULL,
-    libelle VARCHAR(255) NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(ticket_status_uuid, langue)
+    lang VARCHAR(5) NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(ticket_status_uuid, lang)
 );
 
 -- Symptoms Translation
 CREATE TABLE translations.symptoms_translation (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     symptom_code VARCHAR(50) NOT NULL REFERENCES configuration.symptoms(code) ON DELETE RESTRICT,
-    langue VARCHAR(5) NOT NULL,
-    libelle VARCHAR(255) NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(symptom_code, langue)
+    lang VARCHAR(5) NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(symptom_code, lang)
 );
 
 -- Tables de Relations --
@@ -264,15 +264,15 @@ CREATE TABLE configuration.rel_persons_entities (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     person_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
     entity_uuid UUID NOT NULL REFERENCES configuration.entities(uuid) ON DELETE RESTRICT,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(person_uuid, entity_uuid)
 );
 
 -- Tickets (table centrale avec multiples relations)
 CREATE TABLE core.tickets (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    titre VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
     description TEXT,
     configuration_item_uuid UUID NOT NULL REFERENCES data.configuration_items(uuid) ON DELETE RESTRICT,
     requested_by_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
@@ -280,8 +280,8 @@ CREATE TABLE core.tickets (
     writer_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
     ticket_type_uuid UUID NOT NULL REFERENCES configuration.ticket_types(uuid) ON DELETE RESTRICT,
     ticket_status_uuid UUID NOT NULL REFERENCES configuration.ticket_status(uuid) ON DELETE RESTRICT,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Commentaires pour documenter les contraintes de clés étrangères
