@@ -5,7 +5,8 @@ class TicketTypeController {
     async getTicketTypes(req, res) {
         try {
             const lang = req.query.lang;
-            const ticketTypes = await ticketTypeService.getTicketTypes(lang);
+            const toSelect = req.query.toSelect;
+            const ticketTypes = await ticketTypeService.getTicketTypes(lang, { toSelect });
             
             logger.info(`[CONTROLLER] Successfully retrieved ticket types for language ${lang}`);
             return res.status(200).json(ticketTypes);
