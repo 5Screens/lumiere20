@@ -63,11 +63,13 @@ export class Ticket {
         type: 'sFilteredSearchField',
         placeholder: t('ticket.requested_by_placeholder'),
         endpoint: 'persons',
-        displayField: 'name',
+        displayField: 'first_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'name', label: t('person.name'), visible: true },
+          { key: 'first_name', label: t('person.first_name'), visible: true },
+          { key: 'last_name', label: t('person.last_name'), visible: true },
+          { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
         required: true
@@ -77,29 +79,17 @@ export class Ticket {
         type: 'sFilteredSearchField',
         placeholder: t('ticket.requested_for_placeholder'),
         endpoint: 'persons',
-        displayField: 'name',
+        displayField: 'first_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'name', label: t('person.name'), visible: true },
-          { key: 'email', label: t('person.email'), visible: true }
-        ],
-        required: true
-      },
-      writer_uuid: {
-        label: t('ticket.writer'),
-        type: 'sFilteredSearchField',
-        placeholder: t('ticket.writer_placeholder'),
-        endpoint: 'persons',
-        displayField: 'name',
-        valueField: 'uuid',
-        editMode: false,
-        columnsConfig: [
-          { key: 'name', label: t('person.name'), visible: true },
+          { key: 'first_name', label: t('person.first_name'), visible: true },
+          { key: 'last_name', label: t('person.last_name'), visible: true },
+          { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
         required: true
       }
-    };
+    }
   }
 }
