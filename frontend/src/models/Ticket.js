@@ -36,28 +36,57 @@ export class Ticket {
         label: t('ticket.configuration_item'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.configuration_item_placeholder'),
-        table: 'configuration_items',
+        endpoint: 'configuration_items',
+        displayField: 'nom',
+        valueField: 'uuid',
+        editMode: false,
+        columnsConfig: [
+          { key: 'nom', label: t('configuration_item.nom'), visible: true },
+          { key: 'description', label: t('configuration_item.description'), visible: true },
+          { key: 'date_creation', label: t('configuration_item.date_creation'), visible: true }
+        ],
         required: true
       },
       requested_by_uuid: {
         label: t('ticket.requested_by'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.requested_by_placeholder'),
-        table: 'persons',
+        endpoint: 'persons',
+        displayField: 'name',
+        valueField: 'uuid',
+        editMode: true,
+        columnsConfig: [
+          { key: 'name', label: t('person.name'), visible: true },
+          { key: 'email', label: t('person.email'), visible: true }
+        ],
         required: true
       },
       requested_for_uuid: {
         label: t('ticket.requested_for'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.requested_for_placeholder'),
-        table: 'persons',
+        endpoint: 'persons',
+        displayField: 'name',
+        valueField: 'uuid',
+        editMode: true,
+        columnsConfig: [
+          { key: 'name', label: t('person.name'), visible: true },
+          { key: 'email', label: t('person.email'), visible: true }
+        ],
         required: true
       },
       writer_uuid: {
         label: t('ticket.writer'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.writer_placeholder'),
-        table: 'persons',
+        endpoint: 'persons',
+        displayField: 'name',
+        valueField: 'uuid',
+        editMode: true,
+        columnsConfig: [
+          { key: 'name', label: t('person.name'), visible: true },
+          { key: 'email', label: t('person.email'), visible: true }
+        ],
         required: true
       },
       ticket_status_uuid: {

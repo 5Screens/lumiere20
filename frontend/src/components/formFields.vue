@@ -13,6 +13,11 @@
         :required="field.required"
         :multiline="field.multiline"
         :options="field.options"
+        :endpoint="field.endpoint"
+        :display-field="field.displayField"
+        :value-field="field.valueField"
+        :edit-mode="field.editMode"
+        :columns-config="field.columnsConfig"
         :table="field.table"
       />
     </div>
