@@ -19,6 +19,17 @@ export class Ticket {
     const { t } = i18n.global;
     
     return {
+      ticket_status_uuid: {
+        label: t('ticket.status'),
+        type: 'sSelectField',
+        placeholder: t('ticket.status_placeholder'),
+        table: 'ticket_status',
+        required: true,
+        optionsEndpoint: '/api/v1/ticket_status',
+        patchEndpoint: '/api/v1/tickets',
+        fieldName: 'ticket_status_uuid',
+        mode: 'creation'
+      },
       titre: {
         editmode: false,
         label: t('ticket.title'),
@@ -54,7 +65,7 @@ export class Ticket {
         endpoint: 'persons',
         displayField: 'name',
         valueField: 'uuid',
-        editMode: true,
+        editMode: false,
         columnsConfig: [
           { key: 'name', label: t('person.name'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
@@ -68,7 +79,7 @@ export class Ticket {
         endpoint: 'persons',
         displayField: 'name',
         valueField: 'uuid',
-        editMode: true,
+        editMode: false,
         columnsConfig: [
           { key: 'name', label: t('person.name'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
@@ -82,18 +93,11 @@ export class Ticket {
         endpoint: 'persons',
         displayField: 'name',
         valueField: 'uuid',
-        editMode: true,
+        editMode: false,
         columnsConfig: [
           { key: 'name', label: t('person.name'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
-        required: true
-      },
-      ticket_status_uuid: {
-        label: t('ticket.status'),
-        type: 'sSelectField',
-        placeholder: t('ticket.status_placeholder'),
-        table: 'ticket_status',
         required: true
       }
     };
