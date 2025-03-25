@@ -3,7 +3,6 @@
   <form @submit.prevent="handleSubmit" class="form-fields">
     <div v-for="(field, key) in fields" :key="key" class="field-container">
       <label :for="key" class="field-label">{{ field.label }}</label>
-      
       <component
         :is="components[field.type]"
         :id="key"
@@ -81,5 +80,24 @@ const handleSubmit = () => {
   max-height: 600px;
   margin: 0 auto;
   overflow-y: auto;
+}
+
+.field-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  color: var(--text-color);
+  font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  width: 200px;
 }
 </style>
