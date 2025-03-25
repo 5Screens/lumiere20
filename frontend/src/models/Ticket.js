@@ -26,7 +26,7 @@ export class Ticket {
         type: 'sSelectField',
         placeholder: t('ticket.status_placeholder'),
         required: true,
-        optionsEndpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes`,
         patchEndpoint: 'tickets',
         fieldName: 'ticket_status_uuid',
         mode: 'creation'

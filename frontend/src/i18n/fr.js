@@ -277,5 +277,17 @@ export default {
     type_placeholder: 'Sélectionnez un type',
     status: 'Statut',
     status_placeholder: 'Sélectionnez un statut'
+  },
+  configuration_item: {
+    date_creation: 'Date de Création',
+    nom: 'Nom',
+    description: 'Description'
+  },
+  person: {
+    first_name: 'Prénom',
+    last_name: 'Nom',
+    job_role: 'Rôle',
+    email: 'Email',
+    phone: 'Téléphone'
   }
 }

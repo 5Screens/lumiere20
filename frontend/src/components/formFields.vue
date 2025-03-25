@@ -14,7 +14,6 @@
         :multiline="field.multiline"
         :options="field.options"
         :endpoint="field.endpoint"
-        :options-endpoint="field.optionsEndpoint"
         :display-field="field.displayField"
         :value-field="field.valueField"
         :edit-mode="field.editMode"

@@ -63,7 +63,7 @@ const props = defineProps({
   },
   endpoint: {
     type: String,
-    required: true
+    required: false
   },
   optionsEndpoint: {
     type: String,

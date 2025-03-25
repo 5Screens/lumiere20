@@ -11,7 +11,7 @@
         <SSelectField
           :label="$t('configuration.ticketTypes')"
           :required="true"
-          :options-endpoint="`ticket_types?lang=${currentLanguage}&toSelect=yes`"
+          :endpoint="`ticket_types?lang=${currentLanguage}&toSelect=yes`"
           :mode="'creation'"
           :field-name="'ticket_type'"
           v-model="selectedType"
