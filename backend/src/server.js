@@ -17,6 +17,7 @@ const serviceOfferingsRoutes = require('./api/v1/service_offerings/routes');
 const servicesRoutes = require('./api/v1/services/routes');
 const auditChangesRoutes = require('./api/v1/audit_changes/routes');
 const ticketTypesRoutes = require('./api/v1/ticket_types/routes');
+const configurationItemsRoutes = require('./api/v1/configuration_items/routes');
 
 // Middleware
 app.use(cors());
@@ -39,6 +40,7 @@ app.use('/api/v1/service_offerings', serviceOfferingsRoutes);
 app.use('/api/v1/service', servicesRoutes);
 app.use('/api/v1/audit_changes', auditChangesRoutes);
 app.use('/api/v1/ticket_types', ticketTypesRoutes);
+app.use('/api/v1/configuration_items', configurationItemsRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
