@@ -63,11 +63,7 @@ const props = defineProps({
   },
   endpoint: {
     type: String,
-    required: false
-  },
-  optionsEndpoint: {
-    type: String,
-    required: false
+    required: true
   },
   patchEndpoint: {
     type: String,
@@ -119,7 +115,7 @@ const fetchOptions = async () => {
   }
 
   // Utiliser endpoint en priorité, sinon optionsEndpoint pour la rétrocompatibilité
-  const apiEndpoint = props.endpoint || props.optionsEndpoint
+  const apiEndpoint = props.endpoint
   
   console.info('Fetching options from endpoint:', apiEndpoint)
   try {
@@ -198,7 +194,7 @@ onMounted(() => {
     modelValue: props.modelValue,
     mode: props.mode,
     uuid: props.uuid,
-    optionsEndpoint: props.optionsEndpoint,
+    endpoint: props.endpoint,
     fieldName: props.fieldName
   })
 
