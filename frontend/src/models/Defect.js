@@ -1,3 +1,5 @@
+import { useUserProfileStore } from '@/stores/userProfileStore'
+
 export class Defect {
   constructor(data = {}) {
     this.uuid = data.uuid || null;

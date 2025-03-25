@@ -1,4 +1,5 @@
 import i18n from '@/i18n'
+import { useUserProfileStore } from '@/stores/userProfileStore'
 
 export class Ticket {
   constructor(data = {}) {
@@ -17,16 +18,17 @@ export class Ticket {
 
   static getRenderableFields() {
     const { t } = i18n.global;
+    const userProfileStore = useUserProfileStore();
+    const currentLanguage = userProfileStore.language;
     
     return {
       ticket_status_uuid: {
         label: t('ticket.status'),
         type: 'sSelectField',
         placeholder: t('ticket.status_placeholder'),
-        table: 'ticket_status',
         required: true,
-        optionsEndpoint: '/api/v1/ticket_status',
-        patchEndpoint: '/api/v1/tickets',
+        optionsEndpoint: `ticket_status`,
+        patchEndpoint: 'tickets',
         fieldName: 'ticket_status_uuid',
         mode: 'creation'
       },

@@ -17,6 +17,7 @@ const serviceOfferingsRoutes = require('./api/v1/service_offerings/routes');
 const servicesRoutes = require('./api/v1/services/routes');
 const auditChangesRoutes = require('./api/v1/audit_changes/routes');
 const ticketTypesRoutes = require('./api/v1/ticket_types/routes');
+const ticketStatusRoutes = require('./api/v1/ticket_status/routes');
 const configurationItemsRoutes = require('./api/v1/configuration_items/routes');
 const personsRoutes = require('./api/v1/persons/routes');
 
@@ -41,6 +42,7 @@ app.use('/api/v1/service_offerings', serviceOfferingsRoutes);
 app.use('/api/v1/services', servicesRoutes);
 app.use('/api/v1/audit_changes', auditChangesRoutes);
 app.use('/api/v1/ticket_types', ticketTypesRoutes);
+app.use('/api/v1/ticket_status', ticketStatusRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
 app.use('/api/v1/persons', personsRoutes);
 
