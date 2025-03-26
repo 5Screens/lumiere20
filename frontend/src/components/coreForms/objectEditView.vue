@@ -28,7 +28,7 @@
         <div class="form-actions">
           <ButtonStandard
             type="submit"
-            label="Enregistrer"
+            :label="$t('common.save')"
             variant="primary"
             @click="handleSubmit(currentModelInstance)"
           />
