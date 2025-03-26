@@ -58,7 +58,7 @@ export const useObjectStore = defineStore('object', {
         return response
       } catch (error) {
         console.error('[ObjectStore] Error in createObject:', error)
-        this.message = `Erreur lors de la création: ${error.message}`
+        this.message = `Erreur lors de la création: bisous bisoussssssss ${error.message}`
         throw error
       } finally {
         console.info('[ObjectStore] Setting creating flag to false')

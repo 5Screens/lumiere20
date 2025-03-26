@@ -267,14 +267,13 @@ export default {
       
       if (!message) return 'notifications.message'
       
+      // Retourner directement les messages d'erreur
+      if (message.includes('Erreur')) return message
+      
       // Vérifier les messages spécifiques
       if (message.includes('Création réussie')) return 'notifications.creationSuccess'
-      if (message.includes('Erreur lors de la création')) return 'notifications.creationError'
       if (message.includes('Mise à jour réussie')) return 'notifications.updateSuccess'
-      if (message.includes('Erreur lors de la mise à jour')) return 'notifications.updateError'
       if (message.includes('Suppression réussie')) return 'notifications.deleteSuccess'
-      if (message.includes('Erreur lors de la suppression')) return 'notifications.deleteError'
-      if (message.includes('Erreur lors du chargement')) return 'notifications.loadingError'
       
       // Message par défaut
       return 'notifications.message'
