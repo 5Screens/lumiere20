@@ -13,6 +13,22 @@ const getTickets = async (req, res) => {
     }
 };
 
+const createTicket = async (req, res) => {
+    try {
+        logger.info('[CONTROLLER] Processing POST /tickets request');
+        const ticket = await ticketService.createTicket(req.body);
+        res.status(201).json(ticket);
+    } catch (error) {
+        logger.error('[CONTROLLER] Error in createTicket:', error);
+        if (error.constraint) {
+            res.status(400).json({ error: 'Invalid reference data' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
 module.exports = {
-    getTickets
+    getTickets,
+    createTicket
 };
