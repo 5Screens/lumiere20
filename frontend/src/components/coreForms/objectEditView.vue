@@ -100,7 +100,9 @@ const handleSubmit = async (formData) => {
 
 // Réinitialise l'instance quand le type change
 watch(selectedType, (newType) => {
-  currentModelInstance.value = newType === 'Ticket' ? new Ticket() : new Defect()
+  console.info(`[ObjectEditView] Selected type changed to: ${newType}`);
+  currentModelInstance.value = newType === 'TICKET' ? new Ticket() : new Defect()
+  console.info('[ObjectEditView] New model instance created:', currentModelInstance.value)
 })
 </script>
 
