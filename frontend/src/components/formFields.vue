@@ -68,8 +68,12 @@ onMounted(() => {
 })
 
 const handleSubmit = () => {
+  console.info('[FormFields] Form submitted')
+  console.info('[FormFields] Current form data:', props.modelValue)
   emit('submit', props.modelValue)
+  console.info('[FormFields] Emitted "submit" event with form data')
 }
+
 </script>
 
 <style scoped>

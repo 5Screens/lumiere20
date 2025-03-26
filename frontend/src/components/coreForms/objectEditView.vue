@@ -81,11 +81,20 @@ const closeModal = () => {
 
 const handleSubmit = async (formData) => {
   try {
+    console.info('[ObjectEditView] Save button clicked - Starting form submission process')
+    console.info('[ObjectEditView] Form data to be submitted:', formData)
+    
     const type = selectedType.value.toLowerCase() + 's' // Convertir en endpoint API (ex: 'Ticket' -> 'tickets')
-    await objectStore.createObject(type, formData)
+    console.info(`[ObjectEditView] Determined API endpoint type: ${type}`)
+    
+    console.info('[ObjectEditView] Calling objectStore.createObject method')
+    const response = await objectStore.createObject(type, formData)
+    console.info('[ObjectEditView] Received response from createObject:', response)
+    
     closeModal()
+    console.info('[ObjectEditView] Modal closed after successful submission')
   } catch (error) {
-    console.error('Error creating object:', error)
+    console.error('[ObjectEditView] Error creating object:', error)
   }
 }
 

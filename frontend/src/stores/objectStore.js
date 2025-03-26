@@ -35,21 +35,33 @@ export const useObjectStore = defineStore('object', {
      */
     async createObject(type, data) {
       try {
+        console.info(`[ObjectStore] Starting createObject for type: ${type}`)
+        console.info('[ObjectStore] Setting creating flag to true')
         this.creating = true
         this.message = null
         
+        console.info('[ObjectStore] Original data object:', data)
+        
         // Utilise la méthode toAPI de l'objet si disponible
         const apiData = data.toAPI ? data.toAPI() : data
+        console.info('[ObjectStore] Data prepared for API (after toAPI if available):', apiData)
         
+        console.info(`[ObjectStore] Calling apiService.post with endpoint: ${type}`)
         // Appel API
         const response = await apiService.post(type, apiData)
+        console.info('[ObjectStore] Received API response:', response)
         
+        console.info('[ObjectStore] Setting success message')
         this.message = 'Création réussie'
+        
+        console.info('[ObjectStore] createObject completed successfully')
         return response
       } catch (error) {
+        console.error('[ObjectStore] Error in createObject:', error)
         this.message = `Erreur lors de la création: ${error.message}`
         throw error
       } finally {
+        console.info('[ObjectStore] Setting creating flag to false')
         this.creating = false
       }
     },

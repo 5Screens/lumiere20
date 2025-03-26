@@ -55,6 +55,13 @@ export default {
    */
   async post(endpoint, data = {}) {
     try {
+      // Log request details
+      console.info(`[API Request] POST ${API_BASE_URL}/${endpoint}`);
+      console.info('[API Request] Request body:', JSON.stringify(data, null, 2));
+      
+      const startTime = performance.now();
+      console.info(`[API Request] POST request started at: ${new Date().toISOString()}`);
+      
       const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
         method: 'POST',
         headers: {
@@ -63,14 +70,23 @@ export default {
         body: JSON.stringify(data)
       });
       
+      const endTime = performance.now();
+      console.info(`[API Response] POST ${endpoint} - Request took ${(endTime - startTime).toFixed(2)}ms`);
+      console.info(`[API Response] POST ${endpoint} - Status: ${response.status}`);
+      
       // Vérifier si la réponse est OK (statut 2xx)
       if (!response.ok) {
+        console.error(`[API Error] POST ${endpoint} - Failed with status: ${response.status}`);
         throw await this.handleErrorResponse(response);
       }
       
-      return await response.json();
+      const responseData = await response.json();
+      console.info(`[API Response] POST ${endpoint} - Success`);
+      console.info('[API Response] Response data:', responseData);
+      
+      return responseData;
     } catch (error) {
-      console.error(`Erreur lors de la requête POST à ${endpoint}:`, error);
+      console.error(`[API Error] POST ${endpoint}:`, error);
       throw error;
     }
   },
