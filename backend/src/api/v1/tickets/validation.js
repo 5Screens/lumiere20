@@ -27,8 +27,8 @@ const validateCreateTicket = (req, res, next) => {
         requested_by_uuid: Joi.string().uuid().required(),
         requested_for_uuid: Joi.string().uuid().required(),
         writer_uuid: Joi.string().uuid().required(),
-        ticket_type_uuid: Joi.string().required(),
-        ticket_status_uuid: Joi.string().required(),
+        ticket_type_code: Joi.string().required(),
+        ticket_status_code: Joi.string().required(),
         core_extended_attributes: Joi.object().allow(null),
         user_extended_attributes: Joi.object().allow(null)
     });

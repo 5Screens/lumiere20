@@ -65,8 +65,8 @@ const createTicket = async (ticketData) => {
             ticketData.requested_by_uuid,
             ticketData.requested_for_uuid,
             ticketData.writer_uuid,
-            ticketData.ticket_type_uuid,
-            ticketData.ticket_status_uuid,
+            ticketData.ticket_type_code,
+            ticketData.ticket_status_code,
             ticketData.core_extended_attributes || null,
             ticketData.user_extended_attributes || null
         ]);

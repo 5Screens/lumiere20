@@ -10,8 +10,8 @@ export class Ticket {
     this.requested_by_uuid = data.requested_by_uuid || null;
     this.requested_for_uuid = data.requested_for_uuid || null;
     this.writer_uuid = data.writer_uuid || null;
-    this.ticket_type_uuid = data.ticket_type_uuid || null;
-    this.ticket_status_uuid = data.ticket_status_uuid || null;
+    this.ticket_type_code = data.ticket_type_code || null;
+    this.ticket_status_code = data.ticket_status_code || null;
     this.date_creation = data.date_creation || null;
     this.date_modification = data.date_modification || null;
   }
@@ -21,14 +21,14 @@ export class Ticket {
     const userProfileStore = useUserProfileStore();
     
     return {
-      ticket_status_uuid: {
+      ticket_status_code: {
         label: t('ticket.status'),
         type: 'sSelectField',
         placeholder: t('ticket.status_placeholder'),
         required: true,
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes`,
         patchEndpoint: 'tickets',
-        fieldName: 'ticket_status_uuid',
+        fieldName: 'ticket_status_code',
         mode: 'creation'
       },
       titre: {
@@ -95,7 +95,9 @@ export class Ticket {
   }
 
   toAPI(method) {
+    console.log('[Ticket.toAPI] Starting conversion to API format', { method });
     const userProfileStore = useUserProfileStore();
+    console.log('[Ticket.toAPI] Current user profile ID:', userProfileStore.id);
     
     // Base object with common fields
     const baseFields = {
@@ -105,36 +107,42 @@ export class Ticket {
       requested_by_uuid: this.requested_by_uuid,
       requested_for_uuid: this.requested_for_uuid,
       writer_uuid: userProfileStore.id, // Always use current user's ID
-      ticket_type_uuid: this.ticket_type_uuid,
-      ticket_status_uuid: this.ticket_status_uuid
+      ticket_type_code: 'TICKET', //We are creating a ticket
+      ticket_status_code: this.ticket_status_code
     };
+    console.log('[Ticket.toAPI] Base fields prepared', baseFields);
 
     switch (method.toUpperCase()) {
       case 'POST':
-        // For POST, return all fields
+        console.log('[Ticket.toAPI] Processing POST request - returning all base fields');
         return baseFields;
         
       case 'PUT':
-        // For PUT, return all fields including uuid
-        return {
+        console.log('[Ticket.toAPI] Processing PUT request - returning all fields with uuid');
+        const putData = {
           ...baseFields,
           uuid: this.uuid
         };
+        console.log('[Ticket.toAPI] PUT data prepared', putData);
+        return putData;
         
       case 'PATCH':
-        // For PATCH, only return modified fields and uuid
+        console.log('[Ticket.toAPI] Processing PATCH request - filtering for modified fields');
         const modifiedFields = {};
         for (const [key, value] of Object.entries(baseFields)) {
           if (value !== null && value !== '') {
             modifiedFields[key] = value;
           }
         }
-        return {
+        const patchData = {
           uuid: this.uuid,
           ...modifiedFields
         };
+        console.log('[Ticket.toAPI] PATCH data prepared', patchData);
+        return patchData;
         
       default:
+        console.error('[Ticket.toAPI] Error: Unsupported HTTP method', { method });
         throw new Error(`Unsupported HTTP method: ${method}`);
     }
   }
