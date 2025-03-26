@@ -93,4 +93,49 @@ export class Ticket {
       }
     }
   }
+
+  toAPI(method) {
+    const userProfileStore = useUserProfileStore();
+    
+    // Base object with common fields
+    const baseFields = {
+      titre: this.titre,
+      description: this.description,
+      configuration_item_uuid: this.configuration_item_uuid,
+      requested_by_uuid: this.requested_by_uuid,
+      requested_for_uuid: this.requested_for_uuid,
+      writer_uuid: userProfileStore.id, // Always use current user's ID
+      ticket_type_uuid: this.ticket_type_uuid,
+      ticket_status_uuid: this.ticket_status_uuid
+    };
+
+    switch (method.toUpperCase()) {
+      case 'POST':
+        // For POST, return all fields
+        return baseFields;
+        
+      case 'PUT':
+        // For PUT, return all fields including uuid
+        return {
+          ...baseFields,
+          uuid: this.uuid
+        };
+        
+      case 'PATCH':
+        // For PATCH, only return modified fields and uuid
+        const modifiedFields = {};
+        for (const [key, value] of Object.entries(baseFields)) {
+          if (value !== null && value !== '') {
+            modifiedFields[key] = value;
+          }
+        }
+        return {
+          uuid: this.uuid,
+          ...modifiedFields
+        };
+        
+      default:
+        throw new Error(`Unsupported HTTP method: ${method}`);
+    }
+  }
 }

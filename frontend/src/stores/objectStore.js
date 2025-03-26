@@ -42,8 +42,8 @@ export const useObjectStore = defineStore('object', {
         
         console.info('[ObjectStore] Original data object:', data)
         
-        // Utilise la méthode toAPI de l'objet si disponible
-        const apiData = data.toAPI ? data.toAPI() : data
+        // Utilise la méthode toAPI de l'objet si disponible, en spécifiant la méthode HTTP
+        const apiData = data.toAPI ? data.toAPI('POST') : data
         console.info('[ObjectStore] Data prepared for API (after toAPI if available):', apiData)
         
         console.info(`[ObjectStore] Calling apiService.post with endpoint: ${type}`)
@@ -58,7 +58,7 @@ export const useObjectStore = defineStore('object', {
         return response
       } catch (error) {
         console.error('[ObjectStore] Error in createObject:', error)
-        this.message = `Erreur lors de la création: bisous bisoussssssss ${error.message}`
+        this.message = `Erreur lors de la création: ${error.message}`
         throw error
       } finally {
         console.info('[ObjectStore] Setting creating flag to false')
@@ -105,8 +105,8 @@ export const useObjectStore = defineStore('object', {
         this.updating = true
         this.message = null
         
-        // Utilise la méthode toAPI de l'objet si disponible
-        const apiData = data.toAPI ? data.toAPI() : data
+        // Utilise la méthode toAPI de l'objet si disponible, en spécifiant la méthode HTTP
+        const apiData = data.toAPI ? data.toAPI('PUT') : data
         
         // Construit l'endpoint avec l'UUID si disponible
         const endpoint = data.uuid ? `${type}/${data.uuid}` : type
@@ -143,8 +143,9 @@ export const useObjectStore = defineStore('object', {
         // Construit l'endpoint
         const endpoint = `${type}/${data.uuid}`
         
-        // Prépare les données pour le PATCH
-        const patchData = { [fieldName]: data[fieldName] }
+        // Prépare les données pour le PATCH, en utilisant toAPI si disponible
+        const patchValue = data.toAPI ? data.toAPI('PATCH') : data[fieldName]
+        const patchData = { [fieldName]: patchValue }
         
         // Appel API
         const response = await apiService.patch(endpoint, patchData)
