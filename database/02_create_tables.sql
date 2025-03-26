@@ -278,8 +278,10 @@ CREATE TABLE core.tickets (
     requested_by_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
     requested_for_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
     writer_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
-    ticket_type_uuid UUID NOT NULL REFERENCES configuration.ticket_types(uuid) ON DELETE RESTRICT,
-    ticket_status_uuid UUID NOT NULL REFERENCES configuration.ticket_status(uuid) ON DELETE RESTRICT,
+    ticket_type_code VARCHAR(50) NOT NULL REFERENCES configuration.ticket_types(code) ON DELETE RESTRICT,
+    ticket_status_code VARCHAR(50) NOT NULL REFERENCES configuration.ticket_status(code) ON DELETE RESTRICT,
+    core_extended_attributes JSONB,
+    user_extended_attributes JSONB,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -289,8 +291,8 @@ COMMENT ON CONSTRAINT tickets_configuration_item_uuid_fkey ON core.tickets IS 'L
 COMMENT ON CONSTRAINT tickets_requested_by_uuid_fkey ON core.tickets IS 'Personne qui demande le ticket';
 COMMENT ON CONSTRAINT tickets_requested_for_uuid_fkey ON core.tickets IS 'Personne pour qui le ticket est créé';
 COMMENT ON CONSTRAINT tickets_writer_uuid_fkey ON core.tickets IS 'Personne qui écrit le ticket';
-COMMENT ON CONSTRAINT tickets_ticket_type_uuid_fkey ON core.tickets IS 'Type du ticket';
-COMMENT ON CONSTRAINT tickets_ticket_status_uuid_fkey ON core.tickets IS 'Statut du ticket';
+COMMENT ON CONSTRAINT tickets_ticket_type_code_fkey ON core.tickets IS 'Type du ticket';
+COMMENT ON CONSTRAINT tickets_ticket_status_code_fkey ON core.tickets IS 'Statut du ticket';
 
 -- Validation des modifications
 COMMIT;
