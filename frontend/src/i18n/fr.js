@@ -156,6 +156,17 @@ export default {
     yes: 'Oui',
     no: 'Non'
   },
+  notifications: {
+    title: 'Notification',
+    message: 'Message du système',
+    creationSuccess: 'Création réussie',
+    creationError: 'Erreur lors de la création',
+    updateSuccess: 'Mise à jour réussie',
+    updateError: 'Erreur lors de la mise à jour',
+    deleteSuccess: 'Suppression réussie',
+    deleteError: 'Erreur lors de la suppression',
+    loadingError: 'Erreur lors du chargement'
+  },
   dataPane: {
     title: 'Données',
     applications: {

@@ -85,13 +85,26 @@
     <object-edit-view
       v-if="isCreateModalVisible"
       @close="closeCreateModal"
-      @submit="handleCreateSubmit"
     />
+
+    <!-- Fenêtre modale pour afficher les messages du store objectStore -->
+    <div v-if="objectStore.message" class="notification-modal">
+      <div class="notification-content">
+        <div class="notification-header">
+          <h3>{{ $t('notifications.title') }}</h3>
+          <button class="close-button" @click="closeNotification">&times;</button>
+        </div>
+        <div class="notification-body">
+          <p>{{ $t(getMessageTranslationKey()) }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { useTabsStore } from '@/stores/tabsStore'
+import { useObjectStore } from '@/stores/objectStore'
 import HierarchicalTabs from '@/components/common/hierarchicalTabs.vue'
 import ProfilePane from '@/components/panes/ProfilePane.vue'
 import ServiceHubPane from '@/components/panes/ServiceHubPane.vue'
@@ -115,7 +128,8 @@ export default {
   },
   setup() {
     const tabsStore = useTabsStore()
-    return { tabsStore }
+    const objectStore = useObjectStore()
+    return { tabsStore, objectStore }
   },
   data() {
     return {
@@ -244,10 +258,26 @@ export default {
     closeCreateModal() {
       this.isCreateModalVisible = false
     },
-    handleCreateSubmit(data) {
-      console.log('Nouvel objet créé:', data)
-      // Ici, vous pouvez ajouter la logique pour traiter la création de l'objet
-      this.closeCreateModal()
+    closeNotification() {
+      this.objectStore.resetMessage()
+    },
+    getMessageTranslationKey() {
+      // Détermine la clé de traduction en fonction du message
+      const message = this.objectStore.message
+      
+      if (!message) return 'notifications.message'
+      
+      // Vérifier les messages spécifiques
+      if (message.includes('Création réussie')) return 'notifications.creationSuccess'
+      if (message.includes('Erreur lors de la création')) return 'notifications.creationError'
+      if (message.includes('Mise à jour réussie')) return 'notifications.updateSuccess'
+      if (message.includes('Erreur lors de la mise à jour')) return 'notifications.updateError'
+      if (message.includes('Suppression réussie')) return 'notifications.deleteSuccess'
+      if (message.includes('Erreur lors de la suppression')) return 'notifications.deleteError'
+      if (message.includes('Erreur lors du chargement')) return 'notifications.loadingError'
+      
+      // Message par défaut
+      return 'notifications.message'
     }
   }
 }
@@ -255,4 +285,69 @@ export default {
 
 <style>
 @import '@/assets/styles/app.css';
+
+#app {
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-color);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Styles pour la fenêtre modale de notification */
+.notification-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.notification-content {
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  animation: slideIn 0.3s ease-in-out;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.notification-body {
+  padding: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 </style>

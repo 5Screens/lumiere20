@@ -46,6 +46,7 @@ import FormFields from '@/components/formFields.vue'
 import ButtonStandard from '@/components/common/ButtonStandard.vue'
 import SSelectField from '@/components/common/sSelectField.vue'
 import { useUserProfileStore } from '@/stores/userProfileStore'
+import { useObjectStore } from '@/stores/objectStore'
 
 const props = defineProps({
   visible: {
@@ -54,8 +55,9 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['close', 'submit'])
+const emit = defineEmits(['close'])
 const userProfileStore = useUserProfileStore()
+const objectStore = useObjectStore()
 const currentLanguage = computed(() => userProfileStore.language)
 
 const selectedType = ref('Ticket')
@@ -77,12 +79,14 @@ const closeModal = () => {
   emit('close')
 }
 
-const handleSubmit = (formData) => {
-  emit('submit', {
-    type: selectedType.value,
-    data: formData
-  })
-  closeModal()
+const handleSubmit = async (formData) => {
+  try {
+    const type = selectedType.value.toLowerCase() + 's' // Convertir en endpoint API (ex: 'Ticket' -> 'tickets')
+    await objectStore.createObject(type, formData)
+    closeModal()
+  } catch (error) {
+    console.error('Error creating object:', error)
+  }
 }
 
 // Réinitialise l'instance quand le type change
