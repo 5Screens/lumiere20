@@ -1,9 +1,9 @@
 /* sRichTextEditor.css */
 .s-rich-text-editor {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   overflow: hidden;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -13,15 +13,15 @@
   display: flex;
   flex-wrap: wrap;
   padding: 8px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #ddd;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
   gap: 4px;
 }
 
 .toolbar-group {
   display: flex;
   margin-right: 8px;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border-color);
   padding-right: 8px;
 }
 
@@ -40,22 +40,24 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  color: var(--text-color);
 }
 
 .toolbar-button:hover {
-  background-color: #e0e0e0;
+  background-color: var(--hover-color);
 }
 
 .toolbar-button.active {
-  background-color: #e0e0e0;
-  border-color: #bbb;
+  background-color: var(--hover-color);
+  border-color: var(--border-color);
 }
 
 .toolbar-select {
   height: 30px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--input-bg);
+  color: var(--text-color);
   padding: 0 8px;
   font-size: 14px;
   cursor: pointer;
@@ -66,7 +68,8 @@
   padding: 10px;
   min-height: 200px;
   overflow-y: auto;
-  background-color: white;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .editor-content:focus {
@@ -77,11 +80,11 @@
   display: flex;
   flex-wrap: wrap;
   position: absolute;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 5px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-color);
   z-index: 1000;
   width: 220px;
 }
@@ -92,7 +95,7 @@
   margin: 2px;
   border-radius: 2px;
   cursor: pointer;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   transition: transform 0.1s ease;
 }
 
@@ -104,11 +107,11 @@
   display: flex;
   flex-wrap: wrap;
   position: absolute;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 5px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-color);
   z-index: 1000;
   width: 250px;
   max-height: 200px;
@@ -128,11 +131,11 @@
 
 .link-dialog, .table-dialog {
   position: absolute;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-color);
   z-index: 1000;
 }
 
@@ -140,13 +143,15 @@
   width: 100%;
   padding: 8px;
   margin-bottom: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 .link-dialog button, .table-dialog button {
   padding: 6px 12px;
-  background-color: #4a90e2;
+  background-color: var(--primary-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -155,16 +160,16 @@
 }
 
 .link-dialog button:hover, .table-dialog button:hover {
-  background-color: #3a80d2;
+  background-color: var(--primary-hover);
 }
 
 .link-dialog button.cancel, .table-dialog button.cancel {
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--bg-secondary);
+  color: var(--text-color);
 }
 
 .link-dialog button.cancel:hover, .table-dialog button.cancel:hover {
-  background-color: #e0e0e0;
+  background-color: var(--hover-color);
 }
 
 /* Table styles */
@@ -175,18 +180,18 @@
 }
 
 .editor-content table td, .editor-content table th {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   padding: 8px;
   min-width: 50px;
 }
 
 .table-actions {
   display: flex;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 5px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-color);
   position: absolute;
   z-index: 1000;
 }
@@ -199,20 +204,22 @@
   cursor: pointer;
   font-size: 14px;
   margin-right: 5px;
+  color: var(--text-color);
 }
 
 .table-action-button:hover {
-  background-color: #e0e0e0;
+  background-color: var(--hover-color);
 }
 
 /* Code snippet styles */
 .editor-content pre {
-  background-color: #f5f5f5;
+  background-color: var(--bg-secondary);
   padding: 10px;
   border-radius: 4px;
   font-family: monospace;
   white-space: pre-wrap;
   margin: 10px 0;
+  color: var(--text-color);
 }
 
 /* Image styles */
