@@ -302,6 +302,8 @@ const applyColor = (color) => {
 
 // Toggle emoji picker
 const toggleEmojiPicker = () => {
+  // Avant d'afficher la palette, on mémorise la sélection
+  saveSelection();
   showEmojiPicker.value = !showEmojiPicker.value;
   showColorPicker.value = false;
   showLinkDialog.value = false;
@@ -310,6 +312,8 @@ const toggleEmojiPicker = () => {
 
 // Insert emoji
 const insertEmoji = (emoji) => {
+  // Avant d'insérer l'emoji, on restaure la sélection
+  restoreSelection();
   execCommand('insertText', emoji);
   showEmojiPicker.value = false;
 };
