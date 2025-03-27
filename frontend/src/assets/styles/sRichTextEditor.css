@@ -1,0 +1,234 @@
+/* sRichTextEditor.css */
+.s-rich-text-editor {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  gap: 4px;
+}
+
+.toolbar-group {
+  display: flex;
+  margin-right: 8px;
+  border-right: 1px solid #ddd;
+  padding-right: 8px;
+}
+
+.toolbar-group:last-child {
+  border-right: none;
+}
+
+.toolbar-button {
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.toolbar-button:hover {
+  background-color: #e0e0e0;
+}
+
+.toolbar-button.active {
+  background-color: #e0e0e0;
+  border-color: #bbb;
+}
+
+.toolbar-select {
+  height: 30px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  padding: 0 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.editor-content {
+  flex: 1;
+  padding: 10px;
+  min-height: 200px;
+  overflow-y: auto;
+  background-color: white;
+}
+
+.editor-content:focus {
+  outline: none;
+}
+
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  width: 220px;
+}
+
+.color-option {
+  width: 20px;
+  height: 20px;
+  margin: 2px;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  transition: transform 0.1s ease;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+}
+
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  width: 250px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.emoji-option {
+  font-size: 20px;
+  padding: 5px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.emoji-option:hover {
+  transform: scale(1.2);
+}
+
+.link-dialog, .table-dialog {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.link-dialog input, .table-dialog input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.link-dialog button, .table-dialog button {
+  padding: 6px 12px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.link-dialog button:hover, .table-dialog button:hover {
+  background-color: #3a80d2;
+}
+
+.link-dialog button.cancel, .table-dialog button.cancel {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.link-dialog button.cancel:hover, .table-dialog button.cancel:hover {
+  background-color: #e0e0e0;
+}
+
+/* Table styles */
+.editor-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.editor-content table td, .editor-content table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+  min-width: 50px;
+}
+
+.table-actions {
+  display: flex;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  z-index: 1000;
+}
+
+.table-action-button {
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 5px;
+}
+
+.table-action-button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Code snippet styles */
+.editor-content pre {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  margin: 10px 0;
+}
+
+/* Image styles */
+.editor-content img {
+  max-width: 600px;
+  height: auto;
+  display: block;
+  margin: 10px 0;
+}
+
+/* Animation for dropdowns */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.color-picker, .emoji-picker, .link-dialog, .table-dialog, .table-actions {
+  animation: fadeIn 0.2s ease;
+}

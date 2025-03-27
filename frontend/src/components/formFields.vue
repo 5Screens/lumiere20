@@ -31,6 +31,7 @@ import { ref, onMounted } from 'vue'
 import sTextField from './common/sTextField.vue'
 import sFilteredSearchField from './common/sFilteredSearchField.vue'
 import sSelectField from './common/sSelectField.vue'
+import sRichTextEditor from './common/sRichTextEditor.vue'
 
 // Import des styles des composants
 import '@/assets/styles/forms.css'
@@ -42,7 +43,8 @@ import '@/assets/styles/sSelectField.css'
 const components = {
   sTextField,
   sFilteredSearchField,
-  sSelectField
+  sSelectField,
+  sRichTextEditor
 }
 
 const props = defineProps({

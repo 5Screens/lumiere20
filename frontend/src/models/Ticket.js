@@ -40,9 +40,8 @@ export class Ticket {
       },
       description: {
         label: t('ticket.description'),
-        type: 'sTextField',
-        placeholder: t('ticket.description_placeholder'),
-        multiline: true
+        type: 'sRichTextEditor',
+        placeholder: t('ticket.description_placeholder')
       },
       configuration_item_uuid: {
         label: t('ticket.configuration_item'),
