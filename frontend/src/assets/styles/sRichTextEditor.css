@@ -287,7 +287,7 @@
 
 /* Image styles */
 .editor-content img {
-  max-width: 600px;
+  max-width: 400px;
   height: auto;
   display: block;
   margin: 10px 0;
@@ -300,7 +300,7 @@
 }
 
 .editor-content a.s-attachment-link:hover::after {
-  content: "\f0c6"; 
+  content: "\f0c1"; 
   font-family: "Font Awesome 5 Free";
   font-weight: 900;
   display: inline-block;

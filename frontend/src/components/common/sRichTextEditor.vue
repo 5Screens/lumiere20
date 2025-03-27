@@ -532,7 +532,7 @@ const handlePaste = (event) => {
       reader.onload = (e) => {
         const img = document.createElement('img');
         img.src = e.target.result;
-        img.style.maxWidth = '600px';
+        img.style.maxWidth = '400px';
         
         // Insert the image at the current selection
         const selection = window.getSelection();
