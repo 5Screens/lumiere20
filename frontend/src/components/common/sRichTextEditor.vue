@@ -5,11 +5,11 @@
       <!-- Text format group -->
       <div class="toolbar-group">
         <select class="toolbar-select" @change="formatBlock($event.target.value)">
-          <option value="p">Normal</option>
-          <option value="h1">Titre 1</option>
-          <option value="h2">Titre 2</option>
-          <option value="h3">Titre 3</option>
-          <option value="h4">Titre 4</option>
+          <option value="p" class="format-option format-p">Normal</option>
+          <option value="h1" class="format-option format-h1">Titre 1</option>
+          <option value="h2" class="format-option format-h2">Titre 2</option>
+          <option value="h3" class="format-option format-h3">Titre 3</option>
+          <option value="h4" class="format-option format-h4">Titre 4</option>
         </select>
       </div>
 

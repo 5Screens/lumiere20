@@ -63,6 +63,69 @@
   cursor: pointer;
 }
 
+/* Format options styles */
+.format-option {
+  font-family: var(--font-family);
+  padding: 5px 8px;
+}
+
+.format-p {
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.format-h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.format-h2 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.format-h3 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.format-h4 {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Firefox specific styles for select options */
+@-moz-document url-prefix() {
+  .toolbar-select option {
+    padding: 5px 8px;
+  }
+  
+  .format-p {
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  .format-h1 {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .format-h2 {
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .format-h3 {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .format-h4 {
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
+
 .editor-content {
   flex: 1;
   padding: 10px;
