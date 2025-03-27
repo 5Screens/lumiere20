@@ -293,6 +293,23 @@
   margin: 10px 0;
 }
 
+/* Styles pour les liens avec icône de pièce jointe */
+.editor-content a.s-attachment-link:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.editor-content a.s-attachment-link:hover::after {
+  content: "\f0c6"; 
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 14px;
+  vertical-align: middle;
+  color: var(--text-color);
+}
+
 /* Animation for dropdowns */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }

@@ -344,6 +344,7 @@ const insertLink = () => {
     link.href = url;
     link.textContent = text;
     link.target = '_blank';
+    link.classList.add('s-attachment-link'); // Ajout de la classe pour l'icône de pièce jointe
     
     // Insert the link at the current selection
     const selection = window.getSelection();
