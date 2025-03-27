@@ -57,7 +57,7 @@
 
       <!-- Insert group -->
       <div class="toolbar-group">
-        <button class="toolbar-button" @click="showLinkDialog = true" title="Insérer un lien">
+        <button class="toolbar-button" @click="toggleLinkDialog" title="Insérer un lien">
           <i class="fas fa-link"></i>
         </button>
         <button class="toolbar-button" @click="toggleEmojiPicker" title="Insérer un emoji">
@@ -318,8 +318,23 @@ const insertEmoji = (emoji) => {
   showEmojiPicker.value = false;
 };
 
+const toggleLinkDialog = () => {
+  // Mémoriser la sélection actuelle
+  saveSelection();
+
+  // Basculer l’affichage
+  showLinkDialog.value = !showLinkDialog.value;
+
+  // Masquer les autres éventuels éléments (palette de couleurs, emoji, etc.)
+  showColorPicker.value = false;
+  showEmojiPicker.value = false;
+  showTableDialog.value = false;
+};
+
 // Insert link
 const insertLink = () => {
+  // Avant d'insérer le lien, on restaure la sélection
+  restoreSelection();
   if (linkUrl.value) {
     const url = linkUrl.value.startsWith('http') ? linkUrl.value : `https://${linkUrl.value}`;
     const text = linkText.value || url;
