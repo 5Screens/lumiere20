@@ -203,6 +203,26 @@ const tableRows = ref(3);
 const tableCols = ref(3);
 const currentTable = ref(null);
 
+// Variable pour stocker la sélection
+let savedSelection = null;
+
+// Fonction pour mémoriser la sélection
+const saveSelection = () => {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    savedSelection = sel.getRangeAt(0);
+  }
+};
+
+// Fonction pour restaurer la sélection
+const restoreSelection = () => {
+  if (savedSelection) {
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedSelection);
+  }
+};
+
 // Colors for the color picker
 const colors = [
   '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#d9d9d9', '#efefef', '#f3f3f3', '#ffffff',
@@ -264,6 +284,8 @@ const formatBlock = (block) => {
 
 // Toggle color picker
 const toggleColorPicker = () => {
+  // Avant d'afficher la palette, on mémorise la sélection
+  saveSelection();
   showColorPicker.value = !showColorPicker.value;
   showEmojiPicker.value = false;
   showLinkDialog.value = false;
@@ -272,6 +294,8 @@ const toggleColorPicker = () => {
 
 // Apply color to text
 const applyColor = (color) => {
+  // Avant d'appliquer la couleur, on restaure la sélection
+  restoreSelection();
   execCommand('foreColor', color);
   showColorPicker.value = false;
 };
