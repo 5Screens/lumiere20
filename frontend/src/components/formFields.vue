@@ -21,6 +21,13 @@
         :field-name="field.fieldName"
         :patch-endpoint="field.patchEndpoint"
         :mode="field.mode"
+        :source-end-point="field.sourceEndPoint"
+        :displayed-label="field.displayedLabel"
+        :target-end-point="field.targetEndPoint"
+        :target_uuid="field.target_uuid"
+        :picked-items="field.pickedItems"
+        :edition="field.edition"
+        :helper-text="field.helperText"
       />
     </div>
   </form>
@@ -32,19 +39,22 @@ import sTextField from './common/sTextField.vue'
 import sFilteredSearchField from './common/sFilteredSearchField.vue'
 import sSelectField from './common/sSelectField.vue'
 import sRichTextEditor from './common/sRichTextEditor.vue'
+import sPickList from './common/sPickList.vue'
 
 // Import des styles des composants
 import '@/assets/styles/forms.css'
 import '@/assets/styles/sTextField.css'
 import '@/assets/styles/sFilteredSearchField.css'
 import '@/assets/styles/sSelectField.css'
+import '@/assets/styles/sPickList.css'
 
 // Enregistrement des composants pour l'utilisation dynamique
 const components = {
   sTextField,
   sFilteredSearchField,
   sSelectField,
-  sRichTextEditor
+  sRichTextEditor,
+  sPickList
 }
 
 const props = defineProps({
@@ -99,11 +109,9 @@ const handleSubmit = () => {
 
 .field-label {
   font-size: 0.875rem;
-  color: var(--text-color);
   font-weight: 500;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
   width: 200px;
+  text-align: right;
+  padding-top: 0.5rem;
 }
 </style>
