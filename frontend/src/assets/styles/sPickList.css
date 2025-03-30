@@ -87,7 +87,7 @@
 }
 
 .s-pick-list__item {
-  padding: 8px 12px;
+  padding: 4px 12px; /* Hauteurs des lignes des items*/
   cursor: pointer;
   border-bottom: 1px solid var(--border-color);
   display: flex;
