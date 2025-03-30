@@ -68,7 +68,6 @@ const isEditing = ref(false)
 const internalValue = ref('')
 const originalValue = ref('')
 const valueChanged = ref(false)
-const touched = ref(false)
 
 const props = defineProps({
   label: {
@@ -168,7 +167,6 @@ const handleInput = (event) => {
   
   internalValue.value = value
   emit('update:modelValue', value)
-  touched.value = true
   
   // Check if value has changed
   valueChanged.value = value !== originalValue.value
@@ -180,8 +178,6 @@ const onFocus = () => {
 }
 
 const onBlur = () => {
-  // Mark field as touched when user leaves the field
-  touched.value = true
   // Don't reset isEditing here to allow clicking on action buttons
   // Will be reset in cancelChange or after API call
 }

@@ -133,7 +133,6 @@
 /* Style for error state - red border for required fields with no selection */
 .s-select-field.has-error select {
   border-color: var(--error-color);
-  box-shadow: 0 0 0 1px var(--error-color);
 }
 
 /* Error message that appears below the field when validation fails */
