@@ -10,33 +10,6 @@
     <!-- Contenu principal -->
     <div class="s-pick-list__content">
       <!-- Colonne de gauche (source) -->
-      <div class="s-pick-list__chevron-controls">
-        <button 
-          class="s-pick-list__chevron-button" 
-          :disabled="!canMoveSourceItemUp" 
-          @click="moveSourceItemToTop"
-          title="Move to top"
-        >˄˄</button>
-        <button 
-          class="s-pick-list__chevron-button" 
-          :disabled="!canMoveSourceItemUp" 
-          @click="moveSourceItemUp"
-          title="Move up"
-        >˄</button>
-        <button 
-          class="s-pick-list__chevron-button" 
-          :disabled="!canMoveSourceItemDown" 
-          @click="moveSourceItemDown"
-          title="Move down"
-        >˅</button>
-        <button 
-          class="s-pick-list__chevron-button" 
-          :disabled="!canMoveSourceItemDown" 
-          @click="moveSourceItemToBottom"
-          title="Move to bottom"
-        >˅˅</button>
-      </div>
-
       <div class="s-pick-list__column">
         <div class="s-pick-list__search-container">
           <input 
@@ -134,33 +107,6 @@
             @cancel="cancelChanges"
           />
         </div>
-      </div>
-
-      <div class="s-pick-list__chevron-controls">
-        <button 
-          class="s-pick-list__chevron-button" 
-          :disabled="!canMoveTargetItemUp" 
-          @click="moveTargetItemToTop"
-          title="Move to top"
-        >˄˄</button>
-        <button 
-          class="s-pick-list__chevron-button" 
-          :disabled="!canMoveTargetItemUp" 
-          @click="moveTargetItemUp"
-          title="Move up"
-        >˄</button>
-        <button 
-          class="s-pick-list__chevron-button" 
-          :disabled="!canMoveTargetItemDown" 
-          @click="moveTargetItemDown"
-          title="Move down"
-        >˅</button>
-        <button 
-          class="s-pick-list__chevron-button" 
-          :disabled="!canMoveTargetItemDown" 
-          @click="moveTargetItemToBottom"
-          title="Move to bottom"
-        >˅˅</button>
       </div>
     </div>
 
@@ -267,32 +213,6 @@ const filteredTargetItems = computed(() => {
   });
 });
 
-const canMoveSourceItemUp = computed(() => {
-  return selectedSourceItems.value.length > 0 && 
-         sourceItems.value.indexOf(selectedSourceItems.value[0]) > 0;
-});
-
-const canMoveSourceItemDown = computed(() => {
-  if (selectedSourceItems.value.length === 0) return false;
-  const lastSelectedIndex = sourceItems.value.indexOf(
-    selectedSourceItems.value[selectedSourceItems.value.length - 1]
-  );
-  return lastSelectedIndex < sourceItems.value.length - 1;
-});
-
-const canMoveTargetItemUp = computed(() => {
-  return selectedTargetItems.value.length > 0 && 
-         targetItems.value.indexOf(selectedTargetItems.value[0]) > 0;
-});
-
-const canMoveTargetItemDown = computed(() => {
-  if (selectedTargetItems.value.length === 0) return false;
-  const lastSelectedIndex = targetItems.value.indexOf(
-    selectedTargetItems.value[selectedTargetItems.value.length - 1]
-  );
-  return lastSelectedIndex < targetItems.value.length - 1;
-});
-
 // Méthodes
 function getItemLabel(item) {
   return item[props.displayedLabel] || 'Unnamed';
@@ -363,134 +283,6 @@ function moveToSource() {
   selectedTargetItems.value = [];
   
   // Marquer comme modifié
-  checkForChanges();
-}
-
-function moveSourceItemUp() {
-  if (!canMoveSourceItemUp.value) return;
-  
-  const sortedSelectedItems = selectedSourceItems.value
-    .map(item => ({ item, index: sourceItems.value.indexOf(item) }))
-    .sort((a, b) => a.index - b.index);
-  
-  for (const { item, index } of sortedSelectedItems) {
-    if (index > 0) {
-      sourceItems.value.splice(index, 1);
-      sourceItems.value.splice(index - 1, 0, item);
-    }
-  }
-}
-
-function moveSourceItemDown() {
-  if (!canMoveSourceItemDown.value) return;
-  
-  const sortedSelectedItems = selectedSourceItems.value
-    .map(item => ({ item, index: sourceItems.value.indexOf(item) }))
-    .sort((a, b) => b.index - a.index);
-  
-  for (const { item, index } of sortedSelectedItems) {
-    if (index < sourceItems.value.length - 1) {
-      sourceItems.value.splice(index, 1);
-      sourceItems.value.splice(index + 1, 0, item);
-    }
-  }
-}
-
-function moveSourceItemToTop() {
-  if (!canMoveSourceItemUp.value) return;
-  
-  const sortedSelectedItems = selectedSourceItems.value
-    .map(item => ({ item, index: sourceItems.value.indexOf(item) }))
-    .sort((a, b) => a.index - b.index);
-  
-  let insertPosition = 0;
-  for (const { item, index } of sortedSelectedItems) {
-    sourceItems.value.splice(index, 1);
-    sourceItems.value.splice(insertPosition, 0, item);
-    insertPosition++;
-  }
-}
-
-function moveSourceItemToBottom() {
-  if (!canMoveSourceItemDown.value) return;
-  
-  const sortedSelectedItems = selectedSourceItems.value
-    .map(item => ({ item, index: sourceItems.value.indexOf(item) }))
-    .sort((a, b) => b.index - a.index);
-  
-  for (const { item, index } of sortedSelectedItems) {
-    sourceItems.value.splice(index, 1);
-    sourceItems.value.push(item);
-  }
-}
-
-function moveTargetItemUp() {
-  if (!canMoveTargetItemUp.value) return;
-  
-  const sortedSelectedItems = selectedTargetItems.value
-    .map(item => ({ item, index: targetItems.value.indexOf(item) }))
-    .sort((a, b) => a.index - b.index);
-  
-  for (const { item, index } of sortedSelectedItems) {
-    if (index > 0) {
-      targetItems.value.splice(index, 1);
-      targetItems.value.splice(index - 1, 0, item);
-    }
-  }
-  
-  updateModelValue();
-  checkForChanges();
-}
-
-function moveTargetItemDown() {
-  if (!canMoveTargetItemDown.value) return;
-  
-  const sortedSelectedItems = selectedTargetItems.value
-    .map(item => ({ item, index: targetItems.value.indexOf(item) }))
-    .sort((a, b) => b.index - a.index);
-  
-  for (const { item, index } of sortedSelectedItems) {
-    if (index < targetItems.value.length - 1) {
-      targetItems.value.splice(index, 1);
-      targetItems.value.splice(index + 1, 0, item);
-    }
-  }
-  
-  updateModelValue();
-  checkForChanges();
-}
-
-function moveTargetItemToTop() {
-  if (!canMoveTargetItemUp.value) return;
-  
-  const sortedSelectedItems = selectedTargetItems.value
-    .map(item => ({ item, index: targetItems.value.indexOf(item) }))
-    .sort((a, b) => a.index - b.index);
-  
-  let insertPosition = 0;
-  for (const { item, index } of sortedSelectedItems) {
-    targetItems.value.splice(index, 1);
-    targetItems.value.splice(insertPosition, 0, item);
-    insertPosition++;
-  }
-  
-  updateModelValue();
-  checkForChanges();
-}
-
-function moveTargetItemToBottom() {
-  if (!canMoveTargetItemDown.value) return;
-  
-  const sortedSelectedItems = selectedTargetItems.value
-    .map(item => ({ item, index: targetItems.value.indexOf(item) }))
-    .sort((a, b) => b.index - a.index);
-  
-  for (const { item, index } of sortedSelectedItems) {
-    targetItems.value.splice(index, 1);
-    targetItems.value.push(item);
-  }
-  
-  updateModelValue();
   checkForChanges();
 }
 
