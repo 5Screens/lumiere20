@@ -230,7 +230,8 @@ export default {
     confirm_edit: 'Confirmar edição',
     cancel_edit: 'Cancelar edição',
     yes: 'Sim',
-    no: 'Não'
+    no: 'Não',
+    createLabel: 'O que você deseja criar?'
   },
   nav: {
     myWork: 'Meu Trabalho',

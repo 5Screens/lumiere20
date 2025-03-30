@@ -156,7 +156,8 @@ export default {
     confirm_edit: 'Confirmer la modification',
     cancel_edit: 'Annuler la modification',
     yes: 'Oui',
-    no: 'Non'
+    no: 'Non',
+    createLabel: 'Que souhaitez-vous créer ?'
   },
   notifications: {
     title: 'Notification',

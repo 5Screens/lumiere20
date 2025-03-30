@@ -149,7 +149,8 @@ export default {
     confirm_edit: 'Confirm edit',
     cancel_edit: 'Cancel edit',
     yes: 'Yes',
-    no: 'No'
+    no: 'No',
+    createLabel: 'What would you like to create?'
   },
   nav: {
     myWork: 'My Work',

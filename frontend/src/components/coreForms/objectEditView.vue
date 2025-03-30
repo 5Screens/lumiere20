@@ -9,7 +9,7 @@
 
       <div class="modal-body">
         <SSelectField
-          :label="$t('configuration.ticketTypes')"
+          :label="$t('common.createLabel')"
           :required="true"
           :endpoint="`ticket_types?lang=${currentLanguage}&toSelect=yes`"
           :mode="'creation'"
