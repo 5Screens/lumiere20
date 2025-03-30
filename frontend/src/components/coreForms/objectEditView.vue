@@ -60,7 +60,7 @@ const userProfileStore = useUserProfileStore()
 const objectStore = useObjectStore()
 const currentLanguage = computed(() => userProfileStore.language)
 
-const selectedType = ref('Ticket')
+const selectedType = ref('')
 
 const currentModelClass = computed(() => {
   switch (selectedType.value) {

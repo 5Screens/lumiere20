@@ -105,6 +105,11 @@ const touched = ref(false)
 
 // Computed properties
 const showError = computed(() => {
+  console.info('SSelectField showError debug:');
+  console.info('- props.required:', props.required);
+  console.info('- touched.value:', touched.value);
+  console.info('- !selectedValue.value:', !selectedValue.value);
+  console.info('- selectedValue.value:', selectedValue.value);
   return props.required && touched.value && (!selectedValue.value || selectedValue.value === '')
 })
 
