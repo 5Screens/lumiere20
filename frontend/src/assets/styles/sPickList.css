@@ -8,6 +8,7 @@
   flex-direction: column;
   width: 100%;
   font-family: var(--font-family);
+  max-height: 350px; /* Limite la hauteur totale du composant */
 }
 
 .s-pick-list__label-container {
@@ -29,7 +30,9 @@
   display: flex;
   gap: 16px;
   width: 100%;
-  min-height: 300px;
+  height: 300px; /* Hauteur fixe pour le contenu */
+  max-height: 300px; /* Limite la hauteur maximale */
+  overflow: hidden; /* Évite le débordement */
 }
 
 .s-pick-list__column {
@@ -40,6 +43,7 @@
   border-radius: 4px;
   overflow: hidden;
   background-color: var(--card-bg);
+  max-height: 100%; /* Utilise toute la hauteur disponible */
 }
 
 .s-pick-list__column-header {
@@ -50,11 +54,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0; /* Empêche la compression du header */
 }
 
 .s-pick-list__search-container {
   padding: 8px;
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0; /* Empêche la compression de la barre de recherche */
 }
 
 .s-pick-list__search-input {
@@ -69,9 +75,9 @@
 
 .s-pick-list__list-container {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* Ajoute un ascenseur vertical si nécessaire */
   position: relative;
-  min-height: 200px;
+  min-height: 0; /* Permet au conteneur de se réduire si nécessaire */
 }
 
 .s-pick-list__list {
@@ -136,6 +142,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 8px;
+  flex-shrink: 0; /* Empêche la compression des contrôles */
 }
 
 .s-pick-list__control-button {
@@ -172,6 +179,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+  flex-shrink: 0; /* Empêche la compression du footer */
 }
 
 .s-pick-list__loading {
@@ -220,6 +228,7 @@
   justify-content: center;
   gap: 8px;
   padding: 0 8px;
+  flex-shrink: 0; /* Empêche la compression des contrôles de chevron */
 }
 
 .s-pick-list__chevron-button {
