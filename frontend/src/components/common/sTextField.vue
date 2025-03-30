@@ -2,7 +2,8 @@
   <div 
     :class="[
       's-text-field', 
-      { 's-text-field--editing': isEditing }
+      { 's-text-field--editing': isEditing,
+        's-text-field--error': showRequiredError }
     ]"
   >
     <div class="s-text-field__label-container" v-if="label">
@@ -31,7 +32,7 @@
         :step="step"
         :class="[
           's-text-field__input',
-          { 's-text-field__input--error': error }
+          { 's-text-field__input--error': error || showRequiredError }
         ]"
       />
       
@@ -48,22 +49,26 @@
         Debug: isEditing={{ isEditing }}, valueChanged={{ valueChanged }}, editMode={{ editMode }}
       </div>
       
-      <span v-if="error" class="s-text-field__error">{{ error }}</span>
+      <span v-if="showRequiredError" class="s-text-field__error">{{ t('errors.requiredField') }}</span>
+      <span v-else-if="error" class="s-text-field__error">{{ error }}</span>
       <span v-else-if="helperText" class="s-text-field__helper">{{ helperText }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, watch } from 'vue'
+import { defineProps, defineEmits, ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import RgButton from './rgButton.vue'
 import apiService from '@/services/apiService'
 import '@/assets/styles/sTextField.css'
 
+const { t } = useI18n()
 const isEditing = ref(false)
 const internalValue = ref('')
 const originalValue = ref('')
 const valueChanged = ref(false)
+const touched = ref(false)
 
 const props = defineProps({
   label: {
@@ -135,6 +140,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'field-updated', 'field-change-cancelled'])
 
+// Computed property to check if field is required and empty
+const showRequiredError = computed(() => {
+  return props.required &&  
+    (props.modelValue === '' || props.modelValue === null || props.modelValue === undefined)
+})
+
 // Watch for external changes to modelValue
 watch(() => props.modelValue, (newValue) => {
   originalValue.value = newValue
@@ -157,6 +168,7 @@ const handleInput = (event) => {
   
   internalValue.value = value
   emit('update:modelValue', value)
+  touched.value = true
   
   // Check if value has changed
   valueChanged.value = value !== originalValue.value
@@ -168,6 +180,8 @@ const onFocus = () => {
 }
 
 const onBlur = () => {
+  // Mark field as touched when user leaves the field
+  touched.value = true
   // Don't reset isEditing here to allow clicking on action buttons
   // Will be reset in cancelChange or after API call
 }
