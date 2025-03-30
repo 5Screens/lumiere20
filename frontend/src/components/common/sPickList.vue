@@ -38,9 +38,6 @@
       </div>
 
       <div class="s-pick-list__column">
-        <div class="s-pick-list__column-header">
-          Available Items
-        </div>
         <div class="s-pick-list__search-container">
           <input 
             type="text" 
@@ -95,9 +92,6 @@
 
       <!-- Colonne de droite (target) -->
       <div class="s-pick-list__column">
-        <div class="s-pick-list__column-header">
-          Selected Items
-        </div>
         <div class="s-pick-list__search-container">
           <input 
             type="text" 
