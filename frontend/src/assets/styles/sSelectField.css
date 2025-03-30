@@ -129,3 +129,17 @@
   0% { transform: translateY(-50%) rotate(0deg); }
   100% { transform: translateY(-50%) rotate(360deg); }
 }
+
+/* Style for error state - red border for required fields with no selection */
+.s-select-field.has-error select {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 1px var(--error-color);
+}
+
+/* Error message that appears below the field when validation fails */
+.s-select-field__error-message {
+  color: var(--error-color);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  transition: all 0.2s ease;
+}

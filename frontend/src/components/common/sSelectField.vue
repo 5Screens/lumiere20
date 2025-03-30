@@ -1,5 +1,5 @@
 <template>
-  <div class="s-select-field" :class="{ 'editing': editing }">
+  <div class="s-select-field" :class="{ 'editing': editing, 'has-error': showError }">
     <div class="s-select-field__label-container" v-if="label">
       <label class="s-select-field__label" :class="{ 's-select-field__label--required': required }">
         {{ label }}
@@ -31,12 +31,16 @@
           :disabled="isUpdating"
         />
       </div>
+      
+      <div v-if="showError" class="s-select-field__error-message">
+        {{ t('errors.selectOneRow') }}
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import '@/assets/styles/sSelectField.css'
 import apiService from '@/services/apiService'
@@ -97,6 +101,12 @@ const loadingOptions = ref(false)
 const editing = ref(false)
 const isUpdating = ref(false)
 const optionsLoaded = ref(false)
+const touched = ref(false)
+
+// Computed properties
+const showError = computed(() => {
+  return props.required && touched.value && (!selectedValue.value || selectedValue.value === '')
+})
 
 // Watch modelValue changes
 watch(() => props.modelValue, (newValue) => {
@@ -135,6 +145,7 @@ const fetchOptions = async () => {
 }
 
 const handleChange = () => {
+  touched.value = true
   if (props.mode === 'edition' && selectedValue.value !== originalValue.value) {
     editing.value = true
   }
@@ -204,6 +215,11 @@ onMounted(() => {
   }
 
   fetchOptions()
+  
+  // Marquer comme touché si le champ est requis et vide au montage
+  if (props.required && (!selectedValue.value || selectedValue.value === '')) {
+    touched.value = true
+  }
 })
 </script>
 
