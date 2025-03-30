@@ -1,0 +1,672 @@
+<template>
+  <div class="s-pick-list">
+    <!-- Label du composant -->
+    <div class="s-pick-list__label-container" v-if="label">
+      <label :class="['s-pick-list__label', { 's-pick-list__label--required': required }]">
+        {{ label }}
+      </label>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="s-pick-list__content">
+      <!-- Colonne de gauche (source) -->
+      <div class="s-pick-list__chevron-controls">
+        <button 
+          class="s-pick-list__chevron-button" 
+          :disabled="!canMoveSourceItemUp" 
+          @click="moveSourceItemToTop"
+          title="Move to top"
+        >˄˄</button>
+        <button 
+          class="s-pick-list__chevron-button" 
+          :disabled="!canMoveSourceItemUp" 
+          @click="moveSourceItemUp"
+          title="Move up"
+        >˄</button>
+        <button 
+          class="s-pick-list__chevron-button" 
+          :disabled="!canMoveSourceItemDown" 
+          @click="moveSourceItemDown"
+          title="Move down"
+        >˅</button>
+        <button 
+          class="s-pick-list__chevron-button" 
+          :disabled="!canMoveSourceItemDown" 
+          @click="moveSourceItemToBottom"
+          title="Move to bottom"
+        >˅˅</button>
+      </div>
+
+      <div class="s-pick-list__column">
+        <div class="s-pick-list__column-header">
+          Available Items
+        </div>
+        <div class="s-pick-list__search-container">
+          <input 
+            type="text" 
+            v-model="sourceSearchQuery" 
+            class="s-pick-list__search-input"
+            placeholder="Search..." 
+          />
+        </div>
+        <div class="s-pick-list__list-container">
+          <!-- Loading spinner -->
+          <div v-if="sourceLoading" class="s-pick-list__loading">
+            <div class="s-pick-list__spinner"></div>
+          </div>
+          
+          <!-- Liste des items disponibles -->
+          <ul v-else-if="filteredSourceItems.length > 0" class="s-pick-list__list">
+            <li 
+              v-for="item in filteredSourceItems" 
+              :key="item.uuid"
+              :class="[
+                's-pick-list__item', 
+                { 's-pick-list__item--selected': isSourceItemSelected(item) }
+              ]"
+              @click="toggleSourceItemSelection(item)"
+            >
+              <span class="s-pick-list__item-text">{{ getItemLabel(item) }}</span>
+            </li>
+          </ul>
+          
+          <!-- Message si aucun item -->
+          <div v-else class="s-pick-list__no-items">
+            No items available
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutons de contrôle au centre -->
+      <div class="s-pick-list__controls">
+        <button 
+          class="s-pick-list__control-button" 
+          :disabled="selectedSourceItems.length === 0"
+          @click="moveToTarget"
+          title="Move to selected"
+        >→</button>
+        <button 
+          class="s-pick-list__control-button" 
+          :disabled="selectedTargetItems.length === 0"
+          @click="moveToSource"
+          title="Remove from selected"
+        >←</button>
+      </div>
+
+      <!-- Colonne de droite (target) -->
+      <div class="s-pick-list__column">
+        <div class="s-pick-list__column-header">
+          Selected Items
+        </div>
+        <div class="s-pick-list__search-container">
+          <input 
+            type="text" 
+            v-model="targetSearchQuery" 
+            class="s-pick-list__search-input"
+            placeholder="Search..." 
+          />
+        </div>
+        <div class="s-pick-list__list-container">
+          <!-- Loading spinner -->
+          <div v-if="targetLoading" class="s-pick-list__loading">
+            <div class="s-pick-list__spinner"></div>
+          </div>
+          
+          <!-- Liste des items sélectionnés -->
+          <ul v-else-if="filteredTargetItems.length > 0" class="s-pick-list__list">
+            <li 
+              v-for="item in filteredTargetItems" 
+              :key="item.uuid"
+              :class="[
+                's-pick-list__item', 
+                { 's-pick-list__item--selected': isTargetItemSelected(item) }
+              ]"
+              @click="toggleTargetItemSelection(item)"
+            >
+              <span class="s-pick-list__item-text">{{ getItemLabel(item) }}</span>
+            </li>
+          </ul>
+          
+          <!-- Message si aucun item -->
+          <div v-else class="s-pick-list__no-items">
+            No items selected
+          </div>
+        </div>
+        
+        <!-- Footer avec boutons de confirmation/annulation en mode édition -->
+        <div v-if="edition && valueChanged" class="s-pick-list__footer">
+          <RgButton
+            @confirm="confirmChanges"
+            @cancel="cancelChanges"
+          />
+        </div>
+      </div>
+
+      <div class="s-pick-list__chevron-controls">
+        <button 
+          class="s-pick-list__chevron-button" 
+          :disabled="!canMoveTargetItemUp" 
+          @click="moveTargetItemToTop"
+          title="Move to top"
+        >˄˄</button>
+        <button 
+          class="s-pick-list__chevron-button" 
+          :disabled="!canMoveTargetItemUp" 
+          @click="moveTargetItemUp"
+          title="Move up"
+        >˄</button>
+        <button 
+          class="s-pick-list__chevron-button" 
+          :disabled="!canMoveTargetItemDown" 
+          @click="moveTargetItemDown"
+          title="Move down"
+        >˅</button>
+        <button 
+          class="s-pick-list__chevron-button" 
+          :disabled="!canMoveTargetItemDown" 
+          @click="moveTargetItemToBottom"
+          title="Move to bottom"
+        >˅˅</button>
+      </div>
+    </div>
+
+    <!-- Message d'erreur ou d'aide -->
+    <span v-if="error" class="s-pick-list__error">{{ error }}</span>
+    <span v-else-if="helperText" class="s-pick-list__helper">{{ helperText }}</span>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue';
+import apiService from '@/services/apiService';
+import RgButton from './rgButton.vue';
+import '@/assets/styles/sPickList.css';
+
+// Props
+const props = defineProps({
+  // Label du composant
+  label: {
+    type: String,
+    default: ''
+  },
+  // Texte d'aide
+  helperText: {
+    type: String,
+    default: ''
+  },
+  // Si le champ est requis
+  required: {
+    type: Boolean,
+    default: false
+  },
+  // Mode édition ou création
+  edition: {
+    type: Boolean,
+    default: false
+  },
+  // Endpoint pour la liste source (gauche)
+  sourceEndPoint: {
+    type: String,
+    required: true
+  },
+  // Champ à afficher pour chaque item
+  displayedLabel: {
+    type: String,
+    required: true
+  },
+  // Endpoint pour la liste cible (droite)
+  targetEndPoint: {
+    type: String,
+    default: null
+  },
+  // UUID de l'objet cible (pour mode édition)
+  target_uuid: {
+    type: String,
+    default: null
+  },
+  // Liste des UUIDs déjà sélectionnés
+  pickedItems: {
+    type: Array,
+    default: () => []
+  },
+  // Valeur du modèle (v-model)
+  modelValue: {
+    type: Array,
+    default: () => []
+  }
+});
+
+// Emits
+const emit = defineEmits(['update:modelValue', 'update:success', 'update:error']);
+
+// État du composant
+const sourceItems = ref([]);
+const targetItems = ref([]);
+const originalTargetItems = ref([]);
+const selectedSourceItems = ref([]);
+const selectedTargetItems = ref([]);
+const sourceSearchQuery = ref('');
+const targetSearchQuery = ref('');
+const sourceLoading = ref(false);
+const targetLoading = ref(false);
+const error = ref('');
+const valueChanged = ref(false);
+
+// Computed properties
+const filteredSourceItems = computed(() => {
+  if (!sourceSearchQuery.value) return sourceItems.value;
+  
+  const query = sourceSearchQuery.value.toLowerCase();
+  return sourceItems.value.filter(item => {
+    const label = getItemLabel(item).toLowerCase();
+    return label.includes(query);
+  });
+});
+
+const filteredTargetItems = computed(() => {
+  if (!targetSearchQuery.value) return targetItems.value;
+  
+  const query = targetSearchQuery.value.toLowerCase();
+  return targetItems.value.filter(item => {
+    const label = getItemLabel(item).toLowerCase();
+    return label.includes(query);
+  });
+});
+
+const canMoveSourceItemUp = computed(() => {
+  return selectedSourceItems.value.length > 0 && 
+         sourceItems.value.indexOf(selectedSourceItems.value[0]) > 0;
+});
+
+const canMoveSourceItemDown = computed(() => {
+  if (selectedSourceItems.value.length === 0) return false;
+  const lastSelectedIndex = sourceItems.value.indexOf(
+    selectedSourceItems.value[selectedSourceItems.value.length - 1]
+  );
+  return lastSelectedIndex < sourceItems.value.length - 1;
+});
+
+const canMoveTargetItemUp = computed(() => {
+  return selectedTargetItems.value.length > 0 && 
+         targetItems.value.indexOf(selectedTargetItems.value[0]) > 0;
+});
+
+const canMoveTargetItemDown = computed(() => {
+  if (selectedTargetItems.value.length === 0) return false;
+  const lastSelectedIndex = targetItems.value.indexOf(
+    selectedTargetItems.value[selectedTargetItems.value.length - 1]
+  );
+  return lastSelectedIndex < targetItems.value.length - 1;
+});
+
+// Méthodes
+function getItemLabel(item) {
+  return item[props.displayedLabel] || 'Unnamed';
+}
+
+function isSourceItemSelected(item) {
+  return selectedSourceItems.value.includes(item);
+}
+
+function isTargetItemSelected(item) {
+  return selectedTargetItems.value.includes(item);
+}
+
+function toggleSourceItemSelection(item) {
+  const index = selectedSourceItems.value.indexOf(item);
+  if (index === -1) {
+    selectedSourceItems.value.push(item);
+  } else {
+    selectedSourceItems.value.splice(index, 1);
+  }
+}
+
+function toggleTargetItemSelection(item) {
+  const index = selectedTargetItems.value.indexOf(item);
+  if (index === -1) {
+    selectedTargetItems.value.push(item);
+  } else {
+    selectedTargetItems.value.splice(index, 1);
+  }
+}
+
+function moveToTarget() {
+  if (selectedSourceItems.value.length === 0) return;
+  
+  // Ajouter les items sélectionnés à la liste cible
+  targetItems.value = [...targetItems.value, ...selectedSourceItems.value];
+  
+  // Retirer les items sélectionnés de la liste source
+  sourceItems.value = sourceItems.value.filter(
+    item => !selectedSourceItems.value.includes(item)
+  );
+  
+  // Mettre à jour le v-model
+  updateModelValue();
+  
+  // Réinitialiser la sélection
+  selectedSourceItems.value = [];
+  
+  // Marquer comme modifié
+  checkForChanges();
+}
+
+function moveToSource() {
+  if (selectedTargetItems.value.length === 0) return;
+  
+  // Ajouter les items sélectionnés à la liste source
+  sourceItems.value = [...sourceItems.value, ...selectedTargetItems.value];
+  
+  // Retirer les items sélectionnés de la liste cible
+  targetItems.value = targetItems.value.filter(
+    item => !selectedTargetItems.value.includes(item)
+  );
+  
+  // Mettre à jour le v-model
+  updateModelValue();
+  
+  // Réinitialiser la sélection
+  selectedTargetItems.value = [];
+  
+  // Marquer comme modifié
+  checkForChanges();
+}
+
+function moveSourceItemUp() {
+  if (!canMoveSourceItemUp.value) return;
+  
+  const sortedSelectedItems = selectedSourceItems.value
+    .map(item => ({ item, index: sourceItems.value.indexOf(item) }))
+    .sort((a, b) => a.index - b.index);
+  
+  for (const { item, index } of sortedSelectedItems) {
+    if (index > 0) {
+      sourceItems.value.splice(index, 1);
+      sourceItems.value.splice(index - 1, 0, item);
+    }
+  }
+}
+
+function moveSourceItemDown() {
+  if (!canMoveSourceItemDown.value) return;
+  
+  const sortedSelectedItems = selectedSourceItems.value
+    .map(item => ({ item, index: sourceItems.value.indexOf(item) }))
+    .sort((a, b) => b.index - a.index);
+  
+  for (const { item, index } of sortedSelectedItems) {
+    if (index < sourceItems.value.length - 1) {
+      sourceItems.value.splice(index, 1);
+      sourceItems.value.splice(index + 1, 0, item);
+    }
+  }
+}
+
+function moveSourceItemToTop() {
+  if (!canMoveSourceItemUp.value) return;
+  
+  const sortedSelectedItems = selectedSourceItems.value
+    .map(item => ({ item, index: sourceItems.value.indexOf(item) }))
+    .sort((a, b) => a.index - b.index);
+  
+  let insertPosition = 0;
+  for (const { item, index } of sortedSelectedItems) {
+    sourceItems.value.splice(index, 1);
+    sourceItems.value.splice(insertPosition, 0, item);
+    insertPosition++;
+  }
+}
+
+function moveSourceItemToBottom() {
+  if (!canMoveSourceItemDown.value) return;
+  
+  const sortedSelectedItems = selectedSourceItems.value
+    .map(item => ({ item, index: sourceItems.value.indexOf(item) }))
+    .sort((a, b) => b.index - a.index);
+  
+  for (const { item, index } of sortedSelectedItems) {
+    sourceItems.value.splice(index, 1);
+    sourceItems.value.push(item);
+  }
+}
+
+function moveTargetItemUp() {
+  if (!canMoveTargetItemUp.value) return;
+  
+  const sortedSelectedItems = selectedTargetItems.value
+    .map(item => ({ item, index: targetItems.value.indexOf(item) }))
+    .sort((a, b) => a.index - b.index);
+  
+  for (const { item, index } of sortedSelectedItems) {
+    if (index > 0) {
+      targetItems.value.splice(index, 1);
+      targetItems.value.splice(index - 1, 0, item);
+    }
+  }
+  
+  updateModelValue();
+  checkForChanges();
+}
+
+function moveTargetItemDown() {
+  if (!canMoveTargetItemDown.value) return;
+  
+  const sortedSelectedItems = selectedTargetItems.value
+    .map(item => ({ item, index: targetItems.value.indexOf(item) }))
+    .sort((a, b) => b.index - a.index);
+  
+  for (const { item, index } of sortedSelectedItems) {
+    if (index < targetItems.value.length - 1) {
+      targetItems.value.splice(index, 1);
+      targetItems.value.splice(index + 1, 0, item);
+    }
+  }
+  
+  updateModelValue();
+  checkForChanges();
+}
+
+function moveTargetItemToTop() {
+  if (!canMoveTargetItemUp.value) return;
+  
+  const sortedSelectedItems = selectedTargetItems.value
+    .map(item => ({ item, index: targetItems.value.indexOf(item) }))
+    .sort((a, b) => a.index - b.index);
+  
+  let insertPosition = 0;
+  for (const { item, index } of sortedSelectedItems) {
+    targetItems.value.splice(index, 1);
+    targetItems.value.splice(insertPosition, 0, item);
+    insertPosition++;
+  }
+  
+  updateModelValue();
+  checkForChanges();
+}
+
+function moveTargetItemToBottom() {
+  if (!canMoveTargetItemDown.value) return;
+  
+  const sortedSelectedItems = selectedTargetItems.value
+    .map(item => ({ item, index: targetItems.value.indexOf(item) }))
+    .sort((a, b) => b.index - a.index);
+  
+  for (const { item, index } of sortedSelectedItems) {
+    targetItems.value.splice(index, 1);
+    targetItems.value.push(item);
+  }
+  
+  updateModelValue();
+  checkForChanges();
+}
+
+function updateModelValue() {
+  emit('update:modelValue', targetItems.value.map(item => item.uuid));
+}
+
+function checkForChanges() {
+  const currentUuids = targetItems.value.map(item => item.uuid).sort();
+  const originalUuids = originalTargetItems.value.map(item => item.uuid).sort();
+  
+  // Vérifier si les listes sont différentes
+  valueChanged.value = false;
+  
+  if (currentUuids.length !== originalUuids.length) {
+    valueChanged.value = true;
+    return;
+  }
+  
+  for (let i = 0; i < currentUuids.length; i++) {
+    if (currentUuids[i] !== originalUuids[i]) {
+      valueChanged.value = true;
+      return;
+    }
+  }
+}
+
+async function fetchSourceItems() {
+  sourceLoading.value = true;
+  error.value = '';
+  
+  try {
+    const response = await apiService.get(props.sourceEndPoint, { toWatchList: 'yes' });
+    
+    // Filtrer les items qui sont déjà dans la liste cible
+    const targetUuids = targetItems.value.map(item => item.uuid);
+    sourceItems.value = response.filter(item => !targetUuids.includes(item.uuid));
+  } catch (err) {
+    console.error('Error fetching source items:', err);
+    error.value = `Failed to load available items: ${err.message}`;
+  } finally {
+    sourceLoading.value = false;
+  }
+}
+
+async function fetchTargetItems() {
+  if (!props.edition || !props.targetEndPoint || !props.target_uuid) {
+    // En mode création, initialiser avec les pickedItems
+    if (props.pickedItems && props.pickedItems.length > 0) {
+      // Trouver les items correspondants dans sourceItems
+      const pickedUuids = new Set(props.pickedItems);
+      targetItems.value = sourceItems.value.filter(item => pickedUuids.has(item.uuid));
+      
+      // Retirer ces items de la liste source
+      sourceItems.value = sourceItems.value.filter(item => !pickedUuids.has(item.uuid));
+    }
+    return;
+  }
+  
+  targetLoading.value = true;
+  error.value = '';
+  
+  try {
+    const response = await apiService.get(`${props.targetEndPoint}/${props.target_uuid}/watchlist`);
+    targetItems.value = response;
+    originalTargetItems.value = [...response];
+    
+    // Retirer ces items de la liste source
+    const targetUuids = new Set(response.map(item => item.uuid));
+    sourceItems.value = sourceItems.value.filter(item => !targetUuids.has(item.uuid));
+  } catch (err) {
+    console.error('Error fetching target items:', err);
+    error.value = `Failed to load selected items: ${err.message}`;
+  } finally {
+    targetLoading.value = false;
+  }
+}
+
+async function confirmChanges() {
+  if (!props.edition || !props.targetEndPoint || !props.target_uuid) {
+    // En mode création, juste mettre à jour le modèle
+    updateModelValue();
+    valueChanged.value = false;
+    return;
+  }
+  
+  error.value = '';
+  targetLoading.value = true;
+  
+  try {
+    // Envoyer tous les UUIDs sélectionnés
+    const uuids = targetItems.value.map(item => item.uuid);
+    await apiService.patch(`${props.targetEndPoint}/${props.target_uuid}/watchlist`, uuids);
+    
+    // Mettre à jour les items originaux
+    originalTargetItems.value = [...targetItems.value];
+    valueChanged.value = false;
+    
+    // Émettre l'événement de succès
+    emit('update:success', uuids);
+  } catch (err) {
+    console.error('Error updating watchlist:', err);
+    error.value = `Failed to update selected items: ${err.message}`;
+    emit('update:error', err.message);
+  } finally {
+    targetLoading.value = false;
+  }
+}
+
+function cancelChanges() {
+  // Restaurer l'état original
+  targetItems.value = [...originalTargetItems.value];
+  
+  // Recalculer la liste source
+  const targetUuids = new Set(targetItems.value.map(item => item.uuid));
+  sourceItems.value = sourceItems.value.filter(item => !targetUuids.has(item.uuid));
+  
+  // Réinitialiser les sélections
+  selectedSourceItems.value = [];
+  selectedTargetItems.value = [];
+  
+  // Réinitialiser l'état de modification
+  valueChanged.value = false;
+  
+  // Mettre à jour le modèle
+  updateModelValue();
+}
+
+// Initialisation
+onMounted(async () => {
+  // Charger les items source
+  await fetchSourceItems();
+  
+  // Charger les items cible (en mode édition) ou initialiser avec pickedItems
+  await fetchTargetItems();
+  
+  // Initialiser le modèle
+  updateModelValue();
+});
+
+// Surveiller les changements de props
+watch(() => props.pickedItems, async () => {
+  if (!props.edition) {
+    await fetchSourceItems();
+    await fetchTargetItems();
+    updateModelValue();
+  }
+}, { deep: true });
+
+watch(() => props.modelValue, (newValue) => {
+  if (newValue && !valueChanged.value) {
+    // Si le modèle change de l'extérieur et qu'on n'a pas de modifications en cours
+    const modelUuids = new Set(newValue);
+    
+    // Mettre à jour targetItems en fonction du nouveau modèle
+    const newTargetItems = [];
+    const newSourceItems = [];
+    
+    // Répartir les items entre source et target
+    [...sourceItems.value, ...targetItems.value].forEach(item => {
+      if (modelUuids.has(item.uuid)) {
+        newTargetItems.push(item);
+      } else {
+        newSourceItems.push(item);
+      }
+    });
+    
+    sourceItems.value = newSourceItems;
+    targetItems.value = newTargetItems;
+    originalTargetItems.value = [...newTargetItems];
+  }
+}, { deep: true });
+</script>

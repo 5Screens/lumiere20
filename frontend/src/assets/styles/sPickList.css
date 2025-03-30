@@ -1,0 +1,257 @@
+/* 
+ * sPickList.css
+ * Style pour le composant sPickList
+ */
+
+.s-pick-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: var(--font-family);
+}
+
+.s-pick-list__label-container {
+  margin-bottom: 8px;
+}
+
+.s-pick-list__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.s-pick-list__label--required::after {
+  content: ' *';
+  color: var(--error-color);
+}
+
+.s-pick-list__content {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  min-height: 300px;
+}
+
+.s-pick-list__column {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: var(--card-bg);
+}
+
+.s-pick-list__column-header {
+  padding: 8px 12px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.s-pick-list__search-container {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.s-pick-list__search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+}
+
+.s-pick-list__list-container {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  min-height: 200px;
+}
+
+.s-pick-list__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.s-pick-list__item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.s-pick-list__item:hover {
+  background-color: var(--hover-color);
+}
+
+.s-pick-list__item--selected {
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+.s-pick-list__item-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.s-pick-list__actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.s-pick-list__action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  font-size: 16px;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.s-pick-list__action-button:hover {
+  color: var(--primary-color);
+}
+
+.s-pick-list__action-button:disabled {
+  color: var(--text-secondary);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.s-pick-list__controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.s-pick-list__control-button {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 8px;
+  font-size: 14px;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.s-pick-list__control-button:hover {
+  background-color: var(--hover-color);
+  border-color: var(--primary-color);
+}
+
+.s-pick-list__control-button:disabled {
+  color: var(--text-secondary);
+  opacity: 0.5;
+  background-color: var(--bg-secondary);
+  cursor: not-allowed;
+}
+
+.s-pick-list__footer {
+  padding: 8px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.s-pick-list__loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.s-pick-list__spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+}
+
+.s-pick-list__no-items {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.s-pick-list__error {
+  color: var(--error-color);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.s-pick-list__helper {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.s-pick-list__chevron-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.s-pick-list__chevron-button {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 14px;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.s-pick-list__chevron-button:hover {
+  background-color: var(--hover-color);
+  border-color: var(--primary-color);
+}
+
+.s-pick-list__chevron-button:disabled {
+  color: var(--text-secondary);
+  opacity: 0.5;
+  background-color: var(--bg-secondary);
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

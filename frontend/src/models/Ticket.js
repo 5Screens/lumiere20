@@ -14,6 +14,7 @@ export class Ticket {
     this.ticket_status_code = data.ticket_status_code || null;
     this.date_creation = data.date_creation || null;
     this.date_modification = data.date_modification || null;
+    this.watch_list = data.watch_list || [];
   }
 
   static getRenderableFields() {
@@ -89,6 +90,18 @@ export class Ticket {
           { key: 'email', label: t('person.email'), visible: true }
         ],
         required: true
+      },
+      watch_list: {
+        label: "watchlist",
+        type: "sPickList",
+        helperText: "choisissez qui sera notifié lorsque le ticket sera mis à jour",
+        required: false,
+        edition: false,
+        sourceEndPoint: "persons",
+        displayedLabel: "first_name",
+        targetEndPoint: "tickets",
+        target_uuid: null,
+        pickedItems: null
       }
     }
   }
@@ -107,7 +120,8 @@ export class Ticket {
       requested_for_uuid: this.requested_for_uuid,
       writer_uuid: userProfileStore.id, // Always use current user's ID
       ticket_type_code: 'TICKET', //We are creating a ticket
-      ticket_status_code: this.ticket_status_code
+      ticket_status_code: this.ticket_status_code,
+      watch_list: this.watch_list
     };
     console.log('[Ticket.toAPI] Base fields prepared', baseFields);
 
