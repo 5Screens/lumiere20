@@ -101,16 +101,14 @@ const loadingOptions = ref(false)
 const editing = ref(false)
 const isUpdating = ref(false)
 const optionsLoaded = ref(false)
-const touched = ref(false)
 
 // Computed properties
 const showError = computed(() => {
   console.info('SSelectField showError debug:');
   console.info('- props.required:', props.required);
-  console.info('- touched.value:', touched.value);
   console.info('- !selectedValue.value:', !selectedValue.value);
   console.info('- selectedValue.value:', selectedValue.value);
-  return props.required && touched.value && (!selectedValue.value || selectedValue.value === '')
+  return props.required && (!selectedValue.value || selectedValue.value === '')
 })
 
 // Watch modelValue changes
@@ -150,7 +148,6 @@ const fetchOptions = async () => {
 }
 
 const handleChange = () => {
-  touched.value = true
   if (props.mode === 'edition' && selectedValue.value !== originalValue.value) {
     editing.value = true
   }
@@ -220,11 +217,6 @@ onMounted(() => {
   }
 
   fetchOptions()
-  
-  // Marquer comme touché si le champ est requis et vide au montage
-  if (props.required && (!selectedValue.value || selectedValue.value === '')) {
-    touched.value = true
-  }
 })
 </script>
 
