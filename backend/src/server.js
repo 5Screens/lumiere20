@@ -21,6 +21,7 @@ const ticketStatusRoutes = require('./api/v1/ticket_status/routes');
 const configurationItemsRoutes = require('./api/v1/configuration_items/routes');
 const personsRoutes = require('./api/v1/persons/routes');
 const ticketsRoutes = require('./api/v1/tickets/routes');
+const groupsRoutes = require('./api/v1/groups/routes');
 
 // Middleware
 app.use(cors());
@@ -48,6 +49,7 @@ app.use('/api/v1/ticket_status', ticketStatusRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
 app.use('/api/v1/persons', personsRoutes);
 app.use('/api/v1/tickets', ticketsRoutes);
+app.use('/api/v1/groups', groupsRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
