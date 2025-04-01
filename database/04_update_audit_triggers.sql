@@ -187,6 +187,12 @@ CREATE TRIGGER trg_audit_rel_persons_groups
 AFTER INSERT OR UPDATE OR DELETE ON configuration.rel_persons_groups
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
+-- Déclencheur pour la table tickets
+DROP TRIGGER IF EXISTS trg_audit_tickets ON core.tickets;
+CREATE TRIGGER trg_audit_tickets
+AFTER INSERT OR UPDATE OR DELETE ON core.tickets
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
 -- Validation de la transaction
 COMMIT;
 
