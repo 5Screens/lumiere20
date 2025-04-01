@@ -100,11 +100,11 @@ CREATE TABLE configuration.groups (
 -- Person Groups (relation many-to-many)
 CREATE TABLE configuration.rel_persons_groups (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    person_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
-    group_uuid UUID NOT NULL REFERENCES configuration.groups(uuid) ON DELETE CASCADE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(person_uuid, group_uuid)
+    rel_member UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
+    rel_group UUID NOT NULL REFERENCES configuration.groups(uuid) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(rel_member, rel_group)
 );
 
 -- Person Delegates (relation many-to-many)
@@ -114,8 +114,8 @@ CREATE TABLE configuration.rel_persons_delegates (
     delegate_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE CASCADE,
     start_date DATE NOT NULL,
     end_date DATE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT valid_delegation_period CHECK (end_date IS NULL OR end_date >= start_date),
     CONSTRAINT no_self_delegation CHECK (person_uuid != delegate_uuid)
 );

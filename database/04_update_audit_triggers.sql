@@ -181,6 +181,12 @@ CREATE TRIGGER trg_audit_symptoms_translation
 AFTER INSERT OR UPDATE OR DELETE ON translations.symptoms_translation
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
+-- Déclencheur pour la table rel_persons_groups
+DROP TRIGGER IF EXISTS trg_audit_rel_persons_groups ON configuration.rel_persons_groups;
+CREATE TRIGGER trg_audit_rel_persons_groups
+AFTER INSERT OR UPDATE OR DELETE ON configuration.rel_persons_groups
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
 -- Validation de la transaction
 COMMIT;
 
