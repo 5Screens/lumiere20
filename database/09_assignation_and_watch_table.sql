@@ -1,4 +1,4 @@
--- Script to create the rel_ticket_groups_persons table
+-- Script to create the rel_tickets_groups_persons table
 -- This table manages ticket assignments and watchers
 -- Created on: 2025-04-01
 
@@ -14,8 +14,8 @@ BEGIN
 END
 $$;
 
--- Create the rel_ticket_groups_persons table
-CREATE TABLE IF NOT EXISTS core.rel_ticket_groups_persons (
+-- Create the rel_tickets_groups_persons table
+CREATE TABLE IF NOT EXISTS core.rel_tickets_groups_persons (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     rel_ticket UUID NOT NULL REFERENCES core.tickets(uuid) ON DELETE CASCADE,
     rel_assigned_to_group UUID NOT NULL REFERENCES configuration.groups(uuid) ON DELETE CASCADE,
@@ -29,26 +29,26 @@ CREATE TABLE IF NOT EXISTS core.rel_ticket_groups_persons (
 );
 
 -- Add comments for documentation
-COMMENT ON TABLE core.rel_ticket_groups_persons IS 'Table storing ticket assignments and watchers information';
-COMMENT ON COLUMN core.rel_ticket_groups_persons.uuid IS 'Primary key';
-COMMENT ON COLUMN core.rel_ticket_groups_persons.rel_ticket IS 'Reference to the ticket UUID';
-COMMENT ON COLUMN core.rel_ticket_groups_persons.rel_assigned_to_group IS 'Reference to the group UUID';
-COMMENT ON COLUMN core.rel_ticket_groups_persons.rel_assigned_to_person IS 'Optional reference to the person UUID';
-COMMENT ON COLUMN core.rel_ticket_groups_persons.type IS 'Type of relation: WATCHER or ASSIGNED';
-COMMENT ON COLUMN core.rel_ticket_groups_persons.created_at IS 'Date when the assignment/watch was created';
-COMMENT ON COLUMN core.rel_ticket_groups_persons.ended_at IS 'Optional date when the assignment/watch ended';
+COMMENT ON TABLE core.rel_tickets_groups_persons IS 'Table storing ticket assignments and watchers information';
+COMMENT ON COLUMN core.rel_tickets_groups_persons.uuid IS 'Primary key';
+COMMENT ON COLUMN core.rel_tickets_groups_persons.rel_ticket IS 'Reference to the ticket UUID';
+COMMENT ON COLUMN core.rel_tickets_groups_persons.rel_assigned_to_group IS 'Reference to the group UUID';
+COMMENT ON COLUMN core.rel_tickets_groups_persons.rel_assigned_to_person IS 'Optional reference to the person UUID';
+COMMENT ON COLUMN core.rel_tickets_groups_persons.type IS 'Type of relation: WATCHER or ASSIGNED';
+COMMENT ON COLUMN core.rel_tickets_groups_persons.created_at IS 'Date when the assignment/watch was created';
+COMMENT ON COLUMN core.rel_tickets_groups_persons.ended_at IS 'Optional date when the assignment/watch ended';
 
 -- Create indexes for better query performance
-CREATE INDEX idx_rel_ticket_groups_persons_ticket ON core.rel_ticket_groups_persons(rel_ticket);
-CREATE INDEX idx_rel_ticket_groups_persons_group ON core.rel_ticket_groups_persons(rel_assigned_to_group);
-CREATE INDEX idx_rel_ticket_groups_persons_person ON core.rel_ticket_groups_persons(rel_assigned_to_person);
-CREATE INDEX idx_rel_ticket_groups_persons_type ON core.rel_ticket_groups_persons(type);
-CREATE INDEX idx_rel_ticket_groups_persons_active ON core.rel_ticket_groups_persons(rel_ticket, ended_at) 
+CREATE INDEX idx_rel_tickets_groups_persons_ticket ON core.rel_tickets_groups_persons(rel_ticket);
+CREATE INDEX idx_rel_tickets_groups_persons_group ON core.rel_tickets_groups_persons(rel_assigned_to_group);
+CREATE INDEX idx_rel_tickets_groups_persons_person ON core.rel_tickets_groups_persons(rel_assigned_to_person);
+CREATE INDEX idx_rel_tickets_groups_persons_type ON core.rel_tickets_groups_persons(type);
+CREATE INDEX idx_rel_tickets_groups_persons_active ON core.rel_tickets_groups_persons(rel_ticket, ended_at) 
     WHERE ended_at IS NULL;
 
 -- Add audit trigger for the table
-CREATE TRIGGER trg_audit_rel_ticket_groups_persons
-AFTER INSERT OR UPDATE OR DELETE ON core.rel_ticket_groups_persons
+CREATE TRIGGER trg_audit_rel_tickets_groups_persons
+AFTER INSERT OR UPDATE OR DELETE ON core.rel_tickets_groups_persons
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
 -- Commit transaction
