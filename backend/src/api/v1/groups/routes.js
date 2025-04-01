@@ -3,6 +3,12 @@ const router = express.Router();
 const groupController = require('./controller');
 const logger = require('../../../config/logger');
 
+// GET /api/v1/groups/members
+router.get('/members', (req, res) => {
+    logger.info('[ROUTES] GET /api/v1/groups/members - Route handler started');
+    return groupController.getAllGroupMembers(req, res);
+});
+
 // GET /api/v1/groups/:uuid
 router.get('/:uuid', (req, res) => {
     logger.info(`[ROUTES] GET /api/v1/groups/${req.params.uuid} - Route handler started`);

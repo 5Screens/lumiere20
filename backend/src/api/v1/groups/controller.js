@@ -145,6 +145,20 @@ class GroupController {
             });
         }
     }
+
+    async getAllGroupMembers(req, res) {
+        logger.info('[CONTROLLER] getAllGroupMembers - Starting to process request');
+        try {
+            const members = await groupService.getAllGroupMembers();
+            logger.info(`[CONTROLLER] getAllGroupMembers - Successfully retrieved ${members.length} members`);
+            res.json(members);
+        } catch (error) {
+            logger.error(`[CONTROLLER] getAllGroupMembers - Error: ${error.message}`);
+            res.status(500).json({ 
+                error: 'An error occurred while retrieving group members' 
+            });
+        }
+    }
 }
 
 module.exports = new GroupController();

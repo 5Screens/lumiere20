@@ -210,6 +210,45 @@ class GroupService {
             throw error;
         }
     }
+
+    async getAllGroupMembers() {
+        logger.info('[SERVICE] getAllGroupMembers - Starting database query');
+        try {
+            const query = `
+                WITH unique_members AS (
+                    SELECT DISTINCT rel_member
+                    FROM configuration.rel_persons_groups
+                )
+                SELECT 
+                    p.uuid,
+                    p.first_name,
+                    p.last_name,
+                    p.job_role,
+                    p.email,
+                    p.business_phone,
+                    p.business_mobile_phone,
+                    (
+                        SELECT array_agg(json_build_object(
+                            'group_uuid', g.uuid,
+                            'group_name', g.groupe_name,
+                            'member_since', rpg.created_at
+                        ))
+                        FROM configuration.rel_persons_groups rpg
+                        JOIN configuration.groups g ON rpg.rel_group = g.uuid
+                        WHERE rpg.rel_member = p.uuid
+                    ) as groups
+                FROM unique_members um
+                JOIN configuration.persons p ON um.rel_member = p.uuid
+                ORDER BY p.last_name, p.first_name`;
+            
+            const result = await pool.query(query);
+            logger.info(`[SERVICE] getAllGroupMembers - Query executed successfully, found ${result.rows.length} members`);
+            return result.rows;
+        } catch (error) {
+            logger.error(`[SERVICE] getAllGroupMembers - Error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new GroupService();
