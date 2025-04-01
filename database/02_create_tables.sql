@@ -88,7 +88,6 @@ CREATE TABLE configuration.groups (
     groupe_name VARCHAR(255) NOT NULL,
     support_level INTEGER CHECK (support_level >= 0),
     description TEXT,
-    rel_member UUID REFERENCES configuration.persons(uuid),
     rel_supervisor UUID REFERENCES configuration.persons(uuid),
     rel_manager UUID REFERENCES configuration.persons(uuid),
     rel_schedule UUID,
