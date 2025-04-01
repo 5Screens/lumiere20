@@ -17,7 +17,7 @@ BEGIN
     SELECT uuid INTO owning_entity_uuid FROM configuration.entities WHERE name = 'IT Department' LIMIT 1;
     SELECT uuid INTO owned_by_uuid FROM configuration.persons WHERE email = 'john.doe@lumiere.com' LIMIT 1;
     SELECT uuid INTO managed_by_uuid FROM configuration.persons WHERE email = 'jane.smith@lumiere.com' LIMIT 1;
-    SELECT uuid INTO cab_uuid FROM configuration.groups WHERE name = 'Change Advisory Board' LIMIT 1;
+    SELECT uuid INTO cab_uuid FROM configuration.groups WHERE groupe_name = 'Change Advisory Board' LIMIT 1;
     
     -- If UUIDs don't exist, create default ones
     IF owning_entity_uuid IS NULL THEN
@@ -39,8 +39,8 @@ BEGIN
     END IF;
     
     IF cab_uuid IS NULL THEN
-        INSERT INTO configuration.groups (name, description) 
-        VALUES ('Change Advisory Board', 'CAB Team') 
+        INSERT INTO configuration.groups (groupe_name, description, support_level, email, phone) 
+        VALUES ('Change Advisory Board', 'CAB Team', 1, 'cab@lumiere.com', '+33123456789') 
         RETURNING uuid INTO cab_uuid;
     END IF;
     

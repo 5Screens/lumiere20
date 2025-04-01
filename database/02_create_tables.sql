@@ -85,8 +85,15 @@ CREATE TABLE configuration.persons (
 -- Groups
 CREATE TABLE configuration.groups (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(255) NOT NULL,
+    groupe_name VARCHAR(255) NOT NULL,
+    support_level INTEGER CHECK (support_level >= 0),
     description TEXT,
+    rel_member UUID REFERENCES configuration.persons(uuid),
+    rel_supervisor UUID REFERENCES configuration.persons(uuid),
+    rel_manager UUID REFERENCES configuration.persons(uuid),
+    rel_schedule UUID,
+    email VARCHAR(255),
+    phone VARCHAR(50),
     date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

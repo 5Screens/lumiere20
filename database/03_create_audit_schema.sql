@@ -211,6 +211,16 @@ CREATE TRIGGER trg_audit_symptoms_translation
 AFTER INSERT OR UPDATE OR DELETE ON translations.symptoms_translation
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
+-- Déclencheur pour la table groups
+CREATE TRIGGER trg_audit_groups
+AFTER INSERT OR UPDATE OR DELETE ON configuration.groups
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
+-- Déclencheur pour la table tickets
+CREATE TRIGGER trg_audit_tickets
+AFTER INSERT OR UPDATE OR DELETE ON core.tickets
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
 -- Fonction pour définir l'utilisateur courant dans le contexte de la session
 CREATE OR REPLACE FUNCTION configuration.set_current_user_id(user_id UUID)
 RETURNS VOID AS $$
