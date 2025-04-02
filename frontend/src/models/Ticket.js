@@ -82,12 +82,12 @@ export class Ticket {
         type: 'sFilteredSearchField',
         placeholder: t('ticket.assigned_team_placeholder'),
         endpoint: 'groups',
-        displayField: 'group_name',
+        displayField: 'groupe_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'group_name', label: 'Nom du groupe', visible: true },
-          { key: 'phone', label: 'Téléphone', visible: true }
+          { key: 'groupe_name', label: t('group.name'), visible: true },
+          { key: 'phone', label: t('group.phone'), visible: true }
         ],
         required: false
       },

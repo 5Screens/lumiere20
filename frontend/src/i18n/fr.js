@@ -310,5 +310,9 @@ export default {
     job_role: 'Rôle',
     email: 'Email',
     phone: 'Téléphone'
+  },
+  group: {
+    name: 'Nom du groupe',
+    phone: 'Téléphone'
   }
 }
