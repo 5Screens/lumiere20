@@ -22,6 +22,30 @@ const getPersons = async (req, res) => {
     }
 };
 
+/**
+ * Get all groups for a specific person
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getPersonGroups = async (req, res) => {
+    try {
+        const { uuid } = req.params;
+        logger.info(`Controller - Getting groups for person with UUID: ${uuid}`);
+        
+        const groups = await service.getPersonGroups(uuid);
+        logger.info(`Controller - Successfully retrieved ${groups.length} groups for person with UUID: ${uuid}`);
+        
+        res.json(groups);
+    } catch (error) {
+        logger.error(`Controller - Error getting groups for person with UUID: ${req.params.uuid}:`, error);
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+};
+
 module.exports = {
-    getPersons
+    getPersons,
+    getPersonGroups
 };
