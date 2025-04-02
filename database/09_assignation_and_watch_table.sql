@@ -18,7 +18,7 @@ $$;
 CREATE TABLE IF NOT EXISTS core.rel_tickets_groups_persons (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     rel_ticket UUID NOT NULL REFERENCES core.tickets(uuid) ON DELETE CASCADE,
-    rel_assigned_to_group UUID NOT NULL REFERENCES configuration.groups(uuid) ON DELETE CASCADE,
+    rel_assigned_to_group UUID REFERENCES configuration.groups(uuid) ON DELETE CASCADE,
     rel_assigned_to_person UUID REFERENCES configuration.persons(uuid) ON DELETE SET NULL,
     type core.relation_type NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

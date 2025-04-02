@@ -30,7 +30,11 @@ const validateCreateTicket = (req, res, next) => {
         ticket_type_code: Joi.string().required(),
         ticket_status_code: Joi.string().required(),
         core_extended_attributes: Joi.object().allow(null),
-        user_extended_attributes: Joi.object().allow(null)
+        user_extended_attributes: Joi.object().allow(null),
+        // Nouveaux champs pour l'assignation et les observateurs
+        assigned_to_group: Joi.string().uuid(),
+        assigned_to_person: Joi.string().uuid(),
+        watch_list: Joi.array().items(Joi.string().uuid())
     });
 
     const { error } = schema.validate(req.body);

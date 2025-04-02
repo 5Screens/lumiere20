@@ -22,4 +22,8 @@ pool.connect((err, client, release) => {
 module.exports = {
     pool,
     query: (text, params) => pool.query(text, params),
+    getClient: async () => {
+        const client = await pool.connect();
+        return client;
+    }
 };
