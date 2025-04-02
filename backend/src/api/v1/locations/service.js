@@ -28,7 +28,7 @@ class LocationService {
                     l.network_telecom_service,
                     parent.name as parent_location_name,
                     entity.name as primary_entity_name,
-                    g.name as field_service_group_name,
+                    g.groupe_name as field_service_group_name,
                     l.date_creation,
                     l.date_modification
                 FROM configuration.locations l
@@ -75,7 +75,7 @@ class LocationService {
                     l.primary_entity_uuid,
                     entity.name as primary_entity_name,
                     l.field_service_group_uuid,
-                    g.name as field_service_group_name,
+                    g.groupe_name as field_service_group_name,
                     l.date_creation,
                     l.date_modification
                 FROM configuration.locations l
@@ -123,7 +123,7 @@ class LocationService {
                     l.network_telecom_service,
                     parent.name as parent_location_name,
                     entity.name as primary_entity_name,
-                    g.name as field_service_group_name,
+                    g.groupe_name as field_service_group_name,
                     l.date_creation,
                     l.date_modification
                 FROM configuration.locations l
