@@ -290,7 +290,10 @@ export default {
     type: 'Type de ticket',
     type_placeholder: 'Sélectionnez un type',
     status: 'Statut',
-    status_placeholder: 'Sélectionnez un statut'
+    status_placeholder: 'Sélectionnez un statut',
+    watcher: 'Observateur(s)',
+    watcher_placeholder: 'Sélectionnez une ou plusieurs personnes',
+    watcher_helper_text: 'Choisissez qui est intéressé par le traitement du ticket'
   },
   configuration_item: {
     date_creation: 'Date de Création',

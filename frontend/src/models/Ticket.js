@@ -92,9 +92,9 @@ export class Ticket {
         required: true
       },
       watch_list: {
-        label: "watchlist",
+        label: t('ticket.watcher'),
         type: "sPickList",
-        helperText: "choisissez qui sera notifié lorsque le ticket sera mis à jour",
+        helperText: t('ticket.watcher_helper_text'),
         required: false,
         edition: false,
         sourceEndPoint: "persons",
