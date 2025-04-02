@@ -95,6 +95,7 @@ export class Ticket {
         label: t('ticket.watcher'),
         type: "sPickList",
         helperText: t('ticket.watcher_helper_text'),
+        placeholder: t('ticket.watcher_placeholder'),
         required: false,
         edition: false,
         sourceEndPoint: "persons",

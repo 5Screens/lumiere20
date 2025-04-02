@@ -16,7 +16,7 @@
             type="text" 
             v-model="sourceSearchQuery" 
             class="s-pick-list__search-input"
-            placeholder="Search..." 
+            :placeholder="placeholder" 
           />
         </div>
         <div class="s-pick-list__list-container">
@@ -70,7 +70,7 @@
             type="text" 
             v-model="targetSearchQuery" 
             class="s-pick-list__search-input"
-            placeholder="Search..." 
+            :placeholder="placeholder" 
           />
         </div>
         <div class="s-pick-list__list-container">
@@ -173,6 +173,11 @@ const props = defineProps({
   modelValue: {
     type: Array,
     default: () => []
+  },
+  // Texte de placeholder pour les champs de recherche
+  placeholder: {
+    type: String,
+    default: 'Search...'
   }
 });
 
