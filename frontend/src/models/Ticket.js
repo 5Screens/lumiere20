@@ -81,7 +81,12 @@ export class Ticket {
         label: t('ticket.assigned_team_label'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.assigned_team_placeholder'),
-        endpoint: 'groups',
+        endpoint: ({ assigned_to_person }) => {
+          console.log('[Ticket.assigned_to_group.endpoint] Using assigned_to_person:', assigned_to_person);
+          return assigned_to_person 
+            ? `persons/${assigned_to_person}/groups` 
+            : 'groups';
+        },
         displayField: 'groupe_name',
         valueField: 'uuid',
         editMode: false,
