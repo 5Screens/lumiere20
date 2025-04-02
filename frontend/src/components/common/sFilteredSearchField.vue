@@ -164,8 +164,12 @@ const props = defineProps({
     default: 'uuid'
   },
   endpoint: {
-    type: String,
+    type: [String, Function],
     required: true
+  },
+  ticketData: {
+    type: Object,
+    default: () => ({})
   },
   uuid: {
     type: String,
@@ -206,13 +210,28 @@ const filteredItems = computed(() => {
   })
 })
 
+const resolvedEndpoint = computed(() => {
+  if (typeof props.endpoint === 'function') {
+    // Si la fonction endpoint attend le ticket complet
+    return props.endpoint(props.ticketData)
+  }
+  return props.endpoint
+})
+
 // Methods
 const fetchItems = async () => {
   loading.value = true
   error.value = ''
   
+  // Skip fetching if endpoint is null or undefined
+  if (!resolvedEndpoint.value) {
+    loading.value = false
+    items.value = []
+    return
+  }
+  
   try {
-    const data = await apiService.get(props.endpoint)
+    const data = await apiService.get(resolvedEndpoint.value)
     items.value = Array.isArray(data) ? data : []
     
     // Si une configuration de colonnes est fournie, l'utiliser
@@ -411,10 +430,20 @@ const handleClickOutside = (event) => {
 watch(() => props.modelValue, (newValue) => {
   console.log('[watch modelValue] New value:', newValue);
   console.log('[watch modelValue] Items length:', items.value.length);
-  if (newValue && items.value.length > 0) {
-    findAndSelectInitialItem()
+  
+  if (items.value.length > 0) {
+    findAndSelectInitialItem();
   }
-})
+});
+
+// Watch for endpoint changes
+watch(() => resolvedEndpoint.value, (newEndpoint, oldEndpoint) => {
+  console.log('[watch resolvedEndpoint] Endpoint changed from:', oldEndpoint, 'to:', newEndpoint);
+  if (newEndpoint !== oldEndpoint) {
+    console.log('[watch resolvedEndpoint] Fetching items with new endpoint');
+    fetchItems();
+  }
+});
 
 // Watch for items changes to handle async loading
 watch(() => items.value, (newItems) => {

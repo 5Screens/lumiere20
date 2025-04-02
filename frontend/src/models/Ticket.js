@@ -95,7 +95,17 @@ export class Ticket {
         label: t('ticket.assigned_to_label'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.assigned_to_placeholder'),
-        endpoint: (ticket) => ticket.assigned_team_uuid ? `groups/${ticket.assigned_team_uuid}/members` : null,
+        endpoint: (ticketData) => {
+          console.log('[Ticket.assigned_to_uuid.endpoint] Ticket data:', ticketData);
+          // Si ticketData contient assigned_team_uuid
+          if (ticketData && ticketData.assigned_team_uuid) {
+            console.log('[Ticket.assigned_to_uuid.endpoint] Using team UUID:', ticketData.assigned_team_uuid);
+            return `groups/${ticketData.assigned_team_uuid}/members`;
+          }
+          // Sinon, retourner null pour désactiver le champ
+          console.log('[Ticket.assigned_to_uuid.endpoint] No team UUID found, returning null');
+          return null;
+        },
         displayField: 'first_name',
         valueField: 'uuid',
         editMode: false,
