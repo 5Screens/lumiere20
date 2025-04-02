@@ -133,11 +133,7 @@ class GroupController {
             
             const members = await groupService.getGroupMembers(uuid);
             logger.info(`[CONTROLLER] getGroupMembers - Successfully retrieved ${members.length} members for group: ${uuid}`);
-            return res.json({
-                group_uuid: uuid,
-                group_name: group.groupe_name,
-                members: members
-            });
+            return res.json(members);
         } catch (error) {
             logger.error(`[CONTROLLER] getGroupMembers - Error: ${error.message}`);
             return res.status(500).json({
