@@ -293,7 +293,11 @@ export default {
     status_placeholder: 'Sélectionnez un statut',
     watcher: 'Observateur(s)',
     watcher_placeholder: 'Sélectionnez une ou plusieurs personnes',
-    watcher_helper_text: 'Choisissez qui est intéressé par le traitement du ticket'
+    watcher_helper_text: 'Choisissez qui est intéressé par le traitement du ticket',
+    assigned_team_label: 'Equipe assignée',
+    assigned_team_placeholder: 'Sélectionnez une équipe',
+    assigned_to_label: 'Assigné à',
+    assigned_to_placeholder: 'Sélectionnez une personne'
   },
   configuration_item: {
     date_creation: 'Date de Création',

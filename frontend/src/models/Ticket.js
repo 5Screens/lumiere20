@@ -6,9 +6,10 @@ export class Ticket {
     this.uuid = data.uuid || null;
     this.titre = data.titre || '';
     this.description = data.description || '';
-    this.configuration_item_uuid = data.configuration_item_uuid || null;
     this.requested_by_uuid = data.requested_by_uuid || null;
     this.requested_for_uuid = data.requested_for_uuid || null;
+    this.assigned_team_uuid = data.assigned_team_uuid || null;
+    this.assigned_to_uuid = data.assigned_to_uuid || null;
     this.writer_uuid = data.writer_uuid || null;
     this.ticket_type_code = data.ticket_type_code || null;
     this.ticket_status_code = data.ticket_status_code || null;
@@ -44,21 +45,6 @@ export class Ticket {
         type: 'sRichTextEditor',
         placeholder: t('ticket.description_placeholder')
       },
-      configuration_item_uuid: {
-        label: t('ticket.configuration_item'),
-        type: 'sFilteredSearchField',
-        placeholder: t('ticket.configuration_item_placeholder'),
-        endpoint: 'configuration_items',
-        displayField: 'nom',
-        valueField: 'uuid',
-        editMode: false,
-        columnsConfig: [
-          { key: 'nom', label: t('configuration_item.nom'), visible: true },
-          { key: 'description', label: t('configuration_item.description'), visible: true },
-          { key: 'date_creation', label: t('configuration_item.date_creation'), visible: true }
-        ],
-        required: true
-      },
       requested_by_uuid: {
         label: t('ticket.requested_by'),
         type: 'sFilteredSearchField',
@@ -91,6 +77,34 @@ export class Ticket {
         ],
         required: true
       },
+      assigned_team_uuid: {
+        label: t('ticket.assigned_team_label'),
+        type: 'sFilteredSearchField',
+        placeholder: t('ticket.assigned_team_placeholder'),
+        endpoint: 'groups',
+        displayField: 'group_name',
+        valueField: 'uuid',
+        editMode: false,
+        columnsConfig: [
+          { key: 'group_name', label: 'Nom du groupe', visible: true },
+          { key: 'phone', label: 'Téléphone', visible: true }
+        ],
+        required: false
+      },
+      assigned_to_uuid: {
+        label: t('ticket.assigned_to_label'),
+        type: 'sFilteredSearchField',
+        placeholder: t('ticket.assigned_to_placeholder'),
+        endpoint: (ticket) => ticket.assigned_team_uuid ? `groups/${ticket.assigned_team_uuid}/members` : null,
+        displayField: 'first_name',
+        valueField: 'uuid',
+        editMode: false,
+        columnsConfig: [
+          { key: 'first_name', label: t('person.first_name'), visible: true },
+          { key: 'last_name', label: t('person.last_name'), visible: true }
+        ],
+        required: false
+      },
       watch_list: {
         label: t('ticket.watcher'),
         type: "sPickList",
@@ -116,9 +130,10 @@ export class Ticket {
     const baseFields = {
       titre: this.titre,
       description: this.description,
-      configuration_item_uuid: this.configuration_item_uuid,
       requested_by_uuid: this.requested_by_uuid,
       requested_for_uuid: this.requested_for_uuid,
+      assigned_team_uuid: this.assigned_team_uuid,
+      assigned_to_uuid: this.assigned_to_uuid,
       writer_uuid: userProfileStore.id, // Always use current user's ID
       ticket_type_code: 'TICKET', //We are creating a ticket
       ticket_status_code: this.ticket_status_code,
