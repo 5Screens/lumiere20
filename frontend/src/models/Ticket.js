@@ -8,8 +8,8 @@ export class Ticket {
     this.description = data.description || '';
     this.requested_by_uuid = data.requested_by_uuid || null;
     this.requested_for_uuid = data.requested_for_uuid || null;
-    this.assigned_team_uuid = data.assigned_team_uuid || null;
-    this.assigned_to_uuid = data.assigned_to_uuid || null;
+    this.assigned_to_group = data.assigned_to_group || null;
+    this.assigned_to_person = data.assigned_to_person || null;
     this.writer_uuid = data.writer_uuid || null;
     this.ticket_type_code = data.ticket_type_code || null;
     this.ticket_status_code = data.ticket_status_code || null;
@@ -77,7 +77,7 @@ export class Ticket {
         ],
         required: true
       },
-      assigned_team_uuid: {
+      assigned_to_group: {
         label: t('ticket.assigned_team_label'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.assigned_team_placeholder'),
@@ -91,16 +91,16 @@ export class Ticket {
         ],
         required: false
       },
-      assigned_to_uuid: {
+      assigned_to_person: {
         label: t('ticket.assigned_to_label'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.assigned_to_placeholder'),
         endpoint: (ticketData) => {
           console.log('[Ticket.assigned_to_uuid.endpoint] Ticket data:', ticketData);
-          // Si ticketData contient assigned_team_uuid
-          if (ticketData && ticketData.assigned_team_uuid) {
-            console.log('[Ticket.assigned_to_uuid.endpoint] Using team UUID:', ticketData.assigned_team_uuid);
-            return `groups/${ticketData.assigned_team_uuid}/members`;
+          // Si ticketData contient assigned_to_group
+          if (ticketData && ticketData.assigned_to_group) {
+            console.log('[Ticket.assigned_to_uuid.endpoint] Using team UUID:', ticketData.assigned_to_group);
+            return `groups/${ticketData.assigned_to_group}/members`;
           }
           // Sinon, retourner null pour désactiver le champ
           console.log('[Ticket.assigned_to_uuid.endpoint] No team UUID found, returning null');
@@ -142,8 +142,8 @@ export class Ticket {
       description: this.description,
       requested_by_uuid: this.requested_by_uuid,
       requested_for_uuid: this.requested_for_uuid,
-      assigned_team_uuid: this.assigned_team_uuid,
-      assigned_to_uuid: this.assigned_to_uuid,
+      assigned_to_group: this.assigned_to_group,
+      assigned_to_person: this.assigned_to_person,
       writer_uuid: userProfileStore.id, // Always use current user's ID
       ticket_type_code: 'TICKET', //We are creating a ticket
       ticket_status_code: this.ticket_status_code,

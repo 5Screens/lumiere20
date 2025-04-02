@@ -10,7 +10,6 @@ const getTickets = async (lang) => {
             p1.first_name || ' ' || p1.last_name as requested_by_name,
             p2.first_name || ' ' || p2.last_name as requested_for_name,
             p3.first_name || ' ' || p3.last_name as writer_name,
-            ci.nom as configuration_item_name,
             COALESCE(ttt.label, tt.code) as ticket_type_label,
             COALESCE(tst.label, ts.code) as ticket_status_label,
             tt.code as ticket_type_code,
@@ -19,7 +18,6 @@ const getTickets = async (lang) => {
         JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
         JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
         JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
-        JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
         JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
         JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code
         LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid 
@@ -52,7 +50,6 @@ const createTicket = async (ticketData) => {
             INSERT INTO core.tickets (
                 title,
                 description,
-                configuration_item_uuid,
                 requested_by_uuid,
                 requested_for_uuid,
                 writer_uuid,
@@ -60,14 +57,13 @@ const createTicket = async (ticketData) => {
                 ticket_status_code,
                 core_extended_attributes,
                 user_extended_attributes
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
         `;
 
         const ticketResult = await client.query(ticketQuery, [
             ticketData.titre,
             ticketData.description,
-            ticketData.configuration_item_uuid,
             ticketData.requested_by_uuid,
             ticketData.requested_for_uuid,
             ticketData.writer_uuid,

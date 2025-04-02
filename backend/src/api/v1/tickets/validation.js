@@ -23,7 +23,6 @@ const validateCreateTicket = (req, res, next) => {
     const schema = Joi.object({
         titre: Joi.string().required(),
         description: Joi.string().allow('', null),
-        configuration_item_uuid: Joi.string().uuid().required(),
         requested_by_uuid: Joi.string().uuid().required(),
         requested_for_uuid: Joi.string().uuid().required(),
         writer_uuid: Joi.string().uuid().required(),

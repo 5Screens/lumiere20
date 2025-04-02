@@ -280,7 +280,7 @@ CREATE TABLE core.tickets (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    configuration_item_uuid UUID NOT NULL REFERENCES data.configuration_items(uuid) ON DELETE RESTRICT,
+    configuration_item_uuid UUID REFERENCES data.configuration_items(uuid) ON DELETE RESTRICT,
     requested_by_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
     requested_for_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
     writer_uuid UUID NOT NULL REFERENCES configuration.persons(uuid) ON DELETE RESTRICT,
@@ -293,7 +293,7 @@ CREATE TABLE core.tickets (
 );
 
 -- Commentaires pour documenter les contraintes de clés étrangères
-COMMENT ON CONSTRAINT tickets_configuration_item_uuid_fkey ON core.tickets IS 'Lien vers l''élément de configuration concerné';
+COMMENT ON CONSTRAINT tickets_configuration_item_uuid_fkey ON core.tickets IS 'Lien vers l''élément de configuration concerné (optionnel)';
 COMMENT ON CONSTRAINT tickets_requested_by_uuid_fkey ON core.tickets IS 'Personne qui demande le ticket';
 COMMENT ON CONSTRAINT tickets_requested_for_uuid_fkey ON core.tickets IS 'Personne pour qui le ticket est créé';
 COMMENT ON CONSTRAINT tickets_writer_uuid_fkey ON core.tickets IS 'Personne qui écrit le ticket';
