@@ -24,6 +24,7 @@ const ticketsRoutes = require('./api/v1/tickets/routes');
 const groupsRoutes = require('./api/v1/groups/routes');
 const contactTypesRoutes = require('./api/v1/contact_types/routes');
 const incidentCauseCodesRoutes = require('./api/v1/incident_cause_codes/routes');
+const incidentUrgenciesRoutes = require('./api/v1/incident_urgencies/routes');
 
 // Middleware
 app.use(cors());
@@ -54,6 +55,7 @@ app.use('/api/v1/tickets', ticketsRoutes);
 app.use('/api/v1/groups', groupsRoutes);
 app.use('/api/v1/contact_types', contactTypesRoutes);
 app.use('/api/v1/incident_cause_codes', incidentCauseCodesRoutes);
+app.use('/api/v1/incident_urgencies', incidentUrgenciesRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
