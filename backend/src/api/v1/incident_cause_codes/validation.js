@@ -2,28 +2,20 @@ const Joi = require('joi');
 const logger = require('../../../config/logger');
 const db = require('../../../config/database');
 
-// Validation schema for query parameters
-const getIncidentCauseCodesSchema = Joi.object({
-    lang: Joi.string()
-        .required()
-        .min(2)
-        .max(10)
-        .pattern(/^[a-zA-Z-]+$/)
-        .messages({
-            'string.base': 'Language must be a string',
-            'string.empty': 'Language is required',
-            'string.min': 'Language code must be at least 2 characters',
-            'string.max': 'Language code must not exceed 10 characters',
-            'string.pattern.base': 'Language code must only contain letters and hyphens',
-            'any.required': 'Language parameter is required'
-        })
-});
-
 // Validation middleware
 const validateGetIncidentCauseCodes = async (req, res, next) => {
     logger.info('[VALIDATION] Validating get incident cause codes request parameters');
     
-    const { error } = getIncidentCauseCodesSchema.validate(req.query);
+    const schema = Joi.object({
+        lang: Joi.string()
+            .required()
+            .messages({
+                'string.empty': 'Language code cannot be empty',
+                'any.required': 'Language code is required'
+            })
+    });
+
+    const { error } = schema.validate(req.query);
     
     if (error) {
         logger.error(`[VALIDATION] Validation error: ${error.details[0].message}`);
