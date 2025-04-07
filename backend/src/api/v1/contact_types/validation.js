@@ -1,27 +1,58 @@
 const Joi = require('joi');
 const logger = require('../../../config/logger');
+const db = require('../../../config/database');
 
-const getContactTypesSchema = Joi.object({
-    lang: Joi.string()
-        .required()
-        .length(2)
-        .messages({
-            'any.required': 'Language parameter is required',
-            'string.length': 'Language must be exactly 2 characters'
-        })
-});
+// Validation middleware
+const validateGetContactTypes = async (req, res, next) => {
+    logger.info('[VALIDATION] Validating get contact types request parameters');
+    
+    const schema = Joi.object({
+        lang: Joi.string()
+            .required()
+            .messages({
+                'string.empty': 'Language code cannot be empty',
+                'any.required': 'Language code is required'
+            })
+    });
 
-function validateGetContactTypes(req, res, next) {
-    logger.info('[VALIDATION] Validating get contact types request');
-    const { error } = getContactTypesSchema.validate(req.query);
+    const { error } = schema.validate(req.query);
     
     if (error) {
         logger.error(`[VALIDATION] Validation error: ${error.details[0].message}`);
-        return res.status(400).json({ error: error.details[0].message });
+        return res.status(400).json({
+            status: 'error',
+            message: error.details[0].message
+        });
     }
-    
-    next();
-}
+
+    try {
+        // Check if language exists and is active
+        const query = `
+            SELECT code 
+            FROM translations.languages 
+            WHERE code = $1 
+            AND is_active = true
+        `;
+        const result = await db.query(query, [req.query.lang]);
+
+        if (result.rows.length === 0) {
+            logger.error(`[VALIDATION] Language ${req.query.lang} not found or not active`);
+            return res.status(400).json({
+                status: 'error',
+                message: 'Invalid or inactive language code'
+            });
+        }
+
+        logger.info('[VALIDATION] Request parameters validation successful');
+        next();
+    } catch (error) {
+        logger.error(`[VALIDATION] Database error during language validation: ${error.message}`);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Internal server error during validation'
+        });
+    }
+};
 
 module.exports = {
     validateGetContactTypes

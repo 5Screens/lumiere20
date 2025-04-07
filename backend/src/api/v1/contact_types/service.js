@@ -8,11 +8,14 @@ async function getContactTypes(lang) {
             SELECT 
                 ct.uuid,
                 ct.code,
-                ctl.label
+                COALESCE(ctl.label, ct.code) as label
             FROM configuration.contact_types ct
             LEFT JOIN translations.contact_types_labels ctl 
                 ON ct.code = ctl.rel_contact_type_code 
                 AND ctl.language = $1
+            INNER JOIN translations.languages l 
+                ON l.code = $1 
+                AND l.is_active = true
             ORDER BY ct.code ASC
         `;
 
