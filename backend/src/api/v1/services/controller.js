@@ -34,6 +34,26 @@ async function getServicesPerEntityCount(req, res) {
     }
 }
 
+async function getAllServices(req, res) {
+    try {
+        const { lang } = req.query;
+        logger.info(`[CONTROLLER] getAllServices - Processing request with language: ${lang || 'en'}`);
+        
+        const services = await servicesService.getAllServices(lang || 'en');
+        
+        logger.info(`[CONTROLLER] getAllServices - Successfully retrieved ${services.length} services`);
+        return res.json(services);
+    } catch (error) {
+        logger.error(`[CONTROLLER] getAllServices - Error: ${error.message}`);
+        
+        return res.status(500).json({
+            error: 'Error while retrieving services',
+            details: error.message
+        });
+    }
+}
+
 module.exports = {
-    getServicesPerEntityCount
+    getServicesPerEntityCount,
+    getAllServices
 };

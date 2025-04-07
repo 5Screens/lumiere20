@@ -34,6 +34,60 @@ class ServicesService {
             throw error;
         }
     }
+
+    async getAllServices(lang = 'en') {
+        logger.info(`[SERVICE] getAllServices - Starting database query with language: ${lang}`);
+        try {
+            const query = `
+                SELECT 
+                    s.uuid, 
+                    s.name,
+                    s.description,
+                    s.owning_entity_uuid,
+                    e.name as owning_entity_name,
+                    s.owned_by_uuid,
+                    CASE 
+                        WHEN s.owned_by_uuid IS NULL THEN NULL 
+                        ELSE CONCAT(p_owner.first_name, ' ', p_owner.last_name) 
+                    END as owned_by_name,
+                    s.managed_by_uuid,
+                    CASE 
+                        WHEN s.managed_by_uuid IS NULL THEN NULL 
+                        ELSE CONCAT(p_manager.first_name, ' ', p_manager.last_name) 
+                    END as managed_by_name,
+                    s.business_criticality,
+                    s.lifecycle_status,
+                    s.version,
+                    s.operational,
+                    s.legal_regulatory,
+                    s.reputational,
+                    s.financial,
+                    s.comments,
+                    s.cab_uuid,
+                    g.groupe_name as cab_name,
+                    s.parent_uuid,
+                    parent.name as parent_service_name,
+                    s.date_creation,
+                    s.date_modification
+                FROM data.services s
+                LEFT JOIN configuration.entities e ON s.owning_entity_uuid = e.uuid
+                LEFT JOIN configuration.persons p_owner ON s.owned_by_uuid = p_owner.uuid
+                LEFT JOIN configuration.persons p_manager ON s.managed_by_uuid = p_manager.uuid
+                LEFT JOIN configuration.groups g ON s.cab_uuid = g.uuid
+                LEFT JOIN data.services parent ON s.parent_uuid = parent.uuid
+                ORDER BY s.name ASC`;
+            
+            const result = await db.query(query);
+            logger.info(`[SERVICE] getAllServices - Query executed successfully, found ${result.rows.length} services`);
+            
+            // Si la langue demandée est différente de l'anglais, on pourrait chercher des traductions
+            // Pour l'instant, on retourne simplement les données en anglais
+            return result.rows;
+        } catch (error) {
+            logger.error(`[SERVICE] getAllServices - Database error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new ServicesService();

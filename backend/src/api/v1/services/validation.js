@@ -6,6 +6,13 @@ const getServicesPerEntityCount = {
     })
 };
 
+const getAllServices = {
+    query: Joi.object({
+        lang: Joi.string().min(2).max(5).optional()
+    })
+};
+
 module.exports = {
-    getServicesPerEntityCount
+    getServicesPerEntityCount,
+    getAllServices
 };
