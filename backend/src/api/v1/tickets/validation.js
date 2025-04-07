@@ -1,17 +1,35 @@
 const Joi = require('joi');
 const logger = require('../../../config/logger');
+const db = require('../../../config/database');
 
-const validateGetTickets = (req, res, next) => {
+const validateTicketType = async (ticket_type) => {
+    if (!ticket_type) return true;
+
+    const query = 'SELECT code FROM configuration.ticket_types WHERE code = $1';
+    const result = await db.query(query, [ticket_type]);
+    return result.rows.length > 0;
+};
+
+const validateGetTickets = async (req, res, next) => {
     logger.info('[VALIDATION] Validating GET /tickets request');
     
     const schema = Joi.object({
-        lang: Joi.string().min(2).max(5)
+        lang: Joi.string().min(2).max(5),
+        ticket_type: Joi.string()
     });
 
     const { error } = schema.validate(req.query);
     if (error) {
         logger.error('[VALIDATION] Invalid query parameters:', error.details[0].message);
         return res.status(400).json({ error: error.details[0].message });
+    }
+
+    if (req.query.ticket_type) {
+        const isValidType = await validateTicketType(req.query.ticket_type);
+        if (!isValidType) {
+            logger.error('[VALIDATION] Invalid ticket type:', req.query.ticket_type);
+            return res.status(400).json({ error: 'Invalid ticket type' });
+        }
     }
 
     next();

@@ -4,8 +4,8 @@ const logger = require('../../../config/logger');
 const getTickets = async (req, res) => {
     try {
         logger.info('[CONTROLLER] Processing GET /tickets request');
-        const { lang } = req.query;
-        const tickets = await ticketService.getTickets(lang);
+        const { lang, ticket_type } = req.query;
+        const tickets = await ticketService.getTickets(lang, ticket_type);
         res.json(tickets);
     } catch (error) {
         logger.error('[CONTROLLER] Error in getTickets:', error);

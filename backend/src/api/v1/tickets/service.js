@@ -1,8 +1,16 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 
-const getTickets = async (lang) => {
-    logger.info(`[SERVICE] Fetching all tickets${lang ? ` with language ${lang}` : ''}`);
+const getTickets = async (lang, ticket_type) => {
+    logger.info(`[SERVICE] Fetching tickets${ticket_type ? ` of type ${ticket_type}` : ''}${lang ? ` with language ${lang}` : ''}`);
+    
+    const params = [lang || 'en'];
+    let typeCondition = '';
+    
+    if (ticket_type) {
+        typeCondition = 'AND t.ticket_type_code = $2';
+        params.push(ticket_type);
+    }
     
     const query = `
         SELECT 
@@ -24,14 +32,15 @@ const getTickets = async (lang) => {
             AND ttt.lang = $1
         LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
             AND tst.lang = $1
+        WHERE 1=1 ${typeCondition}
         ORDER BY t.created_at DESC
     `;
     
     try {
-        const result = await db.query(query, [lang || 'en']);
+        const result = await db.query(query, params);
         return result.rows;
     } catch (error) {
-        logger.error('[SERVICE] Error fetching tickets:', error);
+        logger.error('[SERVICE] Error in getTickets:', error);
         throw error;
     }
 };
