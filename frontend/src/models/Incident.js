@@ -200,13 +200,30 @@ export class Incident {
         label: t('incident.priority'),
         type: 'sSelectField',
         placeholder: t('incident.priority_placeholder'),
-        endpoint: ({ impact, urgency }) => {
+        endpoint: async ({ impact, urgency }) => {
           console.log('[Incident.priority.endpoint] Using impact:', impact, 'urgency:', urgency);
-          return impact && urgency
-            ? `incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}`
-            : null;
+          if (!impact || !urgency) return [];
+          
+          try {
+            const response = await apiService.get(`incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}`);
+            
+            // Si la réponse est un objet unique (et non un tableau), on le transforme en tableau
+            const priorityData = Array.isArray(response) ? response : [response];
+            
+            // On transforme les données pour avoir le format attendu par sSelectField
+            return priorityData.map(item => ({
+              uuid: item.uuid,
+              code: item.code,
+              value: item.code,
+              label: `${item.code}`
+            }));
+          } catch (error) {
+            console.error('[Incident.priority.endpoint] Error fetching priority:', error);
+            return [];
+          }
         },
-        disabled: ({ impact, urgency }) => !impact || !urgency
+        fieldName: 'priority',
+        mode: 'creation'
       },
       rel_service: {
         label: t('incident.service'),
