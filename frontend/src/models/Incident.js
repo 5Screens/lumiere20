@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import apiService from '@/services/apiService' // Import apiService
 
 export class Incident {
   constructor(data = {}) {
@@ -168,22 +169,32 @@ export class Incident {
         type: 'sSelectField',
         placeholder: t('incident.impact_placeholder'),
         required: true,
-        endpoint: `incident_impacts?lang=${userProfileStore.language}`,
+        endpoint: async () => {
+          const response = await apiService.get(`incident_impacts?lang=${userProfileStore.language}`);
+          // Transforme les données pour utiliser code comme valeur au lieu de value
+          return response.map(item => ({
+            ...item,
+            value: item.code // Utilise le code comme valeur
+          }));
+        },
         fieldName: 'impact',
-        mode: 'creation',
-        valueField: 'code',
-        displayField: 'label'
+        mode: 'creation'
       },
       urgency: {
         label: t('incident.urgency'),
         type: 'sSelectField',
         placeholder: t('incident.urgency_placeholder'),
         required: true,
-        endpoint: `incident_urgencies?lang=${userProfileStore.language}`,
+        endpoint: async () => {
+          const response = await apiService.get(`incident_urgencies?lang=${userProfileStore.language}`);
+          // Transforme les données pour utiliser code comme valeur au lieu de value
+          return response.map(item => ({
+            ...item,
+            value: item.code // Utilise le code comme valeur
+          }));
+        },
         fieldName: 'urgency',
-        mode: 'creation',
-        valueField: 'code',
-        displayField: 'label'
+        mode: 'creation'
       },
       priority: {
         label: t('incident.priority'),
