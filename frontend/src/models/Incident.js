@@ -124,18 +124,28 @@ export class Incident {
         label: t('incident.assigned_group'),
         type: 'sFilteredSearchField',
         placeholder: t('incident.assigned_group_placeholder'),
-        endpoint: 'groups',
-        displayField: 'group_name',
+        endpoint: ({ assigned_to }) => {
+          console.log('[Incident.assigned_to_group.endpoint] Using assigned_to:', assigned_to);
+          return assigned_to 
+            ? `persons/${assigned_to}/groups` 
+            : 'groups';
+        },
+        displayField: 'groupe_name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'group_name', label: t('group.name'), visible: true }
+          { key: 'groupe_name', label: t('group.name'), visible: true }
         ]
       },
       assigned_to: {
         label: t('incident.assigned_to'),
         type: 'sFilteredSearchField',
         placeholder: t('incident.assigned_to_placeholder'),
-        endpoint: 'persons',
+        endpoint: ({ assigned_to_group }) => {
+          console.log('[Incident.assigned_to.endpoint] Using assigned_to_group:', assigned_to_group);
+          return assigned_to_group 
+            ? `groups/${assigned_to_group}/members` 
+            : 'groups/members';
+        },
         displayField: 'first_name',
         valueField: 'uuid',
         columnsConfig: [
@@ -147,29 +157,31 @@ export class Incident {
         label: t('incident.watch_list'),
         type: 'sPickList',
         placeholder: t('incident.watch_list_placeholder'),
-        endpoint: 'persons',
-        displayField: 'first_name',
-        valueField: 'uuid'
+        sourceEndPoint: 'persons',
+        displayedLabel: 'first_name',
+        targetEndPoint: 'incidents',
+        target_uuid: null,
+        pickedItems: null
       },
       impact: {
         label: t('incident.impact'),
         type: 'sSelectField',
         placeholder: t('incident.impact_placeholder'),
         required: true,
-        endpoint: `incident_impacts?lang=${userProfileStore.language}&toSelect=yes`
+        endpoint: `incident_impacts?lang=${userProfileStore.language}`
       },
       urgency: {
         label: t('incident.urgency'),
         type: 'sSelectField',
         placeholder: t('incident.urgency_placeholder'),
         required: true,
-        endpoint: `incident_urgencies?lang=${userProfileStore.language}&toSelect=yes`
+        endpoint: `incident_urgencies?lang=${userProfileStore.language}`
       },
       priority: {
         label: t('incident.priority'),
         type: 'sSelectField',
         placeholder: t('incident.priority_placeholder'),
-        endpoint: `incident_priorities?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `incident_priorities?lang=${userProfileStore.language}`,
         disabled: true
       },
       rel_service: {
