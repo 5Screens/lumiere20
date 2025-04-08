@@ -82,16 +82,17 @@ const closeModal = () => {
   emit('close')
 }
 
+const apiEndpoint = ref('tickets')
+
 const handleSubmit = async (formData) => {
   try {
     console.info('[ObjectEditView] Save button clicked - Starting form submission process')
     console.info('[ObjectEditView] Form data to be submitted:', formData)
     
-    const type = selectedType.value.toLowerCase() + 's' // Convertir en endpoint API (ex: 'Ticket' -> 'tickets')
-    console.info(`[ObjectEditView] Determined API endpoint type: ${type}`)
+    console.info(`[ObjectEditView] Using API endpoint: ${apiEndpoint.value}`)
     
     console.info('[ObjectEditView] Calling objectStore.createObject method')
-    const response = await objectStore.createObject(type, formData)
+    const response = await objectStore.createObject(apiEndpoint.value, formData)
     console.info('[ObjectEditView] Received response from createObject:', response)
     
     closeModal()
@@ -104,15 +105,19 @@ const handleSubmit = async (formData) => {
 // Réinitialise l'instance quand le type change
 watch(selectedType, (newType) => {
   console.info(`[ObjectEditView] Selected type changed to: ${newType}`);
+  
   switch (newType) {
     case 'TICKET':
       currentModelInstance.value = new Ticket()
+      apiEndpoint.value = 'tickets'
       break
     case 'DEFECT':
       currentModelInstance.value = new Defect()
+      apiEndpoint.value = 'tickets?type=DEFECT'
       break
     case 'INCIDENT':
       currentModelInstance.value = new Incident()
+      apiEndpoint.value = 'tickets?type=INCIDENT'
       break
     default:
       currentModelInstance.value = null
