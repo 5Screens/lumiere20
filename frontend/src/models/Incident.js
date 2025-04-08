@@ -264,7 +264,9 @@ export class Incident {
         label: t('incident.cause_code'),
         type: 'sSelectField',
         placeholder: t('incident.cause_code_placeholder'),
-        endpoint: `incident_cause_codes?lang=${userProfileStore.language}`
+        endpoint: `incident_cause_codes?lang=${userProfileStore.language}`,
+        fieldName: 'cause_code',
+        mode: 'creation'
       },
       rel_problem_id: {
         label: t('incident.problem_id'),
