@@ -314,5 +314,54 @@ export default {
   group: {
     name: 'Nom du groupe',
     phone: 'Téléphone'
+  },
+  incident: {
+    status: 'Statut',
+    status_placeholder: 'Sélectionnez un statut',
+    title: 'Titre',
+    title_placeholder: 'Entrez le titre de l\'incident',
+    description: 'Description',
+    description_placeholder: 'Décrivez l\'incident en détail',
+    
+    requested_by: 'Demandé par',
+    requested_by_placeholder: 'Sélectionnez le demandeur',
+    requested_for: 'Demandé pour',
+    requested_for_placeholder: 'Sélectionnez le destinataire',
+    
+    configuration_item: 'Élément de configuration',
+    configuration_item_placeholder: 'Sélectionnez l\'élément de configuration',
+    
+    assigned_group: 'Groupe assigné',
+    assigned_group_placeholder: 'Sélectionnez le groupe',
+    assigned_to: 'Assigné à',
+    assigned_to_placeholder: 'Sélectionnez la personne',
+    watch_list: 'Liste de surveillance',
+    watch_list_placeholder: 'Ajoutez des observateurs',
+    
+    impact: 'Impact',
+    impact_placeholder: 'Sélectionnez l\'impact',
+    urgency: 'Urgence',
+    urgency_placeholder: 'Sélectionnez l\'urgence',
+    priority: 'Priorité',
+    priority_placeholder: 'Priorité calculée',
+    
+    service: 'Service impacté',
+    service_placeholder: 'Sélectionnez le service',
+    service_offerings: 'Offres de service impactées',
+    service_offerings_placeholder: 'Sélectionnez les offres de service',
+    
+    contact_type: 'Type de contact',
+    contact_type_placeholder: 'Sélectionnez le type de contact',
+    resolution_notes: 'Notes de résolution',
+    resolution_notes_placeholder: 'Entrez les notes de résolution',
+    resolution_code: 'Code de résolution',
+    resolution_code_placeholder: 'Sélectionnez le code de résolution',
+    cause_code: 'Code de cause',
+    cause_code_placeholder: 'Sélectionnez le code de cause',
+    
+    problem_id: 'Problème associé',
+    problem_id_placeholder: 'Sélectionnez le problème',
+    change_request: 'Demande de changement',
+    change_request_placeholder: 'Sélectionnez la demande de changement'
   }
 }

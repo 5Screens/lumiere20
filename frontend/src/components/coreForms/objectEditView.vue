@@ -42,6 +42,7 @@
 import { ref, computed, watch } from 'vue'
 import { Ticket } from '@/models/Ticket'
 import { Defect } from '@/models/Defect'
+import { Incident } from '@/models/Incident'
 import FormFields from '@/components/formFields.vue'
 import ButtonStandard from '@/components/common/ButtonStandard.vue'
 import SSelectField from '@/components/common/sSelectField.vue'
@@ -68,6 +69,8 @@ const currentModelClass = computed(() => {
       return Ticket
     case 'DEFECT':
       return Defect
+    case 'INCIDENT':
+      return Incident
     default:
       return null
   }
@@ -101,8 +104,19 @@ const handleSubmit = async (formData) => {
 // Réinitialise l'instance quand le type change
 watch(selectedType, (newType) => {
   console.info(`[ObjectEditView] Selected type changed to: ${newType}`);
-  currentModelInstance.value = newType === 'TICKET' ? new Ticket() : new Defect()
-  console.info('[ObjectEditView] New model instance created:', currentModelInstance.value)
+  switch (newType) {
+    case 'TICKET':
+      currentModelInstance.value = new Ticket()
+      break
+    case 'DEFECT':
+      currentModelInstance.value = new Defect()
+      break
+    case 'INCIDENT':
+      currentModelInstance.value = new Incident()
+      break
+    default:
+      currentModelInstance.value = null
+  }
 })
 </script>
 
