@@ -66,7 +66,7 @@ const props = defineProps({
     required: false
   },
   endpoint: {
-    type: String,
+    type: [String, Function],
     required: true
   },
   patchEndpoint: {
@@ -120,6 +120,14 @@ watch(() => props.modelValue, (newValue) => {
   }
 })
 
+// Watch endpoint changes
+watch(() => props.endpoint, () => {
+  console.info('Endpoint changed, reloading options')
+  optionsLoaded.value = false // Reset the loaded state
+  options.value = [] // Clear current options
+  fetchOptions() // Reload options with new endpoint
+})
+
 // Methods
 const fetchOptions = async () => {
   if (optionsLoaded.value) {
@@ -127,19 +135,22 @@ const fetchOptions = async () => {
     return
   }
 
-  // Utiliser endpoint en priorité, sinon optionsEndpoint pour la rétrocompatibilité
-  const apiEndpoint = props.endpoint
-  
-  console.info('Fetching options from endpoint:', apiEndpoint)
   try {
     loadingOptions.value = true
-    const response = await apiService.get(apiEndpoint)
+    let response
+    
+    if (typeof props.endpoint === 'function') {
+      response = await props.endpoint()
+    } else {
+      response = await apiService.get(props.endpoint)
+    }
+    
     console.info('Successfully fetched options:', response)
     options.value = response
     optionsLoaded.value = true
   } catch (error) {
     console.error('Error loading options:', error)
-    console.warn('Failed to load options from endpoint:', apiEndpoint)
+    console.warn('Failed to load options from endpoint:', props.endpoint)
     emit('error', 'Failed to load options')
   } finally {
     console.info('Options loading state set to:', loadingOptions.value)
@@ -203,19 +214,7 @@ const handleCancelEdit = () => {
 
 // Lifecycle hooks
 onMounted(() => {
-  console.info('SSelectField mounted with props:', {
-    modelValue: props.modelValue,
-    mode: props.mode,
-    uuid: props.uuid,
-    endpoint: props.endpoint,
-    fieldName: props.fieldName
-  })
-
-  if (props.modelValue) {
-    selectedValue.value = props.modelValue
-    originalValue.value = props.modelValue
-  }
-
+  console.info('SSelectField mounted, fetching initial options')
   fetchOptions()
 })
 </script>
