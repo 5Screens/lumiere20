@@ -168,21 +168,34 @@ export class Incident {
         type: 'sSelectField',
         placeholder: t('incident.impact_placeholder'),
         required: true,
-        endpoint: `incident_impacts?lang=${userProfileStore.language}`
+        endpoint: `incident_impacts?lang=${userProfileStore.language}`,
+        fieldName: 'impact',
+        mode: 'creation',
+        valueField: 'code',
+        displayField: 'label'
       },
       urgency: {
         label: t('incident.urgency'),
         type: 'sSelectField',
         placeholder: t('incident.urgency_placeholder'),
         required: true,
-        endpoint: `incident_urgencies?lang=${userProfileStore.language}`
+        endpoint: `incident_urgencies?lang=${userProfileStore.language}`,
+        fieldName: 'urgency',
+        mode: 'creation',
+        valueField: 'code',
+        displayField: 'label'
       },
       priority: {
         label: t('incident.priority'),
         type: 'sSelectField',
         placeholder: t('incident.priority_placeholder'),
-        endpoint: `incident_priorities?lang=${userProfileStore.language}`,
-        disabled: true
+        endpoint: ({ impact, urgency }) => {
+          console.log('[Incident.priority.endpoint] Using impact:', impact, 'urgency:', urgency);
+          return impact && urgency
+            ? `incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}`
+            : null;
+        },
+        disabled: ({ impact, urgency }) => !impact || !urgency
       },
       rel_service: {
         label: t('incident.service'),
@@ -204,30 +217,32 @@ export class Incident {
         label: t('incident.contact_type'),
         type: 'sSelectField',
         placeholder: t('incident.contact_type_placeholder'),
-        endpoint: `contact_types?lang=${userProfileStore.language}&toSelect=yes`
+        endpoint: `contact_types?lang=${userProfileStore.language}`,
+        fieldName: 'contact_type',
+        mode: 'creation'
       },
       resolution_notes: {
         label: t('incident.resolution_notes'),
         type: 'sRichTextEditor',
         placeholder: t('incident.resolution_notes_placeholder')
       },
-      resolution_code: {
+/*resolution_code: {
         label: t('incident.resolution_code'),
         type: 'sSelectField',
         placeholder: t('incident.resolution_code_placeholder'),
-        endpoint: `resolution_codes?lang=${userProfileStore.language}&toSelect=yes`
-      },
+        endpoint: `resolution_codes?lang=${userProfileStore.language}`
+      },*/
       cause_code: {
         label: t('incident.cause_code'),
         type: 'sSelectField',
         placeholder: t('incident.cause_code_placeholder'),
-        endpoint: `incident_cause_codes?lang=${userProfileStore.language}&toSelect=yes`
+        endpoint: `incident_cause_codes?lang=${userProfileStore.language}`
       },
       rel_problem_id: {
         label: t('incident.problem_id'),
         type: 'sFilteredSearchField',
         placeholder: t('incident.problem_id_placeholder'),
-        endpoint: 'problems',
+        endpoint: 'tickets?ticket_type=PROBLEM',
         displayField: 'title',
         valueField: 'uuid'
       },
@@ -235,7 +250,7 @@ export class Incident {
         label: t('incident.change_request'),
         type: 'sFilteredSearchField',
         placeholder: t('incident.change_request_placeholder'),
-        endpoint: 'change_requests',
+        endpoint: 'tickets?ticket_type=CHANGE',
         displayField: 'title',
         valueField: 'uuid'
       }
