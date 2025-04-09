@@ -50,7 +50,7 @@ const validateCreateTicket = (req, res, next) => {
         user_extended_attributes: Joi.object().allow(null),
         // Nouveaux champs pour l'assignation et les observateurs
         assigned_to_group: Joi.string().uuid(),
-        assigned_to_person: Joi.string().uuid(),
+        assigned_to_person: Joi.string().uuid().allow(null, ''),
         watch_list: Joi.array().items(Joi.string().uuid())
     });
 

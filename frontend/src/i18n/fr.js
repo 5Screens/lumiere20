@@ -138,7 +138,7 @@ export default {
     selectRowsForDelete: 'Veuillez sélectionner au moins une ligne à supprimer',
     noTranslations: 'Veuillez saisir au moins une traduction pour le symptôme',
     requiredFields: 'Veuillez saisir tous les champs obligatoires', 
-    selectOneRow: 'Veuillez sélectionner une option',
+    selectOneRow: 'Veuillez sélectionner une valeur',
     requiredField: 'Champ obligatoire'
   },
   common: {
