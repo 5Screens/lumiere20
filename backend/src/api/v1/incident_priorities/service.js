@@ -8,8 +8,8 @@ const getIncidentPriority = async (urgencyCode, impactCode) => {
         const query = `
             SELECT 
                 uuid,
-                code,
-                priority_level as level
+                code as label,
+                priority_level as value
             FROM configuration.incident_priorities
             WHERE rel_incident_urgency_code = $1
             AND rel_incident_impact_code = $2;
@@ -18,7 +18,7 @@ const getIncidentPriority = async (urgencyCode, impactCode) => {
         const result = await db.query(query, [urgencyCode, impactCode]);
         
         logger.info(`[SERVICE] Found incident priority for urgency ${urgencyCode} and impact ${impactCode}`);
-        return result.rows[0] || null;
+        return result.rows || [];
     } catch (error) {
         logger.error(`[SERVICE] Error getting incident priority: ${error.message}`);
         throw error;

@@ -49,7 +49,7 @@ import RgButton from './rgButton.vue'
 // Props definition
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: [String, Number],
     default: ''
   },
   mode: {
@@ -111,8 +111,22 @@ const showError = computed(() => {
 watch(() => props.modelValue, (newValue) => {
   console.info('[sSelectField] modelValue changed to:', newValue)
   if (newValue !== undefined && newValue !== null) {
-    selectedValue.value = newValue
+    if (typeof newValue === 'number') {
+      selectedValue.value = Number(newValue)
+    } else {
+      selectedValue.value = newValue
+    }
     originalValue.value = newValue
+  }
+})
+
+// Watch endpoint changes
+watch(() => props.endpoint, (newEndpoint, oldEndpoint) => {
+  console.info('[sSelectField] endpoint changed from:', oldEndpoint, 'to:', newEndpoint)
+  if (newEndpoint !== oldEndpoint) {
+    optionsLoaded.value = false
+    options.value = []
+    fetchOptions()
   }
 })
 
@@ -148,8 +162,15 @@ const handleChange = () => {
   if (props.mode === 'edition' && selectedValue.value !== originalValue.value) {
     editing.value = true
   }
-  emit('update:modelValue', selectedValue.value)
-  emit('change', selectedValue.value)
+  
+  // Convertir en nombre si la valeur est numérique
+  let emitValue = selectedValue.value
+  if (selectedValue.value !== '' && !isNaN(selectedValue.value)) {
+    emitValue = Number(selectedValue.value)
+  }
+  
+  emit('update:modelValue', emitValue)
+  emit('change', emitValue)
 }
 
 const confirmChange = async () => {
@@ -166,8 +187,15 @@ const confirmChange = async () => {
     isUpdating.value = true
     const fieldName = props.fieldName || 'entity_type'
     const endpointWithUuid = `${props.patchEndpoint}/${props.uuid}`
+    
+    // Convertir en nombre si la valeur est numérique
+    let valueToSend = selectedValue.value
+    if (valueToSend !== '' && !isNaN(valueToSend)) {
+      valueToSend = Number(valueToSend)
+    }
+    
     const data = {
-      [fieldName]: selectedValue.value
+      [fieldName]: valueToSend
     }
     
     await apiService.patch(endpointWithUuid, data)
@@ -176,7 +204,7 @@ const confirmChange = async () => {
     editing.value = false
     emit('update:success', {
       success: true,
-      value: selectedValue.value
+      value: valueToSend
     })
   } catch (error) {
     console.error('Error updating value:', error)

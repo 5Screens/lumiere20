@@ -7,17 +7,17 @@ const getIncidentPriorityByUrgencyAndImpact = async (req, res) => {
     try {
         // Use resolved query parameters from validation middleware
         const { incident_urgencies, incident_impacts } = req.resolvedQuery || req.query;
-        const priority = await getIncidentPriority(incident_urgencies, incident_impacts);
+        const priorities = await getIncidentPriority(incident_urgencies, incident_impacts);
         
-        if (!priority) {
-            logger.warn('[CONTROLLER] No priority found for given urgency and impact');
-            return res.status(404).json({ error: 'No priority found for given urgency and impact combination' });
+        if (!priorities || priorities.length === 0) {
+            logger.warn('[CONTROLLER] No priorities found for given urgency and impact');
+            return res.status(404).json({ error: 'No priorities found for given urgency and impact combination' });
         }
         
-        logger.info('[CONTROLLER] Successfully retrieved incident priority');
-        res.json(priority);
+        logger.info('[CONTROLLER] Successfully retrieved incident priorities');
+        res.json(priorities);
     } catch (error) {
-        logger.error(`[CONTROLLER] Error retrieving incident priority: ${error.message}`);
+        logger.error(`[CONTROLLER] Error retrieving incident priorities: ${error.message}`);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

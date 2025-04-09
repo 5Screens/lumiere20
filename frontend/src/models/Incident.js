@@ -188,8 +188,17 @@ export class Incident {
         placeholder: t('incident.priority_placeholder'),
         endpoint: ({ impact, urgency }) => {
           console.log('[Incident.priority.endpoint] Using impact:', impact, 'urgency:', urgency);
-          if (!impact || !urgency) return 'incident_priorities';
-          return `incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}`;
+          // Assurez-vous que impact et urgency sont des chaînes de caractères
+          const impactParam = impact ? String(impact) : null;
+          const urgencyParam = urgency ? String(urgency) : null;
+          
+          let url = 'incident_priorities';
+          if (impactParam && urgencyParam) {
+            url = `incident_priorities?incident_impacts=${impactParam}&incident_urgencies=${urgencyParam}`;
+          }
+          
+          console.log('[Incident.priority.endpoint] Generated URL:', url);
+          return url;
         },
         fieldName: 'priority',
         mode: 'creation'
