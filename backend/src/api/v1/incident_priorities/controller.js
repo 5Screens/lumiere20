@@ -5,7 +5,8 @@ const getIncidentPriorityByUrgencyAndImpact = async (req, res) => {
     logger.info('[CONTROLLER] Processing get incident priority request');
     
     try {
-        const { incident_urgencies, incident_impacts } = req.query;
+        // Use resolved query parameters from validation middleware
+        const { incident_urgencies, incident_impacts } = req.resolvedQuery || req.query;
         const priority = await getIncidentPriority(incident_urgencies, incident_impacts);
         
         if (!priority) {
