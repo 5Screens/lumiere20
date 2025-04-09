@@ -20,7 +20,7 @@
         :edit-mode="field.editMode"
         :columns-config="field.columnsConfig"
         :table="field.table"
-        :field-name="field.fieldName"
+        :field-name="key"
         :patch-endpoint="field.patchEndpoint"
         :mode="field.mode"
         :source-end-point="field.sourceEndPoint"
@@ -30,18 +30,20 @@
         :picked-items="field.pickedItems"
         :edition="field.edition"
         :helper-text="field.helperText"
+        @update:model-value="handleFieldUpdate(key, $event)"
       />
     </div>
   </form>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import sTextField from './common/sTextField.vue'
 import sFilteredSearchField from './common/sFilteredSearchField.vue'
 import sSelectField from './common/sSelectField.vue'
 import sRichTextEditor from './common/sRichTextEditor.vue'
 import sPickList from './common/sPickList.vue'
+import { useObjectStore } from '@/stores/objectStore'
 
 // Import des styles des composants
 import '@/assets/styles/forms.css'
@@ -71,6 +73,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'submit'])
+const objectStore = useObjectStore()
 
 const fields = ref({})
 
@@ -81,6 +84,13 @@ onMounted(() => {
   fields.value = props.modelClass.getRenderableFields()
 })
 
+// Gère la mise à jour d'un champ dans le store
+const handleFieldUpdate = (fieldName, value) => {
+  console.info(`[FormFields] Field '${fieldName}' updated with value:`, value)
+  objectStore.updateObjectField(fieldName, value)
+  emit('update:modelValue', props.modelValue)
+}
+
 const handleSubmit = () => {
   console.info('[FormFields] Form submitted')
   console.info('[FormFields] Current form data:', props.modelValue)
@@ -88,6 +98,14 @@ const handleSubmit = () => {
   console.info('[FormFields] Emitted "submit" event with form data')
 }
 
+// Observe les changements dans le modèle pour mettre à jour les champs dépendants
+watch(() => objectStore.getCurrentObject, () => {
+  console.info('[FormFields] Current object updated in store, refreshing fields')
+  // Rafraîchir les champs si nécessaire pour les dépendances
+  if (props.modelClass.getRenderableFields) {
+    fields.value = props.modelClass.getRenderableFields()
+  }
+}, { deep: true })
 </script>
 
 <style scoped>

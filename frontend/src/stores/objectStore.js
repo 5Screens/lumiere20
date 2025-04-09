@@ -16,7 +16,15 @@ export const useObjectStore = defineStore('object', {
     // Indique si une suppression est en cours
     deleting: false,
     // Message d'information ou d'erreur
-    message: null
+    message: null,
+    // Objet en cours d'édition dans le formulaire
+    currentObject: null,
+    // Type d'objet en cours d'édition (ex: 'TICKET', 'INCIDENT')
+    currentObjectType: null,
+    // Endpoint API pour l'objet en cours d'édition
+    currentEndpoint: null,
+    // Erreurs de validation pour l'objet en cours d'édition
+    validationErrors: {}
   }),
 
   actions: {
@@ -24,6 +32,45 @@ export const useObjectStore = defineStore('object', {
      * Réinitialise le message
      */
     resetMessage() {
+      this.message = null
+    },
+
+    /**
+     * Initialise un nouvel objet pour édition
+     * @param {string} type - Type d'objet (ex: 'TICKET', 'INCIDENT')
+     * @param {Object} instance - Instance de l'objet
+     * @param {string} endpoint - Endpoint API pour l'objet
+     */
+    initObjectForm(type, instance, endpoint) {
+      console.info(`[ObjectStore] Initializing form for object type: ${type}`)
+      this.currentObjectType = type
+      this.currentObject = instance
+      this.currentEndpoint = endpoint
+      this.validationErrors = {}
+      this.message = null
+    },
+
+    /**
+     * Met à jour un champ de l'objet en cours d'édition
+     * @param {string} fieldName - Nom du champ à mettre à jour
+     * @param {any} value - Nouvelle valeur du champ
+     */
+    updateObjectField(fieldName, value) {
+      console.info(`[ObjectStore] Updating field '${fieldName}' in current object`)
+      if (this.currentObject) {
+        this.currentObject[fieldName] = value
+      }
+    },
+
+    /**
+     * Réinitialise le formulaire
+     */
+    resetObjectForm() {
+      console.info('[ObjectStore] Resetting form state')
+      this.currentObject = null
+      this.currentObjectType = null
+      this.currentEndpoint = null
+      this.validationErrors = {}
       this.message = null
     },
 
@@ -199,8 +246,32 @@ export const useObjectStore = defineStore('object', {
     isProcessing: (state) => state.creating || state.loading || state.updating,
     
     /**
-     * Retourne le message actuel
+     * Retourne le message courant
      */
-    currentMessage: (state) => state.message
+    currentMessage: (state) => state.message,
+
+    /**
+     * Retourne l'objet en cours d'édition
+     */
+    getCurrentObject: (state) => state.currentObject,
+
+    /**
+     * Retourne le type de l'objet en cours d'édition
+     */
+    getCurrentObjectType: (state) => state.currentObjectType,
+
+    /**
+     * Vérifie si un champ a une erreur de validation
+     */
+    hasFieldError: (state) => (fieldName) => {
+      return state.validationErrors[fieldName] !== undefined
+    },
+
+    /**
+     * Retourne l'erreur de validation pour un champ
+     */
+    getFieldError: (state) => (fieldName) => {
+      return state.validationErrors[fieldName]
+    }
   }
 })

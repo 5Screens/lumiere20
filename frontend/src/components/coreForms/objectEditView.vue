@@ -21,7 +21,7 @@
           v-if="currentModelClass"
           :key="selectedType"
           :model-class="currentModelClass"
-          v-model="currentModelInstance"
+          v-model="objectStore.getCurrentObject"
         />
 
         <hr class="form-separator" />
@@ -30,7 +30,7 @@
             type="submit"
             :label="$t('common.save')"
             variant="primary"
-            @click="handleSubmit(currentModelInstance)"
+            @click="handleSubmit"
           />
         </div>
       </div>
@@ -76,23 +76,20 @@ const currentModelClass = computed(() => {
   }
 })
 
-const currentModelInstance = ref(new Ticket())
-
 const closeModal = () => {
+  objectStore.resetObjectForm()
   emit('close')
 }
 
-const apiEndpoint = ref('tickets')
-
-const handleSubmit = async (formData) => {
+const handleSubmit = async () => {
   try {
     console.info('[ObjectEditView] Save button clicked - Starting form submission process')
-    console.info('[ObjectEditView] Form data to be submitted:', formData)
+    console.info('[ObjectEditView] Form data to be submitted:', objectStore.getCurrentObject)
     
-    console.info(`[ObjectEditView] Using API endpoint: ${apiEndpoint.value}`)
+    console.info(`[ObjectEditView] Using API endpoint: ${objectStore.currentEndpoint}`)
     
     console.info('[ObjectEditView] Calling objectStore.createObject method')
-    const response = await objectStore.createObject(apiEndpoint.value, formData)
+    const response = await objectStore.createObject(objectStore.currentEndpoint, objectStore.getCurrentObject)
     console.info('[ObjectEditView] Received response from createObject:', response)
     
     closeModal()
@@ -106,21 +103,30 @@ const handleSubmit = async (formData) => {
 watch(selectedType, (newType) => {
   console.info(`[ObjectEditView] Selected type changed to: ${newType}`);
   
+  let instance;
+  let endpoint;
+  
   switch (newType) {
     case 'TICKET':
-      currentModelInstance.value = new Ticket()
-      apiEndpoint.value = 'tickets'
+      instance = new Ticket()
+      endpoint = 'tickets'
       break
     case 'DEFECT':
-      currentModelInstance.value = new Defect()
-      apiEndpoint.value = 'tickets?type=DEFECT'
+      instance = new Defect()
+      endpoint = 'tickets?type=DEFECT'
       break
     case 'INCIDENT':
-      currentModelInstance.value = new Incident()
-      apiEndpoint.value = 'tickets?type=INCIDENT'
+      instance = new Incident()
+      endpoint = 'tickets?type=INCIDENT'
       break
     default:
-      currentModelInstance.value = null
+      instance = null
+      endpoint = null
+  }
+  
+  // Initialise l'objet dans le store
+  if (instance) {
+    objectStore.initObjectForm(newType, instance, endpoint)
   }
 })
 </script>
