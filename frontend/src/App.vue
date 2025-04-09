@@ -268,7 +268,7 @@ export default {
       if (!message) return 'notifications.message'
       
       // Retourner directement les messages d'erreur
-      if (message.includes('Erreur')) return message
+      if (message.includes(this.$t('errors.identificationLabel'))) return message
       
       // Vérifier les messages spécifiques
       if (message.includes('Création réussie')) return 'notifications.creationSuccess'

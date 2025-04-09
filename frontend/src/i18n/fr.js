@@ -121,6 +121,7 @@ export default {
     updateTitle: 'Modifier l\'entité'
   },
   errors: {
+    identificationLabel: 'Erreur',
     badRequest: 'Requête incorrecte (400)',
     unauthorized: 'Non autorisé (401)',
     forbidden: 'Accès interdit (403)',
@@ -273,7 +274,9 @@ export default {
     }
   },
   objectEditView: {
-    title: 'Créer'
+    title: 'Créer',
+    save: 'Enregistrer',
+    errorMissingFields: 'Veuillez remplir tous les champs obligatoires'
   },
   ticket: {
     title: 'Titre',

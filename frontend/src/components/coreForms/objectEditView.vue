@@ -98,6 +98,16 @@ const handleSubmit = async () => {
     console.info('[ObjectEditView] Save button clicked - Starting form submission process')
     console.info('[ObjectEditView] Form data to be submitted:', objectStore.currentObject)
     
+    // Vérifier que tous les champs requis sont remplis avant de soumettre le formulaire
+    console.info('[ObjectEditView] Checking required fields before submission')
+    const allRequiredFieldsFilled = objectStore.checkRequiredFields()
+    
+    if (!allRequiredFieldsFilled) {
+      console.warn('[ObjectEditView] Form submission aborted: missing required fields')
+      // Le message d'erreur a déjà été mis à jour dans le store par la fonction checkRequiredFields
+      return
+    }
+    
     console.info(`[ObjectEditView] Using API endpoint: ${objectStore.currentEndpoint}`)
     
     console.info('[ObjectEditView] Calling objectStore.createObject method')

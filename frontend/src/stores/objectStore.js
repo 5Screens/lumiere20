@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import apiService from '@/services/apiService'
+import i18n from '@/i18n'
 
 /**
  * Store pour la gestion des opérations CRUD sur les objets métier
@@ -236,7 +237,84 @@ export const useObjectStore = defineStore('object', {
       } finally {
         this.deleting = false
       }
-    }
+    },
+
+    /**
+     * Vérifie si tous les champs requis sont remplis pour l'objet en cours d'édition
+     * @returns {boolean} - true si tous les champs requis sont remplis, false sinon
+     */
+    checkRequiredFields() {
+      console.info('[ObjectStore] Checking required fields for current object')
+      
+      if (!this.currentObject || !this.currentObjectType) {
+        console.warn('[ObjectStore] No current object or object type to check required fields')
+        this.message = 'Erreur: Aucun objet à valider'
+        return false
+      }
+      
+      // Récupère les champs rendus par la classe du modèle
+      let requiredFields = []
+      let missingFields = []
+      
+      try {
+        // Obtenir la classe du modèle en fonction du type d'objet
+        const modelClass = this.currentObject.constructor
+        
+        if (!modelClass || !modelClass.getRenderableFields) {
+          console.error('[ObjectStore] Model class does not implement getRenderableFields')
+          this.message = 'Erreur: Impossible de valider les champs requis'
+          return false
+        }
+        
+        // Récupérer tous les champs rendus
+        const renderableFields = modelClass.getRenderableFields()
+        
+        // Filtrer pour obtenir uniquement les champs requis
+        Object.entries(renderableFields).forEach(([fieldName, fieldConfig]) => {
+          if (fieldConfig.required === true) {
+            requiredFields.push({
+              name: fieldName,
+              label: fieldConfig.label
+            })
+          }
+        })
+        
+        console.info(`[ObjectStore] Found ${requiredFields.length} required fields:`, requiredFields)
+        
+        // Vérifier si chaque champ requis est rempli
+        requiredFields.forEach(field => {
+          const value = this.currentObject[field.name]
+          
+          // Vérifier si la valeur est vide (null, undefined, chaîne vide, ou tableau vide)
+          if (value === null || value === undefined || value === '' || 
+              (Array.isArray(value) && value.length === 0)) {
+            console.warn(`[ObjectStore] Required field '${field.name}' is empty`)
+            missingFields.push(field)
+            
+            // Ajouter une erreur de validation pour ce champ
+            this.validationErrors[field.name] = `Le champ "${field.label}" est requis`
+          }
+        })
+        
+        if (missingFields.length > 0) {
+          console.warn(`[ObjectStore] ${missingFields.length} required fields are missing:`, missingFields)
+          
+          // Construire un message d'erreur avec la liste des champs manquants
+          const fieldLabels = missingFields.map(f => f.label).join(', ')
+          this.message = `${i18n.global.t('errors.identificationLabel')} - ${i18n.global.t('errors.requiredFields')} ${fieldLabels}`
+          
+          return false
+        }
+        
+        console.info('[ObjectStore] All required fields are filled')
+        return true
+        
+      } catch (error) {
+        console.error('[ObjectStore] Error checking required fields:', error)
+        this.message = `Erreur lors de la validation: ${error.message}`
+        return false
+      }
+    },
   },
 
   getters: {
