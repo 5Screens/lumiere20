@@ -104,10 +104,6 @@ const optionsLoaded = ref(false)
 
 // Computed properties
 const showError = computed(() => {
-  console.info('SSelectField showError debug:');
-  console.info('- props.required:', props.required);
-  console.info('- !selectedValue.value:', !selectedValue.value);
-  console.info('- selectedValue.value:', selectedValue.value);
   return props.required && (!selectedValue.value || selectedValue.value === '')
 })
 
@@ -145,7 +141,6 @@ const fetchOptions = async () => {
       response = await apiService.get(props.endpoint)
     }
     
-    console.info('Successfully fetched options:', response)
     options.value = response
     optionsLoaded.value = true
   } catch (error) {
@@ -153,7 +148,6 @@ const fetchOptions = async () => {
     console.warn('Failed to load options from endpoint:', props.endpoint)
     emit('error', 'Failed to load options')
   } finally {
-    console.info('Options loading state set to:', loadingOptions.value)
     loadingOptions.value = false
   }
 }
@@ -214,7 +208,6 @@ const handleCancelEdit = () => {
 
 // Lifecycle hooks
 onMounted(() => {
-  console.info('SSelectField mounted, fetching initial options')
   fetchOptions()
 })
 </script>

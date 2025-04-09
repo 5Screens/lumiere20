@@ -454,10 +454,7 @@ watch(() => resolvedEndpoint.value, (newEndpoint, oldEndpoint) => {
 
 // Watch for items changes to handle async loading
 watch(() => items.value, (newItems) => {
-  console.log('[watch items] Items loaded, length:', newItems.length);
-  console.log('[watch items] Current modelValue:', props.modelValue);
   if (props.modelValue && newItems.length > 0) {
-    console.log('[watch items] Attempting to select initial item');
     findAndSelectInitialItem();
   }
 }, { immediate: true })

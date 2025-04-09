@@ -82,7 +82,6 @@ export class Ticket {
         type: 'sFilteredSearchField',
         placeholder: t('ticket.assigned_team_placeholder'),
         endpoint: ({ assigned_to_person }) => {
-          console.log('[Ticket.assigned_to_group.endpoint] Using assigned_to_person:', assigned_to_person);
           return assigned_to_person 
             ? `persons/${assigned_to_person}/groups` 
             : 'groups';
@@ -101,7 +100,6 @@ export class Ticket {
         type: 'sFilteredSearchField',
         placeholder: t('ticket.assigned_to_placeholder'),
         endpoint: ({ assigned_to_group }) => {
-          console.log('[Ticket.assigned_to_uuid.endpoint] Using assigned_to_group:', assigned_to_group);
           return assigned_to_group 
             ? `groups/${assigned_to_group}/members` 
             : `groups/members` ; // Retourne null pour désactiver le champ si aucun groupe n'est sélectionné
