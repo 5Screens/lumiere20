@@ -126,7 +126,7 @@ export class Incident {
         type: 'sFilteredSearchField',
         placeholder: t('incident.assigned_group_placeholder'),
         endpoint: ({ assigned_to }) => {
-          console.log('[Incident.assigned_to_group.endpoint] Using assigned_to:', assigned_to);
+          //console.log('[Incident.assigned_to_group.endpoint] Using assigned_to:', assigned_to);
           return assigned_to 
             ? `persons/${assigned_to}/groups` 
             : 'groups';
@@ -142,7 +142,7 @@ export class Incident {
         type: 'sFilteredSearchField',
         placeholder: t('incident.assigned_to_placeholder'),
         endpoint: ({ assigned_to_group }) => {
-          console.log('[Incident.assigned_to.endpoint] Using assigned_to_group:', assigned_to_group);
+          //console.log('[Incident.assigned_to.endpoint] Using assigned_to_group:', assigned_to_group);
           return assigned_to_group 
             ? `groups/${assigned_to_group}/members` 
             : 'groups/members';
@@ -187,7 +187,6 @@ export class Incident {
         type: 'sSelectField',
         placeholder: t('incident.priority_placeholder'),
         endpoint: ({ impact, urgency }) => {
-          console.log('[Incident.priority.endpoint] Using impact:', impact, 'urgency:', urgency);
           // Assurez-vous que impact et urgency sont des chaînes de caractères
           const impactParam = impact ? String(impact) : null;
           const urgencyParam = urgency ? String(urgency) : null;
@@ -197,7 +196,7 @@ export class Incident {
             url = `incident_priorities?incident_impacts=${impactParam}&incident_urgencies=${urgencyParam}`;
           }
           
-          console.log('[Incident.priority.endpoint] Generated URL:', url);
+          //console.log('[Incident.priority.endpoint] Generated URL:', url);
           return url;
         },
         fieldName: 'priority',
