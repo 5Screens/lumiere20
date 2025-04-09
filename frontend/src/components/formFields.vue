@@ -2,19 +2,16 @@
 <template>
   <form @submit.prevent="handleSubmit" class="form-fields">
     <div v-for="(field, key) in fields" :key="key" class="field-container">
-      <label :for="key" class="field-label">{{ field.label }}</label>
       <component
         :is="components[field.type]"
-        :id="key"
         v-model="modelValue[key]"
-        :model-value="modelValue[key]"
-        :ticket-data="modelValue"
+        :label="field.label"
+        :required="field.required"
         :placeholder="field.placeholder"
         :disabled="field.disabled"
-        :required="field.required"
         :multiline="field.multiline"
         :options="field.options"
-        :endpoint="typeof field.endpoint === 'function' ? () => field.endpoint(modelValue) : field.endpoint"
+        :endpoint="typeof field.endpoint === 'function' ? field.endpoint(modelValue) : field.endpoint"
         :display-field="field.displayField"
         :value-field="field.valueField"
         :edit-mode="field.editMode"
@@ -30,7 +27,6 @@
         :picked-items="field.pickedItems"
         :edition="field.edition"
         :helper-text="field.helperText"
-        @update:model-value="handleFieldUpdate(key, $event)"
       />
     </div>
   </form>
@@ -82,18 +78,19 @@ onMounted(() => {
     throw new Error('La classe du modèle doit implémenter getRenderableFields()')
   }
   fields.value = props.modelClass.getRenderableFields()
+  
+  // Synchroniser le store avec le modèle au chargement
+  if (props.modelValue && objectStore.currentObject) {
+    Object.assign(objectStore.currentObject, props.modelValue)
+  }
 })
 
-// Gère la mise à jour d'un champ dans le store
-const handleFieldUpdate = (fieldName, value) => {
-  console.info(`[FormFields] Field '${fieldName}' updated with value:`, value)
-  // Met à jour le modèle local
-  props.modelValue[fieldName] = value
-  // Met à jour également le store
-  objectStore.currentObject[fieldName] = value
-  // Émet l'événement pour la liaison bidirectionnelle
-  emit('update:modelValue', props.modelValue)
-}
+// Surveiller les changements du modelValue pour mettre à jour le store
+watch(() => props.modelValue, (newValue) => {
+  if (newValue && objectStore.currentObject) {
+    Object.assign(objectStore.currentObject, newValue)
+  }
+}, { deep: true })
 
 const handleSubmit = () => {
   console.info('[FormFields] Form submitted')
@@ -102,14 +99,6 @@ const handleSubmit = () => {
   console.info('[FormFields] Emitted "submit" event with form data')
 }
 
-// Observe les changements dans le modèle pour mettre à jour les champs dépendants
-watch(() => objectStore.currentObject, () => {
-  console.info('[FormFields] Current object updated in store, refreshing fields')
-  // Rafraîchir les champs si nécessaire pour les dépendances
-  if (props.modelClass.getRenderableFields) {
-    fields.value = props.modelClass.getRenderableFields()
-  }
-}, { deep: true })
 </script>
 
 <style scoped>
@@ -126,16 +115,27 @@ watch(() => objectStore.currentObject, () => {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: 1rem;
-  width: 100%;
   margin-bottom: 1rem;
+  width: 100%;
 }
 
 .field-label {
-  font-size: 0.875rem;
+  flex: 0 0 200px;
+  margin-right: 1rem;
   font-weight: 500;
-  width: 200px;
-  text-align: right;
   padding-top: 0.5rem;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .field-container {
+    flex-direction: column;
+  }
+  
+  .field-label {
+    flex: 0 0 auto;
+    margin-bottom: 0.5rem;
+    text-align: left;
+  }
 }
 </style>

@@ -116,14 +116,6 @@ watch(() => props.modelValue, (newValue) => {
   }
 })
 
-// Watch endpoint changes
-watch(() => props.endpoint, () => {
-  console.info('Endpoint changed, reloading options')
-  optionsLoaded.value = false // Reset the loaded state
-  options.value = [] // Clear current options
-  fetchOptions() // Reload options with new endpoint
-})
-
 // Methods
 const fetchOptions = async () => {
   if (optionsLoaded.value) {
