@@ -83,7 +83,13 @@ const currentModelClass = computed(() => {
 })
 
 const closeModal = () => {
-  objectStore.resetObjectForm()
+  // Ne pas réinitialiser le message pour permettre à l'utilisateur de voir la notification
+  // Réinitialiser uniquement les données du formulaire
+  objectStore.currentObject = null
+  objectStore.currentObjectType = null
+  objectStore.currentEndpoint = null
+  objectStore.validationErrors = {}
+  
   emit('close')
 }
 
