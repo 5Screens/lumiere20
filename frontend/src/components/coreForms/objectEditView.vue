@@ -21,7 +21,7 @@
           v-if="currentModelClass"
           :key="selectedType"
           :model-class="currentModelClass"
-          v-model="objectStore.getCurrentObject"
+          v-model="currentObject"
         />
 
         <hr class="form-separator" />
@@ -63,6 +63,12 @@ const currentLanguage = computed(() => userProfileStore.language)
 
 const selectedType = ref('')
 
+// Accès à l'objet courant du store
+const currentObject = computed({
+  get: () => objectStore.currentObject,
+  set: (value) => { objectStore.currentObject = value }
+})
+
 const currentModelClass = computed(() => {
   switch (selectedType.value) {
     case 'TICKET':
@@ -84,12 +90,12 @@ const closeModal = () => {
 const handleSubmit = async () => {
   try {
     console.info('[ObjectEditView] Save button clicked - Starting form submission process')
-    console.info('[ObjectEditView] Form data to be submitted:', objectStore.getCurrentObject)
+    console.info('[ObjectEditView] Form data to be submitted:', objectStore.currentObject)
     
     console.info(`[ObjectEditView] Using API endpoint: ${objectStore.currentEndpoint}`)
     
     console.info('[ObjectEditView] Calling objectStore.createObject method')
-    const response = await objectStore.createObject(objectStore.currentEndpoint, objectStore.getCurrentObject)
+    const response = await objectStore.createObject(objectStore.currentEndpoint, objectStore.currentObject)
     console.info('[ObjectEditView] Received response from createObject:', response)
     
     closeModal()

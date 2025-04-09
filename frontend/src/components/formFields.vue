@@ -87,7 +87,11 @@ onMounted(() => {
 // Gère la mise à jour d'un champ dans le store
 const handleFieldUpdate = (fieldName, value) => {
   console.info(`[FormFields] Field '${fieldName}' updated with value:`, value)
-  objectStore.updateObjectField(fieldName, value)
+  // Met à jour le modèle local
+  props.modelValue[fieldName] = value
+  // Met à jour également le store
+  objectStore.currentObject[fieldName] = value
+  // Émet l'événement pour la liaison bidirectionnelle
   emit('update:modelValue', props.modelValue)
 }
 
@@ -99,7 +103,7 @@ const handleSubmit = () => {
 }
 
 // Observe les changements dans le modèle pour mettre à jour les champs dépendants
-watch(() => objectStore.getCurrentObject, () => {
+watch(() => objectStore.currentObject, () => {
   console.info('[FormFields] Current object updated in store, refreshing fields')
   // Rafraîchir les champs si nécessaire pour les dépendances
   if (props.modelClass.getRenderableFields) {

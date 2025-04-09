@@ -215,7 +215,7 @@ export const useObjectStore = defineStore('object', {
      */
     async deleteObject(type, data) {
       try {
-        this.updating = true
+        this.deleting = true
         this.message = null
         
         if (!data.uuid) {
@@ -234,7 +234,7 @@ export const useObjectStore = defineStore('object', {
         this.message = `Erreur lors de la suppression: ${error.message}`
         throw error
       } finally {
-        this.updating = false
+        this.deleting = false
       }
     }
   },
@@ -243,22 +243,12 @@ export const useObjectStore = defineStore('object', {
     /**
      * Indique si une opération est en cours
      */
-    isProcessing: (state) => state.creating || state.loading || state.updating,
+    isProcessing: (state) => state.creating || state.loading || state.updating || state.deleting,
     
     /**
      * Retourne le message courant
      */
     currentMessage: (state) => state.message,
-
-    /**
-     * Retourne l'objet en cours d'édition
-     */
-    getCurrentObject: (state) => state.currentObject,
-
-    /**
-     * Retourne le type de l'objet en cours d'édition
-     */
-    getCurrentObjectType: (state) => state.currentObjectType,
 
     /**
      * Vérifie si un champ a une erreur de validation
