@@ -169,14 +169,7 @@ export class Incident {
         type: 'sSelectField',
         placeholder: t('incident.impact_placeholder'),
         required: true,
-        endpoint: async () => {
-          const response = await apiService.get(`incident_impacts?lang=${userProfileStore.language}`);
-          // Transforme les données pour utiliser code comme valeur au lieu de value
-          return response.map(item => ({
-            ...item,
-            value: item.code // Utilise le code comme valeur
-          }));
-        },
+        endpoint: `incident_impacts?lang=${userProfileStore.language}`,
         fieldName: 'impact',
         mode: 'creation'
       },
@@ -185,14 +178,7 @@ export class Incident {
         type: 'sSelectField',
         placeholder: t('incident.urgency_placeholder'),
         required: true,
-        endpoint: async () => {
-          const response = await apiService.get(`incident_urgencies?lang=${userProfileStore.language}`);
-          // Transforme les données pour utiliser code comme valeur au lieu de value
-          return response.map(item => ({
-            ...item,
-            value: item.code // Utilise le code comme valeur
-          }));
-        },
+        endpoint: `incident_urgencies?lang=${userProfileStore.language}`,
         fieldName: 'urgency',
         mode: 'creation'
       },
@@ -200,27 +186,10 @@ export class Incident {
         label: t('incident.priority'),
         type: 'sSelectField',
         placeholder: t('incident.priority_placeholder'),
-        endpoint: async ({ impact, urgency }) => {
+        endpoint: ({ impact, urgency }) => {
           console.log('[Incident.priority.endpoint] Using impact:', impact, 'urgency:', urgency);
-          if (!impact || !urgency) return [];
-          
-          try {
-            const response = await apiService.get(`incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}`);
-            
-            // Si la réponse est un objet unique (et non un tableau), on le transforme en tableau
-            const priorityData = Array.isArray(response) ? response : [response];
-            
-            // On transforme les données pour avoir le format attendu par sSelectField
-            return priorityData.map(item => ({
-              uuid: item.uuid,
-              code: item.code,
-              value: item.code,
-              label: `${item.code}`
-            }));
-          } catch (error) {
-            console.error('[Incident.priority.endpoint] Error fetching priority:', error);
-            return [];
-          }
+          if (!impact || !urgency) return 'incident_priorities';
+          return `incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}`;
         },
         fieldName: 'priority',
         mode: 'creation'
