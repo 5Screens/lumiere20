@@ -1,6 +1,5 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
-import { useObjectStore } from '../stores/objectStore'
 
 export class Ticket {
   constructor(data = {}) {
@@ -57,6 +56,7 @@ export class Ticket {
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true },
+          { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
         required: true
@@ -72,6 +72,7 @@ export class Ticket {
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true },
+          { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
         required: true
@@ -80,11 +81,7 @@ export class Ticket {
         label: t('ticket.assigned_team_label'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.assigned_team_placeholder'),
-        endpoint: () => {
-          // Utiliser le store pour accéder à la valeur de la personne assignée
-          const objectStore = useObjectStore();
-          const assigned_to_person = objectStore.currentObject?.assigned_to_person;
-          
+        endpoint: ({ assigned_to_person }) => {
           console.log('[Ticket.assigned_to_group.endpoint] Using assigned_to_person:', assigned_to_person);
           return assigned_to_person 
             ? `persons/${assigned_to_person}/groups` 
@@ -97,21 +94,17 @@ export class Ticket {
           { key: 'groupe_name', label: t('group.name'), visible: true },
           { key: 'phone', label: t('group.phone'), visible: true }
         ],
-        required: false
+        required: true
       },
       assigned_to_person: {
         label: t('ticket.assigned_to_label'),
         type: 'sFilteredSearchField',
         placeholder: t('ticket.assigned_to_placeholder'),
-        endpoint: () => {
-          // Utiliser le store pour accéder à la valeur du groupe
-          const objectStore = useObjectStore();
-          const assigned_to_group = objectStore.currentObject?.assigned_to_group;
-          
-          console.log('[Ticket.assigned_to_person.endpoint] Using assigned_to_group:', assigned_to_group);
+        endpoint: ({ assigned_to_group }) => {
+          console.log('[Ticket.assigned_to_uuid.endpoint] Using assigned_to_group:', assigned_to_group);
           return assigned_to_group 
             ? `groups/${assigned_to_group}/members` 
-            : `groups/members`;
+            : `groups/members` ; // Retourne null pour désactiver le champ si aucun groupe n'est sélectionné
         },
         displayField: 'first_name',
         valueField: 'uuid',
@@ -141,29 +134,20 @@ export class Ticket {
   toAPI(method) {
     console.log('[Ticket.toAPI] Starting conversion to API format', { method });
     const userProfileStore = useUserProfileStore();
-    const objectStore = useObjectStore();
-    
     console.log('[Ticket.toAPI] Current user profile ID:', userProfileStore.id);
-    
-    // Détermine si nous devons utiliser l'objet du store ou l'instance actuelle
-    const sourceObject = (objectStore.currentObject && objectStore.currentObjectType === 'TICKET') 
-      ? objectStore.currentObject 
-      : this;
-    
-    console.log('[Ticket.toAPI] Using source object:', sourceObject === objectStore.currentObject ? 'from store' : 'from instance');
     
     // Base object with common fields
     const baseFields = {
-      titre: sourceObject.titre,
-      description: sourceObject.description,
-      requested_by_uuid: sourceObject.requested_by_uuid,
-      requested_for_uuid: sourceObject.requested_for_uuid,
-      assigned_to_group: sourceObject.assigned_to_group,
-      assigned_to_person: sourceObject.assigned_to_person,
+      titre: this.titre,
+      description: this.description,
+      requested_by_uuid: this.requested_by_uuid,
+      requested_for_uuid: this.requested_for_uuid,
+      assigned_to_group: this.assigned_to_group,
+      assigned_to_person: this.assigned_to_person,
       writer_uuid: userProfileStore.id, // Always use current user's ID
       ticket_type_code: 'TICKET', //We are creating a ticket
-      ticket_status_code: sourceObject.ticket_status_code,
-      watch_list: sourceObject.watch_list
+      ticket_status_code: this.ticket_status_code,
+      watch_list: this.watch_list
     };
     console.log('[Ticket.toAPI] Base fields prepared', baseFields);
 
@@ -176,33 +160,29 @@ export class Ticket {
         console.log('[Ticket.toAPI] Processing PUT request - returning all fields with uuid');
         const putData = {
           ...baseFields,
-          uuid: sourceObject.uuid
+          uuid: this.uuid
         };
+        console.log('[Ticket.toAPI] PUT data prepared', putData);
         return putData;
         
       case 'PATCH':
-        console.log('[Ticket.toAPI] Processing PATCH request - returning minimal data');
-        // For PATCH, we typically only return the specific field being updated
-        // This is handled by the caller (usually objectStore.patchObject)
-        return baseFields;
+        console.log('[Ticket.toAPI] Processing PATCH request - filtering for modified fields');
+        const modifiedFields = {};
+        for (const [key, value] of Object.entries(baseFields)) {
+          if (value !== null && value !== '') {
+            modifiedFields[key] = value;
+          }
+        }
+        const patchData = {
+          uuid: this.uuid,
+          ...modifiedFields
+        };
+        console.log('[Ticket.toAPI] PATCH data prepared', patchData);
+        return patchData;
         
       default:
-        console.log('[Ticket.toAPI] Unknown method, defaulting to base fields');
-        return baseFields;
+        console.error('[Ticket.toAPI] Error: Unsupported HTTP method', { method });
+        throw new Error(`Unsupported HTTP method: ${method}`);
     }
-  }
-
-  static fromAPI(apiData) {
-    console.log('[Ticket.fromAPI] Converting API data to Ticket instance', apiData);
-    const ticket = new Ticket(apiData);
-    
-    // Mettre à jour le store si nécessaire
-    const objectStore = useObjectStore();
-    if (objectStore.currentObjectType === 'TICKET' && objectStore.currentObject) {
-      console.log('[Ticket.fromAPI] Updating current object in store');
-      objectStore.currentObject = ticket;
-    }
-    
-    return ticket;
   }
 }

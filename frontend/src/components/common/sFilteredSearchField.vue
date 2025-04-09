@@ -2,7 +2,8 @@
   <div 
     :class="[
       's-filtered-search-field', 
-      { 's-filtered-search-field--editing': isEditing }
+      { 's-filtered-search-field--editing': isEditing },
+      { 's-filtered-search-field--error': showRequiredError }
     ]"
   >
     <div class="s-filtered-search-field__label-container" v-if="label">
@@ -93,6 +94,7 @@
       <!-- Error or helper text -->
       <span v-if="error" class="s-filtered-search-field__error">{{ error }}</span>
       <span v-else-if="helperText" class="s-filtered-search-field__helper">{{ helperText }}</span>
+      <span v-else-if="showRequiredError" class="s-filtered-search-field__error">{{ $t('errors.selectOneRow') }}</span>
     </div>
   </div>
 </template>
@@ -128,6 +130,11 @@ const visibleColumns = computed(() => {
 })
 const error = ref('')
 const searchInput = ref(null)
+
+// Computed property to check if field is required and empty
+const showRequiredError = computed(() => {
+  return props.required && !selectedItem.value
+})
 
 // Props
 const props = defineProps({

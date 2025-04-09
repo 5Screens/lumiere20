@@ -213,8 +213,8 @@
 
 /* Error message display - appears below the field when validation fails */
 .s-filtered-search-field__error {
-  font-size: 0.75rem;
   color: var(--error-color);
+  font-size: 0.75rem;
   margin-top: 0.25rem;
 }
 
@@ -258,4 +258,13 @@
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Styles for error state */
+.s-filtered-search-field--error .s-filtered-search-field__selected-value {
+  border-color: var(--error-color);
+}
+
+.s-filtered-search-field--error .s-filtered-search-field__selected-value:hover {
+  border-color: var(--error-color);
 }
