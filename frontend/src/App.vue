@@ -286,7 +286,7 @@ export default {
 @import '@/assets/styles/app.css';
 
 #app {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--text-color);
