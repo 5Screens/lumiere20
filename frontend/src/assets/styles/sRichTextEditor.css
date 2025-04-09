@@ -9,6 +9,23 @@
   width: 100%;
 }
 
+.s-rich-text-editor__label-container {
+  margin-bottom: 8px;
+}
+
+.s-rich-text-editor__label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  display: block;
+}
+
+.s-rich-text-editor__label--required::after {
+  content: '*';
+  color: #e53935;
+  margin-left: 4px;
+}
+
 .editor-toolbar {
   display: flex;
   flex-wrap: wrap;

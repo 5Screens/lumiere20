@@ -1,5 +1,12 @@
 <template>
   <div class="s-rich-text-editor">
+    <!-- Label container -->
+    <div class="s-rich-text-editor__label-container" v-if="label">
+      <label class="s-rich-text-editor__label" :class="{ 's-rich-text-editor__label--required': required }">
+        {{ label }}
+      </label>
+    </div>
+
     <!-- Toolbar -->
     <div class="editor-toolbar">
       <!-- Text format group -->
@@ -176,6 +183,14 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: 'Commencez à écrire...'
+  },
+  label: {
+    type: String,
+    default: ''
+  },
+  required: {
+    type: Boolean,
+    default: false
   }
 });
 

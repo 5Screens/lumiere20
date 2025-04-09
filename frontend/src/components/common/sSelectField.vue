@@ -109,7 +109,7 @@ const showError = computed(() => {
 
 // Watch modelValue changes
 watch(() => props.modelValue, (newValue) => {
-  console.info('modelValue changed to:', newValue)
+  console.info('[sSelectField] modelValue changed to:', newValue)
   if (newValue !== undefined && newValue !== null) {
     selectedValue.value = newValue
     originalValue.value = newValue
