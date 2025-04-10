@@ -4,8 +4,8 @@ const logger = require('../../../config/logger');
 async function handleGetContactTypes(req, res) {
     logger.info('[CONTROLLER] Handling get contact types request');
     try {
-        const { lang } = req.query;
-        const contactTypes = await getContactTypes(lang);
+        const { lang, toSelect } = req.query;
+        const contactTypes = await getContactTypes(lang, toSelect);
         logger.info('[CONTROLLER] Successfully retrieved contact types');
         res.json(contactTypes);
     } catch (error) {

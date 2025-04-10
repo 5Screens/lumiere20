@@ -1,7 +1,7 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 
-async function getContactTypes(lang) {
+async function getContactTypes(lang, toSelect) {
     logger.info('[SERVICE] Getting contact types');
     try {
         const query = `
@@ -21,6 +21,16 @@ async function getContactTypes(lang) {
 
         const result = await db.query(query, [lang]);
         logger.info(`[SERVICE] Found ${result.rows.length} contact types`);
+        
+        // If toSelect=yes, transform the data to value/label pairs
+        if (toSelect === 'yes') {
+            logger.info('[SERVICE] Transforming contact types to select format');
+            return result.rows.map(contactType => ({
+                value: contactType.code,
+                label: contactType.label
+            }));
+        }
+        
         return result.rows;
     } catch (error) {
         logger.error(`[SERVICE] Error getting contact types: ${error.message}`);

@@ -133,7 +133,8 @@ export class Incident {
         valueField: 'uuid',
         columnsConfig: [
           { key: 'groupe_name', label: t('group.name'), visible: true }
-        ]
+        ],
+        required: true
       },
       assigned_to: {
         label: t('incident.assigned_to'),
@@ -209,7 +210,7 @@ export class Incident {
         label: t('incident.contact_type'),
         type: 'sSelectField',
         placeholder: t('incident.contact_type_placeholder'),
-        endpoint: `contact_types?lang=${userProfileStore.language}`,
+        endpoint: `contact_types?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'contact_type',
         mode: 'creation'
       },

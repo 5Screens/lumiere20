@@ -12,6 +12,12 @@ const validateGetContactTypes = async (req, res, next) => {
             .messages({
                 'string.empty': 'Language code cannot be empty',
                 'any.required': 'Language code is required'
+            }),
+        toSelect: Joi.string()
+            .valid('yes')
+            .optional()
+            .messages({
+                'string.valid': 'toSelect parameter must be "yes" if provided'
             })
     });
 
