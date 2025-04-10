@@ -5,8 +5,8 @@ const getAllIncidentImpacts = async (req, res) => {
     logger.info('[CONTROLLER] Processing get all incident impacts request');
     
     try {
-        const { lang } = req.query;
-        const impacts = await getIncidentImpacts(lang);
+        const { lang, toSelect } = req.query;
+        const impacts = await getIncidentImpacts(lang, toSelect);
         
         logger.info('[CONTROLLER] Successfully retrieved incident impacts');
         res.json(impacts);

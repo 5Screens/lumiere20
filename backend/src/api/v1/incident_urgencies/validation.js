@@ -11,7 +11,10 @@ const validateGetIncidentUrgencies = async (req, res, next) => {
             .messages({
                 'string.empty': 'Language code cannot be empty',
                 'any.required': 'Language code is required'
-            })
+            }),
+        toSelect: Joi.string()
+            .valid('yes')
+            .optional()
     });
 
     const { error } = schema.validate(req.query);

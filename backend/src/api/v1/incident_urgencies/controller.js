@@ -5,8 +5,8 @@ const getAllIncidentUrgencies = async (req, res) => {
     logger.info('[CONTROLLER] Processing get all incident urgencies request');
     
     try {
-        const { lang } = req.query;
-        const urgencies = await getIncidentUrgencies(lang);
+        const { lang, toSelect } = req.query;
+        const urgencies = await getIncidentUrgencies(lang, toSelect);
         
         logger.info('[CONTROLLER] Successfully retrieved incident urgencies');
         res.json(urgencies);

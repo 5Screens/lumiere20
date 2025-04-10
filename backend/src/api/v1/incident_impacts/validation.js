@@ -11,6 +11,12 @@ const validateGetIncidentImpacts = async (req, res, next) => {
             .messages({
                 'string.empty': 'Language code cannot be empty',
                 'any.required': 'Language code is required'
+            }),
+        toSelect: Joi.string()
+            .valid('yes')
+            .optional()
+            .messages({
+                'any.only': 'toSelect parameter must be "yes" if provided'
             })
     });
 

@@ -1,7 +1,7 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 
-const getIncidentImpacts = async (lang) => {
+const getIncidentImpacts = async (lang, toSelect) => {
     logger.info('[SERVICE] Getting incident impacts');
     
     try {
@@ -24,6 +24,16 @@ const getIncidentImpacts = async (lang) => {
         const result = await db.query(query, [lang]);
         
         logger.info(`[SERVICE] Found ${result.rows.length} incident impacts`);
+        
+        // If toSelect=yes, transform the data to value/label pairs
+        if (toSelect === 'yes') {
+            logger.info('[SERVICE] Transforming data to value/label format for select component');
+            return result.rows.map(impact => ({
+                value: impact.code,
+                label: impact.label
+            }));
+        }
+        
         return result.rows;
     } catch (error) {
         logger.error(`[SERVICE] Error getting incident impacts: ${error.message}`);
