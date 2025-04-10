@@ -218,17 +218,19 @@ export class Incident {
         type: 'sRichTextEditor',
         placeholder: t('incident.resolution_notes_placeholder')
       },
-/*resolution_code: {
+      resolution_code: {
         label: t('incident.resolution_code'),
         type: 'sSelectField',
         placeholder: t('incident.resolution_code_placeholder'),
-        endpoint: `resolution_codes?lang=${userProfileStore.language}`
-      },*/
+        endpoint: `incident_resolution_codes?lang=${userProfileStore.language}&toSelect=yes`,
+        fieldName: 'resolution_code',
+        mode: 'creation'
+      },
       cause_code: {
         label: t('incident.cause_code'),
         type: 'sSelectField',
         placeholder: t('incident.cause_code_placeholder'),
-        endpoint: `incident_cause_codes?lang=${userProfileStore.language}`,
+        endpoint: `incident_cause_codes?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'cause_code',
         mode: 'creation'
       },
