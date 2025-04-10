@@ -185,7 +185,7 @@ export class Incident {
         endpoint: ({ impact, urgency }) => 
           impact && urgency 
             ? `incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}` 
-            : 'incident_priorities',
+            : null  ,
         fieldName: 'priority',
         mode: 'creation'
       },

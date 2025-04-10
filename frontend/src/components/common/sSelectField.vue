@@ -137,6 +137,11 @@ const fetchOptions = async () => {
     return
   }
 
+  if (!props.endpoint) {
+    console.info('No endpoint provided, skipping fetch')
+    return
+  }
+
   try {
     loadingOptions.value = true
     let response
