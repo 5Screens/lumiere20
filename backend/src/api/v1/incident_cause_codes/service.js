@@ -1,7 +1,7 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 
-const getIncidentCauseCodes = async (lang) => {
+const getIncidentCauseCodes = async (lang, toSelect) => {
     logger.info('[SERVICE] Getting incident cause codes with translations');
     
     try {
@@ -22,6 +22,16 @@ const getIncidentCauseCodes = async (lang) => {
 
         const result = await db.query(query, [lang]);
         logger.info('[SERVICE] Successfully retrieved incident cause codes');
+        
+        // If toSelect=yes, transform the data to value/label pairs
+        if (toSelect === 'yes') {
+            logger.info('[SERVICE] Transforming incident cause codes to select format');
+            return result.rows.map(causeCode => ({
+                value: causeCode.code,
+                label: causeCode.label
+            }));
+        }
+        
         return result.rows;
     } catch (error) {
         logger.error(`[SERVICE] Error getting incident cause codes: ${error.message}`);

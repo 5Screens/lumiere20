@@ -5,8 +5,8 @@ const getIncidentCauseCodesController = async (req, res) => {
     logger.info('[CONTROLLER] Processing get incident cause codes request');
     
     try {
-        const { lang } = req.query;
-        const incidentCauseCodes = await getIncidentCauseCodes(lang);
+        const { lang, toSelect } = req.query;
+        const incidentCauseCodes = await getIncidentCauseCodes(lang, toSelect);
         
         logger.info('[CONTROLLER] Successfully retrieved incident cause codes');
         res.json(incidentCauseCodes);
