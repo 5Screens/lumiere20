@@ -123,3 +123,39 @@ INSERT INTO translations.contact_types_labels (rel_contact_type_code, language, 
 ('WALK_IN', 'fr', 'En personne'),
 ('SOCIAL_MEDIA', 'fr', 'Réseaux sociaux'),
 ('AUTOMATED_ALERT', 'fr', 'Alerte automatisée');
+
+-- Populate incident_resolution_codes table
+INSERT INTO configuration.incident_resolution_codes (code) VALUES
+('FIXED'),
+('WORKAROUND_PROVIDED'),
+('SELF_RESOLVED'),
+('DUPLICATE'),
+('NOT_REPRODUCIBLE'),
+('KNOWN_ISSUE'),
+('THIRD_PARTY_RESOLUTION'),
+('CONFIGURATION_CHANGE'),
+('NO_ACTION_REQUIRED'),
+('REFERRED_TO_CHANGE');
+
+-- Populate incident_resolution_codes_labels table (English and French)
+INSERT INTO translations.incident_resolution_codes_labels (rel_incident_resolution_code, language, label) VALUES
+('FIXED', 'en', 'Fixed'),
+('WORKAROUND_PROVIDED', 'en', 'Workaround Provided'),
+('SELF_RESOLVED', 'en', 'Self Resolved'),
+('DUPLICATE', 'en', 'Duplicate'),
+('NOT_REPRODUCIBLE', 'en', 'Not Reproducible'),
+('KNOWN_ISSUE', 'en', 'Known Issue'),
+('THIRD_PARTY_RESOLUTION', 'en', 'Third-party Resolution'),
+('CONFIGURATION_CHANGE', 'en', 'Configuration Change'),
+('NO_ACTION_REQUIRED', 'en', 'No Action Required'),
+('REFERRED_TO_CHANGE', 'en', 'Referred to Change'),
+('FIXED', 'fr', 'Résolu'),
+('WORKAROUND_PROVIDED', 'fr', 'Solution de contournement fournie'),
+('SELF_RESOLVED', 'fr', 'Résolu automatiquement'),
+('DUPLICATE', 'fr', 'Doublon'),
+('NOT_REPRODUCIBLE', 'fr', 'Non reproductible'),
+('KNOWN_ISSUE', 'fr', 'Problème connu'),
+('THIRD_PARTY_RESOLUTION', 'fr', 'Résolution par un tiers'),
+('CONFIGURATION_CHANGE', 'fr', 'Changement de configuration'),
+('NO_ACTION_REQUIRED', 'fr', 'Aucune action requise'),
+('REFERRED_TO_CHANGE', 'fr', 'Référé à un changement');

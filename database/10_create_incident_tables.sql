@@ -167,6 +167,42 @@ CREATE TABLE translations.contact_types_labels (
     UNIQUE(rel_contact_type_code, language)
 );
 
+-- Create incident_resolution_codes table
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'configuration' AND tablename = 'incident_resolution_codes') THEN
+        DROP TABLE configuration.incident_resolution_codes CASCADE;
+    END IF;
+END
+$$;
+
+CREATE TABLE configuration.incident_resolution_codes (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    value INTEGER NOT NULL,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create incident_resolution_codes_labels table in translations schema
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'translations' AND tablename = 'incident_resolution_codes_labels') THEN
+        DROP TABLE translations.incident_resolution_codes_labels CASCADE;
+    END IF;
+END
+$$;
+
+CREATE TABLE translations.incident_resolution_codes_labels (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    rel_incident_resolution_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_resolution_codes(code),
+    language VARCHAR(10) NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(rel_incident_resolution_code, language)
+);
+
 -- Add audit triggers
 DO $$
 BEGIN
@@ -274,4 +310,30 @@ $$;
 
 CREATE TRIGGER audit_contact_types_labels
 AFTER INSERT OR UPDATE OR DELETE ON translations.contact_types_labels
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
+-- Add audit trigger for incident_resolution_codes
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'audit_incident_resolution_codes') THEN
+        DROP TRIGGER audit_incident_resolution_codes ON configuration.incident_resolution_codes;
+    END IF;
+END
+$$;
+
+CREATE TRIGGER audit_incident_resolution_codes
+AFTER INSERT OR UPDATE OR DELETE ON configuration.incident_resolution_codes
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
+-- Add audit trigger for incident_resolution_codes_labels
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'audit_incident_resolution_codes_labels') THEN
+        DROP TRIGGER audit_incident_resolution_codes_labels ON translations.incident_resolution_codes_labels;
+    END IF;
+END
+$$;
+
+CREATE TRIGGER audit_incident_resolution_codes_labels
+AFTER INSERT OR UPDATE OR DELETE ON translations.incident_resolution_codes_labels
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
