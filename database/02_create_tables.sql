@@ -300,5 +300,35 @@ COMMENT ON CONSTRAINT tickets_writer_uuid_fkey ON core.tickets IS 'Personne qui 
 COMMENT ON CONSTRAINT tickets_ticket_type_code_fkey ON core.tickets IS 'Type du ticket';
 COMMENT ON CONSTRAINT tickets_ticket_status_code_fkey ON core.tickets IS 'Statut du ticket';
 
+-- Relation parent-enfant entre tickets
+CREATE TABLE core.rel_parent_child_tickets (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    rel_parent_ticket_uuid UUID NOT NULL REFERENCES core.tickets(uuid) ON DELETE CASCADE,
+    rel_child_ticket_uuid UUID NOT NULL REFERENCES core.tickets(uuid) ON DELETE CASCADE,
+    dependency_code VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT no_self_reference CHECK (rel_parent_ticket_uuid != rel_child_ticket_uuid),
+    UNIQUE(rel_parent_ticket_uuid, rel_child_ticket_uuid)
+);
+
+COMMENT ON TABLE core.rel_parent_child_tickets IS 'Table de relation entre tickets parents et enfants';
+COMMENT ON CONSTRAINT rel_parent_child_tickets_rel_parent_ticket_uuid_fkey ON core.rel_parent_child_tickets IS 'Référence au ticket parent';
+COMMENT ON CONSTRAINT rel_parent_child_tickets_rel_child_ticket_uuid_fkey ON core.rel_parent_child_tickets IS 'Référence au ticket enfant';
+COMMENT ON COLUMN core.rel_parent_child_tickets.dependency_code IS 'Code de catégorisation du type de relation entre tickets';
+
+-- Ajout du trigger d'audit pour la table rel_parent_child_tickets
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'audit_rel_parent_child_tickets') THEN
+        DROP TRIGGER audit_rel_parent_child_tickets ON core.rel_parent_child_tickets;
+    END IF;
+END
+$$;
+
+CREATE TRIGGER audit_rel_parent_child_tickets
+AFTER INSERT OR UPDATE OR DELETE ON core.rel_parent_child_tickets
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
 -- Validation des modifications
 COMMIT;
