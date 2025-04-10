@@ -27,6 +27,7 @@ const incidentCauseCodesRoutes = require('./api/v1/incident_cause_codes/routes')
 const incidentUrgenciesRoutes = require('./api/v1/incident_urgencies/routes');
 const incidentImpactsRoutes = require('./api/v1/incident_impacts/routes');
 const incidentPrioritiesRoutes = require('./api/v1/incident_priorities/routes');
+const incidentResolutionCodesRoutes = require('./api/v1/incident_resolution_codes/routes');
 
 // Middleware
 app.use(cors());
@@ -60,6 +61,7 @@ app.use('/api/v1/incident_cause_codes', incidentCauseCodesRoutes);
 app.use('/api/v1/incident_urgencies', incidentUrgenciesRoutes);
 app.use('/api/v1/incident_impacts', incidentImpactsRoutes);
 app.use('/api/v1/incident_priorities', incidentPrioritiesRoutes);
+app.use('/api/v1/incident_resolution_codes', incidentResolutionCodesRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
