@@ -252,4 +252,26 @@ export class Incident {
       }
     };
   }
+
+  toAPI(method) {
+    const userProfileStore = useUserProfileStore();
+    
+    switch (method.toUpperCase()) {
+      case 'POST':
+        // Pour POST, définir writer_uuid et ticket_type_code
+        this.writer_uuid = userProfileStore.id;
+        this.ticket_type_code = 'INCIDENT';
+        break;
+      case 'PUT':
+      case 'PATCH':
+        // Ne rien faire pour PUT et PATCH
+        break;
+      default:
+        console.error(`[Incident.toAPI] Error: Unsupported HTTP method: ${method}`);
+        throw new Error(`Unsupported HTTP method: ${method}`);
+    }
+    
+    // Retourner l'objet actuel pour permettre le chaînage
+    return this;
+  }
 }
