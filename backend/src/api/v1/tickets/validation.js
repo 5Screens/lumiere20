@@ -38,21 +38,58 @@ const validateGetTickets = async (req, res, next) => {
 const validateCreateTicket = (req, res, next) => {
     logger.info('[VALIDATION] Validating POST /tickets request');
     
-    const schema = Joi.object({
-        titre: Joi.string().required(),
+    // Vérifier si le type de ticket est INCIDENT
+    const isIncident = req.query.ticket_types === 'INCIDENT' || 
+                       (req.body && req.body.ticket_type_code === 'INCIDENT');
+    
+    // Schéma de base pour tous les types de tickets
+    const baseSchema = {
+        uuid: Joi.string().uuid().allow(null),
+        title: Joi.string().required(),
         description: Joi.string().allow('', null),
         requested_by_uuid: Joi.string().uuid().required(),
         requested_for_uuid: Joi.string().uuid().required(),
         writer_uuid: Joi.string().uuid().required(),
         ticket_type_code: Joi.string().required(),
         ticket_status_code: Joi.string().required(),
-        core_extended_attributes: Joi.object().allow(null),
-        user_extended_attributes: Joi.object().allow(null),
-        // Nouveaux champs pour l'assignation et les observateurs
-        assigned_to_group: Joi.string().uuid(),
-        assigned_to_person: Joi.string().uuid().allow(null, ''),
-        watch_list: Joi.array().items(Joi.string().uuid())
-    });
+        configuration_item_uuid: Joi.string().uuid().allow(null, ''),
+        assigned_to_group: Joi.string().uuid().allow(null, ''),
+        assigned_to: Joi.string().uuid().allow(null, ''),
+        watch_list: Joi.array().items(Joi.string().uuid()).allow(null),
+        created_at: Joi.date().allow(null),
+        updated_at: Joi.date().allow(null)
+    };
+    
+    // Champs spécifiques aux incidents
+    const incidentSchema = {
+        impact: Joi.string().allow(null, ''),
+        urgency: Joi.string().allow(null, ''),
+        priority: Joi.number().allow(null),
+        rel_service: Joi.string().uuid().allow(null, ''),
+        rel_service_offerings: Joi.string().uuid().allow(null, ''),
+        resolution_notes: Joi.string().allow(null, ''),
+        resolution_code: Joi.string().allow(null, ''),
+        cause_code: Joi.string().allow(null, ''),
+        rel_problem_id: Joi.string().uuid().allow(null, ''),
+        rel_change_request: Joi.string().uuid().allow(null, ''),
+        sla_pickup_due_at: Joi.date().allow(null),
+        assigned_to_at: Joi.date().allow(null),
+        sla_resolution_due_at: Joi.date().allow(null),
+        resolved_at: Joi.date().allow(null),
+        reopen_count: Joi.number().allow(null),
+        assignment_count: Joi.number().allow(null),
+        assignment_to_count: Joi.number().allow(null),
+        standby_count: Joi.number().allow(null),
+        closed_at: Joi.date().allow(null),
+        contact_type: Joi.string().allow(null, '')
+    };
+    
+    // Combiner les schémas en fonction du type de ticket
+    const schemaObj = isIncident 
+        ? { ...baseSchema, ...incidentSchema }
+        : baseSchema;
+    
+    const schema = Joi.object(schemaObj);
 
     const { error } = schema.validate(req.body);
     if (error) {

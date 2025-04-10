@@ -54,11 +54,40 @@ const createTicket = async (ticketData) => {
     try {
         await client.query('BEGIN');
         
+        // Déterminer si c'est un ticket de type INCIDENT
+        const isIncident = ticketData.ticket_type_code === 'INCIDENT';
+        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : ticketData.ticket_type_code}`);
+        
+        // Préparer les attributs étendus pour le core
+        let coreExtendedAttributes = {};
+        
+        // Si c'est un incident, ajouter les attributs spécifiques aux incidents
+        if (isIncident) {
+            // Champs à inclure dans core_extended_attributes pour les incidents
+            const incidentFields = [
+                'impact', 'urgency', 'priority', 'rel_service', 'rel_service_offerings',
+                'resolution_notes', 'resolution_code', 'cause_code', 'rel_problem_id',
+                'rel_change_request', 'sla_pickup_due_at', 'assigned_to_at', 
+                'sla_resolution_due_at', 'resolved_at', 'reopen_count', 'assignment_count',
+                'assignment_to_count', 'standby_count', 'closed_at', 'contact_type'
+            ];
+            
+            // Ajouter chaque champ présent dans ticketData aux attributs étendus
+            incidentFields.forEach(field => {
+                if (ticketData[field] !== undefined) {
+                    coreExtendedAttributes[field] = ticketData[field];
+                }
+            });
+            
+            logger.info('[SERVICE] Prepared core_extended_attributes for INCIDENT ticket');
+        }
+        
         // 1. Create the ticket
         const ticketQuery = `
             INSERT INTO core.tickets (
                 title,
                 description,
+                configuration_item_uuid,
                 requested_by_uuid,
                 requested_for_uuid,
                 writer_uuid,
@@ -66,19 +95,20 @@ const createTicket = async (ticketData) => {
                 ticket_status_code,
                 core_extended_attributes,
                 user_extended_attributes
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *
         `;
 
         const ticketResult = await client.query(ticketQuery, [
-            ticketData.titre,
+            ticketData.title,
             ticketData.description,
+            ticketData.configuration_item_uuid,
             ticketData.requested_by_uuid,
             ticketData.requested_for_uuid,
             ticketData.writer_uuid,
             ticketData.ticket_type_code,
             ticketData.ticket_status_code,
-            ticketData.core_extended_attributes || null,
+            Object.keys(coreExtendedAttributes).length > 0 ? coreExtendedAttributes : null,
             ticketData.user_extended_attributes || null
         ]);
 
@@ -100,7 +130,7 @@ const createTicket = async (ticketData) => {
             await client.query(assignmentQuery, [
                 createdTicket.uuid,
                 ticketData.assigned_to_group,
-                ticketData.assigned_to_person || null
+                ticketData.assigned_to || null
             ]);
         }
         
