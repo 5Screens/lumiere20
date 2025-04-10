@@ -125,12 +125,10 @@ export class Incident {
         label: t('incident.assigned_group'),
         type: 'sFilteredSearchField',
         placeholder: t('incident.assigned_group_placeholder'),
-        endpoint: ({ assigned_to }) => {
-          //console.log('[Incident.assigned_to_group.endpoint] Using assigned_to:', assigned_to);
-          return assigned_to 
+        endpoint: ({ assigned_to }) => 
+          assigned_to 
             ? `persons/${assigned_to}/groups` 
-            : 'groups';
-        },
+            : 'groups',
         displayField: 'groupe_name',
         valueField: 'uuid',
         columnsConfig: [
@@ -141,12 +139,10 @@ export class Incident {
         label: t('incident.assigned_to'),
         type: 'sFilteredSearchField',
         placeholder: t('incident.assigned_to_placeholder'),
-        endpoint: ({ assigned_to_group }) => {
-          //console.log('[Incident.assigned_to.endpoint] Using assigned_to_group:', assigned_to_group);
-          return assigned_to_group 
-            ? `groups/${assigned_to_group}/members` 
-            : 'groups/members';
-        },
+        endpoint: ({ assigned_to_group }) => 
+          assigned_to_group 
+          ? `groups/${assigned_to_group}/members` 
+          : 'groups/members',
         displayField: 'first_name',
         valueField: 'uuid',
         columnsConfig: [
@@ -169,7 +165,7 @@ export class Incident {
         type: 'sSelectField',
         placeholder: t('incident.impact_placeholder'),
         required: true,
-        endpoint: `incident_impacts?lang=${userProfileStore.language}`,
+        endpoint: `incident_impacts?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'impact',
         mode: 'creation'
       },
@@ -178,7 +174,7 @@ export class Incident {
         type: 'sSelectField',
         placeholder: t('incident.urgency_placeholder'),
         required: true,
-        endpoint: `incident_urgencies?lang=${userProfileStore.language}`,
+        endpoint: `incident_urgencies?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'urgency',
         mode: 'creation'
       },
@@ -186,19 +182,10 @@ export class Incident {
         label: t('incident.priority'),
         type: 'sSelectField',
         placeholder: t('incident.priority_placeholder'),
-        endpoint: ({ impact, urgency }) => {
-          // Assurez-vous que impact et urgency sont des chaînes de caractères
-          const impactParam = impact ? String(impact) : null;
-          const urgencyParam = urgency ? String(urgency) : null;
-          
-          let url = 'incident_priorities';
-          if (impactParam && urgencyParam) {
-            url = `incident_priorities?incident_impacts=${impactParam}&incident_urgencies=${urgencyParam}`;
-          }
-          
-          //console.log('[Incident.priority.endpoint] Generated URL:', url);
-          return url;
-        },
+        endpoint: ({ impact, urgency }) => 
+          impact && urgency 
+            ? `incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}` 
+            : 'incident_priorities',
         fieldName: 'priority',
         mode: 'creation'
       },
