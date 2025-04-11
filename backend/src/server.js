@@ -28,6 +28,7 @@ const incidentUrgenciesRoutes = require('./api/v1/incident_urgencies/routes');
 const incidentImpactsRoutes = require('./api/v1/incident_impacts/routes');
 const incidentPrioritiesRoutes = require('./api/v1/incident_priorities/routes');
 const incidentResolutionCodesRoutes = require('./api/v1/incident_resolution_codes/routes');
+const problemCategoriesRoutes = require('./api/v1/problem_categories/routes');
 
 // Middleware
 app.use(cors());
@@ -62,6 +63,7 @@ app.use('/api/v1/incident_urgencies', incidentUrgenciesRoutes);
 app.use('/api/v1/incident_impacts', incidentImpactsRoutes);
 app.use('/api/v1/incident_priorities', incidentPrioritiesRoutes);
 app.use('/api/v1/incident_resolution_codes', incidentResolutionCodesRoutes);
+app.use('/api/v1/problem_categories', problemCategoriesRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
