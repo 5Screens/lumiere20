@@ -51,7 +51,7 @@ export class Problem {
         type: 'sSelectField',
         placeholder: t('problem.status_placeholder'),
         required: true,
-        endpoint: `problem_status?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=PROBLEM`,
         patchEndpoint: 'problems',
         fieldName: 'problem_status_code',
         mode: 'creation'

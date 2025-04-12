@@ -320,7 +320,7 @@ async function fetchSourceItems() {
   error.value = '';
   
   try {
-    const response = await apiService.get(props.sourceEndPoint, { toWatchList: 'yes' });
+    const response = await apiService.get(props.sourceEndPoint);
     
     // Filtrer les items qui sont déjà dans la liste cible
     const targetUuids = targetItems.value.map(item => item.uuid);
