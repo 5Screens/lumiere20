@@ -13,7 +13,16 @@ export default {
   },
   datepicker: {
     today: 'Aujourd\'hui',
-    clear: 'Effacer'
+    clear: 'Effacer',
+    weekdays: {
+      su: 'Di',
+      mo: 'Lu',
+      tu: 'Ma',
+      we: 'Me',
+      th: 'Je',
+      fr: 'Ve',
+      sa: 'Sa'
+    }
   },
   nav: {
     myWork: 'Mon Travail',

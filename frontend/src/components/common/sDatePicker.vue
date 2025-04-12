@@ -140,7 +140,15 @@ const currentMonth = ref(new Date().getMonth())
 const currentYear = ref(new Date().getFullYear())
 
 // Jours de la semaine (abrégés)
-const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+const weekdays = [
+  t('datepicker.weekdays.su'),
+  t('datepicker.weekdays.mo'),
+  t('datepicker.weekdays.tu'),
+  t('datepicker.weekdays.we'),
+  t('datepicker.weekdays.th'),
+  t('datepicker.weekdays.fr'),
+  t('datepicker.weekdays.sa')
+]
 
 // Props
 const props = defineProps({
