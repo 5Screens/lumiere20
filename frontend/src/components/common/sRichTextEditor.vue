@@ -38,10 +38,10 @@
 
       <!-- Color picker -->
       <div class="toolbar-group">
-        <button class="toolbar-button" @click="toggleColorPicker" title="Couleur du texte">
+        <button class="toolbar-button" @click="toggleColorPicker($event)" title="Couleur du texte">
           <i class="fas fa-palette"></i>
         </button>
-        <div v-if="showColorPicker" class="color-picker" ref="colorPickerRef">
+        <div v-if="showColorPicker" class="color-picker" ref="colorPickerRef" :style="popupPosition">
           <div 
             v-for="color in colors" 
             :key="color" 
@@ -64,13 +64,13 @@
 
       <!-- Insert group -->
       <div class="toolbar-group">
-        <button class="toolbar-button" @click="toggleLinkDialog" title="Insérer un lien">
+        <button class="toolbar-button" @click="toggleLinkDialog($event)" title="Insérer un lien">
           <i class="fas fa-link"></i>
         </button>
-        <button class="toolbar-button" @click="toggleEmojiPicker" title="Insérer un emoji">
+        <button class="toolbar-button" @click="toggleEmojiPicker($event)" title="Insérer un emoji">
           <i class="fas fa-smile"></i>
         </button>
-        <button class="toolbar-button" @click="showTableDialog = true" title="Insérer un tableau">
+        <button class="toolbar-button" @click="showTableDialog = true; setPopupPosition($event)" title="Insérer un tableau">
           <i class="fas fa-table"></i>
         </button>
         <button class="toolbar-button" @click="insertCodeSnippet" title="Insérer un extrait de code">
@@ -100,7 +100,7 @@
     ></div>
 
     <!-- Link Dialog -->
-    <div v-if="showLinkDialog" class="link-dialog" ref="linkDialogRef">
+    <div v-if="showLinkDialog" class="link-dialog" ref="linkDialogRef" :style="popupPosition">
       <input 
         type="text" 
         v-model="linkUrl" 
@@ -118,7 +118,7 @@
     </div>
 
     <!-- Table Dialog -->
-    <div v-if="showTableDialog" class="table-dialog" ref="tableDialogRef">
+    <div v-if="showTableDialog" class="table-dialog" ref="tableDialogRef" :style="popupPosition">
       <input 
         type="number" 
         v-model="tableRows" 
@@ -157,7 +157,7 @@
     </div>
 
     <!-- Emoji Picker -->
-    <div v-if="showEmojiPicker" class="emoji-picker" ref="emojiPickerRef">
+    <div v-if="showEmojiPicker" class="emoji-picker" ref="emojiPickerRef" :style="popupPosition">
       <div 
         v-for="emoji in emojis" 
         :key="emoji" 
@@ -212,6 +212,7 @@ const showLinkDialog = ref(false);
 const showTableDialog = ref(false);
 const showTableActions = ref(false);
 const tableActionsPosition = ref({ top: '0px', left: '0px' });
+const popupPosition = ref({ top: '0px', left: '0px' });
 const linkUrl = ref('');
 const linkText = ref('');
 const tableRows = ref(3);
@@ -298,13 +299,17 @@ const formatBlock = (block) => {
 };
 
 // Toggle color picker
-const toggleColorPicker = () => {
+const toggleColorPicker = (event) => {
   // Avant d'afficher la palette, on mémorise la sélection
   saveSelection();
   showColorPicker.value = !showColorPicker.value;
   showEmojiPicker.value = false;
   showLinkDialog.value = false;
   showTableDialog.value = false;
+  
+  if (showColorPicker.value) {
+    setPopupPosition(event);
+  }
 };
 
 // Apply color to text
@@ -316,13 +321,17 @@ const applyColor = (color) => {
 };
 
 // Toggle emoji picker
-const toggleEmojiPicker = () => {
+const toggleEmojiPicker = (event) => {
   // Avant d'afficher la palette, on mémorise la sélection
   saveSelection();
   showEmojiPicker.value = !showEmojiPicker.value;
   showColorPicker.value = false;
   showLinkDialog.value = false;
   showTableDialog.value = false;
+  
+  if (showEmojiPicker.value) {
+    setPopupPosition(event);
+  }
 };
 
 // Insert emoji
@@ -333,7 +342,7 @@ const insertEmoji = (emoji) => {
   showEmojiPicker.value = false;
 };
 
-const toggleLinkDialog = () => {
+const toggleLinkDialog = (event) => {
   // Mémoriser la sélection actuelle
   saveSelection();
 
@@ -344,6 +353,10 @@ const toggleLinkDialog = () => {
   showColorPicker.value = false;
   showEmojiPicker.value = false;
   showTableDialog.value = false;
+  
+  if (showLinkDialog.value) {
+    setPopupPosition(event);
+  }
 };
 
 // Insert link
@@ -617,5 +630,22 @@ const handleClickOutside = (event) => {
       !event.target.closest('th')) {
     showTableActions.value = false;
   }
+};
+
+// Fonction pour positionner les popups
+const setPopupPosition = (event) => {
+  if (!event) return;
+  
+  const button = event.currentTarget;
+  if (!button) return;
+  
+  const rect = button.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  
+  popupPosition.value = {
+    top: `${rect.bottom + scrollTop}px`,
+    left: `${rect.left + scrollLeft}px`
+  };
 };
 </script>
