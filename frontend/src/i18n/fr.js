@@ -11,6 +11,10 @@ export default {
     pt: 'Portugais',
     es: 'Espagnol'
   },
+  datepicker: {
+    today: 'Aujourd\'hui',
+    clear: 'Effacer'
+  },
   nav: {
     myWork: 'Mon Travail',
     create: 'Créer',
@@ -366,5 +370,65 @@ export default {
     problem_id_placeholder: 'Sélectionnez le problème',
     change_request: 'Demande de changement',
     change_request_placeholder: 'Sélectionnez la demande de changement'
+  },
+  problem: {
+    status: 'Statut',
+    status_placeholder: 'Sélectionnez un statut',
+    title: 'Titre',
+    title_placeholder: 'Entrez le titre du problème',
+    category: 'Catégorie',
+    category_placeholder: 'Sélectionnez une catégorie',
+    description: 'Description',
+    description_placeholder: 'Décrivez le problème en détail',
+    
+    configuration_item: 'Élément de configuration',
+    configuration_item_placeholder: 'Sélectionnez l\'élément de configuration',
+    
+    service: 'Service impacté',
+    service_placeholder: 'Sélectionnez le service',
+    service_offerings: 'Offres de service impactées',
+    service_offerings_placeholder: 'Sélectionnez les offres de service',
+    
+    watch_list: 'Liste de surveillance',
+    watch_list_placeholder: 'Ajoutez des observateurs',
+    
+    impact: 'Impact',
+    impact_placeholder: 'Sélectionnez l\'impact',
+    urgency: 'Urgence',
+    urgency_placeholder: 'Sélectionnez l\'urgence',
+    
+    assigned_group: 'Équipe en charge',
+    assigned_group_placeholder: 'Sélectionnez l\'équipe',
+    assigned_to: 'Responsable',
+    assigned_to_placeholder: 'Sélectionnez le responsable',
+    
+    symptoms_description: 'Symptômes observés',
+    symptoms_description_placeholder: 'Décrivez les symptômes observés',
+    workaround: 'Solution de contournement',
+    workaround_placeholder: 'Décrivez la solution de contournement',
+    closed_at: 'Date de clôture',
+    closed_at_placeholder: 'Sélectionnez la date de clôture',
+    
+    knownerrors_list: 'Erreurs connues associées',
+    knownerrors_list_placeholder: 'Sélectionnez les erreurs connues',
+    changes_list: 'Changements liés',
+    changes_list_placeholder: 'Sélectionnez les changements liés',
+    incidents_list: 'Incidents liés',
+    incidents_list_placeholder: 'Sélectionnez les incidents liés',
+    
+    root_cause: 'Cause racine',
+    root_cause_placeholder: 'Décrivez la cause racine',
+    definitive_solution: 'Solution définitive',
+    definitive_solution_placeholder: 'Décrivez la solution définitive',
+    
+    target_resolution_date: 'Date de résolution cible',
+    target_resolution_date_placeholder: 'Sélectionnez la date cible',
+    actual_resolution_date: 'Date de résolution réelle',
+    actual_resolution_date_placeholder: 'Sélectionnez la date réelle',
+    actual_resolution_workload: 'Charge de résolution',
+    actual_resolution_workload_placeholder: 'Entrez la charge en heures',
+    
+    closure_justification: 'Justification de la clôture',
+    closure_justification_placeholder: 'Entrez la justification de la clôture'
   }
 }
