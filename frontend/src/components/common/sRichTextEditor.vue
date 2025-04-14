@@ -37,18 +37,20 @@
       </div>
 
       <!-- Color picker -->
-      <div class="toolbar-group" ref="colorPickerGroupRef">
-        <button class="toolbar-button" @click="toggleColorPicker($event)" title="Couleur du texte">
-          <i class="fas fa-palette"></i>
-        </button>
-        <div v-if="showColorPicker" class="color-picker" ref="colorPickerRef" :style="popupPosition">
-          <div 
-            v-for="color in colors" 
-            :key="color" 
-            class="color-option" 
-            :style="{ backgroundColor: color }"
-            @click="applyColor(color)"
-          ></div>
+      <div class="toolbar-group">
+        <div class="toolbar-button-container" ref="colorPickerGroupRef">
+          <button class="toolbar-button" @click="toggleColorPicker($event)" title="Couleur du texte">
+            <i class="fas fa-palette"></i>
+          </button>
+          <div v-if="showColorPicker" class="color-picker" ref="colorPickerRef" :style="popupPosition">
+            <div 
+              v-for="color in colors" 
+              :key="color" 
+              class="color-option" 
+              :style="{ backgroundColor: color }"
+              @click="applyColor(color)"
+            ></div>
+          </div>
         </div>
       </div>
 
