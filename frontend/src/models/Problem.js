@@ -1,6 +1,5 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
-import apiService from '@/services/apiService'
 
 export class Problem {
   constructor(data = {}) {
