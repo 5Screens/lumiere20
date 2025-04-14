@@ -99,7 +99,27 @@ export class Problem {
         placeholder: t('problem.service_placeholder'),
         endpoint: 'services',
         displayField: 'name',
-        valueField: 'uuid'
+        valueField: 'uuid',
+        columnsConfig: [
+          { key: 'name', label: t('service.name'), visible: true },
+          { key: 'description', label: t('service.description'), visible: false },
+          { key: 'business_criticality', label: t('service.business_criticality'), visible: false },
+          { key: 'lifecycle_status', label: t('service.lifecycle_status'), visible: false },
+          { key: 'version', label: t('service.version'), visible: false },
+          { key: 'operational', label: t('service.operational'), visible: false },
+          { key: 'legal_regulatory', label: t('service.legal_regulatory'), visible: false },
+          { key: 'reputational', label: t('service.reputational'), visible: false },
+          { key: 'financial', label: t('service.financial'), visible: false },
+          { key: 'comments', label: t('service.comments'), visible: false },
+          { key: 'date_creation', label: t('service.date_creation'), visible: false },
+          { key: 'date_modification', label: t('service.date_modification'), visible: false },
+          { key: 'owning_entity_name', label: t('service.owning_entity_name'), visible: true },
+          { key: 'owned_by_name', label: t('service.owned_by_name'), visible: true },
+          { key: 'managed_by_name', label: t('service.managed_by_name'), visible: false },
+          { key: 'cab_name', label: t('service.cab_name'), visible: false },
+          { key: 'parent_service_name', label: t('service.parent_service_name'), visible: false }
+        ],
+        required: true
       },
       rel_service_offerings: {
         label: t('problem.service_offerings'),
@@ -107,7 +127,22 @@ export class Problem {
         placeholder: t('problem.service_offerings_placeholder'),
         endpoint: 'service_offerings',
         displayField: 'name',
-        valueField: 'uuid'
+        valueField: 'uuid',
+        columnsConfig: [
+          { key: 'name', label: t('service.name'), visible: true },
+          { key: 'description', label: t('service.description'), visible: false },
+          { key: 'start_date', label: t('service.start_date'), visible: false },
+          { key: 'end_date', label: t('service.end_date'), visible: false },
+          { key: 'business_criticality', label: t('service.business_criticality'), visible: false },
+          { key: 'environment', label: t('service.environment'), visible: false },
+          { key: 'price_model', label: t('service.price_model'), visible: false },
+          { key: 'currency', label: t('service.currency'), visible: false },
+          { key: 'date_creation', label: t('service.date_creation'), visible: false },
+          { key: 'date_modification', label: t('service.date_modification'), visible: false },
+          { key: 'service_name', label: t('service.service_name'), visible: true },
+          { key: 'operator_entity_name', label: t('service.operator_entity_name'), visible: false }
+        ],
+        required: true
       },
       watch_list: {
         label: t('problem.watch_list'),

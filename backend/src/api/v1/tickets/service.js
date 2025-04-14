@@ -93,7 +93,7 @@ const createTicket = async (ticketData) => {
                 'impact', 'urgency', 'symptoms_description', 'workaround',
                 'knownerrors_list', 'changes_list', 'incidents_list', 'root_cause',
                 'definitive_solution', 'target_resolution_date', 'actual_resolution_date',
-                'actual_resolution_workload', 'closure_justification', 'pbm_closed_at'
+                'actual_resolution_workload', 'closure_justification', 'closed_at'
             ];
             
             // Ajouter chaque champ présent dans ticketData aux attributs étendus
