@@ -141,9 +141,9 @@ export class Problem {
         label: t('problem.assigned_group'),
         type: 'sFilteredSearchField',
         placeholder: t('problem.assigned_group_placeholder'),
-        endpoint: ({ assigned_to }) => 
-          assigned_to 
-            ? `persons/${assigned_to}/groups` 
+        endpoint: ({ assigned_to_person }) => 
+          assigned_to_person 
+            ? `persons/${assigned_to_person}/groups` 
             : 'groups',
         displayField: 'groupe_name',
         valueField: 'uuid',
@@ -153,9 +153,9 @@ export class Problem {
         required: true
       },
       assigned_to_person: {
-        label: t('problem.assigned_to'),
+        label: t('problem.assigned_to_person'),
         type: 'sFilteredSearchField',
-        placeholder: t('problem.assigned_to_placeholder'),
+        placeholder: t('problem.assigned_to_person_placeholder'),
         endpoint: ({ assigned_to_group }) => 
           assigned_to_group 
           ? `groups/${assigned_to_group}/members` 
@@ -177,7 +177,7 @@ export class Problem {
         type: 'sRichTextEditor',
         placeholder: t('problem.workaround_placeholder')
       },
-      pbm_closed_at: {
+      closed_at: {
         label: t('problem.closed_at'),
         type: 'sDatePicker',
         placeholder: t('problem.closed_at_placeholder')

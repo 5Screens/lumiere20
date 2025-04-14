@@ -41,14 +41,16 @@ const validateCreateTicket = (req, res, next) => {
     // Vérifier si le type de ticket est INCIDENT
     const isIncident = req.query.ticket_types === 'INCIDENT' || 
                        (req.body && req.body.ticket_type_code === 'INCIDENT');
+                       
+    // Vérifier si le type de ticket est PROBLEM
+    const isProblem = req.query.ticket_types === 'PROBLEM' || 
+                      (req.body && req.body.ticket_type_code === 'PROBLEM');
     
     // Schéma de base pour tous les types de tickets
     const baseSchema = {
         uuid: Joi.string().uuid().allow(null),
         title: Joi.string().required(),
         description: Joi.string().allow('', null),
-        requested_by_uuid: Joi.string().uuid().required(),
-        requested_for_uuid: Joi.string().uuid().required(),
         writer_uuid: Joi.string().uuid().required(),
         ticket_type_code: Joi.string().required(),
         ticket_status_code: Joi.string().required(),
@@ -62,6 +64,8 @@ const validateCreateTicket = (req, res, next) => {
     
     // Champs spécifiques aux incidents
     const incidentSchema = {
+        requested_by_uuid: Joi.string().uuid().required(),
+        requested_for_uuid: Joi.string().uuid().required(),
         impact: Joi.string().allow(null, ''),
         urgency: Joi.string().allow(null, ''),
         priority: Joi.number().allow(null),
@@ -84,10 +88,38 @@ const validateCreateTicket = (req, res, next) => {
         contact_type: Joi.string().allow(null, '')
     };
     
+    // Champs spécifiques aux problèmes
+    const problemSchema = {
+        requested_by_uuid: Joi.string().uuid().forbidden(),
+        requested_for_uuid: Joi.string().uuid().forbidden(),
+        rel_problem_categories_code: Joi.string().allow(null, ''),
+        rel_service: Joi.string().uuid().allow(null, ''),
+        rel_service_offerings: Joi.string().uuid().allow(null, ''),
+        impact: Joi.string().allow(null, ''),
+        urgency: Joi.string().allow(null, ''),
+        symptoms_description: Joi.string().allow(null, ''),
+        workaround: Joi.string().allow(null, ''),
+        knownerrors_list: Joi.array().items(Joi.string().uuid()).allow(null),
+        changes_list: Joi.array().items(Joi.string().uuid()).allow(null),
+        incidents_list: Joi.array().items(Joi.string().uuid()).allow(null),
+        root_cause: Joi.string().allow(null, ''),
+        definitive_solution: Joi.string().allow(null, ''),
+        target_resolution_date: Joi.date().allow(null),
+        actual_resolution_date: Joi.date().allow(null),
+        actual_resolution_workload: Joi.number().allow(null),
+        closure_justification: Joi.string().allow(null, ''),
+        closed_at: Joi.date().allow(null)
+    };
+    
     // Combiner les schémas en fonction du type de ticket
-    const schemaObj = isIncident 
-        ? { ...baseSchema, ...incidentSchema }
-        : baseSchema;
+    let schemaObj;
+    if (isIncident) {
+        schemaObj = { ...baseSchema, ...incidentSchema };
+    } else if (isProblem) {
+        schemaObj = { ...baseSchema, ...problemSchema };
+    } else {
+        schemaObj = baseSchema;
+    }
     
     const schema = Joi.object(schemaObj);
 

@@ -56,7 +56,10 @@ const createTicket = async (ticketData) => {
         
         // Déterminer si c'est un ticket de type INCIDENT
         const isIncident = ticketData.ticket_type_code === 'INCIDENT';
-        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : ticketData.ticket_type_code}`);
+        // Déterminer si c'est un ticket de type PROBLEM
+        const isProblem = ticketData.ticket_type_code === 'PROBLEM';
+        
+        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : ticketData.ticket_type_code}`);
         
         // Préparer les attributs étendus pour le core
         let coreExtendedAttributes = {};
@@ -82,6 +85,27 @@ const createTicket = async (ticketData) => {
             logger.info('[SERVICE] Prepared core_extended_attributes for INCIDENT ticket');
         }
         
+        // Si c'est un problème, ajouter les attributs spécifiques aux problèmes
+        if (isProblem) {
+            // Champs à inclure dans core_extended_attributes pour les problèmes
+            const problemFields = [
+                'rel_problem_categories_code', 'rel_service', 'rel_service_offerings',
+                'impact', 'urgency', 'symptoms_description', 'workaround',
+                'knownerrors_list', 'changes_list', 'incidents_list', 'root_cause',
+                'definitive_solution', 'target_resolution_date', 'actual_resolution_date',
+                'actual_resolution_workload', 'closure_justification', 'pbm_closed_at'
+            ];
+            
+            // Ajouter chaque champ présent dans ticketData aux attributs étendus
+            problemFields.forEach(field => {
+                if (ticketData[field] !== undefined) {
+                    coreExtendedAttributes[field] = ticketData[field];
+                }
+            });
+            
+            logger.info('[SERVICE] Prepared core_extended_attributes for PROBLEM ticket');
+        }
+        
         // 1. Create the ticket
         const ticketQuery = `
             INSERT INTO core.tickets (
@@ -98,13 +122,17 @@ const createTicket = async (ticketData) => {
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *
         `;
+        
+        // Pour les problèmes, on ignore requested_by_uuid et requested_for_uuid
+        const requestedByUuid = isProblem ? ticketData.writer_uuid : ticketData.requested_by_uuid;
+        const requestedForUuid = isProblem ? ticketData.writer_uuid : ticketData.requested_for_uuid;
 
         const ticketResult = await client.query(ticketQuery, [
             ticketData.title,
             ticketData.description,
             ticketData.configuration_item_uuid,
-            ticketData.requested_by_uuid,
-            ticketData.requested_for_uuid,
+            requestedByUuid,
+            requestedForUuid,
             ticketData.writer_uuid,
             ticketData.ticket_type_code,
             ticketData.ticket_status_code,
