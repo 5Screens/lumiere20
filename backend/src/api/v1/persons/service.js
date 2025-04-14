@@ -13,6 +13,7 @@ const getAllPersons = async (lang) => {
             SELECT *
             FROM configuration.persons
             ORDER BY last_name, first_name
+            LIMIT 100
         `;
         const { rows } = await db.query(query);
         logger.info(`Service - Retrieved ${rows.length} persons`);
