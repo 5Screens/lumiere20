@@ -62,7 +62,7 @@ export class Incident {
         type: 'sSelectField',
         placeholder: t('incident.status_placeholder'),
         required: true,
-        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=INCIDENT`,
         patchEndpoint: 'incidents',
         fieldName: 'ticket_status_code',
         mode: 'creation'
