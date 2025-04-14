@@ -152,7 +152,7 @@ export class Problem {
         ],
         required: true
       },
-      assigned_to: {
+      assigned_to_person: {
         label: t('problem.assigned_to'),
         type: 'sFilteredSearchField',
         placeholder: t('problem.assigned_to_placeholder'),
