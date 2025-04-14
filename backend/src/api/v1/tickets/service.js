@@ -123,7 +123,7 @@ const createTicket = async (ticketData) => {
             RETURNING *
         `;
         
-        // Pour les problèmes, on ignore requested_by_uuid et requested_for_uuid
+        // Pour les problèmes, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
         const requestedByUuid = isProblem ? ticketData.writer_uuid : ticketData.requested_by_uuid;
         const requestedForUuid = isProblem ? ticketData.writer_uuid : ticketData.requested_for_uuid;
 
