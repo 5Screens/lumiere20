@@ -6,10 +6,10 @@ export class Problem {
     // Identifiant unique du problème
     this.uuid = data.uuid || null;
     this.writer_uuid = data.writer_uuid || null;
-    this.problem_status_code = data.problem_status_code || null;
+    this.ticket_status_code = data.ticket_status_code || null;
+    this.ticket_type_code = data.ticket_type_code || 'PROBLEM';
 
     // Informations de détection
-    this.created_at = data.created_at || null;
     this.title = data.title || '';
     this.rel_problem_categories_code = data.rel_problem_categories_code || null;
     this.description = data.description || '';
@@ -21,10 +21,11 @@ export class Problem {
     // Informations d'enregistrement
     this.impact = data.impact || null;
     this.urgency = data.urgency || null;
+    this.assigned_to_group = data.assigned_to_group || null;
+    this.assigned_to_person = data.assigned_to_person || null;
     this.symptoms_description = data.symptoms_description || '';
     this.workaround = data.workaround || '';
-    this.pbm_closed_at = data.pbm_closed_at || null;
-
+    
     // Identification des causes
     this.knownerrors_list = data.knownerrors_list || [];
     this.changes_list = data.changes_list || [];
@@ -37,7 +38,11 @@ export class Problem {
 
     // Clôture du problème
     this.closure_justification = data.closure_justification || '';
+
+    // Timestamps
+    this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
+    this.closed_at = data.closed_at || null;
   }
 
   static getRenderableFields() {
@@ -45,14 +50,14 @@ export class Problem {
     const userProfileStore = useUserProfileStore();
 
     return {
-      problem_status_code: {
+      ticket_status_code: {
         label: t('problem.status'),
         type: 'sSelectField',
         placeholder: t('problem.status_placeholder'),
         required: true,
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=PROBLEM`,
         patchEndpoint: 'problems',
-        fieldName: 'problem_status_code',
+        fieldName: 'ticket_status_code',
         mode: 'creation'
       },
       title: {
@@ -248,6 +253,7 @@ export class Problem {
       case 'POST':
         // Pour POST, définir writer_uuid et ticket_type_code
         this.writer_uuid = userProfileStore.id;
+        this.ticket_type_code = 'PROBLEM';
         break;
       case 'PUT':
       case 'PATCH':
