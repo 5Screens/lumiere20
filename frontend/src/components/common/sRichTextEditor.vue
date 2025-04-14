@@ -37,7 +37,7 @@
       </div>
 
       <!-- Color picker -->
-      <div class="toolbar-group">
+      <div class="toolbar-group" ref="colorPickerGroupRef">
         <button class="toolbar-button" @click="toggleColorPicker($event)" title="Couleur du texte">
           <i class="fas fa-palette"></i>
         </button>
@@ -64,15 +64,68 @@
 
       <!-- Insert group -->
       <div class="toolbar-group">
-        <button class="toolbar-button" @click="toggleLinkDialog($event)" title="Insérer un lien">
-          <i class="fas fa-link"></i>
-        </button>
-        <button class="toolbar-button" @click="toggleEmojiPicker($event)" title="Insérer un emoji">
-          <i class="fas fa-smile"></i>
-        </button>
-        <button class="toolbar-button" @click="showTableDialog = true; setPopupPosition($event)" title="Insérer un tableau">
-          <i class="fas fa-table"></i>
-        </button>
+        <div class="toolbar-button-container" ref="linkDialogGroupRef">
+          <button class="toolbar-button" @click="toggleLinkDialog($event)" title="Insérer un lien">
+            <i class="fas fa-link"></i>
+          </button>
+          <!-- Link Dialog -->
+          <div v-if="showLinkDialog" class="link-dialog" ref="linkDialogRef" :style="popupPosition">
+            <input 
+              type="text" 
+              v-model="linkUrl" 
+              placeholder="URL (https://...)" 
+              @keyup.enter="insertLink"
+            >
+            <input 
+              type="text" 
+              v-model="linkText" 
+              placeholder="Texte du lien" 
+              @keyup.enter="insertLink"
+            >
+            <button @click="insertLink">Insérer</button>
+            <button class="cancel" @click="showLinkDialog = false">Annuler</button>
+          </div>
+        </div>
+        <div class="toolbar-button-container" ref="emojiPickerGroupRef">
+          <button class="toolbar-button" @click="toggleEmojiPicker($event)" title="Insérer un emoji">
+            <i class="fas fa-smile"></i>
+          </button>
+          <!-- Emoji Picker -->
+          <div v-if="showEmojiPicker" class="emoji-picker" ref="emojiPickerRef" :style="popupPosition">
+            <div 
+              v-for="emoji in emojis" 
+              :key="emoji" 
+              class="emoji-option" 
+              @click="insertEmoji(emoji)"
+            >
+              {{ emoji }}
+            </div>
+          </div>
+        </div>
+        <div class="toolbar-button-container" ref="tableDialogGroupRef">
+          <button class="toolbar-button" @click="showTableDialog = true; setPopupPosition($event)" title="Insérer un tableau">
+            <i class="fas fa-table"></i>
+          </button>
+          <!-- Table Dialog -->
+          <div v-if="showTableDialog" class="table-dialog" ref="tableDialogRef" :style="popupPosition">
+            <input 
+              type="number" 
+              v-model="tableRows" 
+              min="1" 
+              max="10" 
+              placeholder="Nombre de lignes"
+            >
+            <input 
+              type="number" 
+              v-model="tableCols" 
+              min="1" 
+              max="10" 
+              placeholder="Nombre de colonnes"
+            >
+            <button @click="insertTable">Insérer</button>
+            <button class="cancel" @click="showTableDialog = false">Annuler</button>
+          </div>
+        </div>
         <button class="toolbar-button" @click="insertCodeSnippet" title="Insérer un extrait de code">
           <i class="fas fa-code"></i>
         </button>
@@ -99,72 +152,24 @@
       @click="handleContentClick"
     ></div>
 
-    <!-- Link Dialog -->
-    <div v-if="showLinkDialog" class="link-dialog" ref="linkDialogRef" :style="popupPosition">
-      <input 
-        type="text" 
-        v-model="linkUrl" 
-        placeholder="URL (https://...)" 
-        @keyup.enter="insertLink"
-      >
-      <input 
-        type="text" 
-        v-model="linkText" 
-        placeholder="Texte du lien" 
-        @keyup.enter="insertLink"
-      >
-      <button @click="insertLink">Insérer</button>
-      <button class="cancel" @click="showLinkDialog = false">Annuler</button>
-    </div>
-
-    <!-- Table Dialog -->
-    <div v-if="showTableDialog" class="table-dialog" ref="tableDialogRef" :style="popupPosition">
-      <input 
-        type="number" 
-        v-model="tableRows" 
-        min="1" 
-        max="10" 
-        placeholder="Nombre de lignes"
-      >
-      <input 
-        type="number" 
-        v-model="tableCols" 
-        min="1" 
-        max="10" 
-        placeholder="Nombre de colonnes"
-      >
-      <button @click="insertTable">Insérer</button>
-      <button class="cancel" @click="showTableDialog = false">Annuler</button>
-    </div>
-
     <!-- Table Actions -->
-    <div v-if="showTableActions" class="table-actions" :style="tableActionsPosition" ref="tableActionsRef">
-      <button class="table-action-button" @click="deleteTable" title="Supprimer le tableau">
-        <i class="fas fa-trash"></i>
-      </button>
-      <button class="table-action-button" @click="copyTable" title="Copier le tableau">
-        <i class="fas fa-copy"></i>
-      </button>
-      <button class="table-action-button" @click="alignTable('left')" title="Aligner à gauche">
-        <i class="fas fa-align-left"></i>
-      </button>
-      <button class="table-action-button" @click="alignTable('center')" title="Centrer">
-        <i class="fas fa-align-center"></i>
-      </button>
-      <button class="table-action-button" @click="alignTable('right')" title="Aligner à droite">
-        <i class="fas fa-align-right"></i>
-      </button>
-    </div>
-
-    <!-- Emoji Picker -->
-    <div v-if="showEmojiPicker" class="emoji-picker" ref="emojiPickerRef" :style="popupPosition">
-      <div 
-        v-for="emoji in emojis" 
-        :key="emoji" 
-        class="emoji-option" 
-        @click="insertEmoji(emoji)"
-      >
-        {{ emoji }}
+    <div class="toolbar-button-container" ref="tableActionsGroupRef">
+      <div v-if="showTableActions" class="table-actions" :style="tableActionsPosition" ref="tableActionsRef">
+        <button class="table-action-button" @click="deleteTable" title="Supprimer le tableau">
+          <i class="fas fa-trash"></i>
+        </button>
+        <button class="table-action-button" @click="copyTable" title="Copier le tableau">
+          <i class="fas fa-copy"></i>
+        </button>
+        <button class="table-action-button" @click="alignTable('left')" title="Aligner à gauche">
+          <i class="fas fa-align-left"></i>
+        </button>
+        <button class="table-action-button" @click="alignTable('center')" title="Centrer">
+          <i class="fas fa-align-center"></i>
+        </button>
+        <button class="table-action-button" @click="alignTable('right')" title="Aligner à droite">
+          <i class="fas fa-align-right"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -204,6 +209,11 @@ const linkDialogRef = ref(null);
 const tableDialogRef = ref(null);
 const tableActionsRef = ref(null);
 const imageInput = ref(null);
+const colorPickerGroupRef = ref(null);
+const linkDialogGroupRef = ref(null);
+const emojiPickerGroupRef = ref(null);
+const tableDialogGroupRef = ref(null);
+const tableActionsGroupRef = ref(null);
 
 // State variables
 const showColorPicker = ref(false);
@@ -300,68 +310,72 @@ const formatBlock = (block) => {
 
 // Toggle color picker
 const toggleColorPicker = (event) => {
-  // Avant d'afficher la palette, on mémorise la sélection
   saveSelection();
   showColorPicker.value = !showColorPicker.value;
-  showEmojiPicker.value = false;
-  showLinkDialog.value = false;
-  showTableDialog.value = false;
   
+  // Close other popups
   if (showColorPicker.value) {
+    showLinkDialog.value = false;
+    showTableDialog.value = false;
+    showEmojiPicker.value = false;
+    setPopupPosition(event);
+  }
+};
+
+// Toggle emoji picker
+const toggleEmojiPicker = (event) => {
+  saveSelection();
+  showEmojiPicker.value = !showEmojiPicker.value;
+  
+  // Close other popups
+  if (showEmojiPicker.value) {
+    showColorPicker.value = false;
+    showLinkDialog.value = false;
+    showTableDialog.value = false;
+    setPopupPosition(event);
+  }
+};
+
+// Toggle link dialog
+const toggleLinkDialog = (event) => {
+  saveSelection();
+  showLinkDialog.value = !showLinkDialog.value;
+  
+  if (showLinkDialog.value) {
+    // Get selected text for link
+    if (window.getSelection) {
+      const selection = window.getSelection();
+      if (selection.toString().length > 0) {
+        linkText.value = selection.toString();
+      } else {
+        linkText.value = '';
+      }
+    }
+    
+    // Close other popups
+    showColorPicker.value = false;
+    showEmojiPicker.value = false;
+    showTableDialog.value = false;
     setPopupPosition(event);
   }
 };
 
 // Apply color to text
 const applyColor = (color) => {
-  // Avant d'appliquer la couleur, on restaure la sélection
   restoreSelection();
   execCommand('foreColor', color);
   showColorPicker.value = false;
 };
 
-// Toggle emoji picker
-const toggleEmojiPicker = (event) => {
-  // Avant d'afficher la palette, on mémorise la sélection
-  saveSelection();
-  showEmojiPicker.value = !showEmojiPicker.value;
-  showColorPicker.value = false;
-  showLinkDialog.value = false;
-  showTableDialog.value = false;
-  
-  if (showEmojiPicker.value) {
-    setPopupPosition(event);
-  }
-};
-
 // Insert emoji
 const insertEmoji = (emoji) => {
-  // Avant d'insérer l'emoji, on restaure la sélection
   restoreSelection();
   execCommand('insertText', emoji);
   showEmojiPicker.value = false;
 };
 
-const toggleLinkDialog = (event) => {
-  // Mémoriser la sélection actuelle
-  saveSelection();
-
-  // Basculer l’affichage
-  showLinkDialog.value = !showLinkDialog.value;
-
-  // Masquer les autres éventuels éléments (palette de couleurs, emoji, etc.)
-  showColorPicker.value = false;
-  showEmojiPicker.value = false;
-  showTableDialog.value = false;
-  
-  if (showLinkDialog.value) {
-    setPopupPosition(event);
-  }
-};
-
 // Insert link
 const insertLink = () => {
-  // Avant d'insérer le lien, on restaure la sélection
   restoreSelection();
   if (linkUrl.value) {
     const url = linkUrl.value.startsWith('http') ? linkUrl.value : `https://${linkUrl.value}`;
@@ -439,12 +453,12 @@ const handleContentClick = (event) => {
       showTableActions.value = true;
       
       // Position the table actions menu below the table
-      const tableRect = target.getBoundingClientRect();
+      const rect = target.getBoundingClientRect();
       const editorRect = editorContent.value.getBoundingClientRect();
       
       tableActionsPosition.value = {
-        top: `${tableRect.bottom - editorRect.top + 5}px`,
-        left: `${tableRect.left - editorRect.left}px`
+        top: `${rect.top - editorRect.top - 40}px`,
+        left: `${rect.left - editorRect.left}px`
       };
       
       return;
@@ -639,13 +653,22 @@ const setPopupPosition = (event) => {
   const button = event.currentTarget;
   if (!button) return;
   
-  const rect = button.getBoundingClientRect();
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-  
   popupPosition.value = {
-    top: `${rect.bottom + scrollTop}px`,
-    left: `${rect.left + scrollLeft}px`
+    top: `${button.offsetHeight}px`,
+    left: '0px'
+  };
+};
+
+// Fonction pour positionner les actions de tableau
+const setTableActionsPosition = (table) => {
+  if (!table) return;
+  
+  const rect = table.getBoundingClientRect();
+  const editorRect = editorContent.value.getBoundingClientRect();
+  
+  tableActionsPosition.value = {
+    top: `${rect.top - editorRect.top - 40}px`,
+    left: `${rect.left - editorRect.left}px`
   };
 };
 </script>

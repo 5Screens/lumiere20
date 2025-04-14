@@ -46,6 +46,11 @@
   border-right: none;
 }
 
+.toolbar-button-container {
+  position: relative;
+  display: inline-block;
+}
+
 .toolbar-button {
   background-color: transparent;
   border: 1px solid transparent;
@@ -159,7 +164,7 @@
 .color-picker {
   display: flex;
   flex-wrap: wrap;
-  position: fixed;
+  position: absolute;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -186,7 +191,7 @@
 .emoji-picker {
   display: flex;
   flex-wrap: wrap;
-  position: fixed;
+  position: absolute;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -210,7 +215,7 @@
 }
 
 .link-dialog, .table-dialog {
-  position: fixed;
+  position: absolute;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -272,7 +277,7 @@
   border-radius: 4px;
   padding: 5px;
   box-shadow: 0 2px 10px var(--shadow-color);
-  position: fixed;
+  position: absolute;
   z-index: 1000;
 }
 
