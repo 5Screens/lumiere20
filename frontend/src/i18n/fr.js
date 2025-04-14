@@ -408,8 +408,8 @@ export default {
     
     assigned_group: 'Équipe en charge',
     assigned_group_placeholder: 'Sélectionnez l\'équipe',
-    assigned_to: 'Responsable',
-    assigned_to_placeholder: 'Sélectionnez le responsable',
+    assigned_to_person: 'Responsable',
+    assigned_to_person_placeholder: 'Sélectionnez le responsable',
     
     symptoms_description: 'Symptômes observés',
     symptoms_description_placeholder: 'Décrivez les symptômes observés',
@@ -439,5 +439,38 @@ export default {
     
     closure_justification: 'Justification de la clôture',
     closure_justification_placeholder: 'Entrez la justification de la clôture'
+  },
+  service: {
+    name: 'Nom',
+    description: 'Description',
+    business_criticality: 'Criticité métier',
+    lifecycle_status: 'Statut du cycle de vie',
+    version: 'Version',
+    operational: 'Impact opérationnel',
+    legal_regulatory: 'Impact légal/réglementaire',
+    reputational: 'Impact réputationnel',
+    financial: 'Impact financier',
+    comments: 'Commentaires',
+    date_creation: 'Date de création',
+    date_modification: 'Date de modification',
+    owning_entity_name: 'Entité propriétaire',
+    owned_by_name: 'Propriétaire',
+    managed_by_name: 'Géré par',
+    cab_name: 'CAB',
+    parent_service_name: 'Service parent'
+  },
+  service_offering: {
+    name: 'Offre de service',
+    description: 'Description',
+    start_date: 'Date de début',
+    end_date: 'Date de fin',
+    business_criticality: 'Criticité métier',
+    environment: 'Environnement',
+    price_model: 'Modèle de prix',
+    currency: 'Devise',
+    date_creation: 'Date de création',
+    date_modification: 'Date de modification',
+    service_name: 'Nom du service parent',
+    operator_entity_name: 'Entité opératrice'
   }
 }
