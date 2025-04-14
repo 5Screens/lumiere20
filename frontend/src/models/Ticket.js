@@ -4,7 +4,7 @@ import { useUserProfileStore } from '../stores/userProfileStore'
 export class Ticket {
   constructor(data = {}) {
     this.uuid = data.uuid || null;
-    this.titre = data.titre || '';
+    this.title = data.title || '';
     this.description = data.description || '';
     this.requested_by_uuid = data.requested_by_uuid || null;
     this.requested_for_uuid = data.requested_for_uuid || null;
@@ -33,7 +33,7 @@ export class Ticket {
         fieldName: 'ticket_status_code',
         mode: 'creation'
       },
-      titre: {
+      title: {
         editmode: false,
         label: t('ticket.title'),
         type: 'sTextField',
@@ -136,7 +136,7 @@ export class Ticket {
     
     // Base object with common fields
     const baseFields = {
-      titre: this.titre,
+      title: this.title,
       description: this.description,
       requested_by_uuid: this.requested_by_uuid,
       requested_for_uuid: this.requested_for_uuid,

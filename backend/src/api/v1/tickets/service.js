@@ -130,7 +130,7 @@ const createTicket = async (ticketData) => {
             await client.query(assignmentQuery, [
                 createdTicket.uuid,
                 ticketData.assigned_to_group,
-                ticketData.assigned_to || null
+                ticketData.assigned_to_person || null
             ]);
         }
         

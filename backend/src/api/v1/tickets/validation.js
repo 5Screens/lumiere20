@@ -54,7 +54,7 @@ const validateCreateTicket = (req, res, next) => {
         ticket_status_code: Joi.string().required(),
         configuration_item_uuid: Joi.string().uuid().allow(null, ''),
         assigned_to_group: Joi.string().uuid().allow(null, ''),
-        assigned_to: Joi.string().uuid().allow(null, ''),
+        assigned_to_person: Joi.string().uuid().allow(null, ''),
         watch_list: Joi.array().items(Joi.string().uuid()).allow(null),
         created_at: Joi.date().allow(null),
         updated_at: Joi.date().allow(null)
