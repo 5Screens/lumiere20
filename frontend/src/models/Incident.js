@@ -16,7 +16,7 @@ export class Incident {
 
     // Assignment and watching
     this.assigned_to_group = data.assigned_to_group || null;
-    this.assigned_to = data.assigned_to || null;
+    this.assigned_to_person = data.assigned_to_person || null;
     this.watch_list = data.watch_list || [];
 
     // Impact and priority
@@ -125,9 +125,9 @@ export class Incident {
         label: t('incident.assigned_group'),
         type: 'sFilteredSearchField',
         placeholder: t('incident.assigned_group_placeholder'),
-        endpoint: ({ assigned_to }) => 
-          assigned_to 
-            ? `persons/${assigned_to}/groups` 
+        endpoint: ({ assigned_to_person }) => 
+          assigned_to_person 
+            ? `persons/${assigned_to_person}/groups` 
             : 'groups',
         displayField: 'groupe_name',
         valueField: 'uuid',
@@ -136,7 +136,7 @@ export class Incident {
         ],
         required: true
       },
-      assigned_to: {
+      assigned_to_person: {
         label: t('incident.assigned_to'),
         type: 'sFilteredSearchField',
         placeholder: t('incident.assigned_to_placeholder'),
