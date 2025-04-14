@@ -35,16 +35,16 @@ class ServiceOfferingsController {
         }
     }
 
-    async getAllServices(req, res) {
+    async getAllServiceOfferings(req, res) {
         try {
-            logger.info('[CONTROLLER] Getting all services');
-            const services = await serviceOfferingsService.getAllServices();
-            res.json(services);
+            logger.info('[CONTROLLER] Getting all service offerings');
+            const serviceOfferings = await serviceOfferingsService.getAllServiceOfferings();
+            res.json(serviceOfferings);
         } catch (error) {
-            logger.error('[CONTROLLER] Error getting all services:', error);
+            logger.error('[CONTROLLER] Error getting all service offerings:', error);
             res.status(500).json({
                 error: 'Internal Server Error',
-                message: 'An error occurred while retrieving services'
+                message: 'An error occurred while retrieving service offerings'
             });
         }
     }

@@ -5,7 +5,7 @@ const validate = require('../../../middleware/validate');
 const serviceOfferingsValidation = require('./validation');
 const logger = require('../../../config/logger');
 
-// Route to get all services
+// Route to get all service offerings
 // GET /api/v1/service_offerings
 router.get(
     '/',
@@ -13,7 +13,7 @@ router.get(
         logger.info('[ROUTES] GET /api/v1/service_offerings - Route handler started');
         next();
     },
-    serviceOfferingsController.getAllServices
+    serviceOfferingsController.getAllServiceOfferings
 );
 
 // Route to get the count of subscribed offerings for an entity

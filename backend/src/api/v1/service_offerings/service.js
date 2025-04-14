@@ -36,41 +36,33 @@ class ServiceOfferingsService {
         }
     }
 
-    async getAllServices() {
+    async getAllServiceOfferings() {
         try {
-            logger.info('[SERVICE] Getting all services');
+            logger.info('[SERVICE] Getting all service offerings');
             const query = `
                 SELECT 
-                    s.uuid,
-                    s.name,
-                    s.description,
-                    s.business_criticality,
-                    s.lifecycle_status,
-                    s.version,
-                    s.operational,
-                    s.legal_regulatory,
-                    s.reputational,
-                    s.financial,
-                    s.comments,
-                    s.date_creation,
-                    s.date_modification,
-                    e.name as owning_entity_name,
-                    p1.first_name || ' ' || p1.last_name as owned_by_name,
-                    p2.first_name || ' ' || p2.last_name as managed_by_name,
-                    g.groupe_name as cab_name,
-                    parent.name as parent_service_name
-                FROM data.services s
-                LEFT JOIN configuration.entities e ON s.owning_entity_uuid = e.uuid
-                LEFT JOIN configuration.persons p1 ON s.owned_by_uuid = p1.uuid
-                LEFT JOIN configuration.persons p2 ON s.managed_by_uuid = p2.uuid
-                LEFT JOIN configuration.groups g ON s.cab_uuid = g.uuid
-                LEFT JOIN data.services parent ON s.parent_uuid = parent.uuid
-                ORDER BY s.name ASC`;
+                    so.uuid,
+                    so.name,
+                    so.description,
+                    so.start_date,
+                    so.end_date,
+                    so.business_criticality,
+                    so.environment,
+                    so.price_model,
+                    so.currency,
+                    so.date_creation,
+                    so.date_modification,
+                    s.name as service_name,
+                    e.name as operator_entity_name
+                FROM data.service_offerings so
+                LEFT JOIN data.services s ON so.service_uuid = s.uuid
+                LEFT JOIN configuration.entities e ON so.operator_entity_uuid = e.uuid
+                ORDER BY so.name ASC`;
 
             const result = await db.query(query);
             return result.rows;
         } catch (error) {
-            logger.error('[SERVICE] Error getting all services:', error);
+            logger.error('[SERVICE] Error getting all service offerings:', error);
             throw error;
         }
     }
