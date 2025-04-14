@@ -273,15 +273,31 @@ export class Incident {
         placeholder: t('incident.problem_id_placeholder'),
         endpoint: 'tickets?ticket_type=PROBLEM',
         displayField: 'title',
-        valueField: 'uuid'
+        valueField: 'uuid',
+        columnsConfig: [
+          { key: 'title', label: t('ticket.title'), visible: true },
+          { key: 'ticket_status_code', label: t('ticket.status'), visible: true },
+          { key: 'created_at', label: t('ticket.created_at'), visible: true },
+          { key: 'requested_by_name', label: t('ticket.requested_by_name'), visible: true },
+          { key: 'requested_for_name', label: t('ticket.requested_for_name'), visible: true  },
+          { key: 'writer_name', label: t('ticket.writer_name'), visible: false }
+        ]
       },
-      rel_change_request: {
+      rel_change_request: { 
         label: t('incident.change_request'),
         type: 'sFilteredSearchField',
         placeholder: t('incident.change_request_placeholder'),
         endpoint: 'tickets?ticket_type=CHANGE',
         displayField: 'title',
-        valueField: 'uuid'
+        valueField: 'uuid',
+        columnsConfig: [
+          { key: 'title', label: t('ticket.title'), visible: true },
+          { key: 'ticket_status_code', label: t('ticket.status'), visible: true },
+          { key: 'created_at', label: t('ticket.created_at'), visible: true },
+          { key: 'requested_by_name', label: t('ticket.requested_by_name'), visible: true },
+          { key: 'requested_for_name', label: t('ticket.requested_for_name'), visible: true  },
+          { key: 'writer_name', label: t('ticket.writer_name'), visible: false }
+        ]
       }
     };
   }
