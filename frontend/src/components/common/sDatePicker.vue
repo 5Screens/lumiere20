@@ -28,6 +28,7 @@
           's-date-picker__input',
           { 's-date-picker__input--error': error || showRequiredError }
         ]"
+        @click="toggleCalendar"
       />
       
       <div 
@@ -50,74 +51,85 @@
           :disabled="disabled"
         />
       </div>
-      
-      <Transition name="calendar">
-        <div v-if="showCalendar" class="s-date-picker__calendar-container" v-click-outside="closeCalendar">
-          <!-- En-tête du calendrier avec navigation -->
-          <div class="s-date-picker__calendar-header">
-            <button 
-              class="s-date-picker__nav-button" 
-              @click="previousMonth"
-              type="button"
-            >
-              &lt;
-            </button>
-            <span class="s-date-picker__month-year">{{ currentMonthName }} {{ currentYear }}</span>
-            <button 
-              class="s-date-picker__nav-button" 
-              @click="nextMonth"
-              type="button"
-            >
-              &gt;
-            </button>
-          </div>
-          
-          <!-- Jours de la semaine -->
-          <div class="s-date-picker__weekdays">
-            <div v-for="day in weekdays" :key="day">{{ day }}</div>
-          </div>
-          
-          <!-- Jours du mois -->
-          <div class="s-date-picker__days">
-            <div 
-              v-for="(day, index) in calendarDays" 
-              :key="index"
-              :class="[
-                's-date-picker__day',
-                { 's-date-picker__day--disabled': !day.currentMonth },
-                { 's-date-picker__day--today': day.isToday },
-                { 's-date-picker__day--selected': day.isSelected }
-              ]"
-              @click="selectDate(day)"
-            >
-              {{ day.day }}
-            </div>
-          </div>
-          
-          <!-- Pied du calendrier avec boutons d'action -->
-          <div class="s-date-picker__footer">
-            <button 
-              class="s-date-picker__footer-button" 
-              @click="setToday"
-              type="button"
-            >
-              {{ t('datepicker.today') }}
-            </button>
-            <button 
-              class="s-date-picker__footer-button" 
-              @click="clearDate"
-              type="button"
-            >
-              {{ t('datepicker.clear') }}
-            </button>
-          </div>
-        </div>
-      </Transition>
-      
-      <span v-if="showRequiredError" class="s-date-picker__error">{{ t('errors.requiredField') }}</span>
-      <span v-else-if="error" class="s-date-picker__error">{{ error }}</span>
-      <span v-else-if="helperText" class="s-date-picker__helper">{{ helperText }}</span>
     </div>
+    
+    <!-- Calendrier en position absolue par rapport au document -->
+    <div v-if="showCalendar" class="s-date-picker__calendar-container" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; background-color: var(--bg-color); border: 1px solid var(--border-color); box-shadow: 0 4px 10px var(--shadow-color);">
+      <div style="background-color: var(--primary-color); color: white; padding: 8px; text-align: center; font-weight: 500;">
+        {{ label || 'Sélectionnez une date' }}
+      </div>
+      
+      <!-- En-tête du calendrier avec navigation -->
+      <div class="s-date-picker__calendar-header">
+        <button 
+          class="s-date-picker__nav-button" 
+          @click="previousMonth"
+          type="button"
+        >
+          &lt;
+        </button>
+        <span class="s-date-picker__month-year">{{ currentMonthName }} {{ currentYear }}</span>
+        <button 
+          class="s-date-picker__nav-button" 
+          @click="nextMonth"
+          type="button"
+        >
+          &gt;
+        </button>
+      </div>
+      
+      <!-- Jours de la semaine -->
+      <div class="s-date-picker__weekdays">
+        <div v-for="day in weekdays" :key="day">{{ day }}</div>
+      </div>
+      
+      <!-- Jours du mois -->
+      <div class="s-date-picker__days">
+        <div 
+          v-for="(day, index) in calendarDays" 
+          :key="index"
+          :class="[
+            's-date-picker__day',
+            { 's-date-picker__day--disabled': !day.currentMonth },
+            { 's-date-picker__day--today': day.isToday },
+            { 's-date-picker__day--selected': day.isSelected }
+          ]"
+          @click="selectDate(day)"
+        >
+          {{ day.day }}
+        </div>
+      </div>
+      
+      <!-- Pied du calendrier avec boutons d'action -->
+      <div class="s-date-picker__footer">
+        <button 
+          class="s-date-picker__footer-button" 
+          @click="setToday"
+          type="button"
+        >
+          {{ t('datepicker.today') }}
+        </button>
+        <button 
+          class="s-date-picker__footer-button" 
+          @click="clearDate"
+          type="button"
+        >
+          {{ t('datepicker.clear') }}
+        </button>
+        <button 
+          class="s-date-picker__footer-button" 
+          @click="closeCalendar"
+          type="button"
+          style="background-color: var(--error-color); color: white;"
+        >
+          Fermer
+        </button>
+      </div>
+    </div>
+    
+    <span v-if="showRequiredError" class="s-date-picker__error">{{ t('errors.requiredField') }}</span>
+    <span v-else-if="error" class="s-date-picker__error">{{ error }}</span>
+    <span v-else-if="helperText" class="s-date-picker__helper">{{ helperText }}</span>
   </div>
 </template>
 
@@ -202,82 +214,67 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'update:success'])
+// Emits
+const emit = defineEmits(['update:modelValue', 'update:success', 'update:error'])
 
-// Computed property pour vérifier si le champ est obligatoire et vide
-const showRequiredError = computed(() => {
-  return props.required && !selectedDate.value
-})
-
-// Computed property pour afficher la date au format localisé
+// Computed properties
 const displayValue = computed(() => {
   if (!selectedDate.value) return ''
   
-  // Format: DD/MM/YYYY
   const date = new Date(selectedDate.value)
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const year = date.getFullYear()
-  
-  return `${day}/${month}/${year}`
+  return date.toLocaleDateString()
 })
 
-// Computed property pour le nom du mois actuel
 const currentMonthName = computed(() => {
   const date = new Date(currentYear.value, currentMonth.value, 1)
-  return date.toLocaleString('default', { month: 'long' })
+  return date.toLocaleDateString(undefined, { month: 'long' })
 })
 
-// Computed property pour générer les jours du calendrier
 const calendarDays = computed(() => {
   const days = []
   
-  // Premier jour du mois actuel
-  const firstDayOfMonth = new Date(currentYear.value, currentMonth.value, 1)
-  const firstDayOfWeek = firstDayOfMonth.getDay()
+  // Premier jour du mois
+  const firstDay = new Date(currentYear.value, currentMonth.value, 1)
+  // Dernier jour du mois
+  const lastDay = new Date(currentYear.value, currentMonth.value + 1, 0)
   
-  // Dernier jour du mois actuel
-  const lastDayOfMonth = new Date(currentYear.value, currentMonth.value + 1, 0)
-  const lastDate = lastDayOfMonth.getDate()
-  
-  // Ajouter les jours du mois précédent pour compléter la première semaine
+  // Jours du mois précédent pour compléter la première semaine
+  const firstDayOfWeek = firstDay.getDay()
   const prevMonthLastDay = new Date(currentYear.value, currentMonth.value, 0).getDate()
   
   for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-    const prevMonthDay = prevMonthLastDay - i
-    const date = new Date(currentYear.value, currentMonth.value - 1, prevMonthDay)
-    
+    const day = prevMonthLastDay - i
+    const date = new Date(currentYear.value, currentMonth.value - 1, day)
     days.push({
-      day: prevMonthDay,
-      date: date,
+      day,
+      date,
       currentMonth: false,
       isToday: isToday(date),
       isSelected: isSelectedDate(date)
     })
   }
   
-  // Ajouter les jours du mois actuel
-  for (let i = 1; i <= lastDate; i++) {
-    const date = new Date(currentYear.value, currentMonth.value, i)
-    
+  // Jours du mois courant
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const date = new Date(currentYear.value, currentMonth.value, day)
     days.push({
-      day: i,
-      date: date,
+      day,
+      date,
       currentMonth: true,
       isToday: isToday(date),
       isSelected: isSelectedDate(date)
     })
   }
   
-  // Ajouter les jours du mois suivant pour compléter la dernière semaine
-  const remainingDays = 42 - days.length // 6 semaines * 7 jours = 42
+  // Jours du mois suivant pour compléter la dernière semaine
+  const lastDayOfWeek = lastDay.getDay()
+  const daysToAdd = 6 - lastDayOfWeek
   
-  for (let i = 1; i <= remainingDays; i++) {
-    const date = new Date(currentYear.value, currentMonth.value + 1, i)
-    
+  for (let day = 1; day <= daysToAdd; day++) {
+    const date = new Date(currentYear.value, currentMonth.value + 1, day)
     days.push({
-      day: i,
-      date: date,
+      day,
+      date,
       currentMonth: false,
       isToday: isToday(date),
       isSelected: isSelectedDate(date)
@@ -287,7 +284,11 @@ const calendarDays = computed(() => {
   return days
 })
 
-// Vérifier si une date est aujourd'hui
+const showRequiredError = computed(() => {
+  return props.required && !selectedDate.value && isEditing.value
+})
+
+// Methods
 function isToday(date) {
   const today = new Date()
   return date.getDate() === today.getDate() &&
@@ -295,7 +296,6 @@ function isToday(date) {
          date.getFullYear() === today.getFullYear()
 }
 
-// Vérifier si une date est sélectionnée
 function isSelectedDate(date) {
   if (!selectedDate.value) return false
   
@@ -305,7 +305,6 @@ function isSelectedDate(date) {
          date.getFullYear() === selected.getFullYear()
 }
 
-// Naviguer au mois précédent
 function previousMonth() {
   if (currentMonth.value === 0) {
     currentMonth.value = 11
@@ -315,7 +314,6 @@ function previousMonth() {
   }
 }
 
-// Naviguer au mois suivant
 function nextMonth() {
   if (currentMonth.value === 11) {
     currentMonth.value = 0
@@ -325,10 +323,9 @@ function nextMonth() {
   }
 }
 
-// Sélectionner une date
 function selectDate(day) {
   if (!day.currentMonth) {
-    // Si on clique sur un jour du mois précédent ou suivant, changer de mois
+    // Si on sélectionne un jour du mois précédent ou suivant, changer de mois
     if (day.date < new Date(currentYear.value, currentMonth.value, 1)) {
       previousMonth()
     } else {
@@ -336,132 +333,95 @@ function selectDate(day) {
     }
   }
   
-  selectedDate.value = new Date(day.date)
-  emit('update:modelValue', selectedDate.value)
-  
-  // Vérifier si la valeur a changé
+  selectedDate.value = day.date
   valueChanged.value = !areDatesEqual(selectedDate.value, originalDate.value)
   
-  // Si on n'est pas en mode édition, fermer le calendrier après sélection
   if (!props.edition) {
-    showCalendar.value = false
+    emit('update:modelValue', selectedDate.value)
+    closeCalendar()
   }
 }
 
-// Définir la date à aujourd'hui
 function setToday() {
   const today = new Date()
   currentMonth.value = today.getMonth()
   currentYear.value = today.getFullYear()
   selectedDate.value = today
-  emit('update:modelValue', selectedDate.value)
-  
-  // Vérifier si la valeur a changé
   valueChanged.value = !areDatesEqual(selectedDate.value, originalDate.value)
   
-  // Si on n'est pas en mode édition, fermer le calendrier après sélection
   if (!props.edition) {
-    showCalendar.value = false
+    emit('update:modelValue', selectedDate.value)
+    closeCalendar()
   }
 }
 
-// Effacer la date
 function clearDate() {
   selectedDate.value = null
-  emit('update:modelValue', null)
-  
-  // Vérifier si la valeur a changé
   valueChanged.value = originalDate.value !== null
   
-  // Si on n'est pas en mode édition, fermer le calendrier après sélection
   if (!props.edition) {
-    showCalendar.value = false
+    emit('update:modelValue', null)
+    closeCalendar()
   }
 }
 
-// Ouvrir/fermer le calendrier
 function toggleCalendar() {
   if (props.disabled) return
   
+  console.log('toggleCalendar appelé', { showCalendar: !showCalendar.value, disabled: props.disabled })
   showCalendar.value = !showCalendar.value
   
   if (showCalendar.value) {
-    isEditing.value = true
-    
-    // Si une date est sélectionnée, afficher le mois correspondant
+    // Si une date est déjà sélectionnée, mettre à jour le mois et l'année
     if (selectedDate.value) {
       const date = new Date(selectedDate.value)
       currentMonth.value = date.getMonth()
       currentYear.value = date.getFullYear()
     }
+    
+    // Ajouter un gestionnaire d'événements pour fermer le calendrier lors d'un clic en dehors
+    document.addEventListener('click', handleClickOutside)
   }
 }
 
-// Fermer le calendrier
-function closeCalendar(event) {
+function closeCalendar() {
   showCalendar.value = false
-  
-  // Ne pas réinitialiser isEditing si on est en mode édition et que la valeur a changé
-  if (!(props.edition && valueChanged.value)) {
-    isEditing.value = false
-  }
+  document.removeEventListener('click', handleClickOutside)
 }
 
-// Confirmer le changement (en mode édition)
 async function confirmChange() {
-  if (!props.uuid || !props.patchendpoint) {
-    console.warn('UUID ou endpoint PATCH non fourni pour la mise à jour du champ')
+  if (!props.uuid || !props.fieldname || !props.endpoint) {
+    emit('update:modelValue', selectedDate.value)
+    isEditing.value = false
+    valueChanged.value = false
     return
   }
   
   try {
-    // Préparer l'endpoint avec l'UUID
-    const endpointWithUuid = `${props.patchendpoint}/${props.uuid}`
+    const endpoint = props.patchendpoint || props.endpoint
+    const response = await apiService.patch(`${endpoint}/${props.uuid}`, {
+      [props.fieldname]: selectedDate.value
+    })
     
-    // Préparer les données pour la requête PATCH
-    const data = {
-      [props.fieldname]: selectedDate.value ? selectedDate.value.toISOString().split('T')[0] : null
+    if (response.status === 200) {
+      emit('update:modelValue', selectedDate.value)
+      emit('update:success', response.data)
+      originalDate.value = selectedDate.value
+      valueChanged.value = false
+      isEditing.value = false
     }
-    
-    // Utiliser apiService pour faire la requête PATCH
-    const response = await apiService.patch(endpointWithUuid, data)
-    
-    // Mettre à jour la valeur originale après une mise à jour réussie
-    originalDate.value = selectedDate.value ? new Date(selectedDate.value) : null
-    valueChanged.value = false
-    isEditing.value = false
-    showCalendar.value = false
-    
-    // Émettre un événement de succès
-    emit('update:success', {
-      success: true,
-      fieldName: props.fieldname,
-      value: selectedDate.value
-    })
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du champ:', error)
-    emit('update:success', {
-      success: false,
-      fieldName: props.fieldname,
-      value: selectedDate.value,
-      error: error.message
-    })
+    console.error('Error updating date:', error)
+    emit('update:error', error)
   }
 }
 
-// Annuler le changement (en mode édition)
 function cancelChange() {
-  // Réinitialiser à la valeur originale
-  selectedDate.value = originalDate.value ? new Date(originalDate.value) : null
-  emit('update:modelValue', selectedDate.value)
-  
-  // Réinitialiser les états
-  isEditing.value = false
+  selectedDate.value = originalDate.value
   valueChanged.value = false
-  showCalendar.value = false
+  isEditing.value = false
 }
 
-// Comparer deux dates
 function areDatesEqual(date1, date2) {
   if (!date1 && !date2) return true
   if (!date1 || !date2) return false
@@ -474,76 +434,42 @@ function areDatesEqual(date1, date2) {
          d1.getFullYear() === d2.getFullYear()
 }
 
-// Initialiser le composant
-onMounted(async () => {
-  // Si modelValue est fourni, l'utiliser comme valeur initiale
-  if (props.modelValue) {
-    selectedDate.value = new Date(props.modelValue)
-    originalDate.value = new Date(props.modelValue)
-  } else if (props.edition && props.endpoint && props.uuid) {
-    // En mode édition, si aucune valeur n'est fournie mais qu'un endpoint est disponible,
-    // essayer de récupérer la valeur depuis l'API
-    try {
-      const endpointWithUuid = `${props.endpoint}/${props.uuid}`
-      const response = await apiService.get(endpointWithUuid)
-      
-      if (response && response[props.fieldname]) {
-        selectedDate.value = new Date(response[props.fieldname])
-        originalDate.value = new Date(response[props.fieldname])
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération de la date:', error)
-    }
-  }
-  
-  // Ajouter un gestionnaire de clic global pour fermer le calendrier
-  document.addEventListener('click', handleClickOutside)
-})
-
-// Nettoyer les écouteurs d'événements
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
-
-// Gestionnaire de clic en dehors du composant
 function handleClickOutside(event) {
-  const el = event.target
-  const datePicker = document.querySelector('.s-date-picker')
-  
-  if (datePicker && !datePicker.contains(el) && showCalendar.value) {
+  // Si le clic est en dehors du composant et que le calendrier est ouvert, le fermer
+  if (showCalendar.value && !event.target.closest('.s-date-picker') && !event.target.closest('.s-date-picker__calendar-container')) {
     closeCalendar()
   }
 }
 
-// Directive personnalisée pour détecter les clics en dehors d'un élément
-const vClickOutside = {
-  beforeMount(el, binding) {
-    el.clickOutsideEvent = function(event) {
-      if (!(el === event.target || el.contains(event.target))) {
-        binding.value(event)
-      }
-    }
-    document.addEventListener('click', el.clickOutsideEvent, { capture: true })
-  },
-  unmounted(el) {
-    document.removeEventListener('click', el.clickOutsideEvent, { capture: true })
+// Initialiser le composant
+onMounted(() => {
+  console.log('sDatePicker monté', { 
+    label: props.label,
+    modelValue: props.modelValue,
+    uuid: props.uuid
+  })
+  
+  // Si modelValue est fourni, l'utiliser comme valeur initiale
+  if (props.modelValue) {
+    selectedDate.value = new Date(props.modelValue)
+    originalDate.value = new Date(props.modelValue)
+    
+    // Mettre à jour le mois et l'année affichés
+    currentMonth.value = selectedDate.value.getMonth()
+    currentYear.value = selectedDate.value.getFullYear()
   }
-}
+})
 
 // Surveiller les changements de modelValue
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
     selectedDate.value = new Date(newValue)
-    
-    // Si c'est la première fois qu'on définit la valeur, initialiser aussi originalDate
-    if (!originalDate.value) {
+    if (!isEditing.value) {
       originalDate.value = new Date(newValue)
     }
   } else {
     selectedDate.value = null
-    
-    // Si c'est la première fois qu'on définit la valeur, initialiser aussi originalDate
-    if (originalDate.value === undefined) {
+    if (!isEditing.value) {
       originalDate.value = null
     }
   }

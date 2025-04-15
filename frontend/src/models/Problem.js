@@ -217,6 +217,16 @@ export class Problem {
         type: 'sDatePicker',
         placeholder: t('problem.closed_at_placeholder')
       },
+      target_resolution_date: {
+        label: t('problem.target_resolution_date'),
+        type: 'sDatePicker',
+        placeholder: t('problem.target_resolution_date_placeholder')
+      },
+      actual_resolution_date: {
+        label: t('problem.actual_resolution_date'),
+        type: 'sDatePicker',
+        placeholder: t('problem.actual_resolution_date_placeholder')
+      },
       knownerrors_list: {
         label: t('problem.knownerrors_list'),
         type: 'sPickList',
@@ -256,16 +266,6 @@ export class Problem {
         label: t('problem.definitive_solution'),
         type: 'sRichTextEditor',
         placeholder: t('problem.definitive_solution_placeholder')
-      },
-      target_resolution_date: {
-        label: t('problem.target_resolution_date'),
-        type: 'sDatePicker',
-        placeholder: t('problem.target_resolution_date_placeholder')
-      },
-      actual_resolution_date: {
-        label: t('problem.actual_resolution_date'),
-        type: 'sDatePicker',
-        placeholder: t('problem.actual_resolution_date_placeholder')
       },
       actual_resolution_workload: {
         label: t('problem.actual_resolution_workload'),

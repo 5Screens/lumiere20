@@ -113,8 +113,6 @@
 /* Conteneur du calendrier popup */
 .s-date-picker__calendar-container {
   position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
   z-index: 100;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
@@ -264,16 +262,4 @@
   background: var(--input-bg);
   opacity: 1;
   transition: opacity 0.3s ease;
-}
-
-/* Animation pour le popup du calendrier */
-.calendar-enter-active,
-.calendar-leave-active {
-  transition: opacity 0.3s, transform 0.3s;
-}
-
-.calendar-enter-from,
-.calendar-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
