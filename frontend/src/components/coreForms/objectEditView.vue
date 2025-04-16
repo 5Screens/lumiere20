@@ -44,6 +44,7 @@ import { Ticket } from '@/models/Ticket'
 import { Defect } from '@/models/Defect'
 import { Incident } from '@/models/Incident'
 import { Problem } from '@/models/Problem'
+import { Change } from '@/models/Change'
 import FormFields from '@/components/formFields.vue'
 import ButtonStandard from '@/components/common/ButtonStandard.vue'
 import SSelectField from '@/components/common/sSelectField.vue'
@@ -80,6 +81,8 @@ const currentModelClass = computed(() => {
       return Incident
     case 'PROBLEM':
       return Problem
+    case 'CHANGE':
+      return Change
     default:
       return null
   }
@@ -147,6 +150,10 @@ watch(selectedType, (newType) => {
     case 'PROBLEM':
       instance = new Problem()
       endpoint = 'tickets?type=PROBLEM'
+      break
+    case 'CHANGE':
+      instance = new Change()
+      endpoint = 'tickets?type=CHANGE'
       break
     default:
       instance = null
