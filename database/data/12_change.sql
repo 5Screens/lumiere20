@@ -212,7 +212,7 @@ VALUES
     (uuid_generate_v4(), 'POSTPONED', 'fr', 'Reporté', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (uuid_generate_v4(), 'CANCELLED', 'fr', 'Annulé', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (uuid_generate_v4(), 'NOT_APPLICABLE', 'fr', 'Non applicable (pour les changements standard)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (uuid_generate_v4(), 'UNDER_REVIEW', 'fr', 'En révision (besoin d\'informations complémentaires)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (uuid_generate_v4(), 'UNDER_REVIEW', 'fr', 'En révision (besoin d''informations complémentaires)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (uuid_generate_v4(), 'APPROVED_BY_EXCEPTION', 'fr', 'Approuvé par dérogation (urgences validées en dehors du CAB formel)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insertion des traductions en anglais
