@@ -13,6 +13,12 @@ const getChangeSetupQuerySchema = Joi.object({
         .optional()
         .messages({
             'string.empty': 'Metadata parameter cannot be empty'
+        }),
+    toSelect: Joi.string()
+        .valid('yes')
+        .optional()
+        .messages({
+            'any.only': 'toSelect parameter must be "yes" if provided'
         })
 }).options({
     abortEarly: false,

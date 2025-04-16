@@ -11,9 +11,9 @@ const getChangeSetup = async (req, res) => {
     logger.info('[CONTROLLER] Starting to process getChangeSetup request');
     
     try {
-        const { lang, metadata } = req.query;
+        const { lang, metadata, toSelect } = req.query;
         
-        const changeSetupData = await changeSetupService.getChangeSetup(lang, metadata);
+        const changeSetupData = await changeSetupService.getChangeSetup(lang, metadata, toSelect);
         
         logger.info(`[CONTROLLER] Successfully retrieved change setup data`);
         
