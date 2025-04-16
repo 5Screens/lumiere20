@@ -31,6 +31,7 @@ const incidentResolutionCodesRoutes = require('./api/v1/incident_resolution_code
 const problemCategoriesRoutes = require('./api/v1/problem_categories/routes');
 const changeSetupRoutes = require('./api/v1/change_setup/routes');
 const changeQuestionsRoutes = require('./api/v1/change_questions/routes');
+const changeOptionsRoutes = require('./api/v1/change_options/routes');
 
 // Middleware
 app.use(cors());
@@ -68,6 +69,7 @@ app.use('/api/v1/incident_resolution_codes', incidentResolutionCodesRoutes);
 app.use('/api/v1/problem_categories', problemCategoriesRoutes);
 app.use('/api/v1/change_setup', changeSetupRoutes);
 app.use('/api/v1/change_questions', changeQuestionsRoutes);
+app.use('/api/v1/change_options', changeOptionsRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
