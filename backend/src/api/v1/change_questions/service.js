@@ -4,11 +4,11 @@ const logger = require('../../../config/logger');
 /**
  * Get change questions based on optional filters
  * @param {string} lang - Optional language code filter
- * @param {string} code - Optional question code filter
+ * @param {string} question_id - Optional question ID filter
  * @returns {Array} - Array of change questions
  */
-const getChangeQuestions = async (lang, code) => {
-    logger.info(`[SERVICE] Getting change questions with filters - lang: ${lang || 'all'}, code: ${code || 'all'}`);
+const getChangeQuestions = async (lang, question_id) => {
+    logger.info(`[SERVICE] Getting change questions with filters - lang: ${lang || 'all'}, question_id: ${question_id || 'all'}`);
     
     try {
         let query;
@@ -16,7 +16,7 @@ const getChangeQuestions = async (lang, code) => {
         let paramIndex = 1;
         
         // Base query without filters
-        if (!lang && !code) {
+        if (!lang && !question_id) {
             query = `
                 SELECT 
                     cqc.uuid, 
@@ -57,9 +57,9 @@ const getChangeQuestions = async (lang, code) => {
                 paramIndex++;
             }
             
-            if (code) {
-                query += ` AND cqc.code = UPPER($${paramIndex})`;
-                params.push(code);
+            if (question_id) {
+                query += ` AND cqc.question_id = UPPER($${paramIndex})`;
+                params.push(question_id);
                 paramIndex++;
             }
             
@@ -70,13 +70,13 @@ const getChangeQuestions = async (lang, code) => {
         
         logger.info(`[SERVICE] Found ${result.rows.length} change questions`);
         
-        // If both lang and code are provided, return array format
-        if (lang && code) {
+        // If both lang and question_id are provided, return array format
+        if (lang && question_id) {
             return result.rows;
         }
         
-        // Group by question code if no specific code is requested
-        if (!code) {
+        // Group by question code if no specific question_id is requested
+        if (!question_id) {
             const groupedResults = {};
             
             result.rows.forEach(row => {

@@ -12,7 +12,7 @@ const getChangeQuestions = async (req, res) => {
     try {
         const changeQuestions = await changeQuestionsService.getChangeQuestions(
             req.query.lang, 
-            req.query.code
+            req.query.question_id
         );
         
         logger.info(`[CONTROLLER] Successfully retrieved ${changeQuestions.length} change questions`);

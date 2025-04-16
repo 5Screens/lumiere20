@@ -9,10 +9,10 @@ const getChangeQuestionsQuerySchema = Joi.object({
         .messages({
             'string.empty': 'Language code cannot be empty'
         }),
-    code: Joi.string()
+    question_id: Joi.string()
         .optional()
         .messages({
-            'string.empty': 'Question code cannot be empty'
+            'string.empty': 'Question ID cannot be empty'
         })
 }).options({
     abortEarly: false,
@@ -51,22 +51,22 @@ const validateGetChangeQuestionsQuery = async (req, res, next) => {
         }
     }
 
-    // If code is provided, check if it exists
-    if (req.query.code) {
+    // If question_id is provided, check if it exists
+    if (req.query.question_id) {
         try {
             const query = `
-                SELECT code 
+                SELECT question_id 
                 FROM configuration.change_questions_codes 
-                WHERE code = UPPER($1)
+                WHERE question_id = UPPER($1)
             `;
-            const result = await db.query(query, [req.query.code]);
+            const result = await db.query(query, [req.query.question_id]);
 
             if (result.rows.length === 0) {
-                logger.error(`[VALIDATION] Question code ${req.query.code} not found`);
-                return res.status(400).json({ error: 'Invalid question code' });
+                logger.error(`[VALIDATION] Question ID ${req.query.question_id} not found`);
+                return res.status(400).json({ error: 'Invalid question ID' });
             }
         } catch (error) {
-            logger.error(`[VALIDATION] Database error during code validation: ${error.message}`);
+            logger.error(`[VALIDATION] Database error during question_id validation: ${error.message}`);
             return res.status(500).json({ error: 'Internal server error during validation' });
         }
     }
