@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import apiService from '@/services/apiService'
 
 export class Change {
   constructor(data = {}) {
@@ -28,11 +29,24 @@ export class Change {
     this.r_q4 = data.r_q4 || null;
     this.r_q5 = data.r_q5 || null;
     
+    // Labels dynamiques pour les questions d'évaluation de risque
+    this.r_q1_label = data.r_q1_label || null;
+    this.r_q2_label = data.r_q2_label || null;
+    this.r_q3_label = data.r_q3_label || null;
+    this.r_q4_label = data.r_q4_label || null;
+    this.r_q5_label = data.r_q5_label || null;
+    
     // Evaluation de l'impact (Extended attributes)
     this.i_q1 = data.i_q1 || null;
     this.i_q2 = data.i_q2 || null;
     this.i_q3 = data.i_q3 || null;
     this.i_q4 = data.i_q4 || null;
+    
+    // Labels dynamiques pour les questions d'évaluation d'impact
+    this.i_q1_label = data.i_q1_label || null;
+    this.i_q2_label = data.i_q2_label || null;
+    this.i_q3_label = data.i_q3_label || null;
+    this.i_q4_label = data.i_q4_label || null;
     
     // Planification (Extended attributes)
     this.created_at = data.created_at || null;
@@ -73,9 +87,50 @@ export class Change {
     this.updated_at = data.updated_at || null;
   }
 
-  static getRenderableFields() {
+  static async getDynamicLabel() {
+    const userProfileStore = useUserProfileStore();
+    const instance = new Change();
+    
+    // Liste des questions pour lesquelles récupérer les labels
+    const questionIds = ['r_q1', 'r_q2', 'r_q3', 'r_q4', 'r_q5', 'i_q1', 'i_q2', 'i_q3', 'i_q4'];
+    
+    try {
+      // Récupérer les labels pour chaque question
+      const promises = questionIds.map(async (questionId) => {
+        try {
+          // Utiliser apiService.get au lieu de fetch directement
+          const params = {
+            lang: userProfileStore.language,
+            question_id: questionId
+          };
+          
+          const data = await apiService.get('change_questions', params);
+          
+          if (data && data.length > 0) {
+            // Stocker le label dans l'instance
+            instance[`${questionId}_label`] = data[0].label;
+          }
+        } catch (error) {
+          console.error(`Erreur lors de la récupération du label pour ${questionId}:`, error);
+        }
+      });
+      
+      // Attendre que toutes les requêtes soient terminées
+      await Promise.all(promises);
+      
+      return instance;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des labels dynamiques:', error);
+      return instance;
+    }
+  }
+  
+  static async getRenderableFields() {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
+    
+    // Récupérer les labels dynamiques
+    const dynamicLabels = await this.getDynamicLabel();
 
     return {
       // Informations générales
@@ -194,7 +249,7 @@ export class Change {
       
       // Evaluation du Risque
       r_q1: {
-        label: t('change.risk_q1'),
+        label: dynamicLabels.r_q1_label || t('change.risk_q1'),
         type: 'sSelectField',
         placeholder: t('change.risk_q1_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q1`,
@@ -202,7 +257,7 @@ export class Change {
         mode: 'creation'
       },
       r_q2: {
-        label: t('change.risk_q2'),
+        label: dynamicLabels.r_q2_label || t('change.risk_q2'),
         type: 'sSelectField',
         placeholder: t('change.risk_q2_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q2`,
@@ -210,7 +265,7 @@ export class Change {
         mode: 'creation'
       },
       r_q3: {
-        label: t('change.risk_q3'),
+        label: dynamicLabels.r_q3_label || t('change.risk_q3'),
         type: 'sSelectField',
         placeholder: t('change.risk_q3_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q3`,
@@ -218,7 +273,7 @@ export class Change {
         mode: 'creation'
       },
       r_q4: {
-        label: t('change.risk_q4'),
+        label: dynamicLabels.r_q4_label || t('change.risk_q4'),
         type: 'sSelectField',
         placeholder: t('change.risk_q4_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q4`,
@@ -226,7 +281,7 @@ export class Change {
         mode: 'creation'
       },
       r_q5: {
-        label: t('change.risk_q5'),
+        label: dynamicLabels.r_q5_label || t('change.risk_q5'),
         type: 'sSelectField',
         placeholder: t('change.risk_q5_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q5`,
@@ -236,7 +291,7 @@ export class Change {
       
       // Evaluation de l'impact
       i_q1: {
-        label: t('change.impact_q1'),
+        label: dynamicLabels.i_q1_label || t('change.impact_q1'),
         type: 'sSelectField',
         placeholder: t('change.impact_q1_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q1`,
@@ -244,7 +299,7 @@ export class Change {
         mode: 'creation'
       },
       i_q2: {
-        label: t('change.impact_q2'),
+        label: dynamicLabels.i_q2_label || t('change.impact_q2'),
         type: 'sSelectField',
         placeholder: t('change.impact_q2_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q2`,
@@ -252,7 +307,7 @@ export class Change {
         mode: 'creation'
       },
       i_q3: {
-        label: t('change.impact_q3'),
+        label: dynamicLabels.i_q3_label || t('change.impact_q3'),
         type: 'sSelectField',
         placeholder: t('change.impact_q3_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q3`,
@@ -260,7 +315,7 @@ export class Change {
         mode: 'creation'
       },
       i_q4: {
-        label: t('change.impact_q4'),
+        label: dynamicLabels.i_q4_label || t('change.impact_q4'),
         type: 'sSelectField',
         placeholder: t('change.impact_q4_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q4`,

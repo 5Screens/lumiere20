@@ -1,36 +1,43 @@
 <!-- Template pour l'affichage dynamique des champs de formulaire -->
 <template>
-  <form @submit.prevent="handleSubmit" class="form-fields">
-    <div v-for="(field, key) in fields" :key="key" class="field-container">
-      <component
-        :is="components[field.type]"
-        v-model="modelValue[key]"
-        :label="field.label"
-        :required="field.required"
-        :placeholder="field.placeholder"
-        :disabled="field.disabled"
-        :multiline="field.multiline"
-        :options="field.options"
-        :endpoint="typeof field.endpoint === 'function' ? field.endpoint(modelValue) : field.endpoint"
-        :display-field="field.displayField"
-        :value-field="field.valueField"
-        :edit-mode="field.editMode"
-        :columns-config="field.columnsConfig"
-        :table="field.table"
-        :field-name="key"
-        :patch-endpoint="field.patchEndpoint"
-        :mode="field.mode"
-        :source-end-point="field.sourceEndPoint"
-        :displayed-label="field.displayedLabel"
-        :target-end-point="field.targetEndPoint"
-        :target_uuid="field.target_uuid"
-        :picked-items="field.pickedItems"
-        :edition="field.edition"
-        :helper-text="field.helperText"
-        :input-type="field.inputType"
-      />
+  <div>
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Chargement des champs du formulaire...</p>
     </div>
-  </form>
+    
+    <form v-else @submit.prevent="handleSubmit" class="form-fields">
+      <div v-for="(field, key) in fields" :key="key" class="field-container">
+        <component
+          :is="components[field.type]"
+          v-model="modelValue[key]"
+          :label="field.label"
+          :required="field.required"
+          :placeholder="field.placeholder"
+          :disabled="field.disabled"
+          :multiline="field.multiline"
+          :options="field.options"
+          :endpoint="typeof field.endpoint === 'function' ? field.endpoint(modelValue) : field.endpoint"
+          :display-field="field.displayField"
+          :value-field="field.valueField"
+          :edit-mode="field.editMode"
+          :columns-config="field.columnsConfig"
+          :table="field.table"
+          :field-name="key"
+          :patch-endpoint="field.patchEndpoint"
+          :mode="field.mode"
+          :source-end-point="field.sourceEndPoint"
+          :displayed-label="field.displayedLabel"
+          :target-end-point="field.targetEndPoint"
+          :target_uuid="field.target_uuid"
+          :picked-items="field.pickedItems"
+          :edition="field.edition"
+          :helper-text="field.helperText"
+          :input-type="field.inputType"
+        />
+      </div>
+    </form>
+  </div>
 </template>
 
 <script setup>
@@ -76,16 +83,34 @@ const emit = defineEmits(['update:modelValue', 'submit'])
 const objectStore = useObjectStore()
 
 const fields = ref({})
+const isLoading = ref(true)
 
-onMounted(() => {
+onMounted(async () => {
   if (!props.modelClass.getRenderableFields) {
     throw new Error('La classe du modèle doit implémenter getRenderableFields()')
   }
-  fields.value = props.modelClass.getRenderableFields()
   
-  // Synchroniser le store avec le modèle au chargement
-  if (props.modelValue && objectStore.currentObject) {
-    Object.assign(objectStore.currentObject, props.modelValue)
+  try {
+    // Vérifier si getRenderableFields est une fonction asynchrone
+    const renderableFields = props.modelClass.getRenderableFields()
+    
+    if (renderableFields instanceof Promise) {
+      // Si c'est une promesse, attendre sa résolution
+      console.info('[FormFields] Waiting for async getRenderableFields to resolve')
+      fields.value = await renderableFields
+    } else {
+      // Sinon, utiliser directement le résultat
+      fields.value = renderableFields
+    }
+    
+    // Synchroniser le store avec le modèle au chargement
+    if (props.modelValue && objectStore.currentObject) {
+      Object.assign(objectStore.currentObject, props.modelValue)
+    }
+  } catch (error) {
+    console.error('[FormFields] Error loading renderable fields:', error)
+  } finally {
+    isLoading.value = false
   }
 })
 
@@ -107,6 +132,29 @@ const handleSubmit = () => {
 
 <style scoped>
 /* Les styles spécifiques au composant qui ne sont pas dans forms.css */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .form-fields {
   padding: 1rem;
   max-width: 800px;
