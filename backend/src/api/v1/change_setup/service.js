@@ -146,26 +146,20 @@ const getChangeSetup = async (lang, metadata, toSelect) => {
             }
         }
         
-        // Format standard: restructurer les données pour regrouper les traductions par code
-        const groupedData = {};
+        // Format standard: retourner les données sans regroupement par code
+        const formattedData = [];
         
         result.rows.forEach(row => {
-            if (!groupedData[row.metadata]) {
-                groupedData[row.metadata] = {};
-            }
-            
-            if (!groupedData[row.metadata][row.code]) {
-                groupedData[row.metadata][row.code] = {
-                    uuid: row.uuid,
-                    code: row.code,
-                    translations: {}
-                };
-            }
-            
-            groupedData[row.metadata][row.code].translations[row.lang] = row.label;
+            formattedData.push({
+                uuid: row.uuid,
+                metadata: row.metadata,
+                code: row.code,
+                lang: row.lang,
+                label: row.label
+            });
         });
         
-        return groupedData;
+        return formattedData;
     } catch (error) {
         logger.error(`[SERVICE] Error getting change setup data: ${error.message}`);
         throw error;
