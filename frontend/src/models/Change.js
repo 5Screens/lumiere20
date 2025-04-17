@@ -68,10 +68,7 @@ export class Change {
     this.validated_at = data.validated_at || null;
     
     // Exécution et suivi (Extended attributes)
-    this.related_changes = data.related_changes || [];
-    this.related_incidents_problems = data.related_incidents_problems || [];
-    this.related_requests = data.related_requests || [];
-    this.related_tasks = data.related_tasks || [];
+    this.related_tickets = data.related_tickets || [];
     this.actual_start_date_at = data.actual_start_date_at || null;
     this.actual_end_date_at = data.actual_end_date_at || null;
     this.elapsed_time = data.elapsed_time || null;
@@ -412,41 +409,11 @@ export class Change {
       },
       
       // Exécution et suivi
-      related_changes: {
-        label: t('change.related_changes'),
+      related_tickets: {
+        label: t('change.related_tickets'),
         type: 'sPickList',
-        placeholder: t('change.related_changes_placeholder'),
-        sourceEndPoint: 'tickets?ticket_type=CHANGE',
-        displayedLabel: 'title',
-        targetEndPoint: 'changes',
-        target_uuid: null,
-        pickedItems: null
-      },
-      related_incidents_problems: {
-        label: t('change.related_incidents_problems'),
-        type: 'sPickList',
-        placeholder: t('change.related_incidents_problems_placeholder'),
-        sourceEndPoint: 'tickets?ticket_type=INCIDENT',
-        displayedLabel: 'title',
-        targetEndPoint: 'changes',
-        target_uuid: null,
-        pickedItems: null
-      },
-      related_requests: {
-        label: t('change.related_requests'),
-        type: 'sPickList',
-        placeholder: t('change.related_requests_placeholder'),
-        sourceEndPoint: 'tickets?ticket_type=REQUEST',
-        displayedLabel: 'title',
-        targetEndPoint: 'changes',
-        target_uuid: null,
-        pickedItems: null
-      },
-      related_tasks: {
-        label: t('change.related_tasks'),
-        type: 'sPickList',
-        placeholder: t('change.related_tasks_placeholder'),
-        sourceEndPoint: 'tickets?ticket_type=TICKET',
+        placeholder: t('change.related_tickets_placeholder'),
+        sourceEndPoint: 'tickets',
         displayedLabel: 'title',
         targetEndPoint: 'changes',
         target_uuid: null,
@@ -489,7 +456,7 @@ export class Change {
         label: t('change.post_change_evaluation'),
         type: 'sSelectField',
         placeholder: t('change.post_change_evaluation_placeholder'),
-        endpoint: `post_change_evaluations?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=post_implementation_evaluation`,
         fieldName: 'post_change_evaluation',
         mode: 'creation'
       },
@@ -570,10 +537,7 @@ export class Change {
         rel_cab_validation_status: this.rel_cab_validation_status,
         required_validations: this.required_validations,
         validated_at: this.validated_at,
-        related_changes: this.related_changes,
-        related_incidents_problems: this.related_incidents_problems,
-        related_requests: this.related_requests,
-        related_tasks: this.related_tasks,
+        related_tickets: this.related_tickets,
         actual_start_date_at: this.actual_start_date_at,
         actual_end_date_at: this.actual_end_date_at,
         elapsed_time: this.elapsed_time,

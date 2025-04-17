@@ -551,14 +551,8 @@ export default {
     validated_at_placeholder: 'Sélectionnez la date de validation',
     
     // Exécution et suivi
-    related_changes: 'Changements liés',
-    related_changes_placeholder: 'Sélectionnez les changements liés',
-    related_incidents_problems: 'Incidents/Problèmes liés',
-    related_incidents_problems_placeholder: 'Sélectionnez les incidents ou problèmes liés',
-    related_requests: 'Demandes liées',
-    related_requests_placeholder: 'Sélectionnez les demandes liées',
-    related_tasks: 'Tâches liées',
-    related_tasks_placeholder: 'Sélectionnez les tâches liées',
+    related_tickets: 'Tickets à l\'origine du changement',
+    related_tickets_placeholder: 'Sélectionnez le ou les tickets à l\'origine du changement',
     actual_start_date: 'Date de début effective',
     actual_start_date_placeholder: 'Sélectionnez la date de début effective',
     actual_end_date: 'Date de fin effective',
