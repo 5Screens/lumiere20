@@ -212,7 +212,7 @@ export class Change {
         type: 'sSelectField',
         placeholder: t('change.type_placeholder'),
         required: true,
-        endpoint: `change_types?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=type`,
         fieldName: 'rel_change_type_code',
         mode: 'creation'
       },
@@ -348,14 +348,17 @@ export class Change {
         label: t('change.justification'),
         type: 'sSelectField',
         placeholder: t('change.justification_placeholder'),
-        endpoint: `change_justifications?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=justification`,
         fieldName: 'rel_change_justifications_code',
         mode: 'creation'
       },
       rel_change_objective: {
         label: t('change.objective'),
-        type: 'sTextField',
-        placeholder: t('change.objective_placeholder')
+        type: 'sSelectField',
+        placeholder: t('change.objective_placeholder'),
+        endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=objective`,
+        fieldName: 'rel_change_objective',
+        mode: 'creation'
       },
       test_plan: {
         label: t('change.test_plan'),
@@ -388,7 +391,7 @@ export class Change {
         label: t('change.cab_validation_status'),
         type: 'sSelectField',
         placeholder: t('change.cab_validation_status_placeholder'),
-        endpoint: `cab_validation_status?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=cab_validation_status`,
         fieldName: 'rel_cab_validation_status',
         mode: 'creation'
       },
@@ -396,7 +399,7 @@ export class Change {
         label: t('change.required_validations'),
         type: 'sPickList',
         placeholder: t('change.required_validations_placeholder'),
-        sourceEndPoint: 'validation_levels',
+        sourceEndPoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=validation_level`,
         displayedLabel: 'name',
         targetEndPoint: 'changes',
         target_uuid: null,
