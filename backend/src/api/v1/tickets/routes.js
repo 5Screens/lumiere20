@@ -22,8 +22,14 @@ router.post('/', validateCreateTicket, (req, res, next) => {
     // Vérifier si le type de ticket est PROBLEM depuis le body
     const isProblemFromBody = req.body && req.body.ticket_type_code === 'PROBLEM';
     
+    // Vérifier si le type de ticket est CHANGE depuis les query params
+    const isChangeFromQuery = req.query.ticket_types === 'CHANGE';
+    
+    // Vérifier si le type de ticket est CHANGE depuis le body
+    const isChangeFromBody = req.body && req.body.ticket_type_code === 'CHANGE';
+    
     // Log détaillé pour le debugging
-    logger.info(`[ROUTES] Handling POST /tickets request${isIncidentFromQuery ? ' for INCIDENT type (from query)' : ''}${isIncidentFromBody ? ' for INCIDENT type (from body)' : ''}${isProblemFromQuery ? ' for PROBLEM type (from query)' : ''}${isProblemFromBody ? ' for PROBLEM type (from body)' : ''}`);
+    logger.info(`[ROUTES] Handling POST /tickets request${isIncidentFromQuery ? ' for INCIDENT type (from query)' : ''}${isIncidentFromBody ? ' for INCIDENT type (from body)' : ''}${isProblemFromQuery ? ' for PROBLEM type (from query)' : ''}${isProblemFromBody ? ' for PROBLEM type (from body)' : ''}${isChangeFromQuery ? ' for CHANGE type (from query)' : ''}${isChangeFromBody ? ' for CHANGE type (from body)' : ''}`);
     
     ticketController.createTicket(req, res);
 });

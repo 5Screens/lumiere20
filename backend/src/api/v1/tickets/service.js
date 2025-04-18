@@ -58,8 +58,10 @@ const createTicket = async (ticketData) => {
         const isIncident = ticketData.ticket_type_code === 'INCIDENT';
         // Déterminer si c'est un ticket de type PROBLEM
         const isProblem = ticketData.ticket_type_code === 'PROBLEM';
+        // Déterminer si c'est un ticket de type CHANGE
+        const isChange = ticketData.ticket_type_code === 'CHANGE';
         
-        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : ticketData.ticket_type_code}`);
+        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : ticketData.ticket_type_code}`);
         
         // Préparer les attributs étendus pour le core
         let coreExtendedAttributes = {};
@@ -104,6 +106,31 @@ const createTicket = async (ticketData) => {
             });
             
             logger.info('[SERVICE] Prepared core_extended_attributes for PROBLEM ticket');
+        }
+        
+        // Si c'est un changement, ajouter les attributs spécifiques aux changements
+        if (isChange) {
+            // Champs à inclure dans core_extended_attributes pour les changements
+            const changeFields = [
+                'rel_services', 'rel_service_offerings', 'rel_change_type_code',
+                'r_q1', 'r_q2', 'r_q3', 'r_q4', 'r_q5',
+                'i_q1', 'i_q2', 'i_q3', 'i_q4',
+                'requested_start_date_at', 'requested_end_date_at', 'planned_start_date_at', 'planned_end_date_at',
+                'rel_change_justifications_code', 'rel_change_objective', 'test_plan', 'implementation_plan',
+                'rollbcak_plan', 'post_implementation_plan', 'cab_comments', 'rel_cab_validation_status',
+                'required_validations', 'validated_at', 'related_tickets', 'actual_start_date_at',
+                'actual_end_date_at', 'elapsed_time', 'subscribers', 'success_criteria',
+                'post_change_evaluation', 'post_change_comment', 'closed_at'
+            ];
+            
+            // Ajouter chaque champ présent dans ticketData aux attributs étendus
+            changeFields.forEach(field => {
+                if (ticketData[field] !== undefined) {
+                    coreExtendedAttributes[field] = ticketData[field];
+                }
+            });
+            
+            logger.info('[SERVICE] Prepared core_extended_attributes for CHANGE ticket');
         }
         
         // 1. Create the ticket

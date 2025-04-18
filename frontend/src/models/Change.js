@@ -530,6 +530,7 @@ export class Change {
       case 'POST':
         // Pour POST, définir writer_uuid et ticket_type_code
         this.writer_uuid = userProfileStore.id;
+        this.requested_by_uuid = userProfileStore.id;
         this.ticket_type_code = 'CHANGE';
         break;
       case 'PUT':
