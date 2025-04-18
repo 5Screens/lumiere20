@@ -2,6 +2,19 @@ import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
 import apiService from '@/services/apiService'
 
+// Liste des champs obligatoires pour la création d'un objet Change
+export const requiredField = [
+  'ticket_status_code',
+  'requested_for_uuid',
+  'title',
+  'description',
+  'rel_services',
+  'rel_service_offerings',
+  'rel_change_type_code',
+  'assigned_to_group',
+  'assigned_to_person'
+];
+
 export class Change {
   constructor(data = {}) {
     // Informations générales
@@ -128,6 +141,9 @@ export class Change {
     
     // Récupérer les labels dynamiques
     const dynamicLabels = await this.getDynamicLabel();
+    
+    // Fonction utilitaire pour déterminer si un champ est obligatoire
+    const isRequired = (fieldName) => requiredField.includes(fieldName);
 
     return {
       // Informations générales
@@ -135,7 +151,7 @@ export class Change {
         label: t('change.status'),
         type: 'sSelectField',
         placeholder: t('change.status_placeholder'),
-        required: true,
+        required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=CHANGE`,
         patchEndpoint: 'changes',
         fieldName: 'ticket_status_code',
@@ -152,19 +168,19 @@ export class Change {
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
-        required: true
+        required: isRequired('requested_for_uuid')
       },
       title: {
         label: t('change.title'),
         type: 'sTextField',
         placeholder: t('change.title_placeholder'),
-        required: true
+        required: isRequired('title')
       },
       description: {
         label: t('change.description'),
         type: 'sRichTextEditor',
         placeholder: t('change.description_placeholder'),
-        required: true
+        required: isRequired('description')
       },
       configuration_item_uuid: {
         label: t('change.configuration_item'),
@@ -176,7 +192,8 @@ export class Change {
         columnsConfig: [
           { key: 'nom', label: t('configuration_item.nom'), visible: true },
           { key: 'description', label: t('configuration_item.description'), visible: true }
-        ]
+        ],
+        required: isRequired('configuration_item_uuid')
       },
       rel_services: {
         label: t('change.service'),
@@ -189,7 +206,7 @@ export class Change {
           { key: 'name', label: t('service.name'), visible: true },
           { key: 'owning_entity_name', label: t('service.owning_entity_name'), visible: true }
         ],
-        required: true
+        required: isRequired('rel_services')
       },
       rel_service_offerings: {
         label: t('change.service_offerings'),
@@ -202,16 +219,17 @@ export class Change {
           { key: 'name', label: t('service_offering.name'), visible: true },
           { key: 'service_name', label: t('service_offering.service_name'), visible: true }
         ],
-        required: true
+        required: isRequired('rel_service_offerings')
       },
       rel_change_type_code: {
         label: t('change.type'),
         type: 'sSelectField',
         placeholder: t('change.type_placeholder'),
-        required: true,
+        required: isRequired('rel_change_type_code'),
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=type`,
         fieldName: 'rel_change_type_code',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('rel_change_type_code')
       },
       assigned_to_group: {
         label: t('change.assigned_group'),
@@ -226,7 +244,7 @@ export class Change {
         columnsConfig: [
           { key: 'groupe_name', label: t('group.name'), visible: true }
         ],
-        required: true
+        required: isRequired('assigned_to_group')
       },
       assigned_to_person: {
         label: t('change.assigned_to_person'),
@@ -241,7 +259,8 @@ export class Change {
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
-        ]
+        ],
+        required: isRequired('assigned_to_person')
       },
       
       // Evaluation du Risque
@@ -251,7 +270,8 @@ export class Change {
         placeholder: t('change.risk_q1_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q1`,
         fieldName: 'r_q1',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('r_q1')
       },
       r_q2: {
         label: dynamicLabels.r_q2_label || t('change.risk_q2'),
@@ -259,7 +279,8 @@ export class Change {
         placeholder: t('change.risk_q2_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q2`,
         fieldName: 'r_q2',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('r_q2')
       },
       r_q3: {
         label: dynamicLabels.r_q3_label || t('change.risk_q3'),
@@ -267,7 +288,8 @@ export class Change {
         placeholder: t('change.risk_q3_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q3`,
         fieldName: 'r_q3',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('r_q3') 
       },
       r_q4: {
         label: dynamicLabels.r_q4_label || t('change.risk_q4'),
@@ -275,7 +297,8 @@ export class Change {
         placeholder: t('change.risk_q4_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q4`,
         fieldName: 'r_q4',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('r_q4')
       },
       r_q5: {
         label: dynamicLabels.r_q5_label || t('change.risk_q5'),
@@ -283,7 +306,8 @@ export class Change {
         placeholder: t('change.risk_q5_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q5`,
         fieldName: 'r_q5',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('r_q5')
       },
       
       // Evaluation de l'impact
@@ -293,7 +317,8 @@ export class Change {
         placeholder: t('change.impact_q1_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q1`,
         fieldName: 'i_q1',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('i_q1')
       },
       i_q2: {
         label: dynamicLabels.i_q2_label || t('change.impact_q2'),
@@ -301,7 +326,8 @@ export class Change {
         placeholder: t('change.impact_q2_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q2`,
         fieldName: 'i_q2',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('i_q2')
       },
       i_q3: {
         label: dynamicLabels.i_q3_label || t('change.impact_q3'),
@@ -309,7 +335,8 @@ export class Change {
         placeholder: t('change.impact_q3_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q3`,
         fieldName: 'i_q3',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('i_q3')
       },
       i_q4: {
         label: dynamicLabels.i_q4_label || t('change.impact_q4'),
@@ -317,29 +344,34 @@ export class Change {
         placeholder: t('change.impact_q4_placeholder'),
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q4`,
         fieldName: 'i_q4',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('i_q4')
       },
       
       // Planification
       requested_start_date_at: {
         label: t('change.requested_start_date'),
         type: 'sDatePicker',
-        placeholder: t('change.requested_start_date_placeholder')
+        placeholder: t('change.requested_start_date_placeholder'),
+        required: isRequired('requested_start_date_at')
       },
       requested_end_date_at: {
         label: t('change.requested_end_date'),
         type: 'sDatePicker',
-        placeholder: t('change.requested_end_date_placeholder')
+        placeholder: t('change.requested_end_date_placeholder'),
+        required: isRequired('requested_end_date_at')
       },
       planned_start_date_at: {
         label: t('change.planned_start_date'),
         type: 'sDatePicker',
-        placeholder: t('change.planned_start_date_placeholder')
+        placeholder: t('change.planned_start_date_placeholder'),
+        required: isRequired('planned_start_date_at')
       },
       planned_end_date_at: {
         label: t('change.planned_end_date'),
         type: 'sDatePicker',
-        placeholder: t('change.planned_end_date_placeholder')
+        placeholder: t('change.planned_end_date_placeholder'),
+        required: isRequired('planned_end_date_at')
       },
       rel_change_justifications_code: {
         label: t('change.justification'),
@@ -347,7 +379,8 @@ export class Change {
         placeholder: t('change.justification_placeholder'),
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=justification`,
         fieldName: 'rel_change_justifications_code',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('rel_change_justifications_code')
       },
       rel_change_objective: {
         label: t('change.objective'),
@@ -355,34 +388,40 @@ export class Change {
         placeholder: t('change.objective_placeholder'),
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=objective`,
         fieldName: 'rel_change_objective',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('rel_change_objective')
       },
       test_plan: {
         label: t('change.test_plan'),
         type: 'sRichTextEditor',
-        placeholder: t('change.test_plan_placeholder')
+        placeholder: t('change.test_plan_placeholder'),
+        required: isRequired('test_plan')
       },
       implementation_plan: {
         label: t('change.implementation_plan'),
         type: 'sRichTextEditor',
-        placeholder: t('change.implementation_plan_placeholder')
+        placeholder: t('change.implementation_plan_placeholder'),
+        required: isRequired('implementation_plan')
       },
       rollbcak_plan: {
         label: t('change.rollback_plan'),
         type: 'sRichTextEditor',
-        placeholder: t('change.rollback_plan_placeholder')
+        placeholder: t('change.rollback_plan_placeholder'),
+        required: isRequired('rollbcak_plan')
       },
       post_implementation_plan: {
         label: t('change.post_implementation_plan'),
         type: 'sRichTextEditor',
-        placeholder: t('change.post_implementation_plan_placeholder')
+        placeholder: t('change.post_implementation_plan_placeholder'),
+        required: isRequired('post_implementation_plan')
       },
       
       // Validation et autorisation
       cab_comments: {
         label: t('change.cab_comments'),
         type: 'sRichTextEditor',
-        placeholder: t('change.cab_comments_placeholder')
+        placeholder: t('change.cab_comments_placeholder'),
+        required: isRequired('cab_comments')
       },
       rel_cab_validation_status: {
         label: t('change.cab_validation_status'),
@@ -390,7 +429,8 @@ export class Change {
         placeholder: t('change.cab_validation_status_placeholder'),
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=cab_validation_status`,
         fieldName: 'rel_cab_validation_status',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('rel_cab_validation_status')
       },
       required_validations: {
         label: t('change.required_validations'),
@@ -400,12 +440,14 @@ export class Change {
         displayedLabel: 'label',
         targetEndPoint: 'changes',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        required: isRequired('required_validations')
       },
       validated_at: {
         label: t('change.validated_at'),
         type: 'sDatePicker',
-        placeholder: t('change.validated_at_placeholder')
+        placeholder: t('change.validated_at_placeholder'),
+        required: isRequired('validated_at')
       },
       
       // Exécution et suivi
@@ -417,23 +459,27 @@ export class Change {
         displayedLabel: 'title',
         targetEndPoint: 'changes',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        required: isRequired('related_tickets')
       },
       actual_start_date_at: {
         label: t('change.actual_start_date'),
         type: 'sDatePicker',
-        placeholder: t('change.actual_start_date_placeholder')
+        placeholder: t('change.actual_start_date_placeholder'),
+        required: isRequired('actual_start_date_at')
       },
       actual_end_date_at: {
         label: t('change.actual_end_date'),
         type: 'sDatePicker',
-        placeholder: t('change.actual_end_date_placeholder')
+        placeholder: t('change.actual_end_date_placeholder'),
+        required: isRequired('actual_end_date_at')
       },
       elapsed_time: {
         label: t('change.elapsed_time'),
         type: 'sTextField',
         placeholder: t('change.elapsed_time_placeholder'),
-        inputType: 'number'
+        inputType: 'number',
+        required: isRequired('elapsed_time')
       },
       subscribers: {
         label: t('change.subscribers'),
@@ -443,14 +489,16 @@ export class Change {
         displayedLabel: 'first_name',
         targetEndPoint: 'changes',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        required: isRequired('subscribers')
       },
       
       // Clôture et évaluation finale
       success_criteria: {
         label: t('change.success_criteria'),
         type: 'sRichTextEditor',
-        placeholder: t('change.success_criteria_placeholder')
+        placeholder: t('change.success_criteria_placeholder'),
+        required: isRequired('success_criteria')
       },
       post_change_evaluation: {
         label: t('change.post_change_evaluation'),
@@ -458,17 +506,20 @@ export class Change {
         placeholder: t('change.post_change_evaluation_placeholder'),
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=post_implementation_evaluation`,
         fieldName: 'post_change_evaluation',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('post_change_evaluation')
       },
       post_change_comment: {
         label: t('change.post_change_comment'),
         type: 'sRichTextEditor',
-        placeholder: t('change.post_change_comment_placeholder')
+        placeholder: t('change.post_change_comment_placeholder'),
+        required: isRequired('post_change_comment')
       },
       closed_at: {
         label: t('change.closed_at'),
         type: 'sDatePicker',
-        placeholder: t('change.closed_at_placeholder')
+        placeholder: t('change.closed_at_placeholder'),
+        required: isRequired('closed_at')
       }
     };
   }
