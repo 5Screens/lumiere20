@@ -59,13 +59,17 @@ export class Problem {
   static getRenderableFields() {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
+    
+    // Fonction utilitaire pour déterminer si un champ est obligatoire
+    const dynamicLabels = new Problem();
+    const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
     return {
       ticket_status_code: {
         label: t('problem.status'),
         type: 'sSelectField',
         placeholder: t('problem.status_placeholder'),
-        required: true,
+        required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=PROBLEM`,
         patchEndpoint: 'problems',
         fieldName: 'ticket_status_code',
@@ -75,13 +79,13 @@ export class Problem {
         label: t('problem.title'),
         type: 'sTextField',
         placeholder: t('problem.title_placeholder'),
-        required: true
+        required: isRequired('title')
       },
       rel_problem_categories_code: {
         label: t('problem.category'),
         type: 'sSelectField',
         placeholder: t('problem.category_placeholder'),
-        required: true,
+        required: isRequired('rel_problem_categories_code'),
         endpoint: `problem_categories?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'rel_problem_categories_code',
         mode: 'creation'
@@ -90,7 +94,7 @@ export class Problem {
         label: t('problem.description'),
         type: 'sRichTextEditor',
         placeholder: t('problem.description_placeholder'),
-        required: true
+        required: isRequired('description')
       },
       configuration_item_uuid: {
         label: t('problem.configuration_item'),
@@ -130,7 +134,7 @@ export class Problem {
           { key: 'cab_name', label: t('service.cab_name'), visible: false },
           { key: 'parent_service_name', label: t('service.parent_service_name'), visible: false }
         ],
-        required: true
+        required: isRequired('rel_service')
       },
       rel_service_offerings: {
         label: t('problem.service_offerings'),
@@ -153,7 +157,7 @@ export class Problem {
           { key: 'service_name', label: t('service_offering.service_name'), visible: true },
           { key: 'operator_entity_name', label: t('service_offering.operator_entity_name'), visible: false }
         ],
-        required: true
+        required: isRequired('rel_service_offerings')
       },
       watch_list: {
         label: t('problem.watch_list'),
@@ -169,7 +173,7 @@ export class Problem {
         label: t('problem.impact'),
         type: 'sSelectField',
         placeholder: t('problem.impact_placeholder'),
-        required: true,
+        required: isRequired('impact'),
         endpoint: `incident_impacts?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'impact',
         mode: 'creation'
@@ -178,7 +182,7 @@ export class Problem {
         label: t('problem.urgency'),
         type: 'sSelectField',
         placeholder: t('problem.urgency_placeholder'),
-        required: true,
+        required: isRequired('urgency'),
         endpoint: `incident_urgencies?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'urgency',
         mode: 'creation'
@@ -196,7 +200,7 @@ export class Problem {
         columnsConfig: [
           { key: 'groupe_name', label: t('group.name'), visible: true }
         ],
-        required: true
+        required: isRequired('assigned_to_group')
       },
       assigned_to_person: {
         label: t('problem.assigned_to_person'),
