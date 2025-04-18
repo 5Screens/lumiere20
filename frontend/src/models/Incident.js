@@ -65,13 +65,17 @@ export class Incident {
   static getRenderableFields() {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
+    
+    // Fonction utilitaire pour déterminer si un champ est obligatoire
+    const dynamicLabels = new Incident();
+    const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
     return {
       ticket_status_code: {
         label: t('incident.status'),
         type: 'sSelectField',
         placeholder: t('incident.status_placeholder'),
-        required: true,
+        required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=INCIDENT`,
         patchEndpoint: 'incidents',
         fieldName: 'ticket_status_code',
@@ -81,13 +85,13 @@ export class Incident {
         label: t('incident.title'),
         type: 'sTextField',
         placeholder: t('incident.title_placeholder'),
-        required: true
+        required: isRequired('title')
       },
       description: {
         label: t('incident.description'),
         type: 'sRichTextEditor',
         placeholder: t('incident.description_placeholder'),
-        required: true
+        required: isRequired('description')
       },
       requested_by_uuid: {
         label: t('incident.requested_by'),
@@ -102,7 +106,7 @@ export class Incident {
           { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
-        required: true
+        required: isRequired('requested_by_uuid')
       },
       requested_for_uuid: {
         label: t('incident.requested_for'),
@@ -117,7 +121,7 @@ export class Incident {
           { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
-        required: true
+        required: isRequired('requested_for_uuid')
       },
       configuration_item_uuid: {
         label: t('incident.configuration_item'),
@@ -144,7 +148,7 @@ export class Incident {
         columnsConfig: [
           { key: 'groupe_name', label: t('group.name'), visible: true }
         ],
-        required: true
+        required: isRequired('assigned_to_group')
       },
       assigned_to_person: {
         label: t('incident.assigned_to'),
@@ -175,7 +179,7 @@ export class Incident {
         label: t('incident.impact'),
         type: 'sSelectField',
         placeholder: t('incident.impact_placeholder'),
-        required: true,
+        required: isRequired('impact'),
         endpoint: `incident_impacts?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'impact',
         mode: 'creation'
@@ -184,7 +188,7 @@ export class Incident {
         label: t('incident.urgency'),
         type: 'sSelectField',
         placeholder: t('incident.urgency_placeholder'),
-        required: true,
+        required: isRequired('urgency'),
         endpoint: `incident_urgencies?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'urgency',
         mode: 'creation'
