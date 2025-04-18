@@ -18,6 +18,17 @@ export class Incident {
     this.assigned_to_person = data.assigned_to_person || null;
     this.watch_list = data.watch_list || [];
 
+    // Définition des champs requis avec leurs labels
+    this.requiredFields = [
+      { name: 'ticket_status_code', label: i18n.global.t('incident.status') },
+      { name: 'title', label: i18n.global.t('incident.title') },
+      { name: 'description', label: i18n.global.t('incident.description') },
+      { name: 'requested_for_uuid', label: i18n.global.t('incident.requested_for') },
+      { name: 'impact', label: i18n.global.t('incident.impact') },
+      { name: 'urgency', label: i18n.global.t('incident.urgency') },
+      { name: 'assigned_to_group', label: i18n.global.t('incident.assigned_to_group') }
+    ];
+
     // Impact and priority
     this.impact = data.impact || null;
     this.urgency = data.urgency || null;

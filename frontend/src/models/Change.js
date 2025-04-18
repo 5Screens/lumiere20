@@ -2,19 +2,6 @@ import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
 import apiService from '@/services/apiService'
 
-// Liste des champs obligatoires pour la création d'un objet Change
-export const requiredField = [
-  'ticket_status_code',
-  'requested_for_uuid',
-  'title',
-  'description',
-  'rel_services',
-  'rel_service_offerings',
-  'rel_change_type_code',
-  'assigned_to_group',
-  'assigned_to_person'
-];
-
 export class Change {
   constructor(data = {}) {
     // Informations générales
@@ -34,6 +21,18 @@ export class Change {
     // Assignation (stockée dans rel_tickets_groups_persons)
     this.assigned_to_group = data.assigned_to_group || null;
     this.assigned_to_person = data.assigned_to_person || null;
+    
+    // Définition des champs requis avec leurs labels
+    this.requiredFields = [
+      { name: 'ticket_status_code', label: i18n.global.t('change.status') },
+      { name: 'requested_for_uuid', label: i18n.global.t('change.requested_for') },
+      { name: 'title', label: i18n.global.t('change.title') },
+      { name: 'description', label: i18n.global.t('change.description') },
+      { name: 'rel_services', label: i18n.global.t('change.service') },
+      { name: 'rel_service_offerings', label: i18n.global.t('change.service_offerings') },
+      { name: 'assigned_to_group', label: i18n.global.t('change.assigned_to_group') },
+      { name: 'assigned_to_person', label: i18n.global.t('change.assigned_to_person') }
+    ];
     
     // Evaluation du Risque (Extended attributes)
     this.r_q1 = data.r_q1 || null;
@@ -143,7 +142,7 @@ export class Change {
     const dynamicLabels = await this.getDynamicLabel();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
-    const isRequired = (fieldName) => requiredField.includes(fieldName);
+    const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
     return {
       // Informations générales

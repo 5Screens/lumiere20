@@ -252,37 +252,30 @@ export const useObjectStore = defineStore('object', {
         return false
       }
       
-      // Récupère les champs rendus par la classe du modèle
-      let requiredFields = []
+      // Récupère les champs requis de l'objet
+      console.info('[ObjectStore] Current object type:', this.currentObjectType)
+      console.info('[ObjectStore] Current object:', this.currentObject)
+      
+      let requiredFields = this.currentObject.requiredFields
+      console.info('[ObjectStore] Found required fields:', requiredFields)
+      
+      // Si requiredFields n'est pas défini ou n'est pas un tableau, on utilise un tableau vide
+      if (!requiredFields || !Array.isArray(requiredFields) || requiredFields.length === 0) {
+        console.warn('[ObjectStore] No required fields defined for this object type, using default validation')
+        // Créer une liste de champs requis basée sur les propriétés du modèle
+        requiredFields = [
+          { name: 'title', label: i18n.global.t(`${this.currentObjectType.toLowerCase()}.title`) },
+          { name: 'ticket_status_code', label: i18n.global.t(`${this.currentObjectType.toLowerCase()}.status`) }
+        ]
+        console.info('[ObjectStore] Using default required fields:', requiredFields)
+      }
+      
       let missingFields = []
       
       try {
-        // Obtenir la classe du modèle en fonction du type d'objet
-        const modelClass = this.currentObject.constructor
-        
-        if (!modelClass || !modelClass.getRenderableFields) {
-          console.error('[ObjectStore] Model class does not implement getRenderableFields')
-          this.message = 'Erreur: Impossible de valider les champs requis'
-          return false
-        }
-        
-        // Récupérer tous les champs rendus
-        const renderableFields = modelClass.getRenderableFields()
-        
-        // Filtrer pour obtenir uniquement les champs requis
-        Object.entries(renderableFields).forEach(([fieldName, fieldConfig]) => {
-          if (fieldConfig.required === true) {
-            requiredFields.push({
-              name: fieldName,
-              label: fieldConfig.label
-            })
-          }
-        })
-        
-        console.info(`[ObjectStore] Found ${requiredFields.length} required fields:`, requiredFields)
-        
         // Vérifier si chaque champ requis est rempli
         requiredFields.forEach(field => {
+          console.info(`[ObjectStore] Checking field '${field.name}' with value:`, this.currentObject[field.name])
           const value = this.currentObject[field.name]
           
           // Vérifier si la valeur est vide (null, undefined, chaîne vide, ou tableau vide)
@@ -314,7 +307,7 @@ export const useObjectStore = defineStore('object', {
         this.message = `Erreur lors de la validation: ${error.message}`
         return false
       }
-    },
+    }
   },
 
   getters: {

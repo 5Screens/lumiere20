@@ -26,6 +26,17 @@ export class Problem {
     this.symptoms_description = data.symptoms_description || '';
     this.workaround = data.workaround || '';
     
+    // Définition des champs requis avec leurs labels
+    this.requiredFields = [
+      { name: 'ticket_status_code', label: i18n.global.t('problem.status') },
+      { name: 'title', label: i18n.global.t('problem.title') },
+      { name: 'description', label: i18n.global.t('problem.description') },
+      { name: 'rel_problem_categories_code', label: i18n.global.t('problem.category') },
+      { name: 'impact', label: i18n.global.t('problem.impact') },
+      { name: 'urgency', label: i18n.global.t('problem.urgency') },
+      { name: 'assigned_to_group', label: i18n.global.t('problem.assigned_to_group') }
+    ];
+    
     // Identification des causes
     this.knownerrors_list = data.knownerrors_list || [];
     this.changes_list = data.changes_list || [];

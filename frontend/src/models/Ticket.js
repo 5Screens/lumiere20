@@ -16,6 +16,14 @@ export class Ticket {
     this.date_creation = data.date_creation || null;
     this.date_modification = data.date_modification || null;
     this.watch_list = data.watch_list || [];
+    
+    // Définition des champs requis avec leurs labels
+    this.requiredFields = [
+      { name: 'ticket_status_code', label: i18n.global.t('ticket.status') },
+      { name: 'title', label: i18n.global.t('ticket.title') },
+      { name: 'requested_for_uuid', label: i18n.global.t('ticket.requested_for') },
+      { name: 'assigned_to_group', label: i18n.global.t('ticket.assigned_to_group') }
+    ];
   }
 
   static getRenderableFields() {

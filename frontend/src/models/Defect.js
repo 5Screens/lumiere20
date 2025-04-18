@@ -15,6 +15,14 @@ export class Defect {
     this.date_modification = data.date_modification || null;
     this.severity = data.severity || null;
     this.project = data.project || null;
+    
+    // Définition des champs requis avec leurs labels
+    this.requiredFields = [
+      { name: 'titre', label: 'Titre' },
+      { name: 'configuration_item_uuid', label: 'Configuration Item' },
+      { name: 'severity', label: 'Sévérité' },
+      { name: 'project', label: 'Projet' }
+    ];
   }
 
   static getRenderableFields() {
