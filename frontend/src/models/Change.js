@@ -435,7 +435,7 @@ export class Change {
         label: t('change.required_validations'),
         type: 'sPickList',
         placeholder: t('change.required_validations_placeholder'),
-        sourceEndPoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=validation_level`,
+        sourceEndPoint: `change_setup?lang=${userProfileStore.language}&metadata=validation_level`,
         displayedLabel: 'label',
         targetEndPoint: 'changes',
         target_uuid: null,
