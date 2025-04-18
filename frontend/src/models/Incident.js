@@ -331,7 +331,20 @@ export class Incident {
         throw new Error(`Unsupported HTTP method: ${method}`);
     }
     
-    // Retourner l'objet actuel pour permettre le chaînage
-    return this;
+    // Créer une copie de l'objet sans l'attribut requiredFields
+    const apiData = { ...this };
+    delete apiData.requiredFields;
+    
+    // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
+    Object.keys(apiData).forEach(key => {
+      const value = apiData[key];
+      if (value === null || value === undefined || 
+          (Array.isArray(value) && value.length === 0) ||
+          (typeof value === 'string' && value.trim() === '')) {
+        delete apiData[key];
+      }
+    });
+    
+    return apiData;
   }
 }
