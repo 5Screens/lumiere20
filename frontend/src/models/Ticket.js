@@ -55,7 +55,8 @@ export class Ticket {
       description: {
         label: t('ticket.description'),
         type: 'sRichTextEditor',
-        placeholder: t('ticket.description_placeholder')
+        placeholder: t('ticket.description_placeholder'),
+        required: isRequired('description')
       },
       requested_by_uuid: {
         label: t('ticket.requested_by'),

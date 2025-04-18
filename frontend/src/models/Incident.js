@@ -121,7 +121,7 @@ export class Incident {
           { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
-        required: isRequired('requested_for_uuid')
+          required: isRequired('requested_for_uuid')
       },
       configuration_item_uuid: {
         label: t('incident.configuration_item'),
@@ -133,7 +133,8 @@ export class Incident {
         columnsConfig: [
           { key: 'nom', label: t('configuration_item.nom'), visible: true },
           { key: 'description', label: t('configuration_item.description'), visible: true }
-        ]
+        ],
+        required: isRequired('configuration_item_uuid')
       },
       assigned_to_group: {
         label: t('incident.assigned_group'),
@@ -163,7 +164,8 @@ export class Incident {
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
-        ]
+        ],
+        required: isRequired('assigned_to_person')
       },
       watch_list: {
         label: t('incident.watch_list'),
@@ -173,7 +175,8 @@ export class Incident {
         displayedLabel: 'first_name',
         targetEndPoint: 'incidents',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        required: isRequired('watch_list')
       },
       impact: {
         label: t('incident.impact'),
@@ -202,7 +205,8 @@ export class Incident {
             ? `incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}` 
             : null  ,
         fieldName: 'priority',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('priority')
       },
       rel_service: {
         label: t('incident.service'),
@@ -229,7 +233,8 @@ export class Incident {
           { key: 'managed_by_name', label: t('service.managed_by_name'), visible: false },
           { key: 'cab_name', label: t('service.cab_name'), visible: false },
           { key: 'parent_service_name', label: t('service.parent_service_name'), visible: false }
-        ]
+        ],
+        required: isRequired('rel_service')
       },
       rel_service_offerings: {
         label: t('incident.service_offerings'),
@@ -251,7 +256,8 @@ export class Incident {
           { key: 'date_modification', label: t('service.date_modification'), visible: false },
           { key: 'service_name', label: t('service.service_name'), visible: true },
           { key: 'operator_entity_name', label: t('service.operator_entity_name'), visible: false }
-        ]
+        ],
+        required: isRequired('rel_service')
       },
       contact_type: {
         label: t('incident.contact_type'),
@@ -259,12 +265,14 @@ export class Incident {
         placeholder: t('incident.contact_type_placeholder'),
         endpoint: `contact_types?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'contact_type',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('contact_type')
       },
       resolution_notes: {
         label: t('incident.resolution_notes'),
         type: 'sRichTextEditor',
-        placeholder: t('incident.resolution_notes_placeholder')
+        placeholder: t('incident.resolution_notes_placeholder'),
+        required: isRequired('resolution_notes')
       },
       resolution_code: {
         label: t('incident.resolution_code'),
@@ -272,7 +280,8 @@ export class Incident {
         placeholder: t('incident.resolution_code_placeholder'),
         endpoint: `incident_resolution_codes?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'resolution_code',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('resolution_code')
       },
       cause_code: {
         label: t('incident.cause_code'),
@@ -280,7 +289,8 @@ export class Incident {
         placeholder: t('incident.cause_code_placeholder'),
         endpoint: `incident_cause_codes?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'cause_code',
-        mode: 'creation'
+        mode: 'creation',
+        required: isRequired('cause_code')  
       },
       rel_problem_id: {
         label: t('incident.problem_id'),
@@ -296,7 +306,8 @@ export class Incident {
           { key: 'requested_by_name', label: t('ticket.requested_by_name'), visible: true },
           { key: 'requested_for_name', label: t('ticket.requested_for_name'), visible: true  },
           { key: 'writer_name', label: t('ticket.writer_name'), visible: false }
-        ]
+        ],
+        required: isRequired('rel_problem_id')
       },
       rel_change_request: { 
         label: t('incident.change_request'),
@@ -312,7 +323,8 @@ export class Incident {
           { key: 'requested_by_name', label: t('ticket.requested_by_name'), visible: true },
           { key: 'requested_for_name', label: t('ticket.requested_for_name'), visible: true  },
           { key: 'writer_name', label: t('ticket.writer_name'), visible: false }
-        ]
+        ],
+        required: isRequired('rel_change_request')
       }
     };
   }

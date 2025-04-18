@@ -106,7 +106,8 @@ export class Problem {
         columnsConfig: [
           { key: 'nom', label: t('configuration_item.nom'), visible: true },
           { key: 'description', label: t('configuration_item.description'), visible: true }
-        ]
+        ],
+        required: isRequired('configuration_item_uuid')
       },
       rel_service: {
         label: t('problem.service'),
@@ -167,7 +168,8 @@ export class Problem {
         displayedLabel: 'first_name',
         targetEndPoint: 'problems',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        required: isRequired('watch_list')
       },
       impact: {
         label: t('problem.impact'),
