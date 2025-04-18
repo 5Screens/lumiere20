@@ -541,84 +541,19 @@ export class Change {
         throw new Error(`Unsupported HTTP method: ${method}`);
     }
     
-    // Préparation des données pour l'API
-    const apiData = {
-      uuid: this.uuid,
-      requested_for_uuid: this.requested_for_uuid,
-      ticket_status_code: this.ticket_status_code,
-      ticket_type_code: this.ticket_type_code,
-      title: this.title,
-      description: this.description,
-      configuration_item_uuid: this.configuration_item_uuid,
-      created_at: this.created_at,
-      updated_at: this.updated_at,
-      
-      // Données pour rel_tickets_groups_persons
-      assigned_to: {
-        group: this.assigned_to_group,
-        person: this.assigned_to_person
-      },
-      
-      // Extended attributes
-      extended_attributes: {
-        rel_services: this.rel_services,
-        rel_service_offerings: this.rel_service_offerings,
-        rel_change_type_code: this.rel_change_type_code,
-        r_q1: this.r_q1,
-        r_q2: this.r_q2,
-        r_q3: this.r_q3,
-        r_q4: this.r_q4,
-        r_q5: this.r_q5,
-        i_q1: this.i_q1,
-        i_q2: this.i_q2,
-        i_q3: this.i_q3,
-        i_q4: this.i_q4,
-        requested_start_date_at: this.requested_start_date_at,
-        requested_end_date_at: this.requested_end_date_at,
-        planned_start_date_at: this.planned_start_date_at,
-        planned_end_date_at: this.planned_end_date_at,
-        rel_change_justifications_code: this.rel_change_justifications_code,
-        rel_change_objective: this.rel_change_objective,
-        test_plan: this.test_plan,
-        implementation_plan: this.implementation_plan,
-        rollbcak_plan: this.rollbcak_plan,
-        post_implementation_plan: this.post_implementation_plan,
-        cab_comments: this.cab_comments,
-        rel_cab_validation_status: this.rel_cab_validation_status,
-        required_validations: this.required_validations,
-        validated_at: this.validated_at,
-        related_tickets: this.related_tickets,
-        actual_start_date_at: this.actual_start_date_at,
-        actual_end_date_at: this.actual_end_date_at,
-        elapsed_time: this.elapsed_time,
-        subscribers: this.subscribers,
-        success_criteria: this.success_criteria,
-        post_change_evaluation: this.post_change_evaluation,
-        post_change_comment: this.post_change_comment,
-        closed_at: this.closed_at
-      }
-    };
+    // Créer une copie de l'objet sans l'attribut requiredFields
+    const apiData = { ...this };
+    delete apiData.requiredFields;
     
-    // Supprimer les propriétés null ou undefined
+    // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
     Object.keys(apiData).forEach(key => {
-      if (apiData[key] === null || apiData[key] === undefined) {
+      const value = apiData[key];
+      if (value === null || value === undefined || 
+          (Array.isArray(value) && value.length === 0) ||
+          (typeof value === 'string' && value.trim() === '')) {
         delete apiData[key];
       }
     });
-    
-    // Nettoyer les extended_attributes
-    if (apiData.extended_attributes) {
-      Object.keys(apiData.extended_attributes).forEach(key => {
-        if (apiData.extended_attributes[key] === null || apiData.extended_attributes[key] === undefined) {
-          delete apiData.extended_attributes[key];
-        }
-      });
-      
-      // Supprimer extended_attributes si vide
-      if (Object.keys(apiData.extended_attributes).length === 0) {
-        delete apiData.extended_attributes;
-      }
-    }
     
     return apiData;
   }
