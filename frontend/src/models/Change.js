@@ -546,11 +546,24 @@ export class Change {
     const apiData = { ...this };
     delete apiData.requiredFields;
     
-    // Traiter la watch_list pour extraire uniquement les UUIDs si ce sont des objets complets
-    if (apiData.watch_list && Array.isArray(apiData.watch_list) && apiData.watch_list.length > 0) {
-      if (typeof apiData.watch_list[0] === 'object' && apiData.watch_list[0].uuid) {
-        // Si les éléments de la watch_list sont des objets avec un UUID, extraire uniquement les UUIDs
-        apiData.watch_list = apiData.watch_list.map(item => item.uuid);
+    // Traiter les listes pour extraire les bonnes valeurs selon le type de liste
+    
+    // 1. Pour watch_list et related_tickets, extraire les UUIDs
+    const uuidLists = ['watch_list', 'related_tickets'];
+    uuidLists.forEach(field => {
+      if (apiData[field] && Array.isArray(apiData[field]) && apiData[field].length > 0) {
+        if (typeof apiData[field][0] === 'object' && apiData[field][0].uuid) {
+          // Si les éléments sont des objets avec un UUID, extraire uniquement les UUIDs
+          apiData[field] = apiData[field].map(item => item.uuid);
+        }
+      }
+    });
+    
+    // 2. Pour required_validations, extraire les codes
+    if (apiData.required_validations && Array.isArray(apiData.required_validations) && apiData.required_validations.length > 0) {
+      if (typeof apiData.required_validations[0] === 'object') {
+        // Si les éléments sont des objets, extraire le code au lieu de l'UUID
+        apiData.required_validations = apiData.required_validations.map(item => item.code);
       }
     }
     

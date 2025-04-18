@@ -142,6 +142,16 @@ export class Ticket {
     const userProfileStore = useUserProfileStore();
     console.log('[Ticket.toAPI] Current user profile ID:', userProfileStore.id);
     
+    // Traiter la watch_list pour extraire uniquement les UUIDs si ce sont des objets complets
+    let watchList = this.watch_list;
+    if (this.watch_list && Array.isArray(this.watch_list) && this.watch_list.length > 0) {
+      if (typeof this.watch_list[0] === 'object' && this.watch_list[0].uuid) {
+        // Si les éléments de la watch_list sont des objets avec un UUID, extraire uniquement les UUIDs
+        watchList = this.watch_list.map(item => item.uuid);
+        console.log('[Ticket.toAPI] Extracted UUIDs from watch_list objects', watchList);
+      }
+    }
+    
     // Base object with common fields
     const baseFields = {
       title: this.title,
@@ -153,7 +163,7 @@ export class Ticket {
       writer_uuid: userProfileStore.id, // Always use current user's ID
       ticket_type_code: 'TICKET', //We are creating a ticket
       ticket_status_code: this.ticket_status_code,
-      watch_list: this.watch_list
+      watch_list: watchList
     };
     console.log('[Ticket.toAPI] Base fields prepared', baseFields);
 
