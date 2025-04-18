@@ -314,6 +314,18 @@ export class Problem {
     const apiData = { ...this };
     delete apiData.requiredFields;
     
+    // Traiter les listes pour extraire uniquement les UUIDs si ce sont des objets complets
+    const listFields = ['watch_list', 'knownerrors_list', 'changes_list', 'incidents_list'];
+    
+    listFields.forEach(field => {
+      if (apiData[field] && Array.isArray(apiData[field]) && apiData[field].length > 0) {
+        if (typeof apiData[field][0] === 'object' && apiData[field][0].uuid) {
+          // Si les éléments de la liste sont des objets avec un UUID, extraire uniquement les UUIDs
+          apiData[field] = apiData[field].map(item => item.uuid);
+        }
+      }
+    });
+    
     // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
     Object.keys(apiData).forEach(key => {
       const value = apiData[key];

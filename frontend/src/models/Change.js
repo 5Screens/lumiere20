@@ -546,6 +546,14 @@ export class Change {
     const apiData = { ...this };
     delete apiData.requiredFields;
     
+    // Traiter la watch_list pour extraire uniquement les UUIDs si ce sont des objets complets
+    if (apiData.watch_list && Array.isArray(apiData.watch_list) && apiData.watch_list.length > 0) {
+      if (typeof apiData.watch_list[0] === 'object' && apiData.watch_list[0].uuid) {
+        // Si les éléments de la watch_list sont des objets avec un UUID, extraire uniquement les UUIDs
+        apiData.watch_list = apiData.watch_list.map(item => item.uuid);
+      }
+    }
+    
     // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
     Object.keys(apiData).forEach(key => {
       const value = apiData[key];

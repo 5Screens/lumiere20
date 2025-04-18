@@ -292,7 +292,7 @@ function moveToSource() {
 }
 
 function updateModelValue() {
-  emit('update:modelValue', targetItems.value.map(item => item.uuid));
+  emit('update:modelValue', targetItems.value);
 }
 
 function checkForChanges() {
@@ -335,9 +335,16 @@ async function fetchSourceItems() {
 
 async function fetchTargetItems() {
   if (!props.edition || !props.targetEndPoint || !props.target_uuid) {
-    // En mode création, initialiser avec les pickedItems
-    if (props.pickedItems && props.pickedItems.length > 0) {
-      // Trouver les items correspondants dans sourceItems
+    // En mode création, initialiser avec les pickedItems ou modelValue
+    if (props.modelValue && props.modelValue.length > 0) {
+      // Utiliser directement les objets du modelValue s'ils sont disponibles
+      const modelUuids = new Set(props.modelValue.map(item => item.uuid));
+      targetItems.value = props.modelValue;
+      
+      // Retirer ces items de la liste source
+      sourceItems.value = sourceItems.value.filter(item => !modelUuids.has(item.uuid));
+    } else if (props.pickedItems && props.pickedItems.length > 0) {
+      // Fallback sur pickedItems si modelValue n'est pas disponible
       const pickedUuids = new Set(props.pickedItems);
       targetItems.value = sourceItems.value.filter(item => pickedUuids.has(item.uuid));
       
@@ -386,8 +393,8 @@ async function confirmChanges() {
     originalTargetItems.value = [...targetItems.value];
     valueChanged.value = false;
     
-    // Émettre l'événement de succès
-    emit('update:success', uuids);
+    // Émettre l'événement de succès avec les objets complets
+    emit('update:success', targetItems.value);
   } catch (err) {
     console.error('Error updating watchlist:', err);
     error.value = `Failed to update selected items: ${err.message}`;
@@ -440,7 +447,7 @@ watch(() => props.pickedItems, async () => {
 watch(() => props.modelValue, (newValue) => {
   if (newValue && !valueChanged.value) {
     // Si le modèle change de l'extérieur et qu'on n'a pas de modifications en cours
-    const modelUuids = new Set(newValue);
+    const modelUuids = new Set(newValue.map(item => item.uuid));
     
     // Mettre à jour targetItems en fonction du nouveau modèle
     const newTargetItems = [];
@@ -449,7 +456,9 @@ watch(() => props.modelValue, (newValue) => {
     // Répartir les items entre source et target
     [...sourceItems.value, ...targetItems.value].forEach(item => {
       if (modelUuids.has(item.uuid)) {
-        newTargetItems.push(item);
+        // Utiliser l'objet complet du modelValue si disponible
+        const modelItem = newValue.find(modelItem => modelItem.uuid === item.uuid);
+        newTargetItems.push(modelItem || item);
       } else {
         newSourceItems.push(item);
       }
