@@ -227,8 +227,7 @@ export class Change {
         required: isRequired('rel_change_type_code'),
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=type`,
         fieldName: 'rel_change_type_code',
-        mode: 'creation',
-        required: isRequired('rel_change_type_code')
+        mode: 'creation'
       },
       assigned_to_group: {
         label: t('change.assigned_group'),

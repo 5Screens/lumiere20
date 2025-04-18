@@ -30,12 +30,16 @@ export class Ticket {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
+    // Fonction utilitaire pour déterminer si un champ est obligatoire
+    const dynamicLabels = new Ticket();
+    const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
+    
     return {
       ticket_status_code: {
         label: t('ticket.status'),
         type: 'sSelectField',
         placeholder: t('ticket.status_placeholder'),
-        required: true,
+        required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes`,
         patchEndpoint: 'tickets',
         fieldName: 'ticket_status_code',
@@ -46,7 +50,7 @@ export class Ticket {
         label: t('ticket.title'),
         type: 'sTextField',
         placeholder: 'Entrez le titre',
-        required: true
+        required: isRequired('title')
       },
       description: {
         label: t('ticket.description'),
@@ -67,7 +71,7 @@ export class Ticket {
           { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
-        required: true
+        required: isRequired('requested_by_uuid')
       },
       requested_for_uuid: {
         label: t('ticket.requested_for'),
@@ -83,7 +87,7 @@ export class Ticket {
           { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
-        required: true
+        required: isRequired('requested_for_uuid')
       },
       assigned_to_group: {
         label: t('ticket.assigned_team_label'),
@@ -101,7 +105,7 @@ export class Ticket {
           { key: 'groupe_name', label: t('group.name'), visible: true },
           { key: 'phone', label: t('group.phone'), visible: true }
         ],
-        required: true
+        required: isRequired('assigned_to_group')
       },
       assigned_to_person: {
         label: t('ticket.assigned_to_label'),
@@ -119,14 +123,14 @@ export class Ticket {
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
-        required: false
+        required: isRequired('assigned_to_person')
       },
       watch_list: {
         label: t('ticket.watcher'),
         type: "sPickList",
         helperText: t('ticket.watcher_helper_text'),
         placeholder: t('ticket.watcher_placeholder'),
-        required: false,
+        required: isRequired('watch_list'),
         edition: false,
         sourceEndPoint: "persons",
         displayedLabel: "first_name",

@@ -215,32 +215,38 @@ export class Problem {
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
-        ]
+        ],
+        required: isRequired('assigned_to_person')
       },
       symptoms_description: {
         label: t('problem.symptoms_description'),
         type: 'sRichTextEditor',
-        placeholder: t('problem.symptoms_description_placeholder')
+        placeholder: t('problem.symptoms_description_placeholder'),
+        required: isRequired('symptoms_description')
       },
       workaround: {
         label: t('problem.workaround'),
         type: 'sRichTextEditor',
-        placeholder: t('problem.workaround_placeholder')
+        placeholder: t('problem.workaround_placeholder'),
+        required: isRequired('workaround')
       },
       closed_at: {
         label: t('problem.closed_at'),
         type: 'sDatePicker',
-        placeholder: t('problem.closed_at_placeholder')
+        placeholder: t('problem.closed_at_placeholder'),
+        required: isRequired('closed_at')
       },
       target_resolution_date: {
         label: t('problem.target_resolution_date'),
         type: 'sDatePicker',
-        placeholder: t('problem.target_resolution_date_placeholder')
+        placeholder: t('problem.target_resolution_date_placeholder'),
+        required: isRequired('target_resolution_date')
       },
       actual_resolution_date: {
         label: t('problem.actual_resolution_date'),
         type: 'sDatePicker',
-        placeholder: t('problem.actual_resolution_date_placeholder')
+        placeholder: t('problem.actual_resolution_date_placeholder'),
+        required: isRequired('actual_resolution_date')
       },
       knownerrors_list: {
         label: t('problem.knownerrors_list'),
@@ -250,7 +256,8 @@ export class Problem {
         displayedLabel: 'title',
         targetEndPoint: 'problems',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        required: isRequired('knownerrors_list')
       },
       changes_list: {
         label: t('problem.changes_list'),
@@ -260,7 +267,8 @@ export class Problem {
         displayedLabel: 'title',
         targetEndPoint: 'problems',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        required: isRequired('changes_list')
       },
       incidents_list: {
         label: t('problem.incidents_list'),
@@ -270,28 +278,33 @@ export class Problem {
         displayedLabel: 'title',
         targetEndPoint: 'problems',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        required: isRequired('incidents_list')
       },
       root_cause: {
         label: t('problem.root_cause'),
         type: 'sRichTextEditor',
-        placeholder: t('problem.root_cause_placeholder')
+        placeholder: t('problem.root_cause_placeholder'),
+        required: isRequired('root_cause')
       },
       definitive_solution: {
         label: t('problem.definitive_solution'),
         type: 'sRichTextEditor',
-        placeholder: t('problem.definitive_solution_placeholder')
+        placeholder: t('problem.definitive_solution_placeholder'),
+        required: isRequired('definitive_solution')
       },
       actual_resolution_workload: {
         label: t('problem.actual_resolution_workload'),
         type: 'sTextField',
         placeholder: t('problem.actual_resolution_workload_placeholder'),
-        inputType: 'number'
+        inputType: 'number',
+        required: isRequired('actual_resolution_workload')
       },
       closure_justification: {
         label: t('problem.closure_justification'),
         type: 'sTextField',
-        placeholder: t('problem.closure_justification_placeholder')
+        placeholder: t('problem.closure_justification_placeholder') ,
+        required: isRequired('closure_justification')
       }
     };
   }
