@@ -84,7 +84,7 @@ export class Change {
     this.actual_start_date_at = data.actual_start_date_at || null;
     this.actual_end_date_at = data.actual_end_date_at || null;
     this.elapsed_time = data.elapsed_time || null;
-    this.subscribers = data.subscribers || [];
+    this.watch_list = data.watch_list || [];
     
     // Clôture et évaluation finale (Extended attributes)
     this.success_criteria = data.success_criteria || '';
@@ -480,16 +480,16 @@ export class Change {
         inputType: 'number',
         required: isRequired('elapsed_time')
       },
-      subscribers: {
-        label: t('change.subscribers'),
+      watch_list: {
+        label: t('change.watch_list'),
         type: 'sPickList',
-        placeholder: t('change.subscribers_placeholder'),
+        placeholder: t('change.watch_list_placeholder'),
         sourceEndPoint: 'persons',
         displayedLabel: 'first_name',
         targetEndPoint: 'changes',
         target_uuid: null,
         pickedItems: null,
-        required: isRequired('subscribers')
+        required: isRequired('watch_list')
       },
       
       // Clôture et évaluation finale
