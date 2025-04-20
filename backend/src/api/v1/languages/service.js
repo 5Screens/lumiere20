@@ -6,7 +6,7 @@ class LanguageService {
         logger.info('[SERVICE] getActiveLanguages - Starting database query');
         try {
             const query = `
-                SELECT DISTINCT code
+                SELECT DISTINCT code, code as value, native_name as label
                 FROM translations.languages
                 WHERE is_active = true
                 ORDER BY code ASC`;
