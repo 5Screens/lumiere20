@@ -97,5 +97,49 @@ COMMENT ON TABLE configuration.knowledge_setup_codes IS 'Table contenant les cod
 COMMENT ON TABLE translations.knowledge_setup_label IS 'Table contenant les traductions des libellés de configuration pour la gestion des articles de connaissance';
 COMMENT ON TABLE core.knowledge_article_versions IS 'Table contenant les versions des articles de connaissance';
 
+-- 4. Create attachments table
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'core' AND tablename = 'attachments') THEN
+        DROP TABLE core.attachments CASCADE;
+    END IF;
+END
+$$;
+
+CREATE TABLE core.attachments (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    -- Référence vers l'objet parent
+    object_type VARCHAR(50) NOT NULL,   -- ex: 'knowledge_article', 'incident', 'change_request'
+    object_uuid UUID NOT NULL,
+    -- Métadonnées fichier
+    file_name VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    sha256 CHAR(64) NOT NULL,
+    storage_uri TEXT NOT NULL,  -- ex: s3://itsm-files/2025/04/<uuid>
+    -- Audit
+    uploaded_by UUID NOT NULL REFERENCES configuration.persons(uuid),
+    uploaded_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for faster lookups by object
+CREATE INDEX idx_attachments_object ON core.attachments(object_type, object_uuid);
+
+-- Add audit trigger for attachments
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'audit_attachments') THEN
+        DROP TRIGGER audit_attachments ON core.attachments;
+    END IF;
+END
+$$;
+
+CREATE TRIGGER audit_attachments
+AFTER INSERT OR UPDATE OR DELETE ON core.attachments
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
+-- Add comment
+COMMENT ON TABLE core.attachments IS 'Table contenant les métadonnées des fichiers joints aux différents objets du système (tickets, articles de connaissance, etc.)';
+
 -- Commit transaction
 COMMIT;
