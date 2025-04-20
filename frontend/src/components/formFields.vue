@@ -7,7 +7,7 @@
     </div>
     
     <form v-else @submit.prevent="handleSubmit" class="form-fields">
-      <div v-for="(field, key) in fields" :key="key" class="field-container">
+      <div v-for="(field, key) in filteredFields" :key="key" class="field-container">
         <component
           :is="components[field.type]"
           v-model="modelValue[key]"
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import sTextField from './common/sTextField.vue'
 import sFilteredSearchField from './common/sFilteredSearchField.vue'
 import sSelectField from './common/sSelectField.vue'
@@ -76,6 +76,10 @@ const props = defineProps({
   modelValue: {
     type: Object,
     required: true
+  },
+  showOnlyRequired: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -84,6 +88,23 @@ const objectStore = useObjectStore()
 
 const fields = ref({})
 const isLoading = ref(true)
+
+// Computed property to filter fields based on showOnlyRequired prop
+const filteredFields = computed(() => {
+  if (!props.showOnlyRequired) {
+    return fields.value
+  }
+  
+  // Filter fields to only show required ones
+  const requiredFields = {}
+  Object.entries(fields.value).forEach(([key, field]) => {
+    if (field.required === true) {
+      requiredFields[key] = field
+    }
+  })
+  
+  return requiredFields
+})
 
 onMounted(async () => {
   if (!props.modelClass.getRenderableFields) {

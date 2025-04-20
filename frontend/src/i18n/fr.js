@@ -289,7 +289,8 @@ export default {
   objectEditView: {
     title: 'Créer',
     save: 'Enregistrer',
-    errorMissingFields: 'Veuillez remplir tous les champs obligatoires'
+    errorMissingFields: 'Veuillez remplir tous les champs obligatoires',
+    showOnlyRequired: 'Afficher uniquement les informations obligatoires'
   },
   ticket: {
     title: 'Titre',

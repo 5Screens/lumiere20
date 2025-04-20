@@ -17,11 +17,19 @@
           v-model="selectedType"
         />
 
+        <SToggleField
+          v-if="selectedType"
+          :label="$t('objectEditView.showOnlyRequired')"
+          v-model="showOnlyRequired"
+          :mode="'create'"
+        />
+
         <form-fields
           v-if="currentModelClass"
           :key="selectedType"
           :model-class="currentModelClass"
           v-model="currentObject"
+          :show-only-required="showOnlyRequired"
         />
 
         <hr class="form-separator" />
@@ -48,6 +56,7 @@ import { Change } from '@/models/Change'
 import FormFields from '@/components/formFields.vue'
 import ButtonStandard from '@/components/common/ButtonStandard.vue'
 import SSelectField from '@/components/common/sSelectField.vue'
+import SToggleField from '@/components/common/sToggleField.vue'
 import { useUserProfileStore } from '@/stores/userProfileStore'
 import { useObjectStore } from '@/stores/objectStore'
 
@@ -64,6 +73,7 @@ const objectStore = useObjectStore()
 const currentLanguage = computed(() => userProfileStore.language)
 
 const selectedType = ref('')
+const showOnlyRequired = ref(false)
 
 // Accès à l'objet courant du store
 const currentObject = computed({
