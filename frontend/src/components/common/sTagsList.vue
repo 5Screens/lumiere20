@@ -190,12 +190,36 @@ const showRequiredError = computed(() => {
 })
 
 const filteredOptions = computed(() => {
+  // Filtrer d'abord les options déjà sélectionnées
+  const availableOptions = options.value.filter(option => {
+    // Vérifier si cette option n'est pas déjà dans les tags sélectionnés
+    return !selectedTags.value.some(tag => {
+      if (typeof tag === 'string' && typeof option === 'string') {
+        return tag.toLowerCase() === option.toLowerCase()
+      }
+      
+      if (typeof tag === 'object' && typeof option === 'object') {
+        // Utiliser la valeur de l'ID numérique si disponible
+        if (tag.value !== undefined && option.value !== undefined) {
+          return tag.value === option.value
+        }
+        // Sinon, essayer avec uuid ou id comme fallback
+        const matchesUuid = tag.uuid && option.uuid && tag.uuid === option.uuid
+        const matchesId = tag.id && option.id && tag.id === option.id
+        return matchesUuid || matchesId
+      }
+      
+      return false
+    })
+  })
+  
+  // Ensuite, filtrer par le terme de recherche si nécessaire
   if (!inputValue.value.trim()) {
-    return options.value
+    return availableOptions
   }
   
   const searchTerm = inputValue.value.toLowerCase().trim()
-  return options.value.filter(option => {
+  return availableOptions.filter(option => {
     const label = getOptionLabel(option).toLowerCase()
     return label.includes(searchTerm)
   })
@@ -316,6 +340,11 @@ const selectOption = (option) => {
     }
     
     if (typeof tag === 'object' && typeof option === 'object') {
+      // Utiliser la valeur de l'ID numérique si disponible
+      if (tag.value !== undefined && option.value !== undefined) {
+        return tag.value === option.value
+      }
+      // Sinon, essayer avec uuid ou id comme fallback
       const matchesUuid = tag.uuid && option.uuid && tag.uuid === option.uuid
       const matchesId = tag.id && option.id && tag.id === option.id
       return matchesUuid || matchesId
