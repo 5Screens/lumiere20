@@ -257,14 +257,50 @@ const addTag = () => {
     return getTagDisplay(tag).toLowerCase() === value.toLowerCase()
   })
   
-  if (!tagExists) {
-    const newTags = [...selectedTags.value, value]
-    selectedTags.value = newTags
-    updateModelValue()
+  // En mode comboBox, vérifier si le tag est dans les options disponibles
+  if (props.comboBox) {
+    const tagInOptions = options.value.some(option => {
+      if (typeof option === 'string') {
+        return option.toLowerCase() === value.toLowerCase()
+      }
+      return getOptionLabel(option).toLowerCase() === value.toLowerCase()
+    })
     
-    if (props.edition) {
-      valueChanged.value = !areArraysEqual(selectedTags.value, originalTags.value)
-      isEditing.value = valueChanged.value
+    // Si le tag n'est pas dans les options disponibles, ne pas l'ajouter
+    if (!tagInOptions) {
+      inputValue.value = ''
+      return
+    }
+    
+    // Trouver l'option correspondante pour l'ajouter avec sa structure complète
+    const matchingOption = options.value.find(option => {
+      if (typeof option === 'string') {
+        return option.toLowerCase() === value.toLowerCase()
+      }
+      return getOptionLabel(option).toLowerCase() === value.toLowerCase()
+    })
+    
+    if (!tagExists && matchingOption) {
+      const newTags = [...selectedTags.value, matchingOption]
+      selectedTags.value = newTags
+      updateModelValue()
+      
+      if (props.edition) {
+        valueChanged.value = !areArraysEqual(selectedTags.value, originalTags.value)
+        isEditing.value = valueChanged.value
+      }
+    }
+  } else {
+    // En mode libre, ajouter le tag tel quel
+    if (!tagExists) {
+      const newTags = [...selectedTags.value, value]
+      selectedTags.value = newTags
+      updateModelValue()
+      
+      if (props.edition) {
+        valueChanged.value = !areArraysEqual(selectedTags.value, originalTags.value)
+        isEditing.value = valueChanged.value
+      }
     }
   }
   
