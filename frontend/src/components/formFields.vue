@@ -34,6 +34,7 @@
           :edition="field.edition"
           :helper-text="field.helperText"
           :input-type="field.inputType"
+          :combo-box="field.comboBox"
         />
       </div>
     </form>
@@ -48,6 +49,7 @@ import sSelectField from './common/sSelectField.vue'
 import sRichTextEditor from './common/sRichTextEditor.vue'
 import sPickList from './common/sPickList.vue'
 import sDatePicker from './common/sDatePicker.vue'
+import sTagsList from './common/sTagsList.vue'
 import { useObjectStore } from '@/stores/objectStore'
 
 // Import des styles des composants
@@ -57,6 +59,7 @@ import '@/assets/styles/sFilteredSearchField.css'
 import '@/assets/styles/sSelectField.css'
 import '@/assets/styles/sPickList.css'
 import '@/assets/styles/sDatePicker.css'
+import '@/assets/styles/sTagsList.css'
 
 // Enregistrement des composants pour l'utilisation dynamique
 const components = {
@@ -65,7 +68,8 @@ const components = {
   sSelectField,
   sRichTextEditor,
   sPickList,
-  sDatePicker
+  sDatePicker,
+  sTagsList
 }
 
 const props = defineProps({

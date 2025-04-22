@@ -1,0 +1,242 @@
+/* 
+ * Styles pour le composant sTagsList
+ * Permet la sélection et l'affichage de tags sous forme de badges
+ */
+
+/* Conteneur principal du composant */
+.s-tags-list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+/* Conteneur du label */
+.s-tags-list__label-container {
+  margin-bottom: 0.5rem;
+}
+
+/* Style du label */
+.s-tags-list__label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+/* Label avec indicateur obligatoire (astérisque) */
+.s-tags-list__label--required::after {
+  content: '*';
+  color: var(--error-color);
+  margin-left: 0.25rem;
+}
+
+/* Conteneur principal du contenu (input + tags) */
+.s-tags-list__content-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Zone de saisie et d'affichage des tags */
+.s-tags-list__input-area {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Mise en évidence en cas d'erreur */
+.s-tags-list--error .s-tags-list__input-area {
+  border-color: var(--error-color);
+}
+
+/* Effet de focus sur la zone de saisie */
+.s-tags-list__input-area:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+/* Conteneur des tags sélectionnés */
+.s-tags-list__tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+/* Style d'un tag individuel */
+.s-tags-list__tag {
+  display: flex;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  max-width: 200px;
+  animation: tagAppear 0.2s ease-in-out;
+}
+
+/* Animation d'apparition des tags */
+@keyframes tagAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Texte du tag avec ellipsis si trop long */
+.s-tags-list__tag-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bouton pour supprimer un tag */
+.s-tags-list__tag-remove {
+  background: none;
+  border: none;
+  color: white;
+  margin-left: 0.25rem;
+  padding: 0 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+/* Effet au survol du bouton de suppression */
+.s-tags-list__tag-remove:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Champ de saisie pour les nouveaux tags */
+.s-tags-list__input {
+  flex: 1;
+  min-width: 100px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+}
+
+/* Menu déroulant pour les options */
+.s-tags-list__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 4px 8px var(--shadow-color);
+  z-index: 10;
+  margin-top: 0.25rem;
+  animation: dropdownAppear 0.2s ease-out;
+}
+
+/* Animation d'apparition du dropdown */
+@keyframes dropdownAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Liste des options disponibles */
+.s-tags-list__options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Option individuelle dans le menu déroulant */
+.s-tags-list__option {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Effet au survol d'une option */
+.s-tags-list__option:hover {
+  background-color: var(--hover-color);
+}
+
+/* Message quand aucun résultat n'est trouvé */
+.s-tags-list__no-results {
+  padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  text-align: center;
+  font-style: italic;
+}
+
+/* Indicateur de chargement */
+.s-tags-list__loading {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Animation de chargement (spinner) */
+.s-tags-list__spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(33, 150, 243, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 0.8s linear infinite;
+}
+
+/* Animation de rotation du spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Conteneur des boutons d'action en mode édition */
+.s-tags-list__actions {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+}
+
+/* Message d'erreur */
+.s-tags-list__error {
+  display: block;
+  color: var(--error-color);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* Texte d'aide */
+.s-tags-list__helper {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* Styles spécifiques au mode édition */
+.s-tags-list--editing .s-tags-list__input-area {
+  padding-right: 80px; /* Espace pour les boutons d'action */
+}

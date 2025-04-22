@@ -27,6 +27,17 @@ export class Defect {
 
   static getRenderableFields() {
     return {
+      tags: {
+        type: 'sTagsList',
+        label: 'Tags pour debug !',
+        required: false,
+        comboBox: true,
+        sourceEndPoint: 'ticket_status?lang=fr&toSelect=yes',
+        displayedLabel: 'label',
+        placeholder: 'Ajouter un tag...',
+        helperText: 'Sélectionnez ou saisissez des tags pour catégoriser ce changement',
+        edition: false
+      },
       uuid: {
         label: 'UUID',
         type: 'sTextField',
