@@ -30,9 +30,9 @@ export class Defect {
       tags: {
         type: 'sTagsList',
         label: 'Tags pour debug !',
-        required: false,
-        comboBox: true,
-        sourceEndPoint: 'ticket_status?lang=fr&toSelect=yes',
+        required: true,
+        comboBox: false,
+        sourceEndPoint: 'change_setup?lang=fr&metadata=validation_level',
         displayedLabel: 'label',
         placeholder: 'Ajouter un tag...',
         helperText: 'Sélectionnez ou saisissez des tags pour catégoriser ce changement',
