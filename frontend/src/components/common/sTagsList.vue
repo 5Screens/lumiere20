@@ -77,7 +77,7 @@
             v-for="option in filteredOptions" 
             :key="getOptionId(option)"
             class="s-tags-list__option"
-            @click="selectOption(option)"
+            @mousedown.prevent.stop="selectOption(option)"
           >
             {{ getOptionLabel(option) }}
           </li>
@@ -275,11 +275,16 @@ const selectOption = (option) => {
   // Vérifier si l'option existe déjà
   const optionExists = selectedTags.value.some(tag => {
     if (typeof tag === 'string' && typeof option === 'string') {
-      return tag.toLowerCase() === option.toLowerCase()
+      const matches = tag.toLowerCase() === option.toLowerCase()
+      return matches
     }
+    
     if (typeof tag === 'object' && typeof option === 'object') {
-      return tag.uuid === option.uuid || tag.id === option.id
+      const matchesUuid = tag.uuid && option.uuid && tag.uuid === option.uuid
+      const matchesId = tag.id && option.id && tag.id === option.id
+      return matchesUuid || matchesId
     }
+    
     return false
   })
   
@@ -379,9 +384,13 @@ const areArraysEqual = (arr1, arr2) => {
 }
 
 const handleClickOutside = (event) => {
-  if (tagInput.value && !tagInput.value.contains(event.target)) {
-    showDropdown.value = false
-  }
+  if (
+  tagInput.value &&
+  !tagInput.value.contains(event.target) &&
+  !event.target.closest('.s-tags-list__dropdown')
+) {
+  showDropdown.value = false
+}
 }
 
 // Lifecycle hooks
@@ -398,12 +407,12 @@ onMounted(() => {
   }
   
   // Ajouter l'écouteur de clic pour fermer le dropdown
-  document.addEventListener('click', handleClickOutside)
+  document.addEventListener('mousedown', handleClickOutside)
 })
 
 onBeforeUnmount(() => {
   // Supprimer l'écouteur de clic
-  document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('mousedown', handleClickOutside)
 })
 
 // Watchers
