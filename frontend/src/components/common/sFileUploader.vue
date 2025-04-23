@@ -7,11 +7,6 @@
       </label>
     </div>
 
-    <!-- Texte d'aide -->
-    <div class="s-file-uploader__helper-text" v-if="helperText">
-      {{ helperText }}
-    </div>
-
     <!-- Zone de drag & drop -->
     <div
       class="s-file-uploader__dropzone"
@@ -27,6 +22,15 @@
       <button class="s-file-uploader__browse-button">
         {{ t('fileUploader.browse_button') }}
       </button>
+      <!-- Texte d'aide -->
+      
+      <div class="s-file-uploader__drag-drop-text">
+        - ou -
+        <div>Glisser-déposer pour importer</div>
+      </div>
+      <div class="s-file-uploader__helper-text" v-if="helperText">
+        {{ helperText }}
+      </div>
       <input
         ref="fileInput"
         type="file"
