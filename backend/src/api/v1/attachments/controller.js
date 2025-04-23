@@ -32,8 +32,22 @@ exports.uploadFile = async (req, res) => {
     // Récupérer l'ID de l'utilisateur depuis l'authentification ou le corps de la requête
     const uploadedBy = req.body.uploadedBy || '00000000-0000-0000-0000-000000000000';
     
+    // Assurer l'encodage correct du nom de fichier original pour les accents
+    let decodedFilename;
+    try {
+      decodedFilename = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
+    } catch (error) {
+      logger.warn(`Erreur lors du décodage du nom de fichier: ${error.message}`);
+      decodedFilename = req.file.originalname;
+    }
+    
+    const fileWithCorrectName = {
+      ...req.file,
+      originalname: decodedFilename
+    };
+    
     // Créer l'enregistrement dans la base de données
-    const attachmentUuid = await attachmentService.createAttachment(req.file, objectType, objectUuid, uploadedBy);
+    const attachmentUuid = await attachmentService.createAttachment(fileWithCorrectName, objectType, objectUuid, uploadedBy);
     
     // Renvoyer les informations sur le fichier uploadé
     return res.status(201).json({
@@ -41,7 +55,7 @@ exports.uploadFile = async (req, res) => {
       attachment: {
         uuid: attachmentUuid,
         filename: req.file.filename,
-        originalname: req.file.originalname,
+        originalname: decodedFilename,
         mimetype: req.file.mimetype,
         size: req.file.size
       }
@@ -69,7 +83,10 @@ exports.uploadFile = async (req, res) => {
  */
 exports.uploadMultipleFiles = async (req, res) => {
   try {
+    // Vérification du nombre de fichiers reçus
+    
     if (!req.files || req.files.length === 0) {
+
       return res.status(400).json({ error: 'Aucun fichier n\'a été téléchargé' });
     }
 
@@ -77,10 +94,14 @@ exports.uploadMultipleFiles = async (req, res) => {
     const objectType = req.body.objectType;
     const objectUuid = req.body.objectUuid;
     
+
+    
     if (!objectType || !objectUuid) {
+
       // Supprimer les fichiers si les paramètres sont invalides
       if (req.files) {
         for (const file of req.files) {
+
           fs.unlinkSync(file.path);
         }
       }
@@ -92,29 +113,57 @@ exports.uploadMultipleFiles = async (req, res) => {
     
     // Créer des enregistrements dans la base de données
     const attachments = [];
+
+    
     for (const file of req.files) {
-      const attachmentUuid = await attachmentService.createAttachment(file, objectType, objectUuid, uploadedBy);
-      attachments.push({
-        uuid: attachmentUuid,
-        filename: file.filename,
-        originalname: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size
-      });
+
+      
+      try {
+        // Assurer l'encodage correct du nom de fichier original pour les accents
+        let decodedFilename;
+        try {
+          decodedFilename = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        } catch (error) {
+          logger.warn(`Erreur lors du décodage du nom de fichier: ${error.message}`);
+          decodedFilename = file.originalname;
+        }
+        
+        const fileWithCorrectName = {
+          ...file,
+          originalname: decodedFilename
+        };
+        
+        const attachmentUuid = await attachmentService.createAttachment(fileWithCorrectName, objectType, objectUuid, uploadedBy);
+        
+        attachments.push({
+          uuid: attachmentUuid,
+          filename: file.filename,
+          originalname: decodedFilename,
+          mimetype: file.mimetype,
+          size: file.size
+        });
+      } catch (err) {
+        logger.error(`Erreur lors du traitement du fichier ${file.originalname}: ${err.message}`);
+        logger.error(err.stack);
+        throw err;
+      }
     }
     
     // Renvoyer les informations sur les fichiers uploadés
+
     return res.status(201).json({
       message: `${req.files.length} fichiers téléchargés avec succès`,
       attachments: attachments
     });
   } catch (error) {
     logger.error(`Erreur lors de l'upload des fichiers: ${error.message}`);
+    logger.error(error.stack);
     
     // Supprimer les fichiers en cas d'erreur
     if (req.files) {
       for (const file of req.files) {
         try {
+
           fs.unlinkSync(file.path);
         } catch (err) {
           logger.error(`Erreur lors de la suppression du fichier: ${err.message}`);
