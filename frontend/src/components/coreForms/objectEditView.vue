@@ -168,7 +168,7 @@ watch(selectedType, (newType) => {
       instance = new Change()
       endpoint = 'tickets?type=CHANGE'
       break
-    case 'KNOWLEDGE_ARTICLE':
+    case 'KNOWLEDGE':
       instance = new Knowledge_article()
       endpoint = 'knowledge_articles'
       break
