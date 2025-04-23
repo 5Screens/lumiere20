@@ -33,6 +33,7 @@ const changeSetupRoutes = require('./api/v1/change_setup/routes');
 const changeQuestionsRoutes = require('./api/v1/change_questions/routes');
 const changeOptionsRoutes = require('./api/v1/change_options/routes');
 const knowledgeSetupRoutes = require('./api/v1/knowledge_setup/routes');
+const attachmentsRoutes = require('./api/v1/attachments/routes');
 
 // Middleware
 app.use(cors());
@@ -72,6 +73,7 @@ app.use('/api/v1/change_setup', changeSetupRoutes);
 app.use('/api/v1/change_questions', changeQuestionsRoutes);
 app.use('/api/v1/change_options', changeOptionsRoutes);
 app.use('/api/v1/knowledge_setup', knowledgeSetupRoutes);
+app.use('/api/v1/attachments', attachmentsRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
