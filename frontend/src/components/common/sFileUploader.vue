@@ -65,7 +65,7 @@
           <button
             v-if="canPreview(file)"
             class="s-file-uploader__action-button preview"
-            @click.stop="previewFile(file)"
+            @click.stop="openPreview(file)"
             :title="t('fileUploader.preview')"
           >
             <i class="fas fa-eye"></i>
@@ -258,11 +258,18 @@ const processFiles = async (fileList) => {
     emit('error', errors)
   }
 
-  // Si en mode édition, uploader les fichiers immédiatement
+  // Si en mode édition ET que nous avons un UUID, uploader les fichiers immédiatement
+  // Sinon, simplement les ajouter à la liste sans appel API
   if (props.edition && props.uuid && validFiles.length) {
-    await uploadFiles(validFiles)
+    try {
+      await uploadFiles(validFiles)
+    } catch (error) {
+      console.error('Erreur lors de l\'upload des fichiers:', error)
+      // En cas d'erreur, ajouter quand même les fichiers à la liste locale
+      files.value = [...files.value, ...validFiles]
+    }
   } else {
-    // Sinon, ajouter les fichiers à la liste
+    // En mode création ou sans UUID, ajouter simplement les fichiers à la liste
     files.value = [...files.value, ...validFiles]
   }
 }
@@ -324,14 +331,16 @@ const uploadFiles = async (filesToUpload) => {
 
 
 const removeFile = async (file, index) => {
-  // Si en mode édition et le fichier a un UUID, le supprimer du serveur
-  if (props.edition && file.uuid) {
+  // Si en mode édition, que le fichier a un UUID et qu'on a un UUID d'objet, le supprimer du serveur
+  if (props.edition && file.uuid && props.uuid) {
     try {
       await apiService.delete(`attachments/${file.uuid}`)
       files.value = files.value.filter(f => f.uuid !== file.uuid)
     } catch (error) {
-      console.error('Error deleting file:', error)
-      emit('error', [error.message || 'Delete failed'])
+      console.error('Erreur lors de la suppression du fichier:', error)
+      emit('error', [error.message || 'Échec de la suppression'])
+      // En cas d'erreur, on supprime quand même le fichier de la liste locale
+      files.value.splice(index, 1)
     }
   } else {
     // Sinon, simplement le retirer de la liste
@@ -339,7 +348,7 @@ const removeFile = async (file, index) => {
   }
 }
 
-const previewFile = (file) => {
+const openPreview = (file) => {
   previewFile.value = file
   showPreview.value = true
 }
@@ -402,15 +411,21 @@ const formatFileSize = (bytes) => {
 
 // Charger les fichiers existants si en mode édition
 const loadExistingFiles = async () => {
+  // Ne charger les fichiers existants que si nous sommes en mode édition ET que nous avons un UUID
   if (props.edition && props.uuid) {
     try {
+      console.info(`Chargement des fichiers existants pour l'objet ${props.uuid}`)
       const response = await apiService.get(`attachments/object/${props.uuid}`)
       if (response && Array.isArray(response)) {
         files.value = response
       }
     } catch (error) {
-      console.error('Error loading existing files:', error)
+      console.error('Erreur lors du chargement des fichiers existants:', error)
+      // En cas d'erreur, ne pas bloquer l'utilisation du composant
+      // Simplement logger l'erreur et continuer avec une liste vide
     }
+  } else {
+    console.info('Mode création ou UUID manquant - pas de chargement de fichiers existants')
   }
 }
 
@@ -420,6 +435,7 @@ onMounted(() => {
     files.value = [...props.modelValue]
   }
   
+  // Ne charger les fichiers existants que si nous sommes en mode édition ET que nous avons un UUID
   if (props.edition && props.uuid) {
     loadExistingFiles()
   }
