@@ -150,10 +150,31 @@ const getAttachmentsByObject = async (objectType, objectUuid) => {
   }
 };
 
+/**
+ * Récupère les attachments par UUID de l'objet parent, sans préciser le type
+ * @param {string} objectUuid - UUID de l'objet parent
+ * @returns {Promise<Array>} - Liste des attachments
+ */
+const getAttachmentsByObjectUuid = async (objectUuid) => {
+  try {
+    const query = `
+      SELECT * FROM core.attachments
+      WHERE object_uuid = $1
+    `;
+    
+    const result = await db.query(query, [objectUuid]);
+    return result.rows;
+  } catch (error) {
+    logger.error(`Erreur lors de la récupération des attachments par UUID: ${error.message}`);
+    throw error;
+  }
+};
+
 module.exports = {
   createAttachment,
   getAttachmentByUuid,
   deleteAttachment,
   getAttachmentsByObject,
+  getAttachmentsByObjectUuid,
   calculateFileSha256
 };

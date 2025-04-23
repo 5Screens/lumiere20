@@ -9,6 +9,7 @@ const {
   validateUploadFile, 
   validateUploadMultipleFiles,
   validateGetAttachmentsByObject,
+  validateGetAttachmentsByObjectUuid,
   validateAttachmentUuid
 } = require('./validation');
 
@@ -24,7 +25,7 @@ router.get('/:uuid', validateAttachmentUuid, attachmentsController.getFile);
 // Route pour supprimer un fichier
 router.delete('/:uuid', validateAttachmentUuid, attachmentsController.deleteFile);
 
-// Route pour récupérer les attachments d'un objet
-router.get('/object/:objectType/:objectUuid', validateGetAttachmentsByObject, attachmentsController.getAttachmentsByObject);
+// Route pour récupérer les attachments d'un objet par son UUID
+router.get('/object/:objectUuid', validateGetAttachmentsByObjectUuid, attachmentsController.getAttachmentsByObjectUuid);
 
 module.exports = router;

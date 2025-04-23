@@ -179,25 +179,23 @@ exports.deleteFile = async (req, res) => {
 };
 
 /**
- * Contrôleur pour récupérer les attachments d'un objet
+ * Contrôleur pour récupérer les attachments par UUID de l'objet parent, sans préciser le type
  * @param {Object} req - Requête Express
  * @param {Object} res - Réponse Express
  */
-exports.getAttachmentsByObject = async (req, res) => {
+exports.getAttachmentsByObjectUuid = async (req, res) => {
   try {
-    const { objectType, objectUuid } = req.params;
+    const { objectUuid } = req.params;
     
-    if (!objectType || !objectUuid) {
-      return res.status(400).json({ error: 'objectType et objectUuid sont requis' });
+    if (!objectUuid) {
+      return res.status(400).json({ error: 'objectUuid est requis' });
     }
     
-    const attachments = await attachmentService.getAttachmentsByObject(objectType, objectUuid);
+    const attachments = await attachmentService.getAttachmentsByObjectUuid(objectUuid);
     
-    return res.status(200).json({
-      attachments: attachments
-    });
+    return res.status(200).json(attachments);
   } catch (error) {
-    logger.error(`Erreur lors de la récupération des attachments: ${error.message}`);
+    logger.error(`Erreur lors de la récupération des attachments par UUID: ${error.message}`);
     return res.status(500).json({ error: 'Erreur lors de la récupération des attachments' });
   }
 };

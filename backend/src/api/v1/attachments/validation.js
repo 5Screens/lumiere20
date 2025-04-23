@@ -19,12 +19,8 @@ const uploadFileSchema = Joi.object({
   })
 });
 
-// Schéma de validation pour la récupération des attachments d'un objet
-const getAttachmentsByObjectSchema = Joi.object({
-  objectType: Joi.string().required().messages({
-    'string.empty': 'Le type d\'objet ne peut pas être vide',
-    'any.required': 'Le type d\'objet est requis'
-  }),
+// Schéma de validation pour la récupération des attachments par UUID de l'objet
+const getAttachmentsByObjectUuidSchema = Joi.object({
   objectUuid: Joi.string().guid().required().messages({
     'string.empty': 'L\'UUID de l\'objet ne peut pas être vide',
     'string.guid': 'L\'UUID de l\'objet doit être un UUID valide',
@@ -69,9 +65,9 @@ const validateUploadMultipleFiles = (req, res, next) => {
   next();
 };
 
-// Middleware de validation pour la récupération des attachments d'un objet
-const validateGetAttachmentsByObject = (req, res, next) => {
-  const { error } = getAttachmentsByObjectSchema.validate(req.params);
+// Middleware de validation pour la récupération des attachments par UUID de l'objet
+const validateGetAttachmentsByObjectUuid = (req, res, next) => {
+  const { error } = getAttachmentsByObjectUuidSchema.validate(req.params);
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
@@ -90,6 +86,6 @@ const validateAttachmentUuid = (req, res, next) => {
 module.exports = {
   validateUploadFile,
   validateUploadMultipleFiles,
-  validateGetAttachmentsByObject,
+  validateGetAttachmentsByObjectUuid,
   validateAttachmentUuid
 };
