@@ -89,12 +89,12 @@
 .s-file-uploader__file-item {
   display: flex;
   align-items: center;
-  padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   margin-bottom: 0.5rem;
   background-color: var(--background-primary);
   transition: all 0.3s ease;
+  font-size: 0.75rem;
 }
 
 .s-file-uploader__file-item:hover {
