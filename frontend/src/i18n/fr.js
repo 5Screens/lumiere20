@@ -573,6 +573,66 @@ export default {
     closed_at: 'Date de clôture',
     closed_at_placeholder: 'Sélectionnez la date de clôture'
   },
+
+  knowledge_article: {
+    // Métadonnées d'identification et de classification
+    category: 'Catégorie',
+    category_placeholder: 'Sélectionnez une catégorie',
+    keywords: 'Mots-clés',
+    keywords_placeholder: 'Entrez des mots-clés',
+    service: 'Service',
+    service_placeholder: 'Sélectionnez un service',
+    service_offerings: 'Offres de service',
+    service_offerings_placeholder: 'Sélectionnez des offres de service',
+    target_audience: 'Public cible',
+    target_audience_placeholder: 'Sélectionnez le public cible',
+    lang: 'Langue',
+    lang_placeholder: 'Sélectionnez une langue',
+    confidentiality_level: 'Niveau de confidentialité',
+    confidentiality_level_placeholder: 'Sélectionnez un niveau de confidentialité',
+    
+    // Contenu et structure de l'article
+    title: 'Titre',
+    title_placeholder: 'Entrez le titre de l\'article',
+    summary: 'Résumé',
+    summary_placeholder: 'Entrez un résumé de l\'article',
+    description: 'Contenu détaillé',
+    description_placeholder: 'Entrez le contenu détaillé de l\'article',
+    prerequisites: 'Pré-requis',
+    prerequisites_placeholder: 'Entrez les pré-requis nécessaires',
+    limitations: 'Limitations connues',
+    limitations_placeholder: 'Décrivez les limitations connues',
+    security_notes: 'Notes de sécurité',
+    security_notes_placeholder: 'Entrez les notes de sécurité importantes',
+    attachments: 'Pièces jointes',
+    attachments_placeholder: 'Ajoutez des pièces jointes',
+    
+    // Contexte opérationnel et liens
+    configuration_item: 'Composant concerné',
+    configuration_item_placeholder: 'Sélectionnez un composant',
+    ticket_type: 'Processus associé',
+    ticket_type_placeholder: 'Sélectionnez un processus',
+    tickets_list: 'Tickets reliés',
+    tickets_list_placeholder: 'Sélectionnez des tickets reliés',
+    business_scope: 'Périmètre métier',
+    business_scope_placeholder: 'Définissez le périmètre métier',
+    
+    // Gouvernance et cycle de vie
+    publication_status: 'État de publication',
+    publication_status_placeholder: 'Sélectionnez un état de publication',
+    version: 'Version',
+    version_placeholder: 'Entrez la version',
+    created_at: 'Date de création',
+    created_at_placeholder: 'Date de création',
+    updated_at: 'Date de mise à jour',
+    updated_at_placeholder: 'Date de mise à jour',
+    last_review_at: 'Date de dernière revue',
+    last_review_at_placeholder: 'Sélectionnez la date de dernière revue',
+    next_review_at: 'Date de prochaine revue',
+    next_review_at_placeholder: 'Sélectionnez la date de prochaine revue',
+    license_type: 'Licence ou droits d\'auteur',
+    license_type_placeholder: 'Entrez le type de licence'
+  },
   
   fileUploader: {
     dropzone_placeholder: 'Glisser-déposer pour importer',
