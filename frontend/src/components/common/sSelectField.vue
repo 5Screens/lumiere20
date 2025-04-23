@@ -15,8 +15,8 @@
         <option value="" disabled>{{ loadingOptions ? t('common.loading') : t('common.selectOption') }}</option>
         <option
           v-for="option in options"
-          :key="option.value"
-          :value="option.value"
+          :key="props.valueField ? option[props.valueField] : option.value"
+          :value="props.valueField ? option[props.valueField] : option.value"
         >
           {{ option.label }}
         </option>
@@ -84,6 +84,10 @@ const props = defineProps({
   fieldName: {
     type: String,
     default: 'entity_type'
+  },
+  valueField: {
+    type: String,
+    default: ''
   }
 })
 
@@ -154,6 +158,20 @@ const fetchOptions = async () => {
     
     options.value = response
     optionsLoaded.value = true
+    
+    // Vérifier si la valeur actuelle existe dans les options après le chargement
+    if (selectedValue.value) {
+      const valueField = props.valueField || 'value'
+      const optionExists = options.value.some(option => 
+        option[valueField] === selectedValue.value ||
+        (typeof selectedValue.value === 'number' && option[valueField] === Number(selectedValue.value)) ||
+        (typeof option[valueField] === 'number' && Number(selectedValue.value) === option[valueField])
+      )
+      
+      if (!optionExists) {
+        console.warn(`Selected value ${selectedValue.value} not found in options using field ${valueField}`)
+      }
+    }
   } catch (error) {
     console.error('Error loading options:', error)
     console.warn('Failed to load options from endpoint:', props.endpoint)
@@ -174,8 +192,19 @@ const handleChange = () => {
     emitValue = Number(selectedValue.value)
   }
   
+  // Si une option est sélectionnée et que nous avons un valueField personnalisé,
+  // nous pouvons émettre la valeur complète de l'option pour les composants parents
+  // qui pourraient avoir besoin d'autres propriétés
+  const selectedOption = selectedValue.value ? 
+    options.value.find(option => {
+      const optionValue = props.valueField ? option[props.valueField] : option.value;
+      return optionValue === selectedValue.value || 
+        (typeof selectedValue.value === 'number' && optionValue === Number(selectedValue.value)) ||
+        (typeof optionValue === 'number' && Number(selectedValue.value) === optionValue);
+    }) : null;
+  
   emit('update:modelValue', emitValue)
-  emit('change', emitValue)
+  emit('change', emitValue, selectedOption)
 }
 
 const confirmChange = async () => {

@@ -63,9 +63,10 @@ export class Knowledge_article {
         type: 'sSelectField',
         placeholder: t('knowledge_article.category_placeholder'),
         required: isRequired('rel_category'),
-        endpoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=categories`,
+        endpoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=category`,
         fieldName: 'rel_category',
-        mode: 'creation'
+        mode: 'creation',
+        valueField: 'code',
       },
       keywords: {
         label: t('knowledge_article.keywords'),
