@@ -193,12 +193,7 @@ watch(() => props.modelValue, (newValue) => {
   if (newValue && Array.isArray(newValue)) {
     files.value = [...newValue]
   }
-}, { deep: true })
-
-// Surveiller les changements de files
-watch(files, (newFiles) => {
-  emit('update:modelValue', newFiles)
-}, { deep: true })
+}, { immediate: true, deep: true })
 
 // Méthodes
 const triggerFileInput = () => {
