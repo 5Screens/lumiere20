@@ -49,10 +49,18 @@ const storage = multer.diskStorage({
   }
 });
 
-// Filtre pour les types de fichiers autorisés
+// Filtre pour les types de fichiers autorisés et interdits
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = (process.env.ALLOWED_FILE_TYPES || '').split(',');
+  const allowedTypes = (process.env.ALLOWED_FILE_TYPES || '').split(',').filter(type => type.trim() !== '');
+  const forbiddenTypes = (process.env.FORBIDDEN_FILE_TYPES || '').split(',').filter(type => type.trim() !== '');
   
+  // Vérifier si le type est explicitement interdit
+  if (forbiddenTypes.length > 0 && forbiddenTypes.includes(file.mimetype)) {
+    cb(new Error(`Type de fichier interdit: ${file.mimetype}`), false);
+    return;
+  }
+  
+  // Vérifier si le type est autorisé (si la liste n'est pas vide)
   if (allowedTypes.length === 0 || allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
