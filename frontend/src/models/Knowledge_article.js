@@ -72,7 +72,8 @@ export class Knowledge_article {
         label: t('knowledge_article.keywords'),
         type: 'sTagsList',
         placeholder: t('knowledge_article.keywords_placeholder'),
-        required: isRequired('keywords')
+        required: isRequired('keywords'),
+        comboBox: false
       },
       rel_service: {
         label: t('knowledge_article.service'),
@@ -102,11 +103,16 @@ export class Knowledge_article {
         required: isRequired('rel_service_offerings')
       },
       rel_target_audience: {
-        label: t('knowledge_article.target_audience'),
         type: 'sTagsList',
+        comboBox: true,
+        edition: false,
+        required: isRequired('rel_target_audience'),
+        label: t('knowledge_article.target_audience'),
         placeholder: t('knowledge_article.target_audience_placeholder'),
-        endpoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=target_audience`,
-        required: isRequired('rel_target_audience')
+        sourceEndPoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=target_audience`,
+        displayedLabel: 'label',
+        fieldName: 'rel_target_audience',
+        mode: 'creation'
       },
       rel_lang: {
         label: t('knowledge_article.lang'),
@@ -124,7 +130,8 @@ export class Knowledge_article {
         required: isRequired('rel_confidentiality_level'),
         endpoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=confidentiality_level`,
         fieldName: 'rel_confidentiality_level',
-        mode: 'creation'
+        mode: 'creation',
+        valueField: 'code'
       },
 
       // Contenu et structure de l'article
@@ -192,7 +199,8 @@ export class Knowledge_article {
         required: isRequired('rel_ticket_type'),
         endpoint: `ticket_types?lang=${userProfileStore.language}`,
         fieldName: 'rel_ticket_type',
-        mode: 'creation'
+        mode: 'creation',
+        valueField: 'code'
       },
       tickets_list: {
         label: t('knowledge_article.tickets_list'),
@@ -206,11 +214,15 @@ export class Knowledge_article {
         required: isRequired('tickets_list')
       },
       business_scope: {
-        label: t('knowledge_article.business_scope'),
         type: 'sTagsList',
+        comboBox: true,
+        edition: false,
+        required: isRequired('business_scope'),
+        label: t('knowledge_article.business_scope'),
         placeholder: t('knowledge_article.business_scope_placeholder'),
-        endpoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=business_scope`,
-        required: isRequired('business_scope')
+        sourceEndPoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=business_scope`,
+        displayedLabel: 'label',
+        fieldName: 'business_scope'
       },
 
       // Gouvernance et cycle de vie
@@ -221,7 +233,8 @@ export class Knowledge_article {
         required: isRequired('rel_publication_status'),
         endpoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=publication_status`,
         fieldName: 'rel_publication_status',
-        mode: 'creation'
+        mode: 'creation',
+        valueField: 'code'
       },
       version: {
         label: t('knowledge_article.version'),

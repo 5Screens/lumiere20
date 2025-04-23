@@ -37,18 +37,18 @@ export class Defect {
         required: true,
         edition: false,
         fieldName: 'DEFECT'
-      }
-      /*tags: {
+      },
+      tags: {
         type: 'sTagsList',
         label: 'Tags pour debug !',
         required: true,
-        comboBox: false,
+        comboBox: true,
         sourceEndPoint: 'change_setup?lang=fr&metadata=validation_level',
         displayedLabel: 'label',
         placeholder: 'Ajouter un tag...',
         helperText: 'Sélectionnez ou saisissez des tags pour catégoriser ce changement',
         edition: false
-      },
+      }/*,
       uuid: {
         label: 'UUID',
         type: 'sTextField',
