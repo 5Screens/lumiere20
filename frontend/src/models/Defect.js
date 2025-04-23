@@ -15,13 +15,15 @@ export class Defect {
     this.date_modification = data.date_modification || null;
     this.severity = data.severity || null;
     this.project = data.project || null;
+    this.attachments = data.attachments || [];
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
       { name: 'titre', label: 'Titre' },
       { name: 'configuration_item_uuid', label: 'Configuration Item' },
       { name: 'severity', label: 'Sévérité' },
-      { name: 'project', label: 'Projet' }
+      { name: 'project', label: 'Projet' },
+      { name: 'attachments', label: 'Pièces jointes' }
     ];
   }
 
@@ -102,19 +104,24 @@ export class Defect {
         label: 'Sévérité',
         type: 'sSelectField',
         placeholder: 'Sélectionnez une sévérité',
-        options: [
-          { value: 'low', label: 'Basse' },
-          { value: 'medium', label: 'Moyenne' },
-          { value: 'high', label: 'Haute' },
-          { value: 'critical', label: 'Critique' }
-        ],
+        endpoint: 'defect_setup?lang=fr&metadata=severity',
         required: true
       },
       project: {
         label: 'Projet',
-        type: 'sTextField',
-        placeholder: 'Entrez le projet',
+        type: 'sSelectField',
+        placeholder: 'Sélectionnez un projet',
+        endpoint: 'defect_setup?lang=fr&metadata=project',
         required: true
+      },
+      attachments: {
+        label: 'Pièces jointes',
+        type: 'sFileUploader',
+        placeholder: 'Glisser-déposer pour importer',
+        helperText: 'LIMITES TAILLE FICHIER | 6 Mo pour les images, 10 Mo pour les autres fichiers',
+        required: true,
+        edition: false,
+        fieldName: 'DEFECT'
       }
     };
   }

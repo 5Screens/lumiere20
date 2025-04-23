@@ -572,5 +572,16 @@ export default {
     post_change_comment_placeholder: 'Entrez un commentaire post-changement',
     closed_at: 'Date de clôture',
     closed_at_placeholder: 'Sélectionnez la date de clôture'
+  },
+  
+  fileUploader: {
+    dropzone_placeholder: 'Glisser-déposer pour importer',
+    browse_button: 'Sélectionner les fichiers',
+    required_error: 'Veuillez ajouter au moins un fichier',
+    file_too_large: 'Fichier trop volumineux (max 10 Mo)',
+    forbidden_file_type: 'Type de fichier non autorisé',
+    preview: 'Prévisualiser',
+    delete: 'Supprimer',
+    limits_info: 'LIMITES TAILLE FICHIER | 6 Mo pour les images, 10 Mo pour les autres fichiers'
   }
 }

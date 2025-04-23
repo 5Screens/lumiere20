@@ -11,6 +11,17 @@ export default {
     pt: 'Portuguese',
     es: 'Spanish'
   },
+  
+  fileUploader: {
+    dropzone_placeholder: 'Drag and drop to upload',
+    browse_button: 'Browse',
+    required_error: 'Please add at least one file',
+    file_too_large: 'File too large (max 10 MB)',
+    forbidden_file_type: 'File type not allowed',
+    preview: 'Preview',
+    delete: 'Delete',
+    limits_info: 'FILE SIZE LIMITS | 6 MB for images, 10 MB for other files'
+  },
   nav: {
     myWork: 'My Work',
     create: 'Create',
@@ -106,6 +117,17 @@ export default {
       title: 'Containerization',
       container: 'Container'
     },
+  
+  fileUploader: {
+    dropzone_placeholder: 'Drag and drop to upload',
+    browse_button: 'Browse',
+    required_error: 'Please add at least one file',
+    file_too_large: 'File too large (max 10 MB)',
+    forbidden_file_type: 'File type not allowed',
+    preview: 'Preview',
+    delete: 'Delete',
+    limits_info: 'FILE SIZE LIMITS | 6 MB for images, 10 MB for other files'
+  },
     security: {
       title: 'Security',
       antivirus: 'Antivirus',
@@ -151,6 +173,17 @@ export default {
     yes: 'Yes',
     no: 'No',
     createLabel: 'What would you like to create?'
+  },
+  
+  fileUploader: {
+    dropzone_placeholder: 'Drag and drop to upload',
+    browse_button: 'Browse',
+    required_error: 'Please add at least one file',
+    file_too_large: 'File too large (max 10 MB)',
+    forbidden_file_type: 'File type not allowed',
+    preview: 'Preview',
+    delete: 'Delete',
+    limits_info: 'FILE SIZE LIMITS | 6 MB for images, 10 MB for other files'
   },
   nav: {
     myWork: 'My Work',
@@ -277,5 +310,16 @@ export default {
     type_placeholder: 'Select a type',
     status: 'Status',
     status_placeholder: 'Select a status'
+  },
+  
+  fileUploader: {
+    dropzone_placeholder: 'Drag and drop to upload',
+    browse_button: 'Browse',
+    required_error: 'Please add at least one file',
+    file_too_large: 'File too large (max 10 MB)',
+    forbidden_file_type: 'File type not allowed',
+    preview: 'Preview',
+    delete: 'Delete',
+    limits_info: 'FILE SIZE LIMITS | 6 MB for images, 10 MB for other files'
   }
 }

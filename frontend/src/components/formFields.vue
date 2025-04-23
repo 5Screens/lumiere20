@@ -50,6 +50,7 @@ import sRichTextEditor from './common/sRichTextEditor.vue'
 import sPickList from './common/sPickList.vue'
 import sDatePicker from './common/sDatePicker.vue'
 import sTagsList from './common/sTagsList.vue'
+import sFileUploader from './common/sFileUploader.vue'
 import { useObjectStore } from '@/stores/objectStore'
 
 // Import des styles des composants
@@ -60,6 +61,7 @@ import '@/assets/styles/sSelectField.css'
 import '@/assets/styles/sPickList.css'
 import '@/assets/styles/sDatePicker.css'
 import '@/assets/styles/sTagsList.css'
+import '@/assets/styles/sFileUploader.css'
 
 // Enregistrement des composants pour l'utilisation dynamique
 const components = {
@@ -69,7 +71,8 @@ const components = {
   sRichTextEditor,
   sPickList,
   sDatePicker,
-  sTagsList
+  sTagsList,
+  sFileUploader
 }
 
 const props = defineProps({

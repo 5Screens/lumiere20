@@ -205,9 +205,9 @@ export default {
   getHttpErrorMessage(statusCode) {
     switch (statusCode) {
       case 400:
-        return 'Requête invalide';
+        return 'Requête incorrecte';
       case 401:
-        return 'Non autorisé - Authentification requise';
+        return 'Non autorisé';
       case 403:
         return 'Accès interdit';
       case 404:
@@ -216,14 +216,52 @@ export default {
         return 'Conflit avec l\'état actuel de la ressource';
       case 422:
         return 'Entité non traitable';
-      case 429:
-        return 'Trop de requêtes';
       case 500:
         return 'Erreur interne du serveur';
       case 503:
         return 'Service indisponible';
       default:
         return `Erreur HTTP ${statusCode}`;
+    }
+  },
+  
+  /**
+   * Upload des fichiers avec FormData
+   * @param {string} endpoint - Point d'accès API (sans l'URL de base)
+   * @param {FormData} formData - Données du formulaire contenant les fichiers
+   * @returns {Promise<any>} - Données de réponse
+   */
+  async uploadFormData(endpoint, formData) {
+    try {
+      // Log request details
+      console.info(`[API Request] POST FormData ${API_BASE_URL}/${endpoint}`);
+      
+      const startTime = performance.now();
+      console.info(`[API Request] FormData upload started at: ${new Date().toISOString()}`);
+      
+      const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+        method: 'POST',
+        // Ne pas définir Content-Type ici, le navigateur le fera avec la boundary correcte
+        body: formData
+      });
+      
+      const endTime = performance.now();
+      console.info(`[API Response] POST FormData ${endpoint} - Request took ${(endTime - startTime).toFixed(2)}ms`);
+      console.info(`[API Response] POST FormData ${endpoint} - Status: ${response.status}`);
+      
+      // Vérifier si la réponse est OK (statut 2xx)
+      if (!response.ok) {
+        console.error(`[API Error] POST FormData ${endpoint} - Failed with status: ${response.status}`);
+        throw await this.handleErrorResponse(response);
+      }
+      
+      const responseData = await response.json();
+      console.info(`[API Response] POST FormData ${endpoint} - Success`);
+      
+      return responseData;
+    } catch (error) {
+      console.error(`[API Error] POST FormData ${endpoint}:`, error);
+      throw error;
     }
   }
 };
