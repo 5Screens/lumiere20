@@ -38,13 +38,18 @@ export class Knowledge_article {
     this.next_review_at = data.next_review_at || null;
     this.license_type = data.license_type || '';
 
+    // Assignation (stockée dans rel_tickets_groups_persons)
+    this.assigned_to_group = data.assigned_to_group || null;
+    this.assigned_to_person = data.assigned_to_person || null;
+
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
       { name: 'title', label: i18n.global.t('knowledge_article.title') },
       { name: 'description', label: i18n.global.t('knowledge_article.description') },
       { name: 'rel_category', label: i18n.global.t('knowledge_article.category') },
       { name: 'rel_lang', label: i18n.global.t('knowledge_article.lang') },
-      { name: 'rel_confidentiality_level', label: i18n.global.t('knowledge_article.confidentiality_level') }
+      { name: 'rel_confidentiality_level', label: i18n.global.t('knowledge_article.confidentiality_level'), },
+      { name: 'assigned_to_group', label: i18n.global.t('knowledge_article.assigned_group') }
     ];
   }
 
@@ -109,6 +114,7 @@ export class Knowledge_article {
         label: t('knowledge_article.attachments'),
         type: 'sFileUploader',
         placeholder: t('knowledge_article.attachments_placeholder'),
+        helperText: t('fileUploader.limits_info'),
         required: isRequired('attachments')
       },
 
@@ -146,6 +152,37 @@ export class Knowledge_article {
           { key: 'service_name', label: t('service_offering.service_name'), visible: true }
         ],
         required: isRequired('rel_service_offerings')
+      },
+      assigned_to_group: {
+        label: t('knowledge_article.assigned_group'),
+        type: 'sFilteredSearchField',
+        placeholder: t('knowledge_article.assigned_group_placeholder'),
+        endpoint: ({ assigned_to_person }) => 
+          assigned_to_person 
+            ? `persons/${assigned_to_person}/groups` 
+            : 'groups',
+        displayField: 'groupe_name',
+        valueField: 'uuid',
+        columnsConfig: [
+          { key: 'groupe_name', label: t('group.name'), visible: true }
+        ],
+        required: isRequired('assigned_to_group')
+      },
+      assigned_to_person: {
+        label: t('knowledge_article.assigned_to_person'),
+        type: 'sFilteredSearchField',
+        placeholder: t('knowledge_article.assigned_to_person_placeholder'),
+        endpoint: ({ assigned_to_group }) => 
+          assigned_to_group 
+          ? `groups/${assigned_to_group}/members` 
+          : 'groups/members',
+        displayField: 'first_name',
+        valueField: 'uuid',
+        columnsConfig: [
+          { key: 'first_name', label: t('person.first_name'), visible: true },
+          { key: 'last_name', label: t('person.last_name'), visible: true }
+        ],
+        required: isRequired('assigned_to_person')
       },
       rel_target_audience: {
         type: 'sTagsList',

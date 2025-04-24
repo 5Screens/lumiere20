@@ -85,7 +85,7 @@
   width: 1.5rem;
   left: 0.25rem;
   bottom: 0.25rem;
-  background-color: var(--text-color);
+  background-color: var(--light-red);
   transition: .3s ease-in-out;
   border-radius: 50%;
   box-shadow: 0 2px 4px var(--shadow-color);
@@ -105,7 +105,7 @@ input:focus + .s-toggle-field__slider {
 /* Moves the knob to the right when the toggle is in the ON position */
 input:checked + .s-toggle-field__slider:before {
   transform: translateX(1.5rem);
-  background-color: var(--text-color);
+  background-color: var(--light-green);
 }
 
 /* Hover effect for the toggle switch - highlights the border */

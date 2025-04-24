@@ -16,17 +16,14 @@
       @drop.prevent="handleDrop"
       @click="triggerFileInput"
     >
-      <div class="s-file-uploader__placeholder" v-if="!files.length">
-        {{ placeholder || t('fileUploader.dropzone_placeholder') }}
-      </div>
       <button class="button-standard variant-primary">
         {{ t('fileUploader.browse_button') }}
       </button>
       <!-- Texte d'aide -->
       
-      <div class="s-file-uploader__drag-drop-text">
-        - ou -
-        <div>Glisser-déposer pour importer</div>
+      <div class="s-file-uploader__drag-drop-text" v-if="!files.length">
+        {{ t('fileUploader.or') }}
+        <div>{{ placeholder || t('fileUploader.dropzone_placeholder') }}</div>
       </div>
       <div class="s-file-uploader__helper-text" v-if="helperText">
         {{ helperText }}

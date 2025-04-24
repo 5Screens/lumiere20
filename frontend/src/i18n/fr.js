@@ -642,6 +642,7 @@ export default {
     forbidden_file_type: 'Type de fichier non autorisé',
     preview: 'Prévisualiser',
     delete: 'Supprimer',
-    limits_info: 'LIMITES TAILLE FICHIER | 6 Mo pour les images, 10 Mo pour les autres fichiers'
+    or: ' - ou - ',
+    limits_info: 'LIMITES TAILLE FICHIER : 6 Mo pour les images, 10 Mo pour les autres fichiers'
   }
 }

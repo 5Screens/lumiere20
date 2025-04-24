@@ -36,7 +36,7 @@
   border-radius: 4px;
   padding: 1.5rem;
   text-align: center;
-  background-color: var(--background-secondary);
+  background-color: var(--input-bg);
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
@@ -89,7 +89,7 @@
   border: 1px solid var(--border-color);
   border-radius: 4px;
   margin-bottom: 0.5rem;
-  background-color: var(--background-primary);
+  background-color: var(--input-bg);
   transition: all 0.3s ease;
   font-size: 0.75rem;
 }
