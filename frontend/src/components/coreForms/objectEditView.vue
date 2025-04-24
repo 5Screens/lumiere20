@@ -8,21 +8,23 @@
       </div>
 
       <div class="modal-body">
-        <SSelectField
-          :label="$t('common.createLabel')"
-          :required="true"
-          :endpoint="`ticket_types?lang=${currentLanguage}&toSelect=yes`"
-          :mode="'creation'"
-          :field-name="'ticket_type'"
-          v-model="selectedType"
-        />
+        <div class="field-container">
+          <SSelectField
+            :label="$t('common.createLabel')"
+            :required="true"
+            :endpoint="`ticket_types?lang=${currentLanguage}&toSelect=yes`"
+            :mode="'creation'"
+            :field-name="'ticket_type'"
+            v-model="selectedType"
+          />
+        </div>
 
-        <SToggleField
-          v-if="selectedType"
-          :label="$t('objectEditView.showOnlyRequired')"
-          v-model="showOnlyRequired"
-          :mode="'create'"
-        />
+          <SToggleField
+            v-if="selectedType"
+            :label="$t('objectEditView.showOnlyRequired')"
+            v-model="showOnlyRequired"
+            :mode="'create'"
+          />
 
         <form-fields
           v-if="currentModelClass"
@@ -236,9 +238,13 @@ watch(selectedType, (newType) => {
 }
 
 .form-separator {
-  margin: 1rem 0;
+  margin: 20px 0;
   border: none;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #e0e0e0;
+}
+
+.field-container {
+  margin-bottom: 8px;
 }
 
 .form-actions {
