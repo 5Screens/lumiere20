@@ -63,18 +63,8 @@
 }
 
 .s-file-uploader__browse-button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.s-file-uploader__browse-button:hover {
-  background-color: var(--primary-dark);
+  /* Les styles sont maintenant gérés par ButtonStandard.css */
+  margin-bottom: 0.5rem;
 }
 
 .s-file-uploader__drag-drop-text {

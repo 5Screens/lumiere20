@@ -2,27 +2,18 @@
 
 /* Style de base pour tous les boutons - définit l'apparence générale et le comportement des boutons */
 .button-standard {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
   padding: 0.5rem 1rem;
-  font-size: 1rem;
-  font-weight: 500;
   border-radius: 4px;
   cursor: pointer;
-  outline: none;
-  border: 1px solid transparent;
-  box-shadow: 0 2px 4px var(--shadow-color);
-  transition: all 0.2s ease-in-out;
-  min-height: 2.5rem;
-  min-width: 6rem;
-  gap: 0.5rem;
+  transition: background-color 0.2s;
 }
 
-/* Effet de surélévation lorsque la souris passe sur le bouton (sauf pour les boutons désactivés) */
+/* Effet au survol du bouton de création - légèrement plus foncé */
 .button-standard:hover:not(.button-disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px var(--shadow-color);
+  background-color: var(--primary-hover);
 }
 
 /* Effet d'enfoncement lorsque le bouton est cliqué (sauf pour les boutons désactivés) */

@@ -19,7 +19,7 @@
       <div class="s-file-uploader__placeholder" v-if="!files.length">
         {{ placeholder || t('fileUploader.dropzone_placeholder') }}
       </div>
-      <button class="s-file-uploader__browse-button">
+      <button class="button-standard variant-primary">
         {{ t('fileUploader.browse_button') }}
       </button>
       <!-- Texte d'aide -->
@@ -123,6 +123,7 @@ import { useI18n } from 'vue-i18n'
 import { API_BASE_URL } from '@/config/config'
 import apiService from '@/services/apiService'
 import '@/assets/styles/sFileUploader.css'
+import '@/assets/styles/ButtonStandard.css'
 
 // Props du composant
 const props = defineProps({
