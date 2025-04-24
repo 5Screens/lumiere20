@@ -5,6 +5,7 @@ export class Knowledge_article {
   constructor(data = {}) {
     // Métadonnées d'identification et de classification
     this.uuid = data.uuid || null;
+    this.ticket_type_code = data.ticket_type_code || null;
     this.rel_category = data.rel_category || null;
     this.keywords = data.keywords || [];
     this.rel_service = data.rel_service || null;
@@ -24,7 +25,7 @@ export class Knowledge_article {
 
     // Contexte opérationnel et liens
     this.configuration_item_uuid = data.configuration_item_uuid || null;
-    this.rel_ticket_type = data.rel_ticket_type || null;
+    this.rel_involved_process = data.rel_involved_process || null;
     this.tickets_list = data.tickets_list || [];
     this.business_scope = data.business_scope || [];
 
@@ -233,13 +234,13 @@ export class Knowledge_article {
         ],
         required: isRequired('configuration_item_uuid')
       },
-      rel_ticket_type: {
-        label: t('knowledge_article.ticket_type'),
+      rel_involved_process: {
+        label: t('knowledge_article.involved_process'),
         type: 'sSelectField',
-        placeholder: t('knowledge_article.ticket_type_placeholder'),
-        required: isRequired('rel_ticket_type'),
+        placeholder: t('knowledge_article.involved_process_placeholder'),
+        required: isRequired('rel_involved_process'),
         endpoint: `ticket_types?lang=${userProfileStore.language}`,
-        fieldName: 'rel_ticket_type',
+        fieldName: 'rel_involved_process',
         mode: 'creation',
         valueField: 'code'
       },
@@ -311,6 +312,7 @@ export class Knowledge_article {
       case 'POST':
         // Pour POST, définir writer_uuid
         this.writer_uuid = userProfileStore.id;
+        this.ticket_type_code = 'KNOWLEDGE';
         break;
       case 'PUT':
       case 'PATCH':
@@ -325,25 +327,42 @@ export class Knowledge_article {
     const apiData = { ...this };
     delete apiData.requiredFields;
     
-    // Traiter les listes pour extraire uniquement les UUIDs si ce sont des objets complets
-    const listFields = ['keywords', 'rel_target_audience', 'rel_service_offerings', 'attachments', 'tickets_list', 'business_scope'];
-    
-    listFields.forEach(field => {
+    // Traiter les listes selon leur type spécifique
+    // 1. Pour rel_target_audience et business_scope, utiliser le code au lieu de l'uuid (sTagsList.vue)
+    // 2. Pour keywords et rel_service_offerings, conserver les valeurs telles quelles
+    // 3. Pour attachments, utiliser le formData (sFileUploader.vue)
+    // 4. Pour tickets_list, extraire uniquement les UUIDs
+  
+    // Traitement pour tickets_list (extraction des UUIDs)
+    if (apiData.tickets_list && Array.isArray(apiData.tickets_list) && apiData.tickets_list.length > 0) {
+      if (typeof apiData.tickets_list[0] === 'object' && apiData.tickets_list[0].uuid) {
+        apiData.tickets_list = apiData.tickets_list.map(item => item.uuid);
+      }
+    }
+  
+    // Traitement pour rel_target_audience et business_scope (utiliser le code)
+    ['rel_target_audience', 'business_scope'].forEach(field => {
       if (apiData[field] && Array.isArray(apiData[field]) && apiData[field].length > 0) {
-        if (typeof apiData[field][0] === 'object' && apiData[field][0].uuid) {
-          // Si les éléments de la liste sont des objets avec un UUID, extraire uniquement les UUIDs
-          apiData[field] = apiData[field].map(item => item.uuid);
+        if (typeof apiData[field][0] === 'object') {
+          // Utiliser le code au lieu de l'uuid pour ces champs
+          apiData[field] = apiData[field].map(item => item.code || item);
         }
       }
     });
-    
+  
+    // Pour keywords et rel_service_offerings, aucun traitement spécial nécessaire
+    // Ils sont déjà dans le format attendu
+  
+    // Pour attachments, on conserve le formData tel quel
+    // Le composant sFileUploader.vue s'occupe déjà de la préparation des données
+  
     // Créer un objet pour les attributs étendus
     const extendedAttributes = {};
     const extendedFields = [
       'rel_category', 'keywords', 'rel_service', 'rel_service_offerings', 
       'rel_target_audience', 'rel_lang', 'rel_confidentiality_level',
       'summary', 'prerequisites', 'limitations', 'security_notes', 'attachments',
-      'rel_ticket_type', 'tickets_list', 'business_scope',
+      'rel_involved_process', 'tickets_list', 'business_scope',
       'rel_publication_status', 'version', 'last_review_at', 'next_review_at'
     ];
     
