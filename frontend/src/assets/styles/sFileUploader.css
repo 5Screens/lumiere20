@@ -62,11 +62,6 @@
   margin-bottom: 1rem;
 }
 
-.s-file-uploader__browse-button {
-  /* Les styles sont maintenant gérés par ButtonStandard.css */
-  margin-bottom: 0.5rem;
-}
-
 .s-file-uploader__drag-drop-text {
   font-size: 0.8rem;
   color: var(--text-secondary);
