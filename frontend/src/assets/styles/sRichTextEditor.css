@@ -153,7 +153,7 @@
   padding: 10px;
   min-height: 200px;
   overflow-y: auto;
-  background-color: var(--bg-color);
+  background-color: var(--input-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
   border-radius: 4px;
