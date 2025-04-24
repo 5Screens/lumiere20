@@ -49,7 +49,8 @@ export class Knowledge_article {
       { name: 'rel_category', label: i18n.global.t('knowledge_article.category') },
       { name: 'rel_lang', label: i18n.global.t('knowledge_article.lang') },
       { name: 'rel_confidentiality_level', label: i18n.global.t('knowledge_article.confidentiality_level'), },
-      { name: 'assigned_to_group', label: i18n.global.t('knowledge_article.assigned_group') }
+      { name: 'assigned_to_group', label: i18n.global.t('knowledge_article.assigned_group') },
+      { name: 'version', label: i18n.global.t('knowledge_article.version') }
     ];
   }
 
