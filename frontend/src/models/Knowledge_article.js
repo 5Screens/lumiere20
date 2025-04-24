@@ -57,7 +57,7 @@ export class Knowledge_article {
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
     return {
-      // Métadonnées d'identification et de classification
+      // Catégorie
       rel_category: {
         label: t('knowledge_article.category'),
         type: 'sSelectField',
@@ -68,6 +68,51 @@ export class Knowledge_article {
         mode: 'creation',
         valueField: 'code',
       },
+      // Contenu et structure de l'article
+      title: {
+        label: t('knowledge_article.title'),
+        type: 'sTextField',
+        placeholder: t('knowledge_article.title_placeholder'),
+        required: isRequired('title')
+      },
+      summary: {
+        label: t('knowledge_article.summary'),
+        type: 'sRichTextEditor',
+        placeholder: t('knowledge_article.summary_placeholder'),
+        required: isRequired('summary')
+      },
+      description: {
+        label: t('knowledge_article.description'),
+        type: 'sRichTextEditor',
+        placeholder: t('knowledge_article.description_placeholder'),
+        required: isRequired('description')
+      },
+      prerequisites: {
+        label: t('knowledge_article.prerequisites'),
+        type: 'sRichTextEditor',
+        placeholder: t('knowledge_article.prerequisites_placeholder'),
+        required: isRequired('prerequisites')
+      },
+      limitations: {
+        label: t('knowledge_article.limitations'),
+        type: 'sRichTextEditor',
+        placeholder: t('knowledge_article.limitations_placeholder'),
+        required: isRequired('limitations')
+      },
+      security_notes: {
+        label: t('knowledge_article.security_notes'),
+        type: 'sRichTextEditor',
+        placeholder: t('knowledge_article.security_notes_placeholder'),
+        required: isRequired('security_notes')
+      },
+      attachments: {
+        label: t('knowledge_article.attachments'),
+        type: 'sFileUploader',
+        placeholder: t('knowledge_article.attachments_placeholder'),
+        required: isRequired('attachments')
+      },
+
+// Métadonnées d'identification et de classification
       keywords: {
         label: t('knowledge_article.keywords'),
         type: 'sTagsList',
@@ -134,49 +179,7 @@ export class Knowledge_article {
         valueField: 'code'
       },
 
-      // Contenu et structure de l'article
-      title: {
-        label: t('knowledge_article.title'),
-        type: 'sTextField',
-        placeholder: t('knowledge_article.title_placeholder'),
-        required: isRequired('title')
-      },
-      summary: {
-        label: t('knowledge_article.summary'),
-        type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.summary_placeholder'),
-        required: isRequired('summary')
-      },
-      description: {
-        label: t('knowledge_article.description'),
-        type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.description_placeholder'),
-        required: isRequired('description')
-      },
-      prerequisites: {
-        label: t('knowledge_article.prerequisites'),
-        type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.prerequisites_placeholder'),
-        required: isRequired('prerequisites')
-      },
-      limitations: {
-        label: t('knowledge_article.limitations'),
-        type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.limitations_placeholder'),
-        required: isRequired('limitations')
-      },
-      security_notes: {
-        label: t('knowledge_article.security_notes'),
-        type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.security_notes_placeholder'),
-        required: isRequired('security_notes')
-      },
-      attachments: {
-        label: t('knowledge_article.attachments'),
-        type: 'sFileUploader',
-        placeholder: t('knowledge_article.attachments_placeholder'),
-        required: isRequired('attachments')
-      },
+      
 
       // Contexte opérationnel et liens
       configuration_item_uuid: {
