@@ -197,6 +197,75 @@ watch(() => props.modelValue, (newValue) => {
   }
 }, { immediate: true, deep: true })
 
+/**
+ * Récupère les fichiers en attente d'upload (sans UUID)
+ * @returns {Array} - Liste des fichiers en attente
+ */
+const getPendingFiles = () => {
+  // Retourner uniquement les fichiers qui n'ont pas encore d'UUID
+  // (les fichiers qui n'ont pas encore été uploadés)
+  return files.value.filter(file => !file.uuid)
+}
+
+/**
+ * Upload les fichiers avec l'UUID fourni
+ * @param {string} objectUuid - UUID de l'objet parent
+ * @param {string} objectType - Type d'objet parent
+ * @returns {Promise<Array>} - Liste des fichiers uploadés
+ */
+const uploadFilesWithUuid = async (objectUuid, objectType) => {
+  if (!objectUuid || !files.value.length) {
+    return []
+  }
+  
+  const pendingFiles = files.value.filter(file => !file.uuid)
+  if (!pendingFiles.length) {
+    return []
+  }
+  
+  try {
+    isUploading.value = true
+    const uploadedFiles = []
+    
+    // Préparer le FormData
+    const formData = new FormData()
+    pendingFiles.forEach(file => {
+      formData.append('files', file)
+    })
+    formData.append('objectType', objectType || props.fieldName.toUpperCase())
+    formData.append('objectUuid', objectUuid)
+    
+    // Appeler l'API
+    const response = await apiService.uploadFormData('attachments/upload-multiple', formData)
+    
+    if (response && response.attachments) {
+      uploadedFiles.push(...response.attachments)
+      
+      // Mettre à jour la liste des fichiers
+      const newFiles = files.value.filter(file => file.uuid) // Garder les fichiers déjà uploadés
+      newFiles.push(...response.attachments) // Ajouter les nouveaux fichiers uploadés
+      files.value = newFiles
+      
+      // Émettre l'événement de mise à jour
+      emit('update:modelValue', files.value)
+    }
+    
+    return uploadedFiles
+  } catch (error) {
+    console.error('Error uploading files:', error)
+    emit('error', [error.message || 'Upload failed'])
+    return []
+  } finally {
+    isUploading.value = false
+  }
+}
+
+// Exposer les méthodes pour qu'elles soient accessibles depuis l'extérieur
+defineExpose({
+  getPendingFiles,
+  uploadFilesWithUuid
+})
+
 // Méthodes
 const triggerFileInput = () => {
   fileInput.value.click()

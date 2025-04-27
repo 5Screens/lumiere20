@@ -114,6 +114,9 @@ const closeModal = () => {
   emit('close')
 }
 
+// Référence pour stocker les fichiers temporaires
+const pendingAttachments = ref([])
+
 const handleSubmit = async () => {
   try {
     console.info('[ObjectEditView] Save button clicked - Starting form submission process')
@@ -129,11 +132,43 @@ const handleSubmit = async () => {
       return
     }
     
+    // Récupérer les fichiers en attente du composant sFileUploader
+    pendingAttachments.value = []
+    const fileUploaders = document.querySelectorAll('.s-file-uploader')
+    for (const uploader of fileUploaders) {
+      if (uploader.__vnode && uploader.__vnode.component && uploader.__vnode.component.exposed) {
+        const component = uploader.__vnode.component.exposed
+        if (component.getPendingFiles) {
+          const files = component.getPendingFiles()
+          if (files && files.length) {
+            pendingAttachments.value.push(...files)
+            console.info(`[ObjectEditView] Found ${files.length} pending attachments in uploader`)
+          }
+        }
+      }
+    }
+    
     console.info(`[ObjectEditView] Using API endpoint: ${objectStore.currentEndpoint}`)
     
     console.info('[ObjectEditView] Calling objectStore.createObject method')
     const response = await objectStore.createObject(objectStore.currentEndpoint, objectStore.currentObject)
     console.info('[ObjectEditView] Received response from createObject:', response)
+    
+    // Si des fichiers sont en attente et que nous avons un UUID, les uploader
+    if (pendingAttachments.value.length > 0 && response && response.uuid) {
+      console.info(`[ObjectEditView] Uploading ${pendingAttachments.value.length} pending attachments for object ${response.uuid}`)
+      try {
+        await objectStore.uploadPendingAttachments(
+          response.uuid, 
+          pendingAttachments.value, 
+          objectStore.currentObjectType
+        )
+        console.info('[ObjectEditView] Attachments uploaded successfully')
+      } catch (uploadError) {
+        console.error('[ObjectEditView] Error uploading attachments:', uploadError)
+        // Continuer même en cas d'erreur d'upload des pièces jointes
+      }
+    }
     
     closeModal()
     console.info('[ObjectEditView] Modal closed after successful submission')
@@ -172,7 +207,7 @@ watch(selectedType, (newType) => {
       break
     case 'KNOWLEDGE':
       instance = new Knowledge_article()
-      endpoint = 'knowledge_articles'
+      endpoint = 'tickets?type=KNOWLEDGE'
       break
     default:
       instance = null

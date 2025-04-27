@@ -357,11 +357,12 @@ export class Knowledge_article {
     // Le composant sFileUploader.vue s'occupe déjà de la préparation des données
   
     // Créer un objet pour les attributs étendus
+    //Attachments n'est pas ajouté car géré dans un autre flux
     const extendedAttributes = {};
     const extendedFields = [
       'rel_category', 'keywords', 'rel_service', 'rel_service_offerings', 
       'rel_target_audience', 'rel_lang', 'rel_confidentiality_level',
-      'summary', 'prerequisites', 'limitations', 'security_notes', 'attachments',
+      'summary', 'prerequisites', 'limitations', 'security_notes', 
       'rel_involved_process', 'tickets_list', 'business_scope',
       'rel_publication_status', 'version', 'last_review_at', 'next_review_at'
     ];

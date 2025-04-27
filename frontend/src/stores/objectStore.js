@@ -103,6 +103,7 @@ export const useObjectStore = defineStore('object', {
         this.message = 'Création réussie'
         
         console.info('[ObjectStore] createObject completed successfully')
+        // Retourner la réponse complète pour pouvoir accéder à l'UUID
         return response
       } catch (error) {
         console.error('[ObjectStore] Error in createObject:', error)
@@ -111,6 +112,42 @@ export const useObjectStore = defineStore('object', {
       } finally {
         console.info('[ObjectStore] Setting creating flag to false')
         this.creating = false
+      }
+    },
+    
+    /**
+     * Upload les fichiers en attente pour un objet nouvellement créé
+     * @param {string} objectUuid - UUID de l'objet créé
+     * @param {Array} files - Liste des fichiers à uploader
+     * @param {string} objectType - Type d'objet (ex: 'KNOWLEDGE')
+     * @returns {Promise<Array>} - Liste des fichiers uploadés
+     */
+    async uploadPendingAttachments(objectUuid, files, objectType) {
+      try {
+        console.info(`[ObjectStore] Uploading ${files.length} pending attachments for object ${objectUuid}`)
+        
+        if (!files.length || !objectUuid) {
+          console.warn('[ObjectStore] No files to upload or missing objectUuid')
+          return []
+        }
+        
+        // Préparer le FormData pour l'upload multiple
+        const formData = new FormData()
+        files.forEach(file => {
+          formData.append('files', file)
+        })
+        formData.append('objectType', objectType)
+        formData.append('objectUuid', objectUuid)
+        
+        // Appeler le service API pour l'upload
+        const response = await apiService.uploadFormData('attachments/upload-multiple', formData)
+        console.info('[ObjectStore] Attachments uploaded successfully:', response)
+        
+        return response.attachments || []
+      } catch (error) {
+        console.error('[ObjectStore] Error uploading attachments:', error)
+        this.message = `Erreur lors de l'upload des pièces jointes: ${error.message}`
+        return []
       }
     },
 
