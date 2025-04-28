@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import apiService from '@/services/apiService'
 import i18n from '@/i18n'
+import { useUserProfileStore } from '@/stores/userProfileStore'
 
 /**
  * Store pour la gestion des opérations CRUD sur les objets métier
@@ -131,6 +132,9 @@ export const useObjectStore = defineStore('object', {
           return []
         }
         
+        // Importer le store de profil utilisateur pour obtenir l'ID de l'utilisateur actuel
+        const userProfileStore = useUserProfileStore()
+        
         // Préparer le FormData pour l'upload multiple
         const formData = new FormData()
         files.forEach(file => {
@@ -138,6 +142,7 @@ export const useObjectStore = defineStore('object', {
         })
         formData.append('objectType', objectType)
         formData.append('objectUuid', objectUuid)
+        formData.append('uploadedBy', userProfileStore.id) // Ajouter l'ID de l'utilisateur connecté
         
         // Appeler le service API pour l'upload
         const response = await apiService.uploadFormData('attachments/upload-multiple', formData)
