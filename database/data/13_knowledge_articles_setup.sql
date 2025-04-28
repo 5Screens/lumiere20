@@ -192,37 +192,42 @@ VALUES
     ('LEGACY_MAINTENANCE', 'en', 'Legacy System Maintenance');
 
 -- 5. Statuts de publication
-INSERT INTO configuration.knowledge_setup_codes (metadata, code)
+-- Insertion des codes de statut dans configuration.ticket_status
+INSERT INTO configuration.ticket_status (code, rel_ticket_type)
 VALUES 
-    ('PUBLICATION_STATUS', 'DRAFT'),
-    ('PUBLICATION_STATUS', 'IN_REVIEW'),
-    ('PUBLICATION_STATUS', 'PENDING_APPROVAL'),
-    ('PUBLICATION_STATUS', 'APPROVED'),
-    ('PUBLICATION_STATUS', 'REVISIONS_REQUIRED'),
-    ('PUBLICATION_STATUS', 'REJECTED'),
-    ('PUBLICATION_STATUS', 'PUBLISHED'),
-    ('PUBLICATION_STATUS', 'ARCHIVED');
+    ('DRAFT', 'KNOWLEDGE'),
+    ('IN_REVIEW', 'KNOWLEDGE'),
+    ('PENDING_APPROVAL', 'KNOWLEDGE'),
+    ('APPROVED', 'KNOWLEDGE'),
+    ('REVISIONS_REQUIRED', 'KNOWLEDGE'),
+    ('REJECTED', 'KNOWLEDGE'),
+    ('PUBLISHED', 'KNOWLEDGE'),
+    ('ARCHIVED', 'KNOWLEDGE');
 
 -- Traductions des statuts de publication
-INSERT INTO translations.knowledge_setup_label (rel_change_setup_code, lang, label)
+-- Insertion des traductions dans translations.ticket_status_translation
+WITH status_codes AS (
+    SELECT uuid, code FROM configuration.ticket_status WHERE rel_ticket_type = 'KNOWLEDGE'
+)
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 VALUES
-    ('DRAFT', 'fr', 'Brouillon'),
-    ('IN_REVIEW', 'fr', 'En révision'),
-    ('PENDING_APPROVAL', 'fr', 'En attente d''approbation'),
-    ('APPROVED', 'fr', 'Approuvé'),
-    ('REVISIONS_REQUIRED', 'fr', 'Révisions requises'),
-    ('REJECTED', 'fr', 'Rejeté'),
-    ('PUBLISHED', 'fr', 'Publié'),
-    ('ARCHIVED', 'fr', 'Retiré / Archivé'),
+    ((SELECT uuid FROM status_codes WHERE code = 'DRAFT'), 'fr', 'Brouillon'),
+    ((SELECT uuid FROM status_codes WHERE code = 'IN_REVIEW'), 'fr', 'En révision'),
+    ((SELECT uuid FROM status_codes WHERE code = 'PENDING_APPROVAL'), 'fr', 'En attente d''approbation'),
+    ((SELECT uuid FROM status_codes WHERE code = 'APPROVED'), 'fr', 'Approuvé'),
+    ((SELECT uuid FROM status_codes WHERE code = 'REVISIONS_REQUIRED'), 'fr', 'Révisions requises'),
+    ((SELECT uuid FROM status_codes WHERE code = 'REJECTED'), 'fr', 'Rejeté'),
+    ((SELECT uuid FROM status_codes WHERE code = 'PUBLISHED'), 'fr', 'Publié'),
+    ((SELECT uuid FROM status_codes WHERE code = 'ARCHIVED'), 'fr', 'Retiré / Archivé'),
     -- Traductions anglaises
-    ('DRAFT', 'en', 'Draft'),
-    ('IN_REVIEW', 'en', 'In Review'),
-    ('PENDING_APPROVAL', 'en', 'Pending Approval'),
-    ('APPROVED', 'en', 'Approved'),
-    ('REVISIONS_REQUIRED', 'en', 'Revisions Required'),
-    ('REJECTED', 'en', 'Rejected'),
-    ('PUBLISHED', 'en', 'Published'),
-    ('ARCHIVED', 'en', 'Archived / Withdrawn');
+    ((SELECT uuid FROM status_codes WHERE code = 'DRAFT'), 'en', 'Draft'),
+    ((SELECT uuid FROM status_codes WHERE code = 'IN_REVIEW'), 'en', 'In Review'),
+    ((SELECT uuid FROM status_codes WHERE code = 'PENDING_APPROVAL'), 'en', 'Pending Approval'),
+    ((SELECT uuid FROM status_codes WHERE code = 'APPROVED'), 'en', 'Approved'),
+    ((SELECT uuid FROM status_codes WHERE code = 'REVISIONS_REQUIRED'), 'en', 'Revisions Required'),
+    ((SELECT uuid FROM status_codes WHERE code = 'REJECTED'), 'en', 'Rejected'),
+    ((SELECT uuid FROM status_codes WHERE code = 'PUBLISHED'), 'en', 'Published'),
+    ((SELECT uuid FROM status_codes WHERE code = 'ARCHIVED'), 'en', 'Archived / Withdrawn');
 
 -- Commit transaction
 COMMIT;

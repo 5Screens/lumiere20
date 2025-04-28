@@ -187,10 +187,11 @@ CREATE TABLE configuration.ticket_types (
 -- Ticket Status
 CREATE TABLE configuration.ticket_status (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    code VARCHAR(50) NOT NULL UNIQUE,
+    code VARCHAR(50) NOT NULL,
     rel_ticket_type VARCHAR(50) REFERENCES configuration.ticket_types(code),
     date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(code, rel_ticket_type)
 );
 
 -- Symptoms

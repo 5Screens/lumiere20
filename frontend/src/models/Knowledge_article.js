@@ -31,7 +31,7 @@ export class Knowledge_article {
 
     // Gouvernance et cycle de vie
     this.writer_uuid = data.writer_uuid || null;
-    this.rel_publication_status = data.rel_publication_status || null;
+    this.ticket_status_code = data.ticket_status_code || null;
     this.version = data.version || '';
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
@@ -51,7 +51,8 @@ export class Knowledge_article {
       { name: 'rel_lang', label: i18n.global.t('knowledge_article.lang') },
       { name: 'rel_confidentiality_level', label: i18n.global.t('knowledge_article.confidentiality_level'), },
       { name: 'assigned_to_group', label: i18n.global.t('knowledge_article.assigned_group') },
-      { name: 'version', label: i18n.global.t('knowledge_article.version') }
+      { name: 'version', label: i18n.global.t('knowledge_article.version') },
+      { name: 'ticket_status_code', label: i18n.global.t('knowledge_article.publication_status') }
     ];
   }
 
@@ -268,15 +269,15 @@ export class Knowledge_article {
       },
 
       // Gouvernance et cycle de vie
-      rel_publication_status: {
+      ticket_status_code: {
         label: t('knowledge_article.publication_status'),
         type: 'sSelectField',
         placeholder: t('knowledge_article.publication_status_placeholder'),
-        required: isRequired('rel_publication_status'),
-        endpoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=publication_status`,
-        fieldName: 'rel_publication_status',
+        required: isRequired('ticket_status_code'),
+        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=KNOWLEDGE`,
+        fieldName: 'ticket_status_code',
         mode: 'creation',
-        valueField: 'code'
+        valueField: 'value'
       },
       version: {
         label: t('knowledge_article.version'),
@@ -326,6 +327,7 @@ export class Knowledge_article {
     // Créer une copie de l'objet sans l'attribut requiredFields
     const apiData = { ...this };
     delete apiData.requiredFields;
+    delete apiData.attachments;
     
     // Traiter les listes selon leur type spécifique
     // 1. Pour rel_target_audience et business_scope, utiliser le code au lieu de l'uuid (sTagsList.vue)
@@ -362,9 +364,8 @@ export class Knowledge_article {
     const extendedFields = [
       'rel_category', 'keywords', 'rel_service', 'rel_service_offerings', 
       'rel_target_audience', 'rel_lang', 'rel_confidentiality_level',
-      'summary', 'prerequisites', 'limitations', 'security_notes', 
-      'rel_involved_process', 'tickets_list', 'business_scope',
-      'rel_publication_status', 'version', 'last_review_at', 'next_review_at'
+      'summary', 'prerequisites', 'limitations', 'security_notes', 'license_type',
+      'rel_involved_process', 'tickets_list', 'business_scope', 'version', 'last_review_at', 'next_review_at'
     ];
     
     // Ajouter les attributs étendus à l'objet extendedAttributes

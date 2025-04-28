@@ -60,8 +60,10 @@ const createTicket = async (ticketData) => {
         const isProblem = ticketData.ticket_type_code === 'PROBLEM';
         // Déterminer si c'est un ticket de type CHANGE
         const isChange = ticketData.ticket_type_code === 'CHANGE';
+        // Déterminer si c'est un ticket de type KNOWLEDGE
+        const isKnowledge = ticketData.ticket_type_code === 'KNOWLEDGE';
         
-        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : ticketData.ticket_type_code}`);
+        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : isKnowledge ? 'KNOWLEDGE' : ticketData.ticket_type_code}`);
         
         // Préparer les attributs étendus pour le core
         let coreExtendedAttributes = {};
@@ -133,6 +135,45 @@ const createTicket = async (ticketData) => {
             logger.info('[SERVICE] Prepared core_extended_attributes for CHANGE ticket');
         }
         
+        // Si c'est un article de connaissance, ajouter les attributs spécifiques aux connaissances
+        if (isKnowledge) {
+            // Si des attributs étendus sont fournis, les utiliser directement
+            if (ticketData.extended_attributes && typeof ticketData.extended_attributes === 'object') {
+                coreExtendedAttributes = { ...ticketData.extended_attributes };
+                logger.info('[SERVICE] Using provided extended_attributes for KNOWLEDGE ticket');
+            } else {
+                // Champs à inclure dans core_extended_attributes pour les connaissances
+                const knowledgeFields = [
+                    'license_type', 'rel_category', 'keywords', 'rel_service', 'rel_service_offerings',
+                    'rel_target_audience', 'rel_lang', 'rel_confidentiality_level', 'summary', 'prerequisites',
+                    'limitations', 'security_notes', 'rel_ticket_type', 'tickets_list', 'business_scope',
+                    'rel_publication_status', 'version', 'last_review_at', 'next_review_at'
+                ];
+                
+                // Ajouter chaque champ présent dans ticketData aux attributs étendus
+                knowledgeFields.forEach(field => {
+                    if (ticketData[field] !== undefined) {
+                        coreExtendedAttributes[field] = ticketData[field];
+                    }
+                });
+            }
+            
+            // Créer une entrée dans la table knowledge_article_versions
+            const versionQuery = `
+                INSERT INTO core.knowledge_article_versions (
+                    rel_article_uuid,
+                    version_number,
+                    change_type,
+                    change_summary,
+                    full_article,
+                    created_by
+                ) VALUES ($1, $2, $3, $4, $5, $6)
+                RETURNING uuid
+            `;
+            
+            logger.info('[SERVICE] Prepared core_extended_attributes for KNOWLEDGE ticket');
+        }
+        
         // 1. Create the ticket
         const ticketQuery = `
             INSERT INTO core.tickets (
@@ -150,9 +191,9 @@ const createTicket = async (ticketData) => {
             RETURNING *
         `;
         
-        // Pour les problèmes, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
-        const requestedByUuid = isProblem ? ticketData.writer_uuid : ticketData.requested_by_uuid;
-        const requestedForUuid = isProblem ? ticketData.writer_uuid : ticketData.requested_for_uuid;
+        // Pour les problèmes et les connaissances, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
+        const requestedByUuid = (isProblem || isKnowledge) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
+        const requestedForUuid = (isProblem || isKnowledge) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
 
         const ticketResult = await client.query(ticketQuery, [
             ticketData.title,
@@ -169,7 +210,42 @@ const createTicket = async (ticketData) => {
 
         const createdTicket = ticketResult.rows[0];
         
-        // 2. Handle assignment if provided
+        // 2. Si c'est un article de connaissance, créer une entrée dans knowledge_article_versions
+        if (isKnowledge) {
+            logger.info('[SERVICE] Creating knowledge article version for ticket UUID:', createdTicket.uuid);
+            
+            const versionQuery = `
+                INSERT INTO core.knowledge_article_versions (
+                    rel_article_uuid,
+                    version_number,
+                    change_type,
+                    change_summary,
+                    full_article,
+                    created_by
+                ) VALUES ($1, $2, $3, $4, $5, $6)
+                RETURNING uuid
+            `;
+            
+            // Créer un objet full_article qui contient toutes les informations du ticket
+            const fullArticle = {
+                ...createdTicket,
+                extended_attributes: coreExtendedAttributes
+            };
+            
+            // Insérer la version initiale (V1) de l'article
+            const versionResult = await client.query(versionQuery, [
+                createdTicket.uuid,                // rel_article_uuid
+                1,                                  // version_number (première version)
+                'CREATION',                         // change_type
+                'Initial creation of knowledge article', // change_summary
+                fullArticle,                       // full_article (JSONB)
+                ticketData.writer_uuid             // created_by
+            ]);
+            
+            logger.info('[SERVICE] Created knowledge article version with UUID:', versionResult.rows[0].uuid);
+        }
+        
+        // 3. Handle assignment if provided
         if (ticketData.assigned_to_group) {
             logger.info('[SERVICE] Processing ticket assignment');
             

@@ -49,6 +49,10 @@ const validateCreateTicket = (req, res, next) => {
     // Vérifier si le type de ticket est CHANGE
     const isChange = req.query.ticket_types === 'CHANGE' || 
                      (req.body && req.body.ticket_type_code === 'CHANGE');
+                     
+    // Vérifier si le type de ticket est KNOWLEDGE
+    const isKnowledge = req.query.ticket_types === 'KNOWLEDGE' || 
+                        (req.body && req.body.ticket_type_code === 'KNOWLEDGE');
     
     // Schéma de base pour tous les types de tickets
     const baseSchema = {
@@ -157,6 +161,33 @@ const validateCreateTicket = (req, res, next) => {
         closed_at: Joi.date().allow(null)
     };
     
+    // Champs spécifiques aux articles de connaissance
+    const knowledgeSchema = {
+        requested_by_uuid: Joi.string().uuid().forbidden(),
+        requested_for_uuid: Joi.string().uuid().forbidden(),
+        extended_attributes: Joi.object({
+            rel_category: Joi.string().allow(null, ''),
+            keywords: Joi.array().items(Joi.string()).allow(null),
+            rel_service: Joi.string().uuid().allow(null, ''),
+            rel_service_offerings: Joi.string().uuid().allow(null, ''),
+            rel_target_audience: Joi.array().items(Joi.string()).allow(null),
+            rel_lang: Joi.string().allow(null, ''),
+            rel_confidentiality_level: Joi.string().allow(null, ''),
+            summary: Joi.string().allow(null, ''),
+            prerequisites: Joi.string().allow(null, ''),
+            limitations: Joi.string().allow(null, ''),
+            security_notes: Joi.string().allow(null, ''),
+            rel_ticket_type: Joi.string().allow(null, ''),
+            tickets_list: Joi.array().items(Joi.string().uuid()).allow(null),
+            business_scope: Joi.array().items(Joi.string()).allow(null),
+            rel_publication_status: Joi.string().allow(null, ''),
+            version: Joi.string().allow(null, ''),
+            last_review_at: Joi.date().allow(null),
+            next_review_at: Joi.date().allow(null)
+        }).allow(null),
+        license_type: Joi.string().allow(null, '')
+    };
+    
     // Combiner les schémas en fonction du type de ticket
     let schemaObj;
     if (isIncident) {
@@ -165,6 +196,8 @@ const validateCreateTicket = (req, res, next) => {
         schemaObj = { ...baseSchema, ...problemSchema };
     } else if (isChange) {
         schemaObj = { ...baseSchema, ...changeSchema };
+    } else if (isKnowledge) {
+        schemaObj = { ...baseSchema, ...knowledgeSchema };
     } else {
         schemaObj = baseSchema;
     }
