@@ -132,19 +132,20 @@ const handleSubmit = async () => {
       return
     }
     
-    // Récupérer les fichiers en attente du composant sFileUploader
+    // Vérifier s'il y a des pièces jointes à uploader directement depuis l'objet courant
     pendingAttachments.value = []
-    const fileUploaders = document.querySelectorAll('.s-file-uploader')
-    for (const uploader of fileUploaders) {
-      if (uploader.__vnode && uploader.__vnode.component && uploader.__vnode.component.exposed) {
-        const component = uploader.__vnode.component.exposed
-        if (component.getPendingFiles) {
-          const files = component.getPendingFiles()
-          if (files && files.length) {
-            pendingAttachments.value.push(...files)
-            console.info(`[ObjectEditView] Found ${files.length} pending attachments in uploader`)
-          }
-        }
+    
+    // Vérifier si attachments existe dans l'objet courant
+    if (objectStore.currentObject && objectStore.currentObject.attachments && 
+        Array.isArray(objectStore.currentObject.attachments) && 
+        objectStore.currentObject.attachments.length > 0) {
+      
+      // Filtrer pour ne garder que les fichiers qui n'ont pas d'UUID (non encore uploadés)
+      const filesToUpload = objectStore.currentObject.attachments.filter(file => !file.uuid)
+      
+      if (filesToUpload.length > 0) {
+        pendingAttachments.value = filesToUpload
+        console.info(`[ObjectEditView] Found ${filesToUpload.length} pending attachments in currentObject`)
       }
     }
     
