@@ -135,43 +135,9 @@ const createTicket = async (ticketData) => {
             logger.info('[SERVICE] Prepared core_extended_attributes for CHANGE ticket');
         }
         
-        // Si c'est un article de connaissance, ajouter les attributs spécifiques aux connaissances
+        // Si c'est un article de connaissance, utiliser directement les attributs étendus fournis
         if (isKnowledge) {
-            // Si des attributs étendus sont fournis, les utiliser directement
-            if (ticketData.extended_attributes && typeof ticketData.extended_attributes === 'object') {
-                coreExtendedAttributes = { ...ticketData.extended_attributes };
-                logger.info('[SERVICE] Using provided extended_attributes for KNOWLEDGE ticket');
-            } else {
-                // Champs à inclure dans core_extended_attributes pour les connaissances
-                const knowledgeFields = [
-                    'license_type', 'rel_category', 'keywords', 'rel_service', 'rel_service_offerings',
-                    'rel_target_audience', 'rel_lang', 'rel_confidentiality_level', 'summary', 'prerequisites',
-                    'limitations', 'security_notes', 'rel_ticket_type', 'tickets_list', 'business_scope',
-                    'rel_publication_status', 'version', 'last_review_at', 'next_review_at'
-                ];
-                
-                // Ajouter chaque champ présent dans ticketData aux attributs étendus
-                knowledgeFields.forEach(field => {
-                    if (ticketData[field] !== undefined) {
-                        coreExtendedAttributes[field] = ticketData[field];
-                    }
-                });
-            }
-            
-            // Créer une entrée dans la table knowledge_article_versions
-            const versionQuery = `
-                INSERT INTO core.knowledge_article_versions (
-                    rel_article_uuid,
-                    version_number,
-                    change_type,
-                    change_summary,
-                    full_article,
-                    created_by
-                ) VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING uuid
-            `;
-            
-            logger.info('[SERVICE] Prepared core_extended_attributes for KNOWLEDGE ticket');
+            logger.info('[SERVICE] Using extended_attributes for KNOWLEDGE ticket');
         }
         
         // 1. Create the ticket
@@ -204,7 +170,7 @@ const createTicket = async (ticketData) => {
             ticketData.writer_uuid,
             ticketData.ticket_type_code,
             ticketData.ticket_status_code,
-            Object.keys(coreExtendedAttributes).length > 0 ? coreExtendedAttributes : null,
+            isKnowledge && ticketData.extended_attributes ? ticketData.extended_attributes : Object.keys(coreExtendedAttributes).length > 0 ? coreExtendedAttributes : null,
             ticketData.user_extended_attributes || null
         ]);
 
@@ -231,7 +197,7 @@ const createTicket = async (ticketData) => {
             const { core_extended_attributes, ...ticketWithoutCoreExt } = createdTicket;
             const fullArticle = {
                 ...ticketWithoutCoreExt,
-                extended_attributes: coreExtendedAttributes
+                extended_attributes: ticketData.extended_attributes || {}
             };
             
             // Insérer la version initiale (V1) de l'article
