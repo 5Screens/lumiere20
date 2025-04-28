@@ -46,14 +46,19 @@ export class Knowledge_article {
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
       { name: 'title', label: i18n.global.t('knowledge_article.title') },
+      { name: 'ticket_status_code', label: i18n.global.t('knowledge_article.publication_status') },
+      { name: 'attachments', label: i18n.global.t('knowledge_article.attachments') }
+    ]
+      /*,
       { name: 'description', label: i18n.global.t('knowledge_article.description') },
       { name: 'rel_category', label: i18n.global.t('knowledge_article.category') },
       { name: 'rel_lang', label: i18n.global.t('knowledge_article.lang') },
       { name: 'rel_confidentiality_level', label: i18n.global.t('knowledge_article.confidentiality_level'), },
       { name: 'assigned_to_group', label: i18n.global.t('knowledge_article.assigned_group') },
       { name: 'version', label: i18n.global.t('knowledge_article.version') },
-      { name: 'ticket_status_code', label: i18n.global.t('knowledge_article.publication_status') }
+       }
     ];
+    */
   }
 
   static getRenderableFields() {

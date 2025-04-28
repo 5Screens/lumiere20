@@ -169,7 +169,7 @@ const validateCreateTicket = (req, res, next) => {
             rel_category: Joi.string().allow(null, ''),
             keywords: Joi.array().items(Joi.string()).allow(null),
             rel_service: Joi.string().uuid().allow(null, ''),
-            rel_service_offerings: Joi.string().uuid().allow(null, ''),
+            rel_service_offerings: Joi.array().items(Joi.string().uuid()).allow(null, ''),
             rel_target_audience: Joi.array().items(Joi.string()).allow(null),
             rel_lang: Joi.string().allow(null, ''),
             rel_confidentiality_level: Joi.string().allow(null, ''),
