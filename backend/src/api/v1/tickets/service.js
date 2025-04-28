@@ -227,8 +227,10 @@ const createTicket = async (ticketData) => {
             `;
             
             // Créer un objet full_article qui contient toutes les informations du ticket
+            // On crée une copie du ticket créé sans le champ core_extended_attributes pour éviter la duplication
+            const { core_extended_attributes, ...ticketWithoutCoreExt } = createdTicket;
             const fullArticle = {
-                ...createdTicket,
+                ...ticketWithoutCoreExt,
                 extended_attributes: coreExtendedAttributes
             };
             
