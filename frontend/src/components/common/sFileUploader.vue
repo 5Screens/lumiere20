@@ -337,6 +337,9 @@ const processFiles = async (fileList) => {
   } else {
     // En mode création ou sans UUID, ajouter simplement les fichiers à la liste
     files.value = [...files.value, ...validFiles]
+    
+    // Émettre l'événement de mise à jour pour informer le parent
+    emit('update:modelValue', files.value)
   }
 }
 
