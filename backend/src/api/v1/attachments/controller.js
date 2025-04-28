@@ -107,10 +107,14 @@ exports.uploadMultipleFiles = async (req, res) => {
       }
       return res.status(400).json({ error: 'objectType et objectUuid sont requis' });
     }
+    console.log('objectType:', objectType);
+    console.log('objectUuid:', objectUuid);
     
     // Récupérer l'ID de l'utilisateur depuis l'authentification ou le corps de la requête
+    // Utiliser un ID utilisateur valide connu qui existe dans la base de données
+    // L'ID par défaut doit correspondre à un utilisateur existant dans la table référencée
     const uploadedBy = req.body.uploadedBy || '00000000-0000-0000-0000-000000000000';
-    
+    console.log('uploadedBy:', uploadedBy);
     // Créer des enregistrements dans la base de données
     const attachments = [];
 

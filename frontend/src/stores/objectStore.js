@@ -125,15 +125,14 @@ export const useObjectStore = defineStore('object', {
      */
     async uploadPendingAttachments(objectUuid, files, objectType) {
       try {
-        console.info(`[ObjectStore] Uploading ${files.length} pending attachments for object ${objectUuid}`)
+        console.info(`[ObjectStore] BISOUS Uploading ${files.length} pending attachments for object ${objectUuid}`)
+        console.info('[ObjectStore] FormData content: objectType:', objectType)
+        console.info('[ObjectStore] FormData content: objectUuid:', objectUuid)
         
         if (!files.length || !objectUuid) {
           console.warn('[ObjectStore] No files to upload or missing objectUuid')
           return []
         }
-        
-        // Importer le store de profil utilisateur pour obtenir l'ID de l'utilisateur actuel
-        const userProfileStore = useUserProfileStore()
         
         // Préparer le FormData pour l'upload multiple
         const formData = new FormData()
@@ -142,7 +141,12 @@ export const useObjectStore = defineStore('object', {
         })
         formData.append('objectType', objectType)
         formData.append('objectUuid', objectUuid)
-        formData.append('uploadedBy', userProfileStore.id) // Ajouter l'ID de l'utilisateur connecté
+        formData.append('uploadedBy', this.currentObject.writer_uuid) // Ajouter l'ID de l'utilisateur connecté
+        
+        // Logs pour vérifier le contenu du FormData
+        console.info('[ObjectStore] FormData content: objectType:', objectType)
+        console.info('[ObjectStore] FormData content: objectUuid:', objectUuid)
+        console.info('[ObjectStore] FormData content: uploadedBy:', this.currentObject.writer_uuid)
         
         // Appeler le service API pour l'upload
         const response = await apiService.uploadFormData('attachments/upload-multiple', formData)
