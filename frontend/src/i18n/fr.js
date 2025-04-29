@@ -668,10 +668,10 @@ export default {
     team_id_placeholder: 'Sélectionnez l\'équipe du projet',
     lead_user_id: 'Responsable du projet',
     lead_user_id_placeholder: 'Sélectionnez le responsable',
-    access_to_groups: 'Groupes ayant accès',
-    access_to_groups_placeholder: 'Sélectionnez les groupes',
-    access_to_users: 'Utilisateurs ayant accès',
-    access_to_users_placeholder: 'Sélectionnez les utilisateurs'
+    access_to_groups: 'Seuls les groupes sélectionnés pourront accéder au projet',
+    access_to_groups_placeholder: 'Sélectionnez le ou les groupes',
+    access_to_users: 'Seuls les utilisateurs sélectionnés pourront accéder au projet',
+    access_to_users_placeholder: 'Sélectionnez le ou les utilisateurs'
   },
   
   fileUploader: {
