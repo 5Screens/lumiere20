@@ -10,14 +10,15 @@
       <div v-for="(field, key) in filteredFields" :key="key" class="field-container">
         <component
           :is="components[field.type]"
-          v-model="modelValue[key]"
+          :modelValue="objectStore.currentObject[key]"
+          @update:modelValue="updateStoreField(key, $event)"
           :label="field.label"
           :required="field.required"
           :placeholder="field.placeholder"
           :disabled="field.disabled"
           :multiline="field.multiline"
           :options="field.options"
-          :endpoint="typeof field.endpoint === 'function' ? field.endpoint(modelValue) : field.endpoint"
+          :endpoint="typeof field.endpoint === 'function' ? field.endpoint(objectStore.currentObject) : field.endpoint"
           :display-field="field.displayField"
           :value-field="field.valueField"
           :edit-mode="field.editMode"
@@ -131,7 +132,7 @@ onMounted(async () => {
       fields.value = renderableFields
     }
     
-    // Synchroniser le store avec le modèle au chargement
+    // Synchroniser le store avec le modèle au chargement (une seule fois)
     if (props.modelValue && objectStore.currentObject) {
       Object.assign(objectStore.currentObject, props.modelValue)
     }
@@ -142,17 +143,19 @@ onMounted(async () => {
   }
 })
 
-// Surveiller les changements du modelValue pour mettre à jour le store
-watch(() => props.modelValue, (newValue) => {
-  if (newValue && objectStore.currentObject) {
-    Object.assign(objectStore.currentObject, newValue)
+// Fonction pour mettre à jour directement le store
+const updateStoreField = (key, value) => {
+  if (objectStore.currentObject) {
+    objectStore.currentObject[key] = value
+    // On émet quand même l'événement pour maintenir la compatibilité avec les composants parents
+    emit('update:modelValue', objectStore.currentObject)
   }
-}, { deep: true })
+}
 
 const handleSubmit = () => {
   console.info('[FormFields] Form submitted')
-  console.info('[FormFields] Current form data:', props.modelValue)
-  emit('submit', props.modelValue)
+  console.info('[FormFields] Current form data:', objectStore.currentObject)
+  emit('submit', objectStore.currentObject)
   console.info('[FormFields] Emitted "submit" event with form data')
 }
 
