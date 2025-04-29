@@ -631,7 +631,13 @@ export default {
     next_review_at: 'Date de prochaine revue',
     next_review_at_placeholder: 'Sélectionnez la date de prochaine revue',
     license_type: 'Licence ou droits d\'auteur',
-    license_type_placeholder: 'Entrez le type de licence'
+    license_type_placeholder: 'Entrez le type de licence',
+    assigned_group: 'Groupe validateur',
+    assigned_group_placeholder: 'Sélectionnez le groupe validateur',
+    assigned_to_person: 'Utilisateur validateur',
+    assigned_to_person_placeholder: 'Sélectionnez l\'utilisateur validateur',
+    involved_process: 'Processus associé',
+    involved_process_placeholder: 'Sélectionnez le processus rattaché à l\'article',
   },
   
   project: {
