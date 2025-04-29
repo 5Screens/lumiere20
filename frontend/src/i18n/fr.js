@@ -634,6 +634,40 @@ export default {
     license_type_placeholder: 'Entrez le type de licence'
   },
   
+  project: {
+    // Informations générales
+    name: 'Nom du projet',
+    name_placeholder: 'Entrez le nom du projet',
+    description: 'Description',
+    description_placeholder: 'Décrivez le projet en détail',
+    status: 'Statut',
+    status_placeholder: 'Sélectionnez un statut',
+    
+    // Attributs étendus
+    key: 'Code du projet',
+    key_placeholder: 'Entrez le code unique du projet (ex: PROJ)',
+    start_date: 'Date de début',
+    start_date_placeholder: 'Sélectionnez la date de début',
+    end_date: 'Date de fin',
+    end_date_placeholder: 'Sélectionnez la date de fin',
+    issue_type_scheme_id: 'Schéma des types de tickets',
+    issue_type_scheme_id_placeholder: 'Sélectionnez un schéma',
+    visibility: 'Visibilité',
+    visibility_placeholder: 'Sélectionnez le niveau de visibilité',
+    project_type: 'Type de projet',
+    project_type_placeholder: 'Sélectionnez le type de projet',
+    
+    // Assignation
+    team_id: 'Équipe du projet',
+    team_id_placeholder: 'Sélectionnez l\'équipe du projet',
+    lead_user_id: 'Responsable du projet',
+    lead_user_id_placeholder: 'Sélectionnez le responsable',
+    access_to_groups: 'Groupes ayant accès',
+    access_to_groups_placeholder: 'Sélectionnez les groupes',
+    access_to_users: 'Utilisateurs ayant accès',
+    access_to_users_placeholder: 'Sélectionnez les utilisateurs'
+  },
+  
   fileUploader: {
     dropzone_placeholder: 'Glisser-déposer pour importer',
     browse_button: 'Sélectionner les fichiers',
