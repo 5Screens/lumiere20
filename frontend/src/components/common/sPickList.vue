@@ -1,5 +1,5 @@
 <template>
-  <div class="s-pick-list">
+  <div v-if="visible" class="s-pick-list">
     <!-- Label du composant -->
     <div class="s-pick-list__label-container" v-if="label">
       <label :class="['s-pick-list__label', { 's-pick-list__label--required': required }]">
@@ -124,6 +124,11 @@ import '@/assets/styles/sPickList.css';
 
 // Props
 const props = defineProps({
+  // Contrôle de la visibilité du composant
+  visible: {
+    type: Boolean,
+    default: true
+  },
   // Label du composant
   label: {
     type: String,

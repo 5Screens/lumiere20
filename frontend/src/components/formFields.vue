@@ -36,6 +36,7 @@
           :helper-text="field.helperText"
           :input-type="field.inputType"
           :combo-box="field.comboBox"
+          :visible="field.visible !== undefined ? field.visible : true"
         />
       </div>
     </form>
