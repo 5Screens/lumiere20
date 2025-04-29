@@ -23,7 +23,16 @@ class SymptomsController {
     async getAllSymptoms(req, res) {
         logger.info('[CONTROLLER] getAllSymptoms - Starting to process request');
         try {
-            const symptoms = await symptomsService.getAllSymptomsAllLanguages();
+            const { lang } = req.query;
+            
+            let symptoms;
+            if (lang) {
+                logger.info(`[CONTROLLER] getAllSymptoms - Fetching symptoms for language: ${lang}`);
+                symptoms = await symptomsService.getAllSymptoms(lang);
+            } else {
+                logger.info('[CONTROLLER] getAllSymptoms - Fetching symptoms for all languages');
+                symptoms = await symptomsService.getAllSymptomsAllLanguages();
+            }
             
             logger.info(`[CONTROLLER] getAllSymptoms - Successfully retrieved ${symptoms.length} symptoms`);
             return res.status(200).json(symptoms);
@@ -31,7 +40,7 @@ class SymptomsController {
             logger.error(`[CONTROLLER] getAllSymptoms - Error: ${error.message}`);
             return res.status(500).json({
                 success: false,
-                message: 'Une erreur est survenue lors de la récupération de tous les symptômes'
+                message: 'Une erreur est survenue lors de la récupération des symptômes'
             });
         }
     }

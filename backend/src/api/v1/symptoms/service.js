@@ -2,8 +2,8 @@ const { pool } = require('../../../config/database');
 const logger = require('../../../config/logger');
 
 class SymptomsService {
-    async getAllSymptoms(langue) {
-        logger.info(`[SERVICE] getAllSymptoms - Starting database query for language: ${langue}`);
+    async getAllSymptoms(lang) {
+        logger.info(`[SERVICE] getAllSymptoms - Starting database query for language: ${lang}`);
         try {
             const query = `
                 SELECT 
@@ -17,7 +17,7 @@ class SymptomsService {
                 ORDER BY st.libelle ASC
             `;
             
-            const result = await pool.query(query, [langue]);
+            const result = await pool.query(query, [lang]);
             logger.info(`[SERVICE] getAllSymptoms - Query executed successfully, found ${result.rows.length} symptoms`);
             return result.rows;
         } catch (error) {

@@ -5,14 +5,20 @@ const validate = require('../../../middleware/validate');
 const symptomsValidation = require('./validation');
 const logger = require('../../../config/logger');
 
-// Route pour obtenir tous les symptômes
+// Route pour obtenir tous les symptômes ou filtrés par langue avec le paramètre lang
 //http://localhost:3000/api/v1/symptoms/
+//http://localhost:3000/api/v1/symptoms?lang=fr
 router.get(
     '/',
     (req, res, next) => {
-        logger.info('[ROUTES] GET /api/v1/symptoms - Route handler started');
+        if (req.query.lang) {
+            logger.info(`[ROUTES] GET /api/v1/symptoms - Route handler started with lang=${req.query.lang}`);
+        } else {
+            logger.info('[ROUTES] GET /api/v1/symptoms - Route handler started');
+        }
         next();
     },
+    (req, res, next) => symptomsValidation.validateGetSymptomsWithLang(req, res, next),
     symptomsController.getAllSymptoms
 );
 
