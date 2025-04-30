@@ -183,6 +183,8 @@ export class Project {
       case 'POST':
         // Pour POST, définir writer_uuid et ticket_type_code si nécessaire
         this.writer_uuid = userProfileStore.id;
+        this.ticket_type_code = 'PROJECT';
+
         break;
       case 'PUT':
       case 'PATCH':
