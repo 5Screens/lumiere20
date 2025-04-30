@@ -105,8 +105,9 @@ export class Project {
         type: 'sSelectField',
         placeholder: t('project.visibility_placeholder'),
         required: isRequired('visibility'),
-        endpoint: `project_setup_setup?lang=${userProfileStore.language}&metadata=visibility`,
+        endpoint: `project_setup?lang=${userProfileStore.language}&metadata=visibility`,
         fieldName: 'visibility',
+        valueField: 'code',
         mode: 'creation'
       },
       project_type: {
@@ -114,8 +115,9 @@ export class Project {
         type: 'sSelectField',
         placeholder: t('project.project_type_placeholder'),
         required: isRequired('project_type'),
-        endpoint: `project_setup_setup?lang=${userProfileStore.language}&metadata=type`,
+        endpoint: `project_setup?lang=${userProfileStore.language}&metadata=category`,
         fieldName: 'project_type',
+        valueField: 'code',
         mode: 'creation'
       },
       
@@ -184,7 +186,6 @@ export class Project {
         // Pour POST, définir writer_uuid et ticket_type_code si nécessaire
         this.writer_uuid = userProfileStore.id;
         this.ticket_type_code = 'PROJECT';
-
         break;
       case 'PUT':
       case 'PATCH':
