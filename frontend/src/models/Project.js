@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import { useObjectStore } from '../stores/objectStore'
 
 export class Project {
   constructor(data = {}) {
@@ -110,6 +111,34 @@ export class Project {
         valueField: 'code',
         mode: 'creation'
       },
+      access_to_groups: {
+        label: t('project.access_to_groups'),
+        type: 'sPickList',
+        placeholder: t('project.access_to_groups_placeholder'),
+        sourceEndPoint: 'groups',
+        displayedLabel: 'groupe_name',
+        targetEndPoint: 'projects',
+        target_uuid: null,
+        pickedItems: null,
+        required: isRequired('access_to_groups'),
+        visible: function(obj) {
+          return obj && obj.visibility === 'PRIVATE';
+        }
+      },
+      access_to_users: {
+        label: t('project.access_to_users'),
+        type: 'sPickList',
+        placeholder: t('project.access_to_users_placeholder'),
+        sourceEndPoint: 'persons',
+        displayedLabel: 'first_name',
+        targetEndPoint: 'projects',
+        target_uuid: null,
+        pickedItems: null,
+        required: isRequired('access_to_users'),
+        visible: function(obj) {
+          return obj && obj.visibility === 'RESTRICTED';
+        }
+      },
       project_type: {
         label: t('project.project_type'),
         type: 'sSelectField',
@@ -152,28 +181,6 @@ export class Project {
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
         required: isRequired('lead_user_id')
-      },
-      access_to_groups: {
-        label: t('project.access_to_groups'),
-        type: 'sPickList',
-        placeholder: t('project.access_to_groups_placeholder'),
-        sourceEndPoint: 'groups',
-        displayedLabel: 'groupe_name',
-        targetEndPoint: 'projects',
-        target_uuid: null,
-        pickedItems: null,
-        required: isRequired('access_to_groups')
-      },
-      access_to_users: {
-        label: t('project.access_to_users'),
-        type: 'sPickList',
-        placeholder: t('project.access_to_users_placeholder'),
-        sourceEndPoint: 'persons',
-        displayedLabel: 'first_name',
-        targetEndPoint: 'projects',
-        target_uuid: null,
-        pickedItems: null,
-        required: isRequired('access_to_users')
       }
     };
   }
