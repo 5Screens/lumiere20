@@ -62,8 +62,10 @@ const createTicket = async (ticketData) => {
         const isChange = ticketData.ticket_type_code === 'CHANGE';
         // Déterminer si c'est un ticket de type KNOWLEDGE
         const isKnowledge = ticketData.ticket_type_code === 'KNOWLEDGE';
+        // Déterminer si c'est un ticket de type PROJECT
+        const isProject = ticketData.ticket_type_code === 'PROJECT';
         
-        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : isKnowledge ? 'KNOWLEDGE' : ticketData.ticket_type_code}`);
+        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : isKnowledge ? 'KNOWLEDGE' : isProject ? 'PROJECT' : ticketData.ticket_type_code}`);
         
         // Préparer les attributs étendus pour le core
         let coreExtendedAttributes = {};
@@ -140,6 +142,24 @@ const createTicket = async (ticketData) => {
             logger.info('[SERVICE] Using extended_attributes for KNOWLEDGE ticket');
         }
         
+        // Si c'est un projet, ajouter les attributs spécifiques aux projets
+        if (isProject) {
+            // Champs à inclure dans core_extended_attributes pour les projets
+            const projectFields = [
+                'key', 'start_date', 'end_date', 'issue_type_scheme_id',
+                'visibility', 'project_type'
+            ];
+            
+            // Ajouter chaque champ présent dans ticketData aux attributs étendus
+            projectFields.forEach(field => {
+                if (ticketData[field] !== undefined) {
+                    coreExtendedAttributes[field] = ticketData[field];
+                }
+            });
+            
+            logger.info('[SERVICE] Prepared core_extended_attributes for PROJECT ticket');
+        }
+        
         // 1. Create the ticket
         const ticketQuery = `
             INSERT INTO core.tickets (
@@ -157,9 +177,9 @@ const createTicket = async (ticketData) => {
             RETURNING *
         `;
         
-        // Pour les problèmes et les connaissances, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
-        const requestedByUuid = (isProblem || isKnowledge) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
-        const requestedForUuid = (isProblem || isKnowledge) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
+        // Pour les problèmes, les connaissances et les projets, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
+        const requestedByUuid = (isProblem || isKnowledge || isProject) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
+        const requestedForUuid = (isProblem || isKnowledge || isProject) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
 
         const ticketResult = await client.query(ticketQuery, [
             ticketData.title,
@@ -214,7 +234,7 @@ const createTicket = async (ticketData) => {
         }
         
         // 3. Handle assignment if provided
-        if (ticketData.assigned_to_group) {
+        if (ticketData.assigned_to_group || ticketData.rel_assigned_to_group) {
             logger.info('[SERVICE] Processing ticket assignment');
             
             const assignmentQuery = `
@@ -228,8 +248,8 @@ const createTicket = async (ticketData) => {
             
             await client.query(assignmentQuery, [
                 createdTicket.uuid,
-                ticketData.assigned_to_group,
-                ticketData.assigned_to_person || null
+                ticketData.assigned_to_group || ticketData.rel_assigned_to_group,
+                ticketData.assigned_to_person || ticketData.rel_assigned_to_person || null
             ]);
         }
         
@@ -253,6 +273,50 @@ const createTicket = async (ticketData) => {
             
             const watcherParams = [createdTicket.uuid, ...ticketData.watch_list];
             await client.query(watcherQuery, watcherParams);
+        }
+        
+        // 4. Handle access_to_users for PROJECT type if provided
+        if (isProject && ticketData.access_to_users && Array.isArray(ticketData.access_to_users) && ticketData.access_to_users.length > 0) {
+            logger.info(`[SERVICE] Processing ${ticketData.access_to_users.length} access_to_users for PROJECT ticket`);
+            
+            // Prepare batch insert for access_to_users
+            const accessUsersValues = ticketData.access_to_users.map((personUuid, index) => {
+                return `($1, NULL, $${index + 2}, 'ACCESS_GRANTED')`;
+            }).join(', ');
+            
+            const accessUsersQuery = `
+                INSERT INTO core.rel_tickets_groups_persons (
+                    rel_ticket,
+                    rel_assigned_to_group,
+                    rel_assigned_to_person,
+                    type
+                ) VALUES ${accessUsersValues}
+            `;
+            
+            const accessUsersParams = [createdTicket.uuid, ...ticketData.access_to_users];
+            await client.query(accessUsersQuery, accessUsersParams);
+        }
+        
+        // 5. Handle access_to_groups for PROJECT type if provided
+        if (isProject && ticketData.access_to_groups && Array.isArray(ticketData.access_to_groups) && ticketData.access_to_groups.length > 0) {
+            logger.info(`[SERVICE] Processing ${ticketData.access_to_groups.length} access_to_groups for PROJECT ticket`);
+            
+            // Prepare batch insert for access_to_groups
+            const accessGroupsValues = ticketData.access_to_groups.map((groupUuid, index) => {
+                return `($1, $${index + 2}, NULL, 'ACCESS_GRANTED')`;
+            }).join(', ');
+            
+            const accessGroupsQuery = `
+                INSERT INTO core.rel_tickets_groups_persons (
+                    rel_ticket,
+                    rel_assigned_to_group,
+                    rel_assigned_to_person,
+                    type
+                ) VALUES ${accessGroupsValues}
+            `;
+            
+            const accessGroupsParams = [createdTicket.uuid, ...ticketData.access_to_groups];
+            await client.query(accessGroupsQuery, accessGroupsParams);
         }
         
         await client.query('COMMIT');

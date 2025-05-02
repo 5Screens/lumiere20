@@ -53,6 +53,10 @@ const validateCreateTicket = (req, res, next) => {
     // Vérifier si le type de ticket est KNOWLEDGE
     const isKnowledge = req.query.ticket_types === 'KNOWLEDGE' || 
                         (req.body && req.body.ticket_type_code === 'KNOWLEDGE');
+                        
+    // Vérifier si le type de ticket est PROJECT
+    const isProject = req.query.ticket_types === 'PROJECT' || 
+                      (req.body && req.body.ticket_type_code === 'PROJECT');
     
     // Schéma de base pour tous les types de tickets
     const baseSchema = {
@@ -188,6 +192,22 @@ const validateCreateTicket = (req, res, next) => {
         }).allow(null)
     };
     
+    // Champs spécifiques aux projets
+    const projectSchema = {
+        requested_by_uuid: Joi.string().uuid().forbidden(),
+        requested_for_uuid: Joi.string().uuid().forbidden(),
+        rel_assigned_to_group: Joi.string().uuid().allow(null, ''),
+        rel_assigned_to_person: Joi.string().uuid().allow(null, ''),
+        access_to_users: Joi.array().items(Joi.string().uuid()).allow(null),
+        access_to_groups: Joi.array().items(Joi.string().uuid()).allow(null),
+        key: Joi.string().allow(null, ''),
+        start_date: Joi.date().allow(null),
+        end_date: Joi.date().allow(null),
+        issue_type_scheme_id: Joi.array().items(Joi.string()).allow(null),
+        visibility: Joi.string().allow(null, ''),
+        project_type: Joi.string().allow(null, '')
+    };
+    
     // Combiner les schémas en fonction du type de ticket
     let schemaObj;
     if (isIncident) {
@@ -198,6 +218,8 @@ const validateCreateTicket = (req, res, next) => {
         schemaObj = { ...baseSchema, ...changeSchema };
     } else if (isKnowledge) {
         schemaObj = { ...baseSchema, ...knowledgeSchema };
+    } else if (isProject) {
+        schemaObj = { ...baseSchema, ...projectSchema };
     } else {
         schemaObj = baseSchema;
     }

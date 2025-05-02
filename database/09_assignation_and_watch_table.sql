@@ -9,7 +9,7 @@ BEGIN;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'relation_type') THEN
-        CREATE TYPE core.relation_type AS ENUM ('WATCHER', 'ASSIGNED');
+        CREATE TYPE core.relation_type AS ENUM ('WATCHER', 'ASSIGNED','ACCESS_GRANTED');
     END IF;
 END
 $$;

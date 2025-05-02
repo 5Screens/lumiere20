@@ -7,7 +7,7 @@ export class Project {
     this.uuid = data.uuid || null;
     this.title = data.title || ''; // Nom complet du projet
     this.description = data.description || ''; // Description longue du projet
-    this.rel_status_code = data.rel_status_code || null; // Statut du projet
+    this.ticket_status_code = data.ticket_status_code || null; // Statut du projet
     this.ticket_type_code = 'PROJECT'; // ticket de type projet 
     
     // Attributs étendus (core_ext)
@@ -31,7 +31,7 @@ export class Project {
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
       { name: 'title', label: i18n.global.t('project.name') },
-      { name: 'rel_status_code', label: i18n.global.t('project.status') },
+      { name: 'ticket_status_code', label: i18n.global.t('project.status') },
       { name: 'key', label: i18n.global.t('project.key') },
       { name: 'rel_assigned_to_group', label: i18n.global.t('project.team_id') },
       { name: 'rel_assigned_to_person', label: i18n.global.t('project.lead_user_id') }
@@ -60,14 +60,14 @@ export class Project {
         placeholder: t('project.description_placeholder'),
         required: isRequired('description')
       },
-      rel_status_code: {
+      ticket_status_code: {
         label: t('project.status'),
         type: 'sSelectField',
         placeholder: t('project.status_placeholder'),
-        required: isRequired('rel_status_code'),
+        required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=PROJECT`,
         patchEndpoint: 'projects',
-        fieldName: 'rel_status_code',
+        fieldName: 'ticket_status_code',
         mode: 'creation'
       },
       
