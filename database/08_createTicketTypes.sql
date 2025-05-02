@@ -9,7 +9,8 @@ INSERT INTO configuration.ticket_types (code) VALUES
 ('PROJECT'),
 ('DEFECT'),
 ('STORY'),
-('EPIC');
+('EPIC'),
+('SPRINT');
 
 COMMIT;
 
@@ -30,6 +31,7 @@ SELECT
         WHEN 'DEFECT' THEN 'Anomalie'
         WHEN 'STORY' THEN 'Histoire utilisateur'
         WHEN 'EPIC' THEN 'Épopée'
+        WHEN 'SPRINT' THEN 'Sprint'
     END
 FROM configuration.ticket_types tt
 CROSS JOIN translations.languages l
@@ -51,6 +53,7 @@ SELECT
         WHEN 'DEFECT' THEN 'Defect'
         WHEN 'STORY' THEN 'User Story'
         WHEN 'EPIC' THEN 'Epic'
+        WHEN 'SPRINT' THEN 'Sprint'
     END
 FROM configuration.ticket_types tt
 CROSS JOIN translations.languages l
@@ -72,6 +75,7 @@ SELECT
         WHEN 'DEFECT' THEN 'Defecto'
         WHEN 'STORY' THEN 'Historia de usuario'
         WHEN 'EPIC' THEN 'Épica'
+        WHEN 'SPRINT' THEN 'Sprint'
     END
 FROM configuration.ticket_types tt
 CROSS JOIN translations.languages l
@@ -93,6 +97,7 @@ SELECT
         WHEN 'DEFECT' THEN 'Defeito'
         WHEN 'STORY' THEN 'História de usuário'
         WHEN 'EPIC' THEN 'Épico'
+        WHEN 'SPRINT' THEN 'Sprint'
     END
 FROM configuration.ticket_types tt
 CROSS JOIN translations.languages l
@@ -114,6 +119,7 @@ SELECT
         WHEN 'DEFECT' THEN 'Дефект'
         WHEN 'STORY' THEN 'Потребителска история'
         WHEN 'EPIC' THEN 'Епик'
+        WHEN 'SPRINT' THEN 'Спринт'
     END
 FROM configuration.ticket_types tt
 CROSS JOIN translations.languages l
@@ -135,6 +141,7 @@ SELECT
         WHEN 'DEFECT' THEN 'Defekt'
         WHEN 'STORY' THEN 'Korisnička priča'
         WHEN 'EPIC' THEN 'Epika'
+        WHEN 'SPRINT' THEN 'Sprint'
     END
 FROM configuration.ticket_types tt
 CROSS JOIN translations.languages l
