@@ -215,7 +215,7 @@ watch(selectedType, (newType) => {
       break
     case 'PROJECT':
       instance = new Project()
-      endpoint = 'projects'
+      endpoint = 'tickets?type=PROJECT'
       break
     default:
       instance = null

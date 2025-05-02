@@ -1,6 +1,5 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
-import { useObjectStore } from '../stores/objectStore'
 
 export class Project {
   constructor(data = {}) {
@@ -9,6 +8,7 @@ export class Project {
     this.title = data.title || ''; // Nom complet du projet
     this.description = data.description || ''; // Description longue du projet
     this.rel_status_code = data.rel_status_code || null; // Statut du projet
+    this.ticket_type_code = 'PROJECT'; // ticket de type projet 
     
     // Attributs étendus (core_ext)
     this.key = data.key || ''; // Code unique du projet
@@ -19,8 +19,8 @@ export class Project {
     this.project_type = data.project_type || null; // Type de projet
     
     // Assignation (stockée dans rel_tickets_groups_persons)
-    this.team_id = data.team_id || null; // Référence à une équipe affectée
-    this.lead_user_id = data.lead_user_id || null; // Référence à l'utilisateur responsable
+    this.rel_assigned_to_group = data.rel_assigned_to_group || null; // Référence à une équipe affectée
+    this.rel_assigned_to_person = data.rel_assigned_to_person || null; // Référence à l'utilisateur responsable
     this.access_to_groups = data.access_to_groups || []; // Groupes ayant accès
     this.access_to_users = data.access_to_users || []; // Utilisateurs ayant accès
     
@@ -33,8 +33,8 @@ export class Project {
       { name: 'title', label: i18n.global.t('project.name') },
       { name: 'rel_status_code', label: i18n.global.t('project.status') },
       { name: 'key', label: i18n.global.t('project.key') },
-      { name: 'team_id', label: i18n.global.t('project.team_id') },
-      { name: 'lead_user_id', label: i18n.global.t('project.lead_user_id') }
+      { name: 'rel_assigned_to_group', label: i18n.global.t('project.team_id') },
+      { name: 'rel_assigned_to_person', label: i18n.global.t('project.lead_user_id') }
     ];
   }
 
@@ -151,28 +151,28 @@ export class Project {
       },
       
       // Assignation
-      team_id: {
+      rel_assigned_to_group: {
         label: t('project.team_id'),
         type: 'sFilteredSearchField',
         placeholder: t('project.team_id_placeholder'),
-        endpoint: ({ lead_user_id }) => 
-          lead_user_id 
-            ? `persons/${lead_user_id}/groups` 
+        endpoint: ({ rel_assigned_to_person }) => 
+          rel_assigned_to_person 
+            ? `persons/${rel_assigned_to_person}/groups` 
             : 'groups',
         displayField: 'groupe_name',
         valueField: 'uuid',
         columnsConfig: [
           { key: 'groupe_name', label: t('group.name'), visible: true }
         ],
-        required: isRequired('team_id')
+        required: isRequired('rel_assigned_to_group')
       },
-      lead_user_id: {
+      rel_assigned_to_person: {
         label: t('project.lead_user_id'),
         type: 'sFilteredSearchField',
         placeholder: t('project.lead_user_id_placeholder'),
-        endpoint: ({ team_id }) => 
-          team_id 
-            ? `groups/${team_id}/members` 
+        endpoint: ({ rel_assigned_to_group }) => 
+          rel_assigned_to_group 
+            ? `groups/${rel_assigned_to_group}/members` 
             : 'groups/members',
         displayField: 'first_name',
         valueField: 'uuid',
@@ -180,7 +180,7 @@ export class Project {
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
-        required: isRequired('lead_user_id')
+        required: isRequired('rel_assigned_to_person')
       }
     };
   }
@@ -192,7 +192,6 @@ export class Project {
       case 'POST':
         // Pour POST, définir writer_uuid et ticket_type_code si nécessaire
         this.writer_uuid = userProfileStore.id;
-        this.ticket_type_code = 'PROJECT';
         break;
       case 'PUT':
       case 'PATCH':
@@ -207,10 +206,11 @@ export class Project {
     const apiData = { ...this };
     delete apiData.requiredFields;
     
-    // Traiter les listes pour extraire uniquement les UUIDs si ce sont des objets complets
-    const listFields = ['access_to_groups', 'access_to_users'];
+    // Traiter les listes pour extraire uniquement les UUIDs ou codes selon le champ
+    const uuidListFields = ['access_to_groups', 'access_to_users'];
     
-    listFields.forEach(field => {
+    // Traiter les champs qui utilisent uuid
+    uuidListFields.forEach(field => {
       if (apiData[field] && Array.isArray(apiData[field]) && apiData[field].length > 0) {
         if (typeof apiData[field][0] === 'object' && apiData[field][0].uuid) {
           // Si les éléments de la liste sont des objets avec un UUID, extraire uniquement les UUIDs
@@ -218,6 +218,14 @@ export class Project {
         }
       }
     });
+    
+    // Traiter spécifiquement issue_type_scheme_id qui utilise le champ code
+    if (apiData.issue_type_scheme_id && Array.isArray(apiData.issue_type_scheme_id) && apiData.issue_type_scheme_id.length > 0) {
+      if (typeof apiData.issue_type_scheme_id[0] === 'object' && apiData.issue_type_scheme_id[0].code) {
+        // Extraire uniquement les codes
+        apiData.issue_type_scheme_id = apiData.issue_type_scheme_id.map(item => item.code);
+      }
+    }
     
     // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
     Object.keys(apiData).forEach(key => {
