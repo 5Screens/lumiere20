@@ -291,7 +291,8 @@ CREATE TABLE core.tickets (
     core_extended_attributes JSONB,
     user_extended_attributes JSONB,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    closed_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Commentaires pour documenter les contraintes de clés étrangères
