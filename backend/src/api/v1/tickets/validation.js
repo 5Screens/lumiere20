@@ -57,6 +57,10 @@ const validateCreateTicket = (req, res, next) => {
     // Vérifier si le type de ticket est PROJECT
     const isProject = req.query.ticket_types === 'PROJECT' || 
                       (req.body && req.body.ticket_type_code === 'PROJECT');
+                      
+    // Vérifier si le type de ticket est SPRINT
+    const isSprint = req.query.ticket_type === 'SPRINT' || 
+                     (req.body && req.body.ticket_type_code === 'SPRINT');
     
     // Schéma de base pour tous les types de tickets
     const baseSchema = {
@@ -208,6 +212,20 @@ const validateCreateTicket = (req, res, next) => {
         project_type: Joi.string().allow(null, '')
     };
     
+    // Champs spécifiques aux sprints
+    const sprintSchema = {
+        requested_by_uuid: Joi.string().uuid().forbidden(),
+        requested_for_uuid: Joi.string().uuid().forbidden(),
+        uuid: Joi.string().uuid().forbidden(),
+        created_at: Joi.date().forbidden(),
+        updated_at: Joi.date().forbidden(),
+        project_id: Joi.string().uuid().allow(null, ''),
+        start_date: Joi.date().allow(null),
+        end_date: Joi.date().allow(null),
+        actual_velocity: Joi.number().allow(null),
+        estimated_velocity: Joi.number().allow(null)
+    };
+    
     // Combiner les schémas en fonction du type de ticket
     let schemaObj;
     if (isIncident) {
@@ -220,6 +238,8 @@ const validateCreateTicket = (req, res, next) => {
         schemaObj = { ...baseSchema, ...knowledgeSchema };
     } else if (isProject) {
         schemaObj = { ...baseSchema, ...projectSchema };
+    } else if (isSprint) {
+        schemaObj = { ...baseSchema, ...sprintSchema };
     } else {
         schemaObj = baseSchema;
     }
