@@ -674,6 +674,28 @@ export default {
     access_to_users_placeholder: 'Sélectionnez le ou les utilisateurs'
   },
   
+  sprint: {
+    // Informations générales
+    name: 'Nom du sprint',
+    name_placeholder: 'Entrez le nom du sprint',
+    goal: 'Objectif du sprint',
+    goal_placeholder: 'Décrivez l\'objectif du sprint',
+    state: 'État du sprint',
+    state_placeholder: 'Sélectionnez l\'état du sprint',
+    
+    // Attributs étendus
+    project_id: 'Projet associé',
+    project_id_placeholder: 'Sélectionnez le projet associé',
+    start_date: 'Date de début',
+    start_date_placeholder: 'Sélectionnez la date de début du sprint',
+    end_date: 'Date de fin',
+    end_date_placeholder: 'Sélectionnez la date de fin du sprint',
+    actual_velocity: 'Vélocité réelle',
+    actual_velocity_placeholder: 'Entrez la vélocité réelle du sprint',
+    estimated_velocity: 'Vélocité estimée',
+    estimated_velocity_placeholder: 'Entrez la vélocité estimée du sprint'
+  },
+  
   fileUploader: {
     dropzone_placeholder: 'Glisser-déposer pour importer',
     browse_button: 'Sélectionner les fichiers',
