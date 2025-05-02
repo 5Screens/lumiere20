@@ -57,6 +57,7 @@ import { Problem } from '@/models/Problem'
 import { Change } from '@/models/Change'
 import { Knowledge_article } from '@/models/Knowledge_article'
 import { Project } from '@/models/Project'
+import { Sprint } from '@/models/Sprint'
 import FormFields from '@/components/formFields.vue'
 import ButtonStandard from '@/components/common/ButtonStandard.vue'
 import SSelectField from '@/components/common/sSelectField.vue'
@@ -101,6 +102,8 @@ const currentModelClass = computed(() => {
       return Knowledge_article
     case 'PROJECT':
       return Project
+    case 'SPRINT':
+      return Sprint
     default:
       return null
   }
@@ -216,6 +219,10 @@ watch(selectedType, (newType) => {
     case 'PROJECT':
       instance = new Project()
       endpoint = 'tickets?type=PROJECT'
+      break
+    case 'SPRINT':
+      instance = new Sprint()
+      endpoint = 'tickets?type=SPRINT'
       break
     default:
       instance = null
