@@ -78,7 +78,7 @@ const createTicket = async (ticketData) => {
                 'resolution_notes', 'resolution_code', 'cause_code', 'rel_problem_id',
                 'rel_change_request', 'sla_pickup_due_at', 'assigned_to_at', 
                 'sla_resolution_due_at', 'resolved_at', 'reopen_count', 'assignment_count',
-                'assignment_to_count', 'standby_count', 'closed_at', 'contact_type'
+                'assignment_to_count', 'standby_count', 'contact_type'
             ];
             
             // Ajouter chaque champ présent dans ticketData aux attributs étendus
@@ -99,7 +99,7 @@ const createTicket = async (ticketData) => {
                 'impact', 'urgency', 'symptoms_description', 'workaround',
                 'knownerrors_list', 'changes_list', 'incidents_list', 'root_cause',
                 'definitive_solution', 'target_resolution_date', 'actual_resolution_date',
-                'actual_resolution_workload', 'closure_justification', 'closed_at'
+                'actual_resolution_workload', 'closure_justification'
             ];
             
             // Ajouter chaque champ présent dans ticketData aux attributs étendus
@@ -124,7 +124,7 @@ const createTicket = async (ticketData) => {
                 'rollbcak_plan', 'post_implementation_plan', 'cab_comments', 'rel_cab_validation_status',
                 'required_validations', 'validated_at', 'related_tickets', 'actual_start_date_at',
                 'actual_end_date_at', 'elapsed_time', 'subscribers', 'success_criteria',
-                'post_change_evaluation', 'post_change_comment', 'closed_at'
+                'post_change_evaluation', 'post_change_comment'
             ];
             
             // Ajouter chaque champ présent dans ticketData aux attributs étendus
@@ -172,15 +172,16 @@ const createTicket = async (ticketData) => {
                 ticket_type_code,
                 ticket_status_code,
                 core_extended_attributes,
-                user_extended_attributes
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                user_extended_attributes,
+                closed_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING *
         `;
         
         // Pour les problèmes, les connaissances et les projets, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
         const requestedByUuid = (isProblem || isKnowledge || isProject) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
         const requestedForUuid = (isProblem || isKnowledge || isProject) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
-
+        
         const ticketResult = await client.query(ticketQuery, [
             ticketData.title,
             ticketData.description,
@@ -191,7 +192,8 @@ const createTicket = async (ticketData) => {
             ticketData.ticket_type_code,
             ticketData.ticket_status_code,
             isKnowledge && ticketData.extended_attributes ? ticketData.extended_attributes : Object.keys(coreExtendedAttributes).length > 0 ? coreExtendedAttributes : null,
-            ticketData.user_extended_attributes || null
+            ticketData.user_extended_attributes || null,
+            ticketData.closed_at || null
         ]);
 
         const createdTicket = ticketResult.rows[0];
