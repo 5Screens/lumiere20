@@ -54,6 +54,14 @@ INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
     ('MONITORING', 'PROJECT'),         -- En phase de surveillance
     ('COMPLETED', 'PROJECT');          -- Projet terminé
 
+-- Insertion des statuts spécifiques aux sprints
+INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
+    ('PLANNED', 'SPRINT'),             -- Sprint planifié
+    ('ACTIVE', 'SPRINT'),              -- Sprint actif
+    ('CLOSED', 'SPRINT'),              -- Sprint fermé
+    ('DRAFT', 'SPRINT'),               -- Sprint en brouillon
+    ('CANCELLED', 'SPRINT');           -- Sprint annulé
+
 -- Insertion des traductions en français
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'fr', 
@@ -96,6 +104,12 @@ SELECT uuid, 'fr',
         WHEN 'EXECUTING' THEN 'En exécution'
         WHEN 'MONITORING' THEN 'En surveillance'
         WHEN 'COMPLETED' THEN 'Terminé'
+        -- Statuts spécifiques aux sprints
+        WHEN 'PLANNED' THEN 'Planifié'
+        WHEN 'ACTIVE' THEN 'Actif'
+        WHEN 'CLOSED' THEN 'Fermé'
+        WHEN 'DRAFT' THEN 'Brouillon'
+        WHEN 'CANCELLED' THEN 'Annulé'
     END
 FROM configuration.ticket_status;
 
@@ -141,6 +155,12 @@ SELECT uuid, 'en',
         WHEN 'EXECUTING' THEN 'Executing'
         WHEN 'MONITORING' THEN 'Monitoring'
         WHEN 'COMPLETED' THEN 'Completed'
+        -- Statuts spécifiques aux sprints
+        WHEN 'PLANNED' THEN 'Planned'
+        WHEN 'ACTIVE' THEN 'Active'
+        WHEN 'CLOSED' THEN 'Closed'
+        WHEN 'DRAFT' THEN 'Draft'
+        WHEN 'CANCELLED' THEN 'Cancelled'
     END
 FROM configuration.ticket_status;
 
@@ -186,6 +206,12 @@ SELECT uuid, 'es',
         WHEN 'EXECUTING' THEN 'Ejecución'
         WHEN 'MONITORING' THEN 'Monitoreo'
         WHEN 'COMPLETED' THEN 'Completado'
+        -- Statuts spécifiques aux sprints
+        WHEN 'PLANNED' THEN 'Planificado'
+        WHEN 'ACTIVE' THEN 'Activo'
+        WHEN 'CLOSED' THEN 'Cerrado'
+        WHEN 'DRAFT' THEN 'Borrador'
+        WHEN 'CANCELLED' THEN 'Cancelado'
     END
 FROM configuration.ticket_status;
 
@@ -231,6 +257,12 @@ SELECT uuid, 'pt',
         WHEN 'EXECUTING' THEN 'Execução'
         WHEN 'MONITORING' THEN 'Monitoramento'
         WHEN 'COMPLETED' THEN 'Concluído'
+        -- Statuts spécifiques aux sprints
+        WHEN 'PLANNED' THEN 'Planejado'
+        WHEN 'ACTIVE' THEN 'Ativo'
+        WHEN 'CLOSED' THEN 'Fechado'
+        WHEN 'DRAFT' THEN 'Rascunho'
+        WHEN 'CANCELLED' THEN 'Cancelado'
     END
 FROM configuration.ticket_status;
 
