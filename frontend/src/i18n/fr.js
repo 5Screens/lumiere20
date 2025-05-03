@@ -574,6 +574,38 @@ export default {
     closed_at_placeholder: 'Sélectionnez la date de clôture'
   },
 
+  epic: {
+    // Informations générales
+    name: 'Nom de l\'épopée',
+    name_placeholder: 'Entrez le nom de l\'épopée',
+    description: 'Description',
+    description_placeholder: 'Entrez une description détaillée de l\'épopée',
+    status: 'Statut',
+    status_placeholder: 'Sélectionnez un statut',
+    
+    // Attributs étendus
+    project_id: 'Projet parent',
+    project_id_placeholder: 'Sélectionnez le projet parent',
+    start_date: 'Date de début',
+    start_date_placeholder: 'Sélectionnez la date de début',
+    end_date: 'Date de fin',
+    end_date_placeholder: 'Sélectionnez la date de fin',
+    progress_percent: 'Pourcentage d\'avancement',
+    progress_percent_placeholder: 'Entrez le pourcentage d\'avancement (0-100)',
+    color: 'Couleur',
+    color_placeholder: 'Entrez un code couleur (ex: #FF5733)',
+    tags: 'Tags',
+    tags_placeholder: 'Ajoutez des tags pour catégoriser l\'épopée',
+    
+    // Timestamps
+    created_at: 'Date de création',
+    created_at_placeholder: 'Date de création automatique',
+    updated_at: 'Date de mise à jour',
+    updated_at_placeholder: 'Date de mise à jour automatique',
+    closed_at: 'Date de clôture',
+    closed_at_placeholder: 'Date de clôture automatique'
+  },
+
   knowledge_article: {
     // Métadonnées d'identification et de classification
     category: 'Catégorie',
