@@ -8,7 +8,7 @@ INSERT INTO configuration.ticket_types (code) VALUES
 ('KNOWLEDGE'),
 ('PROJECT'),
 ('DEFECT'),
-('STORY'),
+('USER_STORY'),
 ('EPIC'),
 ('SPRINT');
 
@@ -29,7 +29,7 @@ SELECT
         WHEN 'KNOWLEDGE' THEN 'Connaissance'
         WHEN 'PROJECT' THEN 'Projet'
         WHEN 'DEFECT' THEN 'Anomalie'
-        WHEN 'STORY' THEN 'Histoire utilisateur'
+        WHEN 'USER_STORY' THEN 'Histoire utilisateur'
         WHEN 'EPIC' THEN 'Épopée'
         WHEN 'SPRINT' THEN 'Sprint'
     END
@@ -51,7 +51,7 @@ SELECT
         WHEN 'KNOWLEDGE' THEN 'Knowledge article'
         WHEN 'PROJECT' THEN 'Project'
         WHEN 'DEFECT' THEN 'Defect'
-        WHEN 'STORY' THEN 'User Story'
+        WHEN 'USER_STORY' THEN 'User Story'
         WHEN 'EPIC' THEN 'Epic'
         WHEN 'SPRINT' THEN 'Sprint'
     END
@@ -73,7 +73,7 @@ SELECT
         WHEN 'KNOWLEDGE' THEN 'Base de conocimiento'
         WHEN 'PROJECT' THEN 'Proyecto'
         WHEN 'DEFECT' THEN 'Defecto'
-        WHEN 'STORY' THEN 'Historia de usuario'
+        WHEN 'USER_STORY' THEN 'Historia de usuario'
         WHEN 'EPIC' THEN 'Épica'
         WHEN 'SPRINT' THEN 'Sprint'
     END
@@ -95,7 +95,7 @@ SELECT
         WHEN 'KNOWLEDGE' THEN 'Base de conhecimento'
         WHEN 'PROJECT' THEN 'Projeto'
         WHEN 'DEFECT' THEN 'Defeito'
-        WHEN 'STORY' THEN 'História de usuário'
+        WHEN 'USER_STORY' THEN 'História de usuário'
         WHEN 'EPIC' THEN 'Épico'
         WHEN 'SPRINT' THEN 'Sprint'
     END
@@ -117,7 +117,7 @@ SELECT
         WHEN 'KNOWLEDGE' THEN 'База знания'
         WHEN 'PROJECT' THEN 'Проект'
         WHEN 'DEFECT' THEN 'Дефект'
-        WHEN 'STORY' THEN 'Потребителска история'
+        WHEN 'USER_STORY' THEN 'Потребителска история'
         WHEN 'EPIC' THEN 'Епик'
         WHEN 'SPRINT' THEN 'Спринт'
     END
@@ -139,7 +139,7 @@ SELECT
         WHEN 'KNOWLEDGE' THEN 'Baza znanja'
         WHEN 'PROJECT' THEN 'Projekt'
         WHEN 'DEFECT' THEN 'Defekt'
-        WHEN 'STORY' THEN 'Korisnička priča'
+        WHEN 'USER_STORY' THEN 'Korisnička priča'
         WHEN 'EPIC' THEN 'Epika'
         WHEN 'SPRINT' THEN 'Sprint'
     END

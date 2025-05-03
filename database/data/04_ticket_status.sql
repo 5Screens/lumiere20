@@ -62,6 +62,26 @@ INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
     ('DRAFT', 'SPRINT'),               -- Sprint en brouillon
     ('CANCELLED', 'SPRINT');           -- Sprint annulé
 
+-- Insertion des statuts spécifiques aux epics
+INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
+    ('IN_PREPARATION', 'EPIC'),        -- Epic en préparation
+    ('OPEN', 'EPIC'),                  -- Epic ouvert
+    ('IN_PROGRESS', 'EPIC'),           -- Epic en cours
+    ('DONE', 'EPIC'),                  -- Epic terminé
+    ('CANCELLED', 'EPIC'),             -- Epic annulé
+    ('ARCHIVED', 'EPIC');              -- Epic archivé
+
+-- Insertion des statuts spécifiques aux user stories
+INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
+    ('DRAFT', 'USER_STORY'),           -- User story en brouillon
+    ('TO_DO', 'USER_STORY'),           -- User story à faire
+    ('READY', 'USER_STORY'),           -- User story prête
+    ('IN_PROGRESS', 'USER_STORY'),     -- User story en cours
+    ('IN_REVIEW', 'USER_STORY'),       -- User story en revue
+    ('IN_TEST', 'USER_STORY'),         -- User story en test
+    ('DONE', 'USER_STORY'),            -- User story terminée
+    ('CANCELLED', 'USER_STORY');       -- User story annulée
+
 -- Insertion des traductions en français
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'fr', 
@@ -110,6 +130,22 @@ SELECT uuid, 'fr',
         WHEN 'CLOSED' THEN 'Fermé'
         WHEN 'DRAFT' THEN 'Brouillon'
         WHEN 'CANCELLED' THEN 'Annulé'
+        -- Statuts spécifiques aux epics
+        WHEN 'IN_PREPARATION' THEN 'En préparation'
+        WHEN 'OPEN' THEN 'Ouvert'
+        WHEN 'IN_PROGRESS' THEN 'En cours'
+        WHEN 'DONE' THEN 'Terminé'
+        WHEN 'CANCELLED' THEN 'Annulé'
+        WHEN 'ARCHIVED' THEN 'Archivé'
+        -- Statuts spécifiques aux user stories
+        WHEN 'DRAFT' THEN 'Brouillon'
+        WHEN 'TO_DO' THEN 'À faire'
+        WHEN 'READY' THEN 'Prête'
+        WHEN 'IN_PROGRESS' THEN 'En cours'
+        WHEN 'IN_REVIEW' THEN 'En revue'
+        WHEN 'IN_TEST' THEN 'En test'
+        WHEN 'DONE' THEN 'Terminée'
+        WHEN 'CANCELLED' THEN 'Annulée'
     END
 FROM configuration.ticket_status;
 
@@ -160,6 +196,22 @@ SELECT uuid, 'en',
         WHEN 'ACTIVE' THEN 'Active'
         WHEN 'CLOSED' THEN 'Closed'
         WHEN 'DRAFT' THEN 'Draft'
+        WHEN 'CANCELLED' THEN 'Cancelled'
+        -- Statuts spécifiques aux epics
+        WHEN 'IN_PREPARATION' THEN 'In Preparation'
+        WHEN 'OPEN' THEN 'Open'
+        WHEN 'IN_PROGRESS' THEN 'In Progress'
+        WHEN 'DONE' THEN 'Done'
+        WHEN 'CANCELLED' THEN 'Cancelled'
+        WHEN 'ARCHIVED' THEN 'Archived'
+        -- Statuts spécifiques aux user stories
+        WHEN 'DRAFT' THEN 'Draft'
+        WHEN 'TO_DO' THEN 'To Do'
+        WHEN 'READY' THEN 'Ready'
+        WHEN 'IN_PROGRESS' THEN 'In Progress'
+        WHEN 'IN_REVIEW' THEN 'In Review'
+        WHEN 'IN_TEST' THEN 'In Test'
+        WHEN 'DONE' THEN 'Done'
         WHEN 'CANCELLED' THEN 'Cancelled'
     END
 FROM configuration.ticket_status;
@@ -212,6 +264,22 @@ SELECT uuid, 'es',
         WHEN 'CLOSED' THEN 'Cerrado'
         WHEN 'DRAFT' THEN 'Borrador'
         WHEN 'CANCELLED' THEN 'Cancelado'
+        -- Statuts spécifiques aux epics
+        WHEN 'IN_PREPARATION' THEN 'En preparación'
+        WHEN 'OPEN' THEN 'Abierto'
+        WHEN 'IN_PROGRESS' THEN 'En progreso'
+        WHEN 'DONE' THEN 'Completado'
+        WHEN 'CANCELLED' THEN 'Cancelado'
+        WHEN 'ARCHIVED' THEN 'Archivado'
+        -- Statuts spécifiques aux user stories
+        WHEN 'DRAFT' THEN 'Borrador'
+        WHEN 'TO_DO' THEN 'Por hacer'
+        WHEN 'READY' THEN 'Lista'
+        WHEN 'IN_PROGRESS' THEN 'En progreso'
+        WHEN 'IN_REVIEW' THEN 'En revisión'
+        WHEN 'IN_TEST' THEN 'En prueba'
+        WHEN 'DONE' THEN 'Completada'
+        WHEN 'CANCELLED' THEN 'Cancelada'
     END
 FROM configuration.ticket_status;
 
@@ -263,6 +331,22 @@ SELECT uuid, 'pt',
         WHEN 'CLOSED' THEN 'Fechado'
         WHEN 'DRAFT' THEN 'Rascunho'
         WHEN 'CANCELLED' THEN 'Cancelado'
+        -- Statuts spécifiques aux epics
+        WHEN 'IN_PREPARATION' THEN 'Em preparação'
+        WHEN 'OPEN' THEN 'Aberto'
+        WHEN 'IN_PROGRESS' THEN 'Em andamento'
+        WHEN 'DONE' THEN 'Concluído'
+        WHEN 'CANCELLED' THEN 'Cancelado'
+        WHEN 'ARCHIVED' THEN 'Arquivado'
+        -- Statuts spécifiques aux user stories
+        WHEN 'DRAFT' THEN 'Rascunho'
+        WHEN 'TO_DO' THEN 'A fazer'
+        WHEN 'READY' THEN 'Pronta'
+        WHEN 'IN_PROGRESS' THEN 'Em andamento'
+        WHEN 'IN_REVIEW' THEN 'Em revisão'
+        WHEN 'IN_TEST' THEN 'Em teste'
+        WHEN 'DONE' THEN 'Concluída'
+        WHEN 'CANCELLED' THEN 'Cancelada'
     END
 FROM configuration.ticket_status;
 

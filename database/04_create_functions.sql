@@ -15,11 +15,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function pour valider que la date de modification est postérieure à la date de création
-CREATE OR REPLACE FUNCTION validate_dates(date_creation TIMESTAMP, date_modification TIMESTAMP)
+-- Création de la fonction validate_dates pour comparer deux dates
+CREATE OR REPLACE FUNCTION validate_dates(date1 TIMESTAMP WITH TIME ZONE, date2 TIMESTAMP WITH TIME ZONE)
 RETURNS BOOLEAN AS $$
 BEGIN
-    RETURN date_modification >= date_creation;
+    -- Vérifie que date2 est postérieure ou égale à date1
+    RETURN date2 >= date1;
 END;
 $$ LANGUAGE plpgsql;
 
