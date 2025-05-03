@@ -66,8 +66,10 @@ const createTicket = async (ticketData) => {
         const isProject = ticketData.ticket_type_code === 'PROJECT';
         // Déterminer si c'est un ticket de type SPRINT
         const isSprint = ticketData.ticket_type_code === 'SPRINT';
+        // Déterminer si c'est un ticket de type EPIC
+        const isEpic = ticketData.ticket_type_code === 'EPIC';
         
-        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : isKnowledge ? 'KNOWLEDGE' : isProject ? 'PROJECT' : isSprint ? 'SPRINT' : ticketData.ticket_type_code}`);
+        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : isKnowledge ? 'KNOWLEDGE' : isProject ? 'PROJECT' : isSprint ? 'SPRINT' : isEpic ? 'EPIC' : ticketData.ticket_type_code}`);
         
         // Préparer les attributs étendus pour le core
         let coreExtendedAttributes = {};
@@ -180,6 +182,24 @@ const createTicket = async (ticketData) => {
             logger.info('[SERVICE] Prepared core_extended_attributes for SPRINT ticket');
         }
         
+        // Si c'est un epic, ajouter les attributs spécifiques aux epics
+        if (isEpic) {
+            // Champs à inclure dans core_extended_attributes pour les epics
+            const epicFields = [
+                'project_id', 'start_date', 'end_date', 'progress_percent',
+                'color'
+            ];
+            
+            // Ajouter chaque champ présent dans ticketData aux attributs étendus
+            epicFields.forEach(field => {
+                if (ticketData[field] !== undefined) {
+                    coreExtendedAttributes[field] = ticketData[field];
+                }
+            });
+            
+            logger.info('[SERVICE] Prepared core_extended_attributes for EPIC ticket');
+        }
+        
         // 1. Create the ticket
         const ticketQuery = `
             INSERT INTO core.tickets (
@@ -198,9 +218,9 @@ const createTicket = async (ticketData) => {
             RETURNING *
         `;
         
-        // Pour les problèmes, les connaissances, les projets et les sprints, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
-        const requestedByUuid = (isProblem || isKnowledge || isProject || isSprint) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
-        const requestedForUuid = (isProblem || isKnowledge || isProject || isSprint) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
+        // Pour les problèmes, les connaissances, les projets, les sprints et les epics, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
+        const requestedByUuid = (isProblem || isKnowledge || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
+        const requestedForUuid = (isProblem || isKnowledge || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
         
         const ticketResult = await client.query(ticketQuery, [
             ticketData.title,

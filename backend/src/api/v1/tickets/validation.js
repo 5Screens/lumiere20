@@ -58,9 +58,13 @@ const validateCreateTicket = (req, res, next) => {
     const isProject = req.query.ticket_types === 'PROJECT' || 
                       (req.body && req.body.ticket_type_code === 'PROJECT');
                       
-    // Vérifier si le type de ticket est SPRINT
+    // Vérifier si le type de ticket est SPRINT depuis les query params
     const isSprint = req.query.ticket_type === 'SPRINT' || 
                      (req.body && req.body.ticket_type_code === 'SPRINT');
+                     
+    // Vérifier si le type de ticket est EPIC depuis les query params
+    const isEpic = req.query.ticket_type === 'EPIC' || 
+                   (req.body && req.body.ticket_type_code === 'EPIC');
     
     // Schéma de base pour tous les types de tickets
     const baseSchema = {
@@ -226,6 +230,20 @@ const validateCreateTicket = (req, res, next) => {
         estimated_velocity: Joi.number().allow(null)
     };
     
+    // Champs spécifiques aux epics
+    const epicSchema = {
+        requested_by_uuid: Joi.string().uuid().forbidden(),
+        requested_for_uuid: Joi.string().uuid().forbidden(),
+        uuid: Joi.string().uuid().forbidden(),
+        created_at: Joi.date().forbidden(),
+        updated_at: Joi.date().forbidden(),
+        project_id: Joi.string().uuid().allow(null, ''),
+        start_date: Joi.date().allow(null),
+        end_date: Joi.date().allow(null),
+        progress_percent: Joi.number().min(0).max(100).allow(null),
+        color: Joi.string().allow(null, '')
+    };
+    
     // Combiner les schémas en fonction du type de ticket
     let schemaObj;
     if (isIncident) {
@@ -240,6 +258,8 @@ const validateCreateTicket = (req, res, next) => {
         schemaObj = { ...baseSchema, ...projectSchema };
     } else if (isSprint) {
         schemaObj = { ...baseSchema, ...sprintSchema };
+    } else if (isEpic) {
+        schemaObj = { ...baseSchema, ...epicSchema };
     } else {
         schemaObj = baseSchema;
     }
