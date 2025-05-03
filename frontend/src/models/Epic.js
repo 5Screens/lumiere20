@@ -105,7 +105,7 @@ export class Epic {
       },
       tags: {
         label: t('epic.tags'),
-        type: 'sTagsField',
+        type: 'sTagsList',
         placeholder: t('epic.tags_placeholder'),
         required: isRequired('tags'),
         comboBox: false

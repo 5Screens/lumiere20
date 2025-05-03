@@ -241,7 +241,8 @@ const validateCreateTicket = (req, res, next) => {
         start_date: Joi.date().allow(null),
         end_date: Joi.date().allow(null),
         progress_percent: Joi.number().min(0).max(100).allow(null),
-        color: Joi.string().allow(null, '')
+        color: Joi.string().allow(null, ''),
+        tags: Joi.array().items(Joi.string()).allow(null)
     };
     
     // Combiner les schémas en fonction du type de ticket

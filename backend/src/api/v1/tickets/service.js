@@ -187,7 +187,7 @@ const createTicket = async (ticketData) => {
             // Champs à inclure dans core_extended_attributes pour les epics
             const epicFields = [
                 'project_id', 'start_date', 'end_date', 'progress_percent',
-                'color'
+                'color', 'tags'
             ];
             
             // Ajouter chaque champ présent dans ticketData aux attributs étendus
