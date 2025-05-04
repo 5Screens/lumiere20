@@ -167,8 +167,9 @@ const createTicket = async (ticketData) => {
         // Si c'est un sprint, ajouter les attributs spécifiques aux sprints
         if (isSprint) {
             // Champs à inclure dans core_extended_attributes pour les sprints
+            // project_id n'est pas inclus dans les attributs étendus pour les sprints
             const sprintFields = [
-                'project_id', 'start_date', 'end_date', 'actual_velocity',
+                'start_date', 'end_date', 'actual_velocity',
                 'estimated_velocity'
             ];
             
@@ -185,8 +186,9 @@ const createTicket = async (ticketData) => {
         // Si c'est un epic, ajouter les attributs spécifiques aux epics
         if (isEpic) {
             // Champs à inclure dans core_extended_attributes pour les epics
+            // project_id n'est pas inclus dans les attributs étendus pour les epics
             const epicFields = [
-                'project_id', 'start_date', 'end_date', 'progress_percent',
+                'start_date', 'end_date', 'progress_percent',
                 'color', 'tags'
             ];
             
@@ -359,6 +361,28 @@ const createTicket = async (ticketData) => {
             
             const accessGroupsParams = [createdTicket.uuid, ...ticketData.access_to_groups];
             await client.query(accessGroupsQuery, accessGroupsParams);
+        }
+        
+        // 6. Handle parent-child relationship for SPRINT and EPIC types
+        if ((isSprint || isEpic) && ticketData.project_id) {
+            logger.info(`[SERVICE] Creating parent-child relationship for ${isSprint ? 'SPRINT' : 'EPIC'} ticket with PROJECT ${ticketData.project_id}`);
+            
+            const relationQuery = `
+                INSERT INTO core.rel_parent_child_tickets (
+                    rel_parent_ticket_uuid,
+                    rel_child_ticket_uuid,
+                    dependency_code
+                ) VALUES ($1, $2, $3)
+            `;
+            
+            const relationParams = [
+                ticketData.project_id,
+                createdTicket.uuid,
+                isSprint ? 'SPRINT' : 'EPIC'
+            ];
+            
+            await client.query(relationQuery, relationParams);
+            logger.info(`[SERVICE] Created parent-child relationship for ${isSprint ? 'SPRINT' : 'EPIC'} ticket`);
         }
         
         await client.query('COMMIT');
