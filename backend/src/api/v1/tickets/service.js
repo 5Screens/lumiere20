@@ -373,7 +373,44 @@ const createTicket = async (ticketData) => {
     }
 };
 
+const getTicketTeam = async (ticketUuid) => {
+    logger.info(`[SERVICE] Fetching team for ticket with UUID: ${ticketUuid}`);
+    
+    try {
+        // Requête pour récupérer l'équipe assignée au ticket
+        const query = `
+            SELECT 
+                g.uuid,
+                g.groupe_name,
+                s.first_name || ' ' || s.last_name AS supervisor_full_name,
+                m.first_name || ' ' || m.last_name AS manager_full_name
+            FROM core.rel_tickets_groups_persons rtgp
+            JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+            LEFT JOIN configuration.persons s ON g.rel_supervisor = s.uuid
+            LEFT JOIN configuration.persons m ON g.rel_manager = m.uuid
+            WHERE rtgp.rel_ticket = $1
+            AND rtgp.type = 'ASSIGNED'
+        `;
+        
+        const result = await db.query(query, [ticketUuid]);
+        
+        // Si aucune équipe n'est trouvée, retourner un tableau vide
+        if (result.rows.length === 0) {
+            logger.info(`[SERVICE] No team found for ticket with UUID: ${ticketUuid}`);
+            return [];
+        }
+        
+        // Retourner l'équipe trouvée
+        logger.info(`[SERVICE] Successfully retrieved team for ticket with UUID: ${ticketUuid}`);
+        return result.rows;
+    } catch (error) {
+        logger.error('[SERVICE] Error in getTicketTeam:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     getTickets,
-    createTicket
+    createTicket,
+    getTicketTeam
 };
