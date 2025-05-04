@@ -59,6 +59,7 @@ import { Knowledge_article } from '@/models/Knowledge_article'
 import { Project } from '@/models/Project'
 import { Sprint } from '@/models/Sprint'
 import { Epic } from '@/models/Epic'
+import { Story } from '@/models/Story'
 import FormFields from '@/components/formFields.vue'
 import ButtonStandard from '@/components/common/ButtonStandard.vue'
 import SSelectField from '@/components/common/sSelectField.vue'
@@ -107,6 +108,8 @@ const currentModelClass = computed(() => {
       return Sprint
     case 'EPIC':
       return Epic
+    case 'USER_STORY':
+      return Story
     default:
       return null
   }
@@ -230,6 +233,10 @@ watch(selectedType, (newType) => {
     case 'EPIC':
       instance = new Epic()
       endpoint = 'tickets?type=EPIC'
+      break
+    case 'USER_STORY':
+      instance = new Story()
+      endpoint = 'tickets?type=USER_STORY'
       break
     default:
       instance = null
