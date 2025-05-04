@@ -142,10 +142,30 @@ const getProjectSprints = async (req, res) => {
     }
 };
 
+const getTicketTeamMembers = async (req, res) => {
+    try {
+        logger.info(`[CONTROLLER] Processing GET /tickets/${req.params.uuid}/team/members request`);
+        const ticketUuid = req.params.uuid;
+        
+        // Vérifier que l'UUID est valide
+        if (!ticketUuid || ticketUuid.trim() === '') {
+            logger.error('[CONTROLLER] Invalid ticket UUID provided');
+            return res.status(400).json({ error: 'Invalid ticket UUID' });
+        }
+        
+        const members = await ticketService.getTicketTeamMembers(ticketUuid);
+        res.json(members);
+    } catch (error) {
+        logger.error('[CONTROLLER] Error in getTicketTeamMembers:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
     getTicketTeam,
+    getTicketTeamMembers,
     getProjectEpics,
     getProjectSprints
 };

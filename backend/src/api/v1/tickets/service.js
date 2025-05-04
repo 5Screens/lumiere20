@@ -518,10 +518,61 @@ const getProjectSprints = async (projectUuid) => {
     }
 };
 
+/**
+ * Récupère les membres de l'équipe assignée à un ticket spécifique
+ * @param {string} ticketUuid - UUID du ticket
+ * @returns {Promise<Array>} - Liste des membres de l'équipe avec leurs informations
+ */
+const getTicketTeamMembers = async (ticketUuid) => {
+    logger.info(`[SERVICE] Fetching team members for ticket with UUID: ${ticketUuid}`);
+    
+    try {
+        // Requête pour récupérer tous les membres des groupes assignés au ticket
+        const query = `
+            SELECT DISTINCT
+                p.uuid,
+                p.first_name,
+                p.last_name,
+                p.email,
+                p.business_phone,
+                p.business_mobile_phone,
+                p.personal_mobile_phone,
+                p.job_role,
+                p.ref_entity_uuid,
+                g.uuid as group_uuid,
+                g.groupe_name as group_name
+            FROM core.rel_tickets_groups_persons rtgp
+            JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+            JOIN configuration.rel_persons_groups rpg ON g.uuid = rpg.rel_group
+            JOIN configuration.persons p ON rpg.rel_member = p.uuid
+            WHERE rtgp.rel_ticket = $1
+            AND rtgp.type = 'ASSIGNED'
+            AND (rtgp.ended_at IS NULL OR rtgp.ended_at > CURRENT_TIMESTAMP)
+            ORDER BY p.last_name, p.first_name
+        `;
+        
+        const result = await db.query(query, [ticketUuid]);
+        
+        // Si aucun membre n'est trouvé, retourner un tableau vide
+        if (result.rows.length === 0) {
+            logger.info(`[SERVICE] No team members found for ticket with UUID: ${ticketUuid}`);
+            return [];
+        }
+        
+        // Retourner les membres trouvés
+        logger.info(`[SERVICE] Successfully retrieved ${result.rows.length} team members for ticket with UUID: ${ticketUuid}`);
+        return result.rows;
+    } catch (error) {
+        logger.error('[SERVICE] Error in getTicketTeamMembers:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
     getTicketTeam,
+    getTicketTeamMembers,
     getProjectEpics,
     getProjectSprints
 };
