@@ -96,12 +96,9 @@ export class Story {
         type: 'sSelectField',
         placeholder: ({ project_id }) => project_id ? t('story.assignee_placeholder') : t('story.assignee_placeholder_if_empty_team'),
         required: isRequired('assignee'),
-        endpoint: ({ project_id, team }) => {
-          if (!project_id) return '';
-          if (!team) return '';
-          return `groups/${team.uuid}/members`;
-        },
+        endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/team/members` : '',
         fieldName: 'assignee',
+        displayField: 'full_name',
         valueField: 'uuid',
         mode: 'creation'
       },

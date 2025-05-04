@@ -533,6 +533,7 @@ const getTicketTeamMembers = async (ticketUuid) => {
                 p.uuid,
                 p.first_name,
                 p.last_name,
+                p.first_name || ' ' || p.last_name as full_name,
                 p.email,
                 p.business_phone,
                 p.business_mobile_phone,
