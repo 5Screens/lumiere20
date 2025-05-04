@@ -433,8 +433,49 @@ const getTicketTeam = async (ticketUuid) => {
     }
 };
 
+const getProjectEpics = async (projectUuid) => {
+    logger.info(`[SERVICE] Fetching epics for project with UUID: ${projectUuid}`);
+    
+    try {
+        // Vérifier que le projet existe et est de type PROJECT
+        const projectQuery = `
+            SELECT uuid 
+            FROM core.tickets 
+            WHERE uuid = $1 AND ticket_type_code = 'PROJECT'
+        `;
+        
+        const projectResult = await db.query(projectQuery, [projectUuid]);
+        
+        if (projectResult.rows.length === 0) {
+            logger.error(`[SERVICE] No project found with UUID: ${projectUuid}`);
+            throw new Error('Project not found');
+        }
+        
+        // Requête pour récupérer les epics liés au projet
+        const epicsQuery = `
+            SELECT 
+                t.uuid,
+                t.title
+            FROM core.tickets t
+            JOIN core.rel_parent_child_tickets rpc ON t.uuid = rpc.rel_child_ticket_uuid
+            WHERE rpc.rel_parent_ticket_uuid = $1
+            AND rpc.dependency_code = 'EPIC'
+            AND t.ticket_type_code = 'EPIC'
+        `;
+        
+        const result = await db.query(epicsQuery, [projectUuid]);
+        
+        logger.info(`[SERVICE] Found ${result.rows.length} epics for project with UUID: ${projectUuid}`);
+        return result.rows;
+    } catch (error) {
+        logger.error('[SERVICE] Error in getProjectEpics:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
-    getTicketTeam
+    getTicketTeam,
+    getProjectEpics
 };

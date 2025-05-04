@@ -64,4 +64,10 @@ router.get('/:uuid/team', (req, res, next) => {
     ticketController.getTicketTeam(req, res);
 });
 
+// Route pour récupérer les epics liés à un projet
+router.get('/:uuid/epics', (req, res, next) => {
+    logger.info(`[ROUTES] Handling GET /tickets/${req.params.uuid}/epics request`);
+    ticketController.getProjectEpics(req, res);
+});
+
 module.exports = router;
