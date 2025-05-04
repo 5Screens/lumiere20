@@ -67,20 +67,12 @@ export class Story {
         type: 'sSelectField',
         placeholder: t('story.status_placeholder'),
         required: isRequired('ticket_status_code'),
-        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=STORY`,
+        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=USER_STORY`,
         patchEndpoint: 'tickets',
         fieldName: 'ticket_status_code',
         mode: 'creation'
       },
       
-      // Informations sur les personnes
-      writer_uuid: {
-        label: t('story.writer'),
-        type: 'sTextField',
-        placeholder: t('story.writer_placeholder'),
-        required: isRequired('writer_uuid'),
-        readonly: true
-      },
       requested_for_uuid: {
         label: t('story.reporter'),
         type: 'sFilteredSearchField',
@@ -117,6 +109,7 @@ export class Story {
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/team` : '',
         fieldName: 'team',
         valueField: 'uuid',
+        displayField: 'groupe_name',
         mode: 'creation'
       },
       assignee: {
@@ -140,6 +133,7 @@ export class Story {
         required: isRequired('epic_id'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/epics` : '',
         fieldName: 'epic_id',
+        displayField: 'title',
         valueField: 'uuid',
         mode: 'creation'
       },
@@ -150,6 +144,7 @@ export class Story {
         required: isRequired('sprint_id'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/sprints` : '',
         fieldName: 'sprint_id',
+        displayField: 'title',
         valueField: 'uuid',
         mode: 'creation'
       },

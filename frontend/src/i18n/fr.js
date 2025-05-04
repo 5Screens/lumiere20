@@ -606,6 +606,50 @@ export default {
     closed_at_placeholder: 'Date de clôture automatique'
   },
 
+  story: {
+    // Informations générales
+    title: 'Titre de la story',
+    title_placeholder: 'Entrez le titre de la story utilisateur',
+    description: 'Description',
+    description_placeholder: 'Entrez une description détaillée de la story utilisateur',
+    status: 'Statut',
+    status_placeholder: 'Sélectionnez un statut',
+    
+    // Informations sur les personnes
+    writer: 'Rédacteur',
+    writer_placeholder: 'Personne qui saisit la story dans le système',
+    reporter: 'Demandeur',
+    reporter_placeholder: 'Sélectionnez la personne responsable de l\'expression de la valeur',
+    
+    // Attributs étendus
+    project_id: 'Projet parent',
+    project_id_placeholder: 'Sélectionnez le projet parent',
+    team: 'Équipe',
+    team_placeholder: 'Sélectionnez l\'équipe en charge de la story',
+    team_placeholder_if_empty_project: 'Veuillez d\'abord sélectionner un projet',
+    assignee: 'Assigné à',
+    assignee_placeholder: 'Sélectionnez la personne chargée de réaliser techniquement la story',
+    assignee_placeholder_if_empty_team: 'Veuillez d\'abord sélectionner une équipe',
+    epic_id: 'Épopée',
+    epic_id_placeholder: 'Sélectionnez l\'épopée associée',
+    sprint_id: 'Sprint',
+    sprint_id_placeholder: 'Sélectionnez le sprint associé',
+    story_points: 'Points de story',
+    story_points_placeholder: 'Entrez le nombre de points de story',
+    priority: 'Priorité',
+    priority_placeholder: 'Entrez la priorité de la story',
+    acceptance_criteria: 'Critères d\'acceptation',
+    acceptance_criteria_placeholder: 'Entrez les critères d\'acceptation de la story',
+    tags: 'Tags',
+    tags_placeholder: 'Ajoutez des tags pour catégoriser la story',
+    
+    // Timestamps
+    created_at: 'Date de création',
+    created_at_placeholder: 'Date de création automatique',
+    updated_at: 'Date de mise à jour',
+    updated_at_placeholder: 'Date de mise à jour automatique'
+  },
+
   knowledge_article: {
     // Métadonnées d'identification et de classification
     category: 'Catégorie',
