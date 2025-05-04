@@ -70,4 +70,10 @@ router.get('/:uuid/epics', (req, res, next) => {
     ticketController.getProjectEpics(req, res);
 });
 
+// Route pour récupérer les sprints liés à un projet
+router.get('/:uuid/sprints', (req, res, next) => {
+    logger.info(`[ROUTES] Handling GET /tickets/${req.params.uuid}/sprints request`);
+    ticketController.getProjectSprints(req, res);
+});
+
 module.exports = router;

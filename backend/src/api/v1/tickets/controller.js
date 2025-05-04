@@ -119,9 +119,33 @@ const getProjectEpics = async (req, res) => {
     }
 };
 
+const getProjectSprints = async (req, res) => {
+    try {
+        logger.info(`[CONTROLLER] Processing GET /tickets/${req.params.uuid}/sprints request`);
+        const projectUuid = req.params.uuid;
+        
+        // Vérifier que l'UUID est valide
+        if (!projectUuid || projectUuid.trim() === '') {
+            logger.error('[CONTROLLER] Invalid project UUID provided');
+            return res.status(400).json({ error: 'Invalid project UUID' });
+        }
+        
+        const sprints = await ticketService.getProjectSprints(projectUuid);
+        res.json(sprints);
+    } catch (error) {
+        logger.error('[CONTROLLER] Error in getProjectSprints:', error);
+        if (error.message === 'Project not found') {
+            res.status(404).json({ error: 'Project not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
     getTicketTeam,
-    getProjectEpics
+    getProjectEpics,
+    getProjectSprints
 };
