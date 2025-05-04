@@ -25,8 +25,8 @@ export class Story {
     this.settings = data.settings || {}; // Paramètres additionnels
     
     // Assignation (stockée dans rel_tickets_groups_persons)
-    this.team = data.team || null; // Équipe assignée au projet
-    this.assignee = data.assignee || null; // Personne chargée de réaliser techniquement la story
+    this.rel_assigned_to_group = data.rel_assigned_to_group || null; // Équipe assignée au projet
+    this.rel_assigned_to_person = data.rel_assigned_to_person || null; // Personne chargée de réaliser techniquement la story
     
     // Timestamps
     this.created_at = data.created_at || null;
@@ -91,7 +91,7 @@ export class Story {
         valueField: 'uuid',
         mode: 'creation'
       },
-      assignee: {
+      rel_assigned_to_person: {
         label: t('story.assignee'),
         type: 'sSelectField',
         placeholder: ({ project_id }) => project_id ? t('story.assignee_placeholder') : t('story.assignee_placeholder_if_empty_team'),
@@ -180,33 +180,6 @@ export class Story {
     // Créer une copie de l'objet sans l'attribut requiredFields
     const apiData = { ...this };
     delete apiData.requiredFields;
-    
-    // Traitement spécial pour team et assignee
-    if (apiData.team && typeof apiData.team === 'object' && apiData.team.uuid) {
-      // Extraire l'UUID de l'équipe pour l'API
-      apiData.rel_assigned_to_group = apiData.team.uuid;
-      delete apiData.team;
-    }
-    
-    if (apiData.assignee && typeof apiData.assignee === 'object' && apiData.assignee.uuid) {
-      // Extraire l'UUID de l'assigné pour l'API
-      apiData.rel_assigned_to_person = apiData.assignee.uuid;
-      delete apiData.assignee;
-    }
-    
-    // Récupérer les informations de l'équipe pour l'API
-    if (apiData.project_id) {
-      // Ici, on pourrait faire un appel API pour récupérer l'équipe du projet
-      // Mais cela est géré côté serveur, donc on laisse simplement les champs rel_assigned_to_group et rel_assigned_to_person
-    }
-    
-    // Traiter les tags si nécessaire
-    if (apiData.tags && Array.isArray(apiData.tags) && apiData.tags.length > 0) {
-      if (typeof apiData.tags[0] === 'object' && apiData.tags[0].name) {
-        // Si les éléments de la liste sont des objets avec un name, extraire uniquement les noms
-        apiData.tags = apiData.tags.map(item => item.name);
-      }
-    }
     
     // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
     Object.keys(apiData).forEach(key => {
