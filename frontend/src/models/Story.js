@@ -50,44 +50,6 @@ export class Story {
 
     return {
       // Informations générales
-      title: {
-        label: t('story.title'),
-        type: 'sTextField',
-        placeholder: t('story.title_placeholder'),
-        required: isRequired('title')
-      },
-      description: {
-        label: t('story.description'),
-        type: 'sRichTextEditor',
-        placeholder: t('story.description_placeholder'),
-        required: isRequired('description')
-      },
-      ticket_status_code: {
-        label: t('story.status'),
-        type: 'sSelectField',
-        placeholder: t('story.status_placeholder'),
-        required: isRequired('ticket_status_code'),
-        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=USER_STORY`,
-        patchEndpoint: 'tickets',
-        fieldName: 'ticket_status_code',
-        mode: 'creation'
-      },
-      
-      requested_for_uuid: {
-        label: t('story.reporter'),
-        type: 'sFilteredSearchField',
-        placeholder: t('story.reporter_placeholder'),
-        endpoint: 'persons',
-        displayField: 'first_name',
-        valueField: 'uuid',
-        columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true }
-        ],
-        required: isRequired('requested_for_uuid')
-      },
-      
-      // Attributs étendus
       project_id: {
         label: t('story.project_id'),
         type: 'sFilteredSearchField',
@@ -101,30 +63,11 @@ export class Story {
         ],
         required: isRequired('project_id')
       },
-      team: {
-        label: t('story.team'),
-        type: 'sSelectField',
-        placeholder: ({ project_id }) => project_id ? t('story.team_placeholder') : t('story.team_placeholder_if_empty_project'),
-        required: isRequired('team'),
-        endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/team` : '',
-        fieldName: 'team',
-        valueField: 'uuid',
-        displayField: 'groupe_name',
-        mode: 'creation'
-      },
-      assignee: {
-        label: t('story.assignee'),
-        type: 'sSelectField',
-        placeholder: ({ project_id }) => project_id ? t('story.assignee_placeholder') : t('story.assignee_placeholder_if_empty_team'),
-        required: isRequired('assignee'),
-        endpoint: ({ project_id, team }) => {
-          if (!project_id) return '';
-          if (!team) return '';
-          return `groups/${team.uuid}/members`;
-        },
-        fieldName: 'assignee',
-        valueField: 'uuid',
-        mode: 'creation'
+      title: {
+        label: t('story.title'),
+        type: 'sTextField',
+        placeholder: t('story.title_placeholder'),
+        required: isRequired('title')
       },
       epic_id: {
         label: t('story.epic_id'),
@@ -145,6 +88,49 @@ export class Story {
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/sprints` : '',
         fieldName: 'sprint_id',
         displayField: 'title',
+        valueField: 'uuid',
+        mode: 'creation'
+      },
+      description: {
+        label: t('story.description'),
+        type: 'sRichTextEditor',
+        placeholder: t('story.description_placeholder'),
+        required: isRequired('description')
+      },
+      ticket_status_code: {
+        label: t('story.status'),
+        type: 'sSelectField',
+        placeholder: t('story.status_placeholder'),
+        required: isRequired('ticket_status_code'),
+        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=USER_STORY`,
+        patchEndpoint: 'tickets',
+        fieldName: 'ticket_status_code',
+        mode: 'creation'
+      },
+      requested_for_uuid: {
+        label: t('story.reporter'),
+        type: 'sFilteredSearchField',
+        placeholder: t('story.reporter_placeholder'),
+        endpoint: 'persons',
+        displayField: 'first_name',
+        valueField: 'uuid',
+        columnsConfig: [
+          { key: 'first_name', label: t('person.first_name'), visible: true },
+          { key: 'last_name', label: t('person.last_name'), visible: true }
+        ],
+        required: isRequired('requested_for_uuid')
+      },
+      assignee: {
+        label: t('story.assignee'),
+        type: 'sSelectField',
+        placeholder: ({ project_id }) => project_id ? t('story.assignee_placeholder') : t('story.assignee_placeholder_if_empty_team'),
+        required: isRequired('assignee'),
+        endpoint: ({ project_id, team }) => {
+          if (!project_id) return '';
+          if (!team) return '';
+          return `groups/${team.uuid}/members`;
+        },
+        fieldName: 'assignee',
         valueField: 'uuid',
         mode: 'creation'
       },

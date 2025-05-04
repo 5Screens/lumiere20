@@ -18,7 +18,7 @@
           :key="props.valueField ? option[props.valueField] : option.value"
           :value="props.valueField ? option[props.valueField] : option.value"
         >
-          {{ option.label }}
+          {{ option[props.displayField] }}
         </option>
       </select>
 
@@ -88,6 +88,10 @@ const props = defineProps({
   valueField: {
     type: String,
     default: ''
+  },
+  displayField: {
+    type: String,
+    default: 'label'
   }
 })
 
