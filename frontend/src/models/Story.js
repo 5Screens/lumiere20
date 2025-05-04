@@ -91,6 +91,20 @@ export class Story {
         valueField: 'uuid',
         mode: 'creation'
       },
+      assignee: {
+        label: t('story.assignee'),
+        type: 'sSelectField',
+        placeholder: ({ project_id }) => project_id ? t('story.assignee_placeholder') : t('story.assignee_placeholder_if_empty_team'),
+        required: isRequired('assignee'),
+        endpoint: ({ project_id, team }) => {
+          if (!project_id) return '';
+          if (!team) return '';
+          return `groups/${team.uuid}/members`;
+        },
+        fieldName: 'assignee',
+        valueField: 'uuid',
+        mode: 'creation'
+      },
       description: {
         label: t('story.description'),
         type: 'sRichTextEditor',
@@ -119,20 +133,6 @@ export class Story {
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
         required: isRequired('requested_for_uuid')
-      },
-      assignee: {
-        label: t('story.assignee'),
-        type: 'sSelectField',
-        placeholder: ({ project_id }) => project_id ? t('story.assignee_placeholder') : t('story.assignee_placeholder_if_empty_team'),
-        required: isRequired('assignee'),
-        endpoint: ({ project_id, team }) => {
-          if (!project_id) return '';
-          if (!team) return '';
-          return `groups/${team.uuid}/members`;
-        },
-        fieldName: 'assignee',
-        valueField: 'uuid',
-        mode: 'creation'
       },
       story_points: {
         label: t('story.story_points'),
