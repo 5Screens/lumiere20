@@ -40,7 +40,8 @@ export class Defect {
       { name: 'title', label: i18n.global.t('defect.title') },
       { name: 'description', label: i18n.global.t('defect.description') },
       { name: 'severity', label: i18n.global.t('defect.severity') },
-      { name: 'project_id', label: i18n.global.t('defect.project_id') }
+      { name: 'project_id', label: i18n.global.t('defect.project_id') },
+      { name: 'ticket_status_code', label: i18n.global.t('defect.ticket_status_code') }
     ];
   }
 
@@ -69,7 +70,7 @@ export class Defect {
         patchEndpoint: 'defects',
         fieldName: 'ticket_status_code',
         displayField: 'label',
-        valueField: 'code',
+        valueField: 'value',
         mode: 'creation'
       },
       description: {
