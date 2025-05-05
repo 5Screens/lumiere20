@@ -9,7 +9,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS configuration.defect_setup_codes (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     metadata TEXT NOT NULL,
-    code TEXT NOT NULL,
+    code TEXT NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS configuration.defect_setup_codes (
 -- Création de la table defect_setup_labels
 CREATE TABLE IF NOT EXISTS translations.defect_setup_labels (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_defect_setup_code UUID NOT NULL REFERENCES configuration.defect_setup_codes(uuid) ON DELETE CASCADE,
+    rel_defect_setup_code TEXT NOT NULL REFERENCES configuration.defect_setup_codes(code) ON DELETE CASCADE,
     lang VARCHAR(2) NOT NULL,
     label TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
