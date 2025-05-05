@@ -73,8 +73,6 @@ export class Defect {
         required: isRequired('severity'),
         endpoint: `defect_setup?lang=${userProfileStore.language}&metadata=SEVERITY`,
         fieldName: 'severity',
-        displayField: 'label',
-        valueField: 'code',
         mode: 'creation'
       },
       impact_area: {
@@ -84,8 +82,6 @@ export class Defect {
         required: isRequired('impact_area'),
         endpoint: `defect_setup?lang=${userProfileStore.language}&metadata=IMPACT`,
         fieldName: 'impact_area',
-        displayField: 'label',
-        valueField: 'code',
         mode: 'creation'
       },
       environment: {
@@ -95,8 +91,6 @@ export class Defect {
         required: isRequired('environment'),
         endpoint: `defect_setup?lang=${userProfileStore.language}&metadata=ENVIRONMENT`,
         fieldName: 'environment',
-        displayField: 'label',
-        valueField: 'code',
         mode: 'creation'
       },
       requested_for_uuid: {
@@ -210,6 +204,9 @@ export class Defect {
     // Créer une copie de l'objet sans l'attribut requiredFields
     const apiData = { ...this };
     delete apiData.requiredFields;
+
+    // Supprimer les attachments car ils sont gérés séparément par le composant sFileUploader
+    delete apiData.attachments;
     
     // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
     Object.keys(apiData).forEach(key => {
