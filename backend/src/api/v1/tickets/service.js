@@ -547,7 +547,7 @@ const createTicket = async (ticketData) => {
                     rel_parent_ticket_uuid,
                     rel_child_ticket_uuid,
                     dependency_code
-                ) VALUES ($1, $2, 'STORY')
+                ) VALUES ($1, $2, 'DEFECT')
             `;
             await client.query(relationQuery, [ticketData.project_id, createdTicket.uuid]);
             logger.info('[SERVICE] DEFECT relationship with PROJECT inserted');
