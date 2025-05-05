@@ -82,6 +82,19 @@ INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
     ('DONE', 'USER_STORY'),            -- User story terminée
     ('CANCELLED', 'USER_STORY');       -- User story annulée
 
+-- Insertion des statuts spécifiques aux défauts (defects)
+INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
+    ('NEW', 'DEFECT'),                 -- Défaut nouveau
+    ('TRIAGE', 'DEFECT'),              -- Défaut en triage
+    ('ACKNOWLEDGED', 'DEFECT'),        -- Défaut reconnu
+    ('IN_PROGRESS', 'DEFECT'),         -- Défaut en cours de correction
+    ('IN_REVIEW', 'DEFECT'),           -- Défaut en revue
+    ('IN_TEST', 'DEFECT'),             -- Défaut en test
+    ('RESOLVED', 'DEFECT'),            -- Défaut résolu
+    ('CLOSED', 'DEFECT'),              -- Défaut fermé
+    ('REOPENED', 'DEFECT'),            -- Défaut réouvert
+    ('CANCELLED', 'DEFECT');           -- Défaut annulé
+
 -- Insertion des traductions en français
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'fr', 
@@ -146,6 +159,17 @@ SELECT uuid, 'fr',
         WHEN 'IN_TEST' THEN 'En test'
         WHEN 'DONE' THEN 'Terminée'
         WHEN 'CANCELLED' THEN 'Annulée'
+        -- Statuts spécifiques aux défauts (defects)
+        WHEN 'NEW' AND rel_ticket_type = 'DEFECT' THEN 'Nouveau'
+        WHEN 'TRIAGE' THEN 'Triage'
+        WHEN 'ACKNOWLEDGED' THEN 'Reconnu'
+        WHEN 'IN_PROGRESS' AND rel_ticket_type = 'DEFECT' THEN 'En cours'
+        WHEN 'IN_REVIEW' AND rel_ticket_type = 'DEFECT' THEN 'En revue'
+        WHEN 'IN_TEST' AND rel_ticket_type = 'DEFECT' THEN 'En test'
+        WHEN 'RESOLVED' AND rel_ticket_type = 'DEFECT' THEN 'Résolu'
+        WHEN 'CLOSED' AND rel_ticket_type = 'DEFECT' THEN 'Fermé'
+        WHEN 'REOPENED' AND rel_ticket_type = 'DEFECT' THEN 'Réouvert'
+        WHEN 'CANCELLED' AND rel_ticket_type = 'DEFECT' THEN 'Annulé'
     END
 FROM configuration.ticket_status;
 
@@ -213,6 +237,17 @@ SELECT uuid, 'en',
         WHEN 'IN_TEST' THEN 'In Test'
         WHEN 'DONE' THEN 'Done'
         WHEN 'CANCELLED' THEN 'Cancelled'
+        -- Statuts spécifiques aux défauts (defects)
+        WHEN 'NEW' AND rel_ticket_type = 'DEFECT' THEN 'New'
+        WHEN 'TRIAGE' THEN 'Triage'
+        WHEN 'ACKNOWLEDGED' THEN 'Acknowledged'
+        WHEN 'IN_PROGRESS' AND rel_ticket_type = 'DEFECT' THEN 'In Progress'
+        WHEN 'IN_REVIEW' AND rel_ticket_type = 'DEFECT' THEN 'In Review'
+        WHEN 'IN_TEST' AND rel_ticket_type = 'DEFECT' THEN 'In Test'
+        WHEN 'RESOLVED' AND rel_ticket_type = 'DEFECT' THEN 'Resolved'
+        WHEN 'CLOSED' AND rel_ticket_type = 'DEFECT' THEN 'Closed'
+        WHEN 'REOPENED' AND rel_ticket_type = 'DEFECT' THEN 'Reopened'
+        WHEN 'CANCELLED' AND rel_ticket_type = 'DEFECT' THEN 'Cancelled'
     END
 FROM configuration.ticket_status;
 
@@ -274,12 +309,23 @@ SELECT uuid, 'es',
         -- Statuts spécifiques aux user stories
         WHEN 'DRAFT' THEN 'Borrador'
         WHEN 'TO_DO' THEN 'Por hacer'
-        WHEN 'READY' THEN 'Lista'
+        WHEN 'READY' THEN 'Listo'
         WHEN 'IN_PROGRESS' THEN 'En progreso'
         WHEN 'IN_REVIEW' THEN 'En revisión'
         WHEN 'IN_TEST' THEN 'En prueba'
-        WHEN 'DONE' THEN 'Completada'
-        WHEN 'CANCELLED' THEN 'Cancelada'
+        WHEN 'DONE' THEN 'Terminado'
+        WHEN 'CANCELLED' THEN 'Cancelado'
+        -- Statuts spécifiques aux défauts (defects)
+        WHEN 'NEW' AND rel_ticket_type = 'DEFECT' THEN 'Nuevo'
+        WHEN 'TRIAGE' THEN 'Clasificación'
+        WHEN 'ACKNOWLEDGED' THEN 'Reconocido'
+        WHEN 'IN_PROGRESS' AND rel_ticket_type = 'DEFECT' THEN 'En progreso'
+        WHEN 'IN_REVIEW' AND rel_ticket_type = 'DEFECT' THEN 'En revisión'
+        WHEN 'IN_TEST' AND rel_ticket_type = 'DEFECT' THEN 'En prueba'
+        WHEN 'RESOLVED' AND rel_ticket_type = 'DEFECT' THEN 'Resuelto'
+        WHEN 'CLOSED' AND rel_ticket_type = 'DEFECT' THEN 'Cerrado'
+        WHEN 'REOPENED' AND rel_ticket_type = 'DEFECT' THEN 'Reabierto'
+        WHEN 'CANCELLED' AND rel_ticket_type = 'DEFECT' THEN 'Cancelado'
     END
 FROM configuration.ticket_status;
 
@@ -341,12 +387,23 @@ SELECT uuid, 'pt',
         -- Statuts spécifiques aux user stories
         WHEN 'DRAFT' THEN 'Rascunho'
         WHEN 'TO_DO' THEN 'A fazer'
-        WHEN 'READY' THEN 'Pronta'
+        WHEN 'READY' THEN 'Pronto'
         WHEN 'IN_PROGRESS' THEN 'Em andamento'
         WHEN 'IN_REVIEW' THEN 'Em revisão'
         WHEN 'IN_TEST' THEN 'Em teste'
-        WHEN 'DONE' THEN 'Concluída'
-        WHEN 'CANCELLED' THEN 'Cancelada'
+        WHEN 'DONE' THEN 'Concluído'
+        WHEN 'CANCELLED' THEN 'Cancelado'
+        -- Statuts spécifiques aux défauts (defects)
+        WHEN 'NEW' AND rel_ticket_type = 'DEFECT' THEN 'Novo'
+        WHEN 'TRIAGE' THEN 'Triagem'
+        WHEN 'ACKNOWLEDGED' THEN 'Reconhecido'
+        WHEN 'IN_PROGRESS' AND rel_ticket_type = 'DEFECT' THEN 'Em andamento'
+        WHEN 'IN_REVIEW' AND rel_ticket_type = 'DEFECT' THEN 'Em revisão'
+        WHEN 'IN_TEST' AND rel_ticket_type = 'DEFECT' THEN 'Em teste'
+        WHEN 'RESOLVED' AND rel_ticket_type = 'DEFECT' THEN 'Resolvido'
+        WHEN 'CLOSED' AND rel_ticket_type = 'DEFECT' THEN 'Fechado'
+        WHEN 'REOPENED' AND rel_ticket_type = 'DEFECT' THEN 'Reaberto'
+        WHEN 'CANCELLED' AND rel_ticket_type = 'DEFECT' THEN 'Cancelado'
     END
 FROM configuration.ticket_status;
 

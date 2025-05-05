@@ -60,6 +60,18 @@ export class Defect {
         placeholder: t('defect.title_placeholder'),
         required: isRequired('title')
       },
+      ticket_status_code: {
+        label: t('defect.status'),
+        type: 'sSelectField',
+        placeholder: t('defect.status_placeholder'),
+        required: isRequired('ticket_status_code'),
+        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=DEFECT`,
+        patchEndpoint: 'defects',
+        fieldName: 'ticket_status_code',
+        displayField: 'label',
+        valueField: 'code',
+        mode: 'creation'
+      },
       description: {
         label: t('defect.description'),
         type: 'sRichTextEditor',
