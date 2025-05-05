@@ -22,7 +22,6 @@ export class Story {
     this.priority = data.priority || null; // Priorité de la story
     this.acceptance_criteria = data.acceptance_criteria || ''; // Critères d'acceptation
     this.tags = data.tags || []; // Tags associés à la story
-    this.settings = data.settings || {}; // Paramètres additionnels
     
     // Assignation (stockée dans rel_tickets_groups_persons)
     this.rel_assigned_to_group = data.rel_assigned_to_group || null; // Équipe assignée au projet
