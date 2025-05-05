@@ -65,6 +65,10 @@ const validateCreateTicket = (req, res, next) => {
     // Vérifier si le type de ticket est EPIC depuis les query params
     const isEpic = req.query.ticket_type === 'EPIC' || 
                    (req.body && req.body.ticket_type_code === 'EPIC');
+
+    // Vérifier si le type de ticket est USER_STORY
+    const isUserStory = req.query.ticket_type === 'USER_STORY' || 
+                        (req.body && req.body.ticket_type_code === 'USER_STORY');
     
     // Schéma de base pour tous les types de tickets
     const baseSchema = {
@@ -173,6 +177,32 @@ const validateCreateTicket = (req, res, next) => {
         closed_at: Joi.date().allow(null)
     };
     
+    // Champs spécifiques aux user stories
+    const userStorySchema = {
+        // Champs principaux (requis ou optionnels)
+        title: Joi.string().required(),
+        description: Joi.string().allow('', null),
+        configuration_item_uuid: Joi.string().uuid().allow(null, ''),
+        writer_uuid: Joi.string().uuid().required(),
+        ticket_type_code: Joi.string().valid('USER_STORY').required(),
+        ticket_status_code: Joi.string().required(),
+        requested_for_uuid: Joi.string().uuid().allow(null, ''),
+        requested_by_uuid: Joi.string().uuid().allow(null, ''),
+        project_id: Joi.string().uuid().allow(null, ''),
+        epic_id: Joi.string().uuid().allow(null, ''),
+        sprint_id: Joi.string().uuid().allow(null, ''),
+        rel_assigned_to_person: Joi.string().uuid().allow(null, ''),
+        rel_assigned_to_group: Joi.string().uuid().allow(null, ''),
+        story_points: Joi.number().integer().allow(null),
+        priority: Joi.string().allow(null, ''),
+        acceptance_criteria: Joi.string().allow('', null),
+        tags: Joi.array().items(Joi.string()).allow(null),
+        core_extended_attributes: Joi.object().unknown(true).allow(null),
+        watch_list: Joi.array().items(Joi.string().uuid()).allow(null),
+        created_at: Joi.date().allow(null),
+        updated_at: Joi.date().allow(null)
+    };
+
     // Champs spécifiques aux articles de connaissance
     const knowledgeSchema = {
         requested_by_uuid: Joi.string().uuid().forbidden(),
@@ -255,12 +285,14 @@ const validateCreateTicket = (req, res, next) => {
         schemaObj = { ...baseSchema, ...changeSchema };
     } else if (isKnowledge) {
         schemaObj = { ...baseSchema, ...knowledgeSchema };
+    } else if (isUserStory) {
+        schemaObj = userStorySchema;
     } else if (isProject) {
-        schemaObj = { ...baseSchema, ...projectSchema };
+        schemaObj = baseSchema;
     } else if (isSprint) {
-        schemaObj = { ...baseSchema, ...sprintSchema };
+        schemaObj = baseSchema;
     } else if (isEpic) {
-        schemaObj = { ...baseSchema, ...epicSchema };
+        schemaObj = baseSchema;
     } else {
         schemaObj = baseSchema;
     }
