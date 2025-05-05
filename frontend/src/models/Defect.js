@@ -73,6 +73,8 @@ export class Defect {
         required: isRequired('severity'),
         endpoint: `defect_setup?lang=${userProfileStore.language}&metadata=SEVERITY`,
         fieldName: 'severity',
+        displayField: 'label',
+        valueField: 'code',
         mode: 'creation'
       },
       impact_area: {
@@ -82,6 +84,8 @@ export class Defect {
         required: isRequired('impact_area'),
         endpoint: `defect_setup?lang=${userProfileStore.language}&metadata=IMPACT`,
         fieldName: 'impact_area',
+        displayField: 'label',
+        valueField: 'code',
         mode: 'creation'
       },
       environment: {
@@ -91,6 +95,8 @@ export class Defect {
         required: isRequired('environment'),
         endpoint: `defect_setup?lang=${userProfileStore.language}&metadata=ENVIRONMENT`,
         fieldName: 'environment',
+        displayField: 'label',
+        valueField: 'code',
         mode: 'creation'
       },
       requested_for_uuid: {
