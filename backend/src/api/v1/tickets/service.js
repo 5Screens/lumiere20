@@ -70,8 +70,10 @@ const createTicket = async (ticketData) => {
         const isEpic = ticketData.ticket_type_code === 'EPIC';
         // Déterminer si c'est un ticket de type USER_STORY
         const isUserStory = ticketData.ticket_type_code === 'USER_STORY';
+        // Déterminer si c'est un ticket de type DEFECT
+        const isDefect = ticketData.ticket_type_code === 'DEFECT';
         
-        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : isKnowledge ? 'KNOWLEDGE' : isProject ? 'PROJECT' : isSprint ? 'SPRINT' : isEpic ? 'EPIC' : isUserStory ? 'USER_STORY' : ticketData.ticket_type_code}`);
+        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : isKnowledge ? 'KNOWLEDGE' : isProject ? 'PROJECT' : isSprint ? 'SPRINT' : isEpic ? 'EPIC' : isUserStory ? 'USER_STORY' : isDefect ? 'DEFECT' : ticketData.ticket_type_code}`);
         
         // Préparer les attributs étendus pour le core
         let coreExtendedAttributes = {};
@@ -223,6 +225,25 @@ const createTicket = async (ticketData) => {
             logger.info('[SERVICE] Prepared core_extended_attributes for USER_STORY ticket');
         }
         
+        // Si c'est un defect, ajouter les attributs spécifiques aux defects
+        if (isDefect) {
+            logger.info('[SERVICE] Preparing core_extended_attributes for DEFECT ticket');
+            // Remove forbidden fields
+            const forbiddenFields = ['uuid', 'created_at', 'updated_at', 'sprint_id', 'project_id', 'epic_id', 'rel_assigned_to_person'];
+            // Fields that go directly in columns
+            const columnFields = [
+                'title', 'description', 'configuration_item_uuid', 'writer_uuid',
+                'ticket_type_code', 'ticket_status_code', 'requested_for_uuid', 'requested_by_uuid'
+            ];
+            // Everything else goes into core_extended_attributes
+            Object.keys(ticketData).forEach(key => {
+                if (!forbiddenFields.includes(key) && !columnFields.includes(key)) {
+                    coreExtendedAttributes[key] = ticketData[key];
+                }
+            });
+            logger.info('[SERVICE] Prepared core_extended_attributes for DEFECT ticket');
+        }
+        
         // 1. Create the ticket
         const ticketQuery = `
             INSERT INTO core.tickets (
@@ -244,8 +265,8 @@ const createTicket = async (ticketData) => {
         // Pour les problèmes, les connaissances, les projets, les sprints et les epics, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
         let requestedByUuid = (isProblem || isKnowledge || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
         let requestedForUuid = (isProblem || isKnowledge || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
-        // USER_STORY: requested_by_uuid/requested_for_uuid can be empty, use as received
-        if (isUserStory) {
+        // USER_STORY et DEFECT: requested_by_uuid/requested_for_uuid can be empty, use as received
+        if (isUserStory || isDefect) {
             requestedByUuid = ticketData.requested_by_uuid || null;
             requestedForUuid = ticketData.requested_for_uuid || null;
         }
@@ -352,6 +373,40 @@ const createTicket = async (ticketData) => {
                 logger.info('[SERVICE] USER_STORY assignment inserted');
             } else {
                 logger.warn('[SERVICE] USER_STORY assignment: no group or person found for assignment');
+            }
+        }
+        
+        // DEFECT: assignment logic
+        if (isDefect) {
+            logger.info('[SERVICE] Processing DEFECT assignment');
+            // rel_assigned_to_person from body
+            const relAssignedToPerson = ticketData.rel_assigned_to_person || null;
+            // rel_assigned_to_group = uuid du groupe assigné au ticket ayant le uuid égal à project_id
+            let relAssignedToGroup = null;
+            if (ticketData.project_id) {
+                const groupQuery = `SELECT rel_assigned_to_group FROM core.rel_tickets_groups_persons WHERE rel_ticket = $1 AND type = 'ASSIGNED' LIMIT 1`;
+                const groupResult = await client.query(groupQuery, [ticketData.project_id]);
+                if (groupResult.rows.length > 0) {
+                    relAssignedToGroup = groupResult.rows[0].rel_assigned_to_group;
+                }
+            }
+            if (relAssignedToGroup || relAssignedToPerson) {
+                const assignmentQuery = `
+                    INSERT INTO core.rel_tickets_groups_persons (
+                        rel_ticket,
+                        rel_assigned_to_group,
+                        rel_assigned_to_person,
+                        type
+                    ) VALUES ($1, $2, $3, 'ASSIGNED')
+                `;
+                await client.query(assignmentQuery, [
+                    createdTicket.uuid,
+                    relAssignedToGroup,
+                    relAssignedToPerson
+                ]);
+                logger.info('[SERVICE] DEFECT assignment inserted');
+            } else {
+                logger.warn('[SERVICE] DEFECT assignment: no group or person found for assignment');
             }
         }
         
@@ -482,6 +537,20 @@ const createTicket = async (ticketData) => {
                 await client.query(relationQuery, [ticketData.sprint_id, createdTicket.uuid]);
                 logger.info('[SERVICE] USER_STORY relationship with SPRINT inserted');
             }
+        }
+        
+        // DEFECT: parent-child relationship (fille du projet)
+        if (isDefect && ticketData.project_id) {
+            logger.info(`[SERVICE] Creating DEFECT relationship: project_id=${ticketData.project_id}`);
+            const relationQuery = `
+                INSERT INTO core.rel_parent_child_tickets (
+                    rel_parent_ticket_uuid,
+                    rel_child_ticket_uuid,
+                    dependency_code
+                ) VALUES ($1, $2, 'STORY')
+            `;
+            await client.query(relationQuery, [ticketData.project_id, createdTicket.uuid]);
+            logger.info('[SERVICE] DEFECT relationship with PROJECT inserted');
         }
         
         await client.query('COMMIT');

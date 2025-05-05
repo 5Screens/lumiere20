@@ -69,6 +69,10 @@ const validateCreateTicket = (req, res, next) => {
     // Vérifier si le type de ticket est USER_STORY
     const isUserStory = req.query.ticket_type === 'USER_STORY' || 
                         (req.body && req.body.ticket_type_code === 'USER_STORY');
+                        
+    // Vérifier si le type de ticket est DEFECT
+    const isDefect = req.query.ticket_type === 'DEFECT' || 
+                     (req.body && req.body.ticket_type_code === 'DEFECT');
     
     // Schéma de base pour tous les types de tickets
     const baseSchema = {
@@ -202,6 +206,31 @@ const validateCreateTicket = (req, res, next) => {
         created_at: Joi.date().allow(null),
         updated_at: Joi.date().allow(null)
     };
+    
+    // Champs spécifiques aux defects
+    const defectSchema = {
+        // Champs principaux (requis ou optionnels)
+        title: Joi.string().required(),
+        description: Joi.string().allow('', null),
+        configuration_item_uuid: Joi.string().uuid().allow(null, ''),
+        writer_uuid: Joi.string().uuid().required(),
+        ticket_type_code: Joi.string().valid('DEFECT').required(),
+        ticket_status_code: Joi.string().required(),
+        requested_for_uuid: Joi.string().uuid().allow(null, ''),
+        requested_by_uuid: Joi.string().uuid().allow(null, ''),
+        project_id: Joi.string().uuid().allow(null, ''),
+        rel_assigned_to_person: Joi.string().uuid().allow(null, ''),
+        severity: Joi.string().allow(null, ''),
+        impact_area: Joi.string().allow(null, ''),
+        environment: Joi.string().allow(null, ''),
+        steps_to_reproduce: Joi.string().allow('', null),
+        expected_behavior: Joi.string().allow('', null),
+        workaround: Joi.string().allow('', null),
+        tags: Joi.array().items(Joi.string()).allow(null),
+        watch_list: Joi.array().items(Joi.string().uuid()).allow(null),
+        created_at: Joi.date().allow(null),
+        updated_at: Joi.date().allow(null)
+    };
 
     // Champs spécifiques aux articles de connaissance
     const knowledgeSchema = {
@@ -287,6 +316,8 @@ const validateCreateTicket = (req, res, next) => {
         schemaObj = { ...baseSchema, ...knowledgeSchema };
     } else if (isUserStory) {
         schemaObj = userStorySchema;
+    } else if (isDefect) {
+        schemaObj = defectSchema;
     } else if (isProject) {
         schemaObj = baseSchema;
     } else if (isSprint) {

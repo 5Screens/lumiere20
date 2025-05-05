@@ -57,8 +57,13 @@ router.post('/', validateCreateTicket, (req, res, next) => {
     // Vérifier si le type de ticket est USER_STORY depuis le body
     const isUserStoryFromBody = req.body && req.body.ticket_type_code === 'USER_STORY';
     
+    // Vérifier si le type de ticket est DEFECT depuis les query params
+    const isDefectFromQuery = req.query.ticket_type === 'DEFECT';
+    // Vérifier si le type de ticket est DEFECT depuis le body
+    const isDefectFromBody = req.body && req.body.ticket_type_code === 'DEFECT';
+    
     // Log détaillé pour le debugging
-    logger.info(`[ROUTES] Handling POST /tickets request${isIncidentFromQuery ? ' for INCIDENT type (from query)' : ''}${isIncidentFromBody ? ' for INCIDENT type (from body)' : ''}${isProblemFromQuery ? ' for PROBLEM type (from query)' : ''}${isProblemFromBody ? ' for PROBLEM type (from body)' : ''}${isChangeFromQuery ? ' for CHANGE type (from query)' : ''}${isChangeFromBody ? ' for CHANGE type (from body)' : ''}${isKnowledgeFromQuery ? ' for KNOWLEDGE type (from query)' : ''}${isKnowledgeFromBody ? ' for KNOWLEDGE type (from body)' : ''}${isProjectFromQuery ? ' for PROJECT type (from query)' : ''}${isProjectFromBody ? ' for PROJECT type (from body)' : ''}${isSprintFromQuery ? ' for SPRINT type (from query)' : ''}${isSprintFromBody ? ' for SPRINT type (from body)' : ''}${isEpicFromQuery ? ' for EPIC type (from query)' : ''}${isEpicFromBody ? ' for EPIC type (from body)' : ''}${isUserStoryFromQuery ? ' for USER_STORY type (from query)' : ''}${isUserStoryFromBody ? ' for USER_STORY type (from body)' : ''}`);
+    logger.info(`[ROUTES] Handling POST /tickets request${isIncidentFromQuery ? ' for INCIDENT type (from query)' : ''}${isIncidentFromBody ? ' for INCIDENT type (from body)' : ''}${isProblemFromQuery ? ' for PROBLEM type (from query)' : ''}${isProblemFromBody ? ' for PROBLEM type (from body)' : ''}${isChangeFromQuery ? ' for CHANGE type (from query)' : ''}${isChangeFromBody ? ' for CHANGE type (from body)' : ''}${isKnowledgeFromQuery ? ' for KNOWLEDGE type (from query)' : ''}${isKnowledgeFromBody ? ' for KNOWLEDGE type (from body)' : ''}${isProjectFromQuery ? ' for PROJECT type (from query)' : ''}${isProjectFromBody ? ' for PROJECT type (from body)' : ''}${isSprintFromQuery ? ' for SPRINT type (from query)' : ''}${isSprintFromBody ? ' for SPRINT type (from body)' : ''}${isEpicFromQuery ? ' for EPIC type (from query)' : ''}${isEpicFromBody ? ' for EPIC type (from body)' : ''}${isUserStoryFromQuery ? ' for USER_STORY type (from query)' : ''}${isUserStoryFromBody ? ' for USER_STORY type (from body)' : ''}${isDefectFromQuery ? ' for DEFECT type (from query)' : ''}${isDefectFromBody ? ' for DEFECT type (from body)' : ''}`);
     
     ticketController.createTicket(req, res);
 });
