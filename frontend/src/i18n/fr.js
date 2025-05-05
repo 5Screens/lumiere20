@@ -750,6 +750,47 @@ export default {
     access_to_users_placeholder: 'Sélectionnez le ou les utilisateurs'
   },
   
+  defect: {
+    // Informations générales
+    title: 'Titre',
+    title_placeholder: 'Entrez le titre du défaut',
+    description: 'Description',
+    description_placeholder: 'Décrivez le défaut en détail',
+    severity: 'Sévérité',
+    severity_placeholder: 'Sélectionnez la sévérité',
+    impact_area: 'Zone d\'impact',
+    impact_area_placeholder: 'Sélectionnez la zone d\'impact',
+    environment: 'Environnement',
+    environment_placeholder: 'Sélectionnez l\'environnement',
+    
+    // Personnes
+    detected_by: 'Détecté par',
+    detected_by_placeholder: 'Sélectionnez la personne qui a détecté le défaut',
+    reported_by: 'Rapporté par',
+    reported_by_placeholder: 'Sélectionnez la personne qui rapporte le défaut',
+    
+    // Projet et assignation
+    project_id: 'Projet',
+    project_id_placeholder: 'Sélectionnez le projet associé',
+    assignee: 'Assigné à',
+    assignee_placeholder: 'Sélectionnez la personne en charge de la correction',
+    
+    // Détails techniques
+    steps_to_reproduce: 'Étapes pour reproduire',
+    steps_to_reproduce_placeholder: 'Décrivez les étapes pour reproduire le défaut',
+    expected_behavior: 'Comportement attendu',
+    expected_behavior_placeholder: 'Décrivez le comportement attendu',
+    workaround: 'Solution de contournement',
+    workaround_placeholder: 'Décrivez la solution de contournement si elle existe',
+    
+    // Métadonnées
+    tags: 'Tags',
+    tags_placeholder: 'Ajoutez des tags pour catégoriser ce défaut',
+    attachments: 'Pièces jointes',
+    attachments_placeholder: 'Glisser-déposer pour importer des fichiers',
+    attachments_helper_text: 'Limite : 6 Mo pour les images, 10 Mo pour les autres fichiers'
+  },
+  
   sprint: {
     // Informations générales
     name: 'Nom du sprint',
