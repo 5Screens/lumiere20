@@ -31,14 +31,8 @@
         v-for="(item, index) in items" 
         :key="index"
       >
-        <!-- Router link si l'item a une route -->
-        <router-link v-if="item.route" :to="item.route">
-          <i :class="item.icon"></i>
-          {{ $t(item.label) }}
-        </router-link>
-        
-        <!-- Lien normal pour ouvrir un onglet -->
-        <a v-else href="#" @click.prevent="handleItemClick(item)">
+        <!-- Lien pour ouvrir un onglet -->
+        <a href="#" @click.prevent="handleItemClick(item)">
           <i :class="item.icon"></i>
           {{ $t(item.label) }}
         </a>
@@ -170,11 +164,6 @@ export default {
       }
     },
     handleItemClick(item) {
-      if (item.route) {
-        this.$router.push(item.route)
-        return
-      }
-      
       // Ouvrir un onglet via le store ou émettre un événement
       if (this.store) {
         this.store.openTab({

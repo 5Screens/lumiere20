@@ -118,8 +118,8 @@ export const usePaneStore = defineStore('pane', {
         type: 'serviceHub',
         hasSections: false,
         items: [
-          { route: '/incidents', icon: 'fas fa-exclamation-circle', label: 'serviceHub.incidents' },
-          { route: '/tickets', icon: 'fas fa-ticket-alt', label: 'serviceHub.tickets' }
+          { tabToOpen: 'incidents', icon: 'fas fa-exclamation-circle', label: 'serviceHub.incidents' },
+          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'serviceHub.tickets' }
         ],
         sections: []
       },
@@ -127,8 +127,8 @@ export const usePaneStore = defineStore('pane', {
         type: 'sprintCenter',
         hasSections: false,
         items: [
-          { route: '/tickets', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tickets' },
-          { route: '/user-stories', icon: 'fas fa-book', label: 'sprintCenter.userStories' }
+          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tickets' },
+          { tabToOpen: 'user-stories', icon: 'fas fa-book', label: 'sprintCenter.userStories' }
         ],
         sections: []
       }
