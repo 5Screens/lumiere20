@@ -26,10 +26,10 @@
         <ul>
           <li><a href="#" @click.prevent="toggleServiceHub" data-service-hub-toggle>{{ $t('nav.serviceHub') }}</a></li>
           <li><a href="#" @click.prevent="toggleSprintCenter" data-sprint-center-toggle>{{ $t('nav.sprintCenter') }}</a></li>
-          <li><router-link to="/mail">{{ $t('nav.mail') }}</router-link></li>
-          <li><router-link to="/portals-builder">{{ $t('nav.portalsBuilder') }}</router-link></li>
+          <li><a href="#" @click.prevent="showUnderConstruction('mail')">{{ $t('nav.mail') }}</a></li>
+          <li><a href="#" @click.prevent="showUnderConstruction('portalsBuilder')">{{ $t('nav.portalsBuilder') }}</a></li>
           <li><a href="#" @click.prevent="toggleDataPane" data-data-pane-toggle>{{ $t('nav.data') }}</a></li>
-          <li><router-link to="/tableaux">{{ $t('nav.tableaux') }}</router-link></li>
+          <li><a href="#" @click.prevent="showUnderConstruction('tableaux')">{{ $t('nav.tableaux') }}</a></li>
           <li><a href="#" @click.prevent="toggleConfiguration" data-configuration-toggle>{{ $t('nav.configuration') }}</a></li>
           <li><a href="#" @click.prevent="toggleAdmin" data-admin-toggle>{{ $t('nav.administration') }}</a></li>
         </ul>
@@ -46,40 +46,82 @@
       @close="closeProfilePane"
     />
 
-    <ServiceHubPane
-      :is-visible="isServiceHubVisible"
-      @close="closeServiceHub"
-      @mouse-enter="handleServiceHubMouseEnter"
-      @mouse-leave="handleServiceHubMouseLeave"
-    />
-
-    <SprintCenterPane
-      :is-visible="isSprintCenterVisible"
-      @close="closeSprintCenter"
-      @mouse-enter="handleSprintCenterMouseEnter"
-      @mouse-leave="handleSprintCenterMouseLeave"
-    />
-
-    <DataPane
-      :is-visible="isDataPaneVisible"
-      @close="closeDataPane"
-      @mouse-enter="handleDataMouseEnter"
-      @mouse-leave="handleDataMouseLeave"
+    <!-- Panneaux dynamiques pour remplacer tous les panneaux individuels -->
+    <!-- Service Hub Pane -->
+    <DynamicPane 
+      type="serviceHub"
+      :is-visible="paneStore.isPaneVisible('serviceHub')"
+      :items="paneStore.getPaneConfig('serviceHub').items"
+      :sections="paneStore.getPaneConfig('serviceHub').sections"
+      :has-sections="paneStore.getPaneConfig('serviceHub').hasSections"
+      @close="paneStore.closePane"
+      @mouse-enter="paneStore.handleMouseEnter"
+      @mouse-leave="paneStore.handleMouseLeave"
       @open-tab="handleOpenTab"
     />
-
-    <ConfigurationPane
-      :is-visible="isConfigurationVisible"
-      @close="closeConfiguration"
-      @mouse-enter="handleConfigurationMouseEnter"
-      @mouse-leave="handleConfigurationMouseLeave"
+    
+    <!-- Sprint Center Pane -->
+    <DynamicPane 
+      type="sprintCenter"
+      :is-visible="paneStore.isPaneVisible('sprintCenter')"
+      :items="paneStore.getPaneConfig('sprintCenter').items"
+      :sections="paneStore.getPaneConfig('sprintCenter').sections"
+      :has-sections="paneStore.getPaneConfig('sprintCenter').hasSections"
+      @close="paneStore.closePane"
+      @mouse-enter="paneStore.handleMouseEnter"
+      @mouse-leave="paneStore.handleMouseLeave"
+      @open-tab="handleOpenTab"
     />
-
-    <AdminPane
-      :is-visible="isAdminVisible"
-      @close="closeAdmin"
-      @mouse-enter="handleAdminMouseEnter"
-      @mouse-leave="handleAdminMouseLeave"
+    
+    <!-- Data Pane -->
+    <DynamicPane 
+      type="data"
+      :is-visible="paneStore.isPaneVisible('data')"
+      :items="paneStore.getPaneConfig('data').items"
+      :sections="paneStore.getPaneConfig('data').sections"
+      :has-sections="paneStore.getPaneConfig('data').hasSections"
+      @close="paneStore.closePane"
+      @mouse-enter="paneStore.handleMouseEnter"
+      @mouse-leave="paneStore.handleMouseLeave"
+      @open-tab="handleOpenTab"
+    />
+    
+    <!-- Configuration Pane -->
+    <DynamicPane 
+      type="configuration"
+      :is-visible="paneStore.isPaneVisible('configuration')"
+      :items="paneStore.getPaneConfig('configuration').items"
+      :sections="paneStore.getPaneConfig('configuration').sections"
+      :has-sections="paneStore.getPaneConfig('configuration').hasSections"
+      @close="paneStore.closePane"
+      @mouse-enter="paneStore.handleMouseEnter"
+      @mouse-leave="paneStore.handleMouseLeave"
+      @open-tab="handleOpenTab"
+    />
+    
+    <!-- Admin Pane -->
+    <DynamicPane 
+      type="admin"
+      :is-visible="paneStore.isPaneVisible('admin')"
+      :items="paneStore.getPaneConfig('admin').items"
+      :sections="paneStore.getPaneConfig('admin').sections"
+      :has-sections="paneStore.getPaneConfig('admin').hasSections"
+      @close="paneStore.closePane"
+      @mouse-enter="paneStore.handleMouseEnter"
+      @mouse-leave="paneStore.handleMouseLeave"
+      @open-tab="handleOpenTab"
+    />
+    
+    <!-- Pane En cours de construction -->
+    <DynamicPane 
+      type="underConstruction"
+      :is-visible="isUnderConstructionVisible"
+      :items="[]"
+      :sections="[]"
+      :has-sections="false"
+      @close="closeUnderConstruction"
+      @mouse-enter="paneStore.handleMouseEnter"
+      @mouse-leave="paneStore.handleMouseLeave"
     />
 
     <object-edit-view
@@ -105,13 +147,10 @@
 <script>
 import { useTabsStore } from '@/stores/tabsStore'
 import { useObjectStore } from '@/stores/objectStore'
+import { usePaneStore } from '@/stores/paneStore'
 import HierarchicalTabs from '@/components/common/hierarchicalTabs.vue'
 import ProfilePane from '@/components/panes/ProfilePane.vue'
-import ServiceHubPane from '@/components/panes/ServiceHubPane.vue'
-import SprintCenterPane from '@/components/panes/SprintCenterPane.vue'
-import DataPane from '@/components/panes/DataPane.vue'
-import ConfigurationPane from '@/components/panes/ConfigurationPane.vue'
-import AdminPane from '@/components/panes/AdminPane.vue'
+import DynamicPane from '@/components/panes/DynamicPane.vue'
 import ObjectEditView from '@/components/coreForms/objectEditView.vue'
 
 export default {
@@ -119,32 +158,30 @@ export default {
   components: {
     HierarchicalTabs,
     ProfilePane,
-    ServiceHubPane,
-    SprintCenterPane,
-    DataPane,
-    ConfigurationPane,
-    AdminPane,
+    DynamicPane,
     ObjectEditView
   },
   setup() {
     const tabsStore = useTabsStore()
     const objectStore = useObjectStore()
-    return { tabsStore, objectStore }
+    const paneStore = usePaneStore()
+    
+    // Types de panneaux disponibles
+    const paneTypes = ['admin', 'configuration', 'data', 'serviceHub', 'sprintCenter']
+    
+    return { 
+      tabsStore, 
+      objectStore,
+      paneStore,
+      paneTypes
+    }
   },
   data() {
     return {
       isProfilePaneVisible: false,
-      isServiceHubVisible: false,
-      isSprintCenterVisible: false,
-      isDataPaneVisible: false,
-      isConfigurationVisible: false,
-      isAdminVisible: false,
       isCreateModalVisible: false,
-      serviceHubCloseTimeout: null,
-      sprintCenterCloseTimeout: null,
-      dataCloseTimeout: null,
-      configurationCloseTimeout: null,
-      adminCloseTimeout: null
+      isUnderConstructionVisible: false,
+      underConstructionType: ''
     }
   },
   methods: {
@@ -155,95 +192,33 @@ export default {
       this.isProfilePaneVisible = false
     },
     toggleServiceHub() {
-      this.isServiceHubVisible = !this.isServiceHubVisible
-      if (!this.isServiceHubVisible) {
-        clearTimeout(this.serviceHubCloseTimeout)
-      }
-    },
-    closeServiceHub() {
-      this.isServiceHubVisible = false
+      console.log('toggleServiceHub appelé dans App.vue');
+      this.paneStore.togglePane('serviceHub')
     },
     toggleSprintCenter() {
-      this.isSprintCenterVisible = !this.isSprintCenterVisible
-      if (!this.isSprintCenterVisible) {
-        clearTimeout(this.sprintCenterCloseTimeout)
-      }
-    },
-    closeSprintCenter() {
-      this.isSprintCenterVisible = false
+      this.paneStore.togglePane('sprintCenter')
     },
     toggleDataPane() {
-      this.isDataPaneVisible = !this.isDataPaneVisible
-      if (!this.isDataPaneVisible) {
-        clearTimeout(this.dataCloseTimeout)
-      }
-    },
-    closeDataPane() {
-      this.isDataPaneVisible = false
+      this.paneStore.togglePane('data')
     },
     toggleConfiguration() {
-      this.isConfigurationVisible = !this.isConfigurationVisible
-      if (!this.isConfigurationVisible) {
-        clearTimeout(this.configurationCloseTimeout)
-      }
-    },
-    closeConfiguration() {
-      this.isConfigurationVisible = false
+      this.paneStore.togglePane('configuration')
     },
     toggleAdmin() {
-      this.isAdminVisible = !this.isAdminVisible
-      if (!this.isAdminVisible) {
-        clearTimeout(this.adminCloseTimeout)
-      }
+      this.paneStore.togglePane('admin')
     },
-    closeAdmin() {
-      this.isAdminVisible = false
+    showUnderConstruction(type) {
+      this.underConstructionType = type;
+      this.isUnderConstructionVisible = true;
+    },
+    closeUnderConstruction() {
+      this.isUnderConstructionVisible = false;
     },
     handleOpenTab(tabData) {
       this.tabsStore.openTab({
         ...tabData,
         label: this.$t(`tabs.${tabData.type}`)
       })
-    },
-    handleServiceHubMouseEnter() {
-      clearTimeout(this.serviceHubCloseTimeout)
-    },
-    handleServiceHubMouseLeave() {
-      this.serviceHubCloseTimeout = setTimeout(() => {
-        this.closeServiceHub()
-      }, 300)
-    },
-    handleSprintCenterMouseEnter() {
-      clearTimeout(this.sprintCenterCloseTimeout)
-    },
-    handleSprintCenterMouseLeave() {
-      this.sprintCenterCloseTimeout = setTimeout(() => {
-        this.closeSprintCenter()
-      }, 300)
-    },
-    handleDataMouseEnter() {
-      clearTimeout(this.dataCloseTimeout)
-    },
-    handleDataMouseLeave() {
-      this.dataCloseTimeout = setTimeout(() => {
-        this.closeDataPane()
-      }, 300)
-    },
-    handleConfigurationMouseEnter() {
-      clearTimeout(this.configurationCloseTimeout)
-    },
-    handleConfigurationMouseLeave() {
-      this.configurationCloseTimeout = setTimeout(() => {
-        this.closeConfiguration()
-      }, 300)
-    },
-    handleAdminMouseEnter() {
-      clearTimeout(this.adminCloseTimeout)
-    },
-    handleAdminMouseLeave() {
-      this.adminCloseTimeout = setTimeout(() => {
-        this.closeAdmin()
-      }, 300)
     },
     updateTabTitles() {
       // Mise à jour des titres des onglets en fonction de la langue

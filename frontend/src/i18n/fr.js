@@ -47,6 +47,9 @@ export default {
     tickets: 'Tickets',
     userStories: 'User Stories'
   },
+  underConstruction: {
+    title: 'En cours de construction'
+  },
   configuration: {
     title: 'Configuration',
     companies: 'Sociétés',

@@ -29,6 +29,14 @@ export default {
     incidents: 'Incidentes',
     tickets: 'Tickets'
   },
+  sprintCenter: {
+    title: 'Centro Sprint',
+    tickets: 'Tickets',
+    userStories: 'Histórias de Usuário'
+  },
+  underConstruction: {
+    title: 'Em construção'
+  },
   configuration: {
     title: 'Configuração',
     companies: 'Empresas',

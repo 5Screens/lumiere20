@@ -40,6 +40,14 @@ export default {
     incidents: 'Incidents',
     tickets: 'Tickets'
   },
+  sprintCenter: {
+    title: 'Sprint Center',
+    tickets: 'Tickets',
+    userStories: 'User Stories'
+  },
+  underConstruction: {
+    title: 'Under Construction'
+  },
   configuration: {
     title: 'Configuration',
     companies: 'Companies',
