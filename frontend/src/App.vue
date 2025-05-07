@@ -75,11 +75,11 @@
     
     <!-- Data Pane -->
     <DynamicPane 
-      type="data"
-      :is-visible="paneStore.isPaneVisible('data')"
-      :items="paneStore.getPaneConfig('data').items"
-      :sections="paneStore.getPaneConfig('data').sections"
-      :has-sections="paneStore.getPaneConfig('data').hasSections"
+      type="dataPane"
+      :is-visible="paneStore.isPaneVisible('dataPane')"
+      :items="paneStore.getPaneConfig('dataPane').items"
+      :sections="paneStore.getPaneConfig('dataPane').sections"
+      :has-sections="paneStore.getPaneConfig('dataPane').hasSections"
       @close="paneStore.closePane"
       @mouse-enter="paneStore.handleMouseEnter"
       @mouse-leave="paneStore.handleMouseLeave"
@@ -199,7 +199,7 @@ export default {
       this.paneStore.togglePane('sprintCenter')
     },
     toggleDataPane() {
-      this.paneStore.togglePane('data')
+      this.paneStore.togglePane('dataPane')
     },
     toggleConfiguration() {
       this.paneStore.togglePane('configuration')

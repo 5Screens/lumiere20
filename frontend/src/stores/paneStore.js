@@ -42,8 +42,8 @@ export const usePaneStore = defineStore('pane', {
         ],
         sections: []
       },
-      data: {
-        type: 'data',
+      dataPane: {
+        type: 'dataPane',
         hasSections: true,
         items: [],
         sections: [

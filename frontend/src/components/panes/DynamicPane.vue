@@ -95,7 +95,7 @@ export default {
     type: {
       type: String,
       required: true,
-      validator: (value) => ['admin', 'configuration', 'data', 'serviceHub', 'sprintCenter', 'underConstruction'].includes(value)
+      validator: (value) => ['admin', 'configuration', 'dataPane', 'serviceHub', 'sprintCenter', 'underConstruction'].includes(value)
     },
     isVisible: {
       type: Boolean,
