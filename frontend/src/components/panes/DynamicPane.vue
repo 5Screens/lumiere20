@@ -113,7 +113,7 @@ export default {
     const store = useTabsStore()
     const paneRef = ref(null)
     const openSections = reactive({})
-    const _justOpened = ref(false)
+    const justOpened = ref(false)
     
     // Initialiser les sections fermées
     if (props.sections) {
@@ -126,7 +126,7 @@ export default {
       store, 
       paneRef,
       openSections,
-      _justOpened
+      justOpened
     }
   },
   mounted() {
@@ -137,7 +137,7 @@ export default {
       console.log(`DynamicPane ${this.type} - isVisible changé à:`, newValue);
       if (newValue) {
         // Marquer le panneau comme venant d'être ouvert pour éviter la fermeture immédiate
-        this._justOpened = true;
+        this.justOpened = true;
         document.addEventListener('click', this.handleClickOutside)
       } else {
         document.removeEventListener('click', this.handleClickOutside)
@@ -148,8 +148,8 @@ export default {
     handleClickOutside(event) {
       // Ne pas traiter l'événement immédiatement après l'ouverture du panneau
       // Cela évite que le même clic qui ouvre le panneau ne le ferme immédiatement
-      if (this._justOpened) {
-        this._justOpened = false;
+      if (this.justOpened) {
+        this.justOpened = false;
         return;
       }
 
