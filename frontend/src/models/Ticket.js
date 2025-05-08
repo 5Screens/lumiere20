@@ -10,15 +10,15 @@ export class Ticket {
     const { t } = i18n.global;
     
     return [
-      { key: 'uuid', label: t('ticketsTable.headers.id'), type: 'uuid', format: 'text' },
-      { key: 'title', label: t('ticketsTable.headers.title'), type: 'text', format: 'text' },
-      { key: 'ticket_status_code', label: t('ticketsTable.headers.status'), type: 'text', format: 'text' },
-      { key: 'requested_by_name', label: t('ticketsTable.headers.requestedBy'), type: 'text', format: 'text' },
-      { key: 'requested_for_name', label: t('ticketsTable.headers.requestedFor'), type: 'text', format: 'text' },
-      { key: 'assigned_to_group_name', label: t('ticketsTable.headers.assignedGroup'), type: 'text', format: 'text' },
-      { key: 'assigned_to_person_name', label: t('ticketsTable.headers.assignedPerson'), type: 'text', format: 'text' },
-      { key: 'date_creation', label: t('ticketsTable.headers.creationDate'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'date_modification', label: t('ticketsTable.headers.modificationDate'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('ticket.title'), type: 'text', format: 'text' },
+      { key: 'ticket_status_code', label: t('ticket.status'), type: 'text', format: 'text' },
+      { key: 'requested_by_name', label: t('ticket.requested_by'), type: 'text', format: 'text' },
+      { key: 'requested_for_name', label: t('ticket.requested_for'), type: 'text', format: 'text' },
+      { key: 'assigned_to_group_name', label: t('ticket.assigned_team_label'), type: 'text', format: 'text' },
+      { key: 'assigned_to_person_name', label: t('ticket.assigned_to_label'), type: 'text', format: 'text' },
+      { key: 'date_creation', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'date_modification', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

@@ -100,16 +100,7 @@ export default {
       date_modification: 'Date de Modification'
     }
   },
-  symptomsTable: {
-    headers: {
-      id: 'Id',
-      createdDate: 'Date de création',
-      updateDate: 'Date de modification',
-      symptomCode: 'Code symptôme',
-      symptomLabel: 'Libellé symptôme',
-      symptomLanguage: 'Langue'
-    }
-  },
+
   symptoms: {
     createTitle: 'Créer un symptôme',
     updateTitle: 'Modifier le symptôme {code}',
@@ -158,6 +149,7 @@ export default {
     requiredField: 'Champ obligatoire'
   },
   common: {
+    id: 'Identifiant',
     close: 'Fermer',
     save: 'Enregistrer',
     cancel: 'Annuler',
@@ -174,7 +166,9 @@ export default {
     cancel_edit: 'Annuler la modification',
     yes: 'Oui',
     no: 'Non',
-    createLabel: 'Que souhaitez-vous créer ?'
+    createLabel: 'Que souhaitez-vous créer ?',
+    creation_date: 'Créé le',
+    modification_date: 'Modifié le'
   },
   notifications: {
     title: 'Notification',

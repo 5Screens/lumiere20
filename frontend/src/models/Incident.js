@@ -10,18 +10,18 @@ export class Incident {
     const { t } = i18n.global;
     
     return [
-      { key: 'uuid', label: t('incidentsTable.headers.id'), type: 'uuid', format: 'text' },
-      { key: 'title', label: t('incidentsTable.headers.title'), type: 'text', format: 'text' },
-      { key: 'ticket_status_code', label: t('incidentsTable.headers.status'), type: 'text', format: 'text' },
-      { key: 'impact', label: t('incidentsTable.headers.impact'), type: 'text', format: 'text' },
-      { key: 'urgency', label: t('incidentsTable.headers.urgency'), type: 'text', format: 'text' },
-      { key: 'priority', label: t('incidentsTable.headers.priority'), type: 'text', format: 'text' },
-      { key: 'requested_by_name', label: t('incidentsTable.headers.requestedBy'), type: 'text', format: 'text' },
-      { key: 'requested_for_name', label: t('incidentsTable.headers.requestedFor'), type: 'text', format: 'text' },
-      { key: 'assigned_to_group_name', label: t('incidentsTable.headers.assignedGroup'), type: 'text', format: 'text' },
-      { key: 'assigned_to_person_name', label: t('incidentsTable.headers.assignedPerson'), type: 'text', format: 'text' },
-      { key: 'created_at', label: t('incidentsTable.headers.creationDate'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('incidentsTable.headers.modificationDate'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('incident.title'), type: 'text', format: 'text' },
+      { key: 'ticket_status_code', label: t('incident.status'), type: 'text', format: 'text' },
+      { key: 'impact', label: t('incident.impact'), type: 'text', format: 'text' },
+      { key: 'urgency', label: t('incident.urgency'), type: 'text', format: 'text' },
+      { key: 'priority', label: t('incident.priority'), type: 'text', format: 'text' },
+      { key: 'requested_by_name', label: t('incident.requested_by'), type: 'text', format: 'text' },
+      { key: 'requested_for_name', label: t('incident.requested_for'), type: 'text', format: 'text' },
+      { key: 'assigned_to_group_name', label: t('incident.assigned_group'), type: 'text', format: 'text' },
+      { key: 'assigned_to_person_name', label: t('incident.assigned_to'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

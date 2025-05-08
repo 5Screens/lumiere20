@@ -27,12 +27,12 @@ export class Symptom {
     const { t } = i18n.global;
     
     return [
-      { key: 'uuid', label: t('symptomsTable.headers.id'), type: 'uuid' },
-      { key: 'date_creation', label: t('symptomsTable.headers.createdDate'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'date_modification', label: t('symptomsTable.headers.updateDate'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'symptom_code', label: t('symptomsTable.headers.symptomCode'), type: 'text' },
-      { key: 'libelle', label: t('symptomsTable.headers.symptomLabel'), type: 'text' },
-      { key: 'langue', label: t('symptomsTable.headers.symptomLanguage'), type: 'text' }
+      { key: 'uuid', label: t('common.id'), type: 'uuid' },
+      { key: 'date_creation', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'date_modification', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'symptom_code', label: t('symptoms.code'), type: 'text' },
+      { key: 'libelle', label: t('symptoms.name'), type: 'text' },
+      { key: 'langue', label: t('language.title'), type: 'text' }
     ];
   }
 
