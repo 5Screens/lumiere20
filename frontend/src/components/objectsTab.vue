@@ -250,9 +250,8 @@ export default {
     },
     handleError(error) {
       this.$emit('error', error)
-    }
-  },
-  methods: {
+    },
+    
     // Utiliser les modèles pour obtenir l'endpoint API
     getApiEndpoint() {
       const modelMap = {
