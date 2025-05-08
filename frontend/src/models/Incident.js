@@ -12,7 +12,8 @@ export class Incident {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('incident.title'), type: 'text', format: 'text' },
-      { key: 'ticket_status_code', label: t('incident.status'), type: 'text', format: 'text' },
+      { key: 'ticket_type_label', label: t('incident.type'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('incident.status'), type: 'text', format: 'text' },
       { key: 'impact', label: t('incident.impact'), type: 'text', format: 'text' },
       { key: 'urgency', label: t('incident.urgency'), type: 'text', format: 'text' },
       { key: 'priority', label: t('incident.priority'), type: 'text', format: 'text' },
@@ -20,6 +21,18 @@ export class Incident {
       { key: 'requested_for_name', label: t('incident.requested_for'), type: 'text', format: 'text' },
       { key: 'assigned_group_name', label: t('incident.assigned_group'), type: 'text', format: 'text' },
       { key: 'assigned_person_name', label: t('incident.assigned_to'), type: 'text', format: 'text' },
+      { key: 'cause_code', label: t('incident.cause_code'), type: 'text', format: 'text' },
+      { key: 'rel_service', label: t('incident.rel_service'), type: 'text', format: 'text' },
+      { key: 'contact_type', label: t('incident.contact_type'), type: 'text', format: 'text' },
+      { key: 'reopen_count', label: t('incident.reopen_count'), type: 'text', format: 'text' },
+      { key: 'standby_count', label: t('incident.standby_count'), type: 'text', format: 'text' },
+      { key: 'rel_problem_id', label: t('incident.rel_problem_id'), type: 'text', format: 'text' },
+      { key: 'resolution_code', label: t('incident.resolution_code'), type: 'text', format: 'text' },
+      { key: 'assignment_count', label: t('incident.assignment_count'), type: 'text', format: 'text' },
+      { key: 'assignment_to_count', label: t('incident.assignment_to_count'), type: 'text', format: 'text' },
+      { key: 'rel_service_offerings', label: t('incident.rel_service_offerings'), type: 'text', format: 'text' },
+      { key: 'resolution_notes', label: t('incident.resolution_notes'), type: 'text', format: 'text' },
+      { key: 'rel_change_request', label: t('incident.rel_change_request'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
