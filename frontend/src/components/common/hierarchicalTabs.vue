@@ -46,6 +46,8 @@ import { useTabsStore } from '@/stores/tabsStore'
 import ObjectsTab from '@/components/objectsTab.vue'
 import SymptomsForm from '@/components/coreForms/symptomsForm.vue'
 import EntityForm from '@/components/coreForms/entityForm.vue'
+import { Entity } from '@/models/Entity'
+import { Symptom } from '@/models/Symptom'
 
 export default {
   name: 'HierarchicalTabs',
@@ -70,11 +72,19 @@ export default {
       const activeTab = this.store.activeChildTab || this.store.activeTab
       
       // Pour ObjectsTab, ajouter des données supplémentaires
-      if (activeTab && (activeTab.type === 'symptoms' || activeTab.type === 'entities')) {
-        return {
-          ...activeTab,
-          apiEndpoint: activeTab.type,
-          objectType: activeTab.type
+      if (activeTab) {
+        if (activeTab.type === 'symptoms') {
+          return {
+            ...activeTab,
+            apiEndpoint: Symptom.getApiEndpoint(),
+            objectType: activeTab.type
+          }
+        } else if (activeTab.type === 'entities') {
+          return {
+            ...activeTab,
+            apiEndpoint: Entity.getApiEndpoint(),
+            objectType: activeTab.type
+          }
         }
       }
       

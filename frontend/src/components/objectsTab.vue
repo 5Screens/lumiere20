@@ -28,6 +28,8 @@
 import ReusableTableTab from './common/reusableTableTab.vue'
 import TabControlButtons from './common/tabControlButtons.vue'
 import { useTabsStore } from '@/stores/tabsStore'
+import { Entity } from '@/models/Entity'
+import { Symptom } from '@/models/Symptom'
 import '../assets/styles/tab.css'
 
 export default {
@@ -49,42 +51,26 @@ export default {
   },
   data() {
     return {
-      apiUrl: this.data.apiEndpoint || '',
+      apiUrl: this.getApiEndpoint(),
       selectedRow: null,
       objectType: this.data.objectType || ''
     }
   },
   computed: {
     columns() {
-      // Colonnes par défaut (vide)
-      const defaultColumns = []
-      
-      // Colonnes spécifiques par type d'objet
-      const columnsByType = {
-        'symptoms': [
-          { key: 'uuid', label: this.$t('symptomsTable.headers.id'), type: 'uuid' },
-          { key: 'date_creation', label: this.$t('symptomsTable.headers.createdDate'), type: 'date', format: 'YYYY-MM-DD' },
-          { key: 'date_modification', label: this.$t('symptomsTable.headers.updateDate'), type: 'date', format: 'YYYY-MM-DD' },
-          { key: 'symptom_code', label: this.$t('symptomsTable.headers.symptomCode'), type: 'text' },
-          { key: 'libelle', label: this.$t('symptomsTable.headers.symptomLabel'), type: 'text' },
-          { key: 'langue', label: this.$t('symptomsTable.headers.symptomLanguage'), type: 'text' }
-        ],
-        'entities': [
-          { key: 'uuid', label: this.$t('entitiesTable.headers.uuid'), type: 'uuid', format: 'text' },
-          { key: 'entity_id', label: this.$t('entitiesTable.headers.entity_id'), type: 'text', format: 'text' },
-          { key: 'name', label: this.$t('entitiesTable.headers.name'), type: 'text', format: 'text' },
-          { key: 'parent_entity_name', label: this.$t('entitiesTable.headers.parent_entity_name'), type: 'text', format: 'text' },
-          { key: 'external_id', label: this.$t('entitiesTable.headers.external_id'), type: 'text', format: 'text' },
-          { key: 'entity_type', label: this.$t('entitiesTable.headers.entity_type'), type: 'text', format: 'text' },
-          { key: 'headquarters_location_name', label: this.$t('entitiesTable.headers.headquarters_location'), type: 'text', format: 'text' },
-          { key: 'is_active', label: this.$t('entitiesTable.headers.is_active'), type: 'select', options: ['Yes', 'No'], format: 'text' },
-          { key: 'budget_approver_name', label: this.$t('entitiesTable.headers.budget_approver_name'), type: 'text', format: 'text' },
-          { key: 'date_creation', label: this.$t('entitiesTable.headers.date_creation'), type: 'date', format: 'YYYY-MM-DD' },
-          { key: 'date_modification', label: this.$t('entitiesTable.headers.date_modification'), type: 'date', format: 'YYYY-MM-DD' }
-        ]
+      // Utiliser les modèles pour obtenir les colonnes
+      const modelMap = {
+        'symptoms': Symptom,
+        'entities': Entity
       }
       
-      return columnsByType[this.objectType] || defaultColumns
+      const model = modelMap[this.objectType]
+      if (model && typeof model.getColumns === 'function') {
+        return model.getColumns()
+      }
+      
+      // Colonnes par défaut si le modèle n'existe pas
+      return []
     },
     formType() {
       const formTypeMap = {
@@ -266,10 +252,21 @@ export default {
       this.$emit('error', error)
     }
   },
-  created() {
-    // Initialiser l'API URL et le type d'objet si non définis dans les props
-    if (!this.apiUrl && this.objectType) {
-      this.apiUrl = this.objectType
+  methods: {
+    // Utiliser les modèles pour obtenir l'endpoint API
+    getApiEndpoint() {
+      const modelMap = {
+        'symptoms': Symptom,
+        'entities': Entity
+      }
+      
+      const model = modelMap[this.objectType]
+      if (model && typeof model.getApiEndpoint === 'function') {
+        return model.getApiEndpoint()
+      }
+      
+      // Endpoint par défaut si le modèle n'existe pas
+      return this.data.apiEndpoint || this.objectType || ''
     }
   }
 }
