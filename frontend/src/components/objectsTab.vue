@@ -30,6 +30,7 @@ import TabControlButtons from './common/tabControlButtons.vue'
 import { useTabsStore } from '@/stores/tabsStore'
 import { Entity } from '@/models/Entity'
 import { Symptom } from '@/models/Symptom'
+import { Ticket } from '@/models/Ticket'
 import '../assets/styles/tab.css'
 
 export default {
@@ -61,7 +62,8 @@ export default {
       // Utiliser les modèles pour obtenir les colonnes
       const modelMap = {
         'symptoms': Symptom,
-        'entities': Entity
+        'entities': Entity,
+        'tickets': Ticket
       }
       
       const model = modelMap[this.objectType]
@@ -75,28 +77,32 @@ export default {
     formType() {
       const formTypeMap = {
         'symptoms': 'symptom',
-        'entities': 'entity'
+        'entities': 'entity',
+        'tickets': 'ticket'
       }
       return formTypeMap[this.objectType] || ''
     },
     createTitle() {
       const titleMap = {
         'symptoms': 'symptoms.createTitle',
-        'entities': 'entities.createTitle'
+        'entities': 'entities.createTitle',
+        'tickets': 'tickets.createTitle'
       }
       return titleMap[this.objectType] || ''
     },
     uniqueIdentifier() {
       const identifierMap = {
         'symptoms': 'symptom_code',
-        'entities': 'uuid'
+        'entities': 'uuid',
+        'tickets': 'uuid'
       }
       return identifierMap[this.objectType] || 'uuid'
     },
     nameField() {
       const nameMap = {
         'symptoms': 'symptom_code',
-        'entities': 'name'
+        'entities': 'name',
+        'tickets': 'title'
       }
       return nameMap[this.objectType] || 'name'
     }
@@ -256,7 +262,8 @@ export default {
     getApiEndpoint() {
       const modelMap = {
         'symptoms': Symptom,
-        'entities': Entity
+        'entities': Entity,
+        'tickets': Ticket
       }
       
       const model = modelMap[this.objectType]

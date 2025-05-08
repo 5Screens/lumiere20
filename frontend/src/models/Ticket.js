@@ -2,6 +2,34 @@ import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
 
 export class Ticket {
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des tickets
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('ticketsTable.headers.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('ticketsTable.headers.title'), type: 'text', format: 'text' },
+      { key: 'ticket_status_code', label: t('ticketsTable.headers.status'), type: 'text', format: 'text' },
+      { key: 'requested_by_name', label: t('ticketsTable.headers.requestedBy'), type: 'text', format: 'text' },
+      { key: 'requested_for_name', label: t('ticketsTable.headers.requestedFor'), type: 'text', format: 'text' },
+      { key: 'assigned_to_group_name', label: t('ticketsTable.headers.assignedGroup'), type: 'text', format: 'text' },
+      { key: 'assigned_to_person_name', label: t('ticketsTable.headers.assignedPerson'), type: 'text', format: 'text' },
+      { key: 'date_creation', label: t('ticketsTable.headers.creationDate'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'date_modification', label: t('ticketsTable.headers.modificationDate'), type: 'date', format: 'YYYY-MM-DD' }
+    ];
+  }
+
+  /**
+   * Retourne l'endpoint API pour les tickets de type TICKET
+   * @returns {string} Endpoint API
+   */
+  static getApiEndpoint() {
+    return 'tickets';
+  }
+  
   constructor(data = {}) {
     this.uuid = data.uuid || null;
     this.title = data.title || '';
@@ -11,7 +39,7 @@ export class Ticket {
     this.assigned_to_group = data.assigned_to_group || null;
     this.assigned_to_person = data.assigned_to_person || null;
     this.writer_uuid = data.writer_uuid || null;
-    this.ticket_type_code = data.ticket_type_code || null;
+    this.ticket_type_code = data.ticket_type_code || 'TICKET';
     this.ticket_status_code = data.ticket_status_code || null;
     this.date_creation = data.date_creation || null;
     this.date_modification = data.date_modification || null;
