@@ -1,11 +1,26 @@
 const ticketService = require('./service');
+const incidentService = require('./incidentService');
 const logger = require('../../../config/logger');
 
 const getTickets = async (req, res) => {
     try {
         logger.info('[CONTROLLER] Processing GET /tickets request');
         const { lang, ticket_type } = req.query;
-        const tickets = await ticketService.getTickets(lang, ticket_type);
+        
+        let tickets;
+        
+        // Utiliser le service approprié selon le type de ticket
+        switch (ticket_type) {
+            case 'INCIDENT':
+                logger.info('[CONTROLLER] Calling incidentService.getIncidents');
+                tickets = await incidentService.getIncidents(lang);
+                break;
+            default:
+                logger.info(`[CONTROLLER] Calling ticketService.getTickets for type: ${ticket_type || 'all'}`);
+                tickets = await ticketService.getTickets(lang, ticket_type);
+                break;
+        }
+        
         res.json(tickets);
     } catch (error) {
         logger.error('[CONTROLLER] Error in getTickets:', error);
