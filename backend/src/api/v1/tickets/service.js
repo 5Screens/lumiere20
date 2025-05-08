@@ -13,7 +13,7 @@ const getTickets = async (lang, ticket_type) => {
     }
     
     const query = `
-        SELECT 
+        SELECT DISTINCT ON (t.uuid)
             t.*,
             p1.first_name || ' ' || p1.last_name as requested_by_name,
             p2.first_name || ' ' || p2.last_name as requested_for_name,
@@ -21,10 +21,14 @@ const getTickets = async (lang, ticket_type) => {
             COALESCE(ttt.label, tt.code) as ticket_type_label,
             COALESCE(tst.label, ts.code) as ticket_status_label,
             tt.code as ticket_type_code,
-            ts.code as ticket_status_code
+            ts.code as ticket_status_code,
+            g.groupe_name as assigned_group_name,
+            g.uuid as assigned_group_uuid,
+            p4.first_name || ' ' || p4.last_name as assigned_person_name,
+            p4.uuid as assigned_person_uuid
         FROM core.tickets t
-        JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
-        JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
+        LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
+        LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
         JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
         JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
         JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code
@@ -32,8 +36,15 @@ const getTickets = async (lang, ticket_type) => {
             AND ttt.lang = $1
         LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
             AND tst.lang = $1
+        LEFT JOIN (
+            SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
+            FROM core.rel_tickets_groups_persons
+            WHERE type = 'ASSIGNED' AND ended_at IS NULL
+        ) rtgp ON t.uuid = rtgp.rel_ticket
+        LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+        LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
         WHERE 1=1 ${typeCondition}
-        ORDER BY t.created_at DESC
+        ORDER BY t.uuid, t.created_at DESC
     `;
     
     try {
