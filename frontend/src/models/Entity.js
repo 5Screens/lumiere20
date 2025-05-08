@@ -21,8 +21,8 @@ export class Entity {
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
-      { name: 'name', label: i18n.global.t('entitiesTable.headers.name') },
-      { name: 'entity_type', label: i18n.global.t('entitiesTable.headers.entity_type') }
+      { name: 'name', label: i18n.global.t('entities.name') },
+      { name: 'entity_type', label: i18n.global.t('entities.entity_type') }
     ];
   }
 
@@ -34,17 +34,17 @@ export class Entity {
     const { t } = i18n.global;
     
     return [
-      { key: 'uuid', label: t('entitiesTable.headers.uuid'), type: 'uuid', format: 'text' },
-      { key: 'entity_id', label: t('entitiesTable.headers.entity_id'), type: 'text', format: 'text' },
-      { key: 'name', label: t('entitiesTable.headers.name'), type: 'text', format: 'text' },
-      { key: 'parent_entity_name', label: t('entitiesTable.headers.parent_entity_name'), type: 'text', format: 'text' },
-      { key: 'external_id', label: t('entitiesTable.headers.external_id'), type: 'text', format: 'text' },
-      { key: 'entity_type', label: t('entitiesTable.headers.entity_type'), type: 'text', format: 'text' },
-      { key: 'headquarters_location_name', label: t('entitiesTable.headers.headquarters_location'), type: 'text', format: 'text' },
-      { key: 'is_active', label: t('entitiesTable.headers.is_active'), type: 'select', options: ['Yes', 'No'], format: 'text' },
-      { key: 'budget_approver_name', label: t('entitiesTable.headers.budget_approver_name'), type: 'text', format: 'text' },
-      { key: 'date_creation', label: t('entitiesTable.headers.date_creation'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'date_modification', label: t('entitiesTable.headers.date_modification'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'entity_id', label: t('entities.entity_id'), type: 'text', format: 'text' },
+      { key: 'name', label: t('entities.name'), type: 'text', format: 'text' },
+      { key: 'parent_entity_name', label: t('entities.parent'), type: 'text', format: 'text' },
+      { key: 'external_id', label: t('entities.external_id'), type: 'text', format: 'text' },
+      { key: 'entity_type', label: t('entities.entity_type'), type: 'text', format: 'text' },
+      { key: 'headquarters_location_name', label: t('entities.location'), type: 'text', format: 'text' },
+      { key: 'is_active', label: t('entities.is_active'), type: 'select', options: ['Yes', 'No'], format: 'text' },
+      { key: 'budget_approver_name', label: t('entities.budget_approver_name'), type: 'text', format: 'text' },
+      { key: 'date_creation', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'date_modification', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 
