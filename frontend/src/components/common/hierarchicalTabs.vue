@@ -43,16 +43,14 @@
 
 <script>
 import { useTabsStore } from '@/stores/tabsStore'
-import SymptomsTab from '@/components/SymptomsTab.vue'
-import EntitiesTab from '@/components/entitiesTab.vue'
+import ObjectsTab from '@/components/objectsTab.vue'
 import SymptomsForm from '@/components/coreForms/symptomsForm.vue'
 import EntityForm from '@/components/coreForms/entityForm.vue'
 
 export default {
   name: 'HierarchicalTabs',
   components: {
-    SymptomsTab,
-    EntitiesTab,
+    ObjectsTab,
     SymptomsForm,
     EntityForm
   },
@@ -70,6 +68,16 @@ export default {
     // Obtenir les données du composant actif
     activeComponentData() {
       const activeTab = this.store.activeChildTab || this.store.activeTab
+      
+      // Pour ObjectsTab, ajouter des données supplémentaires
+      if (activeTab && (activeTab.type === 'symptoms' || activeTab.type === 'entities')) {
+        return {
+          ...activeTab,
+          apiEndpoint: activeTab.type,
+          objectType: activeTab.type
+        }
+      }
+      
       return activeTab || null
     },
     
@@ -85,8 +93,8 @@ export default {
     // Obtenir le nom du composant en fonction du type d'onglet
     getComponentByType(type) {
       const componentMap = {
-        'symptoms': 'SymptomsTab',
-        'entities': 'EntitiesTab',
+        'symptoms': 'ObjectsTab',
+        'entities': 'ObjectsTab',
         'symptom': 'SymptomsForm',
         'entity': 'EntityForm'
       }
