@@ -18,8 +18,8 @@ export class Incident {
       { key: 'priority', label: t('incident.priority'), type: 'text', format: 'text' },
       { key: 'requested_by_name', label: t('incident.requested_by'), type: 'text', format: 'text' },
       { key: 'requested_for_name', label: t('incident.requested_for'), type: 'text', format: 'text' },
-      { key: 'assigned_to_group_name', label: t('incident.assigned_group'), type: 'text', format: 'text' },
-      { key: 'assigned_to_person_name', label: t('incident.assigned_to'), type: 'text', format: 'text' },
+      { key: 'assigned_group_name', label: t('incident.assigned_group'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('incident.assigned_to'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
@@ -30,7 +30,8 @@ export class Incident {
    * @returns {string} Endpoint API
    */
   static getApiEndpoint() {
-    return 'tickets?ticket_type=INCIDENT';
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=INCIDENT&lang=${userProfileStore.language}`;
   }
   
   constructor(data = {}) {
