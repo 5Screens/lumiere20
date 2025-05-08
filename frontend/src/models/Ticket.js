@@ -12,13 +12,14 @@ export class Ticket {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('ticket.title'), type: 'text', format: 'text' },
-      { key: 'ticket_status_code', label: t('ticket.status'), type: 'text', format: 'text' },
+      /*{ key: 'description', label: t('ticket.description'), type: 'text', format: 'text' },*/
+      { key: 'ticket_status_label', label: t('ticket.status'), type: 'text', format: 'text' },
       { key: 'requested_by_name', label: t('ticket.requested_by'), type: 'text', format: 'text' },
       { key: 'requested_for_name', label: t('ticket.requested_for'), type: 'text', format: 'text' },
-      { key: 'assigned_to_group_name', label: t('ticket.assigned_team_label'), type: 'text', format: 'text' },
-      { key: 'assigned_to_person_name', label: t('ticket.assigned_to_label'), type: 'text', format: 'text' },
-      { key: 'date_creation', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'date_modification', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'assigned_group_name', label: t('ticket.assigned_team_label'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('ticket.assigned_to_label'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 
@@ -27,7 +28,8 @@ export class Ticket {
    * @returns {string} Endpoint API
    */
   static getApiEndpoint() {
-    return 'tickets?ticket_type=TICKET';
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=TICKET&lang=${userProfileStore.language}`;
   }
   
   constructor(data = {}) {
