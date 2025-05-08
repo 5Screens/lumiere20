@@ -31,6 +31,7 @@ import { useTabsStore } from '@/stores/tabsStore'
 import { Entity } from '@/models/Entity'
 import { Symptom } from '@/models/Symptom'
 import { Ticket } from '@/models/Ticket'
+import { Incident } from '@/models/Incident'
 import '../assets/styles/tab.css'
 
 export default {
@@ -63,7 +64,8 @@ export default {
       const modelMap = {
         'symptoms': Symptom,
         'entities': Entity,
-        'tickets': Ticket
+        'tickets': Ticket,
+        'incidents': Incident
       }
       
       const model = modelMap[this.objectType]
@@ -78,7 +80,8 @@ export default {
       const formTypeMap = {
         'symptoms': 'symptom',
         'entities': 'entity',
-        'tickets': 'ticket'
+        'tickets': 'ticket',
+        'incidents': 'incident'
       }
       return formTypeMap[this.objectType] || ''
     },
@@ -86,7 +89,8 @@ export default {
       const titleMap = {
         'symptoms': 'symptoms.createTitle',
         'entities': 'entities.createTitle',
-        'tickets': 'tickets.createTitle'
+        'tickets': 'tickets.createTitle',
+        'incidents': 'incidents.createTitle'
       }
       return titleMap[this.objectType] || ''
     },
@@ -94,7 +98,8 @@ export default {
       const identifierMap = {
         'symptoms': 'symptom_code',
         'entities': 'uuid',
-        'tickets': 'uuid'
+        'tickets': 'uuid',
+        'incidents': 'uuid'
       }
       return identifierMap[this.objectType] || 'uuid'
     },
@@ -102,7 +107,8 @@ export default {
       const nameMap = {
         'symptoms': 'symptom_code',
         'entities': 'name',
-        'tickets': 'title'
+        'tickets': 'title',
+        'incidents': 'title'
       }
       return nameMap[this.objectType] || 'name'
     }
@@ -263,7 +269,8 @@ export default {
       const modelMap = {
         'symptoms': Symptom,
         'entities': Entity,
-        'tickets': Ticket
+        'tickets': Ticket,
+        'incidents': Incident
       }
       
       const model = modelMap[this.objectType]

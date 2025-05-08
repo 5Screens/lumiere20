@@ -49,6 +49,7 @@ import EntityForm from '@/components/coreForms/entityForm.vue'
 import { Entity } from '@/models/Entity'
 import { Symptom } from '@/models/Symptom'
 import { Ticket } from '@/models/Ticket'
+import { Incident } from '@/models/Incident'
 
 export default {
   name: 'HierarchicalTabs',
@@ -92,6 +93,12 @@ export default {
             apiEndpoint: Ticket.getApiEndpoint(),
             objectType: activeTab.type
           }
+        } else if (activeTab.type === 'incidents') {
+          return {
+            ...activeTab,
+            apiEndpoint: Incident.getApiEndpoint(),
+            objectType: activeTab.type
+          }
         }
       }
       
@@ -113,8 +120,10 @@ export default {
         'symptoms': 'ObjectsTab',
         'entities': 'ObjectsTab',
         'tickets': 'ObjectsTab',
+        'incidents': 'ObjectsTab',
         'symptom': 'SymptomsForm',
         'entity': 'EntityForm'
+        // 'incident': 'IncidentForm' // À implémenter plus tard
       }
       return componentMap[type] || null
     }
