@@ -27,7 +27,7 @@ export class Ticket {
    * @returns {string} Endpoint API
    */
   static getApiEndpoint() {
-    return 'tickets';
+    return 'tickets?ticket_type=TICKET';
   }
   
   constructor(data = {}) {
