@@ -151,18 +151,18 @@ export class Change {
     const { t } = i18n.global;
     
     return [
-      { key: 'uuid', label: 'ID', visible: false },
+      { key: 'uuid', label: t('common.id'), visible: false },
       { key: 'title', label: t('change.title'), visible: true },
       { key: 'ticket_status_code', label: t('change.status'), visible: true },
       { key: 'requested_for_uuid', label: t('change.requested_for'), visible: true },
       { key: 'rel_change_type_code', label: t('change.type'), visible: true },
       { key: 'rel_services', label: t('change.service'), visible: true },
-      { key: 'assigned_to_group', label: t('change.assigned_to_group'), visible: true },
+      { key: 'assigned_to_group', label: t('change.assigned_group'), visible: true },
       { key: 'assigned_to_person', label: t('change.assigned_to_person'), visible: true },
       { key: 'planned_start_date_at', label: t('change.planned_start_date'), visible: true },
       { key: 'planned_end_date_at', label: t('change.planned_end_date'), visible: true },
-      { key: 'created_at', label: t('change.created_at'), visible: true },
-      { key: 'updated_at', label: t('change.updated_at'), visible: true }
+      { key: 'created_at', label: t('common.creation_date'), visible: true },
+      { key: 'updated_at', label: t('common.modification_date'), visible: true }
     ];
   }
 
