@@ -53,6 +53,7 @@ import { Incident } from '@/models/Incident'
 import { Problem } from '@/models/Problem'
 import { Change } from '@/models/Change'
 import { Knowledge_article } from '@/models/Knowledge_article'
+import { Project } from '@/models/Project'
 
 export default {
   name: 'HierarchicalTabs',
@@ -120,6 +121,12 @@ export default {
             apiEndpoint: Knowledge_article.getApiEndpoint(),
             objectType: activeTab.type
           }
+        } else if (activeTab.type === 'projects') {
+          return {
+            ...activeTab,
+            apiEndpoint: Project.getApiEndpoint(),
+            objectType: activeTab.type
+          }
         }
       }
       
@@ -145,6 +152,7 @@ export default {
         'problems': 'ObjectsTab',
         'changes': 'ObjectsTab',
         'knowledge': 'ObjectsTab',
+        'projects': 'ObjectsTab',
         'symptom': 'SymptomsForm',
         'entity': 'EntityForm'
         // 'incident': 'ObjectTab' // À implémenter plus tard

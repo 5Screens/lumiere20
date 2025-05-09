@@ -185,6 +185,39 @@ export class Project {
     };
   }
 
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des projets
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('project.name'), type: 'text', format: 'text' },
+      { key: 'key', label: t('project.key'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('project.status'), type: 'text', format: 'text' },
+      { key: 'description', label: t('project.description'), type: 'text', format: 'text' },
+      { key: 'start_date', label: t('project.start_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'end_date', label: t('project.end_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'visibility', label: t('project.visibility'), type: 'text', format: 'text' },
+      { key: 'project_type', label: t('project.project_type'), type: 'text', format: 'text' },
+      { key: 'assigned_group_name', label: t('project.team_id'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('project.lead_user_id'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+    ];
+  }
+
+  /**
+   * Retourne l'endpoint API pour les projets
+   * @returns {string} URL de l'endpoint API
+   */
+  static getApiEndpoint() {
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=PROJECT&lang=${userProfileStore.language}`;
+  }
+
   toAPI(method) {
     const userProfileStore = useUserProfileStore();
     

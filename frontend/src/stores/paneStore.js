@@ -131,7 +131,8 @@ export const usePaneStore = defineStore('pane', {
         hasSections: false,
         items: [
           { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tickets' },
-          { tabToOpen: 'user-stories', icon: 'fas fa-book', label: 'sprintCenter.userStories' }
+          { tabToOpen: 'user-stories', icon: 'fas fa-book', label: 'sprintCenter.userStories' },
+          { tabToOpen: 'projects', icon: 'fas fa-project-diagram', label: 'sprintCenter.projects' }
         ],
         sections: []
       }
