@@ -123,7 +123,7 @@ export default {
         'incidents': 'ObjectsTab',
         'symptom': 'SymptomsForm',
         'entity': 'EntityForm'
-        // 'incident': 'IncidentForm' // À implémenter plus tard
+        // 'incident': 'ObjectTab' // À implémenter plus tard
       }
       return componentMap[type] || null
     }
