@@ -13,8 +13,7 @@ const getTickets = async (lang, ticket_type) => {
     }
     
     const query = `
-        SELECT DISTINCT ON (t.uuid)
-            t.*,
+        SELECT t.*,
             p1.first_name || ' ' || p1.last_name as requested_by_name,
             p2.first_name || ' ' || p2.last_name as requested_for_name,
             p3.first_name || ' ' || p3.last_name as writer_name,
@@ -31,7 +30,7 @@ const getTickets = async (lang, ticket_type) => {
         LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
         JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
         JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
-        JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code
+        JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code 
         LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid 
             AND ttt.lang = $1
         LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
@@ -44,7 +43,6 @@ const getTickets = async (lang, ticket_type) => {
         LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
         LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
         WHERE 1=1 ${typeCondition}
-        ORDER BY t.uuid, t.created_at ASC
     `;
     
     try {
