@@ -2,6 +2,38 @@ import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
 
 export class Knowledge_article {
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des articles de connaissance
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('knowledge_article.title'), type: 'text', format: 'text' },
+      { key: 'summary', label: t('knowledge_article.summary'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('knowledge_article.publication_status'), type: 'text', format: 'text' },
+      { key: 'rel_category', label: t('knowledge_article.category'), type: 'text', format: 'text' },
+      { key: 'rel_service', label: t('knowledge_article.service'), type: 'text', format: 'text' },
+      { key: 'rel_lang', label: t('knowledge_article.lang'), type: 'text', format: 'text' },
+      { key: 'rel_confidentiality_level', label: t('knowledge_article.confidentiality_level'), type: 'text', format: 'text' },
+      { key: 'version', label: t('knowledge_article.version'), type: 'text', format: 'text' },
+      { key: 'writer_name', label: t('knowledge_article.writer'), type: 'text', format: 'text' },
+      { key: 'assigned_group_name', label: t('knowledge_article.assigned_group'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('knowledge_article.assigned_to_person'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'last_review_at', label: t('knowledge_article.last_review_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'next_review_at', label: t('knowledge_article.next_review_at'), type: 'date', format: 'YYYY-MM-DD' }
+    ];
+  }
+
+  // Méthode statique pour obtenir l'endpoint API
+  static getApiEndpoint() {
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=KNOWLEDGE&lang=${userProfileStore.language}`;
+  }
   constructor(data = {}) {
     // Métadonnées d'identification et de classification
     this.uuid = data.uuid || null;

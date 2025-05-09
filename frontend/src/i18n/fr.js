@@ -677,6 +677,7 @@ export default {
     security_notes_placeholder: 'Entrez les notes de sécurité importantes',
     attachments: 'Pièces jointes',
     attachments_placeholder: 'Ajoutez des pièces jointes',
+    writer: 'Rédacteur',
     
     // Contexte opérationnel et liens
     configuration_item: 'Composant concerné',

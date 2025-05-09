@@ -121,7 +121,8 @@ export const usePaneStore = defineStore('pane', {
           { tabToOpen: 'incidents', icon: 'fas fa-exclamation-circle', label: 'serviceHub.incidents' },
           { tabToOpen: 'problems', icon: 'fas fa-search-minus', label: 'serviceHub.problems' },
           { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'serviceHub.tickets' },
-          { tabToOpen: 'changes', icon: 'fas fa-exchange-alt', label: 'serviceHub.changes' }
+          { tabToOpen: 'changes', icon: 'fas fa-exchange-alt', label: 'serviceHub.changes' },
+          { tabToOpen: 'knowledge', icon: 'fas fa-book', label: 'serviceHub.knowledge' }
         ],
         sections: []
       },

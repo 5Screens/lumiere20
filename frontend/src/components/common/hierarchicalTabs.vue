@@ -52,6 +52,7 @@ import { Ticket } from '@/models/Ticket'
 import { Incident } from '@/models/Incident'
 import { Problem } from '@/models/Problem'
 import { Change } from '@/models/Change'
+import { Knowledge_article } from '@/models/Knowledge_article'
 
 export default {
   name: 'HierarchicalTabs',
@@ -113,6 +114,12 @@ export default {
             apiEndpoint: Change.getApiEndpoint(),
             objectType: activeTab.type
           }
+        } else if (activeTab.type === 'knowledge') {
+          return {
+            ...activeTab,
+            apiEndpoint: Knowledge_article.getApiEndpoint(),
+            objectType: activeTab.type
+          }
         }
       }
       
@@ -137,6 +144,7 @@ export default {
         'incidents': 'ObjectsTab',
         'problems': 'ObjectsTab',
         'changes': 'ObjectsTab',
+        'knowledge': 'ObjectsTab',
         'symptom': 'SymptomsForm',
         'entity': 'EntityForm'
         // 'incident': 'ObjectTab' // À implémenter plus tard

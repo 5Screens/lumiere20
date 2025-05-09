@@ -34,6 +34,7 @@ import { Ticket } from '@/models/Ticket'
 import { Incident } from '@/models/Incident'
 import { Problem } from '@/models/Problem'
 import { Change } from '@/models/Change'
+import { Knowledge_article } from '@/models/Knowledge_article'
 import '../assets/styles/tab.css'
 
 export default {
@@ -69,7 +70,8 @@ export default {
         'tickets': Ticket,
         'incidents': Incident,
         'problems': Problem,
-        'changes': Change
+        'changes': Change,
+        'knowledge': Knowledge_article
       }
       
       const model = modelMap[this.objectType]
@@ -284,7 +286,8 @@ export default {
         'tickets': Ticket,
         'incidents': Incident,
         'problems': Problem,
-        'changes': Change
+        'changes': Change,
+        'knowledge': Knowledge_article
       }
       
       const model = modelMap[this.objectType]
