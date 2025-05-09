@@ -32,6 +32,7 @@ import { Entity } from '@/models/Entity'
 import { Symptom } from '@/models/Symptom'
 import { Ticket } from '@/models/Ticket'
 import { Incident } from '@/models/Incident'
+import { Problem } from '@/models/Problem'
 import '../assets/styles/tab.css'
 
 export default {
@@ -81,7 +82,8 @@ export default {
         'symptoms': 'symptom',
         'entities': 'entity',
         'tickets': 'ticket',
-        'incidents': 'incident'
+        'incidents': 'incident',
+        'problems': 'problem'
       }
       return formTypeMap[this.objectType] || ''
     },
@@ -90,7 +92,8 @@ export default {
         'symptoms': 'symptoms.createTitle',
         'entities': 'entities.createTitle',
         'tickets': 'tickets.createTitle',
-        'incidents': 'incidents.createTitle'
+        'incidents': 'incidents.createTitle',
+        'problems': 'problems.createTitle'
       }
       return titleMap[this.objectType] || ''
     },
@@ -99,7 +102,8 @@ export default {
         'symptoms': 'symptom_code',
         'entities': 'uuid',
         'tickets': 'uuid',
-        'incidents': 'uuid'
+        'incidents': 'uuid',
+        'problems': 'uuid'
       }
       return identifierMap[this.objectType] || 'uuid'
     },
@@ -108,7 +112,8 @@ export default {
         'symptoms': 'symptom_code',
         'entities': 'name',
         'tickets': 'title',
-        'incidents': 'title'
+        'incidents': 'title',
+        'problems': 'title'
       }
       return nameMap[this.objectType] || 'name'
     }
@@ -270,7 +275,8 @@ export default {
         'symptoms': Symptom,
         'entities': Entity,
         'tickets': Ticket,
-        'incidents': Incident
+        'incidents': Incident,
+        'problems': Problem
       }
       
       const model = modelMap[this.objectType]

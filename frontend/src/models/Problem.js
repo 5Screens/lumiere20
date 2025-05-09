@@ -2,6 +2,35 @@ import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
 
 export class Problem {
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des problèmes
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      /*{ key: 'title', label: t('problem.title'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('problem.status'), type: 'text', format: 'text' },
+      { key: 'impact_label', label: t('problem.impact'), type: 'text', format: 'text' },
+      { key: 'urgency_label', label: t('problem.urgency'), type: 'text', format: 'text' },
+      { key: 'assigned_group_name', label: t('problem.assigned_group'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('problem.assigned_to_person'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }*/
+    ];
+  }
+
+  /**
+   * Retourne l'endpoint API pour les tickets de type PROBLEM
+   * @returns {string} Endpoint API
+   */
+  static getApiEndpoint() {
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=PROBLEM&lang=${userProfileStore.language}`;
+  }
+  
   constructor(data = {}) {
     // Identifiant unique du problème
     this.uuid = data.uuid || null;

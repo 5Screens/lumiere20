@@ -50,6 +50,7 @@ import { Entity } from '@/models/Entity'
 import { Symptom } from '@/models/Symptom'
 import { Ticket } from '@/models/Ticket'
 import { Incident } from '@/models/Incident'
+import { Problem } from '@/models/Problem'
 
 export default {
   name: 'HierarchicalTabs',
@@ -99,6 +100,12 @@ export default {
             apiEndpoint: Incident.getApiEndpoint(),
             objectType: activeTab.type
           }
+        } else if (activeTab.type === 'problems') {
+          return {
+            ...activeTab,
+            apiEndpoint: Problem.getApiEndpoint(),
+            objectType: activeTab.type
+          }
         }
       }
       
@@ -121,6 +128,7 @@ export default {
         'entities': 'ObjectsTab',
         'tickets': 'ObjectsTab',
         'incidents': 'ObjectsTab',
+        'problems': 'ObjectsTab',
         'symptom': 'SymptomsForm',
         'entity': 'EntityForm'
         // 'incident': 'ObjectTab' // À implémenter plus tard
