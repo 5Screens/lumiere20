@@ -113,6 +113,39 @@ export class Epic {
     };
   }
 
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des epics
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('epic.name'), type: 'text', format: 'text' },
+      { key: 'description', label: t('epic.description'), type: 'text', format: 'text' },
+      { key: 'ticket_status_code', label: t('epic.status'), type: 'text', format: 'text' },
+      { key: 'project_id', label: t('epic.project_id'), type: 'text', format: 'text' },
+      { key: 'start_date', label: t('epic.start_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'end_date', label: t('epic.end_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'progress_percent', label: t('epic.progress_percent'), type: 'text', format: 'text' },
+      { key: 'color', label: t('epic.color'), type: 'text', format: 'text' },
+      { key: 'tags', label: t('epic.tags'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' }
+    ];
+  }
+
+  /**
+   * Retourne l'endpoint API pour les tickets de type EPIC
+   * @returns {string} Endpoint API
+   */
+  static getApiEndpoint() {
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=EPIC&lang=${userProfileStore.language}`;
+  }
+
   toAPI(method) {
     const userProfileStore = useUserProfileStore();
     

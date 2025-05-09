@@ -37,6 +37,7 @@ import { Change } from '@/models/Change'
 import { Knowledge_article } from '@/models/Knowledge_article'
 import { Project } from '@/models/Project'
 import { Sprint } from '@/models/Sprint'
+import { Epic } from '@/models/Epic'
 import '../assets/styles/tab.css'
 
 export default {
@@ -75,7 +76,8 @@ export default {
         'changes': Change,
         'knowledge': Knowledge_article,
         'projects': Project,
-        'sprints': Sprint
+        'sprints': Sprint,
+        'epics': Epic
       }
       
       const model = modelMap[this.objectType]
