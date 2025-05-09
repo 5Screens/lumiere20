@@ -39,6 +39,7 @@ import { Project } from '@/models/Project'
 import { Sprint } from '@/models/Sprint'
 import { Epic } from '@/models/Epic'
 import { Story } from '@/models/Story'
+import { Defect } from '@/models/Defect'
 import '../assets/styles/tab.css'
 
 export default {
@@ -79,7 +80,8 @@ export default {
         'projects': Project,
         'sprints': Sprint,
         'epics': Epic,
-        'stories': Story
+        'stories': Story,
+        'defects': Defect
       }
       
       const model = modelMap[this.objectType]
@@ -298,7 +300,8 @@ export default {
         'knowledge': Knowledge_article,
         'projects': Project,
         'sprints': Sprint,
-        'stories': Story
+        'stories': Story,
+        'defects': Defect
       }
       
       const model = modelMap[this.objectType]

@@ -4,6 +4,32 @@ export const usePaneStore = defineStore('pane', {
   state: () => ({
     // Configuration des différents panneaux
     paneConfigs: {
+      
+      serviceHub: {
+        type: 'serviceHub',
+        hasSections: false,
+        items: [
+          { tabToOpen: 'incidents', icon: 'fas fa-exclamation-circle', label: 'serviceHub.incidents' },
+          { tabToOpen: 'problems', icon: 'fas fa-search-minus', label: 'serviceHub.problems' },
+          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'serviceHub.tickets' },
+          { tabToOpen: 'changes', icon: 'fas fa-exchange-alt', label: 'serviceHub.changes' },
+          { tabToOpen: 'knowledge', icon: 'fas fa-book', label: 'serviceHub.knowledge' }
+        ],
+        sections: []
+      },
+      sprintCenter: {
+        type: 'sprintCenter',
+        hasSections: false,
+        items: [
+          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tickets' },
+          { tabToOpen: 'stories', icon: 'fas fa-book', label: 'sprintCenter.userStories' },
+          { tabToOpen: 'projects', icon: 'fas fa-project-diagram', label: 'sprintCenter.projects' },
+          { tabToOpen: 'sprints', icon: 'fas fa-running', label: 'sprintCenter.sprints' },
+          { tabToOpen: 'epics', icon: 'fas fa-bookmark', label: 'sprintCenter.epics' },
+          { tabToOpen: 'defects', icon: 'fas fa-bug', label: 'sprintCenter.bugs' }
+        ],
+        sections: []
+      },
       admin: {
         type: 'admin',
         hasSections: false,
@@ -113,30 +139,6 @@ export const usePaneStore = defineStore('pane', {
             ]
           }
         ]
-      },
-      serviceHub: {
-        type: 'serviceHub',
-        hasSections: false,
-        items: [
-          { tabToOpen: 'incidents', icon: 'fas fa-exclamation-circle', label: 'serviceHub.incidents' },
-          { tabToOpen: 'problems', icon: 'fas fa-search-minus', label: 'serviceHub.problems' },
-          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'serviceHub.tickets' },
-          { tabToOpen: 'changes', icon: 'fas fa-exchange-alt', label: 'serviceHub.changes' },
-          { tabToOpen: 'knowledge', icon: 'fas fa-book', label: 'serviceHub.knowledge' }
-        ],
-        sections: []
-      },
-      sprintCenter: {
-        type: 'sprintCenter',
-        hasSections: false,
-        items: [
-          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tickets' },
-          { tabToOpen: 'stories', icon: 'fas fa-book', label: 'sprintCenter.userStories' },
-          { tabToOpen: 'projects', icon: 'fas fa-project-diagram', label: 'sprintCenter.projects' },
-          { tabToOpen: 'sprints', icon: 'fas fa-running', label: 'sprintCenter.sprints' },
-          { tabToOpen: 'epics', icon: 'fas fa-bookmark', label: 'sprintCenter.epics' }
-        ],
-        sections: []
       }
     },
     

@@ -53,7 +53,8 @@ export default {
     sprints: 'Sprints',
     defects: 'Bugs',
     epics: 'Épics',
-    projects: 'Projets'    
+    projects: 'Projets',
+    bugs: 'Bugs'
   },
   underConstruction: {
     title: 'En cours de construction'

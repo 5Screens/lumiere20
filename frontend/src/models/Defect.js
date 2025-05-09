@@ -239,4 +239,36 @@ export class Defect {
     
     return apiData;
   }
+
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des défauts
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('defect.title'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('defect.status'), type: 'text', format: 'text' },
+      { key: 'severity', label: t('defect.severity'), type: 'text', format: 'text' },
+      { key: 'impact_area', label: t('defect.impact_area'), type: 'text', format: 'text' },
+      { key: 'environment', label: t('defect.environment'), type: 'text', format: 'text' },
+      { key: 'requested_by_name', label: t('defect.reported_by'), type: 'text', format: 'text' },
+      { key: 'requested_for_name', label: t('defect.detected_by'), type: 'text', format: 'text' },
+      { key: 'project_id', label: t('defect.project_id'), type: 'text', format: 'text' },
+      { key: 'rel_assigned_to_person', label: t('defect.assignee'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+    ];
+  }
+
+  /**
+   * Retourne l'endpoint API pour les défauts
+   * @returns {string} URL de l'endpoint API
+   */
+  static getApiEndpoint() {
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=DEFECT&lang=${userProfileStore.language}`;
+  }
 }

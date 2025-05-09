@@ -57,6 +57,7 @@ import { Project } from '@/models/Project'
 import { Sprint } from '@/models/Sprint'
 import { Epic } from '@/models/Epic'
 import { Story } from '@/models/Story'
+import { Defect } from '@/models/Defect'
 
 export default {
   name: 'HierarchicalTabs',
@@ -148,6 +149,12 @@ export default {
             apiEndpoint: Story.getApiEndpoint(),
             objectType: activeTab.type
           }
+        } else if (activeTab.type === 'defects') {
+          return {
+            ...activeTab,
+            apiEndpoint: Defect.getApiEndpoint(),
+            objectType: activeTab.type
+          }
         }
       }
       
@@ -177,6 +184,7 @@ export default {
         'sprints': 'ObjectsTab',
         'epics': 'ObjectsTab',
         'stories': 'ObjectsTab',
+        'defects': 'ObjectsTab',
         'symptom': 'SymptomsForm',
         'entity': 'EntityForm'
         // 'incident': 'ObjectTab' // À implémenter plus tard
