@@ -360,8 +360,13 @@ export default {
     
     problem_id: 'Problème associé',
     problem_id_placeholder: 'Sélectionnez le problème',
-    change_request: 'Demande de changement',
-    change_request_placeholder: 'Sélectionnez la demande de changement'
+    change_request: 'Changement à l\'origine de l\'incident',
+    change_request_placeholder: 'Sélectionnez la demande de changement',
+    reopen_count:'Nb. de réouverture',
+    standby_count:'Nb. de mise en attente',
+    assignment_count:'Nb. de transfert d\'équipe',
+    assignment_to_count:'Nb. d\'assignations à une personne',
+    
   },
   problem: {
     status: 'Statut',
