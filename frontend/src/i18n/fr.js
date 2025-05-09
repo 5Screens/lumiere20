@@ -282,7 +282,9 @@ export default {
     title: 'Créer',
     save: 'Enregistrer',
     errorMissingFields: 'Veuillez remplir tous les champs obligatoires',
-    showOnlyRequired: 'Afficher uniquement les informations obligatoires'
+    showOnlyRequired: 'Afficher uniquement les informations obligatoires',
+    creationSuccess: 'Création réussie',
+    creationError: 'Erreur lors de la création'
   },
   ticket: {
     title: 'Titre',

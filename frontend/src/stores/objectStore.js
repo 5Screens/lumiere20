@@ -101,7 +101,7 @@ export const useObjectStore = defineStore('object', {
         console.info('[ObjectStore] Received API response:', response)
         
         console.info('[ObjectStore] Setting success message')
-        this.message = 'Création réussie'
+        this.message = i18n.global.t('objectEditView.creationSuccess')
         
         console.info('[ObjectStore] createObject completed successfully')
         // Retourner la réponse complète pour pouvoir accéder à l'UUID
