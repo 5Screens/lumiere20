@@ -161,7 +161,8 @@ export default {
     no: 'Non',
     createLabel: 'Que souhaitez-vous créer ?',
     creation_date: 'Créé le',
-    modification_date: 'Modifié le'
+    modification_date: 'Modifié le', 
+    closure_date: 'Fermé le'
   },
   notifications: {
     title: 'Notification',

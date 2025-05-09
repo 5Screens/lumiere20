@@ -141,4 +141,36 @@ export class Sprint {
     
     return apiData;
   }
+
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des sprints
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('sprint.name'), type: 'text', format: 'text' },
+      { key: 'description', label: t('sprint.goal'), type: 'text', format: 'text' },
+      { key: 'ticket_status_code', label: t('sprint.state'), type: 'text', format: 'text' },
+      { key: 'project_id', label: t('sprint.project_id'), type: 'text', format: 'text' },
+      { key: 'start_date', label: t('sprint.start_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'end_date', label: t('sprint.end_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'actual_velocity', label: t('sprint.actual_velocity'), type: 'number', format: 'text' },
+      { key: 'estimated_velocity', label: t('sprint.estimated_velocity'), type: 'number', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' }
+    ];
+  }
+
+  /**
+   * Retourne l'endpoint API pour les tickets de type sprint
+   * @returns {string} URL de l'endpoint API
+   */
+  static getApiEndpoint() {
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=SPRINT&lang=${userProfileStore.language}`;
+  }
 }
