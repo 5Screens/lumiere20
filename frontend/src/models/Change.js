@@ -96,6 +96,81 @@ export class Change {
     this.updated_at = data.updated_at || null;
   }
 
+  static async toAPI(data) {
+    return {
+      uuid: data.uuid,
+      requested_for_uuid: data.requested_for_uuid,
+      ticket_status_code: data.ticket_status_code,
+      ticket_type_code: 'CHANGE',
+      title: data.title,
+      description: data.description,
+      configuration_item_uuid: data.configuration_item_uuid,
+      extended_attributes: {
+        rel_services: data.rel_services,
+        rel_service_offerings: data.rel_service_offerings,
+        rel_change_type_code: data.rel_change_type_code,
+        r_q1: data.r_q1,
+        r_q2: data.r_q2,
+        r_q3: data.r_q3,
+        r_q4: data.r_q4,
+        r_q5: data.r_q5,
+        i_q1: data.i_q1,
+        i_q2: data.i_q2,
+        i_q3: data.i_q3,
+        i_q4: data.i_q4,
+        requested_start_date_at: data.requested_start_date_at,
+        requested_end_date_at: data.requested_end_date_at,
+        planned_start_date_at: data.planned_start_date_at,
+        planned_end_date_at: data.planned_end_date_at,
+        rel_change_justifications_code: data.rel_change_justifications_code,
+        rel_change_objective: data.rel_change_objective,
+        test_plan: data.test_plan,
+        implementation_plan: data.implementation_plan,
+        rollbcak_plan: data.rollbcak_plan,
+        post_implementation_plan: data.post_implementation_plan,
+        cab_comments: data.cab_comments,
+        rel_cab_validation_status: data.rel_cab_validation_status,
+        required_validations: data.required_validations,
+        validated_at: data.validated_at,
+        related_tickets: data.related_tickets,
+        actual_start_date_at: data.actual_start_date_at,
+        actual_end_date_at: data.actual_end_date_at,
+        elapsed_time: data.elapsed_time,
+        watch_list: data.watch_list,
+        success_criteria: data.success_criteria,
+        post_change_evaluation: data.post_change_evaluation,
+        post_change_comment: data.post_change_comment,
+        closed_at: data.closed_at
+      },
+      assigned_to_group: data.assigned_to_group,
+      assigned_to_person: data.assigned_to_person
+    }
+  }
+
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: 'ID', visible: false },
+      { key: 'title', label: t('change.title'), visible: true },
+      { key: 'ticket_status_code', label: t('change.status'), visible: true },
+      { key: 'requested_for_uuid', label: t('change.requested_for'), visible: true },
+      { key: 'rel_change_type_code', label: t('change.type'), visible: true },
+      { key: 'rel_services', label: t('change.service'), visible: true },
+      { key: 'assigned_to_group', label: t('change.assigned_to_group'), visible: true },
+      { key: 'assigned_to_person', label: t('change.assigned_to_person'), visible: true },
+      { key: 'planned_start_date_at', label: t('change.planned_start_date'), visible: true },
+      { key: 'planned_end_date_at', label: t('change.planned_end_date'), visible: true },
+      { key: 'created_at', label: t('change.created_at'), visible: true },
+      { key: 'updated_at', label: t('change.updated_at'), visible: true }
+    ];
+  }
+
+  static getApiEndpoint() {
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=CHANGE&lang=${userProfileStore.language}`;
+  }
+
   static async getDynamicLabel() {
     const userProfileStore = useUserProfileStore();
     const instance = new Change();

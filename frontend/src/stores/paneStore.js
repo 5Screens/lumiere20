@@ -120,7 +120,8 @@ export const usePaneStore = defineStore('pane', {
         items: [
           { tabToOpen: 'incidents', icon: 'fas fa-exclamation-circle', label: 'serviceHub.incidents' },
           { tabToOpen: 'problems', icon: 'fas fa-search-minus', label: 'serviceHub.problems' },
-          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'serviceHub.tickets' }
+          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'serviceHub.tickets' },
+          { tabToOpen: 'changes', icon: 'fas fa-exchange-alt', label: 'serviceHub.changes' }
         ],
         sections: []
       },

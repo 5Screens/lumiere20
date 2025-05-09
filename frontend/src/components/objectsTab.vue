@@ -33,6 +33,7 @@ import { Symptom } from '@/models/Symptom'
 import { Ticket } from '@/models/Ticket'
 import { Incident } from '@/models/Incident'
 import { Problem } from '@/models/Problem'
+import { Change } from '@/models/Change'
 import '../assets/styles/tab.css'
 
 export default {
@@ -67,7 +68,8 @@ export default {
         'entities': Entity,
         'tickets': Ticket,
         'incidents': Incident,
-        'problems': Problem
+        'problems': Problem,
+        'changes': Change
       }
       
       const model = modelMap[this.objectType]
@@ -84,7 +86,8 @@ export default {
         'entities': 'entity',
         'tickets': 'ticket',
         'incidents': 'incident',
-        'problems': 'problem'
+        'problems': 'problem',
+        'changes': 'change'
       }
       return formTypeMap[this.objectType] || ''
     },
@@ -94,7 +97,8 @@ export default {
         'entities': 'entities.createTitle',
         'tickets': 'tickets.createTitle',
         'incidents': 'incidents.createTitle',
-        'problems': 'problems.createTitle'
+        'problems': 'problems.createTitle',
+        'changes': 'changes.createTitle'
       }
       return titleMap[this.objectType] || ''
     },
@@ -104,7 +108,8 @@ export default {
         'entities': 'uuid',
         'tickets': 'uuid',
         'incidents': 'uuid',
-        'problems': 'uuid'
+        'problems': 'uuid',
+        'changes': 'uuid'
       }
       return identifierMap[this.objectType] || 'uuid'
     },
@@ -114,7 +119,8 @@ export default {
         'entities': 'name',
         'tickets': 'title',
         'incidents': 'title',
-        'problems': 'title'
+        'problems': 'title',
+        'changes': 'title'
       }
       return nameMap[this.objectType] || 'name'
     }
@@ -277,7 +283,8 @@ export default {
         'entities': Entity,
         'tickets': Ticket,
         'incidents': Incident,
-        'problems': Problem
+        'problems': Problem,
+        'changes': Change
       }
       
       const model = modelMap[this.objectType]
