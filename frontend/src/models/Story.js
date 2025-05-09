@@ -192,4 +192,36 @@ export class Story {
     
     return apiData;
   }
+
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des user stories
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('story.title'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('story.status'), type: 'text', format: 'text' },
+      { key: 'project_id', label: t('story.project_id'), type: 'text', format: 'text' },
+      { key: 'epic_id', label: t('story.epic_id'), type: 'text', format: 'text' },
+      { key: 'sprint_id', label: t('story.sprint_id'), type: 'text', format: 'text' },
+      { key: 'story_points', label: t('story.story_points'), type: 'text', format: 'text' },
+      { key: 'priority', label: t('story.priority'), type: 'text', format: 'text' },
+      { key: 'requested_for_name', label: t('story.reporter'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('story.assignee'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+    ];
+  }
+
+  /**
+   * Retourne l'endpoint API pour récupérer les tickets de type story
+   * @returns {string} URL de l'endpoint API
+   */
+  static getApiEndpoint() {
+    const userProfileStore = useUserProfileStore();
+    return `tickets?ticket_type=USER_STORY&lang=${userProfileStore.language}`;
+  }
 }

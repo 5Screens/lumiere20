@@ -27,18 +27,18 @@ export const usePaneStore = defineStore('pane', {
         type: 'configuration',
         hasSections: false,
         items: [
-          { tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
+          { tabToOpen: 'entities', icon: 'fas fa-cube', label: 'configuration.entities' },
+          { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms' }
+          /*{ tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
           { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },
           { tabToOpen: 'sites', icon: 'fas fa-sitemap', label: 'configuration.sites' },
-          { tabToOpen: 'entities', icon: 'fas fa-cube', label: 'configuration.entities' },
           { tabToOpen: 'departments', icon: 'fas fa-users', label: 'configuration.departments' },
           { tabToOpen: 'persons', icon: 'fas fa-user', label: 'configuration.persons' },
           { tabToOpen: 'support-groups', icon: 'fas fa-user-friends', label: 'configuration.supportGroups' },
           { tabToOpen: 'roles', icon: 'fas fa-user-shield', label: 'configuration.roles' },
           { tabToOpen: 'ticket-status', icon: 'fas fa-tasks', label: 'configuration.ticketStatus' },
-          { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms' },
           { tabToOpen: 'ticket-types', icon: 'fas fa-ticket-alt', label: 'configuration.ticketTypes' },
-          { tabToOpen: 'workflows', icon: 'fas fa-project-diagram', label: 'configuration.workflows' }
+          { tabToOpen: 'workflows', icon: 'fas fa-project-diagram', label: 'configuration.workflows' }*/
         ],
         sections: []
       },
@@ -131,7 +131,7 @@ export const usePaneStore = defineStore('pane', {
         hasSections: false,
         items: [
           { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tickets' },
-          { tabToOpen: 'user-stories', icon: 'fas fa-book', label: 'sprintCenter.userStories' },
+          { tabToOpen: 'stories', icon: 'fas fa-book', label: 'sprintCenter.userStories' },
           { tabToOpen: 'projects', icon: 'fas fa-project-diagram', label: 'sprintCenter.projects' },
           { tabToOpen: 'sprints', icon: 'fas fa-running', label: 'sprintCenter.sprints' },
           { tabToOpen: 'epics', icon: 'fas fa-bookmark', label: 'sprintCenter.epics' }
