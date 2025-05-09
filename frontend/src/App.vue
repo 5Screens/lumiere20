@@ -137,7 +137,7 @@
           <button class="close-button" @click="closeNotification">&times;</button>
         </div>
         <div class="notification-body">
-          <p>{{ $t(getMessageTranslationKey()) }}</p>
+          <p>{{ objectStore.message }}</p>
         </div>
       </div>
     </div>
@@ -236,23 +236,7 @@ export default {
     closeNotification() {
       this.objectStore.resetMessage()
     },
-    getMessageTranslationKey() {
-      // Détermine la clé de traduction en fonction du message
-      const message = this.objectStore.message
-      
-      if (!message) return 'notifications.message'
-      
-      // Retourner directement les messages d'erreur
-      if (message.includes(this.$t('errors.identificationLabel'))) return message
-      
-      // Vérifier les messages spécifiques
-      if (message.includes('Création réussie')) return 'notifications.creationSuccess'
-      if (message.includes('Mise à jour réussie')) return 'notifications.updateSuccess'
-      if (message.includes('Suppression réussie')) return 'notifications.deleteSuccess'
-      
-      // Message par défaut
-      return 'notifications.message'
-    }
+
   }
 }
 </script>

@@ -52,7 +52,7 @@ export class Ticket {
       { name: 'ticket_status_code', label: i18n.global.t('ticket.status') },
       { name: 'title', label: i18n.global.t('ticket.title') },
       { name: 'requested_for_uuid', label: i18n.global.t('ticket.requested_for') },
-      { name: 'assigned_to_group', label: i18n.global.t('ticket.assigned_to_group') }
+      { name: 'assigned_to_group', label: i18n.global.t('ticket.assigned_team_label') }
     ];
   }
 
