@@ -11,14 +11,14 @@ export class Problem {
     
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
-      /*{ key: 'title', label: t('problem.title'), type: 'text', format: 'text' },
+      { key: 'title', label: t('problem.title'), type: 'text', format: 'text' },
       { key: 'ticket_status_label', label: t('problem.status'), type: 'text', format: 'text' },
       { key: 'impact_label', label: t('problem.impact'), type: 'text', format: 'text' },
       { key: 'urgency_label', label: t('problem.urgency'), type: 'text', format: 'text' },
       { key: 'assigned_group_name', label: t('problem.assigned_group'), type: 'text', format: 'text' },
       { key: 'assigned_person_name', label: t('problem.assigned_to_person'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }*/
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

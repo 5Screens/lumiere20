@@ -66,7 +66,8 @@ export default {
         'symptoms': Symptom,
         'entities': Entity,
         'tickets': Ticket,
-        'incidents': Incident
+        'incidents': Incident,
+        'problems': Problem
       }
       
       const model = modelMap[this.objectType]

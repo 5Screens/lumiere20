@@ -40,12 +40,20 @@ export default {
   serviceHub: {
     title: 'Hub de Services',
     incidents: 'Incidents',
-    tickets: 'Tickets'
+    tickets: 'Tickets',
+    problems: 'Problèmes',
+    changes: 'Changements',
+    releases: 'Mise en production',
+    knowledge: 'Connaissances',
   },
   sprintCenter: {
     title: 'Centre Sprint',
     tickets: 'Tickets',
-    userStories: 'User Stories'
+    userStories: 'User Stories',
+    sprints: 'Sprints',
+    defects: 'Bugs',
+    epics: 'Épics',
+    projects: 'Projets'    
   },
   underConstruction: {
     title: 'En cours de construction'
