@@ -70,7 +70,7 @@ export class Ticket {
         type: 'sSelectField',
         placeholder: t('ticket.status_placeholder'),
         required: isRequired('ticket_status_code'),
-        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=TICKET`,
         patchEndpoint: 'tickets',
         fieldName: 'ticket_status_code',
         mode: 'creation'
