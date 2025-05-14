@@ -26,7 +26,7 @@ export class Incident {
       { key: 'rel_service', label: t('incident.service'), type: 'text', format: 'text' },
       { key: 'rel_service_offerings', label: t('incident.service_offerings'), type: 'text', format: 'text' },
       { key: 'resolution_code', label: t('incident.resolution_code'), type: 'text', format: 'text' },
-      { key: 'resolution_notes', label: t('incident.resolution_notes'), type: 'text', format: 'text' },
+      { key: 'resolution_notes', label: t('incident.resolution_notes'), type: 'text', format: 'html' },
       { key: 'rel_change_request', label: t('incident.change_request'), type: 'text', format: 'text' },
       { key: 'rel_problem_id', label: t('incident.problem_id'), type: 'text', format: 'text' },
       { key: 'reopen_count', label: t('incident.reopen_count'), type: 'text', format: 'text' },

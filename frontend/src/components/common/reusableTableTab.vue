@@ -78,7 +78,8 @@
                 :key="column.key"
                 :title="row[column.key]"
                 @contextmenu.prevent="showCopyIcon($event, row[column.key])">
-              {{ formatCellContent(row[column.key], column.format) }}
+              <span v-if="column.format === 'html'" v-html="formatCellContent(row[column.key], column.format)"></span>
+              <span v-else>{{ formatCellContent(row[column.key], column.format) }}</span>
             </td>
           </tr>
         </transition-group>
@@ -333,6 +334,11 @@ export default {
       // Add more format handlers as needed
       if (format === 'YYYY-MM-DD') {
         return new Date(content).toISOString().split('T')[0]
+      }
+      
+      // Pour le contenu HTML, on le retourne tel quel pour l'afficher avec v-html
+      if (format === 'html') {
+        return content
       }
       
       return content
