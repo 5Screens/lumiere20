@@ -6,8 +6,8 @@
         v-for="tab in store.parentTabs" 
         :key="tab.id_tab" 
         class="tab" 
-        :class="{ active: store.activeTabId === tab.id_tab }"
-        @click="store.switchTab(tab.id_tab)"
+        :class="{ active: store.isParentTabActive(tab.id_tab) }"
+        @click="handleTabSwitch(tab)"
       >
         <i v-if="tab.icon" :class="tab.icon"></i>
         <span class="tab-title">{{ $t(tab.label) }}</span>
@@ -22,7 +22,7 @@
         :key="tab.id_tab" 
         class="tab" 
         :class="{ active: store.activeChildTabId === tab.id_tab }"
-        @click="store.switchChildTab(tab.id_tab)"
+        @click="handleChildTabSwitch(tab)"
       >
         <i v-if="tab.icon" :class="tab.icon"></i>
         <span class="tab-title">{{ $t(tab.label) }}</span>
@@ -32,8 +32,8 @@
     
     <!-- Contenu des onglets (tous les onglets sont rendus mais seul l'actif est visible) -->
     <div class="tab-content">
-      <!-- Onglets parents -->
-      <div v-for="tab in store.parentTabs" :key="tab.id_tab" v-show="store.activeTabId === tab.id_tab && !store.activeChildTabId">
+      <!-- Onglets parents - affichés uniquement s'ils sont réellement actifs (pas d'onglet enfant actif) -->
+      <div v-for="tab in store.parentTabs" :key="tab.id_tab" v-show="store.isParentTabActive(tab.id_tab)">
         <component 
           :is="getComponentByType(tab.type)" 
           :data="getComponentData(tab)"
@@ -84,7 +84,49 @@ export default {
   },
   computed: {
   },
+  created() {
+    console.info('[HierarchicalTabs] Initialisation du composant')
+  },
+  mounted() {
+    console.info('[HierarchicalTabs] Composant monté')
+  },
   methods: {
+    /**
+     * Gère le changement d'onglet parent
+     * @param {Object} tab - L'onglet à activer
+     */
+    handleTabSwitch(tab) {
+      // Vérifie si l'onglet est déjà réellement actif (affiché)
+      if (this.store.isParentTabActive(tab.id_tab)) {
+        console.info(`[HierarchicalTabs] Onglet ${tab.id_tab} déjà actif, pas de mise à jour.`)
+        return
+      }
+      
+      // Active l'onglet et désactive les enfants si nécessaire
+      const wasActive = this.store.switchTab(tab.id_tab)
+      if (!wasActive) {
+        console.info(`[HierarchicalTabs] Changement d'onglet parent : ${tab.id_tab}`)
+      }
+    },
+    
+    /**
+     * Gère le changement d'onglet enfant
+     * @param {Object} tab - L'onglet enfant à activer
+     */
+    handleChildTabSwitch(tab) {
+      // Vérifie si l'onglet enfant est déjà actif
+      if (this.store.activeChildTabId === tab.id_tab) {
+        console.info(`[HierarchicalTabs] Onglet enfant ${tab.id_tab} déjà actif, pas de mise à jour.`)
+        return
+      }
+      
+      // Active l'onglet enfant
+      const wasActive = this.store.switchChildTab(tab.id_tab)
+      if (!wasActive) {
+        console.info(`[HierarchicalTabs] Changement d'onglet enfant : ${tab.id_tab}`)
+      }
+    },
+    
     // Obtenir le nom du composant en fonction du type d'onglet
     getComponentByType(type) {
       const componentMap = {

@@ -25,7 +25,8 @@ export const useTabsStore = defineStore('tabs', {
         ...tab,
         id_tab: uuidv4(),
         timestamp: new Date().toISOString(),
-        loaded: false // Nouveau champ pour indiquer si l'onglet est chargé
+        loaded: false, // Nouveau champ pour indiquer si l'onglet est chargé
+        isActive: false // Indique si l'onglet est actif
       }
       
       // Si c'est un onglet enfant
@@ -34,10 +35,25 @@ export const useTabsStore = defineStore('tabs', {
         const parentExists = this.tabs.some(t => t.id_tab === tab.parentId)
         if (!parentExists) return
 
+        // Désactiver tous les onglets
+        this.tabs.forEach(t => t.isActive = false)
+        
+        // Activer le nouvel onglet mais PAS son parent
+        newTab.isActive = true
         this.activeChildTabId = newTab.id_tab
         this.activeTabId = tab.parentId
+        
+        // L'onglet parent ne doit pas être marqué comme actif
+        // car c'est l'onglet enfant qui est affiché
+        const parentTab = this.tabs.find(t => t.id_tab === tab.parentId)
+        if (parentTab) parentTab.isActive = false
       } else {
         // Pour un onglet parent
+        // Désactiver tous les onglets
+        this.tabs.forEach(t => t.isActive = false)
+        
+        // Activer le nouvel onglet
+        newTab.isActive = true
         this.activeTabId = newTab.id_tab
         this.activeChildTabId = null
       }
@@ -84,25 +100,57 @@ export const useTabsStore = defineStore('tabs', {
     /**
      * Active un onglet parent existant
      * @param {number} id_tab - ID de l'onglet à activer
+     * @returns {boolean} - true si l'onglet était déjà actif, false sinon
      */
     switchTab(id_tab) {
       const tab = this.tabs.find(t => t.id_tab === id_tab && !t.parentId)
       if (tab) {
+        // Vérifie si l'onglet est déjà actif ET qu'aucun onglet enfant n'est actif
+        if (this.activeTabId === id_tab && !this.activeChildTabId && tab.isActive) {
+          console.info(`[TabsStore] Onglet parent déjà actif : ${id_tab}, pas de réinitialisation.`)
+          return true // L'onglet était déjà actif et aucun enfant n'est actif
+        }
+        
+        // Mettre à jour l'état actif pour tous les onglets
+        this.tabs.forEach(t => {
+          // Si on active un onglet parent, désactiver tous les autres onglets
+          // L'onglet parent est actif uniquement s'il n'a pas d'enfant actif
+          t.isActive = (t.id_tab === id_tab && !t.parentId && !this.activeChildTabId)
+        })
+        
         this.activeTabId = id_tab
         this.activeChildTabId = null
+        return false // L'onglet n'était pas actif avant
       }
+      return false
     },
 
     /**
      * Active un onglet enfant existant
      * @param {number} id_tab - ID de l'onglet enfant à activer
+     * @returns {boolean} - true si l'onglet était déjà actif, false sinon
      */
     switchChildTab(id_tab) {
       const childTab = this.tabs.find(t => t.id_tab === id_tab && t.parentId)
       if (childTab) {
+        // Vérifie si l'onglet est déjà actif
+        if (this.activeChildTabId === id_tab && childTab.isActive) {
+          console.info(`[TabsStore] Onglet enfant déjà actif : ${id_tab}, pas de réinitialisation.`)
+          return true // L'onglet était déjà actif
+        }
+        
+        // Mettre à jour l'état actif pour tous les onglets
+        this.tabs.forEach(t => {
+          // Seul l'onglet enfant est actif, l'onglet parent ne doit PAS être actif
+          t.isActive = (t.id_tab === id_tab && t.parentId)
+          // L'onglet parent est désactivé car c'est l'enfant qui est affiché
+        })
+        
         this.activeChildTabId = id_tab
         this.activeTabId = childTab.parentId
+        return false // L'onglet n'était pas actif avant
       }
+      return false
     },
 
     /**
@@ -112,6 +160,49 @@ export const useTabsStore = defineStore('tabs', {
     markTabAsLoaded(id_tab) {
       const tab = this.tabs.find(t => t.id_tab === id_tab);
       if (tab) tab.loaded = true;
+    },
+    
+    /**
+     * Désactive tous les onglets enfants d'un parent donné
+     * @param {string} parentId - ID de l'onglet parent
+     */
+    deactivateChildren(parentId) {
+      this.tabs.forEach(tab => {
+        if (tab.parentId === parentId) {
+          tab.isActive = false;
+        }
+      });
+    },
+    
+    /**
+     * Définit l'onglet actif et met à jour l'état isActive de tous les onglets
+     * @param {string} tabId - ID de l'onglet à activer
+     */
+    setActiveTab(tabId) {
+      const tab = this.tabs.find(t => t.id_tab === tabId);
+      
+      if (!tab) return;
+      
+      // Mettre à jour l'état isActive pour tous les onglets
+      this.tabs.forEach(t => {
+        if (tab.parentId) {
+          // Si c'est un onglet enfant qu'on active, SEUL l'onglet enfant est actif
+          // L'onglet parent ne doit PAS être actif car c'est l'enfant qui est affiché
+          t.isActive = (t.id_tab === tabId);
+        } else {
+          // Si c'est un onglet parent qu'on active
+          t.isActive = (t.id_tab === tabId);
+        }
+      });
+      
+      // Mettre à jour les IDs actifs
+      if (tab.parentId) {
+        this.activeChildTabId = tabId;
+        this.activeTabId = tab.parentId;
+      } else {
+        this.activeTabId = tabId;
+        this.activeChildTabId = null;
+      }
     },
 
     /**
@@ -135,6 +226,14 @@ export const useTabsStore = defineStore('tabs', {
      * Retourne les onglets enfants de l'onglet parent actif
      */
     activeChildTabs: (state) => state.tabs.filter(tab => tab.parentId === state.activeTabId),
+    
+    /**
+     * Indique si un onglet parent est réellement actif (affiché)
+     * Un onglet parent n'est réellement actif que s'il n'a pas d'onglet enfant actif
+     */
+    isParentTabActive: (state) => (tabId) => {
+      return state.activeTabId === tabId && !state.activeChildTabId;
+    },
 
     /**
      * Retourne l'onglet parent actif
@@ -144,7 +243,17 @@ export const useTabsStore = defineStore('tabs', {
     /**
      * Retourne l'onglet enfant actif
      */
-    activeChildTab: (state) => state.tabs.find(tab => tab.id_tab === state.activeChildTabId)
+    activeChildTab: (state) => state.tabs.find(tab => tab.id_tab === state.activeChildTabId),
+    
+    /**
+     * Retourne l'onglet actif (parent ou enfant)
+     */
+    getActiveTab: (state) => {
+      if (state.activeChildTabId) {
+        return state.tabs.find(tab => tab.id_tab === state.activeChildTabId)
+      }
+      return state.tabs.find(tab => tab.id_tab === state.activeTabId)
+    }
   },
 
   persist: {
