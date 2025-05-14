@@ -30,13 +30,25 @@
       </div>
     </div>
     
-    <!-- Contenu de l'onglet actif -->
+    <!-- Contenu des onglets (tous les onglets sont rendus mais seul l'actif est visible) -->
     <div class="tab-content">
-      <component 
-        :is="activeComponent" 
-        :data="activeComponentData"
-        :key="activeComponentKey"
-      />
+      <!-- Onglets parents -->
+      <div v-for="tab in store.parentTabs" :key="tab.id_tab" v-show="store.activeTabId === tab.id_tab && !store.activeChildTabId">
+        <component 
+          :is="getComponentByType(tab.type)" 
+          :data="getComponentData(tab)"
+          :tabId="tab.id_tab"
+        />
+      </div>
+      
+      <!-- Onglets enfants -->
+      <div v-for="tab in store.activeChildTabs" :key="tab.id_tab" v-show="store.activeChildTabId === tab.id_tab">
+        <component 
+          :is="getComponentByType(tab.type)" 
+          :data="getComponentData(tab)"
+          :tabId="tab.id_tab"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -71,103 +83,6 @@ export default {
     return { store }
   },
   computed: {
-    // Déterminer le composant à afficher en fonction de l'onglet actif
-    activeComponent() {
-      const activeTab = this.store.activeChildTab || this.store.activeTab
-      return activeTab ? this.getComponentByType(activeTab.type) : null
-    },
-    
-    // Obtenir les données du composant actif
-    activeComponentData() {
-      const activeTab = this.store.activeChildTab || this.store.activeTab
-      
-      // Pour ObjectsTab, ajouter des données supplémentaires
-      if (activeTab) {
-        if (activeTab.type === 'symptoms') {
-          return {
-            ...activeTab,
-            apiEndpoint: Symptom.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'entities') {
-          return {
-            ...activeTab,
-            apiEndpoint: Entity.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'tickets') {
-          return {
-            ...activeTab,
-            apiEndpoint: Ticket.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'incidents') {
-          return {
-            ...activeTab,
-            apiEndpoint: Incident.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'problems') {
-          return {
-            ...activeTab,
-            apiEndpoint: Problem.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'changes') {
-          return {
-            ...activeTab,
-            apiEndpoint: Change.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'knowledge') {
-          return {
-            ...activeTab,
-            apiEndpoint: Knowledge_article.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'projects') {
-          return {
-            ...activeTab,
-            apiEndpoint: Project.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'sprints') {
-          return {
-            ...activeTab,
-            apiEndpoint: Sprint.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'epics') {
-          return {
-            ...activeTab,
-            apiEndpoint: Epic.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'stories') {
-          return {
-            ...activeTab,
-            apiEndpoint: Story.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        } else if (activeTab.type === 'defects') {
-          return {
-            ...activeTab,
-            apiEndpoint: Defect.getApiEndpoint(),
-            objectType: activeTab.type
-          }
-        }
-      }
-      
-      return activeTab || null
-    },
-    
-    // Clé unique pour forcer la réinitialisation du composant
-    activeComponentKey() {
-      if (this.store.activeChildTabId) {
-        return `child-${this.store.activeChildTabId}`
-      }
-      return `parent-${this.store.activeTabId}`
-    }
   },
   methods: {
     // Obtenir le nom du composant en fonction du type d'onglet
@@ -190,6 +105,38 @@ export default {
         // 'incident': 'ObjectTab' // À implémenter plus tard
       }
       return componentMap[type] || null
+    },
+    
+    // Obtenir les données du composant en fonction de l'onglet
+    getComponentData(tab) {
+      // Pour ObjectsTab, ajouter des données supplémentaires
+      if (tab) {
+        const modelMap = {
+          'symptoms': Symptom,
+          'entities': Entity,
+          'tickets': Ticket,
+          'incidents': Incident,
+          'problems': Problem,
+          'changes': Change,
+          'knowledge': Knowledge_article,
+          'projects': Project,
+          'sprints': Sprint,
+          'epics': Epic,
+          'stories': Story,
+          'defects': Defect
+        }
+        
+        const model = modelMap[tab.type]
+        if (model && typeof model.getApiEndpoint === 'function') {
+          return {
+            ...tab,
+            apiEndpoint: model.getApiEndpoint(),
+            objectType: tab.type
+          }
+        }
+      }
+      
+      return tab || null
     }
   }
 }

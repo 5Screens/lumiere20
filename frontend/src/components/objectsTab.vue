@@ -10,6 +10,10 @@
       @export="handleExport"
       @refresh="handleRefresh"
     />
+    <!-- Indicateur de chargement -->
+    <div v-if="loading" class="loading-indicator">
+      {{ $t('common.loading') }}
+    </div>
     <!-- Tableau réutilisable -->
     <reusable-table-tab
       ref="table"
@@ -63,7 +67,22 @@ export default {
     return {
       apiUrl: this.getApiEndpoint(),
       selectedRow: null,
-      objectType: this.data.objectType || ''
+      objectType: this.data.objectType || '',
+      loading: false
+    }
+  },
+  mounted() {
+    // Vérifier si les données ont déjà été chargées pour cet onglet
+    if (!this.store.isTabLoaded(this.store.activeTabId)) {
+      this.fetchData()
+    }
+  },
+  watch: {
+    // Surveiller les changements d'onglet actif pour charger les données si nécessaire
+    'store.activeTabId': function(newTabId) {
+      if (newTabId && !this.store.isTabLoaded(newTabId)) {
+        this.fetchData()
+      }
     }
   },
   computed: {
@@ -201,7 +220,24 @@ export default {
       }
     },
     handleRefresh() {
-      this.$refs.table.fetchData()
+      this.fetchData(true)
+    },
+    async fetchData(forceRefresh = false) {
+      // Si les données sont déjà chargées et qu'on ne force pas le rafraîchissement, on ne fait rien
+      if (!forceRefresh && this.store.isTabLoaded(this.store.activeTabId)) {
+        return
+      }
+      
+      this.loading = true
+      try {
+        await this.$refs.table.fetchData()
+        // Marquer l'onglet comme chargé dans le store
+        this.store.markTabAsLoaded(this.store.activeTabId)
+      } catch (error) {
+        this.handleError(error)
+      } finally {
+        this.loading = false
+      }
     },
     async handleImport() {
       try {
@@ -317,8 +353,23 @@ export default {
 </script>
 
 <style>
-.objects-tab {
-  padding: 1rem;
-  height: 100%;
-}
+  /* Styles spécifiques au composant */
+  .objects-tab {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+  }
 </style>

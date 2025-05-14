@@ -25,6 +25,7 @@ export const useTabsStore = defineStore('tabs', {
         ...tab,
         id_tab: uuidv4(),
         timestamp: new Date().toISOString(),
+        loaded: false // Nouveau champ pour indiquer si l'onglet est chargé
       }
       
       // Si c'est un onglet enfant
@@ -102,6 +103,25 @@ export const useTabsStore = defineStore('tabs', {
         this.activeChildTabId = id_tab
         this.activeTabId = childTab.parentId
       }
+    },
+
+    /**
+     * Marque un onglet comme chargé
+     * @param {string} id_tab - ID de l'onglet à marquer comme chargé
+     */
+    markTabAsLoaded(id_tab) {
+      const tab = this.tabs.find(t => t.id_tab === id_tab);
+      if (tab) tab.loaded = true;
+    },
+
+    /**
+     * Vérifie si un onglet est chargé
+     * @param {string} id_tab - ID de l'onglet à vérifier
+     * @returns {boolean} - true si l'onglet est chargé, false sinon
+     */
+    isTabLoaded(id_tab) {
+      const tab = this.tabs.find(t => t.id_tab === id_tab);
+      return tab ? tab.loaded : false;
     }
   },
 
