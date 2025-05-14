@@ -21,6 +21,7 @@ export const useTabsStore = defineStore('tabs', {
      * @param {Object} tab - Données de l'onglet à ouvrir
      */
     openTab(tab) {
+      console.log('[TabsStore] Exécution de openTab()', tab)
       const newTab = {
         ...tab,
         id_tab: uuidv4(),
@@ -66,6 +67,7 @@ export const useTabsStore = defineStore('tabs', {
      * @param {number} id_tab - ID de l'onglet à fermer
      */
     closeTab(id_tab) {
+      console.log('[TabsStore] Exécution de closeTab()', id_tab)
       // Ferme d'abord les onglets enfants
       this.closeChildTabs(id_tab)
 
@@ -88,6 +90,7 @@ export const useTabsStore = defineStore('tabs', {
      * @param {number} parentId - ID de l'onglet parent
      */
     closeChildTabs(parentId) {
+      console.log('[TabsStore] Exécution de closeChildTabs()', parentId)
       this.tabs = this.tabs.filter(tab => tab.parentId !== parentId)
       if (this.activeChildTabId) {
         const childStillExists = this.tabs.some(t => t.id_tab === this.activeChildTabId)
@@ -103,6 +106,7 @@ export const useTabsStore = defineStore('tabs', {
      * @returns {boolean} - true si l'onglet était déjà actif, false sinon
      */
     switchTab(id_tab) {
+      console.log('[TabsStore] Exécution de switchTab()', id_tab)
       const tab = this.tabs.find(t => t.id_tab === id_tab && !t.parentId)
       if (tab) {
         // Vérifie si l'onglet est déjà actif ET qu'aucun onglet enfant n'est actif
@@ -131,6 +135,7 @@ export const useTabsStore = defineStore('tabs', {
      * @returns {boolean} - true si l'onglet était déjà actif, false sinon
      */
     switchChildTab(id_tab) {
+      console.log('[TabsStore] Exécution de switchChildTab()', id_tab)
       const childTab = this.tabs.find(t => t.id_tab === id_tab && t.parentId)
       if (childTab) {
         // Vérifie si l'onglet est déjà actif
@@ -158,6 +163,7 @@ export const useTabsStore = defineStore('tabs', {
      * @param {string} id_tab - ID de l'onglet à marquer comme chargé
      */
     markTabAsLoaded(id_tab) {
+      console.log('[TabsStore] Exécution de markTabAsLoaded()', id_tab)
       const tab = this.tabs.find(t => t.id_tab === id_tab);
       if (tab) tab.loaded = true;
     },
@@ -167,6 +173,7 @@ export const useTabsStore = defineStore('tabs', {
      * @param {string} parentId - ID de l'onglet parent
      */
     deactivateChildren(parentId) {
+      console.log('[TabsStore] Exécution de deactivateChildren()', parentId)
       this.tabs.forEach(tab => {
         if (tab.parentId === parentId) {
           tab.isActive = false;
@@ -179,6 +186,7 @@ export const useTabsStore = defineStore('tabs', {
      * @param {string} tabId - ID de l'onglet à activer
      */
     setActiveTab(tabId) {
+      console.log('[TabsStore] Exécution de setActiveTab()', tabId)
       const tab = this.tabs.find(t => t.id_tab === tabId);
       
       if (!tab) return;
@@ -211,6 +219,7 @@ export const useTabsStore = defineStore('tabs', {
      * @returns {boolean} - true si l'onglet est chargé, false sinon
      */
     isTabLoaded(id_tab) {
+      console.log('[TabsStore] Exécution de isTabLoaded()', id_tab)
       const tab = this.tabs.find(t => t.id_tab === id_tab);
       return tab ? tab.loaded : false;
     }
@@ -249,6 +258,7 @@ export const useTabsStore = defineStore('tabs', {
      * Retourne l'onglet actif (parent ou enfant)
      */
     getActiveTab: (state) => {
+      console.log('[TabsStore] Exécution de getActiveTab getter')
       if (state.activeChildTabId) {
         return state.tabs.find(tab => tab.id_tab === state.activeChildTabId)
       }

@@ -79,15 +79,18 @@ export default {
     EntityForm
   },
   setup() {
+    console.log('[HierarchicalTabs] Exécution de setup()')
     const store = useTabsStore()
     return { store }
   },
   computed: {
   },
   created() {
+    console.log('[HierarchicalTabs] Exécution de created()')
     console.info('[HierarchicalTabs] Initialisation du composant')
   },
   mounted() {
+    console.log('[HierarchicalTabs] Exécution de mounted()')
     console.info('[HierarchicalTabs] Composant monté')
   },
   methods: {
@@ -96,6 +99,7 @@ export default {
      * @param {Object} tab - L'onglet à activer
      */
     handleTabSwitch(tab) {
+      console.log('[HierarchicalTabs] Exécution de handleTabSwitch()', tab)
       // Vérifie si l'onglet est déjà réellement actif (affiché)
       if (this.store.isParentTabActive(tab.id_tab)) {
         console.info(`[HierarchicalTabs] Onglet ${tab.id_tab} déjà actif, pas de mise à jour.`)
@@ -114,6 +118,7 @@ export default {
      * @param {Object} tab - L'onglet enfant à activer
      */
     handleChildTabSwitch(tab) {
+      console.log('[HierarchicalTabs] Exécution de handleChildTabSwitch()', tab)
       // Vérifie si l'onglet enfant est déjà actif
       if (this.store.activeChildTabId === tab.id_tab) {
         console.info(`[HierarchicalTabs] Onglet enfant ${tab.id_tab} déjà actif, pas de mise à jour.`)
@@ -129,6 +134,7 @@ export default {
     
     // Obtenir le nom du composant en fonction du type d'onglet
     getComponentByType(type) {
+      console.log('[HierarchicalTabs] Exécution de getComponentByType()', type)
       const componentMap = {
         'symptoms': 'ObjectsTab',
         'entities': 'ObjectsTab',
@@ -151,6 +157,7 @@ export default {
     
     // Obtenir les données du composant en fonction de l'onglet
     getComponentData(tab) {
+      console.log('[HierarchicalTabs] Exécution de getComponentData()', tab)
       // Pour ObjectsTab, ajouter des données supplémentaires
       if (tab) {
         const modelMap = {
