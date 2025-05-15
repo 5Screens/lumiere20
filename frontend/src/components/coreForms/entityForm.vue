@@ -220,11 +220,8 @@ const error = ref(null);
 const fetchEntityData = async (forceRefresh = false) => {
   if (!entityId.value) return;
   
-  // Vérifier dans le store si l'entité a déjà été chargée
-  if (!forceRefresh && tabsStore.isEntityLoaded(entityId.value)) {
-    console.log('[fetchEntityData] Data already loaded for entity ID:', entityId.value);
-    return;
-  }
+  // Ne pas vérifier si l'entité est déjà chargée, toujours charger les données
+  console.log('[fetchEntityData] Loading data for entity ID:', entityId.value);
   
   try {
     loading.value = true;
@@ -279,8 +276,8 @@ const fetchEntityData = async (forceRefresh = false) => {
     entityData.value = transformedData;
     console.log('[fetchEntityData] Updated entity data:', entityData.value);
     
-    // Marquer l'entité comme chargée dans le store
-    tabsStore.markEntityAsLoaded(entityId.value);
+    // Ne plus utiliser le système de marquage des entités chargées
+    console.log('[fetchEntityData] Entity data loaded successfully');
     
   } catch (err) {
     console.error('[fetchEntityData] Error:', err);

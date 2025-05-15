@@ -13,8 +13,7 @@ export const useTabsStore = defineStore('tabs', {
     activeTabId: null,
     // ID de l'onglet enfant actif
     activeChildTabId: null,
-    // Suivi des entités déjà chargées pour éviter les appels API redondants
-    loadedEntities: {},
+    // Nous n'utilisons plus le suivi des entités chargées
   }),
 
   actions: {
@@ -224,27 +223,6 @@ export const useTabsStore = defineStore('tabs', {
       console.log('[TabsStore] Exécution de isTabLoaded()', id_tab)
       const tab = this.tabs.find(t => t.id_tab === id_tab);
       return tab ? tab.loaded : false;
-    },
-    
-    /**
-     * Marque une entité comme chargée pour éviter de refaire des appels API
-     * @param {string} entityId - ID de l'entité à marquer comme chargée
-     */
-    markEntityAsLoaded(entityId) {
-      console.log('[TabsStore] Marquage de l\'entité comme chargée:', entityId);
-      if (entityId) {
-        this.loadedEntities[entityId] = true;
-      }
-    },
-    
-    /**
-     * Vérifie si une entité est déjà chargée
-     * @param {string} entityId - ID de l'entité à vérifier
-     * @returns {boolean} - true si l'entité est chargée, false sinon
-     */
-    isEntityLoaded(entityId) {
-      console.log('[TabsStore] Vérification si l\'entité est chargée:', entityId);
-      return entityId ? !!this.loadedEntities[entityId] : false;
     }
   },
 
