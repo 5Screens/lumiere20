@@ -77,14 +77,7 @@ export default {
       this.fetchData()
     }
   },
-  watch: {
-    // Surveiller les changements d'onglet actif pour charger les données si nécessaire
-    'store.activeTabId': function(newTabId) {
-      if (newTabId && !this.store.isTabLoaded(newTabId)) {
-        this.fetchData()
-      }
-    }
-  },
+  // Le watcher a été supprimé car il causait une double initialisation
   computed: {
     columns() {
       // Utiliser les modèles pour obtenir les colonnes
@@ -227,6 +220,9 @@ export default {
       if (!forceRefresh && this.store.isTabLoaded(this.store.activeTabId)) {
         return
       }
+      
+      // Ajout d'un log pour déboguer
+      console.log('[ObjectsTab] Chargement des données pour l\'onglet', this.store.activeTabId)
       
       this.loading = true
       try {

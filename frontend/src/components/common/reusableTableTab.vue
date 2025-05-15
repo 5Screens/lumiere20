@@ -312,8 +312,13 @@ export default {
      * Récupère les données depuis l'API en utilisant le service API centralisé
      */
     async fetchData() {
+      console.log('[ReusableTableTab] Début fetchData() - URL:', this.apiUrl);
+      console.log('[ReusableTableTab] Stack trace:', new Error().stack);
+      
       try {
+        console.log('[ReusableTableTab] Envoi de la requête API...');
         const response = await apiService.get(this.apiUrl);
+        console.log('[ReusableTableTab] Réponse API reçue, nombre d\'éléments:', response.length);
         
         // Traiter directement la réponse comme un tableau
         this.tableData = response.map(item => {
@@ -322,9 +327,12 @@ export default {
             selected: false
           };
         });
+        console.log('[ReusableTableTab] Données traitées et stockées dans tableData');
       } catch (error) {
-        console.error('Erreur lors de la récupération des données:', error);
+        console.error('[ReusableTableTab] Erreur lors de la récupération des données:', error);
         this.$emit('error', error.message || 'Erreur lors de la récupération des données');
+      } finally {
+        console.log('[ReusableTableTab] Fin fetchData()');
       }
     },
     formatCellContent(content, format) {
@@ -573,7 +581,8 @@ export default {
     this.columns.forEach(column => {
       this.filters[column.key] = ''
     })
-    this.fetchData()
+    // L'appel à fetchData() a été supprimé ici pour éviter la double initialisation
+    // Le chargement des données est maintenant géré uniquement par le composant parent (objectsTab.vue)
   },
   mounted() {
     this.initializeColumnWidths()
