@@ -41,14 +41,16 @@
         />
       </div>
       
-      <!-- Onglets enfants -->
-      <div v-for="tab in store.activeChildTabs" :key="tab.id_tab" v-show="store.activeChildTabId === tab.id_tab">
-        <component 
-          :is="getComponentByType(tab.type)" 
-          :data="getComponentData(tab)"
-          :tabId="tab.id_tab"
-        />
-      </div>
+      <!-- Onglets enfants - Utilisation de keep-alive pour conserver l'instance des composants -->
+      <keep-alive>
+        <div v-for="tab in store.tabs.filter(t => t.parentId)" :key="tab.id_tab" v-show="store.activeChildTabId === tab.id_tab">
+          <component 
+            :is="getComponentByType(tab.type)" 
+            :data="getComponentData(tab)"
+            :tabId="tab.id_tab"
+          />
+        </div>
+      </keep-alive>
     </div>
   </div>
 </template>

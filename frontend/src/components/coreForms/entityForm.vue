@@ -217,8 +217,14 @@ const loading = ref(false);
 const error = ref(null);
 
 // Chargement des données de l'entité si on est en mode édition
-const fetchEntityData = async () => {
+const fetchEntityData = async (forceRefresh = false) => {
   if (!entityId.value) return;
+  
+  // Vérifier dans le store si l'entité a déjà été chargée
+  if (!forceRefresh && tabsStore.isEntityLoaded(entityId.value)) {
+    console.log('[fetchEntityData] Data already loaded for entity ID:', entityId.value);
+    return;
+  }
   
   try {
     loading.value = true;
@@ -272,6 +278,9 @@ const fetchEntityData = async () => {
     // Mettre à jour les données du formulaire
     entityData.value = transformedData;
     console.log('[fetchEntityData] Updated entity data:', entityData.value);
+    
+    // Marquer l'entité comme chargée dans le store
+    tabsStore.markEntityAsLoaded(entityId.value);
     
   } catch (err) {
     console.error('[fetchEntityData] Error:', err);
@@ -452,7 +461,7 @@ const handleAction = () => {
 // Initialisation du composant
 onMounted(async () => {
   if (entityId.value) {
-    await fetchEntityData();
+    await fetchEntityData(false); // false = ne pas forcer le rechargement
   }
 });
 </script>
