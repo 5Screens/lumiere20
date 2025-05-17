@@ -136,7 +136,8 @@ export default {
     
     // Obtenir le nom du composant en fonction du type d'onglet
     getComponentByType(type) {
-      console.log('[HierarchicalTabs] Exécution de getComponentByType()', type)
+      console.log('[HierarchicalTabs] Exécution de getComponentByType()', type);
+      console.log('[HierarchicalTabs] Stack trace de getComponentByType:', new Error().stack);
       const componentMap = {
         'symptoms': 'ObjectsTab',
         'entities': 'ObjectsTab',
@@ -159,7 +160,8 @@ export default {
     
     // Obtenir les données du composant en fonction de l'onglet
     getComponentData(tab) {
-      console.log('[HierarchicalTabs] Exécution de getComponentData()', tab)
+      console.log('[HierarchicalTabs] Exécution de getComponentData()', tab);
+      console.log('[HierarchicalTabs] Stack trace de getComponentData:', new Error().stack);
       // Pour ObjectsTab, ajouter des données supplémentaires
       if (tab) {
         const modelMap = {
