@@ -440,6 +440,7 @@ onMounted(async () => {
   updateModelValue();
 });
 
+//Marc 18/05 - Supprimer les surveillances suivantes car elles sont gérées par le composant parent (je crois :) 
 // Surveiller les changements de props
 /*watch(() => props.pickedItems, async () => {
   if (!props.edition) {
