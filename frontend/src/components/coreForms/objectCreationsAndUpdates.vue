@@ -24,6 +24,17 @@
           :label="field.label"
           :required="field.required"
           :placeholder="field.placeholder"
+          :helperText="field.helperText"
+          :disabled="field.disabled"
+          :readonly="field.readonly"
+          :inputType="field.inputType"
+          :min="field.min"
+          :max="field.max"
+          :step="field.step"
+          :uuid="objectId"
+          :fieldName="fieldName"
+          :apiEndpoint="field.apiEndpoint"
+          :editMode="mode === 'update'"
         />
         
         <!-- Champ de sélection -->
@@ -33,10 +44,10 @@
           :label="field.label"
           :required="field.required"
           :placeholder="field.placeholder"
-          :options-endpoint="getEndpoint(field.endpoint, formData)"
+          :endpoint="getEndpoint(field.endpoint, formData)"
           :mode="mode"
           :uuid="objectId"
-          :patch-endpoint="field.patchEndpoint"
+          :patchEndpoint="field.patchEndpoint"
           @update:success="handleFieldSuccess"
         />
         
@@ -57,9 +68,9 @@
           :required="field.required"
           :placeholder="field.placeholder"
           :endpoint="getEndpoint(field.endpoint, formData)"
-          :display-field="field.displayField"
-          :value-field="field.valueField"
-          :columns-config="field.columnsConfig"
+          :displayField="field.displayField"
+          :valueField="field.valueField"
+          :columnsConfig="field.columnsConfig"
           @update:modelValue="handleFieldChange(fieldName, $event)"
         />
         
@@ -69,13 +80,13 @@
           v-model="formData[fieldName]"
           :label="field.label"
           :required="field.required"
-          :helper-text="field.helperText"
+          :helperText="field.helperText"
           :placeholder="field.placeholder"
-          :source-end-point="field.sourceEndPoint"
-          :displayed-label="field.displayedLabel"
-          :target-end-point="field.targetEndPoint"
+          :sourceEndPoint="field.sourceEndPoint"
+          :displayedLabel="field.displayedLabel"
+          :targetEndPoint="field.targetEndPoint"
           :target_uuid="objectId"
-          :picked-items="formData[fieldName]"
+          :pickedItems="formData[fieldName]"
         />
         
         <!-- Sélecteur de date -->
@@ -84,6 +95,9 @@
           v-model="formData[fieldName]"
           :label="field.label"
           :required="field.required"
+          :placeholder="field.placeholder"
+          :helperText="field.helperText"
+          :disabled="field.disabled"
         />
         
         <!-- Champ de bascule -->
@@ -100,8 +114,7 @@
           v-model="formData[fieldName]"
           :label="field.label"
           :required="field.required"
-          :object-type="objectType"
-          :object-id="objectId"
+          :uuid="objectId"
         />
       </template>
       
