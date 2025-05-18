@@ -82,9 +82,9 @@
           :required="field.required"
           :helperText="field.helperText"
           :placeholder="field.placeholder"
-          :sourceEndPoint="field.sourceEndPoint"
+          :sourceEndPoint="getEndpoint(field.sourceEndPoint, formData)"
           :displayedLabel="field.displayedLabel"
-          :targetEndPoint="field.targetEndPoint"
+          :targetEndPoint="getEndpoint(field.targetEndPoint, formData)"
           :target_uuid="objectId"
           :pickedItems="formData[fieldName]"
         />
@@ -395,14 +395,14 @@ onMounted(async () => {
 });
 
 // Surveiller les changements dans les données du formulaire
-watch(formData, (newValue) => {
+/*watch(formData, (newValue) => {
   // Mettre à jour l'objet dans le store
   tabsStore.updateObjectInEditing(props.tabId, {
     objectType: props.objectType,
     objectId: props.objectId,
     data: { ...newValue }
   });
-}, { deep: true });
+}, { deep: true });*/
 </script>
 
 <style scoped src="@/assets/styles/forms.css"></style>
