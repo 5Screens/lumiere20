@@ -441,7 +441,7 @@ onMounted(async () => {
 });
 
 // Surveiller les changements de props
-watch(() => props.pickedItems, async () => {
+/*watch(() => props.pickedItems, async () => {
   if (!props.edition) {
     await fetchSourceItems();
     await fetchTargetItems();
@@ -473,5 +473,5 @@ watch(() => props.modelValue, (newValue) => {
     targetItems.value = newTargetItems;
     originalTargetItems.value = [...newTargetItems];
   }
-}, { deep: true });
+}, { deep: true });*/
 </script>
