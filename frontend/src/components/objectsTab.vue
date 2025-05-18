@@ -123,12 +123,18 @@ export default {
     },
     createTitle() {
       const titleMap = {
-        'symptoms': 'symptoms.createTitle',
-        'entities': 'entities.createTitle',
-        'tickets': 'tickets.createTitle',
-        'incidents': 'incidents.createTitle',
-        'problems': 'problems.createTitle',
-        'changes': 'changes.createTitle'
+        'symptoms': 'objectCreationsAndUpdates.symptomCreation',
+        'entities': 'objectCreationsAndUpdates.entityCreation',
+        'tickets': 'objectCreationsAndUpdates.ticketCreation',
+        'incidents': 'objectCreationsAndUpdates.incidentCreation',
+        'problems': 'objectCreationsAndUpdates.problemCreation',
+        'changes': 'objectCreationsAndUpdates.changeCreation',
+        'knowledge': 'objectCreationsAndUpdates.knowledgeCreation',
+        'projects': 'objectCreationsAndUpdates.projectCreation',
+        'sprints': 'objectCreationsAndUpdates.sprintCreation',
+        'epics': 'objectCreationsAndUpdates.epicCreation',
+        'stories': 'objectCreationsAndUpdates.storyCreation',
+        'defects': 'objectCreationsAndUpdates.defectCreation'
       }
       return titleMap[this.objectType] || ''
     },
