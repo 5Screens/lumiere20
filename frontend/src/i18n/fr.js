@@ -46,6 +46,57 @@ export default {
     releases: 'Mise en production',
     knowledge: 'Connaissances',
   },
+  
+  // Section pour le composant objectCreationsAndUpdates
+  objectCreationsAndUpdates: {
+    // Titres pour les incidents
+    incidentCreation: 'Créer un incident',
+    incidentUpdate: 'Modifier l\'incident',
+    
+    // Titres pour les symptômes
+    symptomCreation: 'Créer un symptôme',
+    symptomUpdate: 'Modifier le symptôme',
+    
+    // Titres pour les entités
+    entityCreation: 'Créer une entité',
+    entityUpdate: 'Modifier l\'entité',
+    
+    // Titres pour les tickets
+    ticketCreation: 'Créer un ticket',
+    ticketUpdate: 'Modifier le ticket',
+    
+    // Titres pour les problèmes
+    problemCreation: 'Créer un problème',
+    problemUpdate: 'Modifier le problème',
+    
+    // Titres pour les changements
+    changeCreation: 'Créer un changement',
+    changeUpdate: 'Modifier le changement',
+    
+    // Titres pour les articles de connaissance
+    knowledgeCreation: 'Créer un article de connaissance',
+    knowledgeUpdate: 'Modifier l\'article de connaissance',
+    
+    // Titres pour les projets
+    projectCreation: 'Créer un projet',
+    projectUpdate: 'Modifier le projet',
+    
+    // Titres pour les sprints
+    sprintCreation: 'Créer un sprint',
+    sprintUpdate: 'Modifier le sprint',
+    
+    // Titres pour les épopées
+    epicCreation: 'Créer une épopée',
+    epicUpdate: 'Modifier l\'épopée',
+    
+    // Titres pour les histoires
+    storyCreation: 'Créer une histoire',
+    storyUpdate: 'Modifier l\'histoire',
+    
+    // Titres pour les défauts
+    defectCreation: 'Créer un défaut',
+    defectUpdate: 'Modifier le défaut'
+  },
   sprintCenter: {
     title: 'Centre Sprint',
     tickets: 'Tickets',

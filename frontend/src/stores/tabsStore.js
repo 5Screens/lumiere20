@@ -13,10 +13,60 @@ export const useTabsStore = defineStore('tabs', {
     activeTabId: null,
     // ID de l'onglet enfant actif
     activeChildTabId: null,
+    // Objets en cours de création/modification
+    objectsInEditing: {},
     // Nous n'utilisons plus le suivi des entités chargées
   }),
-
+  
   actions: {
+
+    /**
+     * Définit un objet en cours de création/modification
+     * @param {string} tabId - ID de l'onglet
+     * @param {Object} objectData - Données de l'objet
+     */
+    setObjectInEditing(tabId, objectData) {
+      console.log('[TabsStore] Exécution de setObjectInEditing()', tabId, objectData)
+      this.objectsInEditing[tabId] = objectData
+    },
+
+    /**
+     * Met à jour un objet en cours de création/modification
+     * @param {string} tabId - ID de l'onglet
+     * @param {Object} objectData - Données de l'objet
+     */
+    updateObjectInEditing(tabId, objectData) {
+      console.log('[TabsStore] Exécution de updateObjectInEditing()', tabId, objectData)
+      if (this.objectsInEditing[tabId]) {
+        this.objectsInEditing[tabId] = {
+          ...this.objectsInEditing[tabId],
+          data: objectData.data
+        }
+      } else {
+        this.setObjectInEditing(tabId, objectData)
+      }
+    },
+
+    /**
+     * Supprime un objet en cours de création/modification
+     * @param {string} tabId - ID de l'onglet
+     */
+    removeObjectInEditing(tabId) {
+      console.log('[TabsStore] Exécution de removeObjectInEditing()', tabId)
+      if (this.objectsInEditing[tabId]) {
+        delete this.objectsInEditing[tabId]
+      }
+    },
+
+    /**
+     * Récupère un objet en cours de création/modification
+     * @param {string} tabId - ID de l'onglet
+     * @returns {Object|null} - Données de l'objet ou null si non trouvé
+     */
+    getObjectInEditing(tabId) {
+      return this.objectsInEditing[tabId] || null
+    },
+    
     /**
      * Ouvre un nouvel onglet et l'active
      * @param {Object} tab - Données de l'onglet à ouvrir
@@ -82,6 +132,9 @@ export const useTabsStore = defineStore('tabs', {
         this.activeTabId = prevTab ? prevTab.id_tab : null
         this.activeChildTabId = null
       }
+
+      // Supprimer les données de l'objet en cours d'édition
+      this.removeObjectInEditing(id_tab)
 
       this.tabs.splice(tabIndex, 1)
     },
@@ -270,6 +323,6 @@ export const useTabsStore = defineStore('tabs', {
   persist: {
     key: 'tabs-store',
     storage: localStorage,
-    paths: ['tabs', 'activeTabId', 'activeChildTabId']
+    paths: ['tabs', 'activeTabId', 'activeChildTabId', 'objectsInEditing']
   }
 })

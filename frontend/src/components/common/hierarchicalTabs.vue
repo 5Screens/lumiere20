@@ -45,8 +45,17 @@
       <keep-alive>
         <div v-for="tab in store.tabs.filter(t => t.parentId)" :key="tab.id_tab" v-show="store.activeChildTabId === tab.id_tab">
           <component 
+            v-if="tab.type !== 'objectForm'"
             :is="getComponentByType(tab.type)" 
             :data="getComponentData(tab)"
+            :tabId="tab.id_tab"
+          />
+          <component 
+            v-else
+            :is="getComponentByType(tab.type)" 
+            :mode="tab.data?.mode"
+            :objectType="tab.data?.objectType"
+            :objectId="tab.data?.objectId"
             :tabId="tab.id_tab"
           />
         </div>
@@ -60,6 +69,7 @@ import { useTabsStore } from '@/stores/tabsStore'
 import ObjectsTab from '@/components/objectsTab.vue'
 import SymptomsForm from '@/components/coreForms/symptomsForm.vue'
 import EntityForm from '@/components/coreForms/entityForm.vue'
+import ObjectCreationsAndUpdates from '@/components/coreForms/objectCreationsAndUpdates.vue'
 import { Entity } from '@/models/Entity'
 import { Symptom } from '@/models/Symptom'
 import { Ticket } from '@/models/Ticket'
@@ -78,7 +88,8 @@ export default {
   components: {
     ObjectsTab,
     SymptomsForm,
-    EntityForm
+    EntityForm,
+    ObjectCreationsAndUpdates
   },
   setup() {
     console.log('[HierarchicalTabs] Exécution de setup()')
@@ -152,8 +163,8 @@ export default {
         'stories': 'ObjectsTab',
         'defects': 'ObjectsTab',
         'symptom': 'SymptomsForm',
-        'entity': 'EntityForm'
-        // 'incident': 'ObjectTab' // À implémenter plus tard
+        'entity': 'EntityForm',
+        'objectForm': 'ObjectCreationsAndUpdates'
       }
       return componentMap[type] || null
     },

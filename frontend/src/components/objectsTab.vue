@@ -111,7 +111,13 @@ export default {
         'tickets': 'ticket',
         'incidents': 'incident',
         'problems': 'problem',
-        'changes': 'change'
+        'changes': 'change',
+        'knowledge': 'knowledge',
+        'projects': 'project',
+        'sprints': 'sprint',
+        'epics': 'epic',
+        'stories': 'story',
+        'defects': 'defect'
       }
       return formTypeMap[this.objectType] || ''
     },
@@ -151,12 +157,16 @@ export default {
   },
   methods: {
     handleCreate() {
+      // Utiliser le nouveau composant objectCreationsAndUpdates.vue
       this.store.openTab({
-        id: `${this.formType}-form-${Date.now()}`,
+        id_tab: `${this.formType}-form-${Date.now()}`,
         label: this.createTitle,
-        type: this.formType,
+        type: 'objectForm',
         icon: 'fas fa-plus',
-        data: { mode: 'create' },
+        data: { 
+          mode: 'creation',
+          objectType: this.formType
+        },
         parentId: this.store.activeTabId
       })
     },
@@ -171,27 +181,33 @@ export default {
           uniqueSymptomCodes.forEach(symptomCode => {
             if (!symptomCode) return // Ignorer les lignes sans code de symptôme
             
+            // Utiliser le nouveau composant pour les symptômes
             this.store.openTab({
-              id: `${this.formType}-form-${symptomCode}-${Date.now()}`,
+              id_tab: `${this.formType}-form-${symptomCode}-${Date.now()}`,
               label: symptomCode,
-              type: this.formType,
+              type: 'objectForm',
               icon: 'fas fa-edit',
-              mode: 'update',
-              symptomCode: symptomCode,
+              data: {
+                mode: 'update',
+                objectType: this.formType,
+                objectId: symptomCode
+              },
               parentId: this.store.activeTabId
             })
           })
         } else {
-          // Logique pour les autres types d'objets
+          // Logique pour les autres types d'objets avec le nouveau composant
           selectedRows.forEach(row => {
             this.store.openTab({
-              id: `${this.formType}-form-${row[this.uniqueIdentifier]}-${Date.now()}`,
+              id_tab: `${this.formType}-form-${row[this.uniqueIdentifier]}-${Date.now()}`,
               label: row[this.nameField],
-              type: this.formType,
+              type: 'objectForm',
               icon: 'fas fa-edit',
-              mode: 'update',
-              entityId: row.uuid,
-              name: row[this.nameField],
+              data: {
+                mode: 'update',
+                objectType: this.formType,
+                objectId: row.uuid
+              },
               parentId: this.store.activeTabId
             })
           })
