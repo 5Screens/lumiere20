@@ -199,6 +199,8 @@ const formData = ref({});
 const loading = ref(false);
 const error = ref(null);
 const modelInstance = ref(null);
+const auditData = ref([]);
+const validationErrors = ref({});
 
 // Computed properties
 const title = computed(() => {
@@ -278,13 +280,6 @@ const fetchObjectData = async () => {
     if (ModelClass) {
       modelInstance.value = new ModelClass(data);
       formData.value = { ...modelInstance.value };
-      
-      // Enregistrer l'objet dans le store
-      tabsStore.setObjectInEditing(props.tabId, {
-        objectType: props.objectType,
-        objectId: props.objectId,
-        data: { ...formData.value }
-      });
     }
   } catch (err) {
     console.error(`[objectCreationsAndUpdates] Erreur lors de la récupération des données: ${err.message}`, err);
@@ -295,58 +290,183 @@ const fetchObjectData = async () => {
   }
 };
 
-const handleSave = async () => {
+/**
+ * Vérifie si tous les champs requis sont remplis
+ * @returns {boolean} - true si tous les champs requis sont remplis, false sinon
+ */
+const checkRequiredFields = () => {
+  console.log('[checkRequiredFields] Vérification des champs requis');
+  
+  // Récupérer les champs requis
+  const requiredFields = Object.entries(formFields.value)
+    .filter(([_, field]) => field.required)
+    .map(([fieldName, field]) => ({ name: fieldName, label: field.label }));
+  
+  console.log('[checkRequiredFields] Champs requis identifiés:', requiredFields);
+  console.log('[checkRequiredFields] Données du formulaire:', formData.value);
+  
+  // Réinitialiser les erreurs de validation
+  validationErrors.value = {};
+  
+  // Vérifier si chaque champ requis est rempli
+  let missingFields = [];
+  
+  requiredFields.forEach(field => {
+    console.log(`[checkRequiredFields] Vérification du champ '${field.name}' avec valeur:`, formData.value[field.name]);
+    const value = formData.value[field.name];
+    
+    // Vérifier si la valeur est vide (null, undefined, chaîne vide, ou tableau vide)
+    if (value === null || value === undefined || value === '' || 
+        (Array.isArray(value) && value.length === 0)) {
+      console.warn(`[checkRequiredFields] Champ requis '${field.name}' est vide`);
+      missingFields.push(field);
+      
+      // Ajouter une erreur de validation pour ce champ
+      validationErrors.value[field.name] = `Le champ "${field.label}" est requis`;
+    }
+  });
+  
+  if (missingFields.length > 0) {
+    console.warn(`[checkRequiredFields] ${missingFields.length} champs requis sont manquants:`, missingFields);
+    
+    // Construire un message d'erreur avec la liste des champs manquants
+    const fieldLabels = missingFields.map(field => field.label).join(', ');
+    error.value = t('errors.requiredFields', { fields: fieldLabels });
+    
+    return false;
+  }
+  
+  console.log('[checkRequiredFields] Tous les champs requis sont remplis');
+  return true;
+};
+
+/**
+ * Upload les fichiers en attente pour un objet nouvellement créé
+ * @param {string} objectUuid - UUID de l'objet créé
+ * @param {Array} files - Liste des fichiers à uploader
+ * @returns {Promise<Array>} - Liste des fichiers uploadés
+ */
+const uploadPendingAttachments = async (objectUuid, files) => {
   try {
-    // Vérifier que tous les champs requis sont remplis
-    const requiredFields = Object.entries(formFields.value)
-      .filter(([_, field]) => field.required)
-      .map(([fieldName, field]) => ({ name: fieldName, label: field.label }));
+    console.log(`[uploadPendingAttachments] Uploading ${files?.length || 0} pending attachments for object ${objectUuid}`);
     
-    const missingFields = requiredFields.filter(field => 
-      !formData.value[field.name] || 
-      (Array.isArray(formData.value[field.name]) && formData.value[field.name].length === 0)
-    );
-    
-    if (missingFields.length > 0) {
-      const missingFieldsText = missingFields.map(field => field.label).join(', ');
-      throw new Error(t('errors.requiredFields', { fields: missingFieldsText }));
+    if (!files || !files.length || !objectUuid) {
+      console.warn('[uploadPendingAttachments] No files to upload or missing objectUuid');
+      return [];
     }
     
+    // Préparer le FormData pour l'upload multiple
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    formData.append('objectType', props.objectType.toUpperCase());
+    formData.append('objectUuid', objectUuid);
+    
+    // Si le modèle a un writer_uuid, l'utiliser comme uploadedBy
+    if (modelInstance.value.writer_uuid) {
+      formData.append('uploadedBy', modelInstance.value.writer_uuid);
+    }
+    
+    // Logs pour vérifier le contenu du FormData
+    console.log('[uploadPendingAttachments] FormData content: objectType:', props.objectType.toUpperCase());
+    console.log('[uploadPendingAttachments] FormData content: objectUuid:', objectUuid);
+    
+    // Appeler le service API pour l'upload
+    const response = await apiService.uploadFormData('attachments/upload-multiple', formData);
+    console.log('[uploadPendingAttachments] Attachments uploaded successfully:', response);
+    
+    return response.attachments || [];
+  } catch (err) {
+    console.error('[uploadPendingAttachments] Error uploading attachments:', err);
+    error.value = `Erreur lors de l'upload des pièces jointes: ${err.message}`;
+    return [];
+  }
+};
+
+/**
+ * Gère la sauvegarde de l'objet (création ou mise à jour)
+ */
+const handleSave = async () => {
+  console.log('[handleSave] Début de la fonction handleSave');
+  try {
+    // Réinitialiser les erreurs
+    error.value = null;
+    
+    // Vérifier que tous les champs requis sont remplis
+    if (!checkRequiredFields()) {
+      console.error('[handleSave] Erreur: champs requis manquants');
+      alert(error.value);
+      return;
+    }
+    
+    console.log('[handleSave] Tous les champs requis sont remplis, activation du chargement');
     loading.value = true;
     
     // Mettre à jour l'instance du modèle avec les données du formulaire
+    console.log('[handleSave] Instance du modèle avant mise à jour:', JSON.stringify(modelInstance.value));
     Object.assign(modelInstance.value, formData.value);
+    console.log('[handleSave] Instance du modèle après mise à jour:', JSON.stringify(modelInstance.value));
     
     // Préparer les données pour l'API
-    const apiData = modelInstance.value.toAPI ? modelInstance.value.toAPI(props.mode) : formData.value;
+    console.log('[handleSave] Préparation des données pour l\'API');
+    // Convertir le mode en méthode HTTP appropriée
+    const httpMethod = props.mode === 'creation' ? 'POST' : 'PUT';
+    console.log(`[handleSave] Mode: ${props.mode}, méthode HTTP: ${httpMethod}`);
+    const apiData = modelInstance.value.toAPI ? modelInstance.value.toAPI(httpMethod) : formData.value;
+    console.log('[handleSave] Données préparées pour l\'API:', apiData);
     
     let response;
+    const endpoint = props.mode === 'creation' ? `${props.objectType}s` : `${props.objectType}s/${props.objectId}`;
+    
+    // Créer ou mettre à jour l'objet via l'API
     if (props.mode === 'creation') {
-      // Créer un nouvel objet
-      const endpoint = `${props.objectType}s`;
+      console.log(`[handleSave] Mode création, appel POST vers l'endpoint: ${endpoint}`);
       response = await apiService.post(endpoint, apiData);
     } else {
-      // Mettre à jour un objet existant
-      const endpoint = `${props.objectType}s/${props.objectId}`;
+      console.log(`[handleSave] Mode mise à jour, appel PUT vers l'endpoint: ${endpoint}`);
       response = await apiService.put(endpoint, apiData);
     }
     
+    console.log('[handleSave] Réponse de l\'API:', response);
+    
+    // Traiter les pièces jointes si présentes
+    const filesUploaderRef = document.querySelector('s-file-uploader');
+    if (filesUploaderRef && filesUploaderRef.__vueParentComponent && filesUploaderRef.__vueParentComponent.component.exposed) {
+      const fileUploaderComponent = filesUploaderRef.__vueParentComponent.component.exposed;
+      const pendingFiles = fileUploaderComponent.getFiles ? fileUploaderComponent.getFiles() : [];
+      
+      if (pendingFiles && pendingFiles.length > 0) {
+        console.log(`[handleSave] ${pendingFiles.length} fichiers en attente d'upload détectés`);        
+        await uploadPendingAttachments(response.uuid, pendingFiles);
+      }
+    }
+    
     // Émettre l'événement de succès
+    console.log('[handleSave] Émission de l\'événement saved');
     emit('saved', response);
     
     // Afficher un message de confirmation
+    console.log(`[handleSave] Affichage du message de confirmation: ${t(`${props.objectType}.saveSuccess`)}`);
     alert(t(`${props.objectType}.saveSuccess`));
     
     // Fermer l'onglet
+    console.log(`[handleSave] Fermeture de l'onglet avec l'ID: ${props.tabId}`);
     tabsStore.closeTab(props.tabId);
+    console.log('[handleSave] Onglet fermé avec succès');
   } catch (err) {
-    console.error(`[objectCreationsAndUpdates] Erreur lors de la sauvegarde: ${err.message}`, err);
+    console.error(`[handleSave] Erreur lors de la sauvegarde: ${err.message}`, err);
+    console.error('[handleSave] Stack trace:', err.stack);
     error.value = err.message || t('errors.saveData');
+    console.log(`[handleSave] Message d'erreur défini: ${error.value}`);
     emit('error', error.value);
+    console.log('[handleSave] Événement d\'erreur émis');
     
     // Afficher un message d'erreur
+    console.log(`[handleSave] Affichage de l'alerte d'erreur: ${error.value}`);
     alert(error.value);
   } finally {
+    console.log('[handleSave] Fin du traitement, désactivation du chargement');
     loading.value = false;
   }
 };
