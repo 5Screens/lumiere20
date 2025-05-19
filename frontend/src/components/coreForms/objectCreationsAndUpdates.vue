@@ -331,7 +331,8 @@ const checkRequiredFields = () => {
     
     // Construire un message d'erreur avec la liste des champs manquants
     const fieldLabels = missingFields.map(field => field.label).join(', ');
-    error.value = t('errors.requiredFields', { fields: fieldLabels });
+    // Utiliser le même format que dans objectStore.js pour afficher la liste des champs manquants
+    error.value = `${t('errors.identificationLabel')} - ${t('errors.requiredFields')} ${fieldLabels}`;
     
     return false;
   }
