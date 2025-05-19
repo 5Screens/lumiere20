@@ -396,7 +396,7 @@ const handleSave = async () => {
     // Vérifier que tous les champs requis sont remplis
     if (!checkRequiredFields()) {
       console.error('[handleSave] Erreur: champs requis manquants');
-      alert(error.value);
+      tabsStore.setMessage(error.value);
       return;
     }
     
@@ -446,9 +446,9 @@ const handleSave = async () => {
     console.log('[handleSave] Émission de l\'événement saved');
     emit('saved', response);
     
-    // Afficher un message de confirmation
+    // Afficher un message de confirmation via le store
     console.log(`[handleSave] Affichage du message de confirmation: ${t(`${props.objectType}.saveSuccess`)}`);
-    alert(t(`${props.objectType}.saveSuccess`));
+    tabsStore.setMessage(t(`${props.objectType}.saveSuccess`));
     
     // Fermer l'onglet
     console.log(`[handleSave] Fermeture de l'onglet avec l'ID: ${props.tabId}`);
@@ -462,9 +462,9 @@ const handleSave = async () => {
     emit('error', error.value);
     console.log('[handleSave] Événement d\'erreur émis');
     
-    // Afficher un message d'erreur
-    console.log(`[handleSave] Affichage de l'alerte d'erreur: ${error.value}`);
-    alert(error.value);
+    // Afficher un message d'erreur via le store
+    console.log(`[handleSave] Affichage du message d'erreur: ${error.value}`);
+    tabsStore.setMessage(error.value);
   } finally {
     console.log('[handleSave] Fin du traitement, désactivation du chargement');
     loading.value = false;

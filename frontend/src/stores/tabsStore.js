@@ -15,10 +15,28 @@ export const useTabsStore = defineStore('tabs', {
     activeChildTabId: null,
     // Objets en cours de création/modification
     objectsInEditing: {},
+    // Message d'information ou d'erreur
+    message: null,
     // Nous n'utilisons plus le suivi des entités chargées
   }),
   
   actions: {
+    /**
+     * Définit un message de notification
+     * @param {string} message - Message à afficher
+     */
+    setMessage(message) {
+      console.log('[TabsStore] Définition du message:', message)
+      this.message = message
+    },
+
+    /**
+     * Réinitialise le message
+     */
+    resetMessage() {
+      console.log('[TabsStore] Réinitialisation du message')
+      this.message = null
+    },
 
     /**
      * Définit un objet en cours de création/modification
@@ -280,6 +298,12 @@ export const useTabsStore = defineStore('tabs', {
   },
 
   getters: {
+    /**
+     * Retourne le message courant
+     */
+    currentMessage(state) {
+      return state.message
+    },
     /**
      * Retourne les onglets parents
      */

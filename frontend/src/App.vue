@@ -129,15 +129,15 @@
       @close="closeCreateModal"
     />
 
-    <!-- Fenêtre modale pour afficher les messages du store objectStore -->
-    <div v-if="objectStore.message" class="notification-modal">
+    <!-- Fenêtre modale pour afficher les messages des stores -->
+    <div v-if="objectStore.message || tabsStore.message" class="notification-modal">
       <div class="notification-content">
         <div class="notification-header">
           <h3>{{ $t('notifications.title') }}</h3>
           <button class="close-button" @click="closeNotification">&times;</button>
         </div>
         <div class="notification-body">
-          <p>{{ objectStore.message }}</p>
+          <p>{{ objectStore.message || tabsStore.message }}</p>
         </div>
       </div>
     </div>
@@ -235,6 +235,7 @@ export default {
     },
     closeNotification() {
       this.objectStore.resetMessage()
+      this.tabsStore.resetMessage()
     },
 
   }
