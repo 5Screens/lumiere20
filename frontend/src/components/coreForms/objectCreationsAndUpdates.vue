@@ -418,7 +418,41 @@ const handleSave = async () => {
     console.log('[handleSave] Données préparées pour l\'API:', apiData);
     
     let response;
-    const endpoint = props.mode === 'creation' ? `${props.objectType}s` : `${props.objectType}s/${props.objectId}`;
+    
+    // Obtenir l'endpoint à partir de la méthode statique getApiEndpoint du modèle
+    let endpoint;
+    if (props.mode === 'creation') {
+      // Récupérer la classe du modèle à partir du type d'objet
+      const modelMap = {
+        'entity': Entity,
+        'symptom': Symptom,
+        'ticket': Ticket,
+        'incident': Incident,
+        'problem': Problem,
+        'change': Change,
+        'knowledge': Knowledge_article,
+        'project': Project,
+        'sprint': Sprint,
+        'epic': Epic,
+        'story': Story,
+        'defect': Defect
+      };
+      
+      const ModelClass = modelMap[props.objectType];
+      
+      if (ModelClass && typeof ModelClass.getApiEndpoint === 'function') {
+        endpoint = ModelClass.getApiEndpoint();
+        console.log(`[handleSave] Endpoint obtenu via getApiEndpoint: ${endpoint}`);
+      } else {
+        // Fallback au cas où la méthode getApiEndpoint n'existe pas
+        endpoint = `${props.objectType}s`;
+        console.log(`[handleSave] Méthode getApiEndpoint non disponible, utilisation du fallback: ${endpoint}`);
+      }
+    } else {
+      // Pour les mises à jour, on ajoute l'ID à l'endpoint
+      endpoint = `${props.objectType}s/${props.objectId}`;
+      console.log(`[handleSave] Mode mise à jour, endpoint: ${endpoint}`);
+    }
     
     // Créer ou mettre à jour l'objet via l'API
     if (props.mode === 'creation') {
