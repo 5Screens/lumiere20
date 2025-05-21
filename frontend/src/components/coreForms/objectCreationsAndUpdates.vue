@@ -454,6 +454,22 @@ const handleSave = async () => {
       console.log(`[handleSave] Mode mise à jour, endpoint: ${endpoint}`);
     }
     
+    // Vérifier s'il y a des pièces jointes à uploader dans formData
+    let pendingAttachments = [];
+    
+    // Vérifier si attachments existe dans l'objet formData
+    if (formData.value && formData.value.attachments && 
+        Array.isArray(formData.value.attachments) && 
+        formData.value.attachments.length > 0) {
+      
+      // Filtrer pour ne garder que les fichiers qui n'ont pas d'UUID (non encore uploadés)
+      pendingAttachments = formData.value.attachments.filter(file => !file.uuid);
+      
+      if (pendingAttachments.length > 0) {
+        console.log(`[handleSave] Found ${pendingAttachments.length} pending attachments in formData`);
+      }
+    }
+    
     // Créer ou mettre à jour l'objet via l'API
     if (props.mode === 'creation') {
       console.log(`[handleSave] Mode création, appel POST vers l'endpoint: ${endpoint}`);
@@ -465,15 +481,15 @@ const handleSave = async () => {
     
     console.log('[handleSave] Réponse de l\'API:', response);
     
-    // Traiter les pièces jointes si présentes
-    const filesUploaderRef = document.querySelector('s-file-uploader');
-    if (filesUploaderRef && filesUploaderRef.__vueParentComponent && filesUploaderRef.__vueParentComponent.component.exposed) {
-      const fileUploaderComponent = filesUploaderRef.__vueParentComponent.component.exposed;
-      const pendingFiles = fileUploaderComponent.getFiles ? fileUploaderComponent.getFiles() : [];
-      
-      if (pendingFiles && pendingFiles.length > 0) {
-        console.log(`[handleSave] ${pendingFiles.length} fichiers en attente d'upload détectés`);        
-        await uploadPendingAttachments(response.uuid, pendingFiles);
+    // Si des fichiers sont en attente et que nous avons un UUID, les uploader
+    if (pendingAttachments.length > 0 && response && response.uuid) {
+      console.log(`[handleSave] Uploading ${pendingAttachments.length} pending attachments for object ${response.uuid}`);
+      try {
+        await uploadPendingAttachments(response.uuid, pendingAttachments);
+        console.log('[handleSave] Attachments uploaded successfully');
+      } catch (uploadError) {
+        console.error('[handleSave] Error uploading attachments:', uploadError);
+        // Continuer même en cas d'erreur d'upload des pièces jointes
       }
     }
     
