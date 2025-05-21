@@ -32,15 +32,20 @@ const getIncidents = async (lang) => {
             p4.uuid as assigned_person_uuid,
             -- Extraction des attributs spécifiques aux incidents depuis le JSONB
             t.core_extended_attributes->>'impact' as impact,
+            COALESCE(impacts_t.label, t.core_extended_attributes->>'impact') as impact_label,
             t.core_extended_attributes->>'urgency' as urgency,
+            COALESCE(urgencies_t.label, t.core_extended_attributes->>'urgency') as urgency_label,
             (t.core_extended_attributes->>'priority')::integer as priority,
             t.core_extended_attributes->>'cause_code' as cause_code,
+            COALESCE(cause_codes_t.label, t.core_extended_attributes->>'cause_code') as cause_code_label,
             t.core_extended_attributes->>'rel_service' as rel_service,
             t.core_extended_attributes->>'contact_type' as contact_type,
+            COALESCE(contact_types_t.label, t.core_extended_attributes->>'contact_type') as contact_type_label,
             (t.core_extended_attributes->>'reopen_count')::integer as reopen_count,
             (t.core_extended_attributes->>'standby_count')::integer as standby_count,
             t.core_extended_attributes->>'rel_problem_id' as rel_problem_id,
             t.core_extended_attributes->>'resolution_code' as resolution_code,
+            COALESCE(resolution_codes_t.label, t.core_extended_attributes->>'resolution_code') as resolution_code_label,
             (t.core_extended_attributes->>'assignment_count')::integer as assignment_count,
             t.core_extended_attributes->>'resolution_notes' as resolution_notes,
             t.core_extended_attributes->>'rel_change_request' as rel_change_request,
@@ -63,6 +68,14 @@ const getIncidents = async (lang) => {
         ) rtgp ON t.uuid = rtgp.rel_ticket
         LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
         LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+
+        -- Traductions additionnelles pour les attributs spécifiques incidents
+        LEFT JOIN translations.incident_impacts_labels impacts_t ON impacts_t.rel_incident_impact_code = t.core_extended_attributes->>'impact' AND impacts_t.language = $1
+        LEFT JOIN translations.incident_urgencies_labels urgencies_t ON urgencies_t.rel_incident_urgency_code = t.core_extended_attributes->>'urgency' AND urgencies_t.language = $1
+        LEFT JOIN translations.incident_cause_codes_labels cause_codes_t ON cause_codes_t.rel_incident_cause_code_code = t.core_extended_attributes->>'cause_code' AND cause_codes_t.language = $1
+        LEFT JOIN translations.contact_types_labels contact_types_t ON contact_types_t.rel_contact_type_code = t.core_extended_attributes->>'contact_type' AND contact_types_t.language = $1
+        LEFT JOIN translations.incident_resolution_codes_labels resolution_codes_t ON resolution_codes_t.rel_incident_resolution_code = t.core_extended_attributes->>'resolution_code' AND resolution_codes_t.language = $1
+
         WHERE t.ticket_type_code = 'INCIDENT'
     `;
     
