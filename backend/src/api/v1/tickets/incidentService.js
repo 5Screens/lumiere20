@@ -44,13 +44,17 @@ const getIncidents = async (lang) => {
             (t.core_extended_attributes->>'reopen_count')::integer as reopen_count,
             (t.core_extended_attributes->>'standby_count')::integer as standby_count,
             t.core_extended_attributes->>'rel_problem_id' as rel_problem_id,
+            problem.title as rel_problem_title,
             t.core_extended_attributes->>'resolution_code' as resolution_code,
             COALESCE(resolution_codes_t.label, t.core_extended_attributes->>'resolution_code') as resolution_code_label,
             (t.core_extended_attributes->>'assignment_count')::integer as assignment_count,
             t.core_extended_attributes->>'resolution_notes' as resolution_notes,
             t.core_extended_attributes->>'rel_change_request' as rel_change_request,
+            change_request.title as rel_change_request_title,
             (t.core_extended_attributes->>'assignment_to_count')::integer as assignment_to_count,
-            t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings
+            t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
+            service.name as rel_service_name,
+            service_offerings.name as rel_service_offerings_name
         FROM core.tickets t
         LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
         LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
@@ -75,6 +79,12 @@ const getIncidents = async (lang) => {
         LEFT JOIN translations.incident_cause_codes_labels cause_codes_t ON cause_codes_t.rel_incident_cause_code_code = t.core_extended_attributes->>'cause_code' AND cause_codes_t.language = $1
         LEFT JOIN translations.contact_types_labels contact_types_t ON contact_types_t.rel_contact_type_code = t.core_extended_attributes->>'contact_type' AND contact_types_t.language = $1
         LEFT JOIN translations.incident_resolution_codes_labels resolution_codes_t ON resolution_codes_t.rel_incident_resolution_code = t.core_extended_attributes->>'resolution_code' AND resolution_codes_t.language = $1
+        
+        -- Jointures pour récupérer les informations liées
+        LEFT JOIN core.tickets problem ON problem.uuid = (t.core_extended_attributes->>'rel_problem_id')::uuid
+        LEFT JOIN core.tickets change_request ON change_request.uuid = (t.core_extended_attributes->>'rel_change_request')::uuid
+        LEFT JOIN data.services service ON service.uuid = (t.core_extended_attributes->>'rel_service')::uuid
+        LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid = (t.core_extended_attributes->>'rel_service_offerings')::uuid
 
         WHERE t.ticket_type_code = 'INCIDENT'
     `;
