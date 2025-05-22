@@ -1,5 +1,6 @@
 const ticketService = require('./service');
 const incidentService = require('./incidentService');
+const taskService = require('./taskService');
 const logger = require('../../../config/logger');
 
 const getTickets = async (req, res) => {
@@ -182,11 +183,51 @@ const getTicketTeamMembers = async (req, res) => {
     }
 };
 
+const getTicketById = async (req, res) => {
+    try {
+        logger.info(`[CONTROLLER] Processing GET /tickets/${req.params.uuid} request`);
+        const ticketUuid = req.params.uuid;
+        const { lang, ticket_type } = req.query;
+        
+        // Vérifier que l'UUID est valide
+        if (!ticketUuid || ticketUuid.trim() === '') {
+            logger.error('[CONTROLLER] Invalid ticket UUID provided');
+            return res.status(400).json({ error: 'Invalid ticket UUID' });
+        }
+        
+        let ticket;
+        
+        // Utiliser le service approprié selon le type de ticket
+        switch (ticket_type) {
+            case 'TASK':
+                logger.info(`[CONTROLLER] Calling taskService.getTaskById for UUID: ${ticketUuid}`);
+                ticket = await taskService.getTaskById(ticketUuid, lang || 'en');
+                break;
+            // Ajouter d'autres cas pour les différents types de tickets si nécessaire
+            default:
+                logger.info(`[CONTROLLER] Calling ticketService.getTicketById for UUID: ${ticketUuid}`);
+                ticket = await ticketService.getTicketById(ticketUuid, lang || 'en');
+                break;
+        }
+        
+        if (!ticket) {
+            logger.warn(`[CONTROLLER] No ticket found with UUID: ${ticketUuid}`);
+            return res.status(404).json({ error: 'Ticket not found' });
+        }
+        
+        res.json(ticket);
+    } catch (error) {
+        logger.error('[CONTROLLER] Error in getTicketById:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
     getTicketTeam,
     getTicketTeamMembers,
     getProjectEpics,
-    getProjectSprints
+    getProjectSprints,
+    getTicketById
 };

@@ -68,6 +68,12 @@ router.post('/', validateCreateTicket, (req, res, next) => {
     ticketController.createTicket(req, res);
 });
 
+// Route pour récupérer un ticket spécifique par son UUID
+router.get('/:uuid', (req, res, next) => {
+    logger.info(`[ROUTES] Handling GET /tickets/${req.params.uuid} request`);
+    ticketController.getTicketById(req, res);
+});
+
 // Route pour récupérer l'équipe assignée à un ticket
 router.get('/:uuid/team', (req, res, next) => {
     logger.info(`[ROUTES] Handling GET /tickets/${req.params.uuid}/team request`);
