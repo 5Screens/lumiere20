@@ -222,6 +222,39 @@ const getTicketById = async (req, res) => {
     }
 };
 
+const updateTicket = async (req, res) => {
+    try {
+        logger.info(`[CONTROLLER] Processing PATCH /tickets/${req.params.uuid} request`);
+        const ticketUuid = req.params.uuid;
+        
+        // Vérifier que l'UUID est valide
+        if (!ticketUuid || ticketUuid.trim() === '') {
+            logger.error('[CONTROLLER] Invalid ticket UUID provided');
+            return res.status(400).json({ error: 'Invalid ticket UUID' });
+        }
+        
+        // Déléguer la mise à jour au service
+        const updatedTicket = await ticketService.updateTicket(ticketUuid, req.body);
+        
+        if (!updatedTicket) {
+            logger.error(`[CONTROLLER] Failed to update ticket with UUID: ${ticketUuid}`);
+            return res.status(404).json({ error: 'Ticket not found or update failed' });
+        }
+        
+        logger.info(`[CONTROLLER] Successfully updated ticket with UUID: ${ticketUuid}`);
+        res.json(updatedTicket);
+    } catch (error) {
+        logger.error('[CONTROLLER] Error in updateTicket:', error);
+        if (error.constraint) {
+            res.status(400).json({ error: 'Invalid reference data' });
+        } else if (error.message === 'Not implemented') {
+            res.status(501).json({ error: 'PATCH not implemented for this ticket type' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
@@ -229,5 +262,6 @@ module.exports = {
     getTicketTeamMembers,
     getProjectEpics,
     getProjectSprints,
-    getTicketById
+    getTicketById,
+    updateTicket
 };

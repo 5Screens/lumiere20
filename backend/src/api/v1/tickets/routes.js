@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ticketController = require('./controller');
-const { validateGetTickets, validateCreateTicket } = require('./validation');
+const { validateGetTickets, validateCreateTicket, validateUpdateTicket } = require('./validation');
 const logger = require('../../../config/logger');
 
 router.get('/', validateGetTickets, (req, res, next) => {
@@ -96,6 +96,12 @@ router.get('/:uuid/epics', (req, res, next) => {
 router.get('/:uuid/sprints', (req, res, next) => {
     logger.info(`[ROUTES] Handling GET /tickets/${req.params.uuid}/sprints request`);
     ticketController.getProjectSprints(req, res);
+});
+
+// Route pour mettre à jour partiellement un ticket (PATCH)
+router.patch('/:uuid', validateUpdateTicket, (req, res, next) => {
+    logger.info(`[ROUTES] Handling PATCH /tickets/${req.params.uuid} request`);
+    ticketController.updateTicket(req, res);
 });
 
 module.exports = router;

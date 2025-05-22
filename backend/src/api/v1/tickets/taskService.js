@@ -136,7 +136,85 @@ const getTasks = async (lang = 'en') => {
     }
 };
 
+/**
+ * Met à jour partiellement une tâche par son UUID
+ * @param {string} uuid - UUID de la tâche à mettre à jour
+ * @param {Object} updateData - Données à mettre à jour
+ * @returns {Promise<Object>} - Détails de la tâche mise à jour
+ */
+const updateTask = async (uuid, updateData) => {
+    logger.info(`[TASK SERVICE] Updating task with UUID: ${uuid}`);
+    
+    try {
+        // Vérifier que la tâche existe et est de type TASK
+        const checkQuery = `
+            SELECT uuid FROM core.tickets 
+            WHERE uuid = $1 AND ticket_type_code = 'TASK'
+        `;
+        const checkResult = await db.query(checkQuery, [uuid]);
+        
+        if (checkResult.rows.length === 0) {
+            logger.error(`[TASK SERVICE] No task found with UUID: ${uuid}`);
+            return null;
+        }
+        
+        // Construire la requête de mise à jour dynamiquement
+        const allowedFields = [
+            'title', 'description', 'configuration_item_uuid',
+            'ticket_status_code', 'requested_by_uuid', 'requested_for_uuid'
+        ];
+        
+        // Filtrer les champs autorisés à être mis à jour
+        const fieldsToUpdate = Object.keys(updateData).filter(field => 
+            allowedFields.includes(field)
+        );
+        
+        if (fieldsToUpdate.length === 0) {
+            logger.warn(`[TASK SERVICE] No valid fields to update for task with UUID: ${uuid}`);
+            return await getTaskById(uuid, 'en'); // Retourner la tâche sans modifications
+        }
+        
+        // Construire la requête SQL dynamiquement
+        let setClause = fieldsToUpdate.map((field, index) => 
+            `${field} = $${index + 2}`
+        ).join(', ');
+        
+        // Ajouter la mise à jour de updated_at
+        setClause += ', updated_at = CURRENT_TIMESTAMP';
+        
+        const updateQuery = `
+            UPDATE core.tickets
+            SET ${setClause}
+            WHERE uuid = $1
+            RETURNING *
+        `;
+        
+        // Préparer les valeurs pour la requête
+        const values = [uuid];
+        fieldsToUpdate.forEach(field => {
+            values.push(updateData[field]);
+        });
+        
+        logger.info(`[TASK SERVICE] Executing update query for task with UUID: ${uuid}`);
+        const result = await db.query(updateQuery, values);
+        
+        if (result.rows.length === 0) {
+            logger.error(`[TASK SERVICE] Failed to update task with UUID: ${uuid}`);
+            return null;
+        }
+        
+        logger.info(`[TASK SERVICE] Successfully updated task with UUID: ${uuid}`);
+        
+        // Récupérer la tâche mise à jour avec toutes ses informations
+        return await getTaskById(uuid, 'en');
+    } catch (error) {
+        logger.error(`[TASK SERVICE] Error updating task with UUID ${uuid}:`, error);
+        throw error;
+    }
+};
+
 module.exports = {
     getTaskById,
-    getTasks
+    getTasks,
+    updateTask
 };

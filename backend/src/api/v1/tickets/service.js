@@ -827,6 +827,52 @@ const getTicketById = async (uuid, lang = 'en') => {
     }
 };
 
+/**
+ * Met à jour partiellement un ticket par son UUID
+ * @param {string} uuid - UUID du ticket à mettre à jour
+ * @param {Object} updateData - Données à mettre à jour
+ * @returns {Promise<Object>} - Détails du ticket mis à jour
+ */
+const updateTicket = async (uuid, updateData) => {
+    logger.info(`[SERVICE] Updating ticket with UUID: ${uuid}`);
+    
+    try {
+        // Vérifier le type de ticket
+        const ticketTypeQuery = 'SELECT ticket_type_code FROM core.tickets WHERE uuid = $1';
+        const ticketTypeResult = await db.query(ticketTypeQuery, [uuid]);
+        
+        if (ticketTypeResult.rows.length === 0) {
+            logger.error(`[SERVICE] No ticket found with UUID: ${uuid}`);
+            return null;
+        }
+        
+        const ticketType = ticketTypeResult.rows[0].ticket_type_code;
+        logger.info(`[SERVICE] Ticket type for UUID ${uuid}: ${ticketType}`);
+        
+        // Utiliser le service approprié selon le type de ticket
+        let updatedTicket;
+        
+        // Importer le service approprié selon le type de ticket
+        const taskService = require('./taskService');
+        
+        switch (ticketType) {
+            case 'TASK':
+                logger.info(`[SERVICE] Calling taskService.updateTask for UUID: ${uuid}`);
+                updatedTicket = await taskService.updateTask(uuid, updateData);
+                break;
+            // Ajouter d'autres cas pour les différents types de tickets si nécessaire
+            default:
+                logger.error(`[SERVICE] PATCH not implemented for ticket type: ${ticketType}`);
+                throw new Error('Not implemented');
+        }
+        
+        return updatedTicket;
+    } catch (error) {
+        logger.error(`[SERVICE] Error updating ticket with UUID ${uuid}:`, error);
+        throw error;
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
@@ -834,5 +880,6 @@ module.exports = {
     getTicketTeamMembers,
     getProjectEpics,
     getProjectSprints,
-    getTicketById
+    getTicketById,
+    updateTicket
 };

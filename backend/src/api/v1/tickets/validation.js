@@ -339,7 +339,30 @@ const validateCreateTicket = (req, res, next) => {
     next();
 };
 
+const validateUpdateTicket = (req, res, next) => {
+    logger.info('[VALIDATION] Validating PATCH /tickets/:uuid request');
+    
+    // Schéma pour la mise à jour partielle d'un ticket
+    const updateSchema = Joi.object({
+        title: Joi.string(),
+        description: Joi.string().allow('', null),
+        configuration_item_uuid: Joi.string().uuid().allow(null, ''),
+        ticket_status_code: Joi.string(),
+        requested_by_uuid: Joi.string().uuid().allow(null, ''),
+        requested_for_uuid: Joi.string().uuid().allow(null, '')
+    }).min(1); // Au moins un champ doit être fourni
+
+    const { error } = updateSchema.validate(req.body);
+    if (error) {
+        logger.error('[VALIDATION] Invalid request body for PATCH:', error.details[0].message);
+        return res.status(400).json({ error: error.details[0].message });
+    }
+
+    next();
+};
+
 module.exports = {
     validateGetTickets,
-    validateCreateTicket
+    validateCreateTicket,
+    validateUpdateTicket
 };
