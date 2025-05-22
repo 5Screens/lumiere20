@@ -40,7 +40,7 @@ export default {
   serviceHub: {
     title: 'Hub de Services',
     incidents: 'Incidents',
-    tickets: 'Tickets',
+    tasks: 'Tâches',
     problems: 'Problèmes',
     changes: 'Changements',
     releases: 'Mise en production',
@@ -61,9 +61,9 @@ export default {
     entityCreation: 'Créer une entité',
     entityUpdate: 'Modifier l\'entité',
     
-    // Titres pour les tickets
-    ticketCreation: 'Créer un ticket',
-    ticketUpdate: 'Modifier le ticket',
+    // Titres pour les tâches
+    ticketCreation: 'Créer une tâche',
+    ticketUpdate: 'Modifier la tâche',
     
     // Titres pour les problèmes
     problemCreation: 'Créer un problème',
@@ -99,7 +99,7 @@ export default {
   },
   sprintCenter: {
     title: 'Centre Sprint',
-    tickets: 'Tickets',
+    tasks: 'Tâches',
     userStories: 'User Stories',
     sprints: 'Sprints',
     defects: 'Bugs',
@@ -120,9 +120,9 @@ export default {
     persons: 'Personnes',
     supportGroups: 'Groupes de support',
     roles: 'Rôles et permissions',
-    ticketStatus: 'Statuts des tickets',
+    ticketStatus: 'Statuts des tâches',
     symptoms: 'Symptômes',
-    ticketTypes: 'Types de tickets',
+    ticketTypes: 'Types de tâches',
     workflows: 'Workflows',
     import: 'Importer',
     export: 'Exporter',
@@ -131,7 +131,7 @@ export default {
   admin: {
     title: 'Administration',
     rolesAndPermissions: 'Rôles et permissions',
-    ticketTypes: 'Types de tickets',
+    ticketTypes: 'Types de tâches',
     mailServers: 'Serveurs de messagerie',
     emailNotifications: 'Notifications email',
     smsNotifications: 'Notifications SMS',
@@ -337,7 +337,7 @@ export default {
     creationSuccess: 'Création réussie',
     creationError: 'Erreur lors de la création'
   },
-  ticket: {
+  task: {
     title: 'Titre',
     description: 'Description',
     description_placeholder: 'Entrez la description',
@@ -349,13 +349,13 @@ export default {
     requested_for_placeholder: 'Sélectionnez une personne',
     writer: 'Rédacteur',
     writer_placeholder: 'Sélectionnez une personne',
-    type: 'Type de ticket',
+    type: 'Type de tâche',
     type_placeholder: 'Sélectionnez un type',
     status: 'Statut',
     status_placeholder: 'Sélectionnez un statut',
     watcher: 'Observateur(s)',
     watcher_placeholder: 'Sélectionnez une ou plusieurs personnes',
-    watcher_helper_text: 'Choisissez qui est intéressé par le traitement du ticket',
+    watcher_helper_text: 'Choisissez qui est intéressé par le traitement de la tâche',
     assigned_team_label: 'Equipe assignée',
     assigned_team_placeholder: 'Sélectionnez une équipe',
     assigned_to_label: 'Assigné à',

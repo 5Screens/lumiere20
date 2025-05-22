@@ -151,7 +151,7 @@ export default {
       const componentMap = {
         'symptoms': 'ObjectsTab',
         'entities': 'ObjectsTab',
-        'tickets': 'ObjectsTab',
+        'tasks': 'ObjectsTab',
         'incidents': 'ObjectsTab',
         'problems': 'ObjectsTab',
         'changes': 'ObjectsTab',
@@ -176,7 +176,7 @@ export default {
         const modelMap = {
           'symptoms': Symptom,
           'entities': Entity,
-          'tickets': Ticket,
+          'tasks': Ticket,
           'incidents': Incident,
           'problems': Problem,
           'changes': Change,

@@ -11,7 +11,7 @@ export const usePaneStore = defineStore('pane', {
         items: [
           { tabToOpen: 'incidents', icon: 'fas fa-exclamation-circle', label: 'serviceHub.incidents' },
           { tabToOpen: 'problems', icon: 'fas fa-search-minus', label: 'serviceHub.problems' },
-          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'serviceHub.tickets' },
+          { tabToOpen: 'tasks', icon: 'fas fa-ticket-alt', label: 'serviceHub.tasks' },
           { tabToOpen: 'changes', icon: 'fas fa-exchange-alt', label: 'serviceHub.changes' },
           { tabToOpen: 'knowledge', icon: 'fas fa-book', label: 'serviceHub.knowledge' }
         ],
@@ -21,7 +21,7 @@ export const usePaneStore = defineStore('pane', {
         type: 'sprintCenter',
         hasSections: false,
         items: [
-          { tabToOpen: 'tickets', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tickets' },
+          { tabToOpen: 'tasks', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tasks' },
           { tabToOpen: 'stories', icon: 'fas fa-book', label: 'sprintCenter.userStories' },
           { tabToOpen: 'projects', icon: 'fas fa-project-diagram', label: 'sprintCenter.projects' },
           { tabToOpen: 'sprints', icon: 'fas fa-running', label: 'sprintCenter.sprints' },
@@ -62,8 +62,8 @@ export const usePaneStore = defineStore('pane', {
           { tabToOpen: 'persons', icon: 'fas fa-user', label: 'configuration.persons' },
           { tabToOpen: 'support-groups', icon: 'fas fa-user-friends', label: 'configuration.supportGroups' },
           { tabToOpen: 'roles', icon: 'fas fa-user-shield', label: 'configuration.roles' },
-          { tabToOpen: 'ticket-status', icon: 'fas fa-tasks', label: 'configuration.ticketStatus' },
-          { tabToOpen: 'ticket-types', icon: 'fas fa-ticket-alt', label: 'configuration.ticketTypes' },
+          { tabToOpen: 'task-status', icon: 'fas fa-tasks', label: 'configuration.taskStatus' },
+          { tabToOpen: 'task-types', icon: 'fas fa-ticket-alt', label: 'configuration.taskTypes' },
           { tabToOpen: 'workflows', icon: 'fas fa-project-diagram', label: 'configuration.workflows' }*/
         ],
         sections: []
