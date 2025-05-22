@@ -26,11 +26,17 @@ export class Task {
 
   /**
    * Retourne l'endpoint API pour les tâches de type TASK
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
    * @returns {string} Endpoint API
    */
-  static getApiEndpoint() {
+  static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
-    return `tickets?ticket_type=TASK&lang=${userProfileStore.language}`;
+    
+    if (method === 'PATCH') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=TASK&lang=${userProfileStore.language}`;
+    }
   }
 
   /**

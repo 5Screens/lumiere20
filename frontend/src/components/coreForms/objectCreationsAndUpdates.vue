@@ -33,7 +33,7 @@
           :step="field.step"
           :uuid="objectId"
           :fieldName="fieldName"
-          :apiEndpoint="field.apiEndpoint"
+:apiEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
           :editMode="mode === 'update'"
         />
         
