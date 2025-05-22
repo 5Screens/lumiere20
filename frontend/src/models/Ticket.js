@@ -25,12 +25,12 @@ export class Ticket {
   }
 
   /**
-   * Retourne l'endpoint API pour les tickets de type TICKET
+   * Retourne l'endpoint API pour les tickets de type TASK
    * @returns {string} Endpoint API
    */
   static getApiEndpoint() {
     const userProfileStore = useUserProfileStore();
-    return `tickets?ticket_type=TICKET&lang=${userProfileStore.language}`;
+    return `tickets?ticket_type=TASK&lang=${userProfileStore.language}`;
   }
 
   /**
@@ -63,7 +63,7 @@ export class Ticket {
     this.assigned_to_group = data.assigned_to_group || null;
     this.assigned_to_person = data.assigned_to_person || null;
     this.writer_uuid = data.writer_uuid || null;
-    this.ticket_type_code = data.ticket_type_code || 'TICKET';
+    this.ticket_type_code = data.ticket_type_code || 'TASK';
     this.ticket_status_code = data.ticket_status_code || null;
     this.date_creation = data.date_creation || null;
     this.date_modification = data.date_modification || null;
@@ -92,7 +92,7 @@ export class Ticket {
         type: 'sSelectField',
         placeholder: t('ticket.status_placeholder'),
         required: isRequired('ticket_status_code'),
-        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=TICKET`,
+        endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=TASK`,
         patchEndpoint: 'tickets',
         fieldName: 'ticket_status_code',
         mode: 'creation'

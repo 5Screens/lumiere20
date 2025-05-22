@@ -1,6 +1,6 @@
 -- Insert ticket types
 INSERT INTO configuration.ticket_types (code) VALUES 
-('TICKET'),
+('TASK'),
 ('INCIDENT'),
 ('PROBLEM'),
 ('CHANGE'),
@@ -21,7 +21,7 @@ SELECT
     tt.uuid,
     l.code,
     CASE tt.code
-        WHEN 'TICKET' THEN 'Ticket'
+        WHEN 'TASK' THEN 'Tâche'
         WHEN 'INCIDENT' THEN 'Incident'
         WHEN 'PROBLEM' THEN 'Problème'
         WHEN 'CHANGE' THEN 'Changement'
@@ -43,7 +43,7 @@ SELECT
     tt.uuid,
     l.code,
     CASE tt.code
-        WHEN 'TICKET' THEN 'Ticket'
+        WHEN 'TASK' THEN 'Task'
         WHEN 'INCIDENT' THEN 'Incident'
         WHEN 'PROBLEM' THEN 'Problem'
         WHEN 'CHANGE' THEN 'Change'
@@ -65,7 +65,7 @@ SELECT
     tt.uuid,
     l.code,
     CASE tt.code
-        WHEN 'TICKET' THEN 'Ticket'
+        WHEN 'TASK' THEN 'Tâche'
         WHEN 'INCIDENT' THEN 'Incidente'
         WHEN 'PROBLEM' THEN 'Problema'
         WHEN 'CHANGE' THEN 'Cambio'
@@ -87,7 +87,7 @@ SELECT
     tt.uuid,
     l.code,
     CASE tt.code
-        WHEN 'TICKET' THEN 'Ticket'
+        WHEN 'TASK' THEN 'Tâche'
         WHEN 'INCIDENT' THEN 'Incidente'
         WHEN 'PROBLEM' THEN 'Problema'
         WHEN 'CHANGE' THEN 'Mudança'
@@ -109,7 +109,7 @@ SELECT
     tt.uuid,
     l.code,
     CASE tt.code
-        WHEN 'TICKET' THEN 'Билет'
+        WHEN 'TASK' THEN 'Задача'
         WHEN 'INCIDENT' THEN 'Инцидент'
         WHEN 'PROBLEM' THEN 'Проблем'
         WHEN 'CHANGE' THEN 'Промяна'
@@ -131,7 +131,7 @@ SELECT
     tt.uuid,
     l.code,
     CASE tt.code
-        WHEN 'TICKET' THEN 'Tiket'
+        WHEN 'TASK' THEN 'Zadatak'
         WHEN 'INCIDENT' THEN 'Incident'
         WHEN 'PROBLEM' THEN 'Problem'
         WHEN 'CHANGE' THEN 'Promjena'

@@ -2,13 +2,13 @@ const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 
 /**
- * Récupère un ticket de type TASK par son UUID
- * @param {string} uuid - UUID du ticket
+ * Récupère une tâche par son UUID
+ * @param {string} uuid - UUID de la tâche
  * @param {string} lang - Code de langue pour les traductions (fr, en, etc.)
- * @returns {Promise<Object>} - Détails du ticket
+ * @returns {Promise<Object>} - Détails de la tâche
  */
 const getTaskById = async (uuid, lang = 'en') => {
-    logger.info(`[TASK SERVICE] Fetching task ticket with UUID: ${uuid} and language: ${lang}`);
+    logger.info(`[TASK SERVICE] Fetching task with UUID: ${uuid} and language: ${lang}`);
     
     try {
         // Requête SQL pour récupérer les détails du ticket avec les données d'assignation
@@ -70,25 +70,25 @@ const getTaskById = async (uuid, lang = 'en') => {
         const result = await db.query(query, [uuid, lang]);
         
         if (result.rows.length === 0) {
-            logger.warn(`[TASK SERVICE] No task ticket found with UUID: ${uuid}`);
+            logger.warn(`[TASK SERVICE] No task found with UUID: ${uuid}`);
             return null;
         }
         
-        logger.info(`[TASK SERVICE] Successfully retrieved task ticket with UUID: ${uuid}`);
+        logger.info(`[TASK SERVICE] Successfully retrieved task with UUID: ${uuid}`);
         return result.rows[0];
     } catch (error) {
-        logger.error(`[TASK SERVICE] Error fetching task ticket with UUID ${uuid}:`, error);
+        logger.error(`[TASK SERVICE] Error fetching task with UUID ${uuid}:`, error);
         throw error;
     }
 };
 
 /**
- * Récupère tous les tickets de type TASK
+ * Récupère toutes les tâches
  * @param {string} lang - Code de langue pour les traductions (fr, en, etc.)
- * @returns {Promise<Array>} - Liste des tickets de type TASK
+ * @returns {Promise<Array>} - Liste des tâches
  */
 const getTasks = async (lang = 'en') => {
-    logger.info(`[TASK SERVICE] Fetching all task tickets with language: ${lang}`);
+    logger.info(`[TASK SERVICE] Fetching all tasks with language: ${lang}`);
     
     try {
         // Requête SQL pour récupérer tous les tickets de type TASK
@@ -128,10 +128,10 @@ const getTasks = async (lang = 'en') => {
         
         const result = await db.query(query, [lang]);
         
-        logger.info(`[TASK SERVICE] Successfully retrieved ${result.rows.length} task tickets`);
+        logger.info(`[TASK SERVICE] Successfully retrieved ${result.rows.length} tasks`);
         return result.rows;
     } catch (error) {
-        logger.error('[TASK SERVICE] Error fetching task tickets:', error);
+        logger.error('[TASK SERVICE] Error fetching tasks:', error);
         throw error;
     }
 };
