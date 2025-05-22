@@ -110,7 +110,7 @@ export default {
         'symptoms': 'symptom',
         'entities': 'entity',
         'tickets': 'ticket',
-        'tasks': 'ticket',
+        'tasks': 'task',
         'incidents': 'incident',
         'problems': 'problem',
         'changes': 'change',
