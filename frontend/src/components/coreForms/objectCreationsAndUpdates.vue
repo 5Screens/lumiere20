@@ -256,11 +256,7 @@ const fetchObjectData = async () => {
   try {
     loading.value = true;
     
-    // Déterminer l'endpoint API en fonction du type d'objet
-    const endpoint = `${props.objectType}s/${props.objectId}`;
-    const data = await apiService.get(endpoint);
-    
-    // Créer une nouvelle instance du modèle avec les données récupérées
+    // Déterminer la classe du modèle en fonction du type d'objet
     const modelMap = {
       'entity': Entity,
       'symptom': Symptom,
@@ -277,10 +273,22 @@ const fetchObjectData = async () => {
     };
     
     const ModelClass = modelMap[props.objectType];
-    if (ModelClass) {
-      modelInstance.value = new ModelClass(data);
-      formData.value = { ...modelInstance.value };
+    if (!ModelClass) {
+      throw new Error(`No model class found for type: ${props.objectType}`);
     }
+    
+    // Utiliser la méthode getById du modèle si elle existe, sinon utiliser l'approche par défaut
+    if (typeof ModelClass.getById === 'function') {
+      console.log(`[fetchObjectData] Using getById for ${props.objectType} with ID: ${props.objectId}`);
+      modelInstance.value = await ModelClass.getById(props.objectId);
+    } else {
+      console.log(`[fetchObjectData] Using direct API call for ${props.objectType} with ID: ${props.objectId}`);
+      const endpoint = `${props.objectType}s/${props.objectId}`;
+      const data = await apiService.get(endpoint);
+      modelInstance.value = new ModelClass(data);
+    }
+    
+    formData.value = { ...modelInstance.value };
   } catch (err) {
     console.error(`[objectCreationsAndUpdates] Erreur lors de la récupération des données: ${err.message}`, err);
     error.value = err.message || t('errors.fetchData');

@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import apiService from '../services/apiService'
 
 export class Ticket {
   /**
@@ -30,6 +31,27 @@ export class Ticket {
   static getApiEndpoint() {
     const userProfileStore = useUserProfileStore();
     return `tickets?ticket_type=TICKET&lang=${userProfileStore.language}`;
+  }
+
+  /**
+   * Récupère un ticket par son UUID
+   * @param {string} uuid - L'UUID du ticket à récupérer
+   * @returns {Promise<Ticket>} Une promesse résolue avec l'instance du ticket
+   */
+  static async getById(uuid) {
+    try {
+      const userProfileStore = useUserProfileStore();
+      const response = await apiService.get(`tickets/${uuid}?lang=${userProfileStore.language}`);
+      
+      if (response) {
+        return new Ticket(response);
+      }
+      
+      throw new Error('Ticket not found');
+    } catch (error) {
+      console.error('Error fetching ticket:', error);
+      throw error;
+    }
   }
   
   constructor(data = {}) {
