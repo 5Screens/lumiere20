@@ -72,7 +72,7 @@ import EntityForm from '@/components/coreForms/entityForm.vue'
 import ObjectCreationsAndUpdates from '@/components/coreForms/objectCreationsAndUpdates.vue'
 import { Entity } from '@/models/Entity'
 import { Symptom } from '@/models/Symptom'
-import { Ticket } from '@/models/Ticket'
+import { Task } from '@/models/Task'
 import { Incident } from '@/models/Incident'
 import { Problem } from '@/models/Problem'
 import { Change } from '@/models/Change'
@@ -176,7 +176,7 @@ export default {
         const modelMap = {
           'symptoms': Symptom,
           'entities': Entity,
-          'tasks': Ticket,
+          'tasks': Task,
           'incidents': Incident,
           'problems': Problem,
           'changes': Change,

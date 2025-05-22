@@ -154,7 +154,7 @@ import apiService from '@/services/apiService';
 // Import des modèles
 import { Entity } from '@/models/Entity';
 import { Symptom } from '@/models/Symptom';
-import { Ticket } from '@/models/Ticket';
+import { Task } from '@/models/Task';
 import { Incident } from '@/models/Incident';
 import { Problem } from '@/models/Problem';
 import { Change } from '@/models/Change';
@@ -227,7 +227,7 @@ const initializeModel = () => {
   const modelMap = {
     'entity': Entity,
     'symptom': Symptom,
-    'ticket': Ticket,
+    'task': Task,
     'incident': Incident,
     'problem': Problem,
     'change': Change,
@@ -260,7 +260,7 @@ const fetchObjectData = async () => {
     const modelMap = {
       'entity': Entity,
       'symptom': Symptom,
-      'ticket': Ticket,
+      'task': Task,
       'incident': Incident,
       'problem': Problem,
       'change': Change,

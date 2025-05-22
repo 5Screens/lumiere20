@@ -50,7 +50,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { Ticket } from '@/models/Ticket'
+import { Task } from '@/models/Task'
 import { Defect } from '@/models/Defect'
 import { Incident } from '@/models/Incident'
 import { Problem } from '@/models/Problem'
@@ -90,8 +90,8 @@ const currentObject = computed({
 
 const currentModelClass = computed(() => {
   switch (selectedType.value) {
-    case 'TICKET':
-      return Ticket
+    case 'TASK':
+      return Task
     case 'DEFECT':
       return Defect
     case 'INCIDENT':
@@ -198,8 +198,8 @@ watch(selectedType, (newType) => {
   let endpoint;
   
   switch (newType) {
-    case 'TICKET':
-      instance = new Ticket()
+    case 'TASK':
+      instance = new Task()
       endpoint = 'tickets'
       break
     case 'DEFECT':
