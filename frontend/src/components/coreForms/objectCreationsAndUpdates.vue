@@ -33,7 +33,7 @@
           :step="field.step"
           :uuid="objectId"
           :fieldName="fieldName"
-:apiEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
+          :apiEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
           :editMode="mode === 'update'"
         />
         
@@ -45,9 +45,10 @@
           :required="field.required"
           :placeholder="field.placeholder"
           :endpoint="getEndpoint(field.endpoint, formData)"
-          :mode="mode"
+          :mode="mode === 'update' ? 'edition' : 'creation'"
           :uuid="objectId"
           :patchEndpoint="field.patchEndpoint"
+          :fieldName="fieldName"
           @update:success="handleFieldSuccess"
         />
         
