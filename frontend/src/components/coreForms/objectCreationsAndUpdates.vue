@@ -72,6 +72,10 @@
           :displayField="field.displayField"
           :valueField="field.valueField"
           :columnsConfig="field.columnsConfig"
+          :editMode="mode === 'update'"
+          :patchEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
+          :fieldName="fieldName"
+          :uuid="objectId"
           @update:modelValue="handleFieldChange(fieldName, $event)"
         />
         
