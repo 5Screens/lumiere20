@@ -53,7 +53,7 @@ BEGIN
             ORDER BY c.ordinal_position
         LOOP
             -- Ignorer les colonnes système
-            IF col_name NOT IN ('date_creation', 'date_modification') THEN
+            IF col_name NOT IN ('date_creation', 'date_modification', 'created_at', 'updated_at') THEN
                 EXECUTE format('SELECT $1.%I::TEXT', col_name) 
                 INTO new_val
                 USING NEW;
@@ -82,8 +82,8 @@ BEGIN
             WHERE c.table_schema = TG_TABLE_SCHEMA 
             AND c.table_name = TG_TABLE_NAME
         LOOP
-            -- Ignorer explicitement les colonnes date_modification
-            IF col_name <> 'date_modification' THEN
+            -- Ignorer explicitement les colonnes date_modification et updated_at
+            IF col_name NOT IN ('date_modification', 'updated_at') THEN
                 -- Récupération des valeurs avant et après modification
                 EXECUTE format('SELECT $1.%I::TEXT, $2.%I::TEXT', col_name, col_name) 
                 INTO old_val, new_val
@@ -111,7 +111,7 @@ BEGIN
             ORDER BY c.ordinal_position
         LOOP
             -- Ignorer les colonnes système
-            IF col_name NOT IN ('date_creation', 'date_modification') THEN
+            IF col_name NOT IN ('date_creation', 'date_modification', 'created_at', 'updated_at') THEN
                 EXECUTE format('SELECT $1.%I::TEXT', col_name) 
                 INTO old_val
                 USING OLD;
@@ -204,10 +204,14 @@ COMMIT;
 
 -- Commentaire explicatif
 /*
-Ce script modifie la fonction d'audit log_changes() pour exclure explicitement les champs 'date_modification'
-lors des opérations UPDATE. Cela évite de générer des entrées d'audit inutiles pour ces champs qui sont
+Ce script modifie la fonction d'audit log_changes() pour exclure explicitement les champs système
+lors des opérations d'audit. Les champs exclus sont :
+- date_creation, date_modification : utilisés dans les anciennes tables
+- created_at, updated_at : utilisés dans les nouvelles tables (comme core.tickets)
+
+Cette exclusion évite de générer des entrées d'audit inutiles pour ces champs qui sont
 automatiquement mis à jour par le système.
 
-La modification principale se trouve dans la section UPDATE de la fonction, où nous avons ajouté une condition
-pour ignorer explicitement le champ 'date_modification'.
+La modification principale se trouve dans les trois sections (INSERT, UPDATE, DELETE) de la fonction,
+où nous avons ajouté des conditions pour ignorer explicitement ces champs système.
 */
