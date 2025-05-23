@@ -193,6 +193,12 @@ CREATE TRIGGER trg_audit_tickets
 AFTER INSERT OR UPDATE OR DELETE ON core.tickets
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
+-- Déclencheur pour la table rel_parent_child_tickets
+DROP TRIGGER IF EXISTS trg_audit_rel_parent_child_tickets ON core.rel_parent_child_tickets;
+CREATE TRIGGER trg_audit_rel_parent_child_tickets
+AFTER INSERT OR UPDATE OR DELETE ON core.rel_parent_child_tickets
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
 -- Validation de la transaction
 COMMIT;
 
