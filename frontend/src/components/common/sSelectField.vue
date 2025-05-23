@@ -124,7 +124,13 @@ watch(() => props.modelValue, (newValue) => {
     } else {
       selectedValue.value = newValue
     }
-    originalValue.value = newValue
+    // Only update originalValue if we're not currently editing
+    if (!editing.value) {
+      console.info('[sSelectField] Updating originalValue from watch:', newValue)
+      originalValue.value = newValue
+    } else {
+      console.info('[sSelectField] Skipping originalValue update - currently editing')
+    }
   }
 })
 
@@ -186,6 +192,12 @@ const fetchOptions = async () => {
 }
 
 const handleChange = () => {
+  // Capture original value when starting to edit
+  if (props.mode === 'edition' && !editing.value) {
+    originalValue.value = props.modelValue
+    console.info('[sSelectField] handleChange - Captured original value:', originalValue.value)
+  }
+  
   if (props.mode === 'edition' && selectedValue.value !== originalValue.value) {
     editing.value = true
   }
@@ -259,9 +271,19 @@ const confirmChange = async () => {
 }
 
 const handleCancelEdit = () => {
+  console.info('[sSelectField] handleCancelEdit called')
+  console.info('[sSelectField] Current selected value:', selectedValue.value)
+  console.info('[sSelectField] Original value to restore:', originalValue.value)
+  
   selectedValue.value = originalValue.value
+  console.info('[sSelectField] Value reset to original:', selectedValue.value)
+  
+  console.info('[sSelectField] Before state reset - editing:', editing.value)
   editing.value = false
+  console.info('[sSelectField] After state reset - editing:', editing.value)
+  
   emit('update:cancelled')
+  console.info('[sSelectField] handleCancelEdit completed')
 }
 
 // Lifecycle hooks
