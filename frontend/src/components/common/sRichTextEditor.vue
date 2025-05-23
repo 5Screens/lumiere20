@@ -198,6 +198,10 @@ const props = defineProps({
   required: {
     type: Boolean,
     default: false
+  },
+  edition: {
+    type: Boolean,
+    default: false
   }
 });
 

@@ -59,6 +59,7 @@
           :label="field.label"
           :required="field.required"
           :placeholder="field.placeholder"
+          :edition="mode === 'update'"
         />
         
         <!-- Champ de recherche filtré -->
