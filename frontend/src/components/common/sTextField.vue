@@ -147,7 +147,11 @@ const showRequiredError = computed(() => {
 
 // Watch for external changes to modelValue
 watch(() => props.modelValue, (newValue) => {
-  originalValue.value = newValue
+  // Only update originalValue if we're not currently editing
+  if (!isEditing.value) {
+    console.log('[sTextField] Updating originalValue from watch:', newValue)
+    originalValue.value = newValue
+  }
   internalValue.value = newValue
 })
 
@@ -174,7 +178,9 @@ const handleInput = (event) => {
 
 const onFocus = () => {
   isEditing.value = true
+  // Capture the original value when starting to edit
   originalValue.value = props.modelValue
+  console.log('[sTextField] onFocus - Captured original value:', originalValue.value)
 }
 
 const onBlur = () => {
@@ -229,18 +235,29 @@ const confirmChange = async () => {
 }
 
 const cancelChange = () => {
+  console.log('[sTextField] cancelChange called')
+  console.log('[sTextField] Current internal value:', internalValue.value)
+  console.log('[sTextField] Original value to restore:', originalValue.value)
+  
   // Reset to original value
   internalValue.value = originalValue.value
   emit('update:modelValue', originalValue.value)
+  console.log('[sTextField] Value reset to original:', originalValue.value)
   
   // Reset states
+  console.log('[sTextField] Before state reset - isEditing:', isEditing.value, 'valueChanged:', valueChanged.value)
   isEditing.value = false
   valueChanged.value = false
+  console.log('[sTextField] After state reset - isEditing:', isEditing.value, 'valueChanged:', valueChanged.value)
   
   // Emit cancel event
-  emit('field-change-cancelled', {
+  const cancelEventData = {
     fieldName: props.fieldName,
     originalValue: originalValue.value
-  })
+  }
+  console.log('[sTextField] Emitting field-change-cancelled event with data:', cancelEventData)
+  emit('field-change-cancelled', cancelEventData)
+  
+  console.log('[sTextField] cancelChange completed')
 }
 </script>
