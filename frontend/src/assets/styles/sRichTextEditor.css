@@ -343,3 +343,19 @@
 .color-picker, .emoji-picker, .link-dialog, .table-dialog, .table-actions {
   animation: fadeIn 0.2s ease;
 }
+
+/* Actions container for edition mode */
+.s-rich-text-editor__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding: 8px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+/* Editing state */
+.s-rich-text-editor--editing .editor-content {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}

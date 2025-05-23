@@ -60,6 +60,10 @@
           :required="field.required"
           :placeholder="field.placeholder"
           :edition="mode === 'update'"
+          :uuid="objectId"
+          :apiEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
+          :fieldName="fieldName"
+          @update:success="handleFieldSuccess"
         />
         
         <!-- Champ de recherche filtré -->

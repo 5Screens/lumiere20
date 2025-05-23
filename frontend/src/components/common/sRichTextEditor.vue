@@ -1,5 +1,5 @@
 <template>
-  <div class="s-rich-text-editor">
+  <div class="s-rich-text-editor" :class="{ 's-rich-text-editor--editing': isEditing && edition }">
     <!-- Label container -->
     <div class="s-rich-text-editor__label-container" v-if="label">
       <label class="s-rich-text-editor__label" :class="{ 's-rich-text-editor__label--required': required }">
@@ -154,6 +154,15 @@
       @click="handleContentClick"
     ></div>
 
+    <!-- Action buttons for edition mode -->
+    <div v-if="edition && isEditing && valueChanged" class="s-rich-text-editor__actions">
+      <RgButton
+        @confirm="confirmChange"
+        @cancel="cancelChange"
+        :disabled="isUpdating"
+      />
+    </div>
+
     <!-- Table Actions -->
     <div class="toolbar-button-container" ref="tableActionsGroupRef">
       <div v-if="showTableActions" class="table-actions" :style="tableActionsPosition" ref="tableActionsRef">
@@ -180,6 +189,8 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick, defineProps, defineEmits } from 'vue';
 import '../../assets/styles/sRichTextEditor.css';
+import RgButton from './rgButton.vue';
+import apiService from '@/services/apiService';
 
 // Props and emits
 const props = defineProps({
@@ -202,10 +213,22 @@ const props = defineProps({
   edition: {
     type: Boolean,
     default: false
+  },
+  uuid: {
+    type: String,
+    default: ''
+  },
+  apiEndpoint: {
+    type: String,
+    default: ''
+  },
+  fieldName: {
+    type: String,
+    default: ''
   }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'update:success', 'field-change-cancelled']);
 
 // Refs
 const editorContent = ref(null);
@@ -221,6 +244,12 @@ const emojiPickerGroupRef = ref(null);
 const tableDialogGroupRef = ref(null);
 const tableActionsGroupRef = ref(null);
 
+// Edition state refs
+const isEditing = ref(false);
+const originalValue = ref('');
+const valueChanged = ref(false);
+const isUpdating = ref(false);
+
 // State variables
 const showColorPicker = ref(false);
 const showEmojiPicker = ref(false);
@@ -231,27 +260,40 @@ const tableActionsPosition = ref({ top: '0px', left: '0px' });
 const popupPosition = ref({ top: '0px', left: '0px' });
 const linkUrl = ref('');
 const linkText = ref('');
-const tableRows = ref(3);
-const tableCols = ref(3);
-const currentTable = ref(null);
+const tableRows = ref(2);
+const tableCols = ref(2);
+const selectedTable = ref(null);
+const savedSelection = ref(null);
 
-// Variable pour stocker la sélection
-let savedSelection = null;
+// Watch for external changes to modelValue
+watch(() => props.modelValue, (newValue) => {
+  // Only update originalValue if we're not currently editing
+  if (!isEditing.value) {
+    console.log('[sRichTextEditor] Updating originalValue from watch:', newValue);
+    originalValue.value = newValue || '';
+  }
+  // Update editor content
+  if (editorContent.value && newValue !== editorContent.value.innerHTML) {
+    editorContent.value.innerHTML = newValue || '';
+  }
+});
 
-// Fonction pour mémoriser la sélection
+// Initialize originalValue
+originalValue.value = props.modelValue || '';
+
+// Selection management
 const saveSelection = () => {
   const sel = window.getSelection();
   if (sel && sel.rangeCount > 0) {
-    savedSelection = sel.getRangeAt(0);
+    savedSelection.value = sel.getRangeAt(0);
   }
 };
 
-// Fonction pour restaurer la sélection
 const restoreSelection = () => {
-  if (savedSelection) {
+  if (savedSelection.value) {
     const sel = window.getSelection();
     sel.removeAllRanges();
-    sel.addRange(savedSelection);
+    sel.addRange(savedSelection.value);
   }
 };
 
@@ -291,16 +333,99 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-// Watch for model value changes
-watch(() => props.modelValue, (newVal) => {
-  if (newVal !== editorContent.value.innerHTML) {
-    editorContent.value.innerHTML = newVal || `<p>${props.placeholder}</p>`;
-  }
-});
-
 // Update content and emit changes
 const updateContent = () => {
-  emit('update:modelValue', editorContent.value.innerHTML);
+  const currentContent = editorContent.value.innerHTML;
+  emit('update:modelValue', currentContent);
+  
+  // In edition mode, track changes
+  if (props.edition) {
+    // Capture original value when starting to edit
+    if (!isEditing.value && currentContent !== originalValue.value) {
+      console.log('[sRichTextEditor] Starting to edit, capturing original value:', originalValue.value);
+      isEditing.value = true;
+    }
+    
+    // Check if value has changed
+    valueChanged.value = currentContent !== originalValue.value;
+    console.log('[sRichTextEditor] Value changed:', valueChanged.value);
+  }
+};
+
+// Confirm changes and save to backend
+const confirmChange = async () => {
+  if (!props.uuid || !props.apiEndpoint) {
+    console.warn('UUID or API endpoint not provided for field update');
+    emit('update:success', {
+      success: false,
+      fieldName: props.fieldName,
+      value: editorContent.value.innerHTML,
+      error: 'UUID or API endpoint not provided'
+    });
+    return;
+  }
+  
+  isUpdating.value = true;
+  
+  try {
+    // Prepare the endpoint with UUID
+    const endpointWithUuid = `${props.apiEndpoint}/${props.uuid}`;
+    
+    // Prepare the data object for PATCH request
+    const data = {
+      [props.fieldName]: editorContent.value.innerHTML
+    };
+    
+    // Use apiService to make the PATCH request
+    const response = await apiService.patch(endpointWithUuid, data);
+    
+    // Update original value after successful update
+    originalValue.value = editorContent.value.innerHTML;
+    valueChanged.value = false;
+    isEditing.value = false;
+    
+    // Emit success event
+    emit('update:success', {
+      success: true,
+      fieldName: props.fieldName,
+      value: editorContent.value.innerHTML
+    });
+  } catch (error) {
+    console.error('Error updating field:', error);
+    emit('update:success', {
+      success: false,
+      fieldName: props.fieldName,
+      value: editorContent.value.innerHTML,
+      error: error.message
+    });
+  } finally {
+    isUpdating.value = false;
+  }
+};
+
+// Cancel changes and restore original value
+const cancelChange = () => {
+  console.log('[sRichTextEditor] cancelChange called');
+  console.log('[sRichTextEditor] Current content:', editorContent.value.innerHTML);
+  console.log('[sRichTextEditor] Original value to restore:', originalValue.value);
+  
+  // Reset to original value
+  editorContent.value.innerHTML = originalValue.value;
+  emit('update:modelValue', originalValue.value);
+  console.log('[sRichTextEditor] Content reset to original:', originalValue.value);
+  
+  // Reset states
+  isEditing.value = false;
+  valueChanged.value = false;
+  console.log('[sRichTextEditor] States reset - isEditing:', isEditing.value, 'valueChanged:', valueChanged.value);
+  
+  // Emit cancel event
+  emit('field-change-cancelled', {
+    fieldName: props.fieldName,
+    originalValue: originalValue.value
+  });
+  
+  console.log('[sRichTextEditor] cancelChange completed');
 };
 
 // Execute document.execCommand for basic formatting
@@ -455,7 +580,7 @@ const handleContentClick = (event) => {
   let target = event.target;
   while (target && target !== editorContent.value) {
     if (target.tagName === 'TABLE') {
-      currentTable.value = target;
+      selectedTable.value = target;
       showTableActions.value = true;
       
       // Position the table actions menu below the table
@@ -480,8 +605,8 @@ const handleContentClick = (event) => {
 
 // Delete table
 const deleteTable = () => {
-  if (currentTable.value) {
-    currentTable.value.remove();
+  if (selectedTable.value) {
+    selectedTable.value.remove();
     showTableActions.value = false;
     updateContent();
   }
@@ -489,9 +614,9 @@ const deleteTable = () => {
 
 // Copy table
 const copyTable = () => {
-  if (currentTable.value) {
+  if (selectedTable.value) {
     const range = document.createRange();
-    range.selectNode(currentTable.value);
+    range.selectNode(selectedTable.value);
     
     const selection = window.getSelection();
     selection.removeAllRanges();
@@ -504,9 +629,9 @@ const copyTable = () => {
 
 // Align table
 const alignTable = (alignment) => {
-  if (currentTable.value) {
-    currentTable.value.style.margin = alignment === 'center' ? '0 auto' : '';
-    currentTable.value.style.float = alignment === 'left' || alignment === 'right' ? alignment : '';
+  if (selectedTable.value) {
+    selectedTable.value.style.margin = alignment === 'center' ? '0 auto' : '';
+    selectedTable.value.style.float = alignment === 'left' || alignment === 'right' ? alignment : '';
     updateContent();
   }
 };
