@@ -98,6 +98,131 @@ const getIncidents = async (lang) => {
     }
 };
 
+/**
+ * Récupère un incident par son UUID
+ * @param {string} uuid - UUID de l'incident
+ * @param {string} lang - Code de langue pour les traductions (fr, en, etc.)
+ * @returns {Promise<Object>} - Détails de l'incident
+ */
+const getIncidentById = async (uuid, lang = 'en') => {
+    logger.info(`[INCIDENT SERVICE] Fetching incident with UUID: ${uuid} and language: ${lang}`);
+    
+    try {
+        // Requête SQL pour récupérer les détails de l'incident avec les données d'assignation
+        const query = `
+            SELECT 
+                t.*,
+                p1.first_name || ' ' || p1.last_name as requested_by_name,
+                p2.first_name || ' ' || p2.last_name as requested_for_name,
+                p3.first_name || ' ' || p3.last_name as writer_name,
+                COALESCE(ttt.label, tt.code) as ticket_type_label,
+                COALESCE(tst.label, ts.code) as ticket_status_label,
+                tt.code as ticket_type_code,
+                ts.code as ticket_status_code,
+                
+                -- Informations sur l'équipe assignée
+                g.groupe_name as assigned_group_name,
+                g.uuid as assigned_to_group,
+                
+                -- Informations sur la personne assignée
+                p4.uuid as assigned_to_person,
+                p4.first_name || ' ' || p4.last_name as assigned_person_name,
+                
+                -- Informations sur les observateurs (watchers)
+                (
+                    SELECT json_agg(json_build_object(
+                        'uuid', w.uuid,
+                        'person_uuid', p5.uuid,
+                        'person_name', p5.first_name || ' ' || p5.last_name,
+                        'created_at', w.created_at
+                    ))
+                    FROM core.rel_tickets_groups_persons w
+                    JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
+                    WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
+                ) as watchers,
+                
+                -- Champs spécifiques aux incidents depuis core_extended_attributes
+                t.core_extended_attributes->>'impact' as impact,
+                t.core_extended_attributes->>'urgency' as urgency,
+                (t.core_extended_attributes->>'priority')::integer as priority,
+                t.core_extended_attributes->>'cause_code' as cause_code,
+                t.core_extended_attributes->>'rel_service' as rel_service,
+                t.core_extended_attributes->>'contact_type' as contact_type,
+                (t.core_extended_attributes->>'reopen_count')::integer as reopen_count,
+                (t.core_extended_attributes->>'standby_count')::integer as standby_count,
+                t.core_extended_attributes->>'rel_problem_id' as rel_problem_id,
+                t.core_extended_attributes->>'resolution_code' as resolution_code,
+                (t.core_extended_attributes->>'assignment_count')::integer as assignment_count,
+                t.core_extended_attributes->>'resolution_notes' as resolution_notes,
+                
+                -- Labels traduits pour les champs avec référence
+                COALESCE(impacts_t.label, t.core_extended_attributes->>'impact') as impact_label,
+                COALESCE(urgencies_t.label, t.core_extended_attributes->>'urgency') as urgency_label,
+                COALESCE(cause_codes_t.label, t.core_extended_attributes->>'cause_code') as cause_code_label,
+                COALESCE(contact_types_t.label, t.core_extended_attributes->>'contact_type') as contact_type_label,
+                COALESCE(resolution_codes_t.label, t.core_extended_attributes->>'resolution_code') as resolution_code_label,
+                
+                -- Titre du problème lié si existant
+                problem.title as rel_problem_title
+                
+            FROM core.tickets t
+            LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
+            LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
+            JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+            JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+            JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code 
+            LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid 
+                AND ttt.lang = $2
+            LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
+                AND tst.lang = $2
+                
+            -- Jointure pour l'assignation (équipe et personne)
+            LEFT JOIN (
+                SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
+                FROM core.rel_tickets_groups_persons
+                WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+            ) rtgp ON t.uuid = rtgp.rel_ticket
+            LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+            LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+            
+            -- Jointures pour les traductions des champs spécifiques aux incidents
+            LEFT JOIN configuration.incident_impacts impacts ON t.core_extended_attributes->>'impact' = impacts.code
+            LEFT JOIN translations.incident_impacts_translation impacts_t ON impacts.uuid = impacts_t.incident_impact_uuid AND impacts_t.lang = $2
+            
+            LEFT JOIN configuration.incident_urgencies urgencies ON t.core_extended_attributes->>'urgency' = urgencies.code
+            LEFT JOIN translations.incident_urgencies_translation urgencies_t ON urgencies.uuid = urgencies_t.incident_urgency_uuid AND urgencies_t.lang = $2
+            
+            LEFT JOIN configuration.incident_cause_codes cause_codes ON t.core_extended_attributes->>'cause_code' = cause_codes.code
+            LEFT JOIN translations.incident_cause_codes_translation cause_codes_t ON cause_codes.uuid = cause_codes_t.incident_cause_code_uuid AND cause_codes_t.lang = $2
+            
+            LEFT JOIN configuration.incident_contact_types contact_types ON t.core_extended_attributes->>'contact_type' = contact_types.code
+            LEFT JOIN translations.incident_contact_types_translation contact_types_t ON contact_types.uuid = contact_types_t.incident_contact_type_uuid AND contact_types_t.lang = $2
+            
+            LEFT JOIN configuration.incident_resolution_codes resolution_codes ON t.core_extended_attributes->>'resolution_code' = resolution_codes.code
+            LEFT JOIN translations.incident_resolution_codes_translation resolution_codes_t ON resolution_codes.uuid = resolution_codes_t.incident_resolution_code_uuid AND resolution_codes_t.lang = $2
+            
+            -- Jointure pour récupérer le titre du problème lié
+            LEFT JOIN core.tickets problem ON t.core_extended_attributes->>'rel_problem_id' = problem.uuid::text
+            
+            WHERE t.uuid = $1 AND t.ticket_type_code = 'INCIDENT'
+        `;
+        
+        const result = await db.query(query, [uuid, lang]);
+        
+        if (result.rows.length === 0) {
+            logger.warn(`[INCIDENT SERVICE] No incident found with UUID: ${uuid}`);
+            return null;
+        }
+        
+        logger.info(`[INCIDENT SERVICE] Successfully retrieved incident with UUID: ${uuid}`);
+        return result.rows[0];
+    } catch (error) {
+        logger.error(`[INCIDENT SERVICE] Error fetching incident with UUID ${uuid}:`, error);
+        throw error;
+    }
+};
+
 module.exports = {
-    getIncidents
+    getIncidents,
+    getIncidentById
 };
