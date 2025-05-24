@@ -42,7 +42,7 @@ const getTaskById = async (uuid, lang = 'en') => {
                     FROM core.rel_tickets_groups_persons w
                     JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
                     WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
-                ) as watchers
+                ) as watch_list
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid

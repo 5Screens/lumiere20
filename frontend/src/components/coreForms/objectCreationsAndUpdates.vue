@@ -272,7 +272,6 @@ const fetchObjectData = async () => {
       'entity': Entity,
       'symptom': Symptom,
       'task': Task,
-      'tasks': Task,
       'incident': Incident,
       'problem': Problem,
       'change': Change,

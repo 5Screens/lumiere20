@@ -13,7 +13,7 @@ export class Task {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('task.title'), type: 'text', format: 'text' },
-      /*{ key: 'description', label: t('task.description'), type: 'text', format: 'text' },*/
+      { key: 'description', label: t('task.description'), type: 'text', format: 'html' },
       { key: 'ticket_status_label', label: t('task.status'), type: 'text', format: 'text' },
       { key: 'requested_by_name', label: t('task.requested_by'), type: 'text', format: 'text' },
       { key: 'requested_for_name', label: t('task.requested_for'), type: 'text', format: 'text' },
@@ -71,8 +71,8 @@ export class Task {
     this.writer_uuid = data.writer_uuid || null;
     this.ticket_type_code = data.ticket_type_code || 'TASK';
     this.ticket_status_code = data.ticket_status_code || null;
-    this.date_creation = data.date_creation || null;
-    this.date_modification = data.date_modification || null;
+    this.created_at = data.created_at || null;
+    this.updated_at = data.updated_at || null;
     this.watch_list = data.watch_list || [];
     
     // Définition des champs requis avec leurs labels
