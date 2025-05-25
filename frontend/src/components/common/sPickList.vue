@@ -338,40 +338,34 @@ async function fetchSourceItems() {
   }
 }
 
-async function fetchTargetItems() {
-  if (!props.edition || !props.targetEndPoint || !props.target_uuid) {
-    // En mode création, initialiser avec les pickedItems ou modelValue
-    if (props.modelValue && props.modelValue.length > 0) {
-      // Utiliser directement les objets du modelValue s'ils sont disponibles
-      const modelUuids = new Set(props.modelValue.map(item => item.uuid));
-      targetItems.value = props.modelValue;
-      
-      // Retirer ces items de la liste source
-      sourceItems.value = sourceItems.value.filter(item => !modelUuids.has(item.uuid));
-    } else if (props.pickedItems && props.pickedItems.length > 0) {
-      // Fallback sur pickedItems si modelValue n'est pas disponible
-      const pickedUuids = new Set(props.pickedItems);
-      targetItems.value = sourceItems.value.filter(item => pickedUuids.has(item.uuid));
-      
-      // Retirer ces items de la liste source
-      sourceItems.value = sourceItems.value.filter(item => !pickedUuids.has(item.uuid));
-    }
-    return;
-  }
-  
+async function loadTargetItems() {
+  // Cette fonction est appelée uniquement en mode édition
   targetLoading.value = true;
   error.value = '';
   
   try {
-    const response = await apiService.get(`${props.targetEndPoint}/${props.target_uuid}/watchlist`);
-    targetItems.value = response;
-    originalTargetItems.value = [...response];
-    
-    // Retirer ces items de la liste source
-    const targetUuids = new Set(response.map(item => item.uuid));
-    sourceItems.value = sourceItems.value.filter(item => !targetUuids.has(item.uuid));
+    // 1. Initialiser avec modelValue s'ils sont disponibles
+    if (props.modelValue && props.modelValue.length > 0) {
+      // Utiliser directement les objets du modelValue s'ils sont disponibles
+      const modelUuids = new Set(props.modelValue.map(item => item.uuid));
+      targetItems.value = props.modelValue;
+      originalTargetItems.value = [...props.modelValue];
+      
+      // 3. Retirer ces items de la liste source
+      sourceItems.value = sourceItems.value.filter(item => !modelUuids.has(item.uuid));
+    } 
+    // 2. Fallback sur les pickedItems sinon
+    else if (props.pickedItems && props.pickedItems.length > 0) {
+      // Fallback sur pickedItems si modelValue n'est pas disponible
+      const pickedUuids = new Set(props.pickedItems);
+      targetItems.value = sourceItems.value.filter(item => pickedUuids.has(item.uuid));
+      originalTargetItems.value = [...targetItems.value];
+      
+      // 3. Retirer ces items de la liste source
+      sourceItems.value = sourceItems.value.filter(item => !pickedUuids.has(item.uuid));
+    }
   } catch (err) {
-    console.error('Error fetching target items:', err);
+    console.error('Error loading target items:', err);
     error.value = `Failed to load selected items: ${err.message}`;
   } finally {
     targetLoading.value = false;
@@ -433,8 +427,10 @@ onMounted(async () => {
   // Charger les items source
   await fetchSourceItems();
   
-  // Charger les items cible (en mode édition) ou initialiser avec pickedItems
-  await fetchTargetItems();
+  // Charger les items cible uniquement en mode édition
+  if (props.edition) {
+    await loadTargetItems();
+  }
   
   // Initialiser le modèle
   updateModelValue();
