@@ -192,7 +192,7 @@ export class Task {
         required: isRequired('watch_list'),
         edition: false,
         sourceEndPoint: "persons",
-        displayedLabel: "first_name",
+        displayedLabel: "person_name",
         targetEndPoint: "tickets",
         target_uuid: null,
         pickedItems: null

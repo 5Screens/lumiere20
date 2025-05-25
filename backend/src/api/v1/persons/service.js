@@ -4,13 +4,14 @@ const logger = require('../../../config/logger');
 /**
  * Get all persons from the database
  * @param {string} [lang] - Optional language parameter for localization
- * @returns {Promise<Array>} Array of persons
+ * @returns {Promise<Array>} Array of persons with person_name field added
  */
 const getAllPersons = async (lang) => {
     try {
         logger.info('Service - Getting all persons');
         const query = `
-            SELECT *
+            SELECT *, 
+                   first_name || ' ' || last_name AS person_name
             FROM configuration.persons
             ORDER BY last_name, first_name
             LIMIT 100
