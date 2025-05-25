@@ -96,6 +96,7 @@
           :displayedLabel="field.displayedLabel"
           :targetEndPoint="getEndpoint(field.targetEndPoint, formData)"
           :target_uuid="objectId"
+          :edition="mode === 'update'"
           :pickedItems="formData[fieldName]"
         />
         
