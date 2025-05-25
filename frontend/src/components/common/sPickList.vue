@@ -384,20 +384,47 @@ async function confirmChanges() {
   targetLoading.value = true;
   
   try {
-    // Envoyer tous les UUIDs sélectionnés
-    const uuids = targetItems.value.map(item => item.uuid);
-    await apiService.patch(`${props.targetEndPoint}/${props.target_uuid}/watchlist`, uuids);
+    // 1. Construire la liste des items ajoutés
+    const currentUuids = new Set(targetItems.value.map(item => item.uuid));
+    const originalUuids = new Set(originalTargetItems.value.map(item => item.uuid));
+    
+    const addedItems = targetItems.value.filter(item => !originalUuids.has(item.uuid));
+    const removedItems = originalTargetItems.value.filter(item => !currentUuids.has(item.uuid));
+    
+    // 2. Pour chaque item ajouté, faire un appel POST
+    const addPromises = addedItems.map(item => 
+      apiService.post(`${props.targetEndPoint}/${props.target_uuid}/watchlist`, item.uuid)
+    );
+    
+    // 3. Pour chaque item retiré, faire un appel DELETE
+    const removePromises = removedItems.map(item => 
+      apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/watchlist`, { data: item.uuid })
+    );
+    
+    // Attendre que toutes les opérations soient terminées
+    await Promise.all([...addPromises, ...removePromises]);
     
     // Mettre à jour les items originaux
     originalTargetItems.value = [...targetItems.value];
     valueChanged.value = false;
     
     // Émettre l'événement de succès avec les objets complets
-    emit('update:success', targetItems.value);
+    emit('update:success', {
+      success: true,
+      fieldName: props.fieldName || 'items',
+      value: targetItems.value,
+      error: null
+    });
   } catch (err) {
     console.error('Error updating watchlist:', err);
     error.value = `Failed to update selected items: ${err.message}`;
     emit('update:error', err.message);
+    emit('update:success', {
+      success: false,
+      fieldName: props.fieldName || 'items',
+      value: null,
+      error: err.message
+    });
   } finally {
     targetLoading.value = false;
   }
