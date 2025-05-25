@@ -43,6 +43,7 @@ const getTickets = async (lang, ticket_type) => {
         LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
         LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
         WHERE 1=1 ${typeCondition}
+        ORDER BY t.created_at DESC
     `;
     
     try {
