@@ -143,10 +143,8 @@ const getTasks = async (lang = 'en') => {
  * @returns {Promise<Object>} - Détails de la tâche mise à jour
  */
 const updateTask = async (uuid, updateData) => {
-    logger.info(`[TASK SERVICE] Updating task with UUID: ${uuid}`);
-    
     try {
-        // Vérifier que la tâche existe et est de type TASK
+        // Vérifier si la tâche existe
         const checkQuery = `
             SELECT uuid FROM core.tickets 
             WHERE uuid = $1 AND ticket_type_code = 'TASK'
@@ -158,55 +156,128 @@ const updateTask = async (uuid, updateData) => {
             return null;
         }
         
-        // Construire la requête de mise à jour dynamiquement
-        const allowedFields = [
+        // Séparer les champs standards des champs d'assignation
+        const standardFields = [
             'title', 'description', 'configuration_item_uuid',
-            'ticket_status_code', 'requested_by_uuid', 'requested_for_uuid'
+            'ticket_status_code', 'requested_by_uuid', 'requested_for_uuid',
+            'core_extended_attributes', 'user_extended_attributes'
         ];
         
-        // Filtrer les champs autorisés à être mis à jour
-        const fieldsToUpdate = Object.keys(updateData).filter(field => 
-            allowedFields.includes(field)
+        const assignmentFields = [
+            'assigned_to_group', 'assigned_to_person'
+        ];
+        
+        // Filtrer les champs standards à mettre à jour
+        const standardFieldsToUpdate = Object.keys(updateData).filter(field => 
+            standardFields.includes(field)
         );
         
-        if (fieldsToUpdate.length === 0) {
+        // Filtrer les champs d'assignation à mettre à jour
+        const assignmentFieldsToUpdate = Object.keys(updateData).filter(field => 
+            assignmentFields.includes(field)
+        );
+        
+        // Vérifier s'il y a des champs à mettre à jour
+        if (standardFieldsToUpdate.length === 0 && assignmentFieldsToUpdate.length === 0) {
             logger.warn(`[TASK SERVICE] No valid fields to update for task with UUID: ${uuid}`);
             return await getTaskById(uuid, 'en'); // Retourner la tâche sans modifications
         }
         
-        // Construire la requête SQL dynamiquement
-        let setClause = fieldsToUpdate.map((field, index) => 
-            `${field} = $${index + 2}`
-        ).join(', ');
+        // Ajouter des logs pour voir les champs à mettre à jour
+        logger.info(`[TASK SERVICE] Updating task with UUID: ${uuid}`);
+        logger.info(`[TASK SERVICE] Standard fields to update: ${JSON.stringify(standardFieldsToUpdate)}`);
+        logger.info(`[TASK SERVICE] Assignment fields to update: ${JSON.stringify(assignmentFieldsToUpdate)}`);
         
-        // Ajouter la mise à jour de updated_at
-        setClause += ', updated_at = CURRENT_TIMESTAMP';
+        // Utiliser une transaction pour garantir l'intégrité des données
+        const client = await db.getClient();
         
-        const updateQuery = `
-            UPDATE core.tickets
-            SET ${setClause}
-            WHERE uuid = $1
-            RETURNING *
-        `;
-        
-        // Préparer les valeurs pour la requête
-        const values = [uuid];
-        fieldsToUpdate.forEach(field => {
-            values.push(updateData[field]);
-        });
-        
-        logger.info(`[TASK SERVICE] Executing update query for task with UUID: ${uuid}`);
-        const result = await db.query(updateQuery, values);
-        
-        if (result.rows.length === 0) {
-            logger.error(`[TASK SERVICE] Failed to update task with UUID: ${uuid}`);
-            return null;
+        try {
+            await client.query('BEGIN');
+            
+            let updatedTask = null;
+            
+            // Cas 1: Mise à jour des champs standards
+            if (standardFieldsToUpdate.length > 0) {
+                let setClause = standardFieldsToUpdate.map((field, index) => 
+                    `${field} = $${index + 2}`
+                ).join(', ');
+                
+                // Ajouter la mise à jour de updated_at
+                setClause += ', updated_at = CURRENT_TIMESTAMP';
+                
+                const updateQuery = `
+                    UPDATE core.tickets
+                    SET ${setClause}
+                    WHERE uuid = $1
+                    RETURNING *
+                `;
+                
+                // Préparer les valeurs pour la requête
+                const values = [uuid];
+                standardFieldsToUpdate.forEach(field => {
+                    values.push(updateData[field]);
+                });
+                
+                logger.info(`[TASK SERVICE] Executing standard fields update query for task with UUID: ${uuid}`);
+                const result = await client.query(updateQuery, values);
+                
+                if (result.rows.length === 0) {
+                    logger.error(`[TASK SERVICE] Failed to update standard fields for task with UUID: ${uuid}`);
+                    throw new Error('Failed to update standard fields');
+                }
+                
+                updatedTask = result.rows[0];
+                logger.info(`[TASK SERVICE] Successfully updated standard fields for task with UUID: ${uuid}`);
+            }
+            
+            // Cas 2: Mise à jour des champs d'assignation
+            if (assignmentFieldsToUpdate.length > 0) {
+                // 1. Mettre fin à l'assignation précédente
+                const endAssignmentQuery = `
+                    UPDATE core.rel_tickets_groups_persons
+                    SET ended_at = CURRENT_TIMESTAMP
+                    WHERE rel_ticket = $1 
+                      AND type = 'ASSIGNED'
+                      AND ended_at IS NULL
+                `;
+                
+                await client.query(endAssignmentQuery, [uuid]);
+                logger.info(`[TASK SERVICE] Ended previous assignment for task with UUID: ${uuid}`);
+                
+                // 2. Créer une nouvelle assignation si des valeurs sont fournies
+                if (updateData.assigned_to_group || updateData.assigned_to_person) {
+                    const newAssignmentQuery = `
+                        INSERT INTO core.rel_tickets_groups_persons (
+                            rel_ticket,
+                            rel_assigned_to_group,
+                            rel_assigned_to_person,
+                            type
+                        ) VALUES ($1, $2, $3, 'ASSIGNED')
+                    `;
+                    
+                    await client.query(newAssignmentQuery, [
+                        uuid,
+                        updateData.assigned_to_group || null,
+                        updateData.assigned_to_person || null
+                    ]);
+                    
+                    logger.info(`[TASK SERVICE] Created new assignment for task with UUID: ${uuid}`);
+                }
+            }
+            
+            await client.query('COMMIT');
+            logger.info(`[TASK SERVICE] Transaction committed for task update with UUID: ${uuid}`);
+            
+            // Récupérer la tâche mise à jour avec toutes ses informations
+            return await getTaskById(uuid, 'en');
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            logger.error(`[TASK SERVICE] Transaction rolled back for task update with UUID: ${uuid}:`, error);
+            throw error;
+        } finally {
+            client.release();
         }
-        
-        logger.info(`[TASK SERVICE] Successfully updated task with UUID: ${uuid}`);
-        
-        // Récupérer la tâche mise à jour avec toutes ses informations
-        return await getTaskById(uuid, 'en');
     } catch (error) {
         logger.error(`[TASK SERVICE] Error updating task with UUID ${uuid}:`, error);
         throw error;
