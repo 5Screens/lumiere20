@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ticketController = require('./controller');
-const { validateGetTickets, validateCreateTicket, validateUpdateTicket } = require('./validation');
+const { validateGetTickets, validateCreateTicket, validateUpdateTicket, validateAddWatchers, validateRemoveWatcher } = require('./validation');
 const logger = require('../../../config/logger');
 
 router.get('/', validateGetTickets, (req, res, next) => {
@@ -102,6 +102,18 @@ router.get('/:uuid/sprints', (req, res, next) => {
 router.patch('/:uuid', validateUpdateTicket, (req, res, next) => {
     logger.info(`[ROUTES] Handling PATCH /tickets/${req.params.uuid} request`);
     ticketController.updateTicket(req, res);
+});
+
+// Route pour ajouter des watchers à un ticket
+router.post('/:uuid/watchers', validateAddWatchers, (req, res, next) => {
+    logger.info(`[ROUTES] Handling POST /tickets/${req.params.uuid}/watchers request`);
+    ticketController.addWatchers(req, res);
+});
+
+// Route pour supprimer un watcher d'un ticket
+router.delete('/:uuid/watchers/:user_uuid', validateRemoveWatcher, (req, res, next) => {
+    logger.info(`[ROUTES] Handling DELETE /tickets/${req.params.uuid}/watchers/${req.params.user_uuid} request`);
+    ticketController.removeWatcher(req, res);
 });
 
 module.exports = router;

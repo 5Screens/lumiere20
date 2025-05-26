@@ -933,13 +933,104 @@ const updateTicket = async (uuid, updateData) => {
     }
 };
 
+// Ajoute des watchers à un ticket spécifique
+// @param {string} ticketUuid - UUID du ticket
+// @param {Array<string>} watchList - Liste des UUIDs des personnes à ajouter comme watchers
+// @returns {Promise<Object>} - Résultat de l'opération
+const addWatchers = async (ticketUuid, watchList) => {
+    logger.info(`[SERVICE] Adding ${watchList.length} watchers to ticket ${ticketUuid}`);
+    
+    // Vérifier que le ticket existe
+    const ticketQuery = 'SELECT uuid FROM core.tickets WHERE uuid = $1';
+    const ticketResult = await db.query(ticketQuery, [ticketUuid]);
+    
+    if (ticketResult.rows.length === 0) {
+        logger.error(`[SERVICE] Ticket with UUID ${ticketUuid} not found`);
+        throw new Error('Ticket not found');
+    }
+    
+    // Préparer l'insertion par lots pour les watchers
+    const watcherValues = watchList.map((personUuid, index) => {
+        return `($1, NULL, $${index + 2}, 'WATCHER')`;
+    }).join(', ');
+    
+    const watcherQuery = `
+        INSERT INTO core.rel_tickets_groups_persons (
+            rel_ticket,
+            rel_assigned_to_group,
+            rel_assigned_to_person,
+            type
+        ) VALUES ${watcherValues}
+        RETURNING uuid
+    `;
+    
+    const watcherParams = [ticketUuid, ...watchList];
+    const result = await db.query(watcherQuery, watcherParams);
+    
+    logger.info(`[SERVICE] Successfully added ${result.rows.length} watchers to ticket ${ticketUuid}`);
+    
+    return { 
+        success: true, 
+        message: `${result.rows.length} watchers added to ticket`, 
+        data: result.rows 
+    };
+};
+
+// Supprime un watcher d'un ticket spécifique (en mettant à jour ended_at)
+// @param {string} ticketUuid - UUID du ticket
+// @param {string} userUuid - UUID de la personne à retirer des watchers
+// @returns {Promise<Object>} - Résultat de l'opération
+const removeWatcher = async (ticketUuid, userUuid) => {
+    logger.info(`[SERVICE] Removing watcher ${userUuid} from ticket ${ticketUuid}`);
+    
+    // Vérifier que le ticket existe
+    const ticketQuery = 'SELECT uuid FROM core.tickets WHERE uuid = $1';
+    const ticketResult = await db.query(ticketQuery, [ticketUuid]);
+    
+    if (ticketResult.rows.length === 0) {
+        logger.error(`[SERVICE] Ticket with UUID ${ticketUuid} not found`);
+        throw new Error('Ticket not found');
+    }
+    
+    // Mettre à jour la date de fin pour le watcher (ne pas supprimer la ligne)
+    const updateQuery = `
+        UPDATE core.rel_tickets_groups_persons
+        SET ended_at = CURRENT_TIMESTAMP
+        WHERE rel_ticket = $1
+        AND rel_assigned_to_person = $2
+        AND type = 'WATCHER'
+        AND ended_at IS NULL
+        RETURNING uuid
+    `;
+    
+    const result = await db.query(updateQuery, [ticketUuid, userUuid]);
+    
+    if (result.rows.length === 0) {
+        logger.warn(`[SERVICE] Watcher ${userUuid} not found for ticket ${ticketUuid} or already removed`);
+        return { 
+            success: false, 
+            message: 'Watcher not found or already removed' 
+        };
+    }
+    
+    logger.info(`[SERVICE] Successfully removed watcher ${userUuid} from ticket ${ticketUuid}`);
+    
+    return { 
+        success: true, 
+        message: 'Watcher removed from ticket', 
+        data: result.rows[0] 
+    };
+};
+
 module.exports = {
     getTickets,
     createTicket,
     getTicketTeam,
-    getTicketTeamMembers,
+    getTicketById,
     getProjectEpics,
     getProjectSprints,
-    getTicketById,
-    updateTicket
+    getTicketTeamMembers,
+    updateTicket,
+    addWatchers,
+    removeWatcher
 };

@@ -361,8 +361,53 @@ const validateUpdateTicket = (req, res, next) => {
     next();
 };
 
+const validateAddWatchers = (req, res, next) => {
+    logger.info('[VALIDATION] Validating POST /tickets/:uuid/watchers request');
+    
+    const schema = Joi.object({
+        watch_list: Joi.array().items(Joi.string().uuid()).required()
+    });
+
+    const { error } = schema.validate(req.body);
+    if (error) {
+        logger.error('[VALIDATION] Invalid request body:', error.details[0].message);
+        return res.status(400).json({ error: error.details[0].message });
+    }
+
+    // Vérifier que l'UUID du ticket est valide
+    const ticketUuidValidation = Joi.string().uuid().validate(req.params.uuid);
+    if (!req.params.uuid || ticketUuidValidation.error) {
+        logger.error('[VALIDATION] Invalid ticket UUID provided:', req.params.uuid);
+        return res.status(400).json({ error: 'Invalid ticket UUID' });
+    }
+
+    next();
+};
+
+const validateRemoveWatcher = (req, res, next) => {
+    logger.info('[VALIDATION] Validating DELETE /tickets/:uuid/watchers/:user_uuid request');
+    
+    // Vérifier que l'UUID du ticket est valide
+    const ticketUuidValidation = Joi.string().uuid().validate(req.params.uuid);
+    if (!req.params.uuid || ticketUuidValidation.error) {
+        logger.error('[VALIDATION] Invalid ticket UUID provided:', req.params.uuid);
+        return res.status(400).json({ error: 'Invalid ticket UUID' });
+    }
+
+    // Vérifier que l'UUID de l'utilisateur est valide
+    const userUuidValidation = Joi.string().uuid().validate(req.params.user_uuid);
+    if (!req.params.user_uuid || userUuidValidation.error) {
+        logger.error('[VALIDATION] Invalid user UUID provided:', req.params.user_uuid);
+        return res.status(400).json({ error: 'Invalid user UUID' });
+    }
+
+    next();
+};
+
 module.exports = {
     validateGetTickets,
     validateCreateTicket,
-    validateUpdateTicket
+    validateUpdateTicket,
+    validateAddWatchers,
+    validateRemoveWatcher
 };
