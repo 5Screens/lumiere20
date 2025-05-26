@@ -137,24 +137,73 @@ export const useTabsStore = defineStore('tabs', {
      */
     closeTab(id_tab) {
       console.log('[TabsStore] Exécution de closeTab()', id_tab)
-      // Ferme d'abord les onglets enfants
-      this.closeChildTabs(id_tab)
+      
+      const tabToClose = this.tabs.find(t => t.id_tab === id_tab)
+      if (!tabToClose) return
+      
+      const isChildTab = !!tabToClose.parentId
+      const parentId = tabToClose.parentId
+      
+      // Si c'est un onglet parent, fermer d'abord ses enfants
+      if (!isChildTab) {
+        this.closeChildTabs(id_tab)
+      }
 
       const tabIndex = this.tabs.findIndex(t => t.id_tab === id_tab)
       if (tabIndex === -1) return
 
-      // Si on ferme l'onglet actif, active l'onglet précédent
-      if (this.activeTabId === id_tab) {
-        const remainingTabs = this.tabs.filter(t => !t.parentId)
-        const prevTab = remainingTabs[remainingTabs.length - 2]
-        this.activeTabId = prevTab ? prevTab.id_tab : null
-        this.activeChildTabId = null
-      }
-
       // Supprimer les données de l'objet en cours d'édition
       this.removeObjectInEditing(id_tab)
-
+      
+      // Supprimer l'onglet
       this.tabs.splice(tabIndex, 1)
+      
+      // Gérer l'activation du prochain onglet
+      if (isChildTab) {
+        // Si on ferme un onglet enfant actif
+        if (this.activeChildTabId === id_tab) {
+          // Récupérer les onglets enfants restants du même parent
+          const siblingTabs = this.tabs.filter(t => t.parentId === parentId)
+          
+          if (siblingTabs.length > 0) {
+            // Activer le dernier onglet enfant restant (le plus récent)
+            const prevChildTab = siblingTabs[siblingTabs.length - 1]
+            this.activeChildTabId = prevChildTab.id_tab
+            
+            // Mettre à jour l'état isActive
+            this.tabs.forEach(t => {
+              t.isActive = (t.id_tab === prevChildTab.id_tab)
+            })
+          } else {
+            // Si plus d'onglets enfants, activer l'onglet parent
+            this.activeChildTabId = null
+            
+            // Mettre à jour l'état isActive
+            this.tabs.forEach(t => {
+              t.isActive = (t.id_tab === parentId)
+            })
+          }
+        }
+      } else {
+        // Si on ferme un onglet parent actif
+        if (this.activeTabId === id_tab) {
+          const remainingTabs = this.tabs.filter(t => !t.parentId)
+          const prevTab = remainingTabs[remainingTabs.length - 1] // Prendre le dernier onglet restant
+          
+          if (prevTab) {
+            this.activeTabId = prevTab.id_tab
+            this.activeChildTabId = null
+            
+            // Mettre à jour l'état isActive
+            this.tabs.forEach(t => {
+              t.isActive = (t.id_tab === prevTab.id_tab)
+            })
+          } else {
+            this.activeTabId = null
+            this.activeChildTabId = null
+          }
+        }
+      }
     },
 
     /**
