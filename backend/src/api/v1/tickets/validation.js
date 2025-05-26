@@ -349,7 +349,9 @@ const validateUpdateTicket = (req, res, next) => {
         configuration_item_uuid: Joi.string().uuid().allow(null, ''),
         ticket_status_code: Joi.string(),
         requested_by_uuid: Joi.string().uuid().allow(null, ''),
-        requested_for_uuid: Joi.string().uuid().allow(null, '')
+        requested_for_uuid: Joi.string().uuid().allow(null, ''),
+        assigned_to_person: Joi.string().uuid().allow(null, ''),
+        assigned_to_group: Joi.string().uuid().allow(null, '')
     }).min(1); // Au moins un champ doit être fourni
 
     const { error } = updateSchema.validate(req.body);
