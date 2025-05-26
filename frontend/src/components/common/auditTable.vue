@@ -156,13 +156,10 @@ export default {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ')
       
-      // If attribute_name exists, concatenate with object_type
-      if (attributeName) {
-        return `${objectType}/${attributeName}`
-      }
-      
+      // Return only the formatted object type
       return formattedObjectType
     },
+
     
     /**
      * Get user name from user ID

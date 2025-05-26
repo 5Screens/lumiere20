@@ -64,9 +64,14 @@ BEGIN
             END IF;
             
             -- Construction de la nouvelle valeur
-            new_val := COALESCE(group_name, 'Unknown Group');
-            IF person_name IS NOT NULL THEN
-                new_val := new_val || ' - ' || person_name;
+            IF group_name IS NOT NULL THEN
+                new_val := group_name;
+                IF person_name IS NOT NULL THEN
+                    new_val := new_val || ' - ' || person_name;
+                END IF;
+            ELSE
+                -- Si pas de groupe, uniquement le nom de la personne
+                new_val := COALESCE(person_name, '');
             END IF;
             
             -- Insertion de l'enregistrement d'audit
@@ -96,9 +101,14 @@ BEGIN
                 END IF;
                 
                 -- Construction de l'ancienne valeur
-                old_val := COALESCE(group_name, 'Unknown Group');
-                IF person_name IS NOT NULL THEN
-                    old_val := old_val || ' - ' || person_name;
+                IF group_name IS NOT NULL THEN
+                    old_val := group_name;
+                    IF person_name IS NOT NULL THEN
+                        old_val := old_val || ' - ' || person_name;
+                    END IF;
+                ELSE
+                    -- Si pas de groupe, uniquement le nom de la personne
+                    old_val := COALESCE(person_name, '');
                 END IF;
                 
                 -- Insertion de l'enregistrement d'audit pour la suppression
@@ -149,9 +159,14 @@ BEGIN
             END IF;
             
             -- Construction de l'ancienne valeur
-            old_val := COALESCE(group_name, 'Unknown Group');
-            IF person_name IS NOT NULL THEN
-                old_val := old_val || ' - ' || person_name;
+            IF group_name IS NOT NULL THEN
+                old_val := group_name;
+                IF person_name IS NOT NULL THEN
+                    old_val := old_val || ' - ' || person_name;
+                END IF;
+            ELSE
+                -- Si pas de groupe, uniquement le nom de la personne
+                old_val := COALESCE(person_name, '');
             END IF;
             
             -- Insertion de l'enregistrement d'audit
