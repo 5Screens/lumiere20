@@ -18,6 +18,9 @@ DECLARE
     old_val TEXT;
     new_val TEXT;
     record_json TEXT := '';
+    group_name TEXT;
+    person_name TEXT;
+    relation_type TEXT;
 BEGIN
     -- Récupération de l'ID utilisateur actuel (à implémenter selon votre système d'authentification)
     -- Dans un système réel, cela serait récupéré depuis le contexte de la session
@@ -42,8 +45,126 @@ BEGIN
         object_type := TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME;
     END IF;
     
-    -- Traitement selon le type d'opération
-    IF (TG_OP = 'INSERT') THEN
+    -- Traitement spécial pour la table core.rel_tickets_groups_persons
+    IF TG_TABLE_SCHEMA = 'core' AND TG_TABLE_NAME = 'rel_tickets_groups_persons' THEN
+        IF (TG_OP = 'INSERT') THEN
+            -- Récupération du type de relation
+            relation_type := NEW.type::TEXT;
+            
+            -- Récupération du nom du groupe
+            SELECT g.groupe_name INTO group_name
+            FROM configuration.groups g
+            WHERE g.uuid = NEW.rel_assigned_to_group;
+            
+            -- Récupération du nom de la personne si elle existe
+            IF NEW.rel_assigned_to_person IS NOT NULL THEN
+                SELECT CONCAT(p.first_name, ' ', p.last_name) INTO person_name
+                FROM configuration.persons p
+                WHERE p.uuid = NEW.rel_assigned_to_person;
+            END IF;
+            
+            -- Construction de la nouvelle valeur
+            new_val := COALESCE(group_name, 'Unknown Group');
+            IF person_name IS NOT NULL THEN
+                new_val := new_val || ' - ' || person_name;
+            END IF;
+            
+            -- Insertion de l'enregistrement d'audit
+            INSERT INTO audit.audit_changes (
+                object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
+            ) VALUES (
+                relation_type, NEW.rel_ticket, 'Rel_Created', 'rel_tickets_groups_persons', '', new_val, current_user_id
+            );
+            RETURN NEW;
+            
+        ELSIF (TG_OP = 'UPDATE') THEN
+            -- Si ended_at est mis à jour (passage de NULL à une valeur), c'est une suppression de relation
+            IF OLD.ended_at IS NULL AND NEW.ended_at IS NOT NULL THEN
+                -- Récupération du type de relation
+                relation_type := NEW.type::TEXT;
+                
+                -- Récupération du nom du groupe
+                SELECT g.groupe_name INTO group_name
+                FROM configuration.groups g
+                WHERE g.uuid = NEW.rel_assigned_to_group;
+                
+                -- Récupération du nom de la personne si elle existe
+                IF NEW.rel_assigned_to_person IS NOT NULL THEN
+                    SELECT CONCAT(p.first_name, ' ', p.last_name) INTO person_name
+                    FROM configuration.persons p
+                    WHERE p.uuid = NEW.rel_assigned_to_person;
+                END IF;
+                
+                -- Construction de l'ancienne valeur
+                old_val := COALESCE(group_name, 'Unknown Group');
+                IF person_name IS NOT NULL THEN
+                    old_val := old_val || ' - ' || person_name;
+                END IF;
+                
+                -- Insertion de l'enregistrement d'audit pour la suppression
+                INSERT INTO audit.audit_changes (
+                    object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
+                ) VALUES (
+                    relation_type, NEW.rel_ticket, 'Rel_Deleted', 'rel_tickets_groups_persons/ended_at', old_val, '', current_user_id
+                );
+            ELSE
+                -- Pour les autres mises à jour, utiliser le traitement standard
+                FOR col_name IN 
+                    SELECT c.column_name 
+                    FROM information_schema.columns c
+                    WHERE c.table_schema = TG_TABLE_SCHEMA 
+                    AND c.table_name = TG_TABLE_NAME
+                LOOP
+                    IF col_name NOT IN ('date_modification', 'updated_at') THEN
+                        EXECUTE format('SELECT $1.%I::TEXT, $2.%I::TEXT', col_name, col_name) 
+                        INTO old_val, new_val
+                        USING OLD, NEW;
+                        
+                        IF old_val IS DISTINCT FROM new_val THEN
+                            INSERT INTO audit.audit_changes (
+                                object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
+                            ) VALUES (
+                                object_type, NEW.uuid, 'Field_UPDATED', col_name, old_val, new_val, current_user_id
+                            );
+                        END IF;
+                    END IF;
+                END LOOP;
+            END IF;
+            RETURN NEW;
+            
+        ELSIF (TG_OP = 'DELETE') THEN
+            -- Pour une suppression physique, traiter comme une suppression de relation
+            relation_type := OLD.type::TEXT;
+            
+            -- Récupération du nom du groupe
+            SELECT g.groupe_name INTO group_name
+            FROM configuration.groups g
+            WHERE g.uuid = OLD.rel_assigned_to_group;
+            
+            -- Récupération du nom de la personne si elle existe
+            IF OLD.rel_assigned_to_person IS NOT NULL THEN
+                SELECT CONCAT(p.first_name, ' ', p.last_name) INTO person_name
+                FROM configuration.persons p
+                WHERE p.uuid = OLD.rel_assigned_to_person;
+            END IF;
+            
+            -- Construction de l'ancienne valeur
+            old_val := COALESCE(group_name, 'Unknown Group');
+            IF person_name IS NOT NULL THEN
+                old_val := old_val || ' - ' || person_name;
+            END IF;
+            
+            -- Insertion de l'enregistrement d'audit
+            INSERT INTO audit.audit_changes (
+                object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
+            ) VALUES (
+                relation_type, OLD.rel_ticket, 'Rel_Deleted', 'rel_tickets_groups_persons', old_val, '', current_user_id
+            );
+            RETURN OLD;
+        END IF;
+        
+    -- Traitement standard pour les autres tables
+    ELSIF (TG_OP = 'INSERT') THEN
         -- Création du format clé/valeur pour les données insérées
         FOR col_name IN 
             SELECT c.column_name 
@@ -197,6 +318,12 @@ FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 DROP TRIGGER IF EXISTS trg_audit_rel_parent_child_tickets ON core.rel_parent_child_tickets;
 CREATE TRIGGER trg_audit_rel_parent_child_tickets
 AFTER INSERT OR UPDATE OR DELETE ON core.rel_parent_child_tickets
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
+-- Déclencheur pour la table rel_tickets_groups_persons
+DROP TRIGGER IF EXISTS trg_audit_rel_tickets_groups_persons ON core.rel_tickets_groups_persons;
+CREATE TRIGGER trg_audit_rel_tickets_groups_persons
+AFTER INSERT OR UPDATE OR DELETE ON core.rel_tickets_groups_persons
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
 -- Validation de la transaction
