@@ -375,25 +375,10 @@ async function confirmChanges() {
     // 2. Construire le body pour l'appel POST avec la structure requise
     // Format du body: { "watch_list": ["uuid1", "uuid2", ...] }
     if (addedItems.length > 0) {
-      // Vérifier la structure des données et s'assurer que nous avons des chaînes de caractères
-      const watchList = addedItems.map(item => {
-        // Vérifier si person_uuid existe et est une chaîne de caractères
-        if (item.person_uuid && typeof item.person_uuid === 'string') {
-          return item.person_uuid;
-        }
-        // Si person_uuid n'existe pas, essayer d'utiliser uuid
-        else if (item.uuid && typeof item.uuid === 'string') {
-          return item.uuid;
-        }
-        // Sinon, convertir l'item en chaîne si c'est lui-même une chaîne
-        else if (typeof item === 'string') {
-          return item;
-        }
-        // Dernier recours: convertir en chaîne
-        return String(item.uuid || item.person_uuid || item);
-      });
+      // Utiliser directement item.uuid et le convertir en chaîne
+      const watchList = addedItems.map(item => String(item.uuid));
       
-      // Vérifier que nous avons bien des chaînes de caractères
+      // Log pour vérification
       console.log('Watch list à envoyer:', watchList);
       
       const watchListBody = {
