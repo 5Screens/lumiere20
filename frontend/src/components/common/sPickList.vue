@@ -372,10 +372,38 @@ async function confirmChanges() {
     const addedItems = targetItems.value.filter(item => !originalUuids.has(item.uuid));
     const removedItems = originalTargetItems.value.filter(item => !currentUuids.has(item.uuid));
     
-    // 2. Pour chaque item ajouté, faire un appel POST
-    const addPromises = addedItems.map(item => 
-      apiService.post(`${props.targetEndPoint}/${props.target_uuid}/watchers`, item.uuid)
-    );
+    // 2. Construire le body pour l'appel POST avec la structure requise
+    // Format du body: { "watch_list": ["uuid1", "uuid2", ...] }
+    if (addedItems.length > 0) {
+      // Vérifier la structure des données et s'assurer que nous avons des chaînes de caractères
+      const watchList = addedItems.map(item => {
+        // Vérifier si person_uuid existe et est une chaîne de caractères
+        if (item.person_uuid && typeof item.person_uuid === 'string') {
+          return item.person_uuid;
+        }
+        // Si person_uuid n'existe pas, essayer d'utiliser uuid
+        else if (item.uuid && typeof item.uuid === 'string') {
+          return item.uuid;
+        }
+        // Sinon, convertir l'item en chaîne si c'est lui-même une chaîne
+        else if (typeof item === 'string') {
+          return item;
+        }
+        // Dernier recours: convertir en chaîne
+        return String(item.uuid || item.person_uuid || item);
+      });
+      
+      // Vérifier que nous avons bien des chaînes de caractères
+      console.log('Watch list à envoyer:', watchList);
+      
+      const watchListBody = {
+        watch_list: watchList
+      };
+      
+      // Faire un seul appel POST avec tous les UUIDs ajoutés
+      const addPromise = apiService.post(`${props.targetEndPoint}/${props.target_uuid}/watchers`, watchListBody);
+      await addPromise;
+    }
     
     // 3. Pour chaque item retiré, faire un appel DELETE avec le format spécifique
     // Format: /tickets/{uuid}/watchers/{user_id}
@@ -383,8 +411,10 @@ async function confirmChanges() {
       apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/watchers/${item.person_uuid}`)
     );
     
-    // Attendre que toutes les opérations soient terminées
-    await Promise.all([...addPromises, ...removePromises]);
+    // Attendre que toutes les opérations de suppression soient terminées
+    if (removedItems.length > 0) {
+      await Promise.all(removePromises);
+    }
     
     // Mettre à jour les items originaux
     originalTargetItems.value = [...targetItems.value];
