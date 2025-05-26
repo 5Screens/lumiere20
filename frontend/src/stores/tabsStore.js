@@ -91,6 +91,45 @@ export const useTabsStore = defineStore('tabs', {
      */
     openTab(tab) {
       console.log('[TabsStore] Exécution de openTab()', tab)
+      
+      // Vérifier si un onglet avec le même objectId est déjà ouvert
+      if (tab.data && tab.data.objectId) {
+        // Rechercher parmi les onglets enfants si tab.parentId est défini
+        const existingTabs = this.tabs.filter(t => 
+          t.data && 
+          t.data.objectId === tab.data.objectId && 
+          t.data.objectType === tab.data.objectType && 
+          t.parentId === tab.parentId
+        )
+        
+        if (existingTabs.length > 0) {
+          console.log('[TabsStore] Onglet existant trouvé, activation de celui-ci', existingTabs[0])
+          
+          // Désactiver tous les onglets
+          this.tabs.forEach(t => t.isActive = false)
+          
+          // Si c'est un onglet enfant
+          if (tab.parentId) {
+            // Activer l'onglet existant mais PAS son parent
+            existingTabs[0].isActive = true
+            this.activeChildTabId = existingTabs[0].id_tab
+            this.activeTabId = tab.parentId
+            
+            // L'onglet parent ne doit pas être marqué comme actif
+            const parentTab = this.tabs.find(t => t.id_tab === tab.parentId)
+            if (parentTab) parentTab.isActive = false
+          } else {
+            // Pour un onglet parent
+            existingTabs[0].isActive = true
+            this.activeTabId = existingTabs[0].id_tab
+            this.activeChildTabId = null
+          }
+          
+          return
+        }
+      }
+      
+      // Si aucun onglet existant n'a été trouvé, créer un nouvel onglet
       const newTab = {
         ...tab,
         id_tab: uuidv4(),
