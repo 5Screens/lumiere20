@@ -92,6 +92,40 @@ export const useTabsStore = defineStore('tabs', {
     openTab(tab) {
       console.log('[TabsStore] Exécution de openTab()', tab)
       
+      // Vérifier si un onglet avec le même id est déjà ouvert (cas de DynamicPane.vue)
+      if (tab.id) {
+        const existingTabsById = this.tabs.filter(t => 
+          t.type === tab.type && 
+          (t.id === tab.id || t.type === tab.id)
+        )
+        
+        if (existingTabsById.length > 0) {
+          console.log('[TabsStore] Onglet existant trouvé par id, activation de celui-ci', existingTabsById[0])
+          
+          // Désactiver tous les onglets
+          this.tabs.forEach(t => t.isActive = false)
+          
+          // Si c'est un onglet enfant
+          if (existingTabsById[0].parentId) {
+            // Activer l'onglet existant mais PAS son parent
+            existingTabsById[0].isActive = true
+            this.activeChildTabId = existingTabsById[0].id_tab
+            this.activeTabId = existingTabsById[0].parentId
+            
+            // L'onglet parent ne doit pas être marqué comme actif
+            const parentTab = this.tabs.find(t => t.id_tab === existingTabsById[0].parentId)
+            if (parentTab) parentTab.isActive = false
+          } else {
+            // Pour un onglet parent
+            existingTabsById[0].isActive = true
+            this.activeTabId = existingTabsById[0].id_tab
+            this.activeChildTabId = null
+          }
+          
+          return
+        }
+      }
+      
       // Vérifier si un onglet avec le même objectId est déjà ouvert
       if (tab.data && tab.data.objectId) {
         // Rechercher parmi les onglets enfants si tab.parentId est défini
@@ -103,7 +137,7 @@ export const useTabsStore = defineStore('tabs', {
         )
         
         if (existingTabs.length > 0) {
-          console.log('[TabsStore] Onglet existant trouvé, activation de celui-ci', existingTabs[0])
+          console.log('[TabsStore] Onglet existant trouvé par objectId, activation de celui-ci', existingTabs[0])
           
           // Désactiver tous les onglets
           this.tabs.forEach(t => t.isActive = false)
