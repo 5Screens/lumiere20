@@ -5,7 +5,7 @@ class AuditChangesService {
     async getAuditChangesByObjectUuid(objectUuid) {
         logger.info(`[SERVICE] getAuditChangesByObjectUuid - Starting database query for object UUID: ${objectUuid}`);
         try {
-            // Query to get all audit changes for a specific object UUID
+            // Query to get all audit changes for a specific object UUID and related ticket-group-person relations
             const query = `
                 SELECT 
                     id,
@@ -21,6 +21,25 @@ class AuditChangesService {
                     audit.audit_changes
                 WHERE 
                     object_uuid = $1
+                UNION
+                SELECT 
+                    ac.id,
+                    ac.object_type,
+                    ac.object_uuid,
+                    ac.event_type,
+                    ac.attribute_name,
+                    ac.old_value,
+                    ac.new_value,
+                    ac.user_id,
+                    ac.event_date
+                FROM 
+                    audit.audit_changes ac
+                WHERE 
+                    ac.object_uuid IN (
+                        SELECT uuid
+                        FROM core.rel_tickets_groups_persons
+                        WHERE rel_ticket = $1
+                    )
                 ORDER BY 
                     event_date DESC
             `;
@@ -32,7 +51,7 @@ class AuditChangesService {
                 return [];
             }
             
-            logger.info(`[SERVICE] getAuditChangesByObjectUuid - Successfully retrieved ${result.rows.length} audit records for object UUID: ${objectUuid}`);
+            logger.info(`[SERVICE] getAuditChangesByObjectUuid - Successfully retrieved ${result.rows.length} audit records for object UUID: ${objectUuid} including related ticket-group-person relations`);
             return result.rows;
         } catch (error) {
             logger.error(`[SERVICE] getAuditChangesByObjectUuid - Database error: ${error.message}`);
