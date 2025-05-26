@@ -6,7 +6,10 @@
         v-for="tab in store.parentTabs" 
         :key="tab.id_tab" 
         class="tab" 
-        :class="{ active: store.isParentTabActive(tab.id_tab) }"
+        :class="{ 
+          active: store.isParentTabActive(tab.id_tab),
+          'has-active-child': store.activeTabId === tab.id_tab && store.activeChildTabId !== null 
+        }"
         @click="handleTabSwitch(tab)"
       >
         <i v-if="tab.icon" :class="tab.icon"></i>

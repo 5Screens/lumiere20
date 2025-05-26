@@ -74,6 +74,15 @@
   font-weight: 500; /* Légèrement plus gras pour l'onglet actif */
 }
 
+/* Style pour l'onglet parent qui contient un onglet enfant actif */
+.tab.has-active-child {
+  background-color: var(--bg-color);
+  border-bottom: 2px solid var(--primary-color);
+  color: var(--primary-color); /* Couleur du texte similaire à l'onglet actif */
+  font-weight: 500; /* Légèrement plus gras comme l'onglet actif */
+  opacity: 0.85; /* Légèrement plus transparent que l'onglet actif pour différencier */
+}
+
 /* Titre de l'onglet - texte principal affiché dans l'onglet */
 .tab-title {
   margin-right: 8px;
