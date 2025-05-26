@@ -374,12 +374,13 @@ async function confirmChanges() {
     
     // 2. Pour chaque item ajouté, faire un appel POST
     const addPromises = addedItems.map(item => 
-      apiService.post(`${props.targetEndPoint}/${props.target_uuid}/watchlist`, item.uuid)
+      apiService.post(`${props.targetEndPoint}/${props.target_uuid}/watchers`, item.uuid)
     );
     
-    // 3. Pour chaque item retiré, faire un appel DELETE
+    // 3. Pour chaque item retiré, faire un appel DELETE avec le format spécifique
+    // Format: /tickets/{uuid}/watchers/{user_id}
     const removePromises = removedItems.map(item => 
-      apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/watchlist`, { data: item.uuid })
+      apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/watchers/${item.person_uuid}`)
     );
     
     // Attendre que toutes les opérations soient terminées
