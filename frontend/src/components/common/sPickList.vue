@@ -65,14 +65,6 @@
 
       <!-- Colonne de droite (target) -->
       <div class="s-pick-list__column">
-        <div class="s-pick-list__search-container">
-          <input 
-            type="text" 
-            v-model="targetSearchQuery" 
-            class="s-pick-list__search-input"
-            :placeholder="placeholder" 
-          />
-        </div>
         <div class="s-pick-list__list-container">
           <!-- Loading spinner -->
           <div v-if="targetLoading" class="s-pick-list__loading">
@@ -80,9 +72,9 @@
           </div>
           
           <!-- Liste des items sélectionnés -->
-          <ul v-else-if="filteredTargetItems.length > 0" class="s-pick-list__list">
+          <ul v-else-if="targetItems.length > 0" class="s-pick-list__list">
             <li 
-              v-for="item in filteredTargetItems" 
+              v-for="item in targetItems" 
               :key="item.uuid"
               :class="[
                 's-pick-list__item', 
@@ -196,7 +188,6 @@ const originalTargetItems = ref([]);
 const selectedSourceItems = ref([]);
 const selectedTargetItems = ref([]);
 const sourceSearchQuery = ref('');
-const targetSearchQuery = ref('');
 const sourceLoading = ref(false);
 const targetLoading = ref(false);
 const error = ref('');
@@ -208,16 +199,6 @@ const filteredSourceItems = computed(() => {
   
   const query = sourceSearchQuery.value.toLowerCase();
   return sourceItems.value.filter(item => {
-    const label = getItemLabel(item).toLowerCase();
-    return label.includes(query);
-  });
-});
-
-const filteredTargetItems = computed(() => {
-  if (!targetSearchQuery.value) return targetItems.value;
-  
-  const query = targetSearchQuery.value.toLowerCase();
-  return targetItems.value.filter(item => {
     const label = getItemLabel(item).toLowerCase();
     return label.includes(query);
   });
