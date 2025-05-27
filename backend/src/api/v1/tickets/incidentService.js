@@ -187,19 +187,19 @@ const getIncidentById = async (uuid, lang = 'en') => {
             
             -- Jointures pour les traductions des champs spécifiques aux incidents
             LEFT JOIN configuration.incident_impacts impacts ON t.core_extended_attributes->>'impact' = impacts.code
-            LEFT JOIN translations.incident_impacts_translation impacts_t ON impacts.uuid = impacts_t.incident_impact_uuid AND impacts_t.lang = $2
+            LEFT JOIN translations.incident_impacts_labels impacts_t ON impacts_t.rel_incident_impact_code = t.core_extended_attributes->>'impact' AND impacts_t.language = $2
             
             LEFT JOIN configuration.incident_urgencies urgencies ON t.core_extended_attributes->>'urgency' = urgencies.code
-            LEFT JOIN translations.incident_urgencies_translation urgencies_t ON urgencies.uuid = urgencies_t.incident_urgency_uuid AND urgencies_t.lang = $2
+            LEFT JOIN translations.incident_urgencies_labels urgencies_t ON urgencies_t.rel_incident_urgency_code = t.core_extended_attributes->>'urgency' AND urgencies_t.language = $2
             
             LEFT JOIN configuration.incident_cause_codes cause_codes ON t.core_extended_attributes->>'cause_code' = cause_codes.code
-            LEFT JOIN translations.incident_cause_codes_translation cause_codes_t ON cause_codes.uuid = cause_codes_t.incident_cause_code_uuid AND cause_codes_t.lang = $2
+            LEFT JOIN translations.incident_cause_codes_labels cause_codes_t ON cause_codes_t.rel_incident_cause_code_code = t.core_extended_attributes->>'cause_code' AND cause_codes_t.language = $2
             
-            LEFT JOIN configuration.incident_contact_types contact_types ON t.core_extended_attributes->>'contact_type' = contact_types.code
-            LEFT JOIN translations.incident_contact_types_translation contact_types_t ON contact_types.uuid = contact_types_t.incident_contact_type_uuid AND contact_types_t.lang = $2
+            LEFT JOIN configuration.contact_types contact_types ON t.core_extended_attributes->>'contact_type' = contact_types.code
+            LEFT JOIN translations.contact_types_labels contact_types_t ON contact_types_t.rel_contact_type_code = t.core_extended_attributes->>'contact_type' AND contact_types_t.language = $2
             
             LEFT JOIN configuration.incident_resolution_codes resolution_codes ON t.core_extended_attributes->>'resolution_code' = resolution_codes.code
-            LEFT JOIN translations.incident_resolution_codes_translation resolution_codes_t ON resolution_codes.uuid = resolution_codes_t.incident_resolution_code_uuid AND resolution_codes_t.lang = $2
+            LEFT JOIN translations.incident_resolution_codes_labels resolution_codes_t ON resolution_codes_t.rel_incident_resolution_code = t.core_extended_attributes->>'resolution_code' AND resolution_codes_t.language = $2
             
             -- Jointure pour récupérer le titre du problème lié
             LEFT JOIN core.tickets problem ON t.core_extended_attributes->>'rel_problem_id' = problem.uuid::text
