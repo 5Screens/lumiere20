@@ -5,6 +5,7 @@
       { 's-filtered-search-field--editing': isEditing },
       { 's-filtered-search-field--error': showRequiredError }
     ]"
+    @mouseleave="showDropdown = false"
   >
     <div class="s-filtered-search-field__label-container" v-if="label">
       <label 

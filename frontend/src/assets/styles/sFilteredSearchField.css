@@ -84,7 +84,7 @@
 /* The dropdown menu that appears when the field is clicked */
 .s-filtered-search-field__dropdown {
   position: absolute;
-  top: calc(100% + 4px);
+  top: 100%;
   left: 0;
   width: 100%;
   max-height: 300px;
