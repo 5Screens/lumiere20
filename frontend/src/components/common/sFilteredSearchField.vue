@@ -33,6 +33,16 @@
         <span>▼</span>
       </div>
       
+      <!-- Reset button -->
+      <button
+        v-if="selectedItem && !isEditing"
+        class="s-filtered-search-field__reset-button"
+        @click.stop="resetSelection"
+        type="button"
+      >
+        Reset
+      </button>
+      
       <!-- Action buttons for edit mode -->
       <div v-if="isEditing && valueChanged && editMode" class="s-filtered-search-field__actions">
         <RgButton
@@ -117,7 +127,7 @@ const loading = ref(false)
 const items = ref([])
 const searchQuery = ref('')
 const selectedItem = ref(null)
-const originalItem = ref(null)
+const originalValue = ref(null)
 const valueChanged = ref(false)
 const columns = ref([])
 const visibleColumns = computed(() => {
@@ -293,12 +303,12 @@ const findAndSelectInitialItem = () => {
     const found = items.value.find(item => item.uuid === props.modelValue.uuid)
     if (found) {
       selectedItem.value = found
-      // Only update originalItem if we're not currently editing
+      // Only update originalValue if we're not currently editing
       if (!isEditing.value) {
-        console.log('[sFilteredSearchField] Updating originalItem from findAndSelectInitialItem')
-        originalItem.value = { ...found }
+        console.log('[sFilteredSearchField] Updating originalValue from findAndSelectInitialItem')
+        originalValue.value = { ...found }
       } else {
-        console.log('[sFilteredSearchField] Skipping originalItem update - currently editing')
+        console.log('[sFilteredSearchField] Skipping originalValue update - currently editing')
       }
     }
   } 
@@ -307,12 +317,12 @@ const findAndSelectInitialItem = () => {
     const found = items.value.find(item => item.uuid === props.modelValue)
     if (found) {
       selectedItem.value = found
-      // Only update originalItem if we're not currently editing
+      // Only update originalValue if we're not currently editing
       if (!isEditing.value) {
-        console.log('[sFilteredSearchField] Updating originalItem from findAndSelectInitialItem')
-        originalItem.value = { ...found }
+        console.log('[sFilteredSearchField] Updating originalValue from findAndSelectInitialItem')
+        originalValue.value = { ...found }
       } else {
-        console.log('[sFilteredSearchField] Skipping originalItem update - currently editing')
+        console.log('[sFilteredSearchField] Skipping originalValue update - currently editing')
       }
     }
   }
@@ -353,14 +363,14 @@ const selectItem = (item) => {
   // Capture original value when starting to edit
   if (props.editMode && !isEditing.value) {
     console.log('[sFilteredSearchField] selectItem - Capturing original item:', selectedItem.value)
-    originalItem.value = selectedItem.value ? { ...selectedItem.value } : null
+    originalValue.value = selectedItem.value ? { ...selectedItem.value } : null
   }
   
   selectedItem.value = item
   
   // In edit mode, track if value has changed
   if (props.editMode) {
-    valueChanged.value = !isEqual(item, originalItem.value)
+    valueChanged.value = !isEqual(item, originalValue.value)
     isEditing.value = true
   }
   
@@ -416,7 +426,7 @@ const confirmChange = async () => {
     await apiService.patch(endpointWithUuid, data)
     
     // Update original value after successful update
-    originalItem.value = { ...selectedItem.value }
+    originalValue.value = { ...selectedItem.value }
     valueChanged.value = false
     isEditing.value = false
     
@@ -438,33 +448,47 @@ const confirmChange = async () => {
 }
 
 const cancelChange = () => {
-  console.log('[sFilteredSearchField] cancelChange called')
-  console.log('[sFilteredSearchField] Current selected item:', selectedItem.value)
-  console.log('[sFilteredSearchField] Original item to restore:', originalItem.value)
+  console.log('[cancelChange] Cancelling change');
   
-  // Revert to original value
-  selectedItem.value = originalItem.value
-  console.log('[sFilteredSearchField] Item reset to original:', selectedItem.value)
-  
-  valueChanged.value = false
-  isEditing.value = false
-  console.log('[sFilteredSearchField] States reset - valueChanged:', valueChanged.value, 'isEditing:', isEditing.value)
-  
-  // Emit update event with original value
-  if (originalItem.value) {
-    console.log('[sFilteredSearchField] Emitting update:modelValue with uuid:', originalItem.value.uuid)
-    emit('update:modelValue', originalItem.value.uuid)
+  // Restore original value
+  if (originalValue.value) {
+    selectedItem.value = { ...originalValue.value };
   } else {
-    console.log('[sFilteredSearchField] Emitting update:modelValue with null')
-    emit('update:modelValue', null)
+    selectedItem.value = null;
   }
+  
+  // Update model value
+  emit('update:modelValue', originalValue.value?.uuid || null);
+  
+  // Reset editing state
+  isEditing.value = false;
+  valueChanged.value = false;
   
   // Emit cancel event
   emit('field-change-cancelled', {
-    fieldName: props.fieldName
-  })
+    fieldName: props.fieldName,
+    originalValue: originalValue.value
+  });
   
-  console.log('[sFilteredSearchField] cancelChange completed')
+  console.log('[cancelChange] Change cancelled, restored to:', originalValue.value);
+}
+
+const resetSelection = () => {
+  console.log('[resetSelection] Resetting selection');
+  
+  // Clear the selection
+  selectedItem.value = null;
+  
+  // Update model value
+  emit('update:modelValue', null);
+  
+  // If in edit mode, track the change
+  if (editMode.value) {
+    isEditing.value = true;
+    valueChanged.value = true;
+  }
+  
+  console.log('[resetSelection] Selection cleared');
 }
 
 // Helper function to compare objects

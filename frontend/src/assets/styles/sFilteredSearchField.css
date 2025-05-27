@@ -47,6 +47,35 @@
   width: 100%;
 }
 
+/* Reset button - appears when a value is selected */
+.s-filtered-search-field__reset-button {
+  position: absolute;
+  top: 50%;
+  right: 2.5rem;
+  transform: translateY(-50%);
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  z-index: 10;
+}
+
+/* Hover effect for reset button */
+.s-filtered-search-field__reset-button:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Active/pressed state for reset button */
+.s-filtered-search-field__reset-button:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
 /* Display area showing the currently selected value - acts as a button to open the dropdown */
 .s-filtered-search-field__selected-value {
   width: 100%;
