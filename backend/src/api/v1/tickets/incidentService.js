@@ -222,7 +222,297 @@ const getIncidentById = async (uuid, lang = 'en') => {
     }
 };
 
+/**
+ * Met à jour partiellement un incident par son UUID
+ * @param {string} uuid - UUID de l'incident à mettre à jour
+ * @param {Object} updateData - Données à mettre à jour
+ * @returns {Promise<Object>} - Détails de l'incident mis à jour
+ */
+const updateIncident = async (uuid, updateData) => {
+    try {
+        // Vérifier si l'incident existe
+        const checkQuery = `
+            SELECT uuid FROM core.tickets 
+            WHERE uuid = $1 AND ticket_type_code = 'INCIDENT'
+        `;
+        const checkResult = await db.query(checkQuery, [uuid]);
+        
+        if (checkResult.rows.length === 0) {
+            logger.error(`[INCIDENT SERVICE] No incident found with UUID: ${uuid}`);
+            return null;
+        }
+        
+        // Séparer les champs standards des champs d'assignation et des attributs étendus spécifiques aux incidents
+        const standardFields = [
+            'title', 'description', 'configuration_item_uuid',
+            'ticket_status_code', 'requested_by_uuid', 'requested_for_uuid'
+        ];
+        
+        const assignmentFields = [
+            'assigned_to_group', 'assigned_to_person'
+        ];
+        
+        const extendedAttributesFields = [
+            'impact', 'urgency', 'priority', 'cause_code', 'rel_service',
+            'contact_type', 'reopen_count', 'standby_count', 'rel_problem_id',
+            'resolution_code', 'assignment_count', 'resolution_notes',
+            'rel_change_request', 'rel_service_offerings'
+        ];
+        
+        // Filtrer les champs standards à mettre à jour
+        const standardFieldsToUpdate = Object.keys(updateData).filter(field => 
+            standardFields.includes(field)
+        );
+        
+        // Filtrer les champs d'assignation à mettre à jour
+        const assignmentFieldsToUpdate = Object.keys(updateData).filter(field => 
+            assignmentFields.includes(field)
+        );
+        
+        // Filtrer les attributs étendus à mettre à jour
+        const extendedAttributesToUpdate = Object.keys(updateData).filter(field => 
+            extendedAttributesFields.includes(field)
+        );
+        
+        // Vérifier s'il y a des champs à mettre à jour
+        if (standardFieldsToUpdate.length === 0 && assignmentFieldsToUpdate.length === 0 && extendedAttributesToUpdate.length === 0) {
+            logger.warn(`[INCIDENT SERVICE] No valid fields to update for incident with UUID: ${uuid}`);
+            return await getIncidentById(uuid, 'en'); // Retourner l'incident sans modifications
+        }
+        
+        // Ajouter des logs pour voir les champs à mettre à jour
+        logger.info(`[INCIDENT SERVICE] Updating incident with UUID: ${uuid}`);
+        logger.info(`[INCIDENT SERVICE] Standard fields to update: ${JSON.stringify(standardFieldsToUpdate)}`);
+        logger.info(`[INCIDENT SERVICE] Assignment fields to update: ${JSON.stringify(assignmentFieldsToUpdate)}`);
+        logger.info(`[INCIDENT SERVICE] Extended attributes to update: ${JSON.stringify(extendedAttributesToUpdate)}`);
+        
+        // Utiliser une transaction pour garantir l'intégrité des données
+        const client = await db.getClient();
+        
+        try {
+            await client.query('BEGIN');
+            
+            let updatedIncident = null;
+            
+            // Cas 1: Mise à jour des champs standards
+            if (standardFieldsToUpdate.length > 0) {
+                let setClause = standardFieldsToUpdate.map((field, index) => 
+                    `${field} = $${index + 2}`
+                ).join(', ');
+                
+                // Ajouter la mise à jour de updated_at
+                setClause += ', updated_at = CURRENT_TIMESTAMP';
+                
+                const updateQuery = `
+                    UPDATE core.tickets
+                    SET ${setClause}
+                    WHERE uuid = $1
+                    RETURNING *
+                `;
+                
+                // Préparer les valeurs pour la requête
+                const values = [uuid];
+                standardFieldsToUpdate.forEach(field => {
+                    values.push(updateData[field]);
+                });
+                
+                logger.info(`[INCIDENT SERVICE] Executing standard fields update query for incident with UUID: ${uuid}`);
+                const result = await client.query(updateQuery, values);
+                
+                if (result.rows.length === 0) {
+                    logger.error(`[INCIDENT SERVICE] Failed to update standard fields for incident with UUID: ${uuid}`);
+                    throw new Error('Failed to update standard fields');
+                }
+                
+                updatedIncident = result.rows[0];
+                logger.info(`[INCIDENT SERVICE] Successfully updated standard fields for incident with UUID: ${uuid}`);
+            }
+            
+            // Cas 2: Mise à jour des attributs étendus
+            if (extendedAttributesToUpdate.length > 0) {
+                // Récupérer d'abord les attributs étendus actuels
+                const getCurrentAttributesQuery = `
+                    SELECT core_extended_attributes 
+                    FROM core.tickets 
+                    WHERE uuid = $1
+                `;
+                
+                const currentAttributes = await client.query(getCurrentAttributesQuery, [uuid]);
+                
+                if (currentAttributes.rows.length === 0) {
+                    logger.error(`[INCIDENT SERVICE] Failed to retrieve current extended attributes for incident with UUID: ${uuid}`);
+                    throw new Error('Failed to retrieve current extended attributes');
+                }
+                
+                // Fusionner les attributs actuels avec les nouveaux
+                const currentExtendedAttributes = currentAttributes.rows[0].core_extended_attributes || {};
+                
+                // Mettre à jour les attributs
+                extendedAttributesToUpdate.forEach(attr => {
+                    currentExtendedAttributes[attr] = updateData[attr];
+                });
+                
+                // Mettre à jour les attributs étendus dans la base de données
+                const updateExtendedQuery = `
+                    UPDATE core.tickets
+                    SET core_extended_attributes = $2,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE uuid = $1
+                    RETURNING *
+                `;
+                
+                const result = await client.query(updateExtendedQuery, [uuid, currentExtendedAttributes]);
+                
+                if (result.rows.length === 0) {
+                    logger.error(`[INCIDENT SERVICE] Failed to update extended attributes for incident with UUID: ${uuid}`);
+                    throw new Error('Failed to update extended attributes');
+                }
+                
+                updatedIncident = result.rows[0];
+                logger.info(`[INCIDENT SERVICE] Successfully updated extended attributes for incident with UUID: ${uuid}`);
+            }
+            
+            // Cas 3: Mise à jour des champs d'assignation
+            if (assignmentFieldsToUpdate.length > 0) {
+                // Déterminer le type de mise à jour
+                const isUpdatingGroup = assignmentFieldsToUpdate.includes('assigned_to_group');
+                const isUpdatingPerson = assignmentFieldsToUpdate.includes('assigned_to_person');
+                
+                // Cas C: Si on met à jour uniquement rel_assigned_to_person
+                if (isUpdatingPerson && !isUpdatingGroup) {
+                    // Récupérer l'assignation courante
+                    const getCurrentAssignmentQuery = `
+                        SELECT uuid, rel_assigned_to_group
+                        FROM core.rel_tickets_groups_persons
+                        WHERE rel_ticket = $1 
+                          AND type = 'ASSIGNED'
+                          AND ended_at IS NULL
+                        LIMIT 1
+                    `;
+                    
+                    const currentAssignment = await client.query(getCurrentAssignmentQuery, [uuid]);
+                    
+                    if (currentAssignment.rows.length > 0) {
+                        // Mettre à jour l'assignation existante avec la nouvelle personne
+                        const updateAssignmentQuery = `
+                            UPDATE core.rel_tickets_groups_persons
+                            SET rel_assigned_to_person = $2
+                            WHERE uuid = $1
+                        `;
+                        
+                        await client.query(updateAssignmentQuery, [
+                            currentAssignment.rows[0].uuid,
+                            updateData.assigned_to_person || null
+                        ]);
+                        
+                        logger.info(`[INCIDENT SERVICE] Updated person assignment for incident with UUID: ${uuid}`);
+                    } else {
+                        // Aucune assignation courante, créer une nouvelle assignation avec seulement la personne
+                        const newAssignmentQuery = `
+                            INSERT INTO core.rel_tickets_groups_persons (
+                                rel_ticket,
+                                rel_assigned_to_group,
+                                rel_assigned_to_person,
+                                type
+                            ) VALUES ($1, NULL, $2, 'ASSIGNED')
+                        `;
+                        
+                        await client.query(newAssignmentQuery, [
+                            uuid,
+                            updateData.assigned_to_person || null
+                        ]);
+                        
+                        logger.info(`[INCIDENT SERVICE] Created new person-only assignment for incident with UUID: ${uuid}`);
+                    }
+                } else {
+                    // Cas A et B: Mise à jour du groupe (avec ou sans personne)
+                    // 1. Mettre fin à l'assignation précédente
+                    const endAssignmentQuery = `
+                        UPDATE core.rel_tickets_groups_persons
+                        SET ended_at = CURRENT_TIMESTAMP
+                        WHERE rel_ticket = $1 
+                          AND type = 'ASSIGNED'
+                          AND ended_at IS NULL
+                    `;
+                    
+                    await client.query(endAssignmentQuery, [uuid]);
+                    logger.info(`[INCIDENT SERVICE] Ended previous assignment for incident with UUID: ${uuid}`);
+                    
+                    // 2. Créer une nouvelle assignation si des valeurs sont fournies
+                    if (updateData.assigned_to_group || updateData.assigned_to_person) {
+                        const newAssignmentQuery = `
+                            INSERT INTO core.rel_tickets_groups_persons (
+                                rel_ticket,
+                                rel_assigned_to_group,
+                                rel_assigned_to_person,
+                                type
+                            ) VALUES ($1, $2, $3, 'ASSIGNED')
+                        `;
+                        
+                        await client.query(newAssignmentQuery, [
+                            uuid,
+                            updateData.assigned_to_group || null,
+                            updateData.assigned_to_person || null
+                        ]);
+                        
+                        logger.info(`[INCIDENT SERVICE] Created new assignment for incident with UUID: ${uuid}`);
+                    }
+                }
+                
+                // Mettre à jour le compteur d'assignations si nécessaire
+                if (isUpdatingGroup) {
+                    // Récupérer le compteur actuel
+                    const getCurrentCountQuery = `
+                        SELECT core_extended_attributes->>'assignment_count' as assignment_count
+                        FROM core.tickets
+                        WHERE uuid = $1
+                    `;
+                    
+                    const currentCount = await client.query(getCurrentCountQuery, [uuid]);
+                    let assignmentCount = 1; // Valeur par défaut si non défini
+                    
+                    if (currentCount.rows.length > 0 && currentCount.rows[0].assignment_count) {
+                        assignmentCount = parseInt(currentCount.rows[0].assignment_count) + 1;
+                    }
+                    
+                    // Mettre à jour le compteur
+                    const updateCountQuery = `
+                        UPDATE core.tickets
+                        SET core_extended_attributes = jsonb_set(
+                            core_extended_attributes,
+                            '{assignment_count}',
+                            to_jsonb($2::integer),
+                            true
+                        )
+                        WHERE uuid = $1
+                    `;
+                    
+                    await client.query(updateCountQuery, [uuid, assignmentCount]);
+                    logger.info(`[INCIDENT SERVICE] Updated assignment count to ${assignmentCount} for incident with UUID: ${uuid}`);
+                }
+            }
+            
+            await client.query('COMMIT');
+            logger.info(`[INCIDENT SERVICE] Transaction committed for incident update with UUID: ${uuid}`);
+            
+            // Récupérer l'incident mis à jour avec toutes ses informations
+            return await getIncidentById(uuid, 'en');
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            logger.error(`[INCIDENT SERVICE] Transaction rolled back for incident update with UUID: ${uuid}:`, error);
+            throw error;
+        } finally {
+            client.release();
+        }
+    } catch (error) {
+        logger.error(`[INCIDENT SERVICE] Error updating incident with UUID ${uuid}:`, error);
+        throw error;
+    }
+};
+
 module.exports = {
     getIncidents,
-    getIncidentById
+    getIncidentById,
+    updateIncident
 };
