@@ -232,36 +232,89 @@ const updateTask = async (uuid, updateData) => {
             
             // Cas 2: Mise à jour des champs d'assignation
             if (assignmentFieldsToUpdate.length > 0) {
-                // 1. Mettre fin à l'assignation précédente
-                const endAssignmentQuery = `
-                    UPDATE core.rel_tickets_groups_persons
-                    SET ended_at = CURRENT_TIMESTAMP
-                    WHERE rel_ticket = $1 
-                      AND type = 'ASSIGNED'
-                      AND ended_at IS NULL
-                `;
+                // Déterminer le type de mise à jour
+                const isUpdatingGroup = assignmentFieldsToUpdate.includes('assigned_to_group');
+                const isUpdatingPerson = assignmentFieldsToUpdate.includes('assigned_to_person');
                 
-                await client.query(endAssignmentQuery, [uuid]);
-                logger.info(`[TASK SERVICE] Ended previous assignment for task with UUID: ${uuid}`);
-                
-                // 2. Créer une nouvelle assignation si des valeurs sont fournies
-                if (updateData.assigned_to_group || updateData.assigned_to_person) {
-                    const newAssignmentQuery = `
-                        INSERT INTO core.rel_tickets_groups_persons (
-                            rel_ticket,
-                            rel_assigned_to_group,
-                            rel_assigned_to_person,
-                            type
-                        ) VALUES ($1, $2, $3, 'ASSIGNED')
+                // Cas C: Si on met à jour uniquement rel_assigned_to_person
+                if (isUpdatingPerson && !isUpdatingGroup) {
+                    // Récupérer l'assignation courante
+                    const getCurrentAssignmentQuery = `
+                        SELECT uuid, rel_assigned_to_group
+                        FROM core.rel_tickets_groups_persons
+                        WHERE rel_ticket = $1 
+                          AND type = 'ASSIGNED'
+                          AND ended_at IS NULL
+                        LIMIT 1
                     `;
                     
-                    await client.query(newAssignmentQuery, [
-                        uuid,
-                        updateData.assigned_to_group || null,
-                        updateData.assigned_to_person || null
-                    ]);
+                    const currentAssignment = await client.query(getCurrentAssignmentQuery, [uuid]);
                     
-                    logger.info(`[TASK SERVICE] Created new assignment for task with UUID: ${uuid}`);
+                    if (currentAssignment.rows.length > 0) {
+                        // Mettre à jour l'assignation existante avec la nouvelle personne
+                        const updateAssignmentQuery = `
+                            UPDATE core.rel_tickets_groups_persons
+                            SET rel_assigned_to_person = $2
+                            WHERE uuid = $1
+                        `;
+                        
+                        await client.query(updateAssignmentQuery, [
+                            currentAssignment.rows[0].uuid,
+                            updateData.assigned_to_person || null
+                        ]);
+                        
+                        logger.info(`[TASK SERVICE] Updated person assignment for task with UUID: ${uuid}`);
+                    } else {
+                        // Aucune assignation courante, créer une nouvelle assignation avec seulement la personne
+                        const newAssignmentQuery = `
+                            INSERT INTO core.rel_tickets_groups_persons (
+                                rel_ticket,
+                                rel_assigned_to_group,
+                                rel_assigned_to_person,
+                                type
+                            ) VALUES ($1, NULL, $2, 'ASSIGNED')
+                        `;
+                        
+                        await client.query(newAssignmentQuery, [
+                            uuid,
+                            updateData.assigned_to_person || null
+                        ]);
+                        
+                        logger.info(`[TASK SERVICE] Created new person-only assignment for task with UUID: ${uuid}`);
+                    }
+                } else {
+                    // Cas A et B: Mise à jour du groupe (avec ou sans personne)
+                    // 1. Mettre fin à l'assignation précédente
+                    const endAssignmentQuery = `
+                        UPDATE core.rel_tickets_groups_persons
+                        SET ended_at = CURRENT_TIMESTAMP
+                        WHERE rel_ticket = $1 
+                          AND type = 'ASSIGNED'
+                          AND ended_at IS NULL
+                    `;
+                    
+                    await client.query(endAssignmentQuery, [uuid]);
+                    logger.info(`[TASK SERVICE] Ended previous assignment for task with UUID: ${uuid}`);
+                    
+                    // 2. Créer une nouvelle assignation si des valeurs sont fournies
+                    if (updateData.assigned_to_group || updateData.assigned_to_person) {
+                        const newAssignmentQuery = `
+                            INSERT INTO core.rel_tickets_groups_persons (
+                                rel_ticket,
+                                rel_assigned_to_group,
+                                rel_assigned_to_person,
+                                type
+                            ) VALUES ($1, $2, $3, 'ASSIGNED')
+                        `;
+                        
+                        await client.query(newAssignmentQuery, [
+                            uuid,
+                            updateData.assigned_to_group || null,
+                            updateData.assigned_to_person || null
+                        ]);
+                        
+                        logger.info(`[TASK SERVICE] Created new assignment for task with UUID: ${uuid}`);
+                    }
                 }
             }
             
