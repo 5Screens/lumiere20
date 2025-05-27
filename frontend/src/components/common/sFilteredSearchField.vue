@@ -43,7 +43,11 @@
       
       <!-- Dropdown with search and table -->
       <Transition name="dropdown">
-        <div v-if="showDropdown" class="s-filtered-search-field__dropdown">
+        <div 
+          v-if="showDropdown" 
+          class="s-filtered-search-field__dropdown"
+          @mouseleave="showDropdown = false"
+        >
           <!-- Search input -->
           <div class="s-filtered-search-field__search-container">
             <input 
@@ -100,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import apiService from '@/services/apiService'
 import RgButton from './rgButton.vue'
 import '@/assets/styles/sFilteredSearchField.css'
@@ -469,16 +473,6 @@ const isEqual = (obj1, obj2) => {
   return obj1.uuid === obj2.uuid
 }
 
-// Click outside handler to close dropdown
-const handleClickOutside = (event) => {
-  const element = event.target
-  const isInsideComponent = element.closest('.s-filtered-search-field')
-  
-  if (!isInsideComponent && showDropdown.value) {
-    showDropdown.value = false
-  }
-}
-
 // Watch for modelValue changes
 watch(() => props.modelValue, (newValue) => {
   console.log('[watch modelValue] New value:', newValue);
@@ -512,10 +506,5 @@ onMounted(() => {
   console.log('[sFilteredSearchField] onMounted - Value field:', props.valueField)
   console.log('[sFilteredSearchField] onMounted - Endpoint:', props.endpoint)
   fetchItems()
-  document.addEventListener('click', handleClickOutside)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
 })
 </script>
