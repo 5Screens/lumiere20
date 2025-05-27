@@ -38,10 +38,15 @@ export class Symptom {
 
   /**
    * Retourne l'endpoint API pour les symptômes
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
    * @returns {string} Endpoint API
    */
-  static getApiEndpoint() {
-    return 'symptoms';
+  static getApiEndpoint(method) {
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'symptoms/:uuid';
+    } else {
+      return 'symptoms';
+    }
   }
 
   static getRenderableFields() {

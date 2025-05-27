@@ -50,10 +50,23 @@ export class Entity {
 
   /**
    * Retourne l'endpoint API pour les entités
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
    * @returns {string} Endpoint API
    */
-  static getApiEndpoint() {
-    return 'entities';
+  static getApiEndpoint(method) {
+    switch (method.toUpperCase()) {
+      case 'PATCH':
+      case 'PUT':
+      case 'DELETE':
+        return 'entities/:uuid';
+      case 'GET':
+        return 'entities';
+      case 'POST':
+        return 'entities';
+      default:
+        console.error('[Entity.getApiEndpoint] Unsupported method:', method);
+        return null;
+    }
   }
 
   static getRenderableFields() {

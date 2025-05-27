@@ -41,11 +41,17 @@ export class Incident {
 
   /**
    * Retourne l'endpoint API pour les tickets de type INCIDENT
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
    * @returns {string} Endpoint API
    */
-  static getApiEndpoint() {
+  static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
-    return `tickets?ticket_type=INCIDENT&lang=${userProfileStore.language}`;
+    
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=INCIDENT&lang=${userProfileStore.language}`;
+    }
   }
   
   constructor(data = {}) {

@@ -32,7 +32,7 @@ export class Task {
   static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
     
-    if (method === 'PATCH') {
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
       return 'tickets';
     } else {
       return `tickets?ticket_type=TASK&lang=${userProfileStore.language}`;
