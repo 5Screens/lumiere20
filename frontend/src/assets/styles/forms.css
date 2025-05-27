@@ -34,8 +34,6 @@
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
 }
 
 /* Style pour les titres de formulaire - plus grands et bien visibles */
@@ -59,3 +57,20 @@
 .form__footer button:hover {
   transform: scale(1.05);
 }
+
+/* Indicateur de chargement - affiché pendant le chargement des données */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--text-color);
+  font-size: 1.1rem;
+}
+
+.loading-indicator i {
+  color: var(--primary-color);
+}
+
+/* Champ de formulaire générique - style de base pour tous les champs */

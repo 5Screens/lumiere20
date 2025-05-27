@@ -15,118 +15,127 @@
     </div>
       
     <div class="form__content">
+      <!-- Indicateur de chargement -->
+      <div v-if="mode === 'update' && loading" class="loading-indicator">
+        <i class="fas fa-spinner fa-spin"></i>
+        {{ $t('common.loading') }}
+      </div>
+      
       <!-- Champs dynamiques générés à partir du modèle -->
-      <template v-for="(field, fieldName) in formFields" :key="fieldName">
-        <!-- Champ texte standard -->
-        <sTextField
-          v-if="field.type === 'sTextField'"
-          v-model="formData[fieldName]"
-          :label="field.label"
-          :required="field.required"
-          :placeholder="field.placeholder"
-          :helperText="field.helperText"
-          :disabled="field.disabled"
-          :readonly="field.readonly"
-          :inputType="field.inputType"
-          :min="field.min"
-          :max="field.max"
-          :step="field.step"
-          :uuid="objectId"
-          :fieldName="fieldName"
-          :apiEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
-          :editMode="mode === 'update'"
-        />
-        
-        <!-- Champ de sélection -->
-        <sSelectField
-          v-else-if="field.type === 'sSelectField'"
-          v-model="formData[fieldName]"
-          :label="field.label"
-          :required="field.required"
-          :placeholder="field.placeholder"
-          :endpoint="getEndpoint(field.endpoint, formData)"
-          :mode="mode === 'update' ? 'edition' : 'creation'"
-          :uuid="objectId"
-          :patchEndpoint="field.patchEndpoint"
-          :fieldName="fieldName"
-          @update:success="handleFieldSuccess"
-        />
-        
-        <!-- Éditeur de texte riche -->
-        <sRichTextEditor
-          v-else-if="field.type === 'sRichTextEditor'"
-          v-model="formData[fieldName]"
-          :label="field.label"
-          :required="field.required"
-          :placeholder="field.placeholder"
-          :edition="mode === 'update'"
-          :uuid="objectId"
-          :apiEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
-          :fieldName="fieldName"
-          @update:success="handleFieldSuccess"
-        />
-        
-        <!-- Champ de recherche filtré -->
-        <sFilteredSearchField
-          v-else-if="field.type === 'sFilteredSearchField'"
-          v-model="formData[fieldName]"
-          :label="field.label"
-          :required="field.required"
-          :placeholder="field.placeholder"
-          :endpoint="getEndpoint(field.endpoint, formData)"
-          :displayField="field.displayField"
-          :valueField="field.valueField"
-          :columnsConfig="field.columnsConfig"
-          :editMode="mode === 'update'"
-          :patchEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
-          :fieldName="fieldName"
-          :uuid="objectId"
-          @update:modelValue="handleFieldChange(fieldName, $event)"
-        />
-        
-        <!-- Liste de sélection -->
-        <sPickList
-          v-else-if="field.type === 'sPickList'"
-          v-model="formData[fieldName]"
-          :label="field.label"
-          :required="field.required"
-          :helperText="field.helperText"
-          :placeholder="field.placeholder"
-          :sourceEndPoint="getEndpoint(field.sourceEndPoint, formData)"
-          :displayedLabel="field.displayedLabel"
-          :targetEndPoint="getEndpoint(field.targetEndPoint, formData)"
-          :target_uuid="objectId"
-          :edition="mode === 'update'"
-          :pickedItems="formData[fieldName]"
-        />
-        
-        <!-- Sélecteur de date -->
-        <sDatePicker
-          v-else-if="field.type === 'sDatePicker'"
-          v-model="formData[fieldName]"
-          :label="field.label"
-          :required="field.required"
-          :placeholder="field.placeholder"
-          :helperText="field.helperText"
-          :disabled="field.disabled"
-        />
-        
-        <!-- Champ de bascule -->
-        <sToggleField
-          v-else-if="field.type === 'sToggleField'"
-          v-model="formData[fieldName]"
-          :label="field.label"
-          :required="field.required"
-        />
-        
-        <!-- Uploader de fichiers -->
-        <sFileUploader
-          v-else-if="field.type === 'sFileUploader'"
-          v-model="formData[fieldName]"
-          :label="field.label"
-          :required="field.required"
-          :uuid="objectId"
-        />
+      <template v-if="mode === 'creation' || (mode === 'update' && !loading)">
+        <template v-for="(field, fieldName) in formFields" :key="fieldName">
+          <!-- Champ texte standard -->
+          <sTextField
+            v-if="field.type === 'sTextField'"
+            v-model="formData[fieldName]"
+            :label="field.label"
+            :required="field.required"
+            :placeholder="field.placeholder"
+            :helperText="field.helperText"
+            :disabled="field.disabled"
+            :readonly="field.readonly"
+            :inputType="field.inputType"
+            :min="field.min"
+            :max="field.max"
+            :step="field.step"
+            :uuid="objectId"
+            :fieldName="fieldName"
+            :apiEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
+            :editMode="mode === 'update'"
+          />
+          
+          <!-- Champ de sélection -->
+          <sSelectField
+            v-else-if="field.type === 'sSelectField'"
+            v-model="formData[fieldName]"
+            :label="field.label"
+            :required="field.required"
+            :placeholder="field.placeholder"
+            :endpoint="getEndpoint(field.endpoint, formData)"
+            :mode="mode === 'update' ? 'edition' : 'creation'"
+            :uuid="objectId"
+            :patchEndpoint="field.patchEndpoint"
+            :fieldName="fieldName"
+            @update:success="handleFieldSuccess"
+          />
+          
+          <!-- Éditeur de texte riche -->
+          <sRichTextEditor
+            v-else-if="field.type === 'sRichTextEditor'"
+            v-model="formData[fieldName]"
+            :label="field.label"
+            :required="field.required"
+            :placeholder="field.placeholder"
+            :edition="mode === 'update'"
+            :uuid="objectId"
+            :apiEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
+            :fieldName="fieldName"
+            @update:success="handleFieldSuccess"
+          />
+          
+          <!-- Champ de recherche filtré -->
+          <sFilteredSearchField
+            v-else-if="field.type === 'sFilteredSearchField'"
+            v-model="formData[fieldName]"
+            :label="field.label"
+            :required="field.required"
+            :placeholder="field.placeholder"
+            :endpoint="getEndpoint(field.endpoint, formData)"
+            :displayField="field.displayField"
+            :valueField="field.valueField"
+            :columnsConfig="field.columnsConfig"
+            :editMode="mode === 'update'"
+            :patchEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
+            :fieldName="fieldName"
+            :uuid="objectId"
+            :ticketData="formData"
+            @update:modelValue="handleFieldChange(fieldName, $event)"
+          />
+          
+          <!-- Liste de sélection -->
+          <sPickList
+            v-else-if="field.type === 'sPickList'"
+            v-model="formData[fieldName]"
+            :label="field.label"
+            :required="field.required"
+            :helperText="field.helperText"
+            :placeholder="field.placeholder"
+            :sourceEndPoint="getEndpoint(field.sourceEndPoint, formData)"
+            :displayedLabel="field.displayedLabel"
+            :targetEndPoint="getEndpoint(field.targetEndPoint, formData)"
+            :target_uuid="objectId"
+            :edition="mode === 'update'"
+            :pickedItems="formData[fieldName]"
+          />
+          
+          <!-- Sélecteur de date -->
+          <sDatePicker
+            v-else-if="field.type === 'sDatePicker'"
+            v-model="formData[fieldName]"
+            :label="field.label"
+            :required="field.required"
+            :placeholder="field.placeholder"
+            :helperText="field.helperText"
+            :disabled="field.disabled"
+          />
+          
+          <!-- Champ de bascule -->
+          <sToggleField
+            v-else-if="field.type === 'sToggleField'"
+            v-model="formData[fieldName]"
+            :label="field.label"
+            :required="field.required"
+          />
+          
+          <!-- Uploader de fichiers -->
+          <sFileUploader
+            v-else-if="field.type === 'sFileUploader'"
+            v-model="formData[fieldName]"
+            :label="field.label"
+            :required="field.required"
+            :uuid="objectId"
+          />
+        </template>
       </template>
       
       <!-- Tableau d'audit pour afficher l'historique des modifications -->

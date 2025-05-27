@@ -314,11 +314,25 @@ const findAndSelectInitialItem = () => {
 }
 
 const toggleDropdown = () => {
+  //Ajouter des logs
+  console.log('[sFilteredSearchField] toggleDropdown called')
+  console.log('[sFilteredSearchField] Current showDropdown value:', showDropdown.value)
+  console.log('[sFilteredSearchField] Current items length:', items.value.length)
+  console.log('[sFilteredSearchField] Current endpoint:', props.endpoint)
+  
   if (props.disabled) return
   
   showDropdown.value = !showDropdown.value
   
   if (showDropdown.value) {
+    //ajoiuter des logs
+    console.log('[sFilteredSearchField] Dropdown opened')
+    // Fetch items if not already loaded or if endpoint is dynamic
+    if (items.value.length === 0 || typeof props.endpoint === 'function') {
+      console.log('[sFilteredSearchField] Fetching items')
+      fetchItems()
+    }
+    
     // Focus the search input when dropdown opens
     nextTick(() => {
       if (searchInput.value) {
@@ -493,6 +507,10 @@ watch(() => items.value, (newItems) => {
 
 // Lifecycle hooks
 onMounted(() => {
+  //ajouter des logs en précisant les props valuefield et endpoint
+  console.log('[sFilteredSearchField] onMounted - Fetching items on mount')
+  console.log('[sFilteredSearchField] onMounted - Value field:', props.valueField)
+  console.log('[sFilteredSearchField] onMounted - Endpoint:', props.endpoint)
   fetchItems()
   document.addEventListener('click', handleClickOutside)
 })
