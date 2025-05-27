@@ -909,21 +909,75 @@ const updateTicket = async (uuid, updateData) => {
         const ticketType = ticketTypeResult.rows[0].ticket_type_code;
         logger.info(`[SERVICE] Ticket type for UUID ${uuid}: ${ticketType}`);
         
-        // Utiliser le service approprié selon le type de ticket
-        let updatedTicket;
-        
-        // Importer le service approprié selon le type de ticket
+        // Importer les services nécessaires
         const taskService = require('./taskService');
+        const incidentService = require('./incidentService');
         
-        switch (ticketType) {
-            case 'TASK':
-                logger.info(`[SERVICE] Calling taskService.updateTask for UUID: ${uuid}`);
-                updatedTicket = await taskService.updateTask(uuid, updateData);
-                break;
-            // Ajouter d'autres cas pour les différents types de tickets si nécessaire
-            default:
-                logger.error(`[SERVICE] PATCH not implemented for ticket type: ${ticketType}`);
-                throw new Error('Not implemented');
+        // Utiliser le service approprié selon le type de ticket
+        let updatedTicket = null;
+        
+        // TASK
+        if (ticketType === 'TASK') {
+            logger.info(`[SERVICE] Calling taskService.updateTask for UUID: ${uuid}`);
+            updatedTicket = await taskService.updateTask(uuid, updateData);
+        }
+        // INCIDENT
+        else if (ticketType === 'INCIDENT') {
+            logger.info(`[SERVICE] Calling incidentService.updateIncident for UUID: ${uuid}`);
+            updatedTicket = await incidentService.updateIncident(uuid, updateData);
+        }
+        // CHANGE
+        else if (ticketType === 'CHANGE') {
+            logger.info(`[SERVICE] Calling changeService.updateChange for UUID: ${uuid}`);
+            const changeService = require('./changeService');
+            updatedTicket = await changeService.updateChange(uuid, updateData);
+        }
+        // DEFECT
+        else if (ticketType === 'DEFECT') {
+            logger.info(`[SERVICE] Calling defectService.updateDefect for UUID: ${uuid}`);
+            const defectService = require('./defectService');
+            updatedTicket = await defectService.updateDefect(uuid, updateData);
+        }
+        // EPIC
+        else if (ticketType === 'EPIC') {
+            logger.info(`[SERVICE] Calling epicService.updateEpic for UUID: ${uuid}`);
+            const epicService = require('./epicService');
+            updatedTicket = await epicService.updateEpic(uuid, updateData);
+        }
+        // KNOWLEDGE
+        else if (ticketType === 'KNOWLEDGE') {
+            logger.info(`[SERVICE] Calling knowledgeService.updateKnowledge for UUID: ${uuid}`);
+            const knowledgeService = require('./knowledgeService');
+            updatedTicket = await knowledgeService.updateKnowledge(uuid, updateData);
+        }
+        // PROBLEM
+        else if (ticketType === 'PROBLEM') {
+            logger.info(`[SERVICE] Calling problemService.updateProblem for UUID: ${uuid}`);
+            const problemService = require('./problemService');
+            updatedTicket = await problemService.updateProblem(uuid, updateData);
+        }
+        // PROJECT
+        else if (ticketType === 'PROJECT') {
+            logger.info(`[SERVICE] Calling projectService.updateProject for UUID: ${uuid}`);
+            const projectService = require('./projectService');
+            updatedTicket = await projectService.updateProject(uuid, updateData);
+        }
+        // SPRINT
+        else if (ticketType === 'SPRINT') {
+            logger.info(`[SERVICE] Calling sprintService.updateSprint for UUID: ${uuid}`);
+            const sprintService = require('./sprintService');
+            updatedTicket = await sprintService.updateSprint(uuid, updateData);
+        }
+        // STORY
+        else if (ticketType === 'STORY') {
+            logger.info(`[SERVICE] Calling storyService.updateStory for UUID: ${uuid}`);
+            const storyService = require('./storyService');
+            updatedTicket = await storyService.updateStory(uuid, updateData);
+        }
+        // Type de ticket non pris en charge
+        else {
+            logger.error(`[SERVICE] PATCH not implemented for ticket type: ${ticketType}`);
+            throw new Error(`Update not implemented for ticket type: ${ticketType}`);
         }
         
         return updatedTicket;
