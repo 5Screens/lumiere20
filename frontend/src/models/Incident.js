@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import apiService from '@/services/apiService'
 
 export class Incident {
   /**
@@ -415,5 +416,26 @@ export class Incident {
     });
     
     return apiData;
+  }
+
+  /**
+   * Récupère un incident par son UUID
+   * @param {string} uuid - L'UUID du ticket à récupérer
+   * @returns {Promise<Incident>} Une promesse résolue avec l'instance de l'incident
+   */
+  static async getById(uuid) {
+    try {
+      const userProfileStore = useUserProfileStore();
+      const response = await apiService.get(`tickets/${uuid}?lang=${userProfileStore.language}`);
+      
+      if (response) {
+        return new Incident(response);
+      }
+      
+      throw new Error('Incident not found');
+    } catch (error) {
+      console.error('Error fetching incident:', error);
+      throw error;
+    }
   }
 }
