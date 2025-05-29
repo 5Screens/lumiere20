@@ -116,7 +116,7 @@ export class Project {
         type: 'sPickList',
         placeholder: t('project.access_to_groups_placeholder'),
         sourceEndPoint: 'groups',
-        displayedLabel: 'groupe_name',
+        displayedLabel: 'group_name',
         targetEndPoint: 'projects',
         target_uuid: null,
         pickedItems: null,
@@ -159,10 +159,10 @@ export class Project {
           rel_assigned_to_person 
             ? `persons/${rel_assigned_to_person}/groups` 
             : 'groups',
-        displayField: 'groupe_name',
+        displayField: 'group_name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'groupe_name', label: t('group.name'), visible: true }
+          { key: 'group_name', label: t('group.name'), visible: true }
         ],
         required: isRequired('rel_assigned_to_group')
       },

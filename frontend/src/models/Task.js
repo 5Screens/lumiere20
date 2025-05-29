@@ -157,11 +157,11 @@ export class Task {
             ? `persons/${assigned_to_person}/groups` 
             : 'groups';
         },
-        displayField: 'groupe_name',
+        displayField: 'group_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'groupe_name', label: t('group.name'), visible: true },
+          { key: 'group_name', label: t('group.name'), visible: true },
           { key: 'phone', label: t('group.phone'), visible: true }
         ],
         required: isRequired('assigned_to_group')

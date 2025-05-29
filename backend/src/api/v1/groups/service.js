@@ -8,7 +8,7 @@ class GroupService {
             const query = `
                 SELECT 
                     g.uuid, 
-                    g.groupe_name, 
+                    g.group_name, 
                     g.support_level,
                     g.description,
                     g.rel_supervisor,
@@ -29,7 +29,7 @@ class GroupService {
                 FROM configuration.groups g
                 LEFT JOIN configuration.persons supervisor ON g.rel_supervisor = supervisor.uuid
                 LEFT JOIN configuration.persons manager ON g.rel_manager = manager.uuid
-                ORDER BY g.groupe_name ASC`;
+                ORDER BY g.group_name ASC`;
             
             const result = await pool.query(query);
             logger.info(`[SERVICE] getAllGroups - Query executed successfully, found ${result.rows.length} records`);
@@ -46,7 +46,7 @@ class GroupService {
             const query = `
                 SELECT 
                     g.uuid, 
-                    g.groupe_name, 
+                    g.group_name, 
                     g.support_level,
                     g.description,
                     g.rel_supervisor,
@@ -86,7 +86,7 @@ class GroupService {
         logger.info('[SERVICE] createGroup - Starting database operation');
         try {
             const {
-                groupe_name,
+                group_name,
                 support_level,
                 description,
                 rel_supervisor,
@@ -98,7 +98,7 @@ class GroupService {
 
             const query = `
                 INSERT INTO configuration.groups (
-                    groupe_name,
+                    group_name,
                     support_level,
                     description,
                     rel_supervisor,
@@ -109,7 +109,7 @@ class GroupService {
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING 
                     uuid,
-                    groupe_name,
+                    group_name,
                     support_level,
                     description,
                     rel_supervisor,
@@ -121,7 +121,7 @@ class GroupService {
                     date_modification`;
             
             const values = [
-                groupe_name,
+                group_name,
                 support_level,
                 description,
                 rel_supervisor,
@@ -159,7 +159,7 @@ class GroupService {
                 WHERE uuid = $${values.length}
                 RETURNING 
                     uuid,
-                    groupe_name,
+                    group_name,
                     support_level,
                     description,
                     rel_supervisor,
