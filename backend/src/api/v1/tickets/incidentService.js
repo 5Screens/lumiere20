@@ -113,7 +113,18 @@ const getIncidentById = async (uuid, lang = 'en') => {
         // Requête SQL pour récupérer les détails de l'incident avec les données d'assignation
         const query = `
             SELECT 
-                t.*,
+                t.uuid,
+                t.title,
+                t.description,
+                t.configuration_item_uuid,
+                t.requested_by_uuid,
+                t.requested_for_uuid,
+                t.writer_uuid,
+                t.ticket_type_code,
+                t.ticket_status_code,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
                 p1.first_name || ' ' || p1.last_name as requested_by_name,
                 p2.first_name || ' ' || p2.last_name as requested_for_name,
                 p3.first_name || ' ' || p3.last_name as writer_name,
@@ -123,9 +134,9 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 ts.code as ticket_status_code,
                 
                 -- Informations sur l'équipe assignée
-                g.group_name as assigned_group_name,
                 g.uuid as assigned_to_group,
-                
+                g.group_name as assigned_group_name,
+                           
                 -- Informations sur la personne assignée
                 p4.uuid as assigned_to_person,
                 p4.first_name || ' ' || p4.last_name as assigned_person_name,
@@ -149,12 +160,10 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 (t.core_extended_attributes->>'priority')::integer as priority,
                 t.core_extended_attributes->>'cause_code' as cause_code,
                 t.core_extended_attributes->>'rel_service' as rel_service,
+                t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
                 t.core_extended_attributes->>'contact_type' as contact_type,
-                (t.core_extended_attributes->>'reopen_count')::integer as reopen_count,
-                (t.core_extended_attributes->>'standby_count')::integer as standby_count,
                 t.core_extended_attributes->>'rel_problem_id' as rel_problem_id,
                 t.core_extended_attributes->>'resolution_code' as resolution_code,
-                (t.core_extended_attributes->>'assignment_count')::integer as assignment_count,
                 t.core_extended_attributes->>'resolution_notes' as resolution_notes,
                 
                 -- Labels traduits pour les champs avec référence
@@ -165,7 +174,12 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 COALESCE(resolution_codes_t.label, t.core_extended_attributes->>'resolution_code') as resolution_code_label,
                 
                 -- Titre du problème lié si existant
-                problem.title as rel_problem_title
+                problem.title as rel_problem_title,
+
+                -- Comptages
+                (t.core_extended_attributes->>'assignment_count')::integer as assignment_count,
+                (t.core_extended_attributes->>'reopen_count')::integer as reopen_count,
+                (t.core_extended_attributes->>'standby_count')::integer as standby_count
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
@@ -255,7 +269,7 @@ const updateIncident = async (uuid, updateData) => {
         ];
         
         const extendedAttributesFields = [
-            'impact', 'urgency', 'priority', 'cause_code', 'rel_service',
+            'impact', 'urgency', 'priority', 'cause_code', 'rel_service', 
             'contact_type', 'reopen_count', 'standby_count', 'rel_problem_id',
             'resolution_code', 'assignment_count', 'resolution_notes',
             'rel_change_request', 'rel_service_offerings'
