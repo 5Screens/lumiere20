@@ -141,6 +141,12 @@ watch(() => props.endpoint, (newEndpoint, oldEndpoint) => {
     optionsLoaded.value = false
     options.value = []
     fetchOptions()
+    
+    // Si l'endpoint contient 'incident_priorities', c'est probablement une mise à jour de priorité
+    // basée sur l'impact et l'urgence
+    if (typeof newEndpoint === 'string' && newEndpoint.includes('incident_priorities')) {
+      console.info('[sSelectField] Detected incident_priorities endpoint change, will auto-select first option when loaded')
+    }
   }
 })
 
@@ -159,15 +165,34 @@ const fetchOptions = async () => {
   try {
     loadingOptions.value = true
     let response
+    let endpointStr = ''
     
     if (typeof props.endpoint === 'function') {
       response = await props.endpoint()
     } else {
+      endpointStr = props.endpoint
       response = await apiService.get(props.endpoint)
     }
     
     options.value = response
     optionsLoaded.value = true
+    
+    // Auto-sélection pour le champ priorité d'incident
+    const isPriorityField = props.fieldName === 'priority' && 
+                          (endpointStr.includes('incident_priorities') || 
+                           (typeof props.endpoint === 'function' && props.label === i18n.global.t('incident.priority')))
+    
+    // Pour le champ de priorité, toujours sélectionner la première option lorsque l'endpoint change
+    // (ce qui signifie que l'impact ou l'urgence a changé)
+    if (isPriorityField && options.value.length > 0) {
+      console.info('[sSelectField] Auto-selecting first priority option:', options.value[0])
+      const valueField = props.valueField || 'value'
+      selectedValue.value = options.value[0][valueField]
+      
+      // Émettre la mise à jour du modèle
+      emit('update:modelValue', selectedValue.value)
+      emit('change', selectedValue.value, options.value[0])
+    }
     
     // Vérifier si la valeur actuelle existe dans les options après le chargement
     if (selectedValue.value) {
