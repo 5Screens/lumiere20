@@ -222,14 +222,16 @@ export class Incident {
       },
       watch_list: {
         label: t('incident.watch_list'),
-        type: 'sPickList',
+        type: "sPickList",
+        helperText: t('incident.watch_list_helper_text'),
         placeholder: t('incident.watch_list_placeholder'),
-        sourceEndPoint: 'persons',
-        displayedLabel: 'first_name',
-        targetEndPoint: 'incidents',
+        required: isRequired('watch_list'),
+        edition: false,
+        sourceEndPoint: "persons",
+        displayedLabel: "person_name",
+        targetEndPoint: "tickets",
         target_uuid: null,
-        pickedItems: null,
-        required: isRequired('watch_list')
+        pickedItems: null
       },
       impact: {
         label: t('incident.impact'),
