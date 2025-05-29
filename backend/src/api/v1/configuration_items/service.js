@@ -7,12 +7,12 @@ const getAllConfigurationItems = async (lang) => {
         const query = `
             SELECT 
                 ci.uuid,
-                ci.nom,
+                ci.name,
                 ci.description,
                 ci.created_at,
                 ci.updated_at
             FROM data.configuration_items ci
-            ORDER BY ci.nom ASC
+            ORDER BY ci.name ASC
         `;
         
         const result = await db.query(query);

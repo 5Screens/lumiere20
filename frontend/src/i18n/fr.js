@@ -363,7 +363,7 @@ export default {
   },
   configuration_item: {
     created_at: 'Date de Création',
-    nom: 'Nom',
+    name: 'Nom',
     description: 'Description'
   },
   person: {

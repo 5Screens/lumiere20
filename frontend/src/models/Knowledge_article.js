@@ -264,10 +264,10 @@ export class Knowledge_article {
         type: 'sFilteredSearchField',
         placeholder: t('knowledge_article.configuration_item_placeholder'),
         endpoint: 'configuration_items',
-        displayField: 'nom',
+        displayField: 'name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'nom', label: t('configuration_item.nom'), visible: true },
+          { key: 'name', label: t('configuration_item.name'), visible: true },
           { key: 'description', label: t('configuration_item.description'), visible: true }
         ],
         required: isRequired('configuration_item_uuid')

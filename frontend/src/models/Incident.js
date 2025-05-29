@@ -15,7 +15,7 @@ export class Incident {
       { key: 'title', label: t('incident.title'), type: 'text', format: 'text' },
       { key: 'ticket_type_label', label: t('configuration.ticketTypes'), type: 'text', format: 'text' },
       { key: 'ticket_status_label', label: t('incident.status'), type: 'text', format: 'text' },
-      { key: 'configuration_item_uuid', label: t('incident.configuration_item'), type: 'uuid', format: 'text' },
+      { key: 'configuration_item_name', label: t('incident.configuration_item'), type: 'text', format: 'text' },
       { key: 'impact_label', label: t('incident.impact'), type: 'text', format: 'text' },
       { key: 'urgency_label', label: t('incident.urgency'), type: 'text', format: 'text' },
       { key: 'priority', label: t('incident.priority'), type: 'text', format: 'text' },
@@ -181,10 +181,10 @@ export class Incident {
         type: 'sFilteredSearchField',
         placeholder: t('incident.configuration_item_placeholder'),
         endpoint: 'configuration_items',
-        displayField: 'nom',
+        displayField: 'name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'nom', label: t('configuration_item.nom'), visible: true },
+          { key: 'name', label: t('configuration_item.name'), visible: true },
           { key: 'description', label: t('configuration_item.description'), visible: true }
         ],
         required: isRequired('configuration_item_uuid')
