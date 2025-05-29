@@ -65,7 +65,7 @@ export default {
   },
   data() {
     return {
-      apiUrl: this.getApiEndpoint(),
+      apiUrl: this.getApiEndpoint("GET"),
       selectedRow: null,
       objectType: this.data.objectType || '',
       loading: false

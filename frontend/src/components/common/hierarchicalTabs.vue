@@ -195,7 +195,7 @@ export default {
         if (model && typeof model.getApiEndpoint === 'function') {
           return {
             ...tab,
-            apiEndpoint: model.getApiEndpoint(),
+            apiEndpoint: model.getApiEndpoint("GET"),
             objectType: tab.type
           }
         }

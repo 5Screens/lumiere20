@@ -54,6 +54,11 @@ export class Entity {
    * @returns {string} Endpoint API
    */
   static getApiEndpoint(method) {
+    // Si method est undefined, on considère que c'est GET
+    if (!method) {
+      return 'entities';
+    }
+    
     switch (method.toUpperCase()) {
       case 'PATCH':
       case 'PUT':
@@ -65,7 +70,7 @@ export class Entity {
         return 'entities';
       default:
         console.error('[Entity.getApiEndpoint] Unsupported method:', method);
-        return null;
+        return 'entities';
     }
   }
 

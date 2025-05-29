@@ -15,6 +15,7 @@ export class Incident {
       { key: 'title', label: t('incident.title'), type: 'text', format: 'text' },
       { key: 'ticket_type_label', label: t('configuration.ticketTypes'), type: 'text', format: 'text' },
       { key: 'ticket_status_label', label: t('incident.status'), type: 'text', format: 'text' },
+      { key: 'configuration_item_uuid', label: t('incident.configuration_item'), type: 'uuid', format: 'text' },
       { key: 'impact_label', label: t('incident.impact'), type: 'text', format: 'text' },
       { key: 'urgency_label', label: t('incident.urgency'), type: 'text', format: 'text' },
       { key: 'priority', label: t('incident.priority'), type: 'text', format: 'text' },
@@ -237,6 +238,7 @@ export class Incident {
         required: isRequired('impact'),
         endpoint: `incident_impacts?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'impact',
+        patchEndpoint: 'incidents',
         mode: 'creation'
       },
       urgency: {
@@ -246,6 +248,7 @@ export class Incident {
         required: isRequired('urgency'),
         endpoint: `incident_urgencies?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'urgency',
+        patchEndpoint: 'incidents',
         mode: 'creation'
       },
       priority: {
@@ -257,6 +260,7 @@ export class Incident {
             ? `incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}` 
             : null  ,
         fieldName: 'priority',
+        patchEndpoint: 'incidents',
         mode: 'creation',
         required: isRequired('priority')
       },
@@ -317,6 +321,7 @@ export class Incident {
         placeholder: t('incident.contact_type_placeholder'),
         endpoint: `contact_types?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'contact_type',
+        patchEndpoint: 'incidents',
         mode: 'creation',
         required: isRequired('contact_type')
       },
@@ -332,6 +337,7 @@ export class Incident {
         placeholder: t('incident.resolution_code_placeholder'),
         endpoint: `incident_resolution_codes?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'resolution_code',
+        patchEndpoint: 'incidents',
         mode: 'creation',
         required: isRequired('resolution_code')
       },
@@ -341,6 +347,7 @@ export class Incident {
         placeholder: t('incident.cause_code_placeholder'),
         endpoint: `incident_cause_codes?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'cause_code',
+        patchEndpoint: 'incidents',
         mode: 'creation',
         required: isRequired('cause_code')  
       },

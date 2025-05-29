@@ -54,7 +54,7 @@
             :endpoint="getEndpoint(field.endpoint, formData)"
             :mode="mode === 'update' ? 'edition' : 'creation'"
             :uuid="objectId"
-            :patchEndpoint="field.patchEndpoint"
+            :patchEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
             :fieldName="fieldName"
             @update:success="handleFieldSuccess"
           />
