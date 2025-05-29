@@ -200,7 +200,7 @@ export class Incident {
         displayField: 'group_name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'group _name', label: t('group.name'), visible: true }
+          { key: 'group_name', label: t('group.name'), visible: true }
         ],
         required: isRequired('assigned_to_group')
       },
