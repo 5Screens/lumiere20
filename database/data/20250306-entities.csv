@@ -1,4 +1,4 @@
-"uuid","name","entity_id","external_id","entity_type","budget_approver_uuid","headquarters_location","is_active","parent_uuid","date_creation","date_modification"
+"uuid","name","entity_id","external_id","entity_type","budget_approver_uuid","headquarters_location","is_active","parent_uuid","created_at","updated_at"
 "ddb352fe-50c7-42ff-b744-634ea9dd716d","Lumiere Group","LUM001",NULL,"COMPANY",NULL,"Paris, France",True,NULL,"2025-02-13 17:49:09.087389+01","2025-02-13 17:49:09.087389+01"
 "32488908-e614-4927-849a-a76b24127a92","Lumiere Technologies","LUM002",NULL,"COMPANY",NULL,"Lyon, France",True,"ddb352fe-50c7-42ff-b744-634ea9dd716d","2025-02-13 17:49:09.087389+01","2025-02-13 17:49:09.087389+01"
 "9de47026-a0e0-4400-a0c7-51fe921d1643","Lumiere Services","LUM003",NULL,"COMPANY",NULL,"Marseille, France",True,"ddb352fe-50c7-42ff-b744-634ea9dd716d","2025-02-13 17:49:09.087389+01","2025-02-13 17:49:09.087389+01"

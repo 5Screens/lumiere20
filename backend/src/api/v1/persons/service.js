@@ -38,7 +38,7 @@ const getPersonGroups = async (personUuid) => {
             FROM configuration.groups g
             JOIN configuration.rel_persons_groups rpg ON g.uuid = rpg.rel_group
             WHERE rpg.rel_member = $1
-            ORDER BY g.groupe_name
+            ORDER BY g.group_name
         `;
         const { rows } = await db.query(query, [personUuid]);
         logger.info(`Service - Retrieved ${rows.length} groups for person with UUID: ${personUuid}`);

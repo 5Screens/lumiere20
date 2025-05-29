@@ -50,8 +50,8 @@ class ServiceOfferingsService {
                     so.environment,
                     so.price_model,
                     so.currency,
-                    so.date_creation,
-                    so.date_modification,
+                    so.created_at,
+                    so.updated_at,
                     s.name as service_name,
                     e.name as operator_entity_name
                 FROM data.service_offerings so

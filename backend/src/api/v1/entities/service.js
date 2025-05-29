@@ -20,8 +20,8 @@ class EntityService {
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
                         ELSE CONCAT(p.first_name, ' ', p.last_name) 
                     END as budget_approver_name,
-                    e.date_creation,
-                    e.date_modification
+                    e.created_at,
+                    e.updated_at
                 FROM configuration.entities e
                 LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
                 LEFT JOIN configuration.entities parent ON e.parent_uuid = parent.uuid
@@ -56,8 +56,8 @@ class EntityService {
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
                         ELSE CONCAT(p.first_name, ' ', p.last_name) 
                     END as budget_approver_name,
-                    e.date_creation,
-                    e.date_modification
+                    e.created_at,
+                    e.updated_at
                 FROM configuration.entities e
                 LEFT JOIN configuration.entities parent ON e.parent_uuid = parent.uuid
                 LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
@@ -94,8 +94,8 @@ class EntityService {
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
                         ELSE CONCAT(p.first_name, ' ', p.last_name) 
                     END as budget_approver_name,
-                    e.date_creation,
-                    e.date_modification
+                    e.created_at,
+                    e.updated_at
                 FROM configuration.entities e
                 LEFT JOIN configuration.entities parent ON e.parent_uuid = parent.uuid
                 LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
@@ -145,8 +145,8 @@ class EntityService {
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
                         ELSE CONCAT(p.first_name, ' ', p.last_name) 
                     END as budget_approver_name,
-                    e.date_creation,
-                    e.date_modification
+                    e.created_at,
+                    e.updated_at
                 FROM configuration.entities e
                 LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
                 WHERE e.parent_uuid = $1
@@ -199,8 +199,8 @@ class EntityService {
                     rel_headquarters_location,
                     is_active,
                     parent_uuid,
-                    date_creation,
-                    date_modification`;
+                    created_at,
+                    updated_at`;
 
             const values = [
                 name,
@@ -275,8 +275,8 @@ class EntityService {
                         WHEN e.budget_approver_uuid IS NULL THEN NULL 
                         ELSE CONCAT(p.first_name, ' ', p.last_name) 
                     END as budget_approver_name,
-                    e.date_creation,
-                    e.date_modification
+                    e.created_at,
+                    e.updated_at
                 FROM configuration.entities e
                 LEFT JOIN configuration.persons p ON e.budget_approver_uuid = p.uuid
                 LEFT JOIN configuration.entities parent ON e.parent_uuid = parent.uuid
@@ -305,8 +305,8 @@ class EntityService {
                 values.push(value);
             }
 
-            // Add date_modification
-            updates.push(`date_modification = CURRENT_TIMESTAMP`);
+            // Add updated_at
+            updates.push(`updated_at = CURRENT_TIMESTAMP`);
 
             const query = `
                 UPDATE configuration.entities
@@ -322,8 +322,8 @@ class EntityService {
                     rel_headquarters_location,
                     is_active,
                     parent_uuid,
-                    date_creation,
-                    date_modification`;
+                    created_at,
+                    updated_at`;
 
             const result = await pool.query(query, values);
 

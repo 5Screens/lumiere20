@@ -7,7 +7,7 @@ class SymptomsTranslationsService {
         try {
             const query = `
                 UPDATE translations.symptoms_translation
-                SET libelle = $1, date_modification = CURRENT_TIMESTAMP
+                SET libelle = $1, updated_at = CURRENT_TIMESTAMP
                 WHERE uuid = $2
                 RETURNING *
             `;

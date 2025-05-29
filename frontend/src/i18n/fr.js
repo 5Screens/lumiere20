@@ -362,7 +362,7 @@ export default {
     assigned_to_placeholder: 'Sélectionnez une personne'
   },
   configuration_item: {
-    date_creation: 'Date de Création',
+    created_at: 'Date de Création',
     nom: 'Nom',
     description: 'Description'
   },
@@ -502,8 +502,8 @@ export default {
     reputational: 'Impact réputationnel',
     financial: 'Impact financier',
     comments: 'Commentaires',
-    date_creation: 'Date de création',
-    date_modification: 'Date de modification',
+    created_at: 'Date de création',
+    updated_at: 'Date de modification',
     owning_entity_name: 'Entité propriétaire',
     owned_by_name: 'Propriétaire',
     managed_by_name: 'Géré par',
@@ -519,8 +519,8 @@ export default {
     environment: 'Environnement',
     price_model: 'Modèle de prix',
     currency: 'Devise',
-    date_creation: 'Date de création',
-    date_modification: 'Date de modification',
+    created_at: 'Date de création',
+    updated_at: 'Date de modification',
     service_name: 'Nom du service parent',
     operator_entity_name: 'Entité opératrice'
   },

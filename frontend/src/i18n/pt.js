@@ -153,8 +153,8 @@ export default {
       headquarters_location: 'Localização da Sede',
       is_active: 'Ativo',
       budget_approver_name: 'Aprovador de Orçamento',
-      date_creation: 'Data de Criação',
-      date_modification: 'Data de Modificação'
+      created_at: 'Data de Criação',
+      updated_at: 'Data de Modificação'
     }
   },
   symptomsTable: {

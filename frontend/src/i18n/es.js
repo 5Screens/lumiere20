@@ -148,8 +148,8 @@ export default {
       headquarters_location: 'Ubicación de la Sede',
       is_active: 'Activo',
       budget_approver_name: 'Aprobador de Presupuesto',
-      date_creation: 'Fecha de Creación',
-      date_modification: 'Fecha de Modificación'
+      created_at: 'Fecha de Creación',
+      updated_at: 'Fecha de Modificación'
     }
   },
   sprintCenter: {

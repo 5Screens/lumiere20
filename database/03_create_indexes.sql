@@ -7,43 +7,43 @@ BEGIN;
 
 -- Indexes pour configuration_items (schéma data)
 CREATE INDEX idx_configuration_items_nom ON data.configuration_items (nom);
-CREATE INDEX idx_configuration_items_dates ON data.configuration_items (date_creation, date_modification);
+CREATE INDEX idx_configuration_items_dates ON data.configuration_items (created_at, updated_at);
 
 -- Indexes pour persons (schéma configuration)
 CREATE INDEX idx_persons_nom_prenom ON configuration.persons (nom, prenom);
 CREATE INDEX idx_persons_email ON configuration.persons (email);
-CREATE INDEX idx_persons_dates ON configuration.persons (date_creation, date_modification);
+CREATE INDEX idx_persons_dates ON configuration.persons (created_at, updated_at);
 
 -- Indexes pour entities (schéma configuration)
 CREATE INDEX idx_entities_nom ON configuration.entities (nom);
-CREATE INDEX idx_entities_dates ON configuration.entities (date_creation, date_modification);
+CREATE INDEX idx_entities_dates ON configuration.entities (created_at, updated_at);
 
 -- Indexes pour ticket_types (schéma configuration)
 CREATE INDEX idx_ticket_types_code ON configuration.ticket_types (code);
-CREATE INDEX idx_ticket_types_dates ON configuration.ticket_types (date_creation, date_modification);
+CREATE INDEX idx_ticket_types_dates ON configuration.ticket_types (created_at, updated_at);
 
 -- Indexes pour ticket_status (schéma configuration)
 CREATE INDEX idx_ticket_status_code ON configuration.ticket_status (code);
-CREATE INDEX idx_ticket_status_dates ON configuration.ticket_status (date_creation, date_modification);
+CREATE INDEX idx_ticket_status_dates ON configuration.ticket_status (created_at, updated_at);
 
 -- Indexes pour symptoms (schéma configuration)
 CREATE INDEX idx_symptoms_code ON configuration.symptoms (code);
-CREATE INDEX idx_symptoms_dates ON configuration.symptoms (date_creation, date_modification);
+CREATE INDEX idx_symptoms_dates ON configuration.symptoms (created_at, updated_at);
 
 -- Indexes pour les tables de traduction (schéma translations)
 CREATE INDEX idx_ticket_types_translation_langue ON translations.ticket_types_translation (langue);
-CREATE INDEX idx_ticket_types_translation_dates ON translations.ticket_types_translation (date_creation, date_modification);
+CREATE INDEX idx_ticket_types_translation_dates ON translations.ticket_types_translation (created_at, updated_at);
 
 CREATE INDEX idx_ticket_status_translation_langue ON translations.ticket_status_translation (langue);
-CREATE INDEX idx_ticket_status_translation_dates ON translations.ticket_status_translation (date_creation, date_modification);
+CREATE INDEX idx_ticket_status_translation_dates ON translations.ticket_status_translation (created_at, updated_at);
 
 CREATE INDEX idx_symptoms_translation_langue ON translations.symptoms_translation (langue);
-CREATE INDEX idx_symptoms_translation_dates ON translations.symptoms_translation (date_creation, date_modification);
+CREATE INDEX idx_symptoms_translation_dates ON translations.symptoms_translation (created_at, updated_at);
 
 -- Indexes pour persons_entities (schéma configuration)
 CREATE INDEX idx_persons_entities_person ON configuration.persons_entities (person_uuid);
 CREATE INDEX idx_persons_entities_entity ON configuration.persons_entities (entity_uuid);
-CREATE INDEX idx_persons_entities_dates ON configuration.persons_entities (date_creation, date_modification);
+CREATE INDEX idx_persons_entities_dates ON configuration.persons_entities (created_at, updated_at);
 
 -- Indexes pour tickets (schéma core)
 CREATE INDEX idx_tickets_titre ON core.tickets (titre);
@@ -53,7 +53,7 @@ CREATE INDEX idx_tickets_requested_for ON core.tickets (requested_for_uuid);
 CREATE INDEX idx_tickets_writer ON core.tickets (writer_uuid);
 CREATE INDEX idx_tickets_type ON core.tickets (ticket_type_uuid);
 CREATE INDEX idx_tickets_status ON core.tickets (ticket_status_uuid);
-CREATE INDEX idx_tickets_dates ON core.tickets (date_creation, date_modification);
+CREATE INDEX idx_tickets_dates ON core.tickets (created_at, updated_at);
 
 -- Index pour la recherche full-text sur les tickets
 CREATE INDEX idx_tickets_full_text ON core.tickets 

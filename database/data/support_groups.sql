@@ -29,7 +29,7 @@ BEGIN
     
     -- Insert support groups
     INSERT INTO configuration.groups (
-        groupe_name,
+        group_name,
         support_level,
         description,
         rel_supervisor,

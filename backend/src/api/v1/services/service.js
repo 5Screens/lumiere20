@@ -64,11 +64,11 @@ class ServicesService {
                     s.financial,
                     s.comments,
                     s.cab_uuid,
-                    g.groupe_name as cab_name,
+                    g.group_name as cab_name,
                     s.parent_uuid,
                     parent.name as parent_service_name,
-                    s.date_creation,
-                    s.date_modification
+                    s.created_at,
+                    s.updated_at
                 FROM data.services s
                 LEFT JOIN configuration.entities e ON s.owning_entity_uuid = e.uuid
                 LEFT JOIN configuration.persons p_owner ON s.owned_by_uuid = p_owner.uuid

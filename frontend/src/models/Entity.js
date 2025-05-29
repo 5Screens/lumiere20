@@ -16,8 +16,8 @@ export class Entity {
     this.is_active = data.is_active || 'Yes';
     this.budget_approver_uuid = data.budget_approver_uuid || null;
     this.budget_approver_name = data.budget_approver_name || '';
-    this.date_creation = data.date_creation || null;
-    this.date_modification = data.date_modification || null;
+    this.created_at = data.created_at || null;
+    this.updated_at = data.updated_at || null;
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
@@ -43,8 +43,8 @@ export class Entity {
       { key: 'headquarters_location_name', label: t('entities.location'), type: 'text', format: 'text' },
       { key: 'is_active', label: t('entities.is_active'), type: 'select', options: ['Yes', 'No'], format: 'text' },
       { key: 'budget_approver_name', label: t('entities.budget_approver_name'), type: 'text', format: 'text' },
-      { key: 'date_creation', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'date_modification', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

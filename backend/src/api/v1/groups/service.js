@@ -24,8 +24,8 @@ class GroupService {
                     g.rel_schedule,
                     g.email,
                     g.phone,
-                    g.date_creation,
-                    g.date_modification
+                    g.created_at,
+                    g.updated_at
                 FROM configuration.groups g
                 LEFT JOIN configuration.persons supervisor ON g.rel_supervisor = supervisor.uuid
                 LEFT JOIN configuration.persons manager ON g.rel_manager = manager.uuid
@@ -62,8 +62,8 @@ class GroupService {
                     g.rel_schedule,
                     g.email,
                     g.phone,
-                    g.date_creation,
-                    g.date_modification
+                    g.created_at,
+                    g.updated_at
                 FROM configuration.groups g
                 LEFT JOIN configuration.persons supervisor ON g.rel_supervisor = supervisor.uuid
                 LEFT JOIN configuration.persons manager ON g.rel_manager = manager.uuid
@@ -117,8 +117,8 @@ class GroupService {
                     rel_schedule,
                     email,
                     phone,
-                    date_creation,
-                    date_modification`;
+                    created_at,
+                    updated_at`;
             
             const values = [
                 group_name,
@@ -155,7 +155,7 @@ class GroupService {
             
             const query = `
                 UPDATE configuration.groups
-                SET ${setClause}, date_modification = CURRENT_TIMESTAMP
+                SET ${setClause}, updated_at = CURRENT_TIMESTAMP
                 WHERE uuid = $${values.length}
                 RETURNING 
                     uuid,
@@ -167,8 +167,8 @@ class GroupService {
                     rel_schedule,
                     email,
                     phone,
-                    date_creation,
-                    date_modification`;
+                    created_at,
+                    updated_at`;
             
             const result = await pool.query(query, values);
             
@@ -230,7 +230,7 @@ class GroupService {
                     (
                         SELECT array_agg(json_build_object(
                             'group_uuid', g.uuid,
-                            'group_name', g.groupe_name,
+                            'group_name', g.group_name,
                             'member_since', rpg.created_at
                         ))
                         FROM configuration.rel_persons_groups rpg

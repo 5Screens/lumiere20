@@ -18,23 +18,23 @@
    - uuid (PK)
    - nom
    - description
-   - date_creation
-   - date_modification
+   - created_at
+   - updated_at
 
 2. **persons**
    - uuid (PK)
    - nom
    - prenom
    - email
-   - date_creation
-   - date_modification
+   - created_at
+   - updated_at
 
 3. **tickets**
    - uuid (PK)
    - titre
    - description
-   - date_creation
-   - date_modification
+   - created_at
+   - updated_at
    - configuration_item_uuid (FK)
    - requested_by_uuid (FK -> persons) - personne qui demande le ticket
    - requested_for_uuid (FK -> persons) - personne pour qui le ticket est créé
@@ -46,28 +46,28 @@
    - uuid (PK)
    - nom
    - description
-   - date_creation
-   - date_modification
+   - created_at
+   - updated_at
 
 ### Tables de Référence
 
 5. **ticket_types**
    - uuid (PK)
    - code
-   - date_creation
-   - date_modification
+   - created_at
+   - updated_at
 
 6. **ticket_status**
    - uuid (PK)
    - code
-   - date_creation
-   - date_modification
+   - created_at
+   - updated_at
 
 7. **symptoms**
    - uuid (PK)
    - code
-   - date_creation
-   - date_modification
+   - created_at
+   - updated_at
 
 ### Tables de Traduction
 
@@ -76,24 +76,24 @@
    - ticket_type_uuid (FK)
    - langue
    - libelle
-   - date_creation
-   - date_modification
+   - created_at
+   - updated_at
 
 9. **ticket_status_translation**
    - uuid (PK)
    - ticket_status_uuid (FK)
    - langue
    - libelle
-   - date_creation
-   - date_modification
+   - created_at
+   - updated_at
 
 10. **symptoms_translation**
     - uuid (PK)
     - symptom_uuid (FK)
     - langue
     - libelle
-    - date_creation
-    - date_modification
+    - created_at
+    - updated_at
 
 ### Tables de Relations
 
@@ -101,8 +101,8 @@
     - uuid (PK)
     - person_uuid (FK)
     - entity_uuid (FK)
-    - date_creation
-    - date_modification
+    - created_at
+    - updated_at
 
 ## Scripts SQL
 
@@ -156,7 +156,7 @@ psql -U postgres -d lumiere_v16 -f 07_insert_translations.sql
 ## Notes Importantes
 
 - Tous les UUID sont générés automatiquement
-- Toutes les tables incluent des champs de traçabilité (date_creation, date_modification)
+- Toutes les tables incluent des champs de traçabilité (created_at, updated_at)
 - Les contraintes de clés étrangères sont configurées avec ON DELETE RESTRICT
 - Les index sont créés sur toutes les clés étrangères et les champs fréquemment utilisés dans les requêtes
 - Les traductions sont gérées dans des tables séparées pour faciliter l'internationalisation

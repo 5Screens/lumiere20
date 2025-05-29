@@ -18,8 +18,8 @@ CREATE TABLE configuration.incident_urgencies (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) NOT NULL UNIQUE,
     value INTEGER NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create incident_impacts table
@@ -35,8 +35,8 @@ CREATE TABLE configuration.incident_impacts (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) NOT NULL UNIQUE,
     value INTEGER NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create incident_cause_codes table
@@ -51,8 +51,8 @@ $$;
 CREATE TABLE configuration.incident_cause_codes (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) NOT NULL UNIQUE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create contact_types table
@@ -67,8 +67,8 @@ $$;
 CREATE TABLE configuration.contact_types (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) NOT NULL UNIQUE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create incident_priorities table (without labels)
@@ -86,8 +86,8 @@ CREATE TABLE configuration.incident_priorities (
     rel_incident_urgency_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_urgencies(code),
     rel_incident_impact_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_impacts(code),
     priority_level INTEGER NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(rel_incident_urgency_code, rel_incident_impact_code)
 );
 
@@ -105,8 +105,8 @@ CREATE TABLE translations.incident_urgencies_labels (
     rel_incident_urgency_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_urgencies(code),
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(rel_incident_urgency_code, language)
 );
 
@@ -124,8 +124,8 @@ CREATE TABLE translations.incident_impacts_labels (
     rel_incident_impact_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_impacts(code),
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(rel_incident_impact_code, language)
 );
 
@@ -143,8 +143,8 @@ CREATE TABLE translations.incident_cause_codes_labels (
     rel_incident_cause_code_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_cause_codes(code),
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(rel_incident_cause_code_code, language)
 );
 
@@ -162,8 +162,8 @@ CREATE TABLE translations.contact_types_labels (
     rel_contact_type_code VARCHAR(50) NOT NULL REFERENCES configuration.contact_types(code),
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(rel_contact_type_code, language)
 );
 
@@ -179,8 +179,8 @@ $$;
 CREATE TABLE configuration.incident_resolution_codes (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) NOT NULL UNIQUE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create incident_resolution_codes_labels table in translations schema
@@ -197,8 +197,8 @@ CREATE TABLE translations.incident_resolution_codes_labels (
     rel_incident_resolution_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_resolution_codes(code),
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(rel_incident_resolution_code, language)
 );
 

@@ -217,8 +217,8 @@ export default {
       headquarters_location: 'Headquarters Location',
       is_active: 'Active',
       budget_approver_name: 'Budget Approver',
-      date_creation: 'Creation Date',
-      date_modification: 'Modification Date'
+      created_at: 'Creation Date',
+      updated_at: 'Modification Date'
     }
   },
   symptomsTable: {

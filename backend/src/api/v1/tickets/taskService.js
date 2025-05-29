@@ -24,7 +24,7 @@ const getTaskById = async (uuid, lang = 'en') => {
                 ts.code as ticket_status_code,
                 
                 -- Informations sur l'équipe assignée
-                g.groupe_name as assigned_group_name,
+                g.group_name as assigned_group_name,
                 g.uuid as assigned_to_group,
                 
                 -- Informations sur la personne assignée
@@ -102,7 +102,7 @@ const getTasks = async (lang = 'en') => {
                 COALESCE(tst.label, ts.code) as ticket_status_label,
                 tt.code as ticket_type_code,
                 ts.code as ticket_status_code,
-                g.groupe_name as assigned_group_name,
+                g.group_name as assigned_group_name,
                 g.uuid as assigned_group_uuid,
                 p4.first_name || ' ' || p4.last_name as assigned_person_name,
                 p4.uuid as assigned_person_uuid

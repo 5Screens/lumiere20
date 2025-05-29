@@ -24,7 +24,7 @@ const getDefectById = async (uuid, lang = 'en') => {
                 ts.code as ticket_status_code,
                 
                 -- Informations sur l'équipe assignée
-                g.groupe_name as assigned_group_name,
+                g.group_name as assigned_group_name,
                 g.uuid as assigned_to_group,
                 
                 -- Informations sur la personne assignée

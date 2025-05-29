@@ -8,8 +8,8 @@ export class Symptom {
     this.symptom_code = data.symptom_code || '';
     this.libelle = data.libelle || '';
     this.langue = data.langue || '';
-    this.date_creation = data.date_creation || null;
-    this.date_modification = data.date_modification || null;
+    this.created_at = data.created_at || null;
+    this.updated_at = data.updated_at || null;
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
@@ -28,8 +28,8 @@ export class Symptom {
     
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid' },
-      { key: 'date_creation', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'date_modification', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'symptom_code', label: t('symptoms.code'), type: 'text' },
       { key: 'libelle', label: t('symptoms.name'), type: 'text' },
       { key: 'langue', label: t('language.title'), type: 'text' }

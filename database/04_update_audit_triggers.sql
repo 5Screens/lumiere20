@@ -1,5 +1,5 @@
 -- Script: 04_update_audit_triggers.sql
--- Description: Modification des déclencheurs d'audit pour exclure les champs date_modification
+-- Description: Modification des déclencheurs d'audit pour exclure les champs updated_at
 -- Date: 2025-03-12
 
 -- Activation du mode transaction
@@ -8,7 +8,7 @@ BEGIN;
 -- Suppression de la fonction existante
 DROP FUNCTION IF EXISTS audit.log_changes() CASCADE;
 
--- Création de la nouvelle fonction d'audit qui exclut les champs date_modification
+-- Création de la nouvelle fonction d'audit qui exclut les champs updated_at
 CREATE OR REPLACE FUNCTION audit.log_changes()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -52,7 +52,7 @@ BEGIN
             relation_type := NEW.type::TEXT;
             
             -- Récupération du nom du groupe
-            SELECT g.groupe_name INTO group_name
+            SELECT g.group_name INTO group_name
             FROM configuration.groups g
             WHERE g.uuid = NEW.rel_assigned_to_group;
             
@@ -89,7 +89,7 @@ BEGIN
                 relation_type := NEW.type::TEXT;
                 
                 -- Récupération du nom du groupe
-                SELECT g.groupe_name INTO group_name
+                SELECT g.group_name INTO group_name
                 FROM configuration.groups g
                 WHERE g.uuid = NEW.rel_assigned_to_group;
                 
@@ -125,7 +125,7 @@ BEGIN
                     WHERE c.table_schema = TG_TABLE_SCHEMA 
                     AND c.table_name = TG_TABLE_NAME
                 LOOP
-                    IF col_name NOT IN ('date_modification', 'updated_at') THEN
+                    IF col_name NOT IN ('updated_at', 'updated_at') THEN
                         EXECUTE format('SELECT $1.%I::TEXT, $2.%I::TEXT', col_name, col_name) 
                         INTO old_val, new_val
                         USING OLD, NEW;
@@ -147,7 +147,7 @@ BEGIN
             relation_type := OLD.type::TEXT;
             
             -- Récupération du nom du groupe
-            SELECT g.groupe_name INTO group_name
+            SELECT g.group_name INTO group_name
             FROM configuration.groups g
             WHERE g.uuid = OLD.rel_assigned_to_group;
             
@@ -189,7 +189,7 @@ BEGIN
             ORDER BY c.ordinal_position
         LOOP
             -- Ignorer les colonnes système
-            IF col_name NOT IN ('date_creation', 'date_modification', 'created_at', 'updated_at') THEN
+            IF col_name NOT IN ('created_at', 'updated_at', 'created_at', 'updated_at') THEN
                 EXECUTE format('SELECT $1.%I::TEXT', col_name) 
                 INTO new_val
                 USING NEW;
@@ -218,8 +218,8 @@ BEGIN
             WHERE c.table_schema = TG_TABLE_SCHEMA 
             AND c.table_name = TG_TABLE_NAME
         LOOP
-            -- Ignorer explicitement les colonnes date_modification et updated_at
-            IF col_name NOT IN ('date_modification', 'updated_at') THEN
+            -- Ignorer explicitement les colonnes updated_at et updated_at
+            IF col_name NOT IN ('updated_at', 'updated_at') THEN
                 -- Récupération des valeurs avant et après modification
                 EXECUTE format('SELECT $1.%I::TEXT, $2.%I::TEXT', col_name, col_name) 
                 INTO old_val, new_val
@@ -247,7 +247,7 @@ BEGIN
             ORDER BY c.ordinal_position
         LOOP
             -- Ignorer les colonnes système
-            IF col_name NOT IN ('date_creation', 'date_modification', 'created_at', 'updated_at') THEN
+            IF col_name NOT IN ('created_at', 'updated_at', 'created_at', 'updated_at') THEN
                 EXECUTE format('SELECT $1.%I::TEXT', col_name) 
                 INTO old_val
                 USING OLD;
@@ -348,7 +348,7 @@ COMMIT;
 /*
 Ce script modifie la fonction d'audit log_changes() pour exclure explicitement les champs système
 lors des opérations d'audit. Les champs exclus sont :
-- date_creation, date_modification : utilisés dans les anciennes tables
+- created_at, updated_at : utilisés dans les anciennes tables
 - created_at, updated_at : utilisés dans les nouvelles tables (comme core.tickets)
 
 Cette exclusion évite de générer des entrées d'audit inutiles pour ces champs qui sont

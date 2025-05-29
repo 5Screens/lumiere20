@@ -29,8 +29,8 @@ class LocationService {
                     parent.name as parent_location_name,
                     entity.name as primary_entity_name,
                     g.group_name as field_service_group_name,
-                    l.date_creation,
-                    l.date_modification
+                    l.created_at,
+                    l.updated_at
                 FROM configuration.locations l
                 LEFT JOIN configuration.locations parent ON l.parent_uuid = parent.uuid
                 LEFT JOIN configuration.entities entity ON l.primary_entity_uuid = entity.uuid
@@ -76,8 +76,8 @@ class LocationService {
                     entity.name as primary_entity_name,
                     l.field_service_group_uuid,
                     g.group_name as field_service_group_name,
-                    l.date_creation,
-                    l.date_modification
+                    l.created_at,
+                    l.updated_at
                 FROM configuration.locations l
                 LEFT JOIN configuration.locations parent ON l.parent_uuid = parent.uuid
                 LEFT JOIN configuration.entities entity ON l.primary_entity_uuid = entity.uuid
@@ -123,9 +123,9 @@ class LocationService {
                     l.network_telecom_service,
                     parent.name as parent_location_name,
                     entity.name as primary_entity_name,
-                    g.groupe_name as field_service_group_name,
-                    l.date_creation,
-                    l.date_modification
+                    g.group_name as field_service_group_name,
+                    l.created_at,
+                    l.updated_at
                 FROM configuration.locations l
                 LEFT JOIN configuration.locations parent ON l.parent_uuid = parent.uuid
                 LEFT JOIN configuration.entities entity ON l.primary_entity_uuid = entity.uuid

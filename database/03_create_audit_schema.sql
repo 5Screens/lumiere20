@@ -44,7 +44,7 @@ COMMENT ON COLUMN audit.audit_changes.new_value IS 'Valeur après modification, 
 COMMENT ON COLUMN audit.audit_changes.user_id IS 'UUID de l''utilisateur ayant effectué la modification';
 COMMENT ON COLUMN audit.audit_changes.event_date IS 'Date et heure de l''événement';
 
--- Création de la nouvelle fonction d'audit qui exclut les champs date_modification
+-- Création de la nouvelle fonction d'audit qui exclut les champs updated_at
 CREATE OR REPLACE FUNCTION audit.log_changes()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -89,7 +89,7 @@ BEGIN
             ORDER BY c.ordinal_position
         LOOP
             -- Ignorer les colonnes système
-            IF col_name NOT IN ('date_creation', 'date_modification') THEN
+            IF col_name NOT IN ('created_at', 'updated_at') THEN
                 EXECUTE format('SELECT $1.%I::TEXT', col_name) 
                 INTO new_val
                 USING NEW;
@@ -118,8 +118,8 @@ BEGIN
             WHERE c.table_schema = TG_TABLE_SCHEMA 
             AND c.table_name = TG_TABLE_NAME
         LOOP
-            -- Ignorer explicitement les colonnes date_modification
-            IF col_name <> 'date_modification' THEN
+            -- Ignorer explicitement les colonnes updated_at
+            IF col_name <> 'updated_at' THEN
                 -- Récupération des valeurs avant et après modification
                 EXECUTE format('SELECT $1.%I::TEXT, $2.%I::TEXT', col_name, col_name) 
                 INTO old_val, new_val
@@ -147,7 +147,7 @@ BEGIN
             ORDER BY c.ordinal_position
         LOOP
             -- Ignorer les colonnes système
-            IF col_name NOT IN ('date_creation', 'date_modification') THEN
+            IF col_name NOT IN ('created_at', 'updated_at') THEN
                 EXECUTE format('SELECT $1.%I::TEXT', col_name) 
                 INTO old_val
                 USING OLD;

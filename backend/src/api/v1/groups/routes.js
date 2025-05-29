@@ -52,7 +52,7 @@ router.patch('/:uuid', (req, res) => {
     logger.info('[ROUTES] PATCH /api/v1/groups/:uuid - Route handler started');
     
     // Validate allowed fields in request body
-    const allowedFields = ['groupe_name', 'support_level', 'description', 'rel_supervisor', 'rel_manager', 'rel_schedule', 'email', 'phone'];
+    const allowedFields = ['group_name', 'support_level', 'description', 'rel_supervisor', 'rel_manager', 'rel_schedule', 'email', 'phone'];
     const requestFields = Object.keys(req.body);
     
     const invalidFields = requestFields.filter(field => !allowedFields.includes(field));

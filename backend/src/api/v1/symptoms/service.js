@@ -35,8 +35,8 @@ class SymptomsService {
                     st.symptom_code,
                     st.libelle,
                     st.langue,
-                    st.date_creation,
-                    st.date_modification
+                    st.created_at,
+                    st.updated_at
                 FROM translations.symptoms_translation st
                 ORDER BY st.langue, st.libelle ASC
             `;

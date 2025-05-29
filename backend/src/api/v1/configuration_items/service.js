@@ -9,8 +9,8 @@ const getAllConfigurationItems = async (lang) => {
                 ci.uuid,
                 ci.nom,
                 ci.description,
-                ci.date_creation,
-                ci.date_modification
+                ci.created_at,
+                ci.updated_at
             FROM data.configuration_items ci
             ORDER BY ci.nom ASC
         `;

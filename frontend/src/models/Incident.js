@@ -197,10 +197,10 @@ export class Incident {
           assigned_to_person 
             ? `persons/${assigned_to_person}/groups` 
             : 'groups',
-        displayField: 'groupe_name',
+        displayField: 'group_name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'groupe_name', label: t('group.name'), visible: true }
+          { key: 'group _name', label: t('group.name'), visible: true }
         ],
         required: isRequired('assigned_to_group')
       },
@@ -282,8 +282,8 @@ export class Incident {
           { key: 'reputational', label: t('service.reputational'), visible: false },
           { key: 'financial', label: t('service.financial'), visible: false }, 
           { key: 'comments', label: t('service.comments'), visible: false },
-          { key: 'date_creation', label: t('service.date_creation'), visible: false },
-          { key: 'date_modification', label: t('service.date_modification'), visible: false },
+          { key: 'created_at', label: t('service.created_at'), visible: false },
+          { key: 'updated_at', label: t('service.updated_at'), visible: false },
           { key: 'owning_entity_name', label: t('service.owning_entity_name'), visible: true },
           { key: 'owned_by_name', label: t('service.owned_by_name'), visible: true },
           { key: 'managed_by_name', label: t('service.managed_by_name'), visible: false },
@@ -308,8 +308,8 @@ export class Incident {
           { key: 'environment', label: t('service.environment'), visible: false },
           { key: 'price_model', label: t('service.price_model'), visible: false },
           { key: 'currency', label: t('service.currency'), visible: false },
-          { key: 'date_creation', label: t('service.date_creation'), visible: false },
-          { key: 'date_modification', label: t('service.date_modification'), visible: false },
+          { key: 'created_at', label: t('service.created_at'), visible: false },
+          { key: 'updated_at', label: t('service.updated_at'), visible: false },
           { key: 'service_name', label: t('service.service_name'), visible: true },
           { key: 'operator_entity_name', label: t('service.operator_entity_name'), visible: false }
         ],

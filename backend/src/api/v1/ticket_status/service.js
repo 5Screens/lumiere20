@@ -45,8 +45,8 @@ const getAllTicketStatus = async (lang, options = {}) => {
                     ts.code,
                     ts.rel_ticket_type as ticket_type,
                     COALESCE(tst.label, ts.code) as label,
-                    ts.date_creation,
-                    ts.date_modification
+                    ts.created_at,
+                    ts.updated_at
                 FROM configuration.ticket_status ts
                 LEFT JOIN translations.ticket_status_translation tst 
                     ON ts.uuid = tst.ticket_status_uuid 

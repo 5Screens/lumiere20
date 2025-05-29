@@ -22,8 +22,8 @@ INSERT INTO configuration.rel_entities_locations (
     location_uuid,
     start_date,
     end_date,
-    date_creation,
-    date_modification
+    created_at,
+    updated_at
 )
 SELECT 
     uuid_generate_v4() as uuid,

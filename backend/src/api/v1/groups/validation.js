@@ -3,7 +3,7 @@ const logger = require('../../../config/logger');
 
 const groupSchema = Joi.object({
     uuid: Joi.string().uuid(),
-    groupe_name: Joi.string().required(),
+    group_name: Joi.string().required(),
     support_level: Joi.number().integer().min(0).allow(null),
     description: Joi.string().allow(null, ''),
     rel_supervisor: Joi.string().uuid().allow(null),
@@ -17,7 +17,7 @@ const groupSchema = Joi.object({
 });
 
 const groupPatchSchema = Joi.object({
-    groupe_name: Joi.string(),
+    group_name: Joi.string(),
     support_level: Joi.number().integer().min(0).allow(null),
     description: Joi.string().allow(null, ''),
     rel_supervisor: Joi.string().uuid().allow(null),
