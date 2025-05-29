@@ -21,7 +21,7 @@ const getTickets = async (lang, ticket_type) => {
             COALESCE(tst.label, ts.code) as ticket_status_label,
             tt.code as ticket_type_code,
             ts.code as ticket_status_code,
-            g.groupe_name as assigned_group_name,
+            g.group_name as assigned_group_name,
             g.uuid as assigned_group_uuid,
             p4.first_name || ' ' || p4.last_name as assigned_person_name,
             p4.uuid as assigned_person_uuid
@@ -657,7 +657,7 @@ const getTicketById = async (uuid, lang = 'en') => {
                 ts.code as ticket_status_code,
                 
                 -- Informations sur l'équipe assignée
-                g.groupe_name as assigned_group_name,
+                g.group_name as assigned_group_name,
                 g.uuid as assigned_to_group,
                 
                 -- Informations sur la personne assignée
@@ -723,7 +723,7 @@ const getTicketTeam = async (ticketUuid) => {
         const query = `
             SELECT 
                 g.uuid,
-                g.groupe_name,
+                g.group_name,
                 s.first_name || ' ' || s.last_name AS supervisor_full_name,
                 m.first_name || ' ' || m.last_name AS manager_full_name
             FROM core.rel_tickets_groups_persons rtgp
@@ -859,7 +859,7 @@ const getTicketTeamMembers = async (ticketUuid) => {
                 p.job_role,
                 p.ref_entity_uuid,
                 g.uuid as group_uuid,
-                g.groupe_name as group_name
+                g.group_name as group_name
             FROM core.rel_tickets_groups_persons rtgp
             JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
             JOIN configuration.rel_persons_groups rpg ON g.uuid = rpg.rel_group

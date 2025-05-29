@@ -16,6 +16,7 @@ const getIncidents = async (lang) => {
             t.title,
             t.description,
             t.configuration_item_uuid,
+            ci.name as configuration_item_name,
             t.created_at,
             t.updated_at,
             t.closed_at,
@@ -26,7 +27,7 @@ const getIncidents = async (lang) => {
             COALESCE(tst.label, ts.code) as ticket_status_label,
             tt.code as ticket_type_code,
             ts.code as ticket_status_code,
-            g.groupe_name as assigned_group_name,
+            g.group_name as assigned_group_name,
             g.uuid as assigned_group_uuid,
             p4.first_name || ' ' || p4.last_name as assigned_person_name,
             p4.uuid as assigned_person_uuid,
@@ -60,7 +61,8 @@ const getIncidents = async (lang) => {
         LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
         JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
         JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
-        JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code 
+        JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+        LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid 
         LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid 
             AND ttt.lang = $1
         LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
@@ -121,7 +123,7 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 ts.code as ticket_status_code,
                 
                 -- Informations sur l'équipe assignée
-                g.groupe_name as assigned_group_name,
+                g.group_name as assigned_group_name,
                 g.uuid as assigned_to_group,
                 
                 -- Informations sur la personne assignée

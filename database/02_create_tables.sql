@@ -20,10 +20,10 @@ ALTER DATABASE lumiere_v16 SET search_path TO configuration, core, data, transla
 -- Configuration Items
 CREATE TABLE data.configuration_items (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    nom VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     description TEXT,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Services
@@ -44,8 +44,8 @@ CREATE TABLE data.services (
     comments TEXT,
     cab_uuid UUID REFERENCES configuration.groups(uuid),
     parent_uuid UUID REFERENCES data.services(uuid),
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tables du schéma configuration --
@@ -78,14 +78,14 @@ CREATE TABLE configuration.persons (
     language VARCHAR(10),
     roles JSONB,
     photo TEXT,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Groups
 CREATE TABLE configuration.groups (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    groupe_name VARCHAR(255) NOT NULL,
+    group_name VARCHAR(255) NOT NULL,
     support_level INTEGER CHECK (support_level >= 0),
     description TEXT,
     rel_supervisor UUID REFERENCES configuration.persons(uuid),
@@ -93,8 +93,8 @@ CREATE TABLE configuration.groups (
     rel_schedule UUID,
     email VARCHAR(255),
     phone VARCHAR(50),
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Person Groups (relation many-to-many)
@@ -131,8 +131,8 @@ CREATE TABLE configuration.entities (
     headquarters_location VARCHAR(255),
     is_active BOOLEAN NOT NULL DEFAULT true,
     parent_uuid UUID REFERENCES configuration.entities(uuid),
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Entity Locations 05/03 : Ajout de la table rel_entities_locations
@@ -142,8 +142,8 @@ CREATE TABLE configuration.rel_entities_locations (
     location_uuid UUID NOT NULL REFERENCES configuration.locations(uuid) ON DELETE CASCADE,
     start_date DATE NOT NULL DEFAULT CURRENT_DATE,
     end_date DATE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Service Offerings
@@ -159,8 +159,8 @@ CREATE TABLE data.service_offerings (
     currency VARCHAR(3),
     service_uuid UUID NOT NULL REFERENCES data.services(uuid) ON DELETE CASCADE,
     operator_entity_uuid UUID NOT NULL REFERENCES configuration.entities(uuid) ON DELETE CASCADE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT valid_offering_period CHECK (end_date IS NULL OR end_date >= start_date)
 );
 
@@ -171,8 +171,8 @@ CREATE TABLE data.rel_subscribers_serviceofferings (
     service_offering_uuid UUID NOT NULL REFERENCES data.service_offerings(uuid) ON DELETE CASCADE,
     start_date DATE NOT NULL DEFAULT CURRENT_DATE,
     end_date DATE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT valid_subscription_period CHECK (end_date IS NULL OR end_date >= start_date)
 );
 
@@ -180,8 +180,8 @@ CREATE TABLE data.rel_subscribers_serviceofferings (
 CREATE TABLE configuration.ticket_types (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) NOT NULL UNIQUE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Ticket Status
@@ -189,8 +189,8 @@ CREATE TABLE configuration.ticket_status (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) NOT NULL,
     rel_ticket_type VARCHAR(50) REFERENCES configuration.ticket_types(code),
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(code, rel_ticket_type)
 );
 
@@ -198,8 +198,8 @@ CREATE TABLE configuration.ticket_status (
 CREATE TABLE configuration.symptoms (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) NOT NULL UNIQUE,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Locations
@@ -226,8 +226,8 @@ CREATE TABLE configuration.locations (
     alternative_site_reference VARCHAR(255),
     wan_design TEXT,
     network_telecom_service TEXT,
-    date_creation TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tables du schéma translations --
