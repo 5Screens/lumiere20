@@ -187,7 +187,19 @@ const fetchOptions = async () => {
     if (isPriorityField && options.value.length > 0) {
       console.info('[sSelectField] Auto-selecting first priority option:', options.value[0])
       const valueField = props.valueField || 'value'
-      selectedValue.value = options.value[0][valueField]
+      const newValue = options.value[0][valueField]
+      
+      // Vérifier si la valeur a changé
+      const valueChanged = selectedValue.value !== newValue
+      
+      // Mettre à jour la valeur sélectionnée
+      selectedValue.value = newValue
+      
+      // Si nous sommes en mode édition et que la valeur a changé, activer le mode édition
+      if (props.mode === 'edition' && valueChanged) {
+        console.info('[sSelectField] Value changed in edit mode, activating edit mode for confirmation')
+        editing.value = true
+      }
       
       // Émettre la mise à jour du modèle
       emit('update:modelValue', selectedValue.value)
