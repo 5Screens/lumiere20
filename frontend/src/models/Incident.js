@@ -79,6 +79,7 @@ export class Incident {
       { name: 'requested_for_uuid', label: i18n.global.t('incident.requested_for') },
       { name: 'impact', label: i18n.global.t('incident.impact') },
       { name: 'urgency', label: i18n.global.t('incident.urgency') },
+      { name: 'priority', label: i18n.global.t('incident.priority') },
       { name: 'assigned_to_group', label: i18n.global.t('incident.assigned_to_group') }
     ];
 

@@ -339,11 +339,13 @@ const validateCreateTicket = (req, res, next) => {
     next();
 };
 
-const validateUpdateTicket = (req, res, next) => {
-    logger.info('[VALIDATION] Validating PATCH /tickets/:uuid request');
-    
-    // Schéma pour la mise à jour partielle d'un ticket
-    const updateSchema = Joi.object({
+/**
+ * Définit les schémas de validation pour les différents types de tickets
+ * Facilite la maintenance en centralisant les définitions
+ */
+const ticketValidationSchemas = {
+    // Champs standards communs à tous les tickets
+    standard: {
         title: Joi.string(),
         description: Joi.string().allow('', null),
         configuration_item_uuid: Joi.string().uuid().allow(null, ''),
@@ -352,15 +354,115 @@ const validateUpdateTicket = (req, res, next) => {
         requested_for_uuid: Joi.string().uuid().allow(null, ''),
         assigned_to_person: Joi.string().uuid().allow(null, ''),
         assigned_to_group: Joi.string().uuid().allow(null, '')
-    }).min(1); // Au moins un champ doit être fourni
+    },
+    
+    // Champs étendus pour les incidents
+    INCIDENT: {
+        // Impact et priorité
+        impact: Joi.string(),
+        urgency: Joi.string(),
+        priority: Joi.number().integer(),
+        rel_service: Joi.string().uuid().allow(null, ''),
+        rel_service_offerings: Joi.alternatives().try(
+            Joi.string().uuid().allow(null, ''),
+            Joi.array().items(Joi.string().uuid())
+        ),
+        contact_type: Joi.string(),
+        
+        // Informations de résolution
+        resolution_notes: Joi.string().allow('', null),
+        resolution_code: Joi.string().allow(null, ''),
+        cause_code: Joi.string().allow(null, ''),
+        rel_problem_id: Joi.string().uuid().allow(null, ''),
+        rel_change_request: Joi.string().uuid().allow(null, ''),
+        
+        // SLA et timing
+        sla_pickup_due_at: Joi.date().allow(null),
+        assigned_to_at: Joi.date().allow(null),
+        sla_resolution_due_at: Joi.date().allow(null),
+        resolved_at: Joi.date().allow(null),
+        
+        // Compteurs
+        reopen_count: Joi.number().integer().min(0),
+        assignment_count: Joi.number().integer().min(0),
+        assignment_to_count: Joi.number().integer().min(0),
+        standby_count: Joi.number().integer().min(0)
+    },
+    
+    // Champs étendus pour les problèmes
+    PROBLEM: {
+        // Informations de base
+        pbm_closed_at: Joi.date().allow(null),
+        target_resolution_date: Joi.date().allow(null),
+        actual_resolution_date: Joi.date().allow(null),
+        actual_resolution_workload: Joi.number(),
+        rel_service: Joi.string().uuid().allow(null, ''),
+        rel_service_offerings: Joi.alternatives().try(
+            Joi.string().uuid().allow(null, ''),
+            Joi.array().items(Joi.string().uuid())
+        ),
+        
+        // Informations de résolution
+        root_cause: Joi.string().allow('', null),
+        workaround: Joi.string().allow('', null),
+        definitive_solution: Joi.string().allow('', null),
+        closure_justification: Joi.string().allow('', null),
+        
+        // Relations
+        rel_known_errors: Joi.alternatives().try(
+            Joi.string().uuid().allow(null, ''),
+            Joi.array().items(Joi.string().uuid())
+        ),
+        rel_changes: Joi.alternatives().try(
+            Joi.string().uuid().allow(null, ''),
+            Joi.array().items(Joi.string().uuid())
+        ),
+        rel_incidents: Joi.alternatives().try(
+            Joi.string().uuid().allow(null, ''),
+            Joi.array().items(Joi.string().uuid())
+        )
+    },
+    
+    // Ajoutez d'autres types de tickets selon les besoins
+    // CHANGE: { ... },
+    // KNOWLEDGE: { ... },
+    // etc.
+};
 
-    const { error } = updateSchema.validate(req.body);
-    if (error) {
-        logger.error('[VALIDATION] Invalid request body for PATCH:', error.details[0].message);
-        return res.status(400).json({ error: error.details[0].message });
+/**
+ * Valide les données de mise à jour d'un ticket
+ * Utilise une approche modulaire qui facilite l'ajout de nouveaux types de tickets
+ */
+const validateUpdateTicket = async (req, res, next) => {
+    logger.info('[VALIDATION] Validating PATCH /tickets/:uuid request');
+    
+    try {
+        // Créer un schéma de base avec les champs standards
+        let validationSchema = {
+            ...ticketValidationSchemas.standard
+        };
+
+        // Ajouter les validations spécifiques des types de ticket 
+        validationSchema = {
+            ...validationSchema,
+            ...ticketValidationSchemas.INCIDENT,
+            ...ticketValidationSchemas.PROBLEM
+        };
+
+        // Créer le schéma final et valider
+        const updateSchema = Joi.object(validationSchema).min(1); // Au moins un champ doit être fourni
+        
+        const { error } = updateSchema.validate(req.body);
+        if (error) {
+            logger.error('[VALIDATION] Invalid request body for PATCH:', error.details[0].message);
+            return res.status(400).json({ error: error.details[0].message });
+        }
+        
+        next();
+    } catch (error) {
+        logger.error('[VALIDATION] Error validating update ticket request:', error);
+        return res.status(500).json({ error: 'Internal server error during validation' });
     }
-
-    next();
 };
 
 const validateAddWatchers = (req, res, next) => {
