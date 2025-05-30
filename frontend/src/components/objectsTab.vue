@@ -72,10 +72,19 @@ export default {
     }
   },
   mounted() {
-    // Vérifier si les données ont déjà été chargées pour cet onglet
-    if (!this.store.isTabLoaded(this.store.activeTabId)) {
-      this.fetchData()
-    }
+    console.log('[ObjectsTab] Exécution de mounted()', this.store.activeTabId);
+    // Après un rafraîchissement de la page, même si l'onglet est marqué comme chargé,
+    // les données ne sont pas réellement présentes dans le composant ReusableTableTab
+    // On vérifie donc si le tableau a des données
+    this.$nextTick(() => {
+      if (this.$refs.table && (!this.$refs.table.items || this.$refs.table.items.length === 0)) {
+        console.log('[ObjectsTab] Tableau vide après rafraîchissement, rechargement des données');
+        this.fetchData(true); // Force le rechargement
+      } else if (!this.store.isTabLoaded(this.store.activeTabId)) {
+        console.log('[ObjectsTab] Onglet non chargé, chargement initial des données');
+        this.fetchData();
+      }
+    });
   },
   // Le watcher a été supprimé car il causait une double initialisation
   computed: {
