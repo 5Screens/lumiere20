@@ -46,10 +46,13 @@ const getProblemById = async (uuid, lang = 'en') => {
                 
                 -- Champs spécifiques aux problèmes extraits du JSONB core_extended_attributes
                 t.core_extended_attributes->>'rel_problem_categories_code' as problem_category_code,
+                COALESCE(pcl.label, t.core_extended_attributes->>'rel_problem_categories_code') as problem_category_label,
                 t.core_extended_attributes->>'rel_service' as service_uuid,
                 t.core_extended_attributes->>'rel_service_offerings' as service_offering_uuid,
                 t.core_extended_attributes->>'impact' as impact,
+                COALESCE(iil.label, t.core_extended_attributes->>'impact') as impact_label,
                 t.core_extended_attributes->>'urgency' as urgency,
+                COALESCE(iul.label, t.core_extended_attributes->>'urgency') as urgency_label,
                 t.core_extended_attributes->>'symptoms_description' as symptoms_description,
                 t.core_extended_attributes->>'workaround' as workaround,
                 t.core_extended_attributes->>'knownerrors_list' as known_errors_list,
@@ -82,6 +85,21 @@ const getProblemById = async (uuid, lang = 'en') => {
             ) rtgp ON t.uuid = rtgp.rel_ticket
             LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
             LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+            
+            -- Jointure pour la traduction des catégories de problèmes
+            LEFT JOIN translations.problem_categories_labels pcl ON 
+                pcl.rel_problem_category_code = t.core_extended_attributes->>'rel_problem_categories_code'
+                AND pcl.lang = $2
+                
+            -- Jointure pour la traduction des impacts
+            LEFT JOIN translations.incident_impacts_labels iil ON
+                iil.rel_incident_impact_code = t.core_extended_attributes->>'impact'
+                AND iil.language = $2
+                
+            -- Jointure pour la traduction des urgences
+            LEFT JOIN translations.incident_urgencies_labels iul ON
+                iul.rel_incident_urgency_code = t.core_extended_attributes->>'urgency'
+                AND iul.language = $2
             
             WHERE t.uuid = $1 AND t.ticket_type_code = 'PROBLEM'
         `;
@@ -134,8 +152,11 @@ const getProblems = async (lang = 'en') => {
                 
                 -- Champs spécifiques aux problèmes extraits du JSONB core_extended_attributes
                 t.core_extended_attributes->>'rel_problem_categories_code' as problem_category_code,
+                COALESCE(pcl.label, t.core_extended_attributes->>'rel_problem_categories_code') as problem_category_label,
                 t.core_extended_attributes->>'impact' as impact,
+                COALESCE(iil.label, t.core_extended_attributes->>'impact') as impact_label,
                 t.core_extended_attributes->>'urgency' as urgency,
+                COALESCE(iul.label, t.core_extended_attributes->>'urgency') as urgency_label,
                 t.core_extended_attributes->>'target_resolution_date' as target_resolution_date,
                 t.core_extended_attributes->>'actual_resolution_date' as actual_resolution_date,
                 t.core_extended_attributes->>'actual_resolution_workload' as actual_resolution_workload,
@@ -160,6 +181,21 @@ const getProblems = async (lang = 'en') => {
             ) rtgp ON t.uuid = rtgp.rel_ticket
             LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
             LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+            
+            -- Jointure pour la traduction des catégories de problèmes
+            LEFT JOIN translations.problem_categories_labels pcl ON 
+                pcl.rel_problem_category_code = t.core_extended_attributes->>'rel_problem_categories_code'
+                AND pcl.lang = $1
+                
+            -- Jointure pour la traduction des impacts
+            LEFT JOIN translations.incident_impacts_labels iil ON
+                iil.rel_incident_impact_code = t.core_extended_attributes->>'impact'
+                AND iil.language = $1
+                
+            -- Jointure pour la traduction des urgences
+            LEFT JOIN translations.incident_urgencies_labels iul ON
+                iul.rel_incident_urgency_code = t.core_extended_attributes->>'urgency'
+                AND iul.language = $1
             
             WHERE t.ticket_type_code = 'PROBLEM'
             ORDER BY t.created_at DESC
