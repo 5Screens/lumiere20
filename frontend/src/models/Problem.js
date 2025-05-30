@@ -234,9 +234,10 @@ export class Problem {
       watch_list: {
         label: t('problem.watch_list'),
         type: 'sPickList',
+        helperText: t('problem.watch_list_helper_text'),
         placeholder: t('problem.watch_list_placeholder'),
         sourceEndPoint: 'persons',
-        displayedLabel: 'first_name',
+        displayedLabel: 'person_name',
         targetEndPoint: 'problems',
         target_uuid: null,
         pickedItems: null,
