@@ -64,7 +64,12 @@ const getProblemById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'actual_resolution_date' as actual_resolution_date,
                 t.core_extended_attributes->>'actual_resolution_workload' as actual_resolution_workload,
                 t.core_extended_attributes->>'closure_justification' as closure_justification,
-                t.closed_at as closed_at
+                t.closed_at as closed_at,
+                
+                -- Informations sur les éléments de configuration, services et offres de service
+                ci.name as configuration_item_name,
+                s.name as rel_service_name,
+                so.name as rel_service_offerings_name
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
@@ -76,6 +81,9 @@ const getProblemById = async (uuid, lang = 'en') => {
                 AND ttt.lang = $2
             LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
                 AND tst.lang = $2
+            LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
+            LEFT JOIN data.services s ON t.core_extended_attributes->>'rel_service' = s.uuid::text
+            LEFT JOIN data.service_offerings so ON t.core_extended_attributes->>'rel_service_offerings' = so.uuid::text
                 
             -- Jointure pour l'assignation (équipe et personne)
             LEFT JOIN (
@@ -157,10 +165,20 @@ const getProblems = async (lang = 'en') => {
                 COALESCE(iil.label, t.core_extended_attributes->>'impact') as impact_label,
                 t.core_extended_attributes->>'urgency' as urgency,
                 COALESCE(iul.label, t.core_extended_attributes->>'urgency') as urgency_label,
+                t.core_extended_attributes->>'symptoms_description' as symptoms_description,
+                t.core_extended_attributes->>'workaround' as workaround,
+                t.core_extended_attributes->>'root_cause' as root_cause,
+                t.core_extended_attributes->>'definitive_solution' as definitive_solution,
+                t.core_extended_attributes->>'closure_justification' as closure_justification,
                 t.core_extended_attributes->>'target_resolution_date' as target_resolution_date,
                 t.core_extended_attributes->>'actual_resolution_date' as actual_resolution_date,
                 t.core_extended_attributes->>'actual_resolution_workload' as actual_resolution_workload,
-                t.closed_at as closed_at
+                t.closed_at as closed_at,
+                
+                -- Informations sur les éléments de configuration, services et offres de service
+                ci.name as configuration_item_name,
+                s.name as rel_service_name,
+                so.name as rel_service_offerings_name
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
@@ -172,6 +190,9 @@ const getProblems = async (lang = 'en') => {
                 AND ttt.lang = $1
             LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
                 AND tst.lang = $1
+            LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
+            LEFT JOIN data.services s ON t.core_extended_attributes->>'rel_service' = s.uuid::text
+            LEFT JOIN data.service_offerings so ON t.core_extended_attributes->>'rel_service_offerings' = so.uuid::text
                 
             -- Jointure pour l'assignation (équipe et personne)
             LEFT JOIN (
