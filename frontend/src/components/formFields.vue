@@ -37,6 +37,7 @@
           :input-type="field.inputType"
           :combo-box="field.comboBox"
           :visible="typeof field.visible === 'function' ? field.visible(objectStore.currentObject) : (field.visible !== undefined ? field.visible : true)"
+          :resetable="field.resetable"
         />
       </div>
     </form>

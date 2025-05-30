@@ -35,7 +35,7 @@
       
       <!-- Reset button -->
       <button
-        v-if="selectedItem && !isEditing"
+        v-if="selectedItem && !isEditing && resetable"
         class="s-filtered-search-field__reset-button"
         @click.stop="resetSelection"
         type="button"
@@ -206,6 +206,10 @@ const props = defineProps({
     default: ''
   },
   editMode: {
+    type: Boolean,
+    default: false
+  },
+  resetable: {
     type: Boolean,
     default: false
   },

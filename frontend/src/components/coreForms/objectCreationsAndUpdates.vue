@@ -90,6 +90,7 @@
             :uuid="objectId"
             :ticketData="formData"
             @update:modelValue="handleFieldChange(fieldName, $event)"
+            :resetable="field.resetable"
           />
           
           <!-- Liste de sélection -->
