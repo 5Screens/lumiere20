@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import apiService from '@/services/apiService'
 
 export class Problem {
   /**
@@ -98,11 +99,32 @@ export class Problem {
 
     // Clôture du problème
     this.closure_justification = data.closure_justification || '';
-
+    
     // Timestamps
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
     this.closed_at = data.closed_at || null;
+  }
+  
+  /**
+   * Récupère un problème par son UUID
+   * @param {string} uuid - L'UUID du ticket à récupérer
+   * @returns {Promise<Problem>} Une promesse résolue avec l'instance du problème
+   */
+  static async getById(uuid) {
+    try {
+      const userProfileStore = useUserProfileStore();
+      const response = await apiService.get(`tickets/${uuid}?ticket_type=PROBLEM&lang=${userProfileStore.language}`);
+      
+      if (response) {
+        return new Problem(response);
+      }
+      
+      throw new Error('Problem not found');
+    } catch (error) {
+      console.error('Error fetching problem:', error);
+      throw error;
+    }
   }
 
   static getRenderableFields() {
