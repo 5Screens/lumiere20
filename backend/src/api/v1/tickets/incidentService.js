@@ -163,6 +163,7 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
                 t.core_extended_attributes->>'contact_type' as contact_type,
                 t.core_extended_attributes->>'rel_problem_id' as rel_problem_id,
+                t.core_extended_attributes->>'rel_change_request' as rel_change_request,
                 t.core_extended_attributes->>'resolution_code' as resolution_code,
                 t.core_extended_attributes->>'resolution_notes' as resolution_notes,
                 
