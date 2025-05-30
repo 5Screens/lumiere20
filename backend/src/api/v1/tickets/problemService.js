@@ -44,25 +44,24 @@ const getProblemById = async (uuid, lang = 'en') => {
                     WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
                 ) as watchers,
                 
-                -- Champs spécifiques aux problèmes
-                pbm_category,
-                pbm_ci_uuid,
-                pbm_service_uuid,
-                pbm_service_offering_uuid,
-                pbm_impact,
-                pbm_urgency,
-                pbm_symptoms,
-                pbm_workaround,
-                pbm_known_errors,
-                pbm_related_changes,
-                pbm_related_incidents,
-                pbm_root_cause,
-                pbm_definitive_solution,
-                pbm_target_resolution_date,
-                pbm_actual_resolution_date,
-                pbm_actual_resolution_workload,
-                pbm_closure_justification,
-                pbm_closed_at
+                -- Champs spécifiques aux problèmes extraits du JSONB core_extended_attributes
+                t.core_extended_attributes->>'rel_problem_categories_code' as problem_category_code,
+                t.core_extended_attributes->>'rel_service' as service_uuid,
+                t.core_extended_attributes->>'rel_service_offerings' as service_offering_uuid,
+                t.core_extended_attributes->>'impact' as impact,
+                t.core_extended_attributes->>'urgency' as urgency,
+                t.core_extended_attributes->>'symptoms_description' as symptoms_description,
+                t.core_extended_attributes->>'workaround' as workaround,
+                t.core_extended_attributes->>'knownerrors_list' as known_errors_list,
+                t.core_extended_attributes->>'changes_list' as changes_list,
+                t.core_extended_attributes->>'incidents_list' as incidents_list,
+                t.core_extended_attributes->>'root_cause' as root_cause,
+                t.core_extended_attributes->>'definitive_solution' as definitive_solution,
+                t.core_extended_attributes->>'target_resolution_date' as target_resolution_date,
+                t.core_extended_attributes->>'actual_resolution_date' as actual_resolution_date,
+                t.core_extended_attributes->>'actual_resolution_workload' as actual_resolution_workload,
+                t.core_extended_attributes->>'closure_justification' as closure_justification,
+                t.closed_at as closed_at
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
@@ -102,6 +101,81 @@ const getProblemById = async (uuid, lang = 'en') => {
     }
 };
 
+/**
+ * Récupère tous les problèmes
+ * @param {string} lang - Code de langue pour les traductions (fr, en, etc.)
+ * @returns {Promise<Array>} - Liste des problèmes
+ */
+const getProblems = async (lang = 'en') => {
+    logger.info(`[PROBLEM SERVICE] Fetching all problems with language: ${lang}`);
+    
+    try {
+        // Requête SQL pour récupérer la liste des problèmes avec les données d'assignation
+        const query = `
+            SELECT 
+                t.uuid,
+                t.title,
+                t.description,
+                t.created_at,
+                t.updated_at,
+                t.ticket_status_code,
+                t.ticket_type_code,
+                p1.first_name || ' ' || p1.last_name as requested_by_name,
+                p2.first_name || ' ' || p2.last_name as requested_for_name,
+                p3.first_name || ' ' || p3.last_name as writer_name,
+                COALESCE(ttt.label, tt.code) as ticket_type_label,
+                COALESCE(tst.label, ts.code) as ticket_status_label,
+                
+                -- Informations sur l'équipe assignée
+                g.group_name as assigned_group_name,
+                
+                -- Informations sur la personne assignée
+                p4.first_name || ' ' || p4.last_name as assigned_person_name,
+                
+                -- Champs spécifiques aux problèmes extraits du JSONB core_extended_attributes
+                t.core_extended_attributes->>'rel_problem_categories_code' as problem_category_code,
+                t.core_extended_attributes->>'impact' as impact,
+                t.core_extended_attributes->>'urgency' as urgency,
+                t.core_extended_attributes->>'target_resolution_date' as target_resolution_date,
+                t.core_extended_attributes->>'actual_resolution_date' as actual_resolution_date,
+                t.core_extended_attributes->>'actual_resolution_workload' as actual_resolution_workload,
+                t.closed_at as closed_at
+                
+            FROM core.tickets t
+            LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
+            LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
+            JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+            JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+            JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code 
+            LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid 
+                AND ttt.lang = $1
+            LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
+                AND tst.lang = $1
+                
+            -- Jointure pour l'assignation (équipe et personne)
+            LEFT JOIN (
+                SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
+                FROM core.rel_tickets_groups_persons
+                WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+            ) rtgp ON t.uuid = rtgp.rel_ticket
+            LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+            LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+            
+            WHERE t.ticket_type_code = 'PROBLEM'
+            ORDER BY t.created_at DESC
+        `;
+        
+        const result = await db.query(query, [lang]);
+        
+        logger.info(`[PROBLEM SERVICE] Successfully retrieved ${result.rows.length} problems`);
+        return result.rows;
+    } catch (error) {
+        logger.error('[PROBLEM SERVICE] Error fetching problems:', error);
+        throw error;
+    }
+};
+
 module.exports = {
-    getProblemById
+    getProblemById,
+    getProblems
 };

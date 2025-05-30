@@ -1,6 +1,7 @@
 const ticketService = require('./service');
 const incidentService = require('./incidentService');
 const taskService = require('./taskService');
+const problemService = require('./problemService');
 const logger = require('../../../config/logger');
 
 const getTickets = async (req, res) => {
@@ -15,6 +16,10 @@ const getTickets = async (req, res) => {
             case 'INCIDENT':
                 logger.info('[CONTROLLER] Calling incidentService.getIncidents');
                 tickets = await incidentService.getIncidents(lang);
+                break;
+            case 'PROBLEM':
+                logger.info('[CONTROLLER] Calling problemService.getProblems');
+                tickets = await problemService.getProblems(lang);
                 break;
             default:
                 logger.info(`[CONTROLLER] Calling ticketService.getTickets for type: ${ticket_type || 'all'}`);
@@ -202,6 +207,10 @@ const getTicketById = async (req, res) => {
             case 'TASK':
                 logger.info(`[CONTROLLER] Calling taskService.getTaskById for UUID: ${ticketUuid}`);
                 ticket = await taskService.getTaskById(ticketUuid, lang || 'en');
+                break;
+            case 'PROBLEM':
+                logger.info(`[CONTROLLER] Calling problemService.getProblemById for UUID: ${ticketUuid}`);
+                ticket = await problemService.getProblemById(ticketUuid, lang || 'en');
                 break;
             // Ajouter d'autres cas pour les différents types de tickets si nécessaire
             default:
