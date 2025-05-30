@@ -12,13 +12,27 @@ export class Problem {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('problem.title'), type: 'text', format: 'text' },
+      { key: 'description', label: t('problem.description'), type: 'text', format: 'html' },
+      { key: 'rel_service_name', label: t('problem.service'), type: 'text', format: 'text' },
+      { key: 'rel_service_offerings_name', label: t('problem.service_offering'), type: 'text', format: 'text' },
+      { key: 'configuration_item_name', label: t('problem.configuration_item'), type: 'text', format: 'text' },
       { key: 'ticket_status_label', label: t('problem.status'), type: 'text', format: 'text' },
+      { key: 'problem_category_label', label: t('problem.category'), type: 'text', format: 'text' },
       { key: 'impact_label', label: t('problem.impact'), type: 'text', format: 'text' },
       { key: 'urgency_label', label: t('problem.urgency'), type: 'text', format: 'text' },
       { key: 'assigned_group_name', label: t('problem.assigned_group'), type: 'text', format: 'text' },
       { key: 'assigned_person_name', label: t('problem.assigned_to_person'), type: 'text', format: 'text' },
+      { key: 'target_resolution_date', label: t('problem.target_resolution_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'actual_resolution_date', label: t('problem.actual_resolution_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'actual_resolution_workload', label: t('problem.actual_resolution_workload'), type: 'text', format: 'text' },
+      { key: 'symptoms_description', label: t('problem.symptoms'), type: 'text', format: 'text' },
+      { key: 'workaround', label: t('problem.workaround'), type: 'text', format: 'text' },
+      { key: 'root_cause', label: t('problem.root_cause'), type: 'text', format: 'text' },
+      { key: 'definitive_solution', label: t('problem.definitive_solution'), type: 'text', format: 'text' },
+      { key: 'closure_justification', label: t('problem.closure_justification'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 
