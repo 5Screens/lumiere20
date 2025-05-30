@@ -35,14 +35,16 @@
     
     <!-- Contenu des onglets (tous les onglets sont rendus mais seul l'actif est visible) -->
     <div class="tab-content">
-      <!-- Onglets parents - affichés uniquement s'ils sont réellement actifs (pas d'onglet enfant actif) -->
-      <div v-for="tab in store.parentTabs" :key="tab.id_tab" v-show="store.isParentTabActive(tab.id_tab)">
-        <component 
-          :is="getComponentByType(tab.type)" 
-          :data="getComponentData(tab)"
-          :tabId="tab.id_tab"
-        />
-      </div>
+      <!-- Onglets parents - utilisation de keep-alive pour conserver l'instance des composants -->
+      <keep-alive>
+        <div v-for="tab in store.parentTabs" :key="tab.id_tab" v-show="store.isParentTabActive(tab.id_tab)">
+          <component 
+            :is="getComponentByType(tab.type)" 
+            :data="getComponentData(tab)"
+            :tabId="tab.id_tab"
+          />
+        </div>
+      </keep-alive>
       
       <!-- Onglets enfants - Utilisation de keep-alive pour conserver l'instance des composants -->
       <keep-alive>
