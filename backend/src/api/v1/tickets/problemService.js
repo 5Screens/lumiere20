@@ -14,7 +14,18 @@ const getProblemById = async (uuid, lang = 'en') => {
         // Requête SQL pour récupérer les détails du problème avec les données d'assignation
         const query = `
             SELECT 
-                t.*,
+                t.uuid,
+                t.title,
+                t.description,
+                t.configuration_item_uuid,
+                t.requested_by_uuid,
+                t.requested_for_uuid,
+                t.writer_uuid,
+                t.ticket_type_code,
+                t.ticket_status_code,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
                 p1.first_name || ' ' || p1.last_name as requested_by_name,
                 p2.first_name || ' ' || p2.last_name as requested_for_name,
                 p3.first_name || ' ' || p3.last_name as writer_name,
@@ -45,26 +56,69 @@ const getProblemById = async (uuid, lang = 'en') => {
                 ) as watch_list,
                 
                 -- Champs spécifiques aux problèmes extraits du JSONB core_extended_attributes
-                t.core_extended_attributes->>'rel_problem_categories_code' as problem_category_code,
-                COALESCE(pcl.label, t.core_extended_attributes->>'rel_problem_categories_code') as problem_category_label,
-                t.core_extended_attributes->>'rel_service' as service_uuid,
-                t.core_extended_attributes->>'rel_service_offerings' as service_offering_uuid,
+                t.core_extended_attributes->>'rel_problem_categories_code' as rel_problem_categories_code,
+                COALESCE(pcl.label, t.core_extended_attributes->>'rel_problem_categories_code') as rel_problem_categories_label,
+                t.core_extended_attributes->>'rel_service' as rel_service,
+                t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
                 t.core_extended_attributes->>'impact' as impact,
                 COALESCE(iil.label, t.core_extended_attributes->>'impact') as impact_label,
                 t.core_extended_attributes->>'urgency' as urgency,
                 COALESCE(iul.label, t.core_extended_attributes->>'urgency') as urgency_label,
                 t.core_extended_attributes->>'symptoms_description' as symptoms_description,
                 t.core_extended_attributes->>'workaround' as workaround,
-                t.core_extended_attributes->>'knownerrors_list' as known_errors_list,
-                t.core_extended_attributes->>'changes_list' as changes_list,
-                t.core_extended_attributes->>'incidents_list' as incidents_list,
+                
+                -- Gestion des listes JSON pour qu'elles soient traitées comme des colonnes distinctes avec titres
+                -- Approche simplifiée pour les listes
+                t.core_extended_attributes->>'knownerrors_list' as known_errors_list_raw,
+                t.core_extended_attributes->>'changes_list' as changes_list_raw,
+                t.core_extended_attributes->>'incidents_list' as incidents_list_raw,
+                
+                -- Création des listes enrichies avec les titres
+                (
+                    SELECT COALESCE(json_agg(
+                        json_build_object(
+                            'uuid', ke.uuid,
+                            'title', ke.title
+                        )
+                    ), '[]'::json)
+                    FROM core.tickets ke
+                    WHERE ke.uuid::text IN (
+                        SELECT jsonb_array_elements_text(COALESCE(t.core_extended_attributes->>'knownerrors_list', '[]')::jsonb)
+                    )
+                ) AS knownerrors_list,
+                
+                (
+                    SELECT COALESCE(json_agg(
+                        json_build_object(
+                            'uuid', ch.uuid,
+                            'title', ch.title
+                        )
+                    ), '[]'::json)
+                    FROM core.tickets ch
+                    WHERE ch.uuid::text IN (
+                        SELECT jsonb_array_elements_text(COALESCE(t.core_extended_attributes->>'changes_list', '[]')::jsonb)
+                    )
+                ) AS changes_list,
+                
+                (
+                    SELECT COALESCE(json_agg(
+                        json_build_object(
+                            'uuid', inc.uuid,
+                            'title', inc.title
+                        )
+                    ), '[]'::json)
+                    FROM core.tickets inc
+                    WHERE inc.uuid::text IN (
+                        SELECT jsonb_array_elements_text(COALESCE(t.core_extended_attributes->>'incidents_list', '[]')::jsonb)
+                    )
+                ) AS incidents_list,
+                
                 t.core_extended_attributes->>'root_cause' as root_cause,
                 t.core_extended_attributes->>'definitive_solution' as definitive_solution,
-                t.core_extended_attributes->>'target_resolution_date' as target_resolution_date,
-                t.core_extended_attributes->>'actual_resolution_date' as actual_resolution_date,
-                t.core_extended_attributes->>'actual_resolution_workload' as actual_resolution_workload,
+                (t.core_extended_attributes->>'target_resolution_date')::timestamp as target_resolution_date,
+                (t.core_extended_attributes->>'actual_resolution_date')::timestamp as actual_resolution_date,
+                (t.core_extended_attributes->>'actual_resolution_workload')::numeric as actual_resolution_workload,
                 t.core_extended_attributes->>'closure_justification' as closure_justification,
-                t.closed_at as closed_at,
                 
                 -- Informations sur les éléments de configuration, services et offres de service
                 ci.name as configuration_item_name,
@@ -167,12 +221,17 @@ const getProblems = async (lang = 'en') => {
                 COALESCE(iul.label, t.core_extended_attributes->>'urgency') as urgency_label,
                 t.core_extended_attributes->>'symptoms_description' as symptoms_description,
                 t.core_extended_attributes->>'workaround' as workaround,
+                -- Listes JSON traitées comme des colonnes distinctes
+                (t.core_extended_attributes->>'knownerrors_list')::jsonb as known_errors_list,
+                (t.core_extended_attributes->>'changes_list')::jsonb as changes_list,
+                (t.core_extended_attributes->>'incidents_list')::jsonb as incidents_list,
+                
                 t.core_extended_attributes->>'root_cause' as root_cause,
                 t.core_extended_attributes->>'definitive_solution' as definitive_solution,
                 t.core_extended_attributes->>'closure_justification' as closure_justification,
-                t.core_extended_attributes->>'target_resolution_date' as target_resolution_date,
-                t.core_extended_attributes->>'actual_resolution_date' as actual_resolution_date,
-                t.core_extended_attributes->>'actual_resolution_workload' as actual_resolution_workload,
+                (t.core_extended_attributes->>'target_resolution_date')::timestamp as target_resolution_date,
+                (t.core_extended_attributes->>'actual_resolution_date')::timestamp as actual_resolution_date,
+                (t.core_extended_attributes->>'actual_resolution_workload')::numeric as actual_resolution_workload,
                 t.closed_at as closed_at,
                 
                 -- Informations sur les éléments de configuration, services et offres de service

@@ -238,7 +238,7 @@ export class Problem {
         placeholder: t('problem.watch_list_placeholder'),
         sourceEndPoint: 'persons',
         displayedLabel: 'person_name',
-        targetEndPoint: 'problems',
+        targetEndPoint: 'tickets',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('watch_list')
