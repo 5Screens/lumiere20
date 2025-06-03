@@ -227,11 +227,58 @@ BEGIN
                 
                 -- Si la valeur a changé, enregistrer la modification
                 IF old_val IS DISTINCT FROM new_val THEN
-                    INSERT INTO audit.audit_changes (
-                        object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
-                    ) VALUES (
-                        object_type, NEW.uuid, 'Field_UPDATED', col_name, old_val, new_val, current_user_id
-                    );
+                    -- Traitement spécial pour core_extended_attributes
+                    IF col_name = 'core_extended_attributes' THEN
+                        -- Convertir les valeurs en JSON
+                        DECLARE
+                            old_json JSON;
+                            new_json JSON;
+                            key_name TEXT;
+                            old_key_value TEXT;
+                            new_key_value TEXT;
+                        BEGIN
+                            -- Convertir les chaînes en objets JSON
+                            old_json := old_val::JSON;
+                            new_json := new_val::JSON;
+                            
+                            -- Pour chaque clé dans le nouveau JSON
+                            FOR key_name IN SELECT json_object_keys(new_json)
+                            LOOP
+                                -- Extraire les valeurs pour cette clé
+                                old_key_value := old_json ->> key_name;
+                                new_key_value := new_json ->> key_name;
+                                
+                                -- Si la valeur a changé pour cette clé
+                                IF old_key_value IS DISTINCT FROM new_key_value THEN
+                                    INSERT INTO audit.audit_changes (
+                                        object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
+                                    ) VALUES (
+                                        object_type, NEW.uuid, 'Field_UPDATED', key_name, old_key_value, new_key_value, current_user_id
+                                    );
+                                END IF;
+                            END LOOP;
+                            
+                            -- Vérifier également les clés qui existaient dans l'ancien JSON mais ont été supprimées
+                            FOR key_name IN SELECT json_object_keys(old_json)
+                            LOOP
+                                -- Si la clé n'existe pas dans le nouveau JSON
+                                IF (new_json ->> key_name) IS NULL AND (old_json ->> key_name) IS NOT NULL THEN
+                                    INSERT INTO audit.audit_changes (
+                                        object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
+                                    ) VALUES (
+                                        object_type, NEW.uuid, 'Field_UPDATED', key_name, old_json ->> key_name, NULL, current_user_id
+                                    );
+                                END IF;
+                            END LOOP;
+                        END;
+                    ELSE
+                        -- Traitement standard pour les autres colonnes
+                        INSERT INTO audit.audit_changes (
+                            object_type, object_uuid, event_type, attribute_name, old_value, new_value, user_id
+                        ) VALUES (
+                            object_type, NEW.uuid, 'Field_UPDATED', col_name, old_val, new_val, current_user_id
+                        );
+                    END IF;
                 END IF;
             END IF;
         END LOOP;
