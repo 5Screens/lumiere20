@@ -310,19 +310,22 @@ export class Problem {
         label: t('problem.closed_at'),
         type: 'sDatePicker',
         placeholder: t('problem.closed_at_placeholder'),
-        required: isRequired('closed_at')
+        required: isRequired('closed_at'),
+        patchendpoint: 'tickets'
       },
       target_resolution_date: {
         label: t('problem.target_resolution_date'),
         type: 'sDatePicker',
         placeholder: t('problem.target_resolution_date_placeholder'),
-        required: isRequired('target_resolution_date')
+        required: isRequired('target_resolution_date'),
+        patchendpoint: 'tickets'
       },
       actual_resolution_date: {
         label: t('problem.actual_resolution_date'),
         type: 'sDatePicker',
         placeholder: t('problem.actual_resolution_date_placeholder'),
-        required: isRequired('actual_resolution_date')
+        required: isRequired('actual_resolution_date'),
+        patchendpoint: 'tickets'
       },
       knownerrors_list: {
         label: t('problem.knownerrors_list'),
