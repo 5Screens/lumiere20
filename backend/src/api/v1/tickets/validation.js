@@ -392,32 +392,44 @@ const ticketValidationSchemas = {
     // Champs étendus pour les problèmes
     PROBLEM: {
         // Informations de base
-        pbm_closed_at: Joi.date().allow(null),
+        rel_problem_categories_code: Joi.string().allow(null, ''),
+        closed_at: Joi.date().allow(null),
         target_resolution_date: Joi.date().allow(null),
         actual_resolution_date: Joi.date().allow(null),
-        actual_resolution_workload: Joi.number(),
+        actual_resolution_workload: Joi.number().allow(null),
+        impact: Joi.string().allow(null, ''),
+        urgency: Joi.string().allow(null, ''),
         rel_service: Joi.string().uuid().allow(null, ''),
         rel_service_offerings: Joi.alternatives().try(
             Joi.string().uuid().allow(null, ''),
             Joi.array().items(Joi.string().uuid())
         ),
         
+        // Description des symptômes et contournement
+        symptoms_description: Joi.string().allow('', null),
+        workaround: Joi.string().allow('', null),
+        
         // Informations de résolution
         root_cause: Joi.string().allow('', null),
-        workaround: Joi.string().allow('', null),
         definitive_solution: Joi.string().allow('', null),
         closure_justification: Joi.string().allow('', null),
         
+        // Liste de surveillance
+        watch_list: Joi.alternatives().try(
+            Joi.string().uuid().allow(null, ''),
+            Joi.array().items(Joi.string().uuid())
+        ),
+        
         // Relations
-        rel_known_errors: Joi.alternatives().try(
+        knownerrors_list: Joi.alternatives().try(
             Joi.string().uuid().allow(null, ''),
             Joi.array().items(Joi.string().uuid())
         ),
-        rel_changes: Joi.alternatives().try(
+        changes_list: Joi.alternatives().try(
             Joi.string().uuid().allow(null, ''),
             Joi.array().items(Joi.string().uuid())
         ),
-        rel_incidents: Joi.alternatives().try(
+        incidents_list: Joi.alternatives().try(
             Joi.string().uuid().allow(null, ''),
             Joi.array().items(Joi.string().uuid())
         )
