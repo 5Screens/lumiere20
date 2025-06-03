@@ -319,7 +319,7 @@ function nextMonth() {
   }
 }
 
-function selectDate(day) {
+const selectDate = (day) => {
   if (!day.currentMonth) {
     // Si on sélectionne un jour du mois précédent ou suivant, changer de mois
     if (day.date < new Date(currentYear.value, currentMonth.value, 1)) {
@@ -330,64 +330,78 @@ function selectDate(day) {
   }
   
   selectedDate.value = day.date
-  valueChanged.value = !areDatesEqual(selectedDate.value, originalDate.value)
+  emit('update:modelValue', day.date)
   
-  emit('update:modelValue', selectedDate.value)
-  closeCalendar()
+  // Vérifier si la valeur a changé
+  valueChanged.value = !areDatesEqual(day.date, originalDate.value)
+  
+  // Fermer le calendrier après sélection
+  showCalendar.value = false
+  isEditing.value = true
 }
 
-function setToday() {
+const setToday = () => {
   const today = new Date()
   currentMonth.value = today.getMonth()
   currentYear.value = today.getFullYear()
-  selectedDate.value = today
-  valueChanged.value = !areDatesEqual(selectedDate.value, originalDate.value)
   
-  if (!props.edition) {
-    emit('update:modelValue', selectedDate.value)
-    closeCalendar()
-  }
+  selectedDate.value = today
+  emit('update:modelValue', today)
+  
+  // Vérifier si la valeur a changé
+  valueChanged.value = !areDatesEqual(today, originalDate.value)
+  
+  // Fermer le calendrier après sélection
+  showCalendar.value = false
+  isEditing.value = true
 }
 
-function clearDate() {
+const clearDate = () => {
   selectedDate.value = null
+  emit('update:modelValue', null)
+  
+  // Vérifier si la valeur a changé
   valueChanged.value = originalDate.value !== null
   
-  if (!props.edition) {
-    emit('update:modelValue', null)
-    closeCalendar()
-  }
+  // Fermer le calendrier après sélection
+  showCalendar.value = false
+  isEditing.value = true
 }
 
-function toggleCalendar() {
+const toggleCalendar = () => {
   if (props.disabled) return
   
-  console.log('toggleCalendar appelé', { showCalendar: !showCalendar.value, disabled: props.disabled })
   showCalendar.value = !showCalendar.value
   
   if (showCalendar.value) {
-    // Si une date est déjà sélectionnée, mettre à jour le mois et l'année
+    // Initialiser le calendrier avec la date actuellement sélectionnée ou la date du jour
     if (selectedDate.value) {
       const date = new Date(selectedDate.value)
       currentMonth.value = date.getMonth()
       currentYear.value = date.getFullYear()
+    } else {
+      const today = new Date()
+      currentMonth.value = today.getMonth()
+      currentYear.value = today.getFullYear()
     }
     
-    // Ajouter un gestionnaire d'événements pour fermer le calendrier lors d'un clic en dehors
-    document.addEventListener('click', handleClickOutside)
+    // Activer le mode édition
+    isEditing.value = true
+    
+    // Capturer la valeur originale quand on commence à éditer
+    originalDate.value = selectedDate.value
   }
 }
 
 function closeCalendar() {
   showCalendar.value = false
-  document.removeEventListener('click', handleClickOutside)
 }
 
 async function confirmChange() {
-  if (!props.uuid || !props.fieldname || !props.patchendpoint) {
+  if (!props.uuid || !props.fieldName || !props.patchendpoint) {
     console.error('Erreur lors de la mise à jour de la date: paramètres manquants', { 
       uuid: props.uuid, 
-      fieldname: props.fieldname, 
+      fieldName: props.fieldName, 
       patchendpoint: props.patchendpoint 
     })
     return
@@ -395,7 +409,7 @@ async function confirmChange() {
   
   try {
     const response = await apiService.patch(`${props.patchendpoint}/${props.uuid}`, {
-      [props.fieldname]: selectedDate.value
+      [props.fieldName]: selectedDate.value
     })
     
     if (response.status === 200) {
@@ -441,32 +455,33 @@ onMounted(() => {
   console.log('sDatePicker monté', { 
     label: props.label,
     modelValue: props.modelValue,
-    uuid: props.uuid
+    edition: props.edition
   })
   
-  // Si modelValue est fourni, l'utiliser comme valeur initiale
   if (props.modelValue) {
     selectedDate.value = new Date(props.modelValue)
     originalDate.value = new Date(props.modelValue)
-    
-    // Mettre à jour le mois et l'année affichés
-    currentMonth.value = selectedDate.value.getMonth()
-    currentYear.value = selectedDate.value.getFullYear()
   }
+  
+  // Ajouter un écouteur d'événement pour les clics en dehors du calendrier
+  document.addEventListener('click', handleClickOutside)
 })
 
 // Surveiller les changements de modelValue
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
     selectedDate.value = new Date(newValue)
-    if (!isEditing.value) {
-      originalDate.value = new Date(newValue)
-    }
   } else {
     selectedDate.value = null
-    if (!isEditing.value) {
-      originalDate.value = null
-    }
+  }
+  
+  // Mettre à jour la valeur originale seulement si on n'est pas en train d'éditer
+  if (!isEditing.value) {
+    originalDate.value = selectedDate.value
+    valueChanged.value = false
+  } else {
+    // Si on est en mode édition, vérifier si la valeur a changé
+    valueChanged.value = !areDatesEqual(selectedDate.value, originalDate.value)
   }
 })
 </script>
