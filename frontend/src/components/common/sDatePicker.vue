@@ -329,11 +329,15 @@ const selectDate = (day) => {
     }
   }
   
-  selectedDate.value = day.date
-  emit('update:modelValue', day.date)
+  // Créer une nouvelle date à midi pour éviter les problèmes de fuseau horaire
+  const dateAtNoon = new Date(day.date)
+  dateAtNoon.setHours(12, 0, 0, 0)
+  
+  selectedDate.value = dateAtNoon
+  emit('update:modelValue', dateAtNoon)
   
   // Vérifier si la valeur a changé
-  valueChanged.value = !areDatesEqual(day.date, originalDate.value)
+  valueChanged.value = !areDatesEqual(dateAtNoon, originalDate.value)
   
   // Fermer le calendrier après sélection
   showCalendar.value = false
@@ -344,6 +348,9 @@ const setToday = () => {
   const today = new Date()
   currentMonth.value = today.getMonth()
   currentYear.value = today.getFullYear()
+  
+  // Définir l'heure à midi pour éviter les problèmes de fuseau horaire
+  today.setHours(12, 0, 0, 0)
   
   selectedDate.value = today
   emit('update:modelValue', today)
