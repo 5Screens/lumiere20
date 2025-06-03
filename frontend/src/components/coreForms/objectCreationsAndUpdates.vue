@@ -113,11 +113,15 @@
           <sDatePicker
             v-else-if="field.type === 'sDatePicker'"
             v-model="formData[fieldName]"
+            :uuid="objectId"
+            :patchendpoint="getEndpoint(field.patchendpoint, formData)"
             :label="field.label"
             :required="field.required"
             :placeholder="field.placeholder"
             :helperText="field.helperText"
             :disabled="field.disabled"
+            :edition="mode === 'update'"
+            :fieldName="fieldName"
           />
           
           <!-- Champ de bascule -->

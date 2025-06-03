@@ -196,11 +196,7 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  fieldname: {
-    type: String,
-    default: ''
-  },
-  endpoint: {
+  fieldName: {
     type: String,
     default: ''
   },
@@ -390,16 +386,17 @@ function closeCalendar() {
 }
 
 async function confirmChange() {
-  if (!props.uuid || !props.fieldname || !props.endpoint) {
-    emit('update:modelValue', selectedDate.value)
-    isEditing.value = false
-    valueChanged.value = false
+  if (!props.uuid || !props.fieldname || !props.patchendpoint) {
+    console.error('Erreur lors de la mise à jour de la date: paramètres manquants', { 
+      uuid: props.uuid, 
+      fieldname: props.fieldname, 
+      patchendpoint: props.patchendpoint 
+    })
     return
   }
   
   try {
-    const endpoint = props.patchendpoint || props.endpoint
-    const response = await apiService.patch(`${endpoint}/${props.uuid}`, {
+    const response = await apiService.patch(`${props.patchendpoint}/${props.uuid}`, {
       [props.fieldname]: selectedDate.value
     })
     
