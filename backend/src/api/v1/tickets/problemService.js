@@ -314,7 +314,8 @@ const updateProblem = async (uuid, updateData) => {
         // Séparer les champs standards des champs d'assignation et des attributs étendus spécifiques aux problèmes
         const standardFields = [
             'title', 'description', 'configuration_item_uuid',
-            'ticket_status_code', 'requested_by_uuid', 'requested_for_uuid'
+            'ticket_status_code', 'requested_by_uuid', 'requested_for_uuid',
+            'closed_at'
         ];
         
         const assignmentFields = [
