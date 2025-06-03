@@ -347,38 +347,47 @@ const updateIncident = async (uuid, updateData) => {
             
             // Cas 2: Mise à jour des attributs étendus
             if (extendedAttributesToUpdate.length > 0) {
-                // Récupérer d'abord les attributs étendus actuels
-                const getCurrentAttributesQuery = `
-                    SELECT core_extended_attributes 
-                    FROM core.tickets 
-                    WHERE uuid = $1
-                `;
+                // Approche optimisée : utiliser jsonb_set pour mettre à jour uniquement les champs spécifiques du JSON
+                let setClause = 'core_extended_attributes = ';
+                let params = [uuid]; // Premier paramètre est toujours l'UUID
+                let paramIndex = 2;
                 
-                const currentAttributes = await client.query(getCurrentAttributesQuery, [uuid]);
-                
-                if (currentAttributes.rows.length === 0) {
-                    logger.error(`[INCIDENT SERVICE] Failed to retrieve current extended attributes for incident with UUID: ${uuid}`);
-                    throw new Error('Failed to retrieve current extended attributes');
-                }
-                
-                // Fusionner les attributs actuels avec les nouveaux
-                const currentExtendedAttributes = currentAttributes.rows[0].core_extended_attributes || {};
-                
-                // Mettre à jour les attributs
-                extendedAttributesToUpdate.forEach(attr => {
-                    currentExtendedAttributes[attr] = updateData[attr];
+                // Construire une chaîne de jsonb_set imbriqués pour mettre à jour tous les attributs en une seule requête
+                extendedAttributesToUpdate.forEach((attr, index) => {
+                    // Premier attribut : initialiser avec COALESCE pour gérer le cas où core_extended_attributes est NULL
+                    if (index === 0) {
+                        setClause += `jsonb_set(
+                            COALESCE(core_extended_attributes, '{}'::jsonb),
+                            '{${attr}}',
+                            $${paramIndex}::jsonb,
+                            true
+                        )`;
+                    } else {
+                        // Pour les attributs suivants, imbriquer les appels jsonb_set
+                        setClause = `jsonb_set(
+                            ${setClause},
+                            '{${attr}}',
+                            $${paramIndex}::jsonb,
+                            true
+                        )`;
+                    }
+                    
+                    // Ajouter la valeur du paramètre
+                    params.push(JSON.stringify(updateData[attr]));
+                    paramIndex++;
                 });
                 
-                // Mettre à jour les attributs étendus dans la base de données
+                // Construire la requête SQL complète
                 const updateExtendedQuery = `
                     UPDATE core.tickets
-                    SET core_extended_attributes = $2,
+                    SET ${setClause},
                         updated_at = CURRENT_TIMESTAMP
                     WHERE uuid = $1
                     RETURNING *
                 `;
                 
-                const result = await client.query(updateExtendedQuery, [uuid, currentExtendedAttributes]);
+                logger.info(`[INCIDENT SERVICE] Executing optimized extended attributes update query for incident with UUID: ${uuid}`);
+                const result = await client.query(updateExtendedQuery, params);
                 
                 if (result.rows.length === 0) {
                     logger.error(`[INCIDENT SERVICE] Failed to update extended attributes for incident with UUID: ${uuid}`);
