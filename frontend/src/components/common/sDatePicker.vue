@@ -332,10 +332,8 @@ function selectDate(day) {
   selectedDate.value = day.date
   valueChanged.value = !areDatesEqual(selectedDate.value, originalDate.value)
   
-  if (!props.edition) {
-    emit('update:modelValue', selectedDate.value)
-    closeCalendar()
-  }
+  emit('update:modelValue', selectedDate.value)
+  closeCalendar()
 }
 
 function setToday() {
