@@ -107,6 +107,7 @@
             :target_uuid="objectId"
             :edition="mode === 'update'"
             :pickedItems="formData[fieldName]"
+            :ressourceEndPoint="field.ressourceEndPoint"
           />
           
           <!-- Sélecteur de date -->
