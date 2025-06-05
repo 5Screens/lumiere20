@@ -156,6 +156,11 @@ const props = defineProps({
     type: String,
     default: null
   },
+  //Ressource à utiliser dans le POST en mode édition
+  ressourceEndPoint: {
+    type: String,
+    default: null
+  },
   // UUID de l'objet cible (pour mode édition)
   target_uuid: {
     type: String,
@@ -386,14 +391,14 @@ async function confirmChanges() {
       };
       
       // Faire un seul appel POST avec tous les UUIDs ajoutés
-      const addPromise = apiService.post(`${props.targetEndPoint}/${props.target_uuid}/watchers`, watchListBody);
+      const addPromise = apiService.post(`${props.targetEndPoint}/${props.target_uuid}/${props.ressourceEndPoint || 'watchers'}`, watchListBody);
       await addPromise;
     }
     
     // 3. Pour chaque item retiré, faire un appel DELETE avec le format spécifique
     // Format: /tickets/{uuid}/watchers/{user_id}
     const removePromises = removedItems.map(item => 
-      apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/watchers/${item.person_uuid}`)
+      apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/${props.ressourceEndPoint || 'watchers'}/${item.person_uuid}`)
     );
     
     // Attendre que toutes les opérations de suppression soient terminées

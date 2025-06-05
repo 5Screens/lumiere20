@@ -233,6 +233,7 @@ export class Incident {
         sourceEndPoint: "persons",
         displayedLabel: "person_name",
         targetEndPoint: "tickets",
+        ressourceEndPoint: 'watchers',
         target_uuid: null,
         pickedItems: null
       },

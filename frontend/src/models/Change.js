@@ -561,6 +561,7 @@ export class Change {
         sourceEndPoint: 'persons',
         displayedLabel: 'first_name',
         targetEndPoint: 'changes',
+        ressourceEndPoint: 'watchers',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('watch_list')

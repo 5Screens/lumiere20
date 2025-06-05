@@ -239,6 +239,7 @@ export class Problem {
         sourceEndPoint: 'persons',
         displayedLabel: 'person_name',
         targetEndPoint: 'tickets',
+        ressourceEndPoint: 'watchers',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('watch_list')
@@ -333,7 +334,8 @@ export class Problem {
         placeholder: t('problem.knownerrors_list_placeholder'),
         sourceEndPoint: 'tickets?ticket_type=PROBLEM',
         displayedLabel: 'title',
-        targetEndPoint: 'problems',
+        targetEndPoint: 'tickets',
+        ressourceEndPoint: 'knownerrors',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('knownerrors_list')
@@ -344,7 +346,8 @@ export class Problem {
         placeholder: t('problem.changes_list_placeholder'),
         sourceEndPoint: 'tickets?ticket_type=CHANGE',
         displayedLabel: 'title',
-        targetEndPoint: 'problems',
+        targetEndPoint: 'tickets',
+        ressourceEndPoint: 'changes',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('changes_list')
@@ -355,7 +358,8 @@ export class Problem {
         placeholder: t('problem.incidents_list_placeholder'),
         sourceEndPoint: 'tickets?ticket_type=INCIDENT',
         displayedLabel: 'title',
-        targetEndPoint: 'problems',
+        targetEndPoint: 'tickets',
+        ressourceEndPoint: 'incidents',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('incidents_list')
