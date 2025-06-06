@@ -415,12 +415,22 @@ async function confirmChanges() {
     if (removedItems.length > 0) {
       // Si c'est une relation parent-enfant, nous devons gérer différemment
       if (props.fieldName && props.ressourceEndPoint === 'children') {
-        // Pour les relations parent-enfant, nous n'avons pas d'API DELETE spécifique
-        // Nous pourrions implémenter une logique spécifique ici si nécessaire
-        console.log(`Les relations parent-enfant supprimées seront gérées lors de la mise à jour du ticket:`, 
-          removedItems.map(item => item.uuid));
+        // Pour les relations parent-enfant, nous utilisons l'API DELETE spécifique
+        console.log(`Suppression des relations parent-enfant:`, removedItems.map(item => item.uuid));
         
-        // Note: Si une API DELETE spécifique est ajoutée ultérieurement, nous pourrons l'utiliser ici
+        // Créer un tableau de promesses pour chaque suppression
+        const removePromises = removedItems.map(item => 
+          apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/${props.ressourceEndPoint}/${item.uuid}`)
+        );
+        
+        try {
+          // Attendre que toutes les opérations de suppression soient terminées
+          await Promise.all(removePromises);
+          console.log('Relations parent-enfant supprimées avec succès');
+        } catch (error) {
+          console.error('Erreur lors de la suppression des relations parent-enfant:', error);
+          throw error;
+        }
       } else {
         // Format standard pour les watchers: /tickets/{uuid}/watchers/{user_id}
         const removePromises = removedItems.map(item => 
