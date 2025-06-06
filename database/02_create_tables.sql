@@ -311,6 +311,7 @@ CREATE TABLE core.rel_parent_child_tickets (
     dependency_code VARCHAR(50) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ended_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT no_self_reference CHECK (rel_parent_ticket_uuid != rel_child_ticket_uuid),
     UNIQUE(rel_parent_ticket_uuid, rel_child_ticket_uuid)
 );
@@ -319,6 +320,7 @@ COMMENT ON TABLE core.rel_parent_child_tickets IS 'Table de relation entre ticke
 COMMENT ON CONSTRAINT rel_parent_child_tickets_rel_parent_ticket_uuid_fkey ON core.rel_parent_child_tickets IS 'Référence au ticket parent';
 COMMENT ON CONSTRAINT rel_parent_child_tickets_rel_child_ticket_uuid_fkey ON core.rel_parent_child_tickets IS 'Référence au ticket enfant';
 COMMENT ON COLUMN core.rel_parent_child_tickets.dependency_code IS 'Code de catégorisation du type de relation entre tickets';
+COMMENT ON COLUMN core.rel_parent_child_tickets.ended_at IS 'Date de fin de la relation parent-enfant entre tickets';
 
 -- Ajout du trigger d'audit pour la table rel_parent_child_tickets
 DO $$
