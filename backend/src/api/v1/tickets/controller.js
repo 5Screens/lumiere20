@@ -348,6 +348,43 @@ const addChildrenTickets = async (req, res) => {
     }
 };
 
+/**
+ * Supprime une relation parent-enfant entre tickets
+ * @param {Object} req - Requête Express
+ * @param {Object} res - Réponse Express
+ * @param {string} parentUuid - UUID du ticket parent
+ * @param {string} childUuid - UUID du ticket enfant
+ */
+const removeChildTicket = async (req, res, parentUuid, childUuid) => {
+    try {
+        logger.info(`[CONTROLLER] Processing DELETE /tickets/${parentUuid}/children/${childUuid} request`);
+        
+        // Vérifier que les UUIDs sont valides
+        if (!parentUuid || parentUuid.trim() === '' || !childUuid || childUuid.trim() === '') {
+            logger.error('[CONTROLLER] Invalid parent or child UUID provided');
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid parent or child UUID'
+            });
+        }
+        
+        const result = await ticketService.removeChildTicket(parentUuid, childUuid);
+        
+        if (!result.success) {
+            return res.status(404).json(result);
+        }
+        
+        return res.status(200).json(result);
+    } catch (error) {
+        logger.error('[CONTROLLER] Error in removeChildTicket:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
@@ -359,5 +396,6 @@ module.exports = {
     updateTicket,
     addWatchers,
     removeWatcher,
-    addChildrenTickets
+    addChildrenTickets,
+    removeChildTicket
 };

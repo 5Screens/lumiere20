@@ -1130,6 +1130,60 @@ const addChildrenTickets = async (parentUuid, dependencyType, childrenUuids) => 
     }
 };
 
+/**
+ * Supprime une relation parent-enfant entre tickets (en mettant à jour ended_at)
+ * @param {string} parentUuid - UUID du ticket parent
+ * @param {string} childUuid - UUID du ticket enfant
+ * @returns {Promise<Object>} - Résultat de l'opération
+ */
+const removeChildTicket = async (parentUuid, childUuid) => {
+    logger.info(`[SERVICE] Removing child ticket ${childUuid} from parent ${parentUuid}`);
+    
+    // Start a transaction
+    const client = await db.getClient();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // Mettre à jour la relation en ajoutant un timestamp dans ended_at
+        const updateQuery = `
+            UPDATE core.rel_parent_child_tickets
+            SET ended_at = NOW(), updated_at = NOW()
+            WHERE rel_parent_ticket_uuid = $1 
+            AND rel_child_ticket_uuid = $2
+            AND ended_at IS NULL
+            RETURNING *
+        `;
+        
+        const result = await client.query(updateQuery, [parentUuid, childUuid]);
+        
+        await client.query('COMMIT');
+        
+        if (result.rowCount === 0) {
+            logger.warn(`[SERVICE] No active relation found between parent ${parentUuid} and child ${childUuid}`);
+            return {
+                success: false,
+                message: 'No active relation found between parent and child tickets'
+            };
+        }
+        
+        logger.info(`[SERVICE] Successfully removed child ticket ${childUuid} from parent ${parentUuid}`);
+        
+        return {
+            success: true,
+            message: 'Child ticket relation removed',
+            data: result.rows[0]
+        };
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        logger.error('[SERVICE] Error removing child ticket relation:', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
@@ -1141,5 +1195,6 @@ module.exports = {
     updateTicket,
     addWatchers,
     removeWatcher,
-    addChildrenTickets
+    addChildrenTickets,
+    removeChildTicket
 };

@@ -122,4 +122,23 @@ router.post('/:parent_uuid/children', (req, res, next) => {
     ticketController.addChildrenTickets(req, res);
 });
 
+// Route pour supprimer une relation parent-enfant entre tickets
+router.delete('/:parent_uuid/children/:children_uuid', (req, res) => {
+    logger.info(`[ROUTES] Handling DELETE /tickets/${req.params.parent_uuid}/children/${req.params.children_uuid} request`);
+    
+    try {
+        const parentUuid = req.params.parent_uuid;
+        const childUuid = req.params.children_uuid;
+        
+        ticketController.removeChildTicket(req, res, parentUuid, childUuid);
+    } catch (error) {
+        logger.error('[ROUTES] Error in DELETE /:parent_uuid/children/:children_uuid route:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Une erreur est survenue lors de la suppression de la relation parent-enfant',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
