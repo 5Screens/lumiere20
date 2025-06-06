@@ -1076,6 +1076,60 @@ const removeWatcher = async (ticketUuid, userUuid) => {
     };
 };
 
+/**
+ * Ajoute des relations parent-enfant entre tickets
+ * @param {string} parentUuid - UUID du ticket parent
+ * @param {string} dependencyType - Type de dépendance (ex: DEPENDENCY_CODE)
+ * @param {Array<string>} childrenUuids - Liste des UUIDs des tickets enfants
+ * @returns {Promise<Object>} - Résultat de l'opération
+ */
+const addChildrenTickets = async (parentUuid, dependencyType, childrenUuids) => {
+    logger.info(`[SERVICE] Adding ${childrenUuids.length} child tickets to parent ${parentUuid} with dependency type ${dependencyType}`);
+    
+    // Start a transaction
+    const client = await db.getClient();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // Préparer la requête pour l'insertion multiple
+        const insertPromises = childrenUuids.map(childUuid => {
+            const relationQuery = `
+                INSERT INTO core.rel_parent_child_tickets (
+                    rel_parent_ticket_uuid,
+                    rel_child_ticket_uuid,
+                    dependency_code
+                ) VALUES ($1, $2, $3)
+                ON CONFLICT (rel_parent_ticket_uuid, rel_child_ticket_uuid) 
+                DO UPDATE SET dependency_code = $3, updated_at = NOW()
+            `;
+            
+            return client.query(relationQuery, [parentUuid, childUuid, dependencyType]);
+        });
+        
+        // Exécuter toutes les insertions
+        await Promise.all(insertPromises);
+        
+        await client.query('COMMIT');
+        
+        logger.info(`[SERVICE] Successfully added ${childrenUuids.length} child tickets to parent ${parentUuid}`);
+        
+        return {
+            success: true,
+            parentUuid,
+            dependencyType,
+            childrenCount: childrenUuids.length
+        };
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        logger.error('[SERVICE] Error adding children tickets:', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
@@ -1086,5 +1140,6 @@ module.exports = {
     getTicketTeamMembers,
     updateTicket,
     addWatchers,
-    removeWatcher
+    removeWatcher,
+    addChildrenTickets
 };

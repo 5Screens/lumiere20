@@ -116,4 +116,10 @@ router.delete('/:uuid/watchers/:user_uuid', validateRemoveWatcher, (req, res, ne
     ticketController.removeWatcher(req, res);
 });
 
+// Route pour ajouter des relations parent-enfant entre tickets
+router.post('/:parent_uuid/children', (req, res, next) => {
+    logger.info(`[ROUTES] Handling POST /tickets/${req.params.parent_uuid}/children request`);
+    ticketController.addChildrenTickets(req, res);
+});
+
 module.exports = router;

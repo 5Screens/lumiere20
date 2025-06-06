@@ -305,15 +305,59 @@ const removeWatcher = async (req, res) => {
     }
 };
 
+/**
+ * Ajoute des relations parent-enfant entre tickets
+ * @param {Object} req - Requête Express
+ * @param {Object} res - Réponse Express
+ */
+const addChildrenTickets = async (req, res) => {
+    try {
+        logger.info(`[CONTROLLER] Processing POST /tickets/${req.params.parent_uuid}/children request`);
+        const parentUuid = req.params.parent_uuid;
+        const { type, children } = req.body;
+        
+        // Vérifier que l'UUID parent est valide
+        if (!parentUuid || parentUuid.trim() === '') {
+            logger.error('[CONTROLLER] Invalid parent ticket UUID provided');
+            return res.status(400).json({ error: 'Invalid parent ticket UUID' });
+        }
+        
+        // Vérifier que le type de dépendance est fourni
+        if (!type || type.trim() === '') {
+            logger.error('[CONTROLLER] Dependency type not provided');
+            return res.status(400).json({ error: 'Dependency type is required' });
+        }
+        
+        // Vérifier que la liste des enfants est fournie et valide
+        if (!children || !Array.isArray(children) || children.length === 0) {
+            logger.error('[CONTROLLER] Children UUIDs not provided or invalid');
+            return res.status(400).json({ error: 'Children UUIDs must be a non-empty array' });
+        }
+        
+        // Ajouter les relations parent-enfant
+        const result = await ticketService.addChildrenTickets(parentUuid, type, children);
+        
+        res.status(201).json(result);
+    } catch (error) {
+        logger.error('[CONTROLLER] Error in addChildrenTickets:', error);
+        if (error.constraint) {
+            res.status(400).json({ error: 'Invalid reference data' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
     getTicketTeam,
-    getTicketTeamMembers,
+    getTicketById,
     getProjectEpics,
     getProjectSprints,
-    getTicketById,
+    getTicketTeamMembers,
     updateTicket,
     addWatchers,
-    removeWatcher
+    removeWatcher,
+    addChildrenTickets
 };
