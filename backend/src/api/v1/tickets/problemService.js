@@ -67,13 +67,9 @@ const getProblemById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'symptoms_description' as symptoms_description,
                 t.core_extended_attributes->>'workaround' as workaround,
                 
-                -- Gestion des listes JSON pour qu'elles soient traitées comme des colonnes distinctes avec titres
-                -- Approche simplifiée pour les listes
-                t.core_extended_attributes->>'knownerrors_list' as known_errors_list_raw,
-                t.core_extended_attributes->>'changes_list' as changes_list_raw,
-                t.core_extended_attributes->>'incidents_list' as incidents_list_raw,
+                -- Gestion des listes de tickets associés à partir de la table rel_parent_child_tickets
                 
-                -- Création des listes enrichies avec les titres
+                -- Liste des erreurs connues (knownerrors) associées au problème
                 (
                     SELECT COALESCE(json_agg(
                         json_build_object(
@@ -81,12 +77,14 @@ const getProblemById = async (uuid, lang = 'en') => {
                             'title', ke.title
                         )
                     ), '[]'::json)
-                    FROM core.tickets ke
-                    WHERE ke.uuid::text IN (
-                        SELECT jsonb_array_elements_text(COALESCE(t.core_extended_attributes->>'knownerrors_list', '[]')::jsonb)
-                    )
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets ke ON rpc.rel_child_ticket_uuid = ke.uuid
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+                    AND ke.ticket_type_code = 'KNOWNERROR'
+                    AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
                 ) AS knownerrors_list,
                 
+                -- Liste des changements (changes) associés au problème
                 (
                     SELECT COALESCE(json_agg(
                         json_build_object(
@@ -94,12 +92,14 @@ const getProblemById = async (uuid, lang = 'en') => {
                             'title', ch.title
                         )
                     ), '[]'::json)
-                    FROM core.tickets ch
-                    WHERE ch.uuid::text IN (
-                        SELECT jsonb_array_elements_text(COALESCE(t.core_extended_attributes->>'changes_list', '[]')::jsonb)
-                    )
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets ch ON rpc.rel_child_ticket_uuid = ch.uuid
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+                    AND ch.ticket_type_code = 'CHANGE'
+                    AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
                 ) AS changes_list,
                 
+                -- Liste des incidents associés au problème
                 (
                     SELECT COALESCE(json_agg(
                         json_build_object(
@@ -107,10 +107,11 @@ const getProblemById = async (uuid, lang = 'en') => {
                             'title', inc.title
                         )
                     ), '[]'::json)
-                    FROM core.tickets inc
-                    WHERE inc.uuid::text IN (
-                        SELECT jsonb_array_elements_text(COALESCE(t.core_extended_attributes->>'incidents_list', '[]')::jsonb)
-                    )
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets inc ON rpc.rel_child_ticket_uuid = inc.uuid
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+                    AND inc.ticket_type_code = 'INCIDENT'
+                    AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
                 ) AS incidents_list,
                 
                 t.core_extended_attributes->>'root_cause' as root_cause,
