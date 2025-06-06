@@ -335,7 +335,8 @@ export class Problem {
         sourceEndPoint: 'tickets?ticket_type=PROBLEM',
         displayedLabel: 'title',
         targetEndPoint: 'tickets',
-        ressourceEndPoint: 'knownerrors',
+        ressourceEndPoint: 'children',
+        fieldName: 'KNOWNERROR',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('knownerrors_list')
@@ -347,7 +348,8 @@ export class Problem {
         sourceEndPoint: 'tickets?ticket_type=CHANGE',
         displayedLabel: 'title',
         targetEndPoint: 'tickets',
-        ressourceEndPoint: 'changes',
+        ressourceEndPoint: 'children',
+        fieldName: 'CHANGE',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('changes_list')
@@ -359,7 +361,8 @@ export class Problem {
         sourceEndPoint: 'tickets?ticket_type=INCIDENT',
         displayedLabel: 'title',
         targetEndPoint: 'tickets',
-        ressourceEndPoint: 'incidents',
+        ressourceEndPoint: 'children',
+        fieldName: 'INCIDENT',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('incidents_list')

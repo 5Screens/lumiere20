@@ -161,6 +161,10 @@ const props = defineProps({
     type: String,
     default: null
   },
+  fieldName: {
+    type: String,
+    default: ''
+  },
   // UUID de l'objet cible (pour mode édition)
   target_uuid: {
     type: String,
@@ -378,32 +382,54 @@ async function confirmChanges() {
     const removedItems = originalTargetItems.value.filter(item => !currentUuids.has(item.uuid));
     
     // 2. Construire le body pour l'appel POST avec la structure requise
-    // Format du body: { "watch_list": ["uuid1", "uuid2", ...] }
     if (addedItems.length > 0) {
       // Utiliser directement item.uuid et le convertir en chaîne
-      const watchList = addedItems.map(item => String(item.uuid));
+      const itemUuids = addedItems.map(item => String(item.uuid));
       
-      // Log pour vérification
-      console.log('Watch list à envoyer:', watchList);
+      let requestBody;
       
-      const watchListBody = {
-        watch_list: watchList
-      };
+      // Vérifier si fieldName est défini pour déterminer le format du body
+      if (props.fieldName && props.ressourceEndPoint === 'children') {
+        // Format pour les relations parent-enfant
+        // { "type": "DEPENDENCY_CODE", "children": ["uuid1", "uuid2", ...] }
+        requestBody = {
+          type: props.fieldName,
+          children: itemUuids
+        };
+        console.log(`Envoi des relations parent-enfant de type ${props.fieldName}:`, itemUuids);
+      } else {
+        // Format standard pour les watchers
+        // { "watch_list": ["uuid1", "uuid2", ...] }
+        requestBody = {
+          watch_list: itemUuids
+        };
+        console.log('Watch list à envoyer:', itemUuids);
+      }
       
       // Faire un seul appel POST avec tous les UUIDs ajoutés
-      const addPromise = apiService.post(`${props.targetEndPoint}/${props.target_uuid}/${props.ressourceEndPoint || 'watchers'}`, watchListBody);
+      const addPromise = apiService.post(`${props.targetEndPoint}/${props.target_uuid}/${props.ressourceEndPoint || 'watchers'}`, requestBody);
       await addPromise;
     }
     
-    // 3. Pour chaque item retiré, faire un appel DELETE avec le format spécifique
-    // Format: /tickets/{uuid}/watchers/{user_id}
-    const removePromises = removedItems.map(item => 
-      apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/${props.ressourceEndPoint || 'watchers'}/${item.person_uuid}`)
-    );
-    
-    // Attendre que toutes les opérations de suppression soient terminées
+    // 3. Gérer la suppression des items
     if (removedItems.length > 0) {
-      await Promise.all(removePromises);
+      // Si c'est une relation parent-enfant, nous devons gérer différemment
+      if (props.fieldName && props.ressourceEndPoint === 'children') {
+        // Pour les relations parent-enfant, nous n'avons pas d'API DELETE spécifique
+        // Nous pourrions implémenter une logique spécifique ici si nécessaire
+        console.log(`Les relations parent-enfant supprimées seront gérées lors de la mise à jour du ticket:`, 
+          removedItems.map(item => item.uuid));
+        
+        // Note: Si une API DELETE spécifique est ajoutée ultérieurement, nous pourrons l'utiliser ici
+      } else {
+        // Format standard pour les watchers: /tickets/{uuid}/watchers/{user_id}
+        const removePromises = removedItems.map(item => 
+          apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/${props.ressourceEndPoint || 'watchers'}/${item.person_uuid}`)
+        );
+        
+        // Attendre que toutes les opérations de suppression soient terminées
+        await Promise.all(removePromises);
+      }
     }
     
     // Mettre à jour les items originaux

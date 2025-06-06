@@ -108,6 +108,7 @@
             :edition="mode === 'update'"
             :pickedItems="formData[fieldName]"
             :ressourceEndPoint="field.ressourceEndPoint"
+            :fieldName="field.fieldName"
           />
           
           <!-- Sélecteur de date -->
