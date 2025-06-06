@@ -80,7 +80,7 @@ const getProblemById = async (uuid, lang = 'en') => {
                     FROM core.rel_parent_child_tickets rpc
                     JOIN core.tickets ke ON rpc.rel_child_ticket_uuid = ke.uuid
                     WHERE rpc.rel_parent_ticket_uuid = t.uuid 
-                    AND ke.ticket_type_code = 'KNOWNERROR'
+                    AND rpc.dependency_code = 'KNOWNERROR'
                     AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
                 ) AS knownerrors_list,
                 
@@ -95,7 +95,7 @@ const getProblemById = async (uuid, lang = 'en') => {
                     FROM core.rel_parent_child_tickets rpc
                     JOIN core.tickets ch ON rpc.rel_child_ticket_uuid = ch.uuid
                     WHERE rpc.rel_parent_ticket_uuid = t.uuid 
-                    AND ch.ticket_type_code = 'CHANGE'
+                    AND rpc.dependency_code = 'CHANGE'
                     AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
                 ) AS changes_list,
                 
@@ -110,7 +110,7 @@ const getProblemById = async (uuid, lang = 'en') => {
                     FROM core.rel_parent_child_tickets rpc
                     JOIN core.tickets inc ON rpc.rel_child_ticket_uuid = inc.uuid
                     WHERE rpc.rel_parent_ticket_uuid = t.uuid 
-                    AND inc.ticket_type_code = 'INCIDENT'
+                    AND rpc.dependency_code = 'INCIDENT'
                     AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
                 ) AS incidents_list,
                 
