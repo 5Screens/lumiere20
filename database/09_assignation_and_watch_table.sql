@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS core.rel_tickets_groups_persons (
     rel_assigned_to_person UUID REFERENCES configuration.persons(uuid) ON DELETE SET NULL,
     type core.relation_type NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ended_at TIMESTAMP WITH TIME ZONE,
     
     -- Ensure ended_at is after created_at when provided
@@ -36,6 +37,7 @@ COMMENT ON COLUMN core.rel_tickets_groups_persons.rel_assigned_to_group IS 'Refe
 COMMENT ON COLUMN core.rel_tickets_groups_persons.rel_assigned_to_person IS 'Optional reference to the person UUID';
 COMMENT ON COLUMN core.rel_tickets_groups_persons.type IS 'Type of relation: WATCHER or ASSIGNED';
 COMMENT ON COLUMN core.rel_tickets_groups_persons.created_at IS 'Date when the assignment/watch was created';
+COMMENT ON COLUMN core.rel_tickets_groups_persons.updated_at IS 'Date when the assignment/watch was last updated';
 COMMENT ON COLUMN core.rel_tickets_groups_persons.ended_at IS 'Optional date when the assignment/watch ended';
 
 -- Create indexes for better query performance

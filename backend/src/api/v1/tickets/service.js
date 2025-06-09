@@ -1358,13 +1358,12 @@ const applyUpdate = async (uuid, updateData, ticketType, standardFields, assignm
                     // Mettre à jour l'assignation existante
                     const updateAssignmentQuery = `
                         UPDATE core.rel_tickets_groups_persons
-                        SET rel_assigned_to_person = $2, updated_at = CURRENT_TIMESTAMP
-                        WHERE uuid = $3
+                        SET rel_assigned_to_person = $1, updated_at = CURRENT_TIMESTAMP
+                        WHERE uuid = $2
                     `;
                     
                     logger.info(`${servicePrefix} Updating person assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
                     await client.query(updateAssignmentQuery, [
-                        uuid,
                         updateData.assigned_to_person,
                         currentAssignment.rows[0].uuid
                     ]);
