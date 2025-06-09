@@ -546,6 +546,9 @@ export default {
     assigned_group_placeholder: 'Sélectionnez le groupe',
     assigned_to_person: 'Assigné à',
     assigned_to_person_placeholder: 'Sélectionnez la personne',
+    watch_list:'Observateurs du changement',
+    watch_list_placeholder:'Ajoutez des observateurs',
+    
     
     // Évaluation du risque
     risk_q1: 'Question d\'évaluation du risque 1',
