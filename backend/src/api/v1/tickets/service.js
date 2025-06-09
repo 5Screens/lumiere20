@@ -1184,6 +1184,247 @@ const removeChildTicket = async (parentUuid, childUuid) => {
     }
 };
 
+/**
+ * Fonction générique pour appliquer des mises à jour à un ticket
+ * @param {string} uuid - UUID du ticket à mettre à jour
+ * @param {Object} updateData - Données à mettre à jour
+ * @param {string} ticketType - Type de ticket (ex: 'INCIDENT', 'PROBLEM', 'TASK')
+ * @param {Array} standardFields - Liste des champs standards pour ce type de ticket
+ * @param {Array} assignmentFields - Liste des champs d'assignation pour ce type de ticket
+ * @param {Array} extendedAttributesFields - Liste des attributs étendus pour ce type de ticket (optionnel)
+ * @param {Function} getTicketById - Fonction pour récupérer le ticket par son ID
+ * @param {string} servicePrefix - Préfixe pour les logs (ex: '[INCIDENT SERVICE]')
+ * @returns {Promise<Object>} - Détails du ticket mis à jour
+ */
+const applyUpdate = async (uuid, updateData, ticketType, standardFields, assignmentFields, extendedAttributesFields, getTicketById, servicePrefix) => {
+    try {
+        // Vérifier si le ticket existe
+        const checkQuery = `
+            SELECT uuid FROM core.tickets 
+            WHERE uuid = $1 AND ticket_type_code = $2
+        `;
+        const checkResult = await db.query(checkQuery, [uuid, ticketType]);
+        
+        if (checkResult.rows.length === 0) {
+            logger.error(`${servicePrefix} No ${ticketType.toLowerCase()} found with UUID: ${uuid}`);
+            return null;
+        }
+        
+        // Filtrer les champs standards à mettre à jour
+        const standardFieldsToUpdate = Object.keys(updateData).filter(field => 
+            standardFields.includes(field)
+        );
+        
+        // Filtrer les champs d'assignation à mettre à jour
+        const assignmentFieldsToUpdate = Object.keys(updateData).filter(field => 
+            assignmentFields.includes(field)
+        );
+        
+        // Filtrer les attributs étendus à mettre à jour (si applicable)
+        let extendedAttributesToUpdate = [];
+        if (extendedAttributesFields && extendedAttributesFields.length > 0) {
+            extendedAttributesToUpdate = Object.keys(updateData).filter(field => 
+                extendedAttributesFields.includes(field)
+            );
+        }
+        
+        // Vérifier s'il y a des champs à mettre à jour
+        if (standardFieldsToUpdate.length === 0 && assignmentFieldsToUpdate.length === 0 && extendedAttributesToUpdate.length === 0) {
+            logger.warn(`${servicePrefix} No valid fields to update for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+            return await getTicketById(uuid, 'en'); // Retourner le ticket sans modifications
+        }
+        
+        // Ajouter des logs pour voir les champs à mettre à jour
+        logger.info(`${servicePrefix} Updating ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+        logger.info(`${servicePrefix} Standard fields to update: ${JSON.stringify(standardFieldsToUpdate)}`);
+        logger.info(`${servicePrefix} Assignment fields to update: ${JSON.stringify(assignmentFieldsToUpdate)}`);
+        if (extendedAttributesFields && extendedAttributesFields.length > 0) {
+            logger.info(`${servicePrefix} Extended attributes to update: ${JSON.stringify(extendedAttributesToUpdate)}`);
+        }
+        
+        // Utiliser une transaction pour garantir l'intégrité des données
+        const client = await db.getClient();
+        
+        try {
+            await client.query('BEGIN');
+            
+            let updatedTicket = null;
+            
+            // Cas 1: Mise à jour des champs standards
+            if (standardFieldsToUpdate.length > 0) {
+                let setClause = standardFieldsToUpdate.map((field, index) => 
+                    `${field} = $${index + 2}`
+                ).join(', ');
+                
+                // Ajouter la mise à jour de updated_at
+                setClause += ', updated_at = CURRENT_TIMESTAMP';
+                
+                const updateQuery = `
+                    UPDATE core.tickets
+                    SET ${setClause}
+                    WHERE uuid = $1
+                    RETURNING *
+                `;
+                
+                // Préparer les valeurs pour la requête
+                const values = [uuid];
+                standardFieldsToUpdate.forEach(field => {
+                    values.push(updateData[field]);
+                });
+                
+                logger.info(`${servicePrefix} Executing standard fields update query for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                const result = await client.query(updateQuery, values);
+                
+                if (result.rows.length === 0) {
+                    logger.error(`${servicePrefix} Failed to update standard fields for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                    throw new Error('Failed to update standard fields');
+                }
+                
+                updatedTicket = result.rows[0];
+                logger.info(`${servicePrefix} Successfully updated standard fields for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+            }
+            
+            // Cas 2: Mise à jour des attributs étendus (si applicable)
+            if (extendedAttributesFields && extendedAttributesToUpdate.length > 0) {
+                // Récupérer les attributs étendus actuels
+                const getExtendedQuery = `
+                    SELECT core_extended_attributes
+                    FROM core.tickets
+                    WHERE uuid = $1
+                `;
+                
+                const extendedResult = await client.query(getExtendedQuery, [uuid]);
+                
+                if (extendedResult.rows.length === 0) {
+                    logger.error(`${servicePrefix} Failed to retrieve extended attributes for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                    throw new Error('Failed to retrieve extended attributes');
+                }
+                
+                // Fusionner les attributs étendus actuels avec les nouveaux
+                const currentExtended = extendedResult.rows[0].core_extended_attributes || {};
+                
+                // Mettre à jour les attributs étendus
+                extendedAttributesToUpdate.forEach(field => {
+                    currentExtended[field] = updateData[field];
+                });
+                
+                // Mettre à jour dans la base de données
+                const updateExtendedQuery = `
+                    UPDATE core.tickets
+                    SET core_extended_attributes = $2, updated_at = CURRENT_TIMESTAMP
+                    WHERE uuid = $1
+                    RETURNING *
+                `;
+                
+                logger.info(`${servicePrefix} Executing extended attributes update query for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                const result = await client.query(updateExtendedQuery, [uuid, currentExtended]);
+                
+                if (result.rows.length === 0) {
+                    logger.error(`${servicePrefix} Failed to update extended attributes for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                    throw new Error('Failed to update extended attributes');
+                }
+                
+                updatedTicket = result.rows[0];
+                logger.info(`${servicePrefix} Successfully updated extended attributes for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+            }
+            
+            // Cas 3: Mise à jour des champs d'assignation
+            if (assignmentFieldsToUpdate.length > 0) {
+                // Déterminer le type de mise à jour
+                const isUpdatingGroup = assignmentFieldsToUpdate.includes('assigned_to_group');
+                const isUpdatingPerson = assignmentFieldsToUpdate.includes('assigned_to_person');
+                
+                // Cas A: Si on met à jour uniquement rel_assigned_to_person
+                if (isUpdatingPerson && !isUpdatingGroup) {
+                    // Récupérer l'assignation courante
+                    const getCurrentAssignmentQuery = `
+                        SELECT uuid, rel_assigned_to_group
+                        FROM core.rel_tickets_groups_persons
+                        WHERE rel_ticket = $1 
+                          AND type = 'ASSIGNED'
+                          AND ended_at IS NULL
+                    `;
+                    
+                    const currentAssignment = await client.query(getCurrentAssignmentQuery, [uuid]);
+                    
+                    if (currentAssignment.rows.length === 0) {
+                        logger.warn(`${servicePrefix} No current assignment found for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                        
+                        // Si pas d'assignation existante, on ne peut pas mettre à jour uniquement la personne
+                        logger.error(`${servicePrefix} Cannot update only person assignment without an existing group assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                        throw new Error('Cannot update only person assignment without an existing group assignment');
+                    }
+                    
+                    // Mettre à jour l'assignation existante
+                    const updateAssignmentQuery = `
+                        UPDATE core.rel_tickets_groups_persons
+                        SET rel_assigned_to_person = $2, updated_at = CURRENT_TIMESTAMP
+                        WHERE uuid = $3
+                    `;
+                    
+                    logger.info(`${servicePrefix} Updating person assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                    await client.query(updateAssignmentQuery, [
+                        uuid,
+                        updateData.assigned_to_person,
+                        currentAssignment.rows[0].uuid
+                    ]);
+                    
+                    logger.info(`${servicePrefix} Successfully updated person assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                }
+                // Cas B: Si on met à jour le groupe (avec ou sans personne)
+                else if (isUpdatingGroup) {
+                    // Terminer l'assignation courante
+                    const endCurrentAssignmentQuery = `
+                        UPDATE core.rel_tickets_groups_persons
+                        SET ended_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                        WHERE rel_ticket = $1 
+                          AND type = 'ASSIGNED'
+                          AND ended_at IS NULL
+                    `;
+                    
+                    logger.info(`${servicePrefix} Ending current assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                    await client.query(endCurrentAssignmentQuery, [uuid]);
+                    
+                    // Créer une nouvelle assignation
+                    const createAssignmentQuery = `
+                        INSERT INTO core.rel_tickets_groups_persons (
+                            rel_ticket,
+                            rel_assigned_to_group,
+                            rel_assigned_to_person,
+                            type
+                        ) VALUES ($1, $2, $3, 'ASSIGNED')
+                    `;
+                    
+                    logger.info(`${servicePrefix} Creating new assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                    await client.query(createAssignmentQuery, [
+                        uuid,
+                        updateData.assigned_to_group,
+                        isUpdatingPerson ? updateData.assigned_to_person : null
+                    ]);
+                    
+                    logger.info(`${servicePrefix} Successfully created new assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                }
+            }
+            
+            await client.query('COMMIT');
+            
+            // Récupérer le ticket mis à jour avec toutes ses informations
+            logger.info(`${servicePrefix} Retrieving updated ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+            return await getTicketById(uuid, 'en');
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            logger.error(`${servicePrefix} Error in applyUpdate for ${ticketType.toLowerCase()} with UUID ${uuid}:`, error);
+            throw error;
+        } finally {
+            client.release();
+        }
+    } catch (error) {
+        logger.error(`${servicePrefix} Error in applyUpdate:`, error);
+        throw error;
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
@@ -1196,5 +1437,6 @@ module.exports = {
     addWatchers,
     removeWatcher,
     addChildrenTickets,
-    removeChildTicket
+    removeChildTicket,
+    applyUpdate
 };
