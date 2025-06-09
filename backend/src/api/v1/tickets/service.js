@@ -1381,36 +1381,101 @@ const applyUpdate = async (uuid, updateData, ticketType, standardFields, assignm
                 }
                 // Cas B: Si on met à jour le groupe (avec ou sans personne)
                 else if (isUpdatingGroup) {
-                    // Terminer l'assignation courante
-                    const endCurrentAssignmentQuery = `
-                        UPDATE core.rel_tickets_groups_persons
-                        SET ended_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                    // Récupérer l'assignation courante
+                    const getCurrentAssignmentQuery = `
+                        SELECT uuid, rel_assigned_to_group, rel_assigned_to_person
+                        FROM core.rel_tickets_groups_persons
                         WHERE rel_ticket = $1 
                           AND type = 'ASSIGNED'
                           AND ended_at IS NULL
                     `;
                     
-                    logger.info(`${servicePrefix} Ending current assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
-                    await client.query(endCurrentAssignmentQuery, [uuid]);
+                    const currentAssignment = await client.query(getCurrentAssignmentQuery, [uuid]);
                     
-                    // Créer une nouvelle assignation
-                    const createAssignmentQuery = `
-                        INSERT INTO core.rel_tickets_groups_persons (
-                            rel_ticket,
-                            rel_assigned_to_group,
-                            rel_assigned_to_person,
-                            type
-                        ) VALUES ($1, $2, $3, 'ASSIGNED')
-                    `;
+                    // Si une personne est actuellement assignée, vérifier si elle appartient au nouveau groupe
+                    let personInNewGroup = false;
+                    if (currentAssignment.rows.length > 0 && currentAssignment.rows[0].rel_assigned_to_person) {
+                        const currentPersonId = currentAssignment.rows[0].rel_assigned_to_person;
+                        
+                        // Vérifier si la personne appartient au nouveau groupe
+                        const checkPersonInGroupQuery = `
+                            SELECT uuid 
+                            FROM configuration.rel_persons_groups 
+                            WHERE rel_member = $1 AND rel_group = $2
+                        `;
+                        
+                        const personInGroupResult = await client.query(checkPersonInGroupQuery, [
+                            currentPersonId,
+                            updateData.assigned_to_group
+                        ]);
+                        
+                        personInNewGroup = personInGroupResult.rows.length > 0;
+                    }
                     
-                    logger.info(`${servicePrefix} Creating new assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
-                    await client.query(createAssignmentQuery, [
-                        uuid,
-                        updateData.assigned_to_group,
-                        isUpdatingPerson ? updateData.assigned_to_person : null
-                    ]);
-                    
-                    logger.info(`${servicePrefix} Successfully created new assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                    // Cas B1: Si la personne n'appartient pas au nouveau groupe, terminer l'assignation et en créer une nouvelle
+                    if (!personInNewGroup) {
+                        // Terminer l'assignation courante
+                        const endCurrentAssignmentQuery = `
+                            UPDATE core.rel_tickets_groups_persons
+                            SET ended_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                            WHERE rel_ticket = $1 
+                              AND type = 'ASSIGNED'
+                              AND ended_at IS NULL
+                        `;
+                        
+                        logger.info(`${servicePrefix} Ending current assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                        await client.query(endCurrentAssignmentQuery, [uuid]);
+                        
+                        // Créer une nouvelle assignation
+                        const createAssignmentQuery = `
+                            INSERT INTO core.rel_tickets_groups_persons (
+                                rel_ticket,
+                                rel_assigned_to_group,
+                                rel_assigned_to_person,
+                                type
+                            ) VALUES ($1, $2, $3, 'ASSIGNED')
+                        `;
+                        
+                        logger.info(`${servicePrefix} Creating new assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                        await client.query(createAssignmentQuery, [
+                            uuid,
+                            updateData.assigned_to_group,
+                            isUpdatingPerson ? updateData.assigned_to_person : null
+                        ]);
+                        
+                        logger.info(`${servicePrefix} Successfully created new assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                    }
+                    // Cas B2: Si la personne appartient au nouveau groupe, mettre à jour l'assignation courante
+                    else {
+                        const updateAssignmentQuery = `
+                            UPDATE core.rel_tickets_groups_persons
+                            SET rel_assigned_to_group = $1, updated_at = CURRENT_TIMESTAMP
+                            WHERE uuid = $2
+                        `;
+                        
+                        logger.info(`${servicePrefix} Updating group assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                        await client.query(updateAssignmentQuery, [
+                            updateData.assigned_to_group,
+                            currentAssignment.rows[0].uuid
+                        ]);
+                        
+                        // Si on met à jour aussi la personne
+                        if (isUpdatingPerson) {
+                            const updatePersonQuery = `
+                                UPDATE core.rel_tickets_groups_persons
+                                SET rel_assigned_to_person = $1, updated_at = CURRENT_TIMESTAMP
+                                WHERE uuid = $2
+                            `;
+                            
+                            logger.info(`${servicePrefix} Updating person assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                            await client.query(updatePersonQuery, [
+                                updateData.assigned_to_person,
+                                currentAssignment.rows[0].uuid
+                            ]);
+                        }
+                        
+                        logger.info(`${servicePrefix} Successfully updated assignment for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                    }
                 }
             }
             
