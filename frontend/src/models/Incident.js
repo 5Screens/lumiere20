@@ -228,14 +228,13 @@ export class Incident {
         type: "sPickList",
         helperText: t('incident.watch_list_helper_text'),
         placeholder: t('incident.watch_list_placeholder'),
-        required: isRequired('watch_list'),
-        edition: false,
         sourceEndPoint: "persons",
         displayedLabel: "person_name",
         targetEndPoint: "tickets",
         ressourceEndPoint: 'watchers',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        required: isRequired('watch_list'),
       },
       impact: {
         label: t('incident.impact'),
