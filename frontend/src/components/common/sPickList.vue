@@ -433,9 +433,11 @@ async function confirmChanges() {
         }
       } else {
         // Format standard pour les watchers: /tickets/{uuid}/watchers/{user_id}
-        const removePromises = removedItems.map(item => 
-          apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/${props.ressourceEndPoint || 'watchers'}/${item.person_uuid}`)
-        );
+        const removePromises = removedItems.map(item => {
+          // Utiliser item.uuid si person_uuid n'est pas disponible
+          const userUuid = item.person_uuid || item.uuid;
+          return apiService.delete(`${props.targetEndPoint}/${props.target_uuid}/${props.ressourceEndPoint || 'watchers'}/${userUuid}`);
+        });
         
         // Attendre que toutes les opérations de suppression soient terminées
         await Promise.all(removePromises);
