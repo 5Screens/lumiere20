@@ -38,41 +38,19 @@ const validateGetTickets = async (req, res, next) => {
 const validateCreateTicket = (req, res, next) => {
     logger.info('[VALIDATION] Validating POST /tickets request');
     
-    // Vérifier si le type de ticket est INCIDENT
-    const isIncident = req.query.ticket_types === 'INCIDENT' || 
-                       (req.body && req.body.ticket_type_code === 'INCIDENT');
-                       
-    // Vérifier si le type de ticket est PROBLEM
-    const isProblem = req.query.ticket_types === 'PROBLEM' || 
-                      (req.body && req.body.ticket_type_code === 'PROBLEM');
-                      
-    // Vérifier si le type de ticket est CHANGE
-    const isChange = req.query.ticket_types === 'CHANGE' || 
-                     (req.body && req.body.ticket_type_code === 'CHANGE');
-                     
-    // Vérifier si le type de ticket est KNOWLEDGE
-    const isKnowledge = req.query.ticket_types === 'KNOWLEDGE' || 
-                        (req.body && req.body.ticket_type_code === 'KNOWLEDGE');
-                        
-    // Vérifier si le type de ticket est PROJECT
-    const isProject = req.query.ticket_types === 'PROJECT' || 
-                      (req.body && req.body.ticket_type_code === 'PROJECT');
-                      
-    // Vérifier si le type de ticket est SPRINT depuis les query params
-    const isSprint = req.query.ticket_type === 'SPRINT' || 
-                     (req.body && req.body.ticket_type_code === 'SPRINT');
-                     
-    // Vérifier si le type de ticket est EPIC depuis les query params
-    const isEpic = req.query.ticket_type === 'EPIC' || 
-                   (req.body && req.body.ticket_type_code === 'EPIC');
-
-    // Vérifier si le type de ticket est USER_STORY
-    const isUserStory = req.query.ticket_type === 'USER_STORY' || 
-                        (req.body && req.body.ticket_type_code === 'USER_STORY');
-                        
-    // Vérifier si le type de ticket est DEFECT
-    const isDefect = req.query.ticket_type === 'DEFECT' || 
-                     (req.body && req.body.ticket_type_code === 'DEFECT');
+    // Récupérer le type de ticket depuis req.body.ticket_type_code
+    const ticketType = req.body && req.body.ticket_type_code;
+    
+    // Vérifier les différents types de tickets
+    const isIncident = ticketType === 'INCIDENT';
+    const isProblem = ticketType === 'PROBLEM';
+    const isChange = ticketType === 'CHANGE';
+    const isKnowledge = ticketType === 'KNOWLEDGE';
+    const isProject = ticketType === 'PROJECT';
+    const isSprint = ticketType === 'SPRINT';
+    const isEpic = ticketType === 'EPIC';
+    const isUserStory = ticketType === 'USER_STORY';
+    const isDefect = ticketType === 'DEFECT';
     
     // Log du type de ticket trouvé
     if (isIncident) logger.info('[VALIDATION] Ticket type found: INCIDENT');
@@ -95,13 +73,13 @@ const validateCreateTicket = (req, res, next) => {
         ticket_type_code: Joi.string().required(),
         ticket_status_code: Joi.string().required(),
         configuration_item_uuid: Joi.string().uuid().allow(null, ''),
-        assigned_to_group: Joi.string().uuid().allow(null, ''),
-        assigned_to_person: Joi.string().uuid().allow(null, ''),
-        watch_list: Joi.array().items(Joi.string().uuid()).allow(null),
         requested_by_uuid: Joi.string().uuid().allow(null, ''),
         requested_for_uuid: Joi.string().uuid().allow(null, ''),
         created_at: Joi.date().allow(null),
-        updated_at: Joi.date().allow(null)
+        updated_at: Joi.date().allow(null),
+        assigned_to_group: Joi.string().uuid().allow(null, ''),
+        assigned_to_person: Joi.string().uuid().allow(null, ''),
+        watch_list: Joi.array().items(Joi.string().uuid()).allow(null)
     };
     
     // Champs spécifiques aux incidents
@@ -327,11 +305,11 @@ const validateCreateTicket = (req, res, next) => {
     } else if (isKnowledge) {
         schemaObj = { ...baseSchema, ...knowledgeSchema };
     } else if (isUserStory) {
-        schemaObj = userStorySchema;
+        schemaObj = { ...baseSchema, ...userStorySchema };
     } else if (isDefect) {
-        schemaObj = defectSchema;
+        schemaObj = { ...baseSchema, ...defectSchema };
     } else if (isProject) {
-        schemaObj = baseSchema;
+        schemaObj = { ...baseSchema, ...projectSchema };
     } else if (isSprint) {
         schemaObj = { ...baseSchema, ...sprintSchema };
     } else if (isEpic) {

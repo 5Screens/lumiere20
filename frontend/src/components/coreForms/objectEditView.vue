@@ -195,52 +195,41 @@ watch(selectedType, (newType) => {
   console.info(`[ObjectEditView] Selected type changed to: ${newType}`);
   
   let instance;
-  let endpoint;
+  const endpoint = 'tickets';
   
   switch (newType) {
     case 'TASK':
       instance = new Task()
-      endpoint = 'tickets'
       break
     case 'DEFECT':
       instance = new Defect()
-      endpoint = 'tickets?type=DEFECT'
       break
     case 'INCIDENT':
       instance = new Incident()
-      endpoint = 'tickets?type=INCIDENT'
       break
     case 'PROBLEM':
       instance = new Problem()
-      endpoint = 'tickets?type=PROBLEM'
       break
     case 'CHANGE':
       instance = new Change()
-      endpoint = 'tickets?type=CHANGE'
       break
     case 'KNOWLEDGE':
       instance = new Knowledge_article()
-      endpoint = 'tickets?type=KNOWLEDGE'
       break
     case 'PROJECT':
       instance = new Project()
-      endpoint = 'tickets?type=PROJECT'
       break
     case 'SPRINT':
       instance = new Sprint()
-      endpoint = 'tickets?type=SPRINT'
       break
     case 'EPIC':
       instance = new Epic()
-      endpoint = 'tickets?type=EPIC'
       break
     case 'USER_STORY':
       instance = new Story()
-      endpoint = 'tickets?type=USER_STORY'
       break
     default:
       instance = null
-      endpoint = null
   }
   
   // Initialise l'objet dans le store
