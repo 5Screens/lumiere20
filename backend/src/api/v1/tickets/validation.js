@@ -74,6 +74,18 @@ const validateCreateTicket = (req, res, next) => {
     const isDefect = req.query.ticket_type === 'DEFECT' || 
                      (req.body && req.body.ticket_type_code === 'DEFECT');
     
+    // Log du type de ticket trouvé
+    if (isIncident) logger.info('[VALIDATION] Ticket type found: INCIDENT');
+    else if (isProblem) logger.info('[VALIDATION] Ticket type found: PROBLEM');
+    else if (isChange) logger.info('[VALIDATION] Ticket type found: CHANGE');
+    else if (isKnowledge) logger.info('[VALIDATION] Ticket type found: KNOWLEDGE');
+    else if (isProject) logger.info('[VALIDATION] Ticket type found: PROJECT');
+    else if (isSprint) logger.info('[VALIDATION] Ticket type found: SPRINT');
+    else if (isEpic) logger.info('[VALIDATION] Ticket type found: EPIC');
+    else if (isUserStory) logger.info('[VALIDATION] Ticket type found: USER_STORY');
+    else if (isDefect) logger.info('[VALIDATION] Ticket type found: DEFECT');
+    else logger.warn('[VALIDATION] No valid ticket type found');
+    
     // Schéma de base pour tous les types de tickets
     const baseSchema = {
         uuid: Joi.string().uuid().allow(null),
@@ -296,7 +308,7 @@ const validateCreateTicket = (req, res, next) => {
         uuid: Joi.string().uuid().forbidden(),
         created_at: Joi.date().forbidden(),
         updated_at: Joi.date().forbidden(),
-        project_id: Joi.string().uuid().allow(null, ''),
+        project_id: Joi.string().uuid().allow(null, ''),  // Champ accepté pour les epics
         start_date: Joi.date().allow(null),
         end_date: Joi.date().allow(null),
         progress_percent: Joi.number().min(0).max(100).allow(null),
@@ -321,9 +333,9 @@ const validateCreateTicket = (req, res, next) => {
     } else if (isProject) {
         schemaObj = baseSchema;
     } else if (isSprint) {
-        schemaObj = baseSchema;
+        schemaObj = { ...baseSchema, ...sprintSchema };
     } else if (isEpic) {
-        schemaObj = baseSchema;
+        schemaObj = { ...baseSchema, ...epicSchema };
     } else {
         schemaObj = baseSchema;
     }
