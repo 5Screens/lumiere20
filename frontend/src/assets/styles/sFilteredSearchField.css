@@ -117,7 +117,7 @@
   left: 0;
   width: 100%;
   max-height: 300px;
-  background-color: var(--bg-color);
+  background-color: var(--input-bg);
   border: 1px solid var(--border-color);
   border-radius: 0.375rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -198,7 +198,7 @@
 
 /* Hover effect for table rows */
 .s-filtered-search-field__table tr:hover {
-  background-color: var(--hover-color);
+  background-color: var(--bg-secondary);
 }
 
 /* Style for the currently selected row */
