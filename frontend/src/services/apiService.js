@@ -126,18 +126,26 @@ export default {
    */
   async delete(endpoint) {
     try {
+      // Log request details
+      console.info(`[API Request] DELETE ${API_BASE_URL}/${endpoint}`);
+
       const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
         method: 'DELETE'
       });
+      
+      // Log response status
+      console.info(`[API Response] DELETE ${endpoint} - Status: ${response.status}`);
       
       // Vérifier si la réponse est OK (statut 2xx)
       if (!response.ok) {
         throw await this.handleErrorResponse(response);
       }
       
-      return await response.json();
+      const responseData = await response.json();
+      console.info(`[API Response] DELETE ${endpoint} - Success`);
+      return responseData;
     } catch (error) {
-      console.error(`Erreur lors de la requête DELETE à ${endpoint}:`, error);
+      console.error(`[API Error] DELETE ${endpoint}:`, error);
       throw error;
     }
   },
