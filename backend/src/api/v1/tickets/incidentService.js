@@ -277,8 +277,69 @@ const updateIncident = async (uuid, updateData) => {
     );
 };
 
+/**
+ * Prépare les données pour la création d'un incident
+ * @param {Object} incidentData - Données pour la création de l'incident
+ * @returns {Object} - Objet contenant les champs standards, d'assignation et attributs étendus
+ */
+const createIncident = (incidentData) => {
+    logger.info('[INCIDENT SERVICE] Preparing data for incident creation');
+    
+    // Définir les champs standards pour un incident
+    const standardFields = {
+        title: incidentData.title,
+        description: incidentData.description,
+        configuration_item_uuid: incidentData.configuration_item_uuid,
+        ticket_type_code: 'INCIDENT',
+        ticket_status_code: incidentData.ticket_status_code || 'NEW',
+        requested_by_uuid: incidentData.requested_by_uuid,
+        requested_for_uuid: incidentData.requested_for_uuid,
+        writer_uuid: incidentData.writer_uuid
+    };
+    
+    // Définir les champs d'assignation pour un incident
+    const assignmentFields = {
+        assigned_to_group: incidentData.assigned_to_group,
+        assigned_to_person: incidentData.assigned_to_person
+    };
+    
+    // Définir les attributs étendus pour un incident
+    const extendedAttributesFields = {};
+    
+    // Liste des champs spécifiques aux incidents
+    const incidentExtendedFields = [
+        'impact', 'urgency', 'priority', 'rel_service', 'rel_service_offerings',
+        'resolution_notes', 'resolution_code', 'cause_code', 'rel_problem_id',
+        'rel_change_request', 'sla_pickup_due_at', 'assigned_to_at', 
+        'sla_resolution_due_at', 'resolved_at', 'reopen_count', 'assignment_count',
+        'assignment_to_count', 'standby_count', 'contact_type'
+    ];
+    
+    // Ajouter chaque champ présent dans incidentData aux attributs étendus
+    incidentExtendedFields.forEach(field => {
+        if (incidentData[field] !== undefined) {
+            extendedAttributesFields[field] = incidentData[field];
+        }
+    });
+    
+    // Initialiser certains compteurs à 0 s'ils ne sont pas définis
+    if (extendedAttributesFields.reopen_count === undefined) extendedAttributesFields.reopen_count = 0;
+    if (extendedAttributesFields.assignment_count === undefined) extendedAttributesFields.assignment_count = 0;
+    if (extendedAttributesFields.assignment_to_count === undefined) extendedAttributesFields.assignment_to_count = 0;
+    if (extendedAttributesFields.standby_count === undefined) extendedAttributesFields.standby_count = 0;
+    
+    logger.info('[INCIDENT SERVICE] Successfully prepared data for incident creation');
+    
+    return {
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields
+    };
+};
+
 module.exports = {
     getIncidents,
     getIncidentById,
-    updateIncident
+    updateIncident,
+    createIncident
 };

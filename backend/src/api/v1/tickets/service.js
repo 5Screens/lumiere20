@@ -88,25 +88,24 @@ const createTicket = async (ticketData) => {
         // Préparer les attributs étendus pour le core
         let coreExtendedAttributes = {};
         
-        // Si c'est un incident, ajouter les attributs spécifiques aux incidents
+        // Si c'est un incident, utiliser le service d'incident pour la création
         if (isIncident) {
-            // Champs à inclure dans core_extended_attributes pour les incidents
-            const incidentFields = [
-                'impact', 'urgency', 'priority', 'rel_service', 'rel_service_offerings',
-                'resolution_notes', 'resolution_code', 'cause_code', 'rel_problem_id',
-                'rel_change_request', 'sla_pickup_due_at', 'assigned_to_at', 
-                'sla_resolution_due_at', 'resolved_at', 'reopen_count', 'assignment_count',
-                'assignment_to_count', 'standby_count', 'contact_type'
-            ];
+            logger.info('[SERVICE] Using incidentService.createIncident for INCIDENT ticket');
+            const incidentService = require('./incidentService');
             
-            // Ajouter chaque champ présent dans ticketData aux attributs étendus
-            incidentFields.forEach(field => {
-                if (ticketData[field] !== undefined) {
-                    coreExtendedAttributes[field] = ticketData[field];
-                }
-            });
+            // Utiliser createIncident pour préparer les données
+            const incidentData = incidentService.createIncident(ticketData);
             
-            logger.info('[SERVICE] Prepared core_extended_attributes for INCIDENT ticket');
+            // Utiliser applyCreation pour créer le ticket
+            return await applyCreation(
+                ticketData,
+                'INCIDENT',
+                incidentData.standardFields,
+                incidentData.assignmentFields,
+                incidentData.extendedAttributesFields,
+                incidentService.getIncidentById,
+                '[INCIDENT SERVICE]'
+            );
         }
         
         // Si c'est un problème, ajouter les attributs spécifiques aux problèmes
@@ -1498,6 +1497,95 @@ const applyUpdate = async (uuid, updateData, ticketType, standardFields, assignm
     }
 };
 
+/**
+ * Fonction générique pour appliquer la création d'un ticket
+ * @param {Object} ticketData - Données pour la création du ticket
+ * @param {string} ticketType - Type de ticket (ex: 'INCIDENT', 'PROBLEM', 'TASK')
+ * @param {Object} standardFields - Objet des champs standards pour ce type de ticket
+ * @param {Object} assignmentFields - Objet des champs d'assignation pour ce type de ticket
+ * @param {Object} extendedAttributesFields - Objet des attributs étendus pour ce type de ticket (optionnel)
+ * @param {Function} getTicketById - Fonction pour récupérer le ticket par son ID
+ * @param {string} servicePrefix - Préfixe pour les logs (ex: '[INCIDENT SERVICE]')
+ * @returns {Promise<Object>} - Détails du ticket créé
+ */
+const applyCreation = async (ticketData, ticketType, standardFields, assignmentFields, extendedAttributesFields, getTicketById, servicePrefix) => {
+    logger.info(`${servicePrefix} Creating new ${ticketType.toLowerCase()}`);
+    
+    // Utiliser une transaction pour garantir l'intégrité des données
+    const client = await db.getClient();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // Étape 1: Insérer les données de base du ticket
+        const insertTicketQuery = `
+            INSERT INTO core.tickets (
+                title, description, configuration_item_uuid, ticket_type_code,
+                ticket_status_code, requested_by_uuid, requested_for_uuid, writer_uuid,
+                core_extended_attributes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING *
+        `;
+        
+        const ticketValues = [
+            standardFields.title,
+            standardFields.description,
+            standardFields.configuration_item_uuid,
+            ticketType,
+            standardFields.ticket_status_code,
+            standardFields.requested_by_uuid,
+            standardFields.requested_for_uuid,
+            standardFields.writer_uuid,
+            extendedAttributesFields || {}
+        ];
+        
+        logger.info(`${servicePrefix} Executing ticket creation query`);
+        const ticketResult = await client.query(insertTicketQuery, ticketValues);
+        
+        if (ticketResult.rows.length === 0) {
+            throw new Error(`Failed to create ${ticketType.toLowerCase()}`);
+        }
+        
+        const newTicket = ticketResult.rows[0];
+        logger.info(`${servicePrefix} Successfully created ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+        
+        // Étape 2: Gérer l'assignation si nécessaire
+        if (assignmentFields && (assignmentFields.assigned_to_group || assignmentFields.assigned_to_person)) {
+            const insertAssignmentQuery = `
+                INSERT INTO core.rel_tickets_groups_persons (
+                    rel_ticket, rel_assigned_to_group, rel_assigned_to_person, type
+                ) VALUES ($1, $2, $3, 'ASSIGNED')
+                RETURNING *
+            `;
+            
+            const assignmentValues = [
+                newTicket.uuid,
+                assignmentFields.assigned_to_group,
+                assignmentFields.assigned_to_person
+            ];
+            
+            logger.info(`${servicePrefix} Creating assignment for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+            await client.query(insertAssignmentQuery, assignmentValues);
+            logger.info(`${servicePrefix} Successfully created assignment for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+        }
+        
+        // Valider la transaction
+        await client.query('COMMIT');
+        logger.info(`${servicePrefix} Transaction committed successfully for ${ticketType.toLowerCase()} creation with UUID: ${newTicket.uuid}`);
+        
+        // Récupérer le ticket complet avec toutes ses relations
+        return await getTicketById(newTicket.uuid, 'en');
+    } catch (error) {
+        // En cas d'erreur, annuler la transaction
+        await client.query('ROLLBACK');
+        logger.error(`${servicePrefix} Error creating ${ticketType.toLowerCase()}: ${error.message}`);
+        throw error;
+    } finally {
+        // Libérer le client
+        client.release();
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
@@ -1511,5 +1599,6 @@ module.exports = {
     removeWatcher,
     addChildrenTickets,
     removeChildTicket,
-    applyUpdate
+    applyUpdate,
+    applyCreation
 };
