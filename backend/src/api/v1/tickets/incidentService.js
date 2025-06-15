@@ -83,8 +83,8 @@ const getIncidents = async (lang) => {
         LEFT JOIN translations.incident_resolution_codes_labels resolution_codes_t ON resolution_codes_t.rel_incident_resolution_code = t.core_extended_attributes->>'resolution_code' AND resolution_codes_t.language = $1
         
         -- Jointures pour récupérer les relations parent-enfant
-        LEFT JOIN core.rel_parent_child_tickets problem_rel ON t.uuid = problem_rel.rel_parent_ticket_uuid AND problem_rel.dependency_code = 'KNOWN_PROBLEM'
-        LEFT JOIN core.rel_parent_child_tickets change_rel ON t.uuid = change_rel.rel_parent_ticket_uuid AND change_rel.dependency_code = 'CHANGE_AT_ORIGIN'
+        LEFT JOIN core.rel_parent_child_tickets problem_rel ON t.uuid = problem_rel.rel_parent_ticket_uuid AND problem_rel.dependency_code = 'KNOWN_PROBLEM' AND problem_rel.ended_at IS NULL
+        LEFT JOIN core.rel_parent_child_tickets change_rel ON t.uuid = change_rel.rel_parent_ticket_uuid AND change_rel.dependency_code = 'CHANGE_AT_ORIGIN' AND change_rel.ended_at IS NULL
         
         -- Jointures pour récupérer les informations liées
         LEFT JOIN core.tickets problem ON problem.uuid = problem_rel.rel_child_ticket_uuid
