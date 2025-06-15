@@ -196,6 +196,27 @@ export class Change {
     return `tickets?ticket_type=CHANGE&lang=${userProfileStore.language}`;
   }
 
+  /**
+   * Récupère un changement par son UUID
+   * @param {string} uuid - L'UUID du ticket à récupérer
+   * @returns {Promise<Change>} Une promesse résolue avec l'instance du changement
+   */
+  static async getById(uuid) {
+    try {
+      const userProfileStore = useUserProfileStore();
+      const response = await apiService.get(`tickets/${uuid}?lang=${userProfileStore.language}`);
+      
+      if (response) {
+        return new Change(response);
+      }
+      
+      throw new Error('Change not found');
+    } catch (error) {
+      console.error('Error fetching change:', error);
+      throw error;
+    }
+  }
+
   static async getDynamicLabel() {
     const userProfileStore = useUserProfileStore();
     const instance = new Change();
