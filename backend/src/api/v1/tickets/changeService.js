@@ -35,30 +35,40 @@ const getChanges = async (lang) => {
             t.core_extended_attributes->>'rel_services' as rel_services,
             t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
             t.core_extended_attributes->>'rel_change_type_code' as rel_change_type_code,
-            COALESCE(change_types_t.label, t.core_extended_attributes->>'rel_change_type_code') as change_type_label,
+            COALESCE(change_type_t.label, t.core_extended_attributes->>'rel_change_type_code') as change_type_label,
             t.core_extended_attributes->>'r_q1' as r_q1,
+            r_q1_t.label as r_q1_label,
             t.core_extended_attributes->>'r_q2' as r_q2,
+            r_q2_t.label as r_q2_label,
             t.core_extended_attributes->>'r_q3' as r_q3,
+            r_q3_t.label as r_q3_label,
             t.core_extended_attributes->>'r_q4' as r_q4,
+            r_q4_t.label as r_q4_label,
             t.core_extended_attributes->>'r_q5' as r_q5,
+            r_q5_t.label as r_q5_label,
             t.core_extended_attributes->>'i_q1' as i_q1,
+            i_q1_t.label as i_q1_label,
             t.core_extended_attributes->>'i_q2' as i_q2,
+            i_q2_t.label as i_q2_label,
             t.core_extended_attributes->>'i_q3' as i_q3,
+            i_q3_t.label as i_q3_label,
             t.core_extended_attributes->>'i_q4' as i_q4,
+            i_q4_t.label as i_q4_label,
             t.core_extended_attributes->>'requested_start_date_at' as requested_start_date_at,
             t.core_extended_attributes->>'requested_end_date_at' as requested_end_date_at,
             t.core_extended_attributes->>'planned_start_date_at' as planned_start_date_at,
             t.core_extended_attributes->>'planned_end_date_at' as planned_end_date_at,
             t.core_extended_attributes->>'rel_change_justifications_code' as rel_change_justifications_code,
-            COALESCE(change_justifications_t.label, t.core_extended_attributes->>'rel_change_justifications_code') as change_justifications_label,
+            COALESCE(change_justification_t.label, t.core_extended_attributes->>'rel_change_justifications_code') as change_justifications_label,
             t.core_extended_attributes->>'rel_change_objective' as rel_change_objective,
+            COALESCE(change_objective_t.label, t.core_extended_attributes->>'rel_change_objective') as change_objective_label,
             t.core_extended_attributes->>'test_plan' as test_plan,
             t.core_extended_attributes->>'implementation_plan' as implementation_plan,
             t.core_extended_attributes->>'rollbcak_plan' as rollbcak_plan,
             t.core_extended_attributes->>'post_implementation_plan' as post_implementation_plan,
             t.core_extended_attributes->>'cab_comments' as cab_comments,
             t.core_extended_attributes->>'rel_cab_validation_status' as rel_cab_validation_status,
-            COALESCE(cab_validation_status_t.label, t.core_extended_attributes->>'rel_cab_validation_status') as cab_validation_status_label,
+            COALESCE(cab_validation_t.label, t.core_extended_attributes->>'rel_cab_validation_status') as cab_validation_status_label,
             t.core_extended_attributes->>'required_validations' as required_validations,
             t.core_extended_attributes->>'validated_at' as validated_at,
             t.core_extended_attributes->>'actual_start_date_at' as actual_start_date_at,
@@ -101,9 +111,32 @@ const getChanges = async (lang) => {
         LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
 
         -- Traductions additionnelles pour les attributs spécifiques aux changements
-        LEFT JOIN translations.change_types_labels change_types_t ON change_types_t.rel_change_type_code = t.core_extended_attributes->>'rel_change_type_code' AND change_types_t.language = $1
-        LEFT JOIN translations.change_justifications_labels change_justifications_t ON change_justifications_t.rel_change_justification_code = t.core_extended_attributes->>'rel_change_justifications_code' AND change_justifications_t.language = $1
-        LEFT JOIN translations.cab_validation_status_labels cab_validation_status_t ON cab_validation_status_t.rel_cab_validation_status_code = t.core_extended_attributes->>'rel_cab_validation_status' AND cab_validation_status_t.language = $1
+        -- Type de changement (metadata = 'TYPE')
+        LEFT JOIN translations.change_setup_label change_type_t ON change_type_t.rel_change_setup_code = t.core_extended_attributes->>'rel_change_type_code' 
+            AND change_type_t.lang = $1
+        
+        -- Justification de changement (metadata = 'JUSTIFICATION')
+        LEFT JOIN translations.change_setup_label change_justification_t ON change_justification_t.rel_change_setup_code = t.core_extended_attributes->>'rel_change_justifications_code' 
+            AND change_justification_t.lang = $1
+            
+        -- Objectif de changement (metadata = 'OBJECTIVE')
+        LEFT JOIN translations.change_setup_label change_objective_t ON change_objective_t.rel_change_setup_code = t.core_extended_attributes->>'rel_change_objective' 
+            AND change_objective_t.lang = $1
+            
+        -- Statut de validation CAB (metadata = 'CAB_VALIDATION_STATUS')
+        LEFT JOIN translations.change_setup_label cab_validation_t ON cab_validation_t.rel_change_setup_code = t.core_extended_attributes->>'rel_cab_validation_status' 
+            AND cab_validation_t.lang = $1
+            
+        -- Questions d'évaluation des risques et impacts
+        LEFT JOIN translations.change_questions_labels r_q1_t ON r_q1_t.rel_change_question_code = 'R_Q1_CODE' AND r_q1_t.lang = $1
+        LEFT JOIN translations.change_questions_labels r_q2_t ON r_q2_t.rel_change_question_code = 'R_Q2_CODE' AND r_q2_t.lang = $1
+        LEFT JOIN translations.change_questions_labels r_q3_t ON r_q3_t.rel_change_question_code = 'R_Q3_CODE' AND r_q3_t.lang = $1
+        LEFT JOIN translations.change_questions_labels r_q4_t ON r_q4_t.rel_change_question_code = 'R_Q4_CODE' AND r_q4_t.lang = $1
+        LEFT JOIN translations.change_questions_labels r_q5_t ON r_q5_t.rel_change_question_code = 'R_Q5_CODE' AND r_q5_t.lang = $1
+        LEFT JOIN translations.change_questions_labels i_q1_t ON i_q1_t.rel_change_question_code = 'I_Q1_CODE' AND i_q1_t.lang = $1
+        LEFT JOIN translations.change_questions_labels i_q2_t ON i_q2_t.rel_change_question_code = 'I_Q2_CODE' AND i_q2_t.lang = $1
+        LEFT JOIN translations.change_questions_labels i_q3_t ON i_q3_t.rel_change_question_code = 'I_Q3_CODE' AND i_q3_t.lang = $1
+        LEFT JOIN translations.change_questions_labels i_q4_t ON i_q4_t.rel_change_question_code = 'I_Q4_CODE' AND i_q4_t.lang = $1
         LEFT JOIN data.services service ON service.uuid = (t.core_extended_attributes->>'rel_service')::uuid
         LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid = (t.core_extended_attributes->>'rel_service_offerings')::uuid
         WHERE t.ticket_type_code = 'CHANGE'
@@ -295,7 +328,14 @@ const getChangeById = async (uuid, lang = 'en') => {
         // Requête SQL pour récupérer les détails du changement avec les données d'assignation
         const query = `
             SELECT 
-                t.*,
+                    t.uuid,
+                t.title,
+                t.description,
+                t.configuration_item_uuid,
+                ci.name as configuration_item_name,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
                 p1.first_name || ' ' || p1.last_name as requested_by_name,
                 p2.first_name || ' ' || p2.last_name as requested_for_name,
                 p3.first_name || ' ' || p3.last_name as writer_name,
