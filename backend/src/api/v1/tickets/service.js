@@ -131,29 +131,26 @@ const createTicket = async (ticketData) => {
             logger.info('[SERVICE] Prepared core_extended_attributes for PROBLEM ticket');
         }
         
-        // Si c'est un changement, ajouter les attributs spécifiques aux changements
+        // Si c'est un changement, utiliser le service de changement pour la création
         if (isChange) {
-            // Champs à inclure dans core_extended_attributes pour les changements
-            const changeFields = [
-                'rel_services', 'rel_service_offerings', 'rel_change_type_code',
-                'r_q1', 'r_q2', 'r_q3', 'r_q4', 'r_q5',
-                'i_q1', 'i_q2', 'i_q3', 'i_q4',
-                'requested_start_date_at', 'requested_end_date_at', 'planned_start_date_at', 'planned_end_date_at',
-                'rel_change_justifications_code', 'rel_change_objective', 'test_plan', 'implementation_plan',
-                'rollbcak_plan', 'post_implementation_plan', 'cab_comments', 'rel_cab_validation_status',
-                'required_validations', 'validated_at', 'related_tickets', 'actual_start_date_at',
-                'actual_end_date_at', 'elapsed_time', 'subscribers', 'success_criteria',
-                'post_change_evaluation', 'post_change_comment'
-            ];
+            logger.info('[SERVICE] Using changeService.createChange for CHANGE ticket');
+            const changeService = require('./changeService');
             
-            // Ajouter chaque champ présent dans ticketData aux attributs étendus
-            changeFields.forEach(field => {
-                if (ticketData[field] !== undefined) {
-                    coreExtendedAttributes[field] = ticketData[field];
-                }
-            });
+            // Utiliser createChange pour préparer les données
+            const changeData = changeService.createChange(ticketData);
             
-            logger.info('[SERVICE] Prepared core_extended_attributes for CHANGE ticket');
+            // Utiliser applyCreation pour créer le ticket
+            return await applyCreation(
+                ticketData,
+                'CHANGE',
+                changeData.standardFields,
+                changeData.assignmentFields,
+                changeData.extendedAttributesFields,
+                changeData.watchList,
+                changeData.parentChildRelations,
+                changeService.getChangeById,
+                '[CHANGE SERVICE]'
+            );
         }
         
         // Si c'est un article de connaissance, utiliser directement les attributs étendus fournis
@@ -1513,7 +1510,7 @@ const applyUpdate = async (uuid, updateData, ticketType, standardFields, assignm
  * @returns {Promise<Object>} - Détails du ticket créé
  */
 const applyCreation = async (ticketData, ticketType, standardFields, assignmentFields, extendedAttributesFields, watchList, parentChildRelations, getTicketById, servicePrefix) => {
-    logger.info(`${servicePrefix} Creating new ${ticketType.toLowerCase()}`);
+    logger.info(`${servicePrefix} [applyCreation] Creating new ${ticketType.toLowerCase()}`);
     
     // Utiliser une transaction pour garantir l'intégrité des données
     const client = await db.getClient();
@@ -1543,7 +1540,7 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
             extendedAttributesFields || {}
         ];
         
-        logger.info(`${servicePrefix} Executing ticket creation query`);
+        logger.info(`${servicePrefix} [applyCreation] Executing ticket creation query`);
         const ticketResult = await client.query(insertTicketQuery, ticketValues);
         
         if (ticketResult.rows.length === 0) {
@@ -1551,7 +1548,7 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
         }
         
         const newTicket = ticketResult.rows[0];
-        logger.info(`${servicePrefix} Successfully created ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+        logger.info(`${servicePrefix} [applyCreation] Successfully created ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
         
         // Étape 2: Gérer l'assignation si nécessaire
         if (assignmentFields && (assignmentFields.assigned_to_group || assignmentFields.assigned_to_person)) {
@@ -1568,14 +1565,14 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
                 assignmentFields.assigned_to_person
             ];
             
-            logger.info(`${servicePrefix} Creating assignment for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+            logger.info(`${servicePrefix} [applyCreation] Creating assignment for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
             await client.query(insertAssignmentQuery, assignmentValues);
-            logger.info(`${servicePrefix} Successfully created assignment for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+            logger.info(`${servicePrefix} [applyCreation] Successfully created assignment for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
         }
         
         // Étape 3: Gérer les observateurs (watchers) si fournis
         if (watchList && Array.isArray(watchList) && watchList.length > 0) {
-            logger.info(`${servicePrefix} Processing ${watchList.length} watchers for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+            logger.info(`${servicePrefix} [applyCreation] Processing ${watchList.length} watchers for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
             
             // Préparer l'insertion par lot pour les observateurs
             const watcherValues = watchList.map((personUuid, index) => {
@@ -1593,12 +1590,12 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
             
             const watcherParams = [newTicket.uuid, ...watchList];
             await client.query(watcherQuery, watcherParams);
-            logger.info(`${servicePrefix} Successfully added ${watchList.length} watchers for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+            logger.info(`${servicePrefix} [applyCreation] Successfully added ${watchList.length} watchers for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
         }
         
         // Étape 4: Gérer les relations parent-enfant si présentes
         if (parentChildRelations && Array.isArray(parentChildRelations) && parentChildRelations.length > 0) {
-            logger.info(`${servicePrefix} Processing ${parentChildRelations.length} parent-child relations for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+            logger.info(`${servicePrefix} [applyCreation] Processing ${parentChildRelations.length} parent-child relations for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
             
             for (const relation of parentChildRelations) {
                 const relationQuery = `
@@ -1612,20 +1609,20 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
                 `;
                 
                 await client.query(relationQuery, [newTicket.uuid, relation.childUuid, relation.dependencyCode]);
-                logger.info(`${servicePrefix} Added parent-child relation: ${newTicket.uuid} -> ${relation.childUuid} (${relation.dependencyCode})`);
+                logger.info(`${servicePrefix} [applyCreation] Added parent-child relation: ${newTicket.uuid} -> ${relation.childUuid} (${relation.dependencyCode})`);
             }
         }
         
         // Valider la transaction
         await client.query('COMMIT');
-        logger.info(`${servicePrefix} Transaction committed successfully for ${ticketType.toLowerCase()} creation with UUID: ${newTicket.uuid}`);
+        logger.info(`${servicePrefix} [applyCreation] Transaction committed successfully for ${ticketType.toLowerCase()} creation with UUID: ${newTicket.uuid}`);
         
         // Récupérer le ticket complet avec toutes ses relations
         return await getTicketById(newTicket.uuid, 'en');
     } catch (error) {
         // En cas d'erreur, annuler la transaction
         await client.query('ROLLBACK');
-        logger.error(`${servicePrefix} Error creating ${ticketType.toLowerCase()}: ${error.message}`);
+        logger.error(`${servicePrefix} [applyCreation] Error creating ${ticketType.toLowerCase()}: ${error.message}`);
         throw error;
     } finally {
         // Libérer le client
