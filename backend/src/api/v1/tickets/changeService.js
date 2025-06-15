@@ -15,6 +15,7 @@ const createChange = (ticketData) => {
         description: ticketData.description,
         configuration_item_uuid: ticketData.configuration_item_uuid,
         ticket_status_code: ticketData.ticket_status_code,
+        ticket_type_code: 'CHANGE',
         requested_by_uuid: ticketData.requested_by_uuid,
         requested_for_uuid: ticketData.requested_for_uuid,
         writer_uuid: ticketData.writer_uuid
@@ -25,6 +26,19 @@ const createChange = (ticketData) => {
         assigned_to_group: ticketData.assigned_to_group,
         assigned_to_person: ticketData.assigned_to_person
     };
+    
+    // Liste des champs spécifiques aux changements
+    const changeExtendedFields = [
+        'rel_services', 'rel_service_offerings', 'rel_change_type_code',
+        'r_q1', 'r_q2', 'r_q3', 'r_q4', 'r_q5',
+        'i_q1', 'i_q2', 'i_q3', 'i_q4',
+        'requested_start_date_at', 'requested_end_date_at', 'planned_start_date_at', 'planned_end_date_at',
+        'rel_change_justifications_code', 'rel_change_objective', 'test_plan', 'implementation_plan',
+        'rollbcak_plan', 'post_implementation_plan', 'cab_comments', 'rel_cab_validation_status',
+        'required_validations', 'validated_at', 'actual_start_date_at',
+        'actual_end_date_at', 'elapsed_time', 'subscribers', 'success_criteria',
+        'post_change_evaluation', 'post_change_comment'
+    ];
     
     // Extraire les related_tickets pour les gérer comme relations parent-enfant
     const relatedTickets = ticketData.related_tickets;
@@ -40,13 +54,15 @@ const createChange = (ticketData) => {
         });
     }
     
-    // Supprimer related_tickets des attributs étendus
-    const { related_tickets, ...restOfExtendedAttributes } = ticketData;
+    // Initialiser l'objet des attributs étendus
+    const extendedAttributesFields = {};
     
-    // Définir les attributs étendus sans related_tickets
-    const extendedAttributesFields = {
-        ...restOfExtendedAttributes
-    };
+    // Ajouter chaque champ présent dans ticketData aux attributs étendus
+    changeExtendedFields.forEach(field => {
+        if (field !== 'related_tickets' && ticketData[field] !== undefined) {
+            extendedAttributesFields[field] = ticketData[field];
+        }
+    });
     
     // Extraire la liste des observateurs
     const watchList = ticketData.watch_list || [];
