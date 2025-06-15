@@ -280,7 +280,7 @@ const updateIncident = async (uuid, updateData) => {
 /**
  * Prépare les données pour la création d'un incident
  * @param {Object} incidentData - Données pour la création de l'incident
- * @returns {Object} - Objet contenant les champs standards, d'assignation et attributs étendus
+ * @returns {Object} - Objet contenant les champs standards, d'assignation, attributs étendus et observateurs
  */
 const createIncident = (incidentData) => {
     logger.info('[INCIDENT SERVICE] Preparing data for incident creation');
@@ -328,12 +328,21 @@ const createIncident = (incidentData) => {
     if (extendedAttributesFields.assignment_to_count === undefined) extendedAttributesFields.assignment_to_count = 0;
     if (extendedAttributesFields.standby_count === undefined) extendedAttributesFields.standby_count = 0;
     
+    // Gérer la liste des observateurs (watchers)
+    const watchList = incidentData.watch_list && Array.isArray(incidentData.watch_list) ? 
+        incidentData.watch_list : [];
+    
+    if (watchList.length > 0) {
+        logger.info(`[INCIDENT SERVICE] Processing ${watchList.length} watchers for incident creation`);
+    }
+    
     logger.info('[INCIDENT SERVICE] Successfully prepared data for incident creation');
     
     return {
         standardFields,
         assignmentFields,
-        extendedAttributesFields
+        extendedAttributesFields,
+        watchList
     };
 };
 

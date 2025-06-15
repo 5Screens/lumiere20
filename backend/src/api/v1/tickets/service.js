@@ -103,6 +103,7 @@ const createTicket = async (ticketData) => {
                 incidentData.standardFields,
                 incidentData.assignmentFields,
                 incidentData.extendedAttributesFields,
+                incidentData.watchList,
                 incidentService.getIncidentById,
                 '[INCIDENT SERVICE]'
             );
@@ -1504,11 +1505,12 @@ const applyUpdate = async (uuid, updateData, ticketType, standardFields, assignm
  * @param {Object} standardFields - Objet des champs standards pour ce type de ticket
  * @param {Object} assignmentFields - Objet des champs d'assignation pour ce type de ticket
  * @param {Object} extendedAttributesFields - Objet des attributs étendus pour ce type de ticket (optionnel)
+ * @param {Array} watchList - Liste des UUIDs des observateurs à ajouter (optionnel)
  * @param {Function} getTicketById - Fonction pour récupérer le ticket par son ID
  * @param {string} servicePrefix - Préfixe pour les logs (ex: '[INCIDENT SERVICE]')
  * @returns {Promise<Object>} - Détails du ticket créé
  */
-const applyCreation = async (ticketData, ticketType, standardFields, assignmentFields, extendedAttributesFields, getTicketById, servicePrefix) => {
+const applyCreation = async (ticketData, ticketType, standardFields, assignmentFields, extendedAttributesFields, watchList, getTicketById, servicePrefix) => {
     logger.info(`${servicePrefix} Creating new ${ticketType.toLowerCase()}`);
     
     // Utiliser une transaction pour garantir l'intégrité des données
@@ -1567,6 +1569,29 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
             logger.info(`${servicePrefix} Creating assignment for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
             await client.query(insertAssignmentQuery, assignmentValues);
             logger.info(`${servicePrefix} Successfully created assignment for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+        }
+        
+        // Étape 3: Gérer les observateurs (watchers) si fournis
+        if (watchList && Array.isArray(watchList) && watchList.length > 0) {
+            logger.info(`${servicePrefix} Processing ${watchList.length} watchers for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+            
+            // Préparer l'insertion par lot pour les observateurs
+            const watcherValues = watchList.map((personUuid, index) => {
+                return `($1, NULL, $${index + 2}, 'WATCHER')`;
+            }).join(', ');
+            
+            const watcherQuery = `
+                INSERT INTO core.rel_tickets_groups_persons (
+                    rel_ticket,
+                    rel_assigned_to_group,
+                    rel_assigned_to_person,
+                    type
+                ) VALUES ${watcherValues}
+            `;
+            
+            const watcherParams = [newTicket.uuid, ...watchList];
+            await client.query(watcherQuery, watcherParams);
+            logger.info(`${servicePrefix} Successfully added ${watchList.length} watchers for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
         }
         
         // Valider la transaction
