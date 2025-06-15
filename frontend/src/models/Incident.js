@@ -371,7 +371,8 @@ export class Incident {
           { key: 'requested_for_name', label: t('ticket.requested_for_name'), visible: true  },
           { key: 'writer_name', label: t('ticket.writer_name'), visible: false }
         ],
-        required: isRequired('rel_problem_id')
+        required: isRequired('rel_problem_id'),
+        resetable: true
       },
       rel_change_request: { 
         label: t('incident.change_request'),
@@ -388,7 +389,8 @@ export class Incident {
           { key: 'requested_for_name', label: t('ticket.requested_for_name'), visible: true  },
           { key: 'writer_name', label: t('ticket.writer_name'), visible: false }
         ],
-        required: isRequired('rel_change_request')
+        required: isRequired('rel_change_request'),
+        resetable: true
       }
     };
   }
