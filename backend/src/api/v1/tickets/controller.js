@@ -172,6 +172,14 @@ const getTicketById = async (req, res) => {
                 logger.info(`[CONTROLLER] Calling problemService.getProblemById for UUID: ${ticketUuid}`);
                 ticket = await problemService.getProblemById(ticketUuid, lang || 'en');
                 break;
+            case 'CHANGE':
+                logger.info(`[CONTROLLER] Calling changeService.getChangeById for UUID: ${ticketUuid}`);
+                ticket = await changeService.getChangeById(ticketUuid, lang || 'en');
+                break;
+            case 'INCIDENT':
+                logger.info(`[CONTROLLER] Calling incidentService.getIncidentById for UUID: ${ticketUuid}`);
+                ticket = await incidentService.getIncidentById(ticketUuid, lang || 'en');
+                break;
             // Ajouter d'autres cas pour les différents types de tickets si nécessaire
             default:
                 logger.info(`[CONTROLLER] Calling ticketService.getTicketById for UUID: ${ticketUuid}`);
