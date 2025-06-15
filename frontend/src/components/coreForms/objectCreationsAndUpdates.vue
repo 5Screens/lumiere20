@@ -228,6 +228,7 @@ const error = ref(null);
 const modelInstance = ref(null);
 const auditData = ref([]);
 const validationErrors = ref({});
+const formFields = ref({});
 
 // Computed properties
 const title = computed(() => {
@@ -238,16 +239,27 @@ const title = computed(() => {
   }
 });
 
-const formFields = computed(() => {
-  if (!modelInstance.value) return {};
+// Fonction pour charger les champs de formulaire de manière asynchrone
+const loadFormFields = async () => {
+  if (!modelInstance.value) return;
   
-  // Récupérer les champs rendables du modèle
-  if (typeof modelInstance.value.constructor.getRenderableFields === 'function') {
-    return modelInstance.value.constructor.getRenderableFields();
+  try {
+    // Récupérer les champs rendables du modèle
+    if (typeof modelInstance.value.constructor.getRenderableFields === 'function') {
+      console.log(`[loadFormFields] Chargement des champs pour ${props.objectType}`);
+      const fields = await modelInstance.value.constructor.getRenderableFields();
+      formFields.value = fields;
+      console.log(`[loadFormFields] Champs chargés avec succès:`, Object.keys(fields));
+    } else {
+      console.warn(`[loadFormFields] La méthode getRenderableFields n'existe pas pour ${props.objectType}`);
+      formFields.value = {};
+    }
+  } catch (err) {
+    console.error(`[loadFormFields] Erreur lors du chargement des champs: ${err.message}`, err);
+    formFields.value = {};
+    error.value = err.message || t('errors.loadFormFields');
   }
-  
-  return {};
-});
+};
 
 // Méthodes
 const initializeModel = () => {
@@ -317,6 +329,9 @@ const fetchObjectData = async () => {
     }
     
     formData.value = { ...modelInstance.value };
+    
+    // Charger les champs du formulaire après avoir récupéré l'instance du modèle
+    await loadFormFields();
   } catch (err) {
     console.error(`[objectCreationsAndUpdates] Erreur lors de la récupération des données: ${err.message}`, err);
     error.value = err.message || t('errors.fetchData');
@@ -591,6 +606,11 @@ const getEndpoint = (endpoint, data) => {
 onMounted(async () => {
   initializeModel();
   await fetchObjectData();
+  
+  // Si nous sommes en mode création, charger les champs du formulaire
+  if (props.mode === 'creation') {
+    await loadFormFields();
+  }
   
   // Si c'est un nouvel objet, initialiser dans le store
   if (props.mode === 'creation') {
