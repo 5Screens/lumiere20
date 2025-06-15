@@ -282,14 +282,20 @@ const updateIncident = async (uuid, updateData) => {
     
     const extendedAttributesFields = [
         'impact', 'urgency', 'priority', 'cause_code', 'rel_service', 
-        'contact_type', 'reopen_count', 'standby_count', 'rel_problem_id',
+        'contact_type', 'reopen_count', 'standby_count',
         'resolution_code', 'assignment_count', 'resolution_notes',
-        'rel_change_request', 'rel_service_offerings'
+        'rel_service_offerings'
     ];
     
-    // Utiliser la fonction applyUpdate du service.js
-    const { applyUpdate } = require('./service');
-    return await applyUpdate(
+    // Extraire les relations parent-enfant pour les traiter séparément
+    const relProblemId = updateData.rel_problem_id;
+    const relChangeRequest = updateData.rel_change_request;
+    
+    // Utiliser les fonctions du service.js
+    const { applyUpdate, addChildrenTickets, removeChildTicket } = require('./service');
+    
+    // Mettre à jour les champs standards, d'assignation et attributs étendus
+    const updatedIncident = await applyUpdate(
         uuid,
         updateData,
         'INCIDENT',
@@ -299,6 +305,79 @@ const updateIncident = async (uuid, updateData) => {
         getIncidentById,
         '[INCIDENT SERVICE]'
     );
+    
+    // Gérer la relation avec le problème si présent
+    if (relProblemId !== undefined) {
+        logger.info(`[INCIDENT SERVICE] Updating problem relation for incident ${uuid}`);
+        if (relProblemId) {
+            // Ajouter ou mettre à jour la relation avec le problème
+            await addChildrenTickets(uuid, 'KNOWN_PROBLEM', [relProblemId]);
+            logger.info(`[INCIDENT SERVICE] Added/updated problem relation: ${uuid} -> ${relProblemId}`);
+        } else {
+            // Si relProblemId est null, vide ou false, supprimer la relation existante
+            try {
+                // Récupérer d'abord les relations existantes pour ce type de dépendance
+                const existingRelations = await db.query(
+                    `SELECT rel_child_ticket_uuid FROM core.rel_parent_child_tickets 
+                     WHERE rel_parent_ticket_uuid = $1 AND dependency_code = $2 AND ended_at IS NULL`,
+                    [uuid, 'KNOWN_PROBLEM']
+                );
+                
+                // Logs pour débogage
+                logger.info(`[INCIDENT SERVICE] Found ${existingRelations.rowCount} existing problem relations for incident ${uuid}`);
+                logger.info(`[INCIDENT SERVICE] Existing problem relations: ${JSON.stringify(existingRelations.rows)}`);
+                if (existingRelations.rowCount === 0) {
+                    logger.info(`[INCIDENT SERVICE] No existing problem relations found for incident ${uuid}`);
+                }
+                
+                // Supprimer chaque relation existante
+                for (const row of existingRelations.rows) {
+                    await removeChildTicket(uuid, row.rel_child_ticket_uuid);
+                    logger.info(`[INCIDENT SERVICE] Removed problem relation: ${uuid} -> ${row.rel_child_ticket_uuid}`);
+                }
+            } catch (error) {
+                logger.error(`[INCIDENT SERVICE] Error removing problem relation for incident ${uuid}:`, error);
+            }
+        }
+    }
+    
+    // Gérer la relation avec la demande de changement si présente
+    if (relChangeRequest !== undefined) {
+        logger.info(`[INCIDENT SERVICE] Updating change request relation for incident ${uuid}`);
+        if (relChangeRequest) {
+            // Ajouter ou mettre à jour la relation avec la demande de changement
+            await addChildrenTickets(uuid, 'CHANGE_AT_ORIGIN', [relChangeRequest]);
+            logger.info(`[INCIDENT SERVICE] Added/updated change request relation: ${uuid} -> ${relChangeRequest}`);
+        } else {
+            // Si relChangeRequest est null, vide ou false, supprimer la relation existante
+            try {
+                // Récupérer d'abord les relations existantes pour ce type de dépendance
+                const existingRelations = await db.query(
+                    `SELECT rel_child_ticket_uuid FROM core.rel_parent_child_tickets 
+                     WHERE rel_parent_ticket_uuid = $1 AND dependency_code = $2 AND ended_at IS NULL`,
+                    [uuid, 'CHANGE_AT_ORIGIN']
+                );
+                
+                // Logs pour débogage
+                logger.info(`[INCIDENT SERVICE] Found ${existingRelations.rowCount} existing change request relations for incident ${uuid}`);
+                logger.info(`[INCIDENT SERVICE] Existing change request relations: ${JSON.stringify(existingRelations.rows)}`);
+                if (existingRelations.rowCount === 0) {
+                    logger.info(`[INCIDENT SERVICE] No existing change request relations found for incident ${uuid}`);
+                }
+                
+                // Supprimer chaque relation existante
+                for (const row of existingRelations.rows) {
+                    await removeChildTicket(uuid, row.rel_child_ticket_uuid);
+                    logger.info(`[INCIDENT SERVICE] Removed change request relation: ${uuid} -> ${row.rel_child_ticket_uuid}`);
+                }
+            } catch (error) {
+                logger.error(`[INCIDENT SERVICE] Error removing change request relation for incident ${uuid}:`, error);
+            }
+        }
+    }
+    
+    // Récupérer l'incident mis à jour avec toutes ses relations
+    return updatedIncident;
 };
 
 /**
