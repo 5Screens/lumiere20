@@ -309,8 +309,8 @@ const createIncident = (incidentData) => {
     // Liste des champs spécifiques aux incidents
     const incidentExtendedFields = [
         'impact', 'urgency', 'priority', 'rel_service', 'rel_service_offerings',
-        'resolution_notes', 'resolution_code', 'cause_code', 'rel_problem_id',
-        'rel_change_request', 'sla_pickup_due_at', 'assigned_to_at', 
+        'resolution_notes', 'resolution_code', 'cause_code',
+        'sla_pickup_due_at', 'assigned_to_at', 
         'sla_resolution_due_at', 'resolved_at', 'reopen_count', 'assignment_count',
         'assignment_to_count', 'standby_count', 'contact_type'
     ];
@@ -338,11 +338,37 @@ const createIncident = (incidentData) => {
     
     logger.info('[INCIDENT SERVICE] Successfully prepared data for incident creation');
     
+    // Préparer les relations parent-enfant
+    const parentChildRelations = [];
+    
+    // Extraire les relations parent-enfant pour les traiter séparément
+    const relProblemId = incidentData.rel_problem_id;
+    const relChangeRequest = incidentData.rel_change_request;
+    
+    // Ajouter la relation avec le problème si présent
+    if (relProblemId) {
+        parentChildRelations.push({
+            childUuid: relProblemId,
+            dependencyCode: 'KNOWN_PROBLEM'
+        });
+        logger.info(`[INCIDENT SERVICE] Prepared parent-child relation with problem ${relProblemId}`);
+    }
+    
+    // Ajouter la relation avec la demande de changement si présente
+    if (relChangeRequest) {
+        parentChildRelations.push({
+            childUuid: relChangeRequest,
+            dependencyCode: 'CHANGE_AT_ORIGIN'
+        });
+        logger.info(`[INCIDENT SERVICE] Prepared parent-child relation with change request ${relChangeRequest}`);
+    }
+    
     return {
         standardFields,
         assignmentFields,
         extendedAttributesFields,
-        watchList
+        watchList,
+        parentChildRelations
     };
 };
 

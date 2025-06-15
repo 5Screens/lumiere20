@@ -104,6 +104,7 @@ const createTicket = async (ticketData) => {
                 incidentData.assignmentFields,
                 incidentData.extendedAttributesFields,
                 incidentData.watchList,
+                incidentData.parentChildRelations,
                 incidentService.getIncidentById,
                 '[INCIDENT SERVICE]'
             );
@@ -1506,11 +1507,12 @@ const applyUpdate = async (uuid, updateData, ticketType, standardFields, assignm
  * @param {Object} assignmentFields - Objet des champs d'assignation pour ce type de ticket
  * @param {Object} extendedAttributesFields - Objet des attributs étendus pour ce type de ticket (optionnel)
  * @param {Array} watchList - Liste des UUIDs des observateurs à ajouter (optionnel)
+ * @param {Array} parentChildRelations - Liste des relations parent-enfant à créer (optionnel)
  * @param {Function} getTicketById - Fonction pour récupérer le ticket par son ID
  * @param {string} servicePrefix - Préfixe pour les logs (ex: '[INCIDENT SERVICE]')
  * @returns {Promise<Object>} - Détails du ticket créé
  */
-const applyCreation = async (ticketData, ticketType, standardFields, assignmentFields, extendedAttributesFields, watchList, getTicketById, servicePrefix) => {
+const applyCreation = async (ticketData, ticketType, standardFields, assignmentFields, extendedAttributesFields, watchList, parentChildRelations, getTicketById, servicePrefix) => {
     logger.info(`${servicePrefix} Creating new ${ticketType.toLowerCase()}`);
     
     // Utiliser une transaction pour garantir l'intégrité des données
@@ -1592,6 +1594,26 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
             const watcherParams = [newTicket.uuid, ...watchList];
             await client.query(watcherQuery, watcherParams);
             logger.info(`${servicePrefix} Successfully added ${watchList.length} watchers for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+        }
+        
+        // Étape 4: Gérer les relations parent-enfant si présentes
+        if (parentChildRelations && Array.isArray(parentChildRelations) && parentChildRelations.length > 0) {
+            logger.info(`${servicePrefix} Processing ${parentChildRelations.length} parent-child relations for ${ticketType.toLowerCase()} with UUID: ${newTicket.uuid}`);
+            
+            for (const relation of parentChildRelations) {
+                const relationQuery = `
+                    INSERT INTO core.rel_parent_child_tickets (
+                        rel_parent_ticket_uuid,
+                        rel_child_ticket_uuid,
+                        dependency_code
+                    ) VALUES ($1, $2, $3)
+                    ON CONFLICT (rel_parent_ticket_uuid, rel_child_ticket_uuid) 
+                    DO UPDATE SET dependency_code = $3, updated_at = NOW()
+                `;
+                
+                await client.query(relationQuery, [newTicket.uuid, relation.childUuid, relation.dependencyCode]);
+                logger.info(`${servicePrefix} Added parent-child relation: ${newTicket.uuid} -> ${relation.childUuid} (${relation.dependencyCode})`);
+            }
         }
         
         // Valider la transaction
