@@ -44,13 +44,13 @@ const getIncidents = async (lang) => {
             COALESCE(contact_types_t.label, t.core_extended_attributes->>'contact_type') as contact_type_label,
             (t.core_extended_attributes->>'reopen_count')::integer as reopen_count,
             (t.core_extended_attributes->>'standby_count')::integer as standby_count,
-            t.core_extended_attributes->>'rel_problem_id' as rel_problem_id,
+            problem_rel.rel_child_ticket_uuid as rel_problem_id,
             problem.title as rel_problem_title,
             t.core_extended_attributes->>'resolution_code' as resolution_code,
             COALESCE(resolution_codes_t.label, t.core_extended_attributes->>'resolution_code') as resolution_code_label,
             (t.core_extended_attributes->>'assignment_count')::integer as assignment_count,
             t.core_extended_attributes->>'resolution_notes' as resolution_notes,
-            t.core_extended_attributes->>'rel_change_request' as rel_change_request,
+            change_rel.rel_child_ticket_uuid as rel_change_request,
             change_request.title as rel_change_request_title,
             (t.core_extended_attributes->>'assignment_to_count')::integer as assignment_to_count,
             t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
@@ -82,13 +82,18 @@ const getIncidents = async (lang) => {
         LEFT JOIN translations.contact_types_labels contact_types_t ON contact_types_t.rel_contact_type_code = t.core_extended_attributes->>'contact_type' AND contact_types_t.language = $1
         LEFT JOIN translations.incident_resolution_codes_labels resolution_codes_t ON resolution_codes_t.rel_incident_resolution_code = t.core_extended_attributes->>'resolution_code' AND resolution_codes_t.language = $1
         
+        -- Jointures pour récupérer les relations parent-enfant
+        LEFT JOIN core.rel_parent_child_tickets problem_rel ON t.uuid = problem_rel.rel_parent_ticket_uuid AND problem_rel.dependency_code = 'KNOWN_PROBLEM'
+        LEFT JOIN core.rel_parent_child_tickets change_rel ON t.uuid = change_rel.rel_parent_ticket_uuid AND change_rel.dependency_code = 'CHANGE_AT_ORIGIN'
+        
         -- Jointures pour récupérer les informations liées
-        LEFT JOIN core.tickets problem ON problem.uuid = (t.core_extended_attributes->>'rel_problem_id')::uuid
-        LEFT JOIN core.tickets change_request ON change_request.uuid = (t.core_extended_attributes->>'rel_change_request')::uuid
+        LEFT JOIN core.tickets problem ON problem.uuid = problem_rel.rel_child_ticket_uuid
+        LEFT JOIN core.tickets change_request ON change_request.uuid = change_rel.rel_child_ticket_uuid
         LEFT JOIN data.services service ON service.uuid = (t.core_extended_attributes->>'rel_service')::uuid
         LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid = (t.core_extended_attributes->>'rel_service_offerings')::uuid
 
         WHERE t.ticket_type_code = 'INCIDENT'
+        ORDER BY t.updated_at DESC
     `;
     
     try {
@@ -154,6 +159,19 @@ const getIncidentById = async (uuid, lang = 'en') => {
                     WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
                 ) as watch_list,
                 
+                -- Informations sur les tickets liés (problème et demande de changement)
+                (SELECT json_build_object(
+                    'uuid', problem.uuid,
+                    'title', problem.title,
+                    'ticket_status_code', problem.ticket_status_code
+                ) FROM core.tickets problem WHERE problem.uuid = problem_rel.rel_child_ticket_uuid) as problem_info,
+                
+                (SELECT json_build_object(
+                    'uuid', change_request.uuid,
+                    'title', change_request.title,
+                    'ticket_status_code', change_request.ticket_status_code
+                ) FROM core.tickets change_request WHERE change_request.uuid = change_rel.rel_child_ticket_uuid) as change_request_info,
+                
                 -- Champs spécifiques aux incidents depuis core_extended_attributes
                 t.core_extended_attributes->>'impact' as impact,
                 t.core_extended_attributes->>'urgency' as urgency,
@@ -162,8 +180,8 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'rel_service' as rel_service,
                 t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
                 t.core_extended_attributes->>'contact_type' as contact_type,
-                t.core_extended_attributes->>'rel_problem_id' as rel_problem_id,
-                t.core_extended_attributes->>'rel_change_request' as rel_change_request,
+                problem_rel.rel_child_ticket_uuid as rel_problem_id,
+                change_rel.rel_child_ticket_uuid as rel_change_request,
                 t.core_extended_attributes->>'resolution_code' as resolution_code,
                 t.core_extended_attributes->>'resolution_notes' as resolution_notes,
                 
@@ -201,6 +219,12 @@ const getIncidentById = async (uuid, lang = 'en') => {
             ) rtgp ON t.uuid = rtgp.rel_ticket
             LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
             LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+            
+            -- Jointures pour les relations parent-enfant
+            LEFT JOIN core.rel_parent_child_tickets problem_rel ON t.uuid = problem_rel.rel_parent_ticket_uuid 
+                AND problem_rel.dependency_code = 'KNOWN_PROBLEM'
+            LEFT JOIN core.rel_parent_child_tickets change_rel ON t.uuid = change_rel.rel_parent_ticket_uuid 
+                AND change_rel.dependency_code = 'CHANGE_AT_ORIGIN'
             
             -- Jointures pour les traductions des champs spécifiques aux incidents
             LEFT JOIN configuration.incident_impacts impacts ON t.core_extended_attributes->>'impact' = impacts.code
