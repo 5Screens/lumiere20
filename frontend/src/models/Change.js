@@ -607,7 +607,7 @@ export class Change {
         type: 'sPickList',
         placeholder: t('change.watch_list_placeholder'),
         sourceEndPoint: 'persons',
-        displayedLabel: 'first_name',
+        displayedLabel: 'person_name',
         targetEndPoint: 'changes',
         ressourceEndPoint: 'watchers',
         target_uuid: null,
