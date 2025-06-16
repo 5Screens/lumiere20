@@ -336,6 +336,8 @@ const getChangeById = async (uuid, lang = 'en') => {
                 t.created_at,
                 t.updated_at,
                 t.closed_at,
+                t.requested_by_uuid,
+                t.requested_for_uuid,
                 p1.first_name || ' ' || p1.last_name as requested_by_name,
                 p2.first_name || ' ' || p2.last_name as requested_for_name,
                 p3.first_name || ' ' || p3.last_name as writer_name,
