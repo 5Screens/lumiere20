@@ -191,8 +191,11 @@ export class Change {
     ];
   }
 
-  static getApiEndpoint() {
+  static getApiEndpoint(method = 'GET') {
     const userProfileStore = useUserProfileStore();
+    if (method === 'PATCH') {
+      return 'tickets';
+    }
     return `tickets?ticket_type=CHANGE&lang=${userProfileStore.language}`;
   }
 
