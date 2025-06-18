@@ -651,7 +651,8 @@ export class Change {
         label: t('change.closed_at'),
         type: 'sDatePicker',
         placeholder: t('change.closed_at_placeholder'),
-        required: isRequired('closed_at')
+        required: isRequired('closed_at'),
+        patchendpoint: 'tickets'
       }
     };
   }
