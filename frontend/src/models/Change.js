@@ -566,7 +566,7 @@ export class Change {
         placeholder: t('change.required_validations_placeholder'),
         sourceEndPoint: `change_setup?lang=${userProfileStore.language}&metadata=validation_level`,
         displayedLabel: 'label',
-        targetEndPoint: 'changes',
+        targetEndPoint: 'tickets',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('required_validations')
@@ -586,7 +586,8 @@ export class Change {
         placeholder: t('change.related_tickets_placeholder'),
         sourceEndPoint: 'tickets',
         displayedLabel: 'title',
-        targetEndPoint: 'changes',
+        targetEndPoint: 'tickets',
+        ressourceEndPoint: 'embeded_tickets',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('related_tickets')
@@ -618,7 +619,7 @@ export class Change {
         placeholder: t('change.watch_list_placeholder'),
         sourceEndPoint: 'persons',
         displayedLabel: 'person_name',
-        targetEndPoint: 'changes',
+        targetEndPoint: 'tickets',
         ressourceEndPoint: 'watchers',
         target_uuid: null,
         pickedItems: null,
