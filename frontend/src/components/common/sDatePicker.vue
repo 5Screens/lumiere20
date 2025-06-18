@@ -405,6 +405,16 @@ function closeCalendar() {
 }
 
 async function confirmChange() {
+  console.log('[sDatePicker] confirmChange - Start', {
+    uuid: props.uuid,
+    fieldName: props.fieldName,
+    patchendpoint: props.patchendpoint,
+    selectedDate: selectedDate.value,
+    isEditing: isEditing.value,
+    valueChanged: valueChanged.value,
+    edition: props.edition
+  });
+
   if (!props.uuid || !props.fieldName || !props.patchendpoint) {
     console.error('Erreur lors de la mise à jour de la date: paramètres manquants', { 
       uuid: props.uuid, 
@@ -415,21 +425,42 @@ async function confirmChange() {
   }
   
   try {
-    const response = await apiService.patch(`${props.patchendpoint}/${props.uuid}`, {
-      [props.fieldName]: selectedDate.value
+    // Convertir la date en format ISO string pour compatibilité avec le serveur
+    const isoDateString = selectedDate.value instanceof Date ? selectedDate.value.toISOString() : selectedDate.value;
+    
+    console.log('[sDatePicker] confirmChange - Sending API request', {
+      endpoint: `${props.patchendpoint}/${props.uuid}`,
+      data: { [props.fieldName]: isoDateString },
+      originalFormat: selectedDate.value
+    });
+
+    // Appel API et récupération des données
+    const responseData = await apiService.patch(`${props.patchendpoint}/${props.uuid}`, {
+      [props.fieldName]: isoDateString
     })
     
-    if (response.status === 200) {
-      emit('update:modelValue', selectedDate.value)
-      emit('update:success', response.data)
-      originalDate.value = selectedDate.value
-      valueChanged.value = false
-      isEditing.value = false
-    }
+    console.log('[sDatePicker] confirmChange - API response received', {
+      responseData: responseData
+    });
+
+    // Le service API a déjà vérifié que la réponse est OK (statut 2xx)
+    // Si nous arrivons ici, c'est que la requête a réussi
+    emit('update:modelValue', selectedDate.value)
+    emit('update:success', responseData)
+    originalDate.value = selectedDate.value
+    valueChanged.value = false
+    isEditing.value = false
+    console.log('[sDatePicker] confirmChange - Update successful, state updated');
   } catch (error) {
-    console.error('Error updating date:', error)
+    console.error('[sDatePicker] confirmChange - Error updating date:', error)
     emit('update:error', error)
   }
+  
+  console.log('[sDatePicker] confirmChange - End state', {
+    isEditing: isEditing.value,
+    valueChanged: valueChanged.value,
+    edition: props.edition
+  });
 }
 
 function cancelChange() {
