@@ -477,25 +477,29 @@ export class Change {
         label: t('change.requested_start_date'),
         type: 'sDatePicker',
         placeholder: t('change.requested_start_date_placeholder'),
-        required: isRequired('requested_start_date_at')
+        required: isRequired('requested_start_date_at'),
+        patchendpoint: 'tickets'
       },
       requested_end_date_at: {
         label: t('change.requested_end_date'),
         type: 'sDatePicker',
         placeholder: t('change.requested_end_date_placeholder'),
-        required: isRequired('requested_end_date_at')
+        required: isRequired('requested_end_date_at'),
+        patchendpoint: 'tickets'
       },
       planned_start_date_at: {
         label: t('change.planned_start_date'),
         type: 'sDatePicker',
         placeholder: t('change.planned_start_date_placeholder'),
-        required: isRequired('planned_start_date_at')
+        required: isRequired('planned_start_date_at'),
+        patchendpoint: 'tickets'
       },
       planned_end_date_at: {
         label: t('change.planned_end_date'),
         type: 'sDatePicker',
         placeholder: t('change.planned_end_date_placeholder'),
-        required: isRequired('planned_end_date_at')
+        required: isRequired('planned_end_date_at'),
+        patchendpoint: 'tickets'
       },
       rel_change_justifications_code: {
         label: t('change.justification'),
