@@ -575,7 +575,8 @@ export class Change {
         label: t('change.validated_at'),
         type: 'sDatePicker',
         placeholder: t('change.validated_at_placeholder'),
-        required: isRequired('validated_at')
+        required: isRequired('validated_at'),
+        patchendpoint: 'tickets'
       },
       
       // Exécution et suivi
@@ -594,13 +595,15 @@ export class Change {
         label: t('change.actual_start_date'),
         type: 'sDatePicker',
         placeholder: t('change.actual_start_date_placeholder'),
-        required: isRequired('actual_start_date_at')
+        required: isRequired('actual_start_date_at'),
+        patchendpoint: 'tickets'
       },
       actual_end_date_at: {
         label: t('change.actual_end_date'),
         type: 'sDatePicker',
         placeholder: t('change.actual_end_date_placeholder'),
-        required: isRequired('actual_end_date_at')
+        required: isRequired('actual_end_date_at'),
+        patchendpoint: 'tickets'
       },
       elapsed_time: {
         label: t('change.elapsed_time'),
