@@ -426,7 +426,44 @@ const ticketValidationSchemas = {
     },
     
     // Ajoutez d'autres types de tickets selon les besoins
-    // CHANGE: { ... },
+    CHANGE: {
+        requested_by_uuid: Joi.string().uuid().allow(null, ''),
+        requested_for_uuid: Joi.string().uuid().allow(null, ''),
+        rel_services: Joi.string().uuid().allow(null, ''),
+        rel_service_offerings: Joi.string().uuid().allow(null, ''),
+        rel_change_type_code: Joi.string().allow(null, ''),
+        r_q1: Joi.string().allow(null, ''),
+        r_q2: Joi.string().allow(null, ''),
+        r_q3: Joi.string().allow(null, ''),
+        r_q4: Joi.string().allow(null, ''),
+        r_q5: Joi.string().allow(null, ''),
+        i_q1: Joi.string().allow(null, ''),
+        i_q2: Joi.string().allow(null, ''),
+        i_q3: Joi.string().allow(null, ''),
+        i_q4: Joi.string().allow(null, ''),
+        requested_start_date_at: Joi.date().allow(null),
+        requested_end_date_at: Joi.date().allow(null),
+        planned_start_date_at: Joi.date().allow(null),
+        planned_end_date_at: Joi.date().allow(null),
+        rel_change_justifications_code: Joi.string().allow(null, ''),
+        rel_change_objective: Joi.string().allow(null, ''),
+        test_plan: Joi.string().allow(null, ''),
+        implementation_plan: Joi.string().allow(null, ''),
+        rollbcak_plan: Joi.string().allow(null, ''),
+        post_implementation_plan: Joi.string().allow(null, ''),
+        cab_comments: Joi.string().allow(null, ''),
+        rel_cab_validation_status: Joi.string().allow(null, ''),
+        required_validations: Joi.array().items(Joi.string()).allow(null),
+        validated_at: Joi.date().allow(null),
+        related_tickets: Joi.array().items(Joi.string().uuid()).allow(null),
+        actual_start_date_at: Joi.date().allow(null),
+        actual_end_date_at: Joi.date().allow(null),
+        elapsed_time: Joi.number().allow(null),
+        success_criteria: Joi.string().allow(null, ''),
+        post_change_evaluation: Joi.string().allow(null, ''),
+        post_change_comment: Joi.string().allow(null, ''),
+        closed_at: Joi.date().allow(null)
+    },
     // KNOWLEDGE: { ... },
     // etc.
 };
@@ -448,7 +485,8 @@ const validateUpdateTicket = async (req, res, next) => {
         validationSchema = {
             ...validationSchema,
             ...ticketValidationSchemas.INCIDENT,
-            ...ticketValidationSchemas.PROBLEM
+            ...ticketValidationSchemas.PROBLEM,
+            ...ticketValidationSchemas.CHANGE
         };
 
         // Créer le schéma final et valider
