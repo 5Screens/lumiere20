@@ -37,7 +37,12 @@
     <div class="tab-content">
       <!-- Onglets parents - utilisation de keep-alive pour conserver l'instance des composants -->
       <keep-alive>
-        <div v-for="tab in store.parentTabs" :key="tab.id_tab" v-show="store.isParentTabActive(tab.id_tab)">
+        <div 
+          v-for="tab in store.parentTabs" 
+          :key="tab.id_tab" 
+          v-show="store.isParentTabActive(tab.id_tab)"
+          class="tab-content-wrapper"
+        >
           <component 
             :is="getComponentByType(tab.type)" 
             :data="getComponentData(tab)"
@@ -48,7 +53,12 @@
       
       <!-- Onglets enfants - Utilisation de keep-alive pour conserver l'instance des composants -->
       <keep-alive>
-        <div v-for="tab in store.tabs.filter(t => t.parentId)" :key="tab.id_tab" v-show="store.activeChildTabId === tab.id_tab">
+        <div 
+          v-for="tab in store.tabs.filter(t => t.parentId)" 
+          :key="tab.id_tab" 
+          v-show="store.activeChildTabId === tab.id_tab"
+          class="tab-content-wrapper"
+        >
           <component 
             v-if="tab.type !== 'objectForm'"
             :is="getComponentByType(tab.type)" 

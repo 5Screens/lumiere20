@@ -117,10 +117,22 @@
 .tab-content {
   flex: 1;
   padding: 0;
-  overflow: auto;
+  overflow: hidden; /* Changé de auto à hidden car le scroll est géré par tab-content-wrapper */
   background-color: var(--bg-color);
   width: 100%;
   position: relative;
+}
+
+/* Wrapper pour chaque contenu d'onglet - isole le contexte de scroll */
+.tab-content-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  /* Empêche la propagation du scroll au parent */
+  overscroll-behavior: contain;
 }
 
 /* Animation pour les transitions - rend l'apparition et la disparition des contenus plus fluide */
