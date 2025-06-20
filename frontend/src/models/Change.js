@@ -587,7 +587,8 @@ export class Change {
         sourceEndPoint: 'tickets',
         displayedLabel: 'title',
         targetEndPoint: 'tickets',
-        ressourceEndPoint: 'embeded_tickets',
+        ressourceEndPoint: 'children',
+        fieldName: 'EMBEDDED_TICKETS',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('related_tickets')
