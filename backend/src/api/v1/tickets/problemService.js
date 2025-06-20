@@ -293,6 +293,106 @@ const getProblems = async (lang = 'en') => {
 };
 
 /**
+ * Prépare les données pour la création d'un problème
+ * @param {Object} problemData - Données pour la création du problème
+ * @returns {Object} - Objet contenant les champs standards, d'assignation, attributs étendus et observateurs
+ */
+const createProblem = (problemData) => {
+    logger.info('[PROBLEM SERVICE] Preparing data for problem creation');
+    
+    // Définir les champs standards pour un problème
+    const standardFields = {
+        title: problemData.title,
+        description: problemData.description,
+        configuration_item_uuid: problemData.configuration_item_uuid,
+        ticket_type_code: 'PROBLEM',
+        ticket_status_code: problemData.ticket_status_code || 'NEW',
+        requested_by_uuid: problemData.requested_by_uuid || problemData.writer_uuid,
+        requested_for_uuid: problemData.requested_for_uuid || problemData.writer_uuid,
+        writer_uuid: problemData.writer_uuid
+    };
+    
+    // Définir les champs d'assignation pour un problème
+    const assignmentFields = {
+        assigned_to_group: problemData.assigned_to_group,
+        assigned_to_person: problemData.assigned_to_person
+    };
+    
+    // Définir les attributs étendus pour un problème
+    const extendedAttributesFields = {};
+    
+    // Liste des champs spécifiques aux problèmes
+    const problemExtendedFields = [
+        'rel_problem_categories_code', 'rel_service', 'rel_service_offerings',
+        'impact', 'urgency', 'symptoms_description', 'workaround',
+        'root_cause', 'definitive_solution', 'target_resolution_date',
+        'actual_resolution_date', 'actual_resolution_workload', 'closure_justification',
+        'pbm_closed_at'
+    ];
+    
+    // Ajouter chaque champ présent dans problemData aux attributs étendus
+    problemExtendedFields.forEach(field => {
+        if (problemData[field] !== undefined) {
+            extendedAttributesFields[field] = problemData[field];
+        }
+    });
+    
+    // Gérer la liste des observateurs (watchers)
+    const watchList = problemData.watch_list && Array.isArray(problemData.watch_list) ? 
+        problemData.watch_list : [];
+    
+    if (watchList.length > 0) {
+        logger.info(`[PROBLEM SERVICE] Processing ${watchList.length} watchers for problem creation`);
+    }
+    
+    logger.info('[PROBLEM SERVICE] Successfully prepared data for problem creation');
+    
+    // Préparer les relations parent-enfant
+    const parentChildRelations = [];
+    
+    // Gérer la liste des erreurs connues (knownerrors_list)
+    if (problemData.knownerrors_list && Array.isArray(problemData.knownerrors_list) && problemData.knownerrors_list.length > 0) {
+        problemData.knownerrors_list.forEach(knownErrorUuid => {
+            parentChildRelations.push({
+                childUuid: knownErrorUuid,
+                dependencyCode: 'KNOWNERROR'
+            });
+        });
+        logger.info(`[PROBLEM SERVICE] Prepared ${problemData.knownerrors_list.length} known error relations`);
+    }
+    
+    // Gérer la liste des changements (changes_list)
+    if (problemData.changes_list && Array.isArray(problemData.changes_list) && problemData.changes_list.length > 0) {
+        problemData.changes_list.forEach(changeUuid => {
+            parentChildRelations.push({
+                childUuid: changeUuid,
+                dependencyCode: 'CHANGE'
+            });
+        });
+        logger.info(`[PROBLEM SERVICE] Prepared ${problemData.changes_list.length} change relations`);
+    }
+    
+    // Gérer la liste des incidents (incidents_list)
+    if (problemData.incidents_list && Array.isArray(problemData.incidents_list) && problemData.incidents_list.length > 0) {
+        problemData.incidents_list.forEach(incidentUuid => {
+            parentChildRelations.push({
+                childUuid: incidentUuid,
+                dependencyCode: 'INCIDENT'
+            });
+        });
+        logger.info(`[PROBLEM SERVICE] Prepared ${problemData.incidents_list.length} incident relations`);
+    }
+    
+    return {
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        watchList,
+        parentChildRelations
+    };
+};
+
+/**
  * Met à jour partiellement un problème par son UUID
  * @param {string} uuid - UUID du problème à mettre à jour
  * @param {Object} updateData - Données à mettre à jour
@@ -313,7 +413,6 @@ const updateProblem = async (uuid, updateData) => {
     const extendedAttributesFields = [
         'rel_problem_categories_code', 'rel_service', 'rel_service_offerings',
         'impact', 'urgency', 'symptoms_description', 'workaround',
-        'knownerrors_list', 'changes_list', 'incidents_list',
         'root_cause', 'definitive_solution', 'target_resolution_date',
         'actual_resolution_date', 'actual_resolution_workload', 'closure_justification'
     ];
@@ -335,5 +434,6 @@ const updateProblem = async (uuid, updateData) => {
 module.exports = {
     getProblemById,
     getProblems,
+    createProblem,
     updateProblem
 };

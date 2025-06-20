@@ -110,25 +110,26 @@ const createTicket = async (ticketData) => {
             );
         }
         
-        // Si c'est un problème, ajouter les attributs spécifiques aux problèmes
+        // Si c'est un problème, utiliser le service de problème pour la création
         if (isProblem) {
-            // Champs à inclure dans core_extended_attributes pour les problèmes
-            const problemFields = [
-                'rel_problem_categories_code', 'rel_service', 'rel_service_offerings',
-                'impact', 'urgency', 'symptoms_description', 'workaround',
-                'knownerrors_list', 'changes_list', 'incidents_list', 'root_cause',
-                'definitive_solution', 'target_resolution_date', 'actual_resolution_date',
-                'actual_resolution_workload', 'closure_justification'
-            ];
+            logger.info('[SERVICE] Using problemService.createProblem for PROBLEM ticket');
+            const problemService = require('./problemService');
             
-            // Ajouter chaque champ présent dans ticketData aux attributs étendus
-            problemFields.forEach(field => {
-                if (ticketData[field] !== undefined) {
-                    coreExtendedAttributes[field] = ticketData[field];
-                }
-            });
+            // Utiliser createProblem pour préparer les données
+            const problemData = problemService.createProblem(ticketData);
             
-            logger.info('[SERVICE] Prepared core_extended_attributes for PROBLEM ticket');
+            // Utiliser applyCreation pour créer le ticket
+            return await applyCreation(
+                ticketData,
+                'PROBLEM',
+                problemData.standardFields,
+                problemData.assignmentFields,
+                problemData.extendedAttributesFields,
+                problemData.watchList,
+                problemData.parentChildRelations,
+                problemService.getProblemById,
+                '[PROBLEM SERVICE]'
+            );
         }
         
         // Si c'est un changement, utiliser le service de changement pour la création
