@@ -86,7 +86,7 @@ const getChanges = async (lang) => {
             FROM core.rel_parent_child_tickets rel
             JOIN core.tickets child ON rel.rel_child_ticket_uuid = child.uuid
             WHERE rel.rel_parent_ticket_uuid = t.uuid
-            AND rel.dependency_code = 'TICKETS_IMPLEMENTED'
+            AND rel.dependency_code = 'EMBEDDED_TICKETS'
             AND rel.ended_at IS NULL
             ) as related_tickets,
             service.name as rel_service_name,
@@ -201,7 +201,7 @@ const createChange = (ticketData) => {
         relatedTickets.forEach(ticketUuid => {
             parentChildRelations.push({
                 childUuid: ticketUuid,
-                dependencyCode: 'TICKETS_IMPLEMENTED'
+                dependencyCode: 'EMBEDDED_TICKETS'
             });
         });
     }
@@ -286,7 +286,7 @@ const updateChange = async (uuid, updateData) => {
             const existingRelations = await db.query(
                 `SELECT rel_child_ticket_uuid FROM core.rel_parent_child_tickets 
                  WHERE rel_parent_ticket_uuid = $1 AND dependency_code = $2 AND ended_at IS NULL`,
-                [uuid, 'TICKETS_IMPLEMENTED']
+                [uuid, 'EMBEDDED_TICKETS']
             );
             
             // Logs pour débogage
@@ -301,7 +301,7 @@ const updateChange = async (uuid, updateData) => {
             
             // 3. Ajouter les nouvelles relations si elles existent
             if (relatedTickets && Array.isArray(relatedTickets) && relatedTickets.length > 0) {
-                await addChildrenTickets(uuid, 'TICKETS_IMPLEMENTED', relatedTickets);
+                await addChildrenTickets(uuid, 'EMBEDDED_TICKETS', relatedTickets);
                 logger.info(`[CHANGE SERVICE] Added ${relatedTickets.length} new related tickets for change ${uuid}`);
             } else {
                 logger.info(`[CHANGE SERVICE] No new related tickets to add for change ${uuid}`);
@@ -378,7 +378,7 @@ const getChangeById = async (uuid, lang = 'en') => {
                     FROM core.rel_parent_child_tickets rel
                     JOIN core.tickets rt ON rel.rel_child_ticket_uuid = rt.uuid
                     WHERE rel.rel_parent_ticket_uuid = t.uuid 
-                    AND rel.dependency_code = 'TICKETS_IMPLEMENTED'
+                    AND rel.dependency_code = 'EMBEDDED_TICKETS'
                     AND rel.ended_at IS NULL
                 ) as related_tickets,
                 
@@ -422,10 +422,12 @@ const getChangeById = async (uuid, lang = 'en') => {
                 COALESCE(cab_validation_t.label, t.core_extended_attributes->>'rel_cab_validation_status') as cab_validation_status_label,
                 (
                     SELECT json_agg(json_build_object(
+                        'uuid', csc.uuid,
                         'code', rv,
                         'label', COALESCE(rv_t.label, rv)
                     ))
                     FROM jsonb_array_elements_text(t.core_extended_attributes->'required_validations') as rv
+                    LEFT JOIN configuration.change_setup_codes csc ON csc.code = rv
                     LEFT JOIN translations.change_setup_label rv_t ON rv_t.rel_change_setup_code = rv AND rv_t.lang = $2
                 ) as required_validations,
                 t.core_extended_attributes->>'validated_at' as validated_at,
