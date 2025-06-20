@@ -363,13 +363,7 @@ async function loadTargetItems() {
 }
 
 async function confirmChanges() {
-  if (!props.edition || !props.targetEndPoint || !props.target_uuid) {
-    // En mode création, juste mettre à jour le modèle
-    updateModelValue();
-    valueChanged.value = false;
-    return;
-  }
-  
+ 
   error.value = '';
   targetLoading.value = true;
   
@@ -381,11 +375,23 @@ async function confirmChanges() {
     const addedItems = targetItems.value.filter(item => !originalUuids.has(item.uuid));
     const removedItems = originalTargetItems.value.filter(item => !currentUuids.has(item.uuid));
     
-    // 2. Construire le body pour l'appel POST avec la structure requise
-    if (addedItems.length > 0) {
+    // Cas spécial: si ressourceEndPoint est null, utiliser PATCH avec un format spécifique
+    if (props.ressourceEndPoint === null && props.fieldName) {
+      // Format pour PATCH: { fieldName: [code1, code2, ...] }
+      // Envoyer tous les codes sélectionnés tels quels, sans distinguer ajout/suppression
+      const allItemCodes = targetItems.value.map(item => item.code || item.uuid);
+      const requestBody = {
+        [props.fieldName]: allItemCodes
+      };
+      console.log(`PATCH avec ${props.fieldName}:`, allItemCodes);
+      
+      // Faire un appel PATCH avec tous les codes
+      await apiService.patch(`${props.targetEndPoint}/${props.target_uuid}`, requestBody);
+    } 
+    // Sinon, utiliser le comportement existant pour les ajouts
+    else if (addedItems.length > 0) {
       // Utiliser directement item.uuid et le convertir en chaîne
       const itemUuids = addedItems.map(item => String(item.uuid));
-      
       let requestBody;
       
       // Vérifier si fieldName est défini pour déterminer le format du body
@@ -412,7 +418,7 @@ async function confirmChanges() {
     }
     
     // 3. Gérer la suppression des items
-    if (removedItems.length > 0) {
+    if (removedItems.length > 0 && props.ressourceEndPoint !== null) {
       // Si c'est une relation parent-enfant, nous devons gérer différemment
       if (props.fieldName && props.ressourceEndPoint === 'children') {
         // Pour les relations parent-enfant, nous utilisons l'API DELETE spécifique

@@ -567,6 +567,8 @@ export class Change {
         sourceEndPoint: `change_setup?lang=${userProfileStore.language}&metadata=validation_level`,
         displayedLabel: 'label',
         targetEndPoint: 'tickets',
+        ressourceEndPoint: null,
+        fieldName: 'required_validations',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('required_validations')
