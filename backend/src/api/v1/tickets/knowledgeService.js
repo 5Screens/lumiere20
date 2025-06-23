@@ -114,12 +114,11 @@ const createKnowledge = (knowledgeData) => {
     
     // Liste des champs spécifiques aux articles de connaissance
     const knowledgeExtendedFields = [
-        'category', 'tags', 'keywords', 'summary', 'content',
-        'visibility', 'expiry_date', 'review_date', 'language',
-        'target_audience', 'related_articles', 'attachments',
-        'approval_status', 'approved_by', 'approved_at',
-        'views_count', 'rating', 'feedback_count',
-        'last_reviewed_by', 'last_reviewed_at', 'version_notes'
+        'rel_category', 'keywords', 'rel_service', 'rel_service_offerings',
+        'rel_target_audience', 'rel_lang', 'rel_confidentiality_level',
+        'summary', 'prerequisites', 'limitations', 'security_notes',
+        'rel_ticket_type', 'tickets_list', 'business_scope', 'version',
+        'last_review_at', 'next_review_at', 'license_type', 'rel_involved_process'
     ];
     
     // Ajouter chaque champ présent dans knowledgeData aux attributs étendus

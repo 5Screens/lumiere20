@@ -226,27 +226,25 @@ const validateCreateTicket = (req, res, next) => {
     const knowledgeSchema = {
         requested_by_uuid: Joi.string().uuid().forbidden(),
         requested_for_uuid: Joi.string().uuid().forbidden(),
-        extended_attributes: Joi.object({
-            rel_category: Joi.string().allow(null, ''),
-            keywords: Joi.array().items(Joi.string()).allow(null),
-            rel_service: Joi.string().uuid().allow(null, ''),
-            rel_service_offerings: Joi.string().uuid().allow(null, ''),
-            rel_target_audience: Joi.array().items(Joi.string()).allow(null),
-            rel_lang: Joi.string().allow(null, ''),
-            rel_confidentiality_level: Joi.string().allow(null, ''),
-            summary: Joi.string().allow(null, ''),
-            prerequisites: Joi.string().allow(null, ''),
-            limitations: Joi.string().allow(null, ''),
-            security_notes: Joi.string().allow(null, ''),
-            rel_ticket_type: Joi.string().allow(null, ''),
-            tickets_list: Joi.array().items(Joi.string().uuid()).allow(null),
-            business_scope: Joi.array().items(Joi.string()).allow(null),
-            version: Joi.string().allow(null, ''),
-            last_review_at: Joi.date().allow(null),
-            next_review_at: Joi.date().allow(null),
-            license_type: Joi.string().allow(null, ''),
-            rel_involved_process: Joi.string().allow(null, '')
-        }).allow(null)
+        rel_category: Joi.string().allow(null, ''),
+        keywords: Joi.array().items(Joi.string()).allow(null),
+        rel_service: Joi.string().uuid().allow(null, ''),
+        rel_service_offerings: Joi.string().uuid().allow(null, ''),
+        rel_target_audience: Joi.array().items(Joi.string()).allow(null),
+        rel_lang: Joi.string().allow(null, ''),
+        rel_confidentiality_level: Joi.string().allow(null, ''),
+        summary: Joi.string().allow(null, ''),
+        prerequisites: Joi.string().allow(null, ''),
+        limitations: Joi.string().allow(null, ''),
+        security_notes: Joi.string().allow(null, ''),
+        rel_ticket_type: Joi.string().allow(null, ''),
+        tickets_list: Joi.array().items(Joi.string().uuid()).allow(null),
+        business_scope: Joi.array().items(Joi.string()).allow(null),
+        version: Joi.string().allow(null, ''),
+        last_review_at: Joi.date().allow(null),
+        next_review_at: Joi.date().allow(null),
+        license_type: Joi.string().allow(null, ''),
+        rel_involved_process: Joi.string().allow(null, '')
     };
     
     // Champs spécifiques aux projets
