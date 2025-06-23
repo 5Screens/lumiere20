@@ -154,9 +154,26 @@ const createTicket = async (ticketData) => {
             );
         }
         
-        // Si c'est un article de connaissance, utiliser directement les attributs étendus fournis
+        // Si c'est un article de connaissance, utiliser le service de connaissance pour la création
         if (isKnowledge) {
-            logger.info('[SERVICE] Using extended_attributes for KNOWLEDGE ticket');
+            logger.info('[SERVICE] Using knowledgeService.createKnowledge for KNOWLEDGE ticket');
+            const knowledgeService = require('./knowledgeService');
+            
+            // Utiliser createKnowledge pour préparer les données
+            const knowledgeData = knowledgeService.createKnowledge(ticketData);
+            
+            // Utiliser applyCreation pour créer le ticket
+            return await applyCreation(
+                ticketData,
+                'KNOWLEDGE',
+                knowledgeData.standardFields,
+                knowledgeData.assignmentFields,
+                knowledgeData.extendedAttributesFields,
+                knowledgeData.watchList,
+                knowledgeData.parentChildRelations,
+                knowledgeService.getKnowledgeById,
+                '[KNOWLEDGE SERVICE]'
+            );
         }
         
         // Si c'est un projet, ajouter les attributs spécifiques aux projets
@@ -271,9 +288,9 @@ const createTicket = async (ticketData) => {
             RETURNING *
         `;
         
-        // Pour les problèmes, les connaissances, les projets, les sprints et les epics, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
-        let requestedByUuid = (isProblem || isKnowledge || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
-        let requestedForUuid = (isProblem || isKnowledge || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
+        // Pour les problèmes, les projets, les sprints et les epics, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
+        let requestedByUuid = (isProblem || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
+        let requestedForUuid = (isProblem || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
         // USER_STORY et DEFECT: requested_by_uuid/requested_for_uuid can be empty, use as received
         if (isUserStory || isDefect) {
             requestedByUuid = ticketData.requested_by_uuid || null;
@@ -288,49 +305,12 @@ const createTicket = async (ticketData) => {
             ticketData.writer_uuid,
             ticketData.ticket_type_code,
             ticketData.ticket_status_code,
-            isKnowledge && ticketData.extended_attributes ? ticketData.extended_attributes : Object.keys(coreExtendedAttributes).length > 0 ? coreExtendedAttributes : null,
+            Object.keys(coreExtendedAttributes).length > 0 ? coreExtendedAttributes : null,
             ticketData.user_extended_attributes || null,
             ticketData.closed_at || null
         ]);
 
         const createdTicket = ticketResult.rows[0];
-        
-        // 2. Si c'est un article de connaissance, créer une entrée dans knowledge_article_versions
-        if (isKnowledge) {
-            logger.info('[SERVICE] Creating knowledge article version for ticket UUID:', createdTicket.uuid);
-            
-            const versionQuery = `
-                INSERT INTO core.knowledge_article_versions (
-                    rel_article_uuid,
-                    version_number,
-                    change_type,
-                    change_summary,
-                    full_article,
-                    created_by
-                ) VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING uuid
-            `;
-            
-            // Créer un objet full_article qui contient toutes les informations du ticket
-            // On crée une copie du ticket créé sans le champ core_extended_attributes pour éviter la duplication
-            const { core_extended_attributes, ...ticketWithoutCoreExt } = createdTicket;
-            const fullArticle = {
-                ...ticketWithoutCoreExt,
-                extended_attributes: ticketData.extended_attributes || {}
-            };
-            
-            // Insérer la version initiale (V1) de l'article
-            const versionResult = await client.query(versionQuery, [
-                createdTicket.uuid,                // rel_article_uuid
-                1,                                  // version_number (première version)
-                'CREATION',                         // change_type
-                'Initial creation of knowledge article', // change_summary
-                fullArticle,                       // full_article (JSONB)
-                ticketData.writer_uuid             // created_by
-            ]);
-            
-            logger.info('[SERVICE] Created knowledge article version with UUID:', versionResult.rows[0].uuid);
-        }
         
         // 3. Handle assignment if provided
         if (ticketData.assigned_to_group || ticketData.rel_assigned_to_group) {
@@ -547,7 +527,7 @@ const createTicket = async (ticketData) => {
                 logger.info('[SERVICE] USER_STORY relationship with SPRINT inserted');
             }
         }
-        
+
         // DEFECT: parent-child relationship (fille du projet)
         if (isDefect && ticketData.project_id) {
             logger.info(`[SERVICE] Creating DEFECT relationship: project_id=${ticketData.project_id}`);
@@ -1612,6 +1592,41 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
                 await client.query(relationQuery, [newTicket.uuid, relation.childUuid, relation.dependencyCode]);
                 logger.info(`${servicePrefix} [applyCreation] Added parent-child relation: ${newTicket.uuid} -> ${relation.childUuid} (${relation.dependencyCode})`);
             }
+        }
+        
+        // Étape 5: Si c'est un article de connaissance, créer la version initiale
+        if (ticketType === 'KNOWLEDGE') {
+            logger.info(`${servicePrefix} [applyCreation] Creating initial knowledge article version for ticket UUID: ${newTicket.uuid}`);
+            
+            const versionQuery = `
+                INSERT INTO core.knowledge_article_versions (
+                    rel_article_uuid,
+                    version_number,
+                    change_type,
+                    change_summary,
+                    full_article,
+                    created_by
+                ) VALUES ($1, $2, $3, $4, $5, $6)
+                RETURNING uuid
+            `;
+            
+            // Créer un objet full_article qui contient toutes les informations du ticket
+            const fullArticle = {
+                ...newTicket,
+                extended_attributes: extendedAttributesFields || {}
+            };
+            
+            // Insérer la version initiale (V1) de l'article
+            const versionResult = await client.query(versionQuery, [
+                newTicket.uuid,                    // rel_article_uuid
+                1,                                  // version_number (première version)
+                'CREATION',                         // change_type
+                'Initial creation of knowledge article', // change_summary
+                fullArticle,                        // full_article (JSONB)
+                standardFields.writer_uuid          // created_by
+            ]);
+            
+            logger.info(`${servicePrefix} [applyCreation] Created knowledge article version with UUID: ${versionResult.rows[0].uuid}`);
         }
         
         // Valider la transaction

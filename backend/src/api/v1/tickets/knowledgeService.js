@@ -82,6 +82,80 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
     }
 };
 
+/**
+ * Prépare les données pour la création d'un article de connaissance
+ * @param {Object} knowledgeData - Données pour la création de l'article de connaissance
+ * @returns {Object} - Objet contenant les champs standards, d'assignation, attributs étendus et observateurs
+ */
+const createKnowledge = (knowledgeData) => {
+    logger.info('[KNOWLEDGE SERVICE] Preparing data for knowledge article creation');
+    
+    // Définir les champs standards pour un article de connaissance
+    const standardFields = {
+        title: knowledgeData.title,
+        description: knowledgeData.description,
+        configuration_item_uuid: knowledgeData.configuration_item_uuid,
+        ticket_type_code: 'KNOWLEDGE',
+        ticket_status_code: knowledgeData.ticket_status_code || 'DRAFT',
+        // Pour les articles de connaissance, requested_by et requested_for sont le writer
+        requested_by_uuid: knowledgeData.writer_uuid,
+        requested_for_uuid: knowledgeData.writer_uuid,
+        writer_uuid: knowledgeData.writer_uuid
+    };
+    
+    // Définir les champs d'assignation pour un article de connaissance
+    const assignmentFields = {
+        assigned_to_group: knowledgeData.assigned_to_group,
+        assigned_to_person: knowledgeData.assigned_to_person
+    };
+    
+    // Définir les attributs étendus pour un article de connaissance
+    const extendedAttributesFields = {};
+    
+    // Liste des champs spécifiques aux articles de connaissance
+    const knowledgeExtendedFields = [
+        'category', 'tags', 'keywords', 'summary', 'content',
+        'visibility', 'expiry_date', 'review_date', 'language',
+        'target_audience', 'related_articles', 'attachments',
+        'approval_status', 'approved_by', 'approved_at',
+        'views_count', 'rating', 'feedback_count',
+        'last_reviewed_by', 'last_reviewed_at', 'version_notes'
+    ];
+    
+    // Ajouter chaque champ présent dans knowledgeData aux attributs étendus
+    knowledgeExtendedFields.forEach(field => {
+        if (knowledgeData[field] !== undefined) {
+            extendedAttributesFields[field] = knowledgeData[field];
+        }
+    });
+    
+    // Initialiser certains compteurs à 0 s'ils ne sont pas définis
+    if (extendedAttributesFields.views_count === undefined) extendedAttributesFields.views_count = 0;
+    if (extendedAttributesFields.feedback_count === undefined) extendedAttributesFields.feedback_count = 0;
+    
+    // Gérer la liste des observateurs (watchers)
+    const watchList = knowledgeData.watch_list && Array.isArray(knowledgeData.watch_list) ? 
+        knowledgeData.watch_list : [];
+    
+    if (watchList.length > 0) {
+        logger.info(`[KNOWLEDGE SERVICE] Processing ${watchList.length} watchers for knowledge article creation`);
+    }
+    
+    logger.info('[KNOWLEDGE SERVICE] Successfully prepared data for knowledge article creation');
+    
+    // Les articles de connaissance n'ont généralement pas de relations parent-enfant lors de la création
+    const parentChildRelations = [];
+    
+    return {
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        watchList,
+        parentChildRelations
+    };
+};
+
 module.exports = {
-    getKnowledgeById
+    getKnowledgeById,
+    createKnowledge
 };
