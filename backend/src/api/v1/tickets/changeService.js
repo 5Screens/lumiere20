@@ -137,7 +137,7 @@ const getChanges = async (lang) => {
         LEFT JOIN translations.change_questions_labels i_q2_t ON i_q2_t.rel_change_question_code = 'I_Q2_CODE' AND i_q2_t.lang = $1
         LEFT JOIN translations.change_questions_labels i_q3_t ON i_q3_t.rel_change_question_code = 'I_Q3_CODE' AND i_q3_t.lang = $1
         LEFT JOIN translations.change_questions_labels i_q4_t ON i_q4_t.rel_change_question_code = 'I_Q4_CODE' AND i_q4_t.lang = $1
-        LEFT JOIN data.services service ON service.uuid = (t.core_extended_attributes->>'rel_service')::uuid
+        LEFT JOIN data.services service ON service.uuid = (t.core_extended_attributes->>'rel_services')::uuid
         LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid = (t.core_extended_attributes->>'rel_service_offerings')::uuid
         WHERE t.ticket_type_code = 'CHANGE'
         ORDER BY t.updated_at DESC
@@ -490,7 +490,7 @@ const getChangeById = async (uuid, lang = 'en') => {
             LEFT JOIN translations.change_questions_labels i_q4_t ON i_q4_t.rel_change_question_code = 'I_Q4_CODE' AND i_q4_t.lang = $2
                 
             -- Jointures pour les services et offres de services
-            LEFT JOIN data.services service ON service.uuid = (t.core_extended_attributes->>'rel_service')::uuid
+            LEFT JOIN data.services service ON service.uuid = (t.core_extended_attributes->>'rel_services')::uuid
             LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid = (t.core_extended_attributes->>'rel_service_offerings')::uuid
             
             WHERE t.uuid = $1 AND t.ticket_type_code = 'CHANGE'
