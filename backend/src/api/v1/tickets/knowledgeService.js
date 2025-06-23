@@ -117,7 +117,7 @@ const createKnowledge = (knowledgeData) => {
         'rel_category', 'keywords', 'rel_service', 'rel_service_offerings',
         'rel_target_audience', 'rel_lang', 'rel_confidentiality_level',
         'summary', 'prerequisites', 'limitations', 'security_notes',
-        'rel_ticket_type', 'tickets_list', 'business_scope', 'version',
+        'rel_ticket_type', 'business_scope', 'version',
         'last_review_at', 'next_review_at', 'license_type', 'rel_involved_process'
     ];
     
@@ -142,8 +142,19 @@ const createKnowledge = (knowledgeData) => {
     
     logger.info('[KNOWLEDGE SERVICE] Successfully prepared data for knowledge article creation');
     
-    // Les articles de connaissance n'ont généralement pas de relations parent-enfant lors de la création
+    // Gérer les relations parent-enfant pour les tickets liés
     const parentChildRelations = [];
+    
+    // Gérer la liste des tickets liés (tickets_list)
+    if (knowledgeData.tickets_list && Array.isArray(knowledgeData.tickets_list) && knowledgeData.tickets_list.length > 0) {
+        knowledgeData.tickets_list.forEach(ticketUuid => {
+            parentChildRelations.push({
+                childUuid: ticketUuid,
+                dependencyCode: 'TIED_TICKETS'
+            });
+        });
+        logger.info(`[KNOWLEDGE SERVICE] Prepared ${knowledgeData.tickets_list.length} tied ticket relations`);
+    }
     
     return {
         standardFields,
