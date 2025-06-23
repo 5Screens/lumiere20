@@ -197,7 +197,7 @@ export class Project {
       { key: 'title', label: t('project.name'), type: 'text', format: 'text' },
       { key: 'key', label: t('project.key'), type: 'text', format: 'text' },
       { key: 'ticket_status_label', label: t('project.status'), type: 'text', format: 'text' },
-      { key: 'description', label: t('project.description'), type: 'text', format: 'text' },
+      { key: 'description', label: t('project.description'), type: 'text', format: 'html' },
       { key: 'start_date', label: t('project.start_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'end_date', label: t('project.end_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'visibility', label: t('project.visibility'), type: 'text', format: 'text' },
