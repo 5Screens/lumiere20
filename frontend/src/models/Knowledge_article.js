@@ -18,7 +18,7 @@ export class Knowledge_article {
       { key: 'limitations', label: t('knowledge_article.limitations'), type: 'text', format: 'html' },
       { key: 'security_notes', label: t('knowledge_article.security_notes'), type: 'text', format: 'html' },
       { key: 'ticket_status_label', label: t('knowledge_article.publication_status'), type: 'text', format: 'text' },
-      { key: 'rel_category', label: t('knowledge_article.category'), type: 'text', format: 'text' },
+      { key: 'rel_category_label', label: t('knowledge_article.category'), type: 'text', format: 'text' },
       { key: 'rel_service', label: t('knowledge_article.service'), type: 'text', format: 'text' },
       { key: 'rel_lang', label: t('knowledge_article.lang'), type: 'text', format: 'text' },
       { key: 'rel_confidentiality_level', label: t('knowledge_article.confidentiality_level'), type: 'text', format: 'text' },

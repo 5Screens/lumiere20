@@ -114,7 +114,12 @@ const getKnowledgeArticles = async (lang) => {
             p4.uuid as assigned_person_uuid,
             
             -- Extraction des attributs spécifiques aux articles de connaissance depuis le JSONB
-            t.core_extended_attributes->>'category' as category,
+            t.core_extended_attributes->>'rel_category' as rel_category,
+            COALESCE(
+                (SELECT ksl.label FROM translations.knowledge_setup_label ksl 
+                WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND ksl.lang = $1 ),
+                t.core_extended_attributes->>'rel_category'
+            ) as rel_category_label,
             t.core_extended_attributes->>'tags' as tags,
             t.core_extended_attributes->>'keywords' as keywords,
             t.core_extended_attributes->>'visibility' as visibility,
