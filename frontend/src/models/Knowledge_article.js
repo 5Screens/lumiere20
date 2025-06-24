@@ -13,6 +13,7 @@ export class Knowledge_article {
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('knowledge_article.title'), type: 'text', format: 'text' },
       { key: 'summary', label: t('knowledge_article.summary'), type: 'text', format: 'html' },
+      { key: 'keywords', label: t('knowledge_article.keywords'), type: 'text', format: 'tags' },
       { key: 'description', label: t('knowledge_article.description'), type: 'text', format: 'html' },
       { key: 'prerequisites', label: t('knowledge_article.prerequisites'), type: 'text', format: 'html' },
       { key: 'limitations', label: t('knowledge_article.limitations'), type: 'text', format: 'html' },
@@ -20,6 +21,8 @@ export class Knowledge_article {
       { key: 'ticket_status_label', label: t('knowledge_article.publication_status'), type: 'text', format: 'text' },
       { key: 'rel_category_label', label: t('knowledge_article.category'), type: 'text', format: 'text' },
       { key: 'rel_involved_process_label', label: t('knowledge_article.involved_process'), type: 'text', format: 'text' },
+      { key: 'rel_target_audience_label', label: t('knowledge_article.target_audience'), type: 'text', format: 'tags' },
+      { key: 'business_scope_label', label: t('knowledge_article.business_scope'), type: 'text', format: 'tags' },
       { key: 'rel_service_name', label: t('knowledge_article.service'), type: 'text', format: 'text' },
       { key: 'rel_service_offerings_name', label: t('knowledge_article.service_offerings'), type: 'text', format: 'text' },
       { key: 'configuration_item_name', label: t('knowledge_article.configuration_item'), type: 'text', format: 'text' },
@@ -33,8 +36,7 @@ export class Knowledge_article {
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'last_review_at', label: t('knowledge_article.last_review_at'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'next_review_at', label: t('knowledge_article.next_review_at'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'keywords', label: t('knowledge_article.keywords'), type: 'text', format: 'tags' }
+      { key: 'next_review_at', label: t('knowledge_article.next_review_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

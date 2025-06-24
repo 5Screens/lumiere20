@@ -159,6 +159,20 @@ const getKnowledgeArticles = async (lang) => {
             t.core_extended_attributes->>'last_review_at' as last_review_at,
             t.core_extended_attributes->>'next_review_at' as next_review_at,
             t.core_extended_attributes->>'license_type' as license_type,
+            t.core_extended_attributes->>'rel_target_audience' as rel_target_audience,
+            (
+                SELECT jsonb_agg(ksl.label)
+                FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code
+                JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code
+                WHERE ksl.lang = $1
+            ) as rel_target_audience_label,
+            t.core_extended_attributes->>'business_scope' as business_scope,
+            (
+                SELECT jsonb_agg(ksl.label)
+                FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code
+                JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code
+                WHERE ksl.lang = $1
+            ) as business_scope_label,
             
             -- Informations sur les observateurs (watchers) - nombre uniquement pour la liste
             (
