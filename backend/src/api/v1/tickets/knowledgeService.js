@@ -148,6 +148,17 @@ const getKnowledgeArticles = async (lang) => {
                 WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND ksl.lang = $1),
                 t.core_extended_attributes->>'rel_confidentiality_level'
             ) as rel_confidentiality_level_label,
+            t.core_extended_attributes->>'rel_involved_process' as rel_involved_process,
+            COALESCE(
+                (SELECT ttt2.label FROM translations.ticket_types_translation ttt2
+                JOIN configuration.ticket_types tt2 ON tt2.uuid = ttt2.ticket_type_uuid
+                WHERE tt2.code = t.core_extended_attributes->>'rel_involved_process' AND ttt2.lang = $1),
+                t.core_extended_attributes->>'rel_involved_process'
+            ) as rel_involved_process_label,
+            t.core_extended_attributes->>'version' as version,
+            t.core_extended_attributes->>'last_review_at' as last_review_at,
+            t.core_extended_attributes->>'next_review_at' as next_review_at,
+            t.core_extended_attributes->>'license_type' as license_type,
             
             -- Informations sur les observateurs (watchers) - nombre uniquement pour la liste
             (
