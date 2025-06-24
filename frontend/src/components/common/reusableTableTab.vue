@@ -76,9 +76,16 @@
             <td v-if="selectable" @click.stop><input type="checkbox" v-model="row.selected" /></td>
             <td v-for="column in columns" 
                 :key="column.key"
-                :title="row[column.key]"
+                :title="column.format !== 'tags' ? row[column.key] : ''"
                 @contextmenu.prevent="showCopyIcon($event, row[column.key])">
               <span v-if="column.format === 'html'" v-html="formatCellContent(row[column.key], column.format)"></span>
+              <div v-else-if="column.format === 'tags'" class="tags-container">
+                <template v-if="row[column.key] && Array.isArray(row[column.key])">
+                  <span v-for="(tag, tagIndex) in row[column.key]" 
+                       :key="tagIndex" 
+                       :class="['tag', getTagColorClass(tag, tagIndex)]">{{ tag }}</span>
+                </template>
+              </div>
               <span v-else>{{ formatCellContent(row[column.key], column.format) }}</span>
             </td>
           </tr>
@@ -349,7 +356,57 @@ export default {
         return content
       }
       
+      // Pour le format tags, on le gère directement dans le template
+      if (format === 'tags') {
+        return content
+      }
+      
       return content
+    },
+    
+    /**
+     * Attribue une classe de couleur à un tag en fonction de sa valeur ou de son index
+     * @param {string} tag - Le texte du tag
+     * @param {number} index - L'index du tag dans le tableau
+     * @returns {string} - La classe CSS à appliquer au tag
+     */
+    getTagColorClass(tag, index) {
+      // Définition des classes de couleur disponibles
+      const colorClasses = [
+        'tag-blue',
+        'tag-green',
+        'tag-yellow',
+        'tag-red',
+        'tag-purple',
+        'tag-orange',
+        'tag-pink'
+      ];
+      
+      // Si le tag contient certains mots-clés, on peut lui attribuer une couleur spécifique
+      const tagLower = tag.toLowerCase();
+      
+      if (tagLower.includes('urgent') || tagLower.includes('critique') || tagLower.includes('critical')) {
+        return 'tag-red';
+      }
+      
+      if (tagLower.includes('important')) {
+        return 'tag-orange';
+      }
+      
+      if (tagLower.includes('new') || tagLower.includes('nouveau')) {
+        return 'tag-blue';
+      }
+      
+      if (tagLower.includes('done') || tagLower.includes('terminé') || tagLower.includes('complete')) {
+        return 'tag-green';
+      }
+      
+      if (tagLower.includes('pending') || tagLower.includes('en attente')) {
+        return 'tag-yellow';
+      }
+      
+      // Sinon, on attribue une couleur en fonction de l'index du tag
+      return colorClasses[index % colorClasses.length];
     },
     toggleAllRows() {
       // Détermine si toutes les lignes sont sélectionnées

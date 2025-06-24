@@ -33,7 +33,8 @@ export class Knowledge_article {
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'last_review_at', label: t('knowledge_article.last_review_at'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'next_review_at', label: t('knowledge_article.next_review_at'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'next_review_at', label: t('knowledge_article.next_review_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'keywords', label: t('knowledge_article.keywords'), type: 'text', format: 'tags' }
     ];
   }
 
