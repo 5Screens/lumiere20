@@ -140,6 +140,8 @@ const getKnowledgeArticles = async (lang) => {
             t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
             service.name as rel_service_name,
             service_offerings.name as rel_service_offerings_name,
+            t.core_extended_attributes->>'rel_lang' as rel_lang,
+            lang.native_name as rel_lang_name,
             
             -- Informations sur les observateurs (watchers) - nombre uniquement pour la liste
             (
@@ -170,8 +172,9 @@ const getKnowledgeArticles = async (lang) => {
         LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
         
         -- Jointures pour les services
-        LEFT JOIN data.services service ON t.core_extended_attributes->>'rel_service' = service.uuid::text
-        LEFT JOIN data.service_offerings service_offerings ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
+        LEFT JOIN data.services service ON service.uuid::text = t.core_extended_attributes->>'rel_service'
+        LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid::text = t.core_extended_attributes->>'rel_service_offerings'
+        LEFT JOIN translations.languages lang ON lang.code = t.core_extended_attributes->>'rel_lang'
         
         WHERE t.ticket_type_code = 'KNOWLEDGE'
         ORDER BY t.created_at DESC
