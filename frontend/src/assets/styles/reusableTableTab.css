@@ -392,58 +392,15 @@ td:nth-child(2) {
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
-  background-color: var(--bg-secondary);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
+  background-color: var(--very-light-blue);
+  color: #333333;
+  border: 1px solid var(--primary-color);
   transition: all 0.2s ease;
 }
 
 .tag:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 3px var(--shadow-color);
-}
-
-/* Variations de couleurs pour les tags */
-.tag-blue {
-  background-color: var(--light-blue);
-  color: var(--text-color);
-  border-color: var(--primary-color);
-}
-
-.tag-green {
-  background-color: var(--light-green);
-  color: var(--text-color);
-  border-color: var(--success-color);
-}
-
-.tag-yellow {
-  background-color: var(--light-yellow);
-  color: var(--text-color);
-  border-color: var(--warning-color);
-}
-
-.tag-red {
-  background-color: var(--light-red);
-  color: var(--text-color);
-  border-color: var(--error-color);
-}
-
-.tag-purple {
-  background-color: var(--light-purple);
-  color: var(--text-color);
-  border-color: #9c27b0;
-}
-
-.tag-orange {
-  background-color: var(--light-orange);
-  color: var(--text-color);
-  border-color: #ff9800;
-}
-
-.tag-pink {
-  background-color: var(--light-pink);
-  color: var(--text-color);
-  border-color: #e91e63;
 }
 
 /* Colonne redimensionnable - permet de modifier la largeur de la colonne */

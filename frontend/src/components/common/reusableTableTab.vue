@@ -83,7 +83,7 @@
                 <template v-if="row[column.key] && Array.isArray(row[column.key])">
                   <span v-for="(tag, tagIndex) in row[column.key]" 
                        :key="tagIndex" 
-                       :class="['tag', getTagColorClass(tag, tagIndex)]">{{ tag }}</span>
+                       class="tag">{{ tag }}</span>
                 </template>
               </div>
               <span v-else>{{ formatCellContent(row[column.key], column.format) }}</span>
@@ -364,50 +364,7 @@ export default {
       return content
     },
     
-    /**
-     * Attribue une classe de couleur à un tag en fonction de sa valeur ou de son index
-     * @param {string} tag - Le texte du tag
-     * @param {number} index - L'index du tag dans le tableau
-     * @returns {string} - La classe CSS à appliquer au tag
-     */
-    getTagColorClass(tag, index) {
-      // Définition des classes de couleur disponibles
-      const colorClasses = [
-        'tag-blue',
-        'tag-green',
-        'tag-yellow',
-        'tag-red',
-        'tag-purple',
-        'tag-orange',
-        'tag-pink'
-      ];
-      
-      // Si le tag contient certains mots-clés, on peut lui attribuer une couleur spécifique
-      const tagLower = tag.toLowerCase();
-      
-      if (tagLower.includes('urgent') || tagLower.includes('critique') || tagLower.includes('critical')) {
-        return 'tag-red';
-      }
-      
-      if (tagLower.includes('important')) {
-        return 'tag-orange';
-      }
-      
-      if (tagLower.includes('new') || tagLower.includes('nouveau')) {
-        return 'tag-blue';
-      }
-      
-      if (tagLower.includes('done') || tagLower.includes('terminé') || tagLower.includes('complete')) {
-        return 'tag-green';
-      }
-      
-      if (tagLower.includes('pending') || tagLower.includes('en attente')) {
-        return 'tag-yellow';
-      }
-      
-      // Sinon, on attribue une couleur en fonction de l'index du tag
-      return colorClasses[index % colorClasses.length];
-    },
+
     toggleAllRows() {
       // Détermine si toutes les lignes sont sélectionnées
       const allSelected = this.filteredData.every(row => row.selected);
