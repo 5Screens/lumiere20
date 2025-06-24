@@ -22,7 +22,7 @@ export class Knowledge_article {
       { key: 'rel_service_name', label: t('knowledge_article.service'), type: 'text', format: 'text' },
       { key: 'rel_service_offerings_name', label: t('knowledge_article.service_offerings'), type: 'text', format: 'text' },
       { key: 'rel_lang_name', label: t('knowledge_article.lang'), type: 'text', format: 'text' },
-      { key: 'rel_confidentiality_level', label: t('knowledge_article.confidentiality_level'), type: 'text', format: 'text' },
+      { key: 'rel_confidentiality_level_label', label: t('knowledge_article.confidentiality_level'), type: 'text', format: 'text' },
       { key: 'version', label: t('knowledge_article.version'), type: 'text', format: 'text' },
       { key: 'writer_name', label: t('knowledge_article.writer'), type: 'text', format: 'text' },
       { key: 'assigned_group_name', label: t('knowledge_article.assigned_group'), type: 'text', format: 'text' },

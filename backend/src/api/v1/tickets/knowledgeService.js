@@ -142,6 +142,12 @@ const getKnowledgeArticles = async (lang) => {
             service_offerings.name as rel_service_offerings_name,
             t.core_extended_attributes->>'rel_lang' as rel_lang,
             lang.native_name as rel_lang_name,
+            t.core_extended_attributes->>'rel_confidentiality_level' as rel_confidentiality_level,
+            COALESCE(
+                (SELECT ksl.label FROM translations.knowledge_setup_label ksl 
+                WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND ksl.lang = $1),
+                t.core_extended_attributes->>'rel_confidentiality_level'
+            ) as rel_confidentiality_level_label,
             
             -- Informations sur les observateurs (watchers) - nombre uniquement pour la liste
             (
