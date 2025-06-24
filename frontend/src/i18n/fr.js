@@ -768,6 +768,8 @@ export default {
     assigned_to_person_placeholder: 'Sélectionnez l\'utilisateur validateur',
     involved_process: 'Processus associé',
     involved_process_placeholder: 'Sélectionnez le processus rattaché à l\'article',
+    attachments_count: 'Nombre de pièces jointes',
+    tieds_tickets_count: 'Nombre de tickets liés',
   },
   
   project: {

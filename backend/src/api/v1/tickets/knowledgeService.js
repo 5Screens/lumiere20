@@ -174,12 +174,21 @@ const getKnowledgeArticles = async (lang) => {
                 WHERE ksl.lang = $1
             ) as business_scope_label,
             
-            -- Informations sur les observateurs (watchers) - nombre uniquement pour la liste
+
+            
+            -- Nombre de pièces jointes
             (
                 SELECT COUNT(*)
-                FROM core.rel_tickets_groups_persons w
-                WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
-            ) as watchers_count
+                FROM core.attachments a
+                WHERE a.object_uuid = t.uuid
+            ) as attachments_count,
+            
+            -- Nombre de tickets liés
+            (
+                SELECT COUNT(*)
+                FROM core.rel_parent_child_tickets rpc
+                WHERE rpc.rel_parent_ticket_uuid = t.uuid
+            ) as tieds_tickets_count
             
         FROM core.tickets t
         LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid

@@ -33,6 +33,8 @@ export class Knowledge_article {
       { key: 'assigned_group_name', label: t('knowledge_article.assigned_group'), type: 'text', format: 'text' },
       { key: 'assigned_person_name', label: t('knowledge_article.assigned_to_person'), type: 'text', format: 'text' },
       { key: 'license_type', label: t('knowledge_article.license_type'), type: 'text', format: 'text' },
+      { key: 'attachments_count', label: t('knowledge_article.attachments_count'), type: 'text', format: 'text' },
+      { key: 'tieds_tickets_count', label: t('knowledge_article.tieds_tickets_count'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'last_review_at', label: t('knowledge_article.last_review_at'), type: 'date', format: 'YYYY-MM-DD' },
