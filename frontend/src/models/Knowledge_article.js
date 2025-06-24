@@ -12,7 +12,11 @@ export class Knowledge_article {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('knowledge_article.title'), type: 'text', format: 'text' },
-      { key: 'summary', label: t('knowledge_article.summary'), type: 'text', format: 'text' },
+      { key: 'summary', label: t('knowledge_article.summary'), type: 'text', format: 'html' },
+      { key: 'description', label: t('knowledge_article.description'), type: 'text', format: 'html' },
+      { key: 'prerequisites', label: t('knowledge_article.prerequisites'), type: 'text', format: 'html' },
+      { key: 'limitations', label: t('knowledge_article.limitations'), type: 'text', format: 'html' },
+      { key: 'security_notes', label: t('knowledge_article.security_notes'), type: 'text', format: 'html' },
       { key: 'ticket_status_label', label: t('knowledge_article.publication_status'), type: 'text', format: 'text' },
       { key: 'rel_category', label: t('knowledge_article.category'), type: 'text', format: 'text' },
       { key: 'rel_service', label: t('knowledge_article.service'), type: 'text', format: 'text' },
