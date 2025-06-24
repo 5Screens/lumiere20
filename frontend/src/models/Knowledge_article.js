@@ -391,29 +391,8 @@ export class Knowledge_article {
     // Pour attachments, on conserve le formData tel quel
     // Le composant sFileUploader.vue s'occupe déjà de la préparation des données
   
-    // Créer un objet pour les attributs étendus
-    //Attachments n'est pas ajouté car géré dans un autre flux
-    const extendedAttributes = {};
-    const extendedFields = [
-      'rel_category', 'keywords', 'rel_service', 'rel_service_offerings', 
-      'rel_target_audience', 'rel_lang', 'rel_confidentiality_level',
-      'summary', 'prerequisites', 'limitations', 'security_notes', 'license_type',
-      'rel_involved_process', 'tickets_list', 'business_scope', 'version', 'last_review_at', 'next_review_at'
-    ];
-    
-    // Ajouter les attributs étendus à l'objet extendedAttributes
-    extendedFields.forEach(field => {
-      if (apiData[field] !== null && apiData[field] !== undefined) {
-        extendedAttributes[field] = apiData[field];
-        // Supprimer le champ de l'objet principal
-        delete apiData[field];
-      }
-    });
-    
-    // Ajouter l'objet extendedAttributes à apiData
-    if (Object.keys(extendedAttributes).length > 0) {
-      apiData.extended_attributes = extendedAttributes;
-    }
+    // Ne pas créer d'objet extended_attributes - laisser tous les champs à plat
+    // Simplement nettoyer les champs vides
     
     // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
     Object.keys(apiData).forEach(key => {
