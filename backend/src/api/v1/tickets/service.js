@@ -1,19 +1,37 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 
-const getTickets = async (lang, ticket_type) => {
-    logger.info(`[SERVICE] Fetching tickets${ticket_type ? ` of type ${ticket_type}` : ''}${lang ? ` with language ${lang}` : ''}`);
+/**
+ * Récupère les tickets avec possibilité d'ajouter des attributs spécifiques et des jointures
+ * @param {string} lang - Code de langue pour les traductions
+ * @param {string} ticket_type - Type de ticket à récupérer (optionnel)
+ * @param {string} baseQuery - Partie de la requête SQL spécifique au type de ticket (optionnel)
+ * @param {string} additionalJoins - Jointures supplémentaires spécifiques au type de ticket (optionnel)
+ * @param {Array} additionalParams - Paramètres supplémentaires pour la requête SQL (optionnel)
+ * @param {string} servicePrefix - Préfixe pour les logs (optionnel)
+ * @returns {Promise<Array>} - Liste des tickets avec leurs attributs
+ */
+const getTickets = async (lang, ticket_type, baseQuery = '', additionalJoins = '', additionalParams = [], servicePrefix = '[SERVICE]') => {
+    logger.info(`${servicePrefix} Fetching tickets${ticket_type ? ` of type ${ticket_type}` : ''}${lang ? ` with language ${lang}` : ''}`);
     
-    const params = [lang || 'en'];
+    const params = [lang || 'en', ...additionalParams];
     let typeCondition = '';
+    let paramIndex = params.length + 1;
     
     if (ticket_type) {
-        typeCondition = 'AND t.ticket_type_code = $2';
+        typeCondition = `AND t.ticket_type_code = $${paramIndex}`;
         params.push(ticket_type);
     }
     
     const query = `
-        SELECT t.*,
+        SELECT t.uuid,
+            t.title,
+            t.description,
+            t.configuration_item_uuid,
+            ci.name as configuration_item_name,
+            t.created_at,
+            t.updated_at,
+            t.closed_at,
             p1.first_name || ' ' || p1.last_name as requested_by_name,
             p2.first_name || ' ' || p2.last_name as requested_for_name,
             p3.first_name || ' ' || p3.last_name as writer_name,
@@ -25,12 +43,14 @@ const getTickets = async (lang, ticket_type) => {
             g.uuid as assigned_group_uuid,
             p4.first_name || ' ' || p4.last_name as assigned_person_name,
             p4.uuid as assigned_person_uuid
+            ${baseQuery ? `,${baseQuery}` : ''}
         FROM core.tickets t
         LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
         LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
         JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
         JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
         JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code 
+        LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid 
         LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid 
             AND ttt.lang = $1
         LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
@@ -42,6 +62,7 @@ const getTickets = async (lang, ticket_type) => {
         ) rtgp ON t.uuid = rtgp.rel_ticket
         LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
         LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+        ${additionalJoins ? additionalJoins : ''}
         WHERE 1=1 ${typeCondition}
         ORDER BY t.created_at DESC
     `;
@@ -50,7 +71,7 @@ const getTickets = async (lang, ticket_type) => {
         const result = await db.query(query, params);
         return result.rows;
     } catch (error) {
-        logger.error('[SERVICE] Error in getTickets:', error);
+        logger.error(`${servicePrefix} Error in getTickets:`, error);
         throw error;
     }
 };
@@ -554,16 +575,7 @@ const createTicket = async (ticketData) => {
     }
 };
 
-const { getTaskById } = require('./taskService');
-const { getIncidentById } = require('./incidentService');
-const { getProblemById } = require('./problemService');
-const { getChangeById } = require('./changeService');
-const { getKnowledgeById } = require('./knowledgeService');
-const { getDefectById } = require('./defectService');
-const { getStoryById } = require('./storyService');
-const { getEpicById } = require('./epicService');
-const { getProjectById } = require('./projectService');
-const { getSprintById } = require('./sprintService');
+// Les imports sont déplacés après l'export du module pour éviter les dépendances circulaires
 
 /**
  * Récupère un ticket par son UUID
@@ -576,51 +588,78 @@ const getTicketById = async (uuid, lang = 'en') => {
     
     try {
         // D'abord, récupérer le type de ticket
-        const typeQuery = `
-            SELECT ticket_type_code 
-            FROM core.tickets 
+        const ticketTypeQuery = `
+            SELECT ticket_type_code
+            FROM core.tickets
             WHERE uuid = $1
         `;
         
-        const typeResult = await db.query(typeQuery, [uuid]);
+        const ticketTypeResult = await db.query(ticketTypeQuery, [uuid]);
         
-        if (typeResult.rows.length === 0) {
+        if (ticketTypeResult.rows.length === 0) {
             logger.warn(`[SERVICE] No ticket found with UUID: ${uuid}`);
             return null;
         }
         
-        const ticketType = typeResult.rows[0].ticket_type_code;
-        logger.info(`[SERVICE] Ticket type identified: ${ticketType}`);
+        const ticketType = ticketTypeResult.rows[0].ticket_type_code;
+        logger.info(`[SERVICE] Ticket type: ${ticketType}`);
         
-        // Appeler le service approprié selon le type
+        // Selon le type de ticket, importer dynamiquement le service approprié et appeler la fonction spécifique
+        // Cette approche évite les dépendances circulaires
+        let result = null;
+        
         switch (ticketType) {
             case 'TASK':
-                return await getTaskById(uuid, lang);
+                const taskService = require('./taskService');
+                result = await taskService.getTaskById(uuid, lang);
+                break;
             case 'INCIDENT':
-                return await getIncidentById(uuid, lang);
+                const incidentService = require('./incidentService');
+                result = await incidentService.getIncidentById(uuid, lang);
+                break;
             case 'PROBLEM':
-                return await getProblemById(uuid, lang);
+                const problemService = require('./problemService');
+                result = await problemService.getProblemById(uuid, lang);
+                break;
             case 'CHANGE':
-                return await getChangeById(uuid, lang);
+                const changeService = require('./changeService');
+                result = await changeService.getChangeById(uuid, lang);
+                break;
             case 'KNOWLEDGE':
-                return await getKnowledgeById(uuid, lang);
+                const knowledgeService = require('./knowledgeService');
+                result = await knowledgeService.getKnowledgeById(uuid, lang);
+                break;
             case 'DEFECT':
-                return await getDefectById(uuid, lang);
+                const defectService = require('./defectService');
+                result = await defectService.getDefectById(uuid, lang);
+                break;
             case 'USER_STORY':
-                return await getStoryById(uuid, lang);
+                const storyService = require('./storyService');
+                result = await storyService.getStoryById(uuid, lang);
+                break;
             case 'EPIC':
-                return await getEpicById(uuid, lang);
+                const epicService = require('./epicService');
+                result = await epicService.getEpicById(uuid, lang);
+                break;
             case 'PROJECT':
-                return await getProjectById(uuid, lang);
+                const projectService = require('./projectService');
+                result = await projectService.getProjectById(uuid, lang);
+                break;
             case 'SPRINT':
-                return await getSprintById(uuid, lang);
+                const sprintService = require('./sprintService');
+                result = await sprintService.getSprintById(uuid, lang);
+                break;
             case 'REQUEST':
                 // Pour REQUEST, utiliser la requête générique
                 logger.info(`[SERVICE] Using generic query for REQUEST type`);
                 break;
             default:
-                logger.warn(`[SERVICE] Unknown ticket type: ${ticketType}, using generic query`);
-                break;
+                logger.warn(`[SERVICE] Unsupported ticket type: ${ticketType}`);
+                return null;
+        }
+        
+        if (ticketType !== 'REQUEST') {
+            return result;
         }
         
         // Requête générique pour REQUEST et types non reconnus
@@ -679,15 +718,15 @@ const getTicketById = async (uuid, lang = 'en') => {
             WHERE t.uuid = $1
         `;
         
-        const result = await db.query(query, [uuid, lang]);
+        const genericResult = await db.query(query, [uuid, lang]);
         
-        if (result.rows.length === 0) {
+        if (genericResult.rows.length === 0) {
             logger.warn(`[SERVICE] No ticket found with UUID: ${uuid}`);
             return null;
         }
         
         logger.info(`[SERVICE] Successfully retrieved ticket with UUID: ${uuid}`);
-        return result.rows[0];
+        return genericResult.rows[0];
     } catch (error) {
         logger.error(`[SERVICE] Error fetching ticket with UUID ${uuid}:`, error);
         throw error;

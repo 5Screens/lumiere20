@@ -1,5 +1,6 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
+const ticketService = require('./service');
 
 /**
  * Récupère un article de connaissance par son UUID
@@ -88,165 +89,96 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
  * @returns {Promise<Array>} - Liste des articles de connaissance avec leurs attributs
  */
 const getKnowledgeArticles = async (lang) => {
-    logger.info(`[KNOWLEDGE SERVICE] Fetching knowledge articles with language ${lang || 'en'}`);
+    const servicePrefix = '[KNOWLEDGE SERVICE]';
     
-    const params = [lang || 'en'];
-    
-    const query = `
-        SELECT t.uuid,
-            t.title,
-            t.description,
-            t.configuration_item_uuid,
-            ci.name as configuration_item_name,
-            t.created_at,
-            t.updated_at,
-            t.closed_at,
-            p1.first_name || ' ' || p1.last_name as requested_by_name,
-            p2.first_name || ' ' || p2.last_name as requested_for_name,
-            p3.first_name || ' ' || p3.last_name as writer_name,
-            COALESCE(ttt.label, tt.code) as ticket_type_label,
-            COALESCE(tst.label, ts.code) as ticket_status_label,
-            tt.code as ticket_type_code,
-            ts.code as ticket_status_code,
-            g.group_name as assigned_group_name,
-            g.uuid as assigned_group_uuid,
-            p4.first_name || ' ' || p4.last_name as assigned_person_name,
-            p4.uuid as assigned_person_uuid,
-            
-            -- Extraction des attributs spécifiques aux articles de connaissance depuis le JSONB
-            t.core_extended_attributes->>'rel_category' as rel_category,
-            COALESCE(
-                (SELECT ksl.label FROM translations.knowledge_setup_label ksl 
-                WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND ksl.lang = $1 ),
-                t.core_extended_attributes->>'rel_category'
-            ) as rel_category_label,
-            t.core_extended_attributes->>'tags' as tags,
-            t.core_extended_attributes->>'keywords' as keywords,
-            t.core_extended_attributes->>'visibility' as visibility,
-            t.core_extended_attributes->>'summary' as summary,
-            t.core_extended_attributes->>'prerequisites' as prerequisites,
-            t.core_extended_attributes->>'limitations' as limitations,
-            t.core_extended_attributes->>'security_notes' as security_notes,
-            t.core_extended_attributes->>'expiry_date' as expiry_date,
-            t.core_extended_attributes->>'review_date' as review_date,
-            t.core_extended_attributes->>'approval_status' as approval_status,
-            t.core_extended_attributes->>'approved_by' as approved_by,
-            t.core_extended_attributes->>'approval_date' as approval_date,
-            (t.core_extended_attributes->>'views_count')::integer as views_count,
-            (t.core_extended_attributes->>'feedback_count')::integer as feedback_count,
-            t.core_extended_attributes->>'average_rating' as average_rating,
-            t.core_extended_attributes->>'content_format' as content_format,
-            t.core_extended_attributes->>'rel_service' as rel_service,
-            t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
-            service.name as rel_service_name,
-            service_offerings.name as rel_service_offerings_name,
-            t.core_extended_attributes->>'rel_lang' as rel_lang,
-            lang.native_name as rel_lang_name,
-            t.core_extended_attributes->>'rel_confidentiality_level' as rel_confidentiality_level,
-            COALESCE(
-                (SELECT ksl.label FROM translations.knowledge_setup_label ksl 
-                WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND ksl.lang = $1),
-                t.core_extended_attributes->>'rel_confidentiality_level'
-            ) as rel_confidentiality_level_label,
-            t.core_extended_attributes->>'rel_involved_process' as rel_involved_process,
-            COALESCE(
-                (SELECT ttt2.label FROM translations.ticket_types_translation ttt2
-                JOIN configuration.ticket_types tt2 ON tt2.uuid = ttt2.ticket_type_uuid
-                WHERE tt2.code = t.core_extended_attributes->>'rel_involved_process' AND ttt2.lang = $1),
-                t.core_extended_attributes->>'rel_involved_process'
-            ) as rel_involved_process_label,
-            t.core_extended_attributes->>'version' as version,
-            t.core_extended_attributes->>'last_review_at' as last_review_at,
-            t.core_extended_attributes->>'next_review_at' as next_review_at,
-            t.core_extended_attributes->>'license_type' as license_type,
-            t.core_extended_attributes->>'rel_target_audience' as rel_target_audience,
-            (
-                SELECT jsonb_agg(ksl.label)
-                FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code
-                JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code
-                WHERE ksl.lang = $1
-            ) as rel_target_audience_label,
-            t.core_extended_attributes->>'business_scope' as business_scope,
-            (
-                SELECT jsonb_agg(ksl.label)
-                FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code
-                JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code
-                WHERE ksl.lang = $1
-            ) as business_scope_label,
-            
-
-            
-            -- Nombre de pièces jointes
-            (
-                SELECT COUNT(*)
-                FROM core.attachments a
-                WHERE a.object_uuid = t.uuid
-            ) as attachments_count,
-            
-            -- Nombre de tickets liés
-            (
-                SELECT COUNT(*)
-                FROM core.rel_parent_child_tickets rpc
-                WHERE rpc.rel_parent_ticket_uuid = t.uuid
-            ) as tieds_tickets_count
-            
-        FROM core.tickets t
-        LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
-        LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
-        JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
-        JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
-        JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
-        LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid 
-        LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid 
-            AND ttt.lang = $1
-        LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
-            AND tst.lang = $1
-            
-        -- Jointure pour l'assignation actuelle
-        LEFT JOIN (
-            SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
-            FROM core.rel_tickets_groups_persons
-            WHERE type = 'ASSIGNED' AND ended_at IS NULL
-        ) rtgp ON t.uuid = rtgp.rel_ticket
-        LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
-        LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+    // Définition des attributs spécifiques aux articles de connaissance
+    const baseQuery = `
+        -- Extraction des attributs spécifiques aux articles de connaissance depuis le JSONB
+        t.core_extended_attributes->>'rel_category' as rel_category,
+        COALESCE(
+            (SELECT ksl.label FROM translations.knowledge_setup_label ksl 
+            WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND ksl.lang = $1 ),
+            t.core_extended_attributes->>'rel_category'
+        ) as rel_category_label,
+        t.core_extended_attributes->>'tags' as tags,
+        t.core_extended_attributes->>'keywords' as keywords,
+        t.core_extended_attributes->>'visibility' as visibility,
+        t.core_extended_attributes->>'summary' as summary,
+        t.core_extended_attributes->>'prerequisites' as prerequisites,
+        t.core_extended_attributes->>'limitations' as limitations,
+        t.core_extended_attributes->>'security_notes' as security_notes,
+        t.core_extended_attributes->>'expiry_date' as expiry_date,
+        t.core_extended_attributes->>'review_date' as review_date,
+        t.core_extended_attributes->>'approval_status' as approval_status,
+        t.core_extended_attributes->>'approved_by' as approved_by,
+        t.core_extended_attributes->>'approval_date' as approval_date,
+        (t.core_extended_attributes->>'views_count')::integer as views_count,
+        (t.core_extended_attributes->>'feedback_count')::integer as feedback_count,
+        t.core_extended_attributes->>'average_rating' as average_rating,
+        t.core_extended_attributes->>'content_format' as content_format,
+        t.core_extended_attributes->>'rel_service' as rel_service,
+        t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
+        service.name as rel_service_name,
+        service_offerings.name as rel_service_offerings_name,
+        t.core_extended_attributes->>'rel_lang' as rel_lang,
+        lang.native_name as rel_lang_name,
+        t.core_extended_attributes->>'rel_confidentiality_level' as rel_confidentiality_level,
+        COALESCE(
+            (SELECT ksl.label FROM translations.knowledge_setup_label ksl 
+            WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND ksl.lang = $1),
+            t.core_extended_attributes->>'rel_confidentiality_level'
+        ) as rel_confidentiality_level_label,
+        t.core_extended_attributes->>'rel_involved_process' as rel_involved_process,
+        COALESCE(
+            (SELECT ttt2.label FROM translations.ticket_types_translation ttt2
+            JOIN configuration.ticket_types tt2 ON tt2.uuid = ttt2.ticket_type_uuid
+            WHERE tt2.code = t.core_extended_attributes->>'rel_involved_process' AND ttt2.lang = $1),
+            t.core_extended_attributes->>'rel_involved_process'
+        ) as rel_involved_process_label,
+        t.core_extended_attributes->>'version' as version,
+        t.core_extended_attributes->>'last_review_at' as last_review_at,
+        t.core_extended_attributes->>'next_review_at' as next_review_at,
+        t.core_extended_attributes->>'license_type' as license_type,
+        t.core_extended_attributes->>'rel_target_audience' as rel_target_audience,
+        (
+            SELECT jsonb_agg(ksl.label)
+            FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code
+            JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code
+            WHERE ksl.lang = $1
+        ) as rel_target_audience_label,
+        t.core_extended_attributes->>'business_scope' as business_scope,
+        (
+            SELECT jsonb_agg(ksl.label)
+            FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code
+            JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code
+            WHERE ksl.lang = $1
+        ) as business_scope_label,
         
+        -- Nombre de pièces jointes
+        (
+            SELECT COUNT(*)
+            FROM core.attachments a
+            WHERE a.object_uuid = t.uuid
+        ) as attachments_count,
+        
+        -- Nombre de tickets liés
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid
+        ) as tieds_tickets_count
+    `;
+    
+    // Définition des jointures spécifiques aux articles de connaissance
+    const additionalJoins = `
         -- Jointures pour les services
         LEFT JOIN data.services service ON service.uuid::text = t.core_extended_attributes->>'rel_service'
         LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid::text = t.core_extended_attributes->>'rel_service_offerings'
         LEFT JOIN translations.languages lang ON lang.code = t.core_extended_attributes->>'rel_lang'
-        
-        WHERE t.ticket_type_code = 'KNOWLEDGE'
-        ORDER BY t.created_at DESC
     `;
     
-    try {
-        const result = await db.query(query, params);
-        logger.info(`[KNOWLEDGE SERVICE] Successfully fetched ${result.rows.length} knowledge articles`);
-        
-        // Parse JSON fields that might be stored as strings
-        result.rows.forEach(row => {
-            if (row.tags && typeof row.tags === 'string') {
-                try {
-                    row.tags = JSON.parse(row.tags);
-                } catch (e) {
-                    // If parsing fails, keep as string
-                }
-            }
-            if (row.keywords && typeof row.keywords === 'string') {
-                try {
-                    row.keywords = JSON.parse(row.keywords);
-                } catch (e) {
-                    // If parsing fails, keep as string
-                }
-            }
-        });
-        
-        return result.rows;
-    } catch (error) {
-        logger.error('[KNOWLEDGE SERVICE] Error fetching knowledge articles:', error);
-        throw error;
-    }
+    // Utilisation de la fonction getTickets factorisée
+    return ticketService.getTickets(lang, 'KNOWLEDGE', baseQuery, additionalJoins, [], servicePrefix);
 };
 
 /**
