@@ -152,13 +152,14 @@ export class Sprint {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('sprint.name'), type: 'text', format: 'text' },
-      { key: 'description', label: t('sprint.goal'), type: 'text', format: 'text' },
-      { key: 'ticket_status_code', label: t('sprint.state'), type: 'text', format: 'text' },
-      { key: 'project_id', label: t('sprint.project_id'), type: 'text', format: 'text' },
+      { key: 'description', label: t('sprint.goal'), type: 'text', format: 'html' },
+      { key: 'ticket_status_label', label: t('sprint.state'), type: 'text', format: 'text' },
+      { key: 'project_title', label: t('sprint.project_id'), type: 'text', format: 'text' },
       { key: 'start_date', label: t('sprint.start_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'end_date', label: t('sprint.end_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'actual_velocity', label: t('sprint.actual_velocity'), type: 'number', format: 'text' },
       { key: 'estimated_velocity', label: t('sprint.estimated_velocity'), type: 'number', format: 'text' },
+      { key: 'requested_by_name', label: t('sprint.reported_by'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' }

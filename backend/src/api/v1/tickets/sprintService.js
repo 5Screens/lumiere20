@@ -1,5 +1,6 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
+const ticketService = require('./service');
 
 /**
  * Récupère un sprint par son UUID
@@ -82,6 +83,54 @@ const getSprintById = async (uuid, lang = 'en') => {
     }
 };
 
+/**
+ * Récupère les sprints avec les attributs étendus spécifiques aux sprints
+ * @param {string} lang - Code de langue pour les traductions
+ * @returns {Promise<Array>} - Liste des sprints avec leurs attributs
+ */
+const getSprints = async (lang) => {
+    const servicePrefix = '[SPRINT SERVICE]';
+    
+    // Définition des attributs spécifiques aux sprints
+    const baseQuery = `
+        -- Extraction des attributs spécifiques aux sprints depuis le JSONB
+        t.core_extended_attributes->>'start_date' as start_date,
+        t.core_extended_attributes->>'end_date' as end_date,
+        t.core_extended_attributes->>'actual_velocity' as actual_velocity,
+        t.core_extended_attributes->>'estimated_velocity' as estimated_velocity,
+        
+        -- Nombre de pièces jointes
+        (
+            SELECT COUNT(*)
+            FROM core.attachments a
+            WHERE a.object_uuid = t.uuid
+        ) as attachments_count,
+        
+        -- Nombre de tickets liés
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid
+        ) as tieds_tickets_count,
+        
+        -- Récupération du titre du projet parent
+        (
+            SELECT parent.title
+            FROM core.rel_parent_child_tickets rpc
+            JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+            WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'SPRINT' AND rpc.ended_at IS NULL
+            LIMIT 1
+        ) as project_title
+    `;
+    
+    // Définition des jointures spécifiques aux sprints
+    const additionalJoins = ``;
+    
+    // Utilisation de la fonction getTickets factorisée
+    return ticketService.getTickets(lang, 'SPRINT', baseQuery, additionalJoins, [], servicePrefix);
+};
+
 module.exports = {
-    getSprintById
+    getSprintById,
+    getSprints
 };

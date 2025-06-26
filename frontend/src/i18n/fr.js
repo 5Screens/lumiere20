@@ -890,13 +890,14 @@ export default {
     goal_placeholder: 'Décrivez l\'objectif du sprint',
     state: 'État du sprint',
     state_placeholder: 'Sélectionnez l\'état du sprint',
+    reported_by: 'Créé par',
     
     // Attributs étendus
     project_id: 'Projet associé',
     project_id_placeholder: 'Sélectionnez le projet associé',
-    start_date: 'Date de début',
+    start_date: 'Date de début du sprint',
     start_date_placeholder: 'Sélectionnez la date de début du sprint',
-    end_date: 'Date de fin',
+    end_date: 'Date de fin du sprint',
     end_date_placeholder: 'Sélectionnez la date de fin du sprint',
     actual_velocity: 'Vélocité réelle',
     actual_velocity_placeholder: 'Entrez la vélocité réelle du sprint',
