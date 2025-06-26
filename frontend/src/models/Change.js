@@ -185,7 +185,7 @@ export class Change {
       { key: 'required_validations_labels', label: t('change.required_validations'), visible: true, type: 'text', format: 'tags' },
       { key: 'elapsed_time', label: t('change.elapsed_time'), visible: true },
       { key: 'success_criteria', label: t('change.success_criteria'), visible: true, type: 'text', format: 'html' },
-      { key: 'post_change_evaluation', label: t('change.post_change_evaluation'), visible: true },
+      { key: 'post_change_evaluation_label', label: t('change.post_change_evaluation'), visible: true },
       { key: 'post_change_comment', label: t('change.post_change_comment'), visible: true, type: 'text', format: 'html' }
     ];
   }

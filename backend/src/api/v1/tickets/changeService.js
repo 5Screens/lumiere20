@@ -62,6 +62,7 @@ const getChanges = async (lang) => {
         t.core_extended_attributes->>'elapsed_time' as elapsed_time,
         t.core_extended_attributes->>'success_criteria' as success_criteria,
         t.core_extended_attributes->>'post_change_evaluation' as post_change_evaluation,
+        COALESCE(post_change_eval_t.label, t.core_extended_attributes->>'post_change_evaluation') as post_change_evaluation_label,
         t.core_extended_attributes->>'post_change_comment' as post_change_comment,
         -- Récupération des tickets liés depuis la table de relations
         (SELECT json_agg(json_build_object(
@@ -97,6 +98,10 @@ const getChanges = async (lang) => {
         -- Statut de validation CAB (metadata = 'CAB_VALIDATION_STATUS')
         LEFT JOIN translations.change_setup_label cab_validation_t 
             ON cab_validation_t.rel_change_setup_code = t.core_extended_attributes->>'rel_cab_validation_status' AND cab_validation_t.lang = $1
+            
+        -- Évaluation post-changement
+        LEFT JOIN translations.change_setup_label post_change_eval_t 
+            ON post_change_eval_t.rel_change_setup_code = t.core_extended_attributes->>'post_change_evaluation' AND post_change_eval_t.lang = $1
             
         -- Questions d'évaluation des risques et impacts
         LEFT JOIN translations.change_questions_labels r_q1_t 
