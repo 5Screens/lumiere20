@@ -4,6 +4,7 @@ const taskService = require('./taskService');
 const problemService = require('./problemService');
 const changeService = require('./changeService');
 const knowledgeService = require('./knowledgeService');
+const projectService = require('./projectService');
 const logger = require('../../../config/logger');
 
 const getTickets = async (req, res) => {
@@ -30,6 +31,10 @@ const getTickets = async (req, res) => {
             case 'KNOWLEDGE':
                 logger.info('[CONTROLLER] Calling knowledgeService.getKnowledgeArticles');
                 tickets = await knowledgeService.getKnowledgeArticles(lang);
+                break;
+            case 'PROJECT':
+                logger.info('[CONTROLLER] Calling projectService.getProjects');
+                tickets = await projectService.getProjects(lang);
                 break;
             default:
                 logger.info(`[CONTROLLER] Calling ticketService.getTickets for type: ${ticket_type || 'all'}`);

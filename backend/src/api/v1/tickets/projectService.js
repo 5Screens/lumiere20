@@ -1,5 +1,6 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
+const ticketService = require('./service');
 
 /**
  * Récupère un projet par son UUID
@@ -82,6 +83,46 @@ const getProjectById = async (uuid, lang = 'en') => {
     }
 };
 
+/**
+ * Récupère les projets avec les attributs étendus spécifiques aux projets
+ * @param {string} lang - Code de langue pour les traductions
+ * @returns {Promise<Array>} - Liste des projets avec leurs attributs
+ */
+const getProjects = async (lang) => {
+    const servicePrefix = '[PROJECT SERVICE]';
+    
+    // Définition des attributs spécifiques aux projets
+    const baseQuery = `
+        -- Extraction des attributs spécifiques aux projets depuis le JSONB
+        t.core_extended_attributes->>'key' as key,
+        t.core_extended_attributes->>'start_date' as start_date,
+        t.core_extended_attributes->>'end_date' as end_date,
+        t.core_extended_attributes->>'issue_type_scheme_id' as issue_type_scheme_id,
+        t.core_extended_attributes->>'visibility' as visibility,
+        COALESCE(
+            (SELECT psl.label FROM translations.project_setup_label psl 
+            WHERE psl.rel_project_setup_code = t.core_extended_attributes->>'visibility' AND psl.lang = $1),
+            t.core_extended_attributes->>'visibility'
+        ) as visibility_label,
+        t.core_extended_attributes->>'project_type' as project_type,
+        COALESCE(
+            (SELECT psl.label FROM translations.project_setup_label psl 
+            WHERE psl.rel_project_setup_code = t.core_extended_attributes->>'project_type' AND psl.lang = $1),
+            t.core_extended_attributes->>'project_type'
+        ) as project_type_label
+    `;
+    
+    // Définition des jointures spécifiques aux projets
+    const additionalJoins = `
+        -- Aucune jointure supplémentaire nécessaire pour les projets
+        -- Les traductions sont gérées directement dans la requête principale
+    `;
+    
+    // Utilisation de la fonction getTickets factorisée
+    return ticketService.getTickets(lang, 'PROJECT', baseQuery, additionalJoins, [], servicePrefix);
+};
+
 module.exports = {
-    getProjectById
+    getProjectById,
+    getProjects
 };
