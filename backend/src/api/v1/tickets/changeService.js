@@ -50,7 +50,12 @@ const getChanges = async (lang) => {
         t.core_extended_attributes->>'cab_comments' as cab_comments,
         t.core_extended_attributes->>'rel_cab_validation_status' as rel_cab_validation_status,
         COALESCE(cab_validation_t.label, t.core_extended_attributes->>'rel_cab_validation_status') as cab_validation_status_label,
-        t.core_extended_attributes->>'required_validations' as required_validations,
+        t.core_extended_attributes->'required_validations' as required_validations,
+        (
+            SELECT json_agg(label)
+            FROM jsonb_array_elements_text(t.core_extended_attributes->'required_validations') as rv
+            LEFT JOIN translations.change_setup_label csl ON csl.rel_change_setup_code = rv AND csl.lang = $1
+        ) as required_validations_labels,
         t.core_extended_attributes->>'validated_at' as validated_at,
         t.core_extended_attributes->>'actual_start_date_at' as actual_start_date_at,
         t.core_extended_attributes->>'actual_end_date_at' as actual_end_date_at,
