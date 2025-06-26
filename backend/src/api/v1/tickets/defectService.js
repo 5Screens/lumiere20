@@ -48,7 +48,16 @@ const getDefects = async (lang) => {
             SELECT COUNT(*)
             FROM core.rel_parent_child_tickets rpc
             WHERE rpc.rel_parent_ticket_uuid = t.uuid
-        ) as tieds_tickets_count
+        ) as tieds_tickets_count,
+        
+        -- Récupération du titre du projet parent
+        (
+            SELECT parent.title
+            FROM core.rel_parent_child_tickets rpc
+            JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+            WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'DEFECT' AND rpc.ended_at IS NULL
+            LIMIT 1
+        ) as project_title
     `;
     
     // Définition des jointures spécifiques aux defects

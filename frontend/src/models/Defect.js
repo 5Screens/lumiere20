@@ -256,7 +256,7 @@ export class Defect {
       { key: 'environment_label', label: t('defect.environment'), type: 'text', format: 'text' },
       { key: 'requested_by_name', label: t('defect.reported_by'), type: 'text', format: 'text' },
       { key: 'requested_for_name', label: t('defect.detected_by'), type: 'text', format: 'text' },
-      { key: 'project_id', label: t('defect.project_id'), type: 'text', format: 'text' },
+      { key: 'project_title', label: t('defect.project_id'), type: 'text', format: 'text' },
       { key: 'rel_assigned_to_person', label: t('defect.assignee'), type: 'text', format: 'text' },
       { key: 'steps_to_reproduce', label: t('defect.steps_to_reproduce'), type: 'text', format: 'text' },
       { key: 'expected_behavior', label: t('defect.expected_behavior'), type: 'text', format: 'text' },
