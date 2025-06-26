@@ -1,5 +1,62 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
+const ticketService = require('./service');
+
+/**
+ * Récupère les defects avec les attributs étendus spécifiques aux defects
+ * @param {string} lang - Code de langue pour les traductions
+ * @returns {Promise<Array>} - Liste des defects avec leurs attributs
+ */
+const getDefects = async (lang) => {
+    const servicePrefix = '[DEFECT SERVICE]';
+    
+    // Définition des attributs spécifiques aux defects
+    const baseQuery = `
+        -- Extraction des attributs spécifiques aux defects depuis le JSONB
+        t.core_extended_attributes->>'tags' as tags,
+        t.core_extended_attributes->>'severity' as severity,
+        COALESCE(
+            (SELECT dsl.label FROM translations.defect_setup_labels dsl 
+            WHERE dsl.rel_defect_setup_code = t.core_extended_attributes->>'severity' AND dsl.lang = $1),
+            t.core_extended_attributes->>'severity'
+        ) as severity_label,
+        t.core_extended_attributes->>'workaround' as workaround,
+        t.core_extended_attributes->>'environment' as environment,
+        COALESCE(
+            (SELECT dsl.label FROM translations.defect_setup_labels dsl 
+            WHERE dsl.rel_defect_setup_code = t.core_extended_attributes->>'environment' AND dsl.lang = $1),
+            t.core_extended_attributes->>'environment'
+        ) as environment_label,
+        t.core_extended_attributes->>'impact_area' as impact_area,
+        COALESCE(
+            (SELECT dsl.label FROM translations.defect_setup_labels dsl 
+            WHERE dsl.rel_defect_setup_code = t.core_extended_attributes->>'impact_area' AND dsl.lang = $1),
+            t.core_extended_attributes->>'impact_area'
+        ) as impact_area_label,
+        t.core_extended_attributes->>'expected_behavior' as expected_behavior,
+        t.core_extended_attributes->>'steps_to_reproduce' as steps_to_reproduce,
+        
+        -- Nombre de pièces jointes
+        (
+            SELECT COUNT(*)
+            FROM core.attachments a
+            WHERE a.object_uuid = t.uuid
+        ) as attachments_count,
+        
+        -- Nombre de tickets liés
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid
+        ) as tieds_tickets_count
+    `;
+    
+    // Définition des jointures spécifiques aux defects
+    const additionalJoins = ``;
+    
+    // Utilisation de la fonction getTickets factorisée
+    return ticketService.getTickets(lang, 'DEFECT', baseQuery, additionalJoins, [], servicePrefix);
+};
 
 /**
  * Récupère un défaut par son UUID
@@ -97,5 +154,6 @@ const getDefectById = async (uuid, lang = 'en') => {
 };
 
 module.exports = {
+    getDefects,
     getDefectById
 };
