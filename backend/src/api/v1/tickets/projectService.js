@@ -109,7 +109,43 @@ const getProjects = async (lang) => {
             (SELECT psl.label FROM translations.project_setup_label psl 
             WHERE psl.rel_project_setup_code = t.core_extended_attributes->>'project_type' AND psl.lang = $1),
             t.core_extended_attributes->>'project_type'
-        ) as project_type_label
+        ) as project_type_label,
+        
+        -- Comptage des defects liés au projet
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+            AND rpc.dependency_code = 'DEFECT'
+            AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
+        ) as defect_count,
+        
+        -- Comptage des user stories liées au projet
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+            AND rpc.dependency_code = 'STORY'
+            AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
+        ) as us_count,
+        
+        -- Comptage des epics liés au projet
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+            AND rpc.dependency_code = 'EPIC'
+            AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
+        ) as epic_count,
+        
+        -- Comptage des sprints liés au projet
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+            AND rpc.dependency_code = 'SPRINT'
+            AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
+        ) as sprint_count
     `;
     
     // Définition des jointures spécifiques aux projets

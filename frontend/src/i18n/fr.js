@@ -804,7 +804,13 @@ export default {
     access_to_groups: 'Seuls les groupes sélectionnés pourront accéder au projet',
     access_to_groups_placeholder: 'Sélectionnez le ou les groupes',
     access_to_users: 'Seuls les utilisateurs sélectionnés pourront accéder au projet',
-    access_to_users_placeholder: 'Sélectionnez le ou les utilisateurs'
+    access_to_users_placeholder: 'Sélectionnez le ou les utilisateurs',
+
+    // Comptage des tickets liés
+    defect_count: 'Nombre de bugs ouverts',
+    us_count: 'Nombre d\'user stories ouvertes',
+    epic_count: 'Nombre d\'épopées ouvertes',
+    sprint_count: 'Nombre de sprints ouverts'
   },
   
   task: {
