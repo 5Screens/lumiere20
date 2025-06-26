@@ -180,7 +180,7 @@ export class Change {
       { key: 'post_implementation_plan', label: t('change.post_implementation_plan'), visible: true, type: 'text', format: 'html' },
       { key: 'cab_comments', label: t('change.cab_comments'), visible: true, type: 'text', format: 'html' },
       { key: 'cab_validation_status_label', label: t('change.cab_validation_status'), visible: true },
-      { key: 'required_validations', label: t('change.required_validations'), visible: true },
+      { key: 'required_validations', label: t('change.required_validations'), visible: true, type: 'text', format: 'tags' },
       { key: 'validated_at', label: t('change.validated_at'), visible: true },
       { key: 'actual_start_date_at', label: t('change.actual_start_date'), visible: true },
       { key: 'actual_end_date_at', label: t('change.actual_end_date'), visible: true },

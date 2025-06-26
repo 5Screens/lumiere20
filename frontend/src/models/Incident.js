@@ -13,6 +13,7 @@ export class Incident {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('incident.title'), type: 'text', format: 'text' },
+      { key: 'description', label: t('incident.description'), type: 'text', format: 'html' },
       { key: 'ticket_type_label', label: t('configuration.ticketTypes'), type: 'text', format: 'text' },
       { key: 'ticket_status_label', label: t('incident.status'), type: 'text', format: 'text' },
       { key: 'configuration_item_name', label: t('incident.configuration_item'), type: 'text', format: 'text' },
