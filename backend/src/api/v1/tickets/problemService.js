@@ -214,15 +214,13 @@ const getProblems = async (lang = 'en') => {
         (t.core_extended_attributes->>'actual_resolution_date')::timestamp as actual_resolution_date,
         (t.core_extended_attributes->>'actual_resolution_workload')::numeric as actual_resolution_workload,
         
-        -- Informations sur les éléments de configuration, services et offres de service
-        ci.name as configuration_item_name,
+        -- Informations sur les services et offres de service
         s.name as rel_service_name,
         so.name as rel_service_offerings_name
     `;
     
     // Définition des jointures spécifiques aux problèmes
     const additionalJoins = `
-        LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
         LEFT JOIN data.services s ON t.core_extended_attributes->>'rel_service' = s.uuid::text
         LEFT JOIN data.service_offerings so ON t.core_extended_attributes->>'rel_service_offerings' = so.uuid::text
             
