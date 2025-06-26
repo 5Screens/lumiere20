@@ -13,7 +13,7 @@ const getDefects = async (lang) => {
     // Définition des attributs spécifiques aux defects
     const baseQuery = `
         -- Extraction des attributs spécifiques aux defects depuis le JSONB
-        t.core_extended_attributes->>'tags' as tags,
+        t.core_extended_attributes->'tags' as tags,
         t.core_extended_attributes->>'severity' as severity,
         COALESCE(
             (SELECT dsl.label FROM translations.defect_setup_labels dsl 

@@ -876,7 +876,8 @@ export default {
     tags_placeholder: 'Ajoutez des tags pour catégoriser ce défaut',
     attachments: 'Pièces jointes',
     attachments_placeholder: 'Glisser-déposer pour importer des fichiers',
-    attachments_helper_text: 'Limite : 6 Mo pour les images, 10 Mo pour les autres fichiers'
+    attachments_helper_text: 'Limite : 6 Mo pour les images, 10 Mo pour les autres fichiers',
+    attachments_count: 'Nombre de pièces jointes'
   },
   
   sprint: {
