@@ -862,6 +862,8 @@ export default {
     project_id_placeholder: 'Sélectionnez le projet associé',
     assignee: 'Assigné à',
     assignee_placeholder: 'Sélectionnez la personne en charge de la correction',
+    team_id: 'Équipe',
+    team_id_placeholder: 'Sélectionnez l\'équipe en charge de la correction',
     
     // Détails techniques
     steps_to_reproduce: 'Étapes pour reproduire',
