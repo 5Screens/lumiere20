@@ -118,7 +118,7 @@ const getUserStories = async (lang) => {
             SELECT parent.title
             FROM core.rel_parent_child_tickets rpc
             JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
-            WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'SPRINT' AND rpc.ended_at IS NULL
+            WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'SPRINT' AND rpc.ended_at IS NULL
             LIMIT 1
         ) as sprint_title,
         
@@ -127,7 +127,7 @@ const getUserStories = async (lang) => {
             SELECT parent.title
             FROM core.rel_parent_child_tickets rpc
             JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
-            WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'EPIC' AND rpc.ended_at IS NULL
+            WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'EPIC' AND rpc.ended_at IS NULL
             LIMIT 1
         ) as epic_title,
         
@@ -139,9 +139,9 @@ const getUserStories = async (lang) => {
             JOIN core.rel_parent_child_tickets rpc2 ON sprint.uuid = rpc2.rel_child_ticket_uuid
             JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid
             WHERE rpc1.rel_child_ticket_uuid = t.uuid 
-              AND rpc1.dependency_code = 'SPRINT' 
+              AND rpc1.dependency_code = 'STORY' 
               AND rpc1.ended_at IS NULL
-              AND rpc2.dependency_code = 'SPRINT'
+              AND rpc2.dependency_code = 'PROJECT'
               AND rpc2.ended_at IS NULL
             LIMIT 1
         ) as project_title,
