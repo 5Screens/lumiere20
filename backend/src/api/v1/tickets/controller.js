@@ -7,6 +7,7 @@ const knowledgeService = require('./knowledgeService');
 const projectService = require('./projectService');
 const defectService = require('./defectService');
 const sprintService = require('./sprintService');
+const storyService = require('./storyService');
 const logger = require('../../../config/logger');
 
 const getTickets = async (req, res) => {
@@ -45,6 +46,10 @@ const getTickets = async (req, res) => {
             case 'SPRINT':
                 logger.info('[CONTROLLER] Calling sprintService.getSprints');
                 tickets = await sprintService.getSprints(lang);
+                break;
+            case 'USER_STORY':
+                logger.info('[CONTROLLER] Calling storyService.getUserStories');
+                tickets = await storyService.getUserStories(lang);
                 break;
             default:
                 logger.info(`[CONTROLLER] Calling ticketService.getTickets for type: ${ticket_type || 'all'}`);

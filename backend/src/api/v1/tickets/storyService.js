@@ -1,5 +1,6 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
+const ticketService = require('./service');
 
 /**
  * Récupère une user story par son UUID
@@ -82,6 +83,87 @@ const getStoryById = async (uuid, lang = 'en') => {
     }
 };
 
+/**
+ * Récupère les user stories avec les attributs étendus spécifiques aux user stories
+ * @param {string} lang - Code de langue pour les traductions
+ * @returns {Promise<Array>} - Liste des user stories avec leurs attributs
+ */
+const getUserStories = async (lang) => {
+    const servicePrefix = '[STORY SERVICE]';
+    
+    // Définition des attributs spécifiques aux user stories
+    const baseQuery = `
+        -- Extraction des attributs spécifiques aux user stories depuis le JSONB
+        t.core_extended_attributes->'tags' as tags,
+        t.core_extended_attributes->>'priority' as priority,
+        t.core_extended_attributes->>'story_points' as story_points,
+        t.core_extended_attributes->>'acceptance_criteria' as acceptance_criteria,
+        
+        -- Nombre de pièces jointes
+        (
+            SELECT COUNT(*)
+            FROM core.attachments a
+            WHERE a.object_uuid = t.uuid
+        ) as attachments_count,
+        
+        -- Nombre de tickets liés
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid
+        ) as tieds_tickets_count,
+        
+        -- Récupération du titre du sprint parent
+        (
+            SELECT parent.title
+            FROM core.rel_parent_child_tickets rpc
+            JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+            WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'SPRINT' AND rpc.ended_at IS NULL
+            LIMIT 1
+        ) as sprint_title,
+        
+        -- Récupération du titre de l'epic parent
+        (
+            SELECT parent.title
+            FROM core.rel_parent_child_tickets rpc
+            JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+            WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'EPIC' AND rpc.ended_at IS NULL
+            LIMIT 1
+        ) as epic_title,
+        
+        -- Récupération du titre du projet parent (projet parent du sprint parent)
+        (
+            SELECT project.title
+            FROM core.rel_parent_child_tickets rpc1
+            JOIN core.tickets sprint ON rpc1.rel_parent_ticket_uuid = sprint.uuid
+            JOIN core.rel_parent_child_tickets rpc2 ON sprint.uuid = rpc2.rel_child_ticket_uuid
+            JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid
+            WHERE rpc1.rel_child_ticket_uuid = t.uuid 
+              AND rpc1.dependency_code = 'SPRINT' 
+              AND rpc1.ended_at IS NULL
+              AND rpc2.dependency_code = 'SPRINT'
+              AND rpc2.ended_at IS NULL
+            LIMIT 1
+        ) as project_title,
+        
+        -- Nombre de tâches enfants
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+              AND rpc.dependency_code = 'TASK' 
+              AND rpc.ended_at IS NULL
+        ) as tasks_count
+    `;
+    
+    // Définition des jointures spécifiques aux user stories
+    const additionalJoins = ``;
+    
+    // Utilisation de la fonction getTickets factorisée
+    return ticketService.getTickets(lang, 'USER_STORY', baseQuery, additionalJoins, [], servicePrefix);
+};
+
 module.exports = {
-    getStoryById
+    getStoryById,
+    getUserStories
 };
