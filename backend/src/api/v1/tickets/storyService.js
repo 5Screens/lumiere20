@@ -141,7 +141,7 @@ const getUserStories = async (lang) => {
             WHERE rpc1.rel_child_ticket_uuid = t.uuid 
               AND rpc1.dependency_code = 'STORY' 
               AND rpc1.ended_at IS NULL
-              AND rpc2.dependency_code = 'PROJECT'
+              AND rpc2.dependency_code = 'EPIC'
               AND rpc2.ended_at IS NULL
             LIMIT 1
         ) as project_title,
