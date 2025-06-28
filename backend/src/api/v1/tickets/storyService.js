@@ -131,19 +131,34 @@ const getUserStories = async (lang) => {
             LIMIT 1
         ) as epic_title,
         
-        -- Récupération du titre du projet parent (projet parent du sprint parent)
-        (
-            SELECT project.title
-            FROM core.rel_parent_child_tickets rpc1
-            JOIN core.tickets sprint ON rpc1.rel_parent_ticket_uuid = sprint.uuid
-            JOIN core.rel_parent_child_tickets rpc2 ON sprint.uuid = rpc2.rel_child_ticket_uuid
-            JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid
-            WHERE rpc1.rel_child_ticket_uuid = t.uuid 
-              AND rpc1.dependency_code = 'STORY' 
-              AND rpc1.ended_at IS NULL
-              AND rpc2.dependency_code = 'EPIC'
-              AND rpc2.ended_at IS NULL
-            LIMIT 1
+        -- Récupération du titre du projet parent (deux cas possibles)
+        COALESCE(
+            -- Cas 1: STORY >>> EPIC >>> PROJECT (story est fille d'une epic qui est fille d'un projet)
+            (
+                SELECT project.title
+                FROM core.rel_parent_child_tickets rpc1
+                JOIN core.tickets sprint ON rpc1.rel_parent_ticket_uuid = sprint.uuid
+                JOIN core.rel_parent_child_tickets rpc2 ON sprint.uuid = rpc2.rel_child_ticket_uuid
+                JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid
+                WHERE rpc1.rel_child_ticket_uuid = t.uuid 
+                  AND rpc1.dependency_code = 'STORY' 
+                  AND rpc1.ended_at IS NULL
+                  AND rpc2.dependency_code = 'EPIC'
+                  AND rpc2.ended_at IS NULL
+                LIMIT 1
+            ),
+            
+            -- Cas 2: STORY >>> PROJECT (story est directement fille d'un projet)
+            (
+                SELECT parent.title
+                FROM core.rel_parent_child_tickets rpc
+                JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                WHERE rpc.rel_child_ticket_uuid = t.uuid 
+                  AND rpc.dependency_code = 'STORY' 
+                  AND parent.ticket_type_code = 'PROJECT'
+                  AND rpc.ended_at IS NULL
+                LIMIT 1
+            )
         ) as project_title,
         
         -- Nombre de tâches enfants
