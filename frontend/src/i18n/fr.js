@@ -899,6 +899,8 @@ export default {
     start_date_placeholder: 'Sélectionnez la date de début du sprint',
     end_date: 'Date de fin du sprint',
     end_date_placeholder: 'Sélectionnez la date de fin du sprint',
+    stories_count: 'Nombre de stories',
+    tasks_count: 'Nombre de tâches',
     actual_velocity: 'Vélocité réelle',
     actual_velocity_placeholder: 'Entrez la vélocité réelle du sprint',
     estimated_velocity: 'Vélocité estimée',

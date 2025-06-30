@@ -157,6 +157,8 @@ export class Sprint {
       { key: 'project_title', label: t('sprint.project_id'), type: 'text', format: 'text' },
       { key: 'start_date', label: t('sprint.start_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'end_date', label: t('sprint.end_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'stories_count', label: t('sprint.stories_count'), type: 'number', format: 'text' },
+      { key: 'tasks_count', label: t('sprint.tasks_count'), type: 'number', format: 'text' },
       { key: 'actual_velocity', label: t('sprint.actual_velocity'), type: 'number', format: 'text' },
       { key: 'estimated_velocity', label: t('sprint.estimated_velocity'), type: 'number', format: 'text' },
       { key: 'requested_by_name', label: t('sprint.reported_by'), type: 'text', format: 'text' },

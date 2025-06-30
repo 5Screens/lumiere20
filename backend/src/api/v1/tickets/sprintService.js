@@ -113,6 +113,20 @@ const getSprints = async (lang) => {
             WHERE rpc.rel_parent_ticket_uuid = t.uuid
         ) as tieds_tickets_count,
         
+        -- Nombre de tickets de type STORY
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY'
+        ) as stories_count,
+        
+        -- Nombre de tickets de type TASK
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = 'TASK'
+        ) as tasks_count,
+        
         -- Récupération du titre du projet parent
         (
             SELECT parent.title
