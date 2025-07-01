@@ -657,7 +657,11 @@ export default {
     updated_at: 'Date de mise à jour',
     updated_at_placeholder: 'Date de mise à jour automatique',
     closed_at: 'Date de clôture',
-    closed_at_placeholder: 'Date de clôture automatique'
+    closed_at_placeholder: 'Date de clôture automatique',
+
+    //Compteurs
+    stories_count: 'Nombre de stories',
+    tasks_count: 'Nombre de tâches',
   },
 
   story: {

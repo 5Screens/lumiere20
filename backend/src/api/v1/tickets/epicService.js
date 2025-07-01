@@ -1,5 +1,6 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
+const ticketService = require('./service');
 
 /**
  * Récupère un epic par son UUID
@@ -82,6 +83,76 @@ const getEpicById = async (uuid, lang = 'en') => {
     }
 };
 
+/**
+ * Récupère les epics avec les attributs étendus spécifiques aux epics
+ * @param {string} lang - Code de langue pour les traductions
+ * @returns {Promise<Array>} - Liste des epics avec leurs attributs
+ */
+const getEpics = async (lang) => {
+    const servicePrefix = '[EPIC SERVICE]';
+    
+    // Définition des attributs spécifiques aux epics
+    const baseQuery = `
+        -- Extraction des attributs spécifiques aux epics depuis le JSONB
+        t.core_extended_attributes->'tags' as tags,
+        t.core_extended_attributes->>'color' as color,
+        t.core_extended_attributes->>'end_date' as end_date,
+        t.core_extended_attributes->>'start_date' as start_date,
+        t.core_extended_attributes->>'progress_percent' as progress_percent,
+        
+        -- Nombre de user stories enfants
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+              AND rpc.dependency_code = 'STORY' 
+              AND rpc.ended_at IS NULL
+        ) as stories_count,
+        
+        -- Nombre de tâches enfants
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+              AND rpc.dependency_code = 'TASK' 
+              AND rpc.ended_at IS NULL
+        ) as tasks_count,
+        
+        -- Récupération du titre du projet parent
+        (
+            SELECT parent.title
+            FROM core.rel_parent_child_tickets rpc
+            JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+            WHERE rpc.rel_child_ticket_uuid = t.uuid 
+              AND rpc.dependency_code = 'EPIC' 
+              AND parent.ticket_type_code = 'PROJECT'
+              AND rpc.ended_at IS NULL
+            LIMIT 1
+        ) as project_title,
+        
+        -- Nombre de pièces jointes
+        (
+            SELECT COUNT(*)
+            FROM core.attachments a
+            WHERE a.object_uuid = t.uuid
+        ) as attachments_count,
+        
+        -- Nombre de tickets liés
+        (
+            SELECT COUNT(*)
+            FROM core.rel_parent_child_tickets rpc
+            WHERE rpc.rel_parent_ticket_uuid = t.uuid
+        ) as tieds_tickets_count
+    `;
+    
+    // Définition des jointures spécifiques aux epics
+    const additionalJoins = ``;
+    
+    // Utilisation de la fonction getTickets factorisée
+    return ticketService.getTickets(lang, 'EPIC', baseQuery, additionalJoins, [], servicePrefix);
+};
+
 module.exports = {
-    getEpicById
+    getEpicById,
+    getEpics
 };
