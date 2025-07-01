@@ -76,6 +76,10 @@ export class Task {
     this.watch_list = data.watch_list || [];
 
     this.requested_by_name = data.requested_by_name || '';
+    this.requested_for_name = data.requested_for_name || '';
+    this.assigned_group_name = data.assigned_group_name || '';
+    this.assigned_person_name = data.assigned_person_name || '';
+    
     
     
     // Définition des champs requis avec leurs labels
@@ -124,7 +128,8 @@ export class Task {
         type: 'sFilteredSearchField',
         placeholder: t('task.requested_by_placeholder'),
         endpoint: 'persons',
-        displayField: 'first_name',
+        displayField: 'person_name',
+        displayFieldAtInitInEditMode: 'requested_by_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
@@ -140,7 +145,8 @@ export class Task {
         type: 'sFilteredSearchField',
         placeholder: t('task.requested_for_placeholder'),
         endpoint: 'persons',
-        displayField: 'first_name',
+        displayField: 'person_name',
+        displayFieldAtInitInEditMode: 'requested_for_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
@@ -161,6 +167,7 @@ export class Task {
             : 'groups';
         },
         displayField: 'group_name',
+        displayFieldAtInitInEditMode: 'assigned_group_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
@@ -180,6 +187,7 @@ export class Task {
             : `groups/members` ; // Retourne null pour désactiver le champ si aucun groupe n'est sélectionné
         },
         displayField: 'first_name',
+        displayFieldAtInitInEditMode: 'assigned_person_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [

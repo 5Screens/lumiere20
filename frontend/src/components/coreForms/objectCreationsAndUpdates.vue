@@ -82,6 +82,7 @@
             :placeholder="field.placeholder"
             :endpoint="getEndpoint(field.endpoint, formData)"
             :displayField="field.displayField"
+            :displayFieldAtInitInEditMode="field.displayFieldAtInitInEditMode"
             :valueField="field.valueField"
             :columnsConfig="field.columnsConfig"
             :editMode="mode === 'update'"

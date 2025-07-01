@@ -181,6 +181,10 @@ const props = defineProps({
     type: String,
     default: 'name'
   },
+  displayFieldAtInitInEditMode: {
+    type: String,
+    default: null
+  },
   valueField: {
     type: String,
     default: 'uuid'
@@ -535,6 +539,8 @@ onMounted(() => {
   console.log('[sFilteredSearchField] onMounted - Value field:', props.valueField)
   console.log('[sFilteredSearchField] onMounted - Endpoint:', props.endpoint)
   console.log('[sFilteredSearchField] onMounted - Edit mode:', props.editMode)
+  console.log('[sFilteredSearchField] onMounted - displayFieldAtInitInEditMode:', props.displayFieldAtInitInEditMode)
+  console.log('[sFilteredSearchField] onMounted - ticketData:', props.ticketData)
   
   // N'appeler fetchItems que si on n'est pas en mode édition
   if (!props.editMode) {
@@ -542,6 +548,17 @@ onMounted(() => {
     fetchItems()
   } else {
     console.log('[sFilteredSearchField] onMounted - In edit mode, skipping API call')
+    
+    // En mode édition, si displayFieldAtInitInEditMode est défini et que la valeur existe dans ticketData
+    if (props.displayFieldAtInitInEditMode && props.ticketData && props.ticketData[props.displayFieldAtInitInEditMode]) {
+      const displayValue = props.ticketData[props.displayFieldAtInitInEditMode]
+      console.log('[sFilteredSearchField] onMounted - Using value from ticketData field:', props.displayFieldAtInitInEditMode, '=', displayValue)
+      
+      // Créer un objet temporaire pour afficher la valeur initiale
+      selectedItem.value = { [props.displayField]: displayValue }
+      // Garder une trace de la valeur originale
+      originalValue.value = selectedItem.value ? { ...selectedItem.value } : null
+    }
   }
 })
 </script>
