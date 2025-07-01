@@ -69,11 +69,14 @@ export class Task {
     this.assigned_to_group = data.assigned_to_group || null;
     this.assigned_to_person = data.assigned_to_person || null;
     this.writer_uuid = data.writer_uuid || null;
-    this.ticket_type_code = data.ticket_type_code || 'TASK';
+    this.ticket_type_code = 'TASK';
     this.ticket_status_code = data.ticket_status_code || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
     this.watch_list = data.watch_list || [];
+
+    this.requested_by_name = data.requested_by_name || '';
+    
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [

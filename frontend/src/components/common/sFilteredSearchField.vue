@@ -534,6 +534,14 @@ onMounted(() => {
   console.log('[sFilteredSearchField] onMounted - Fetching items on mount')
   console.log('[sFilteredSearchField] onMounted - Value field:', props.valueField)
   console.log('[sFilteredSearchField] onMounted - Endpoint:', props.endpoint)
-  fetchItems()
+  console.log('[sFilteredSearchField] onMounted - Edit mode:', props.editMode)
+  
+  // N'appeler fetchItems que si on n'est pas en mode édition
+  if (!props.editMode) {
+    console.log('[sFilteredSearchField] onMounted - Not in edit mode, fetching items')
+    fetchItems()
+  } else {
+    console.log('[sFilteredSearchField] onMounted - In edit mode, skipping API call')
+  }
 })
 </script>

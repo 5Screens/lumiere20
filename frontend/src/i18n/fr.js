@@ -49,6 +49,11 @@ export default {
   
   // Section pour le composant objectCreationsAndUpdates
   objectCreationsAndUpdates: {
+    //Titre pour les tasks
+    taskCreation: 'Créer une tâche',
+    taskUpdate: 'Modifier la tâche',
+
+
     // Titres pour les incidents
     incidentCreation: 'Créer un incident',
     incidentUpdate: 'Modifier l\'incident',
