@@ -123,7 +123,7 @@ onMounted(async () => {
   
   try {
     // Vérifier si getRenderableFields est une fonction asynchrone
-    const renderableFields = props.modelClass.getRenderableFields()
+    const renderableFields = props.modelClass.getRenderableFields('for_creation')
     
     if (renderableFields instanceof Promise) {
       // Si c'est une promesse, attendre sa résolution

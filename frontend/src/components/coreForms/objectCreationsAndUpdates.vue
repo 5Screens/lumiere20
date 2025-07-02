@@ -248,7 +248,7 @@ const loadFormFields = async () => {
     // Récupérer les champs rendables du modèle
     if (typeof modelInstance.value.constructor.getRenderableFields === 'function') {
       console.log(`[loadFormFields] Chargement des champs pour ${props.objectType}`);
-      const fields = await modelInstance.value.constructor.getRenderableFields();
+      const fields = await modelInstance.value.constructor.getRenderableFields('for_edition');
       formFields.value = fields;
       console.log(`[loadFormFields] Champs chargés avec succès:`, Object.keys(fields));
     } else {

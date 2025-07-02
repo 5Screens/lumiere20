@@ -91,7 +91,7 @@ export class Task {
     ];
   }
 
-  static getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
@@ -99,7 +99,7 @@ export class Task {
     const dynamicLabels = new Task();
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
     
-    return {
+    const fields = {
       ticket_status_code: {
         label: t('task.status'),
         type: 'sSelectField',
@@ -210,8 +210,54 @@ export class Task {
         ressourceEndPoint: 'watchers',
         target_uuid: null,
         pickedItems: null
+      },
+      writer_name: {
+        label: t('task.writer_name'),
+        type: 'sTextField',
+        placeholder: t('task.writer_name_placeholder'),
+        required: false,
+        readOnly: true
+      },
+      closed_at: {
+        label: t('task.closed_at'),
+        type: 'sTextField',
+        placeholder: t('task.closed_at_placeholder'),
+        required: false,
+        readOnly: true
+      },
+      uuid: {
+        label: t('common.uuid'),
+        type: 'sTextField',
+        placeholder: t('common.uuid_placeholder'),
+        required: false,
+        readOnly: true
+      },
+      created_at: {
+        label: t('common.creation_date'),
+        type: 'sTextField',
+        placeholder: t('task.creation_date_placeholder'),
+        required: false,
+        readOnly: true
+      },
+      updated_at: {
+        label: t('common.modification_date'),
+        type: 'sTextField',
+        placeholder: t('task.update_date_placeholder'),
+        required: false,
+        readOnly: true
       }
+    };
+    
+    // Champs spécifiques à l'édition
+    if (mode === 'for_creation') {
+      delete fields.writer_name;
+      delete fields.closed_at;
+      delete fields.uuid;
+      delete fields.created_at;
+      delete fields.updated_at;
     }
+    
+    return fields;
   }
 
   toAPI(method) {
