@@ -304,7 +304,7 @@ const fetchItems = async () => {
 }
 
 const findAndSelectInitialItem = () => {
-  console.log('[sFilteredSearchField] findAndSelectInitialItem called, isEditing:', isEditing.value)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] findAndSelectInitialItem called, isEditing:`, isEditing.value)
   
   // If modelValue is an object with uuid, use that
   if (typeof props.modelValue === 'object' && props.modelValue?.uuid) {
@@ -338,10 +338,10 @@ const findAndSelectInitialItem = () => {
 
 const toggleDropdown = () => {
   //Ajouter des logs
-  console.log('[sFilteredSearchField] toggleDropdown called')
-  console.log('[sFilteredSearchField] Current showDropdown value:', showDropdown.value)
-  console.log('[sFilteredSearchField] Current items length:', items.value.length)
-  console.log('[sFilteredSearchField] Current endpoint:', props.endpoint)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] toggleDropdown called`)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] Current showDropdown value:`, showDropdown.value)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] Current items length:`, items.value.length)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] Current endpoint:`, props.endpoint)
   
   if (props.disabled) return
   
@@ -349,10 +349,10 @@ const toggleDropdown = () => {
   
   if (showDropdown.value) {
     //ajoiuter des logs
-    console.log('[sFilteredSearchField] Dropdown opened')
+    console.log(`[sFilteredSearchField] - [${props.fieldName}] Dropdown opened`)
     // Fetch items if not already loaded or if endpoint is dynamic
     if (items.value.length === 0 || typeof props.endpoint === 'function') {
-      console.log('[sFilteredSearchField] Fetching items')
+      console.log(`[sFilteredSearchField] - [${props.fieldName}] Fetching items`)
       fetchItems()
     }
     
@@ -370,7 +370,7 @@ const selectItem = (item) => {
   
   // Capture original value when starting to edit
   if (props.editMode && !isEditing.value) {
-    console.log('[sFilteredSearchField] selectItem - Capturing original item:', selectedItem.value)
+    console.log(`[sFilteredSearchField] - [${props.fieldName}] selectItem - Capturing original item:`, selectedItem.value)
     originalValue.value = selectedItem.value ? { ...selectedItem.value } : null
   }
   
@@ -404,10 +404,10 @@ const getItemValue = (item, field) => {
 }
 
 const getDisplayValue = (item) => {
-  console.log('[getDisplayValue] Input item:', item);
-  console.log('[getDisplayValue] Display field:', props.displayField);
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [getDisplayValue] Input item:`, item);
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [getDisplayValue] Display field:`, props.displayField);
   const value = getItemValue(item, props.displayField);
-  console.log('[getDisplayValue] Computed value:', value);
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [getDisplayValue] Computed value:`, value);
   return value;
 }
 
@@ -456,7 +456,7 @@ const confirmChange = async () => {
 }
 
 const cancelChange = () => {
-  console.log('[cancelChange] Cancelling change');
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [cancelChange] Cancelling change`);
   
   // Restore original value
   if (originalValue.value) {
@@ -478,11 +478,11 @@ const cancelChange = () => {
     originalValue: originalValue.value
   });
   
-  console.log('[cancelChange] Change cancelled, restored to:', originalValue.value);
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [cancelChange] Change cancelled, restored to:`, originalValue.value);
 }
 
 const resetSelection = () => {
-  console.log('[resetSelection] Resetting selection');
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [resetSelection] Resetting selection`);
   
   // Clear the selection
   selectedItem.value = null;
@@ -496,7 +496,7 @@ const resetSelection = () => {
     valueChanged.value = true;
   }
   
-  console.log('[resetSelection] Selection cleared');
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [resetSelection] Selection cleared`);
 }
 
 // Helper function to compare objects
@@ -508,8 +508,8 @@ const isEqual = (obj1, obj2) => {
 
 // Watch for modelValue changes
 watch(() => props.modelValue, (newValue) => {
-  console.log('[watch modelValue] New value:', newValue);
-  console.log('[watch modelValue] Items length:', items.value.length);
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [watch modelValue] New value:`, newValue);
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [watch modelValue] Items length:`, items.value.length);
   
   if (items.value.length > 0) {
     findAndSelectInitialItem();
@@ -518,9 +518,9 @@ watch(() => props.modelValue, (newValue) => {
 
 // Watch for endpoint changes
 watch(() => resolvedEndpoint.value, (newEndpoint, oldEndpoint) => {
-  console.log('[watch resolvedEndpoint] Endpoint changed from:', oldEndpoint, 'to:', newEndpoint);
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] [watch resolvedEndpoint] Endpoint changed from:`, oldEndpoint, 'to:', newEndpoint);
   if (newEndpoint !== oldEndpoint) {
-    console.log('[watch resolvedEndpoint] Fetching items with new endpoint');
+    console.log(`[sFilteredSearchField] - [${props.fieldName}] [watch resolvedEndpoint] Fetching items with new endpoint`);
     fetchItems();
   }
 });
@@ -535,24 +535,24 @@ watch(() => items.value, (newItems) => {
 // Lifecycle hooks
 onMounted(() => {
   //ajouter des logs en précisant les props valuefield et endpoint
-  console.log('[sFilteredSearchField] onMounted - Fetching items on mount')
-  console.log('[sFilteredSearchField] onMounted - Value field:', props.valueField)
-  console.log('[sFilteredSearchField] onMounted - Endpoint:', props.endpoint)
-  console.log('[sFilteredSearchField] onMounted - Edit mode:', props.editMode)
-  console.log('[sFilteredSearchField] onMounted - displayFieldAtInitInEditMode:', props.displayFieldAtInitInEditMode)
-  console.log('[sFilteredSearchField] onMounted - ticketData:', props.ticketData)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - Fetching items on mount`)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - Value field:`, props.valueField)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - Endpoint:`, props.endpoint)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - Edit mode:`, props.editMode)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - displayFieldAtInitInEditMode:`, props.displayFieldAtInitInEditMode)
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - ticketData:`, props.ticketData)
   
   // N'appeler fetchItems que si on n'est pas en mode édition
   if (!props.editMode) {
-    console.log('[sFilteredSearchField] onMounted - Not in edit mode, fetching items')
+    console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - Not in edit mode, fetching items`)
     fetchItems()
   } else {
-    console.log('[sFilteredSearchField] onMounted - In edit mode, skipping API call')
+    console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - In edit mode, skipping API call`)
     
     // En mode édition, si displayFieldAtInitInEditMode est défini et que la valeur existe dans ticketData
     if (props.displayFieldAtInitInEditMode && props.ticketData && props.ticketData[props.displayFieldAtInitInEditMode]) {
       const displayValue = props.ticketData[props.displayFieldAtInitInEditMode]
-      console.log('[sFilteredSearchField] onMounted - Using value from ticketData field:', props.displayFieldAtInitInEditMode, '=', displayValue)
+      console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - Using value from ticketData field:`, props.displayFieldAtInitInEditMode, '=', displayValue)
       
       // Créer un objet temporaire pour afficher la valeur initiale
       selectedItem.value = { [props.displayField]: displayValue }
