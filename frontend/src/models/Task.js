@@ -212,37 +212,37 @@ export class Task {
         pickedItems: null
       },
       writer_name: {
-        label: t('task.writer_name'),
+        label: t('common.writer_name'),
         type: 'sTextField',
-        placeholder: t('task.writer_name_placeholder'),
+        placeholder: null,
         required: false,
         readOnly: true
       },
       closed_at: {
-        label: t('task.closed_at'),
+        label: t('common.closure_date'),
         type: 'sTextField',
-        placeholder: t('task.closed_at_placeholder'),
+        placeholder: null,
         required: false,
         readOnly: true
       },
       uuid: {
         label: t('common.uuid'),
         type: 'sTextField',
-        placeholder: t('common.uuid_placeholder'),
+        placeholder: null,
         required: false,
         readOnly: true
       },
       created_at: {
         label: t('common.creation_date'),
         type: 'sTextField',
-        placeholder: t('task.creation_date_placeholder'),
+        placeholder: null,
         required: false,
         readOnly: true
       },
       updated_at: {
         label: t('common.modification_date'),
         type: 'sTextField',
-        placeholder: t('task.update_date_placeholder'),
+        placeholder: null,
         required: false,
         readOnly: true
       }

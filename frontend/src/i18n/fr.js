@@ -219,7 +219,9 @@ export default {
     createLabel: 'Que souhaitez-vous créer ?',
     creation_date: 'Créé le',
     modification_date: 'Modifié le', 
-    closure_date: 'Fermé le'
+    closure_date: 'Fermé le',
+    writer_name: 'Rédacteur',
+    uuid: 'Identifiant'
   },
   notifications: {
     title: 'Notification',
