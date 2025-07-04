@@ -26,7 +26,7 @@ const getTickets = async (lang, ticket_type, baseQuery = '', additionalJoins = '
     const query = `
         SELECT t.uuid,
             t.title,
-            t.description,
+            SUBSTRING(t.description, 1, 120) as description,
             t.configuration_item_uuid,
             ci.name as configuration_item_name,
             t.created_at,
