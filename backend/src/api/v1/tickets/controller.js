@@ -13,7 +13,7 @@ const logger = require('../../../config/logger');
 
 const getTickets = async (req, res) => {
     try {
-        logger.info('[CONTROLLER] Processing GET /tickets request');
+        logger.info('[TICKETS CONTROLLER] Processing GET /tickets request');
         const { lang, ticket_type } = req.query;
         
         let tickets;
@@ -21,50 +21,50 @@ const getTickets = async (req, res) => {
         // Utiliser le service approprié selon le type de ticket
         switch (ticket_type) {
             case 'INCIDENT':
-                logger.info('[CONTROLLER] Calling incidentService.getIncidents');
+                logger.info('[TICKETS CONTROLLER] Calling incidentService.getIncidents');
                 tickets = await incidentService.getIncidents(lang);
                 break;
             case 'PROBLEM':
-                logger.info('[CONTROLLER] Calling problemService.getProblems');
+                logger.info('[TICKETS CONTROLLER] Calling problemService.getProblems');
                 tickets = await problemService.getProblems(lang);
                 break;
             case 'CHANGE':
-                logger.info('[CONTROLLER] Calling changeService.getChanges');
+                logger.info('[TICKETS CONTROLLER] Calling changeService.getChanges');
                 tickets = await changeService.getChanges(lang);
                 break;
             case 'KNOWLEDGE':
-                logger.info('[CONTROLLER] Calling knowledgeService.getKnowledgeArticles');
+                logger.info('[TICKETS CONTROLLER] Calling knowledgeService.getKnowledgeArticles');
                 tickets = await knowledgeService.getKnowledgeArticles(lang);
                 break;
             case 'PROJECT':
-                logger.info('[CONTROLLER] Calling projectService.getProjects');
+                logger.info('[TICKETS CONTROLLER] Calling projectService.getProjects');
                 tickets = await projectService.getProjects(lang);
                 break;
             case 'DEFECT':
-                logger.info('[CONTROLLER] Calling defectService.getDefects');
+                logger.info('[TICKETS CONTROLLER] Calling defectService.getDefects');
                 tickets = await defectService.getDefects(lang);
                 break;
             case 'SPRINT':
-                logger.info('[CONTROLLER] Calling sprintService.getSprints');
+                logger.info('[TICKETS CONTROLLER] Calling sprintService.getSprints');
                 tickets = await sprintService.getSprints(lang);
                 break;
             case 'EPIC':
-                logger.info('[CONTROLLER] Calling epicService.getEpics');
+                logger.info('[TICKETS CONTROLLER] Calling epicService.getEpics');
                 tickets = await epicService.getEpics(lang);
                 break;
             case 'USER_STORY':
-                logger.info('[CONTROLLER] Calling storyService.getUserStories');
+                logger.info('[TICKETS CONTROLLER] Calling storyService.getUserStories');
                 tickets = await storyService.getUserStories(lang);
                 break;
             default:
-                logger.info(`[CONTROLLER] Calling ticketService.getTickets for type: ${ticket_type || 'all'}`);
+                logger.info(`[TICKETS CONTROLLER] Calling ticketService.getTickets for type: ${ticket_type || 'all'}`);
                 tickets = await ticketService.getTickets(lang, ticket_type);
                 break;
         }
         
         res.json(tickets);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in getTickets:', error);
+        logger.error('[TICKETS CONTROLLER] Error in getTickets:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
@@ -75,17 +75,17 @@ const createTicket = async (req, res) => {
         const ticketType = req.body && req.body.ticket_type_code;
         
         // Log pour le debugging
-        logger.info(`[CONTROLLER] Processing POST /tickets request for type: ${ticketType || 'UNKNOWN'}`);
+        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets request for type: ${ticketType || 'UNKNOWN'}`);
         
         // Créer le ticket
         const ticket = await ticketService.createTicket(req.body);
         
         // Log de succès avec l'UUID du ticket créé
-        logger.info(`[CONTROLLER] Successfully created ticket with UUID: ${ticket.uuid}`);
+        logger.info(`[TICKETS CONTROLLER] Successfully created ticket with UUID: ${ticket.uuid}`);
         
         res.status(201).json(ticket);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in createTicket:', error);
+        logger.error('[TICKETS CONTROLLER] Error in createTicket:', error);
         if (error.constraint) {
             res.status(400).json({ error: 'Invalid reference data' });
         } else {
@@ -96,38 +96,38 @@ const createTicket = async (req, res) => {
 
 const getTicketTeam = async (req, res) => {
     try {
-        logger.info(`[CONTROLLER] Processing GET /tickets/${req.params.uuid}/team request`);
+        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/team request`);
         const ticketUuid = req.params.uuid;
         
         // Vérifier que l'UUID est valide
         if (!ticketUuid || ticketUuid.trim() === '') {
-            logger.error('[CONTROLLER] Invalid ticket UUID provided');
+            logger.error('[TICKETS CONTROLLER] Invalid ticket UUID provided');
             return res.status(400).json({ error: 'Invalid ticket UUID' });
         }
         
         const team = await ticketService.getTicketTeam(ticketUuid);
         res.json(team);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in getTicketTeam:', error);
+        logger.error('[TICKETS CONTROLLER] Error in getTicketTeam:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
 
 const getProjectEpics = async (req, res) => {
     try {
-        logger.info(`[CONTROLLER] Processing GET /tickets/${req.params.uuid}/epics request`);
+        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/epics request`);
         const projectUuid = req.params.uuid;
         
         // Vérifier que l'UUID est valide
         if (!projectUuid || projectUuid.trim() === '') {
-            logger.error('[CONTROLLER] Invalid project UUID provided');
+            logger.error('[TICKETS CONTROLLER] Invalid project UUID provided');
             return res.status(400).json({ error: 'Invalid project UUID' });
         }
         
         const epics = await ticketService.getProjectEpics(projectUuid);
         res.json(epics);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in getProjectEpics:', error);
+        logger.error('[TICKETS CONTROLLER] Error in getProjectEpics:', error);
         if (error.message === 'Project not found') {
             res.status(404).json({ error: 'Project not found' });
         } else {
@@ -138,19 +138,19 @@ const getProjectEpics = async (req, res) => {
 
 const getProjectSprints = async (req, res) => {
     try {
-        logger.info(`[CONTROLLER] Processing GET /tickets/${req.params.uuid}/sprints request`);
+        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/sprints request`);
         const projectUuid = req.params.uuid;
         
         // Vérifier que l'UUID est valide
         if (!projectUuid || projectUuid.trim() === '') {
-            logger.error('[CONTROLLER] Invalid project UUID provided');
+            logger.error('[TICKETS CONTROLLER] Invalid project UUID provided');
             return res.status(400).json({ error: 'Invalid project UUID' });
         }
         
         const sprints = await ticketService.getProjectSprints(projectUuid);
         res.json(sprints);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in getProjectSprints:', error);
+        logger.error('[TICKETS CONTROLLER] Error in getProjectSprints:', error);
         if (error.message === 'Project not found') {
             res.status(404).json({ error: 'Project not found' });
         } else {
@@ -161,32 +161,32 @@ const getProjectSprints = async (req, res) => {
 
 const getTicketTeamMembers = async (req, res) => {
     try {
-        logger.info(`[CONTROLLER] Processing GET /tickets/${req.params.uuid}/team/members request`);
+        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/team/members request`);
         const ticketUuid = req.params.uuid;
         
         // Vérifier que l'UUID est valide
         if (!ticketUuid || ticketUuid.trim() === '') {
-            logger.error('[CONTROLLER] Invalid ticket UUID provided');
+            logger.error('[TICKETS CONTROLLER] Invalid ticket UUID provided');
             return res.status(400).json({ error: 'Invalid ticket UUID' });
         }
         
         const members = await ticketService.getTicketTeamMembers(ticketUuid);
         res.json(members);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in getTicketTeamMembers:', error);
+        logger.error('[TICKETS CONTROLLER] Error in getTicketTeamMembers:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
 
 const getTicketById = async (req, res) => {
     try {
-        logger.info(`[CONTROLLER] Processing GET /tickets/${req.params.uuid} request`);
+        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid} request`);
         const ticketUuid = req.params.uuid;
         const { lang, ticket_type } = req.query;
         
         // Vérifier que l'UUID est valide
         if (!ticketUuid || ticketUuid.trim() === '') {
-            logger.error('[CONTROLLER] Invalid ticket UUID provided');
+            logger.error('[TICKETS CONTROLLER] Invalid ticket UUID provided');
             return res.status(400).json({ error: 'Invalid ticket UUID' });
         }
         
@@ -195,48 +195,48 @@ const getTicketById = async (req, res) => {
         // Utiliser le service approprié selon le type de ticket
         switch (ticket_type) {
             case 'TASK':
-                logger.info(`[CONTROLLER] Calling taskService.getTaskById for UUID: ${ticketUuid}`);
+                logger.info(`[TICKETS CONTROLLER] Calling taskService.getTaskById for UUID: ${ticketUuid}`);
                 ticket = await taskService.getTaskById(ticketUuid, lang || 'en');
                 break;
             case 'PROBLEM':
-                logger.info(`[CONTROLLER] Calling problemService.getProblemById for UUID: ${ticketUuid}`);
+                logger.info(`[TICKETS CONTROLLER] Calling problemService.getProblemById for UUID: ${ticketUuid}`);
                 ticket = await problemService.getProblemById(ticketUuid, lang || 'en');
                 break;
             case 'CHANGE':
-                logger.info(`[CONTROLLER] Calling changeService.getChangeById for UUID: ${ticketUuid}`);
+                logger.info(`[TICKETS CONTROLLER] Calling changeService.getChangeById for UUID: ${ticketUuid}`);
                 ticket = await changeService.getChangeById(ticketUuid, lang || 'en');
                 break;
             case 'INCIDENT':
-                logger.info(`[CONTROLLER] Calling incidentService.getIncidentById for UUID: ${ticketUuid}`);
+                logger.info(`[TICKETS CONTROLLER] Calling incidentService.getIncidentById for UUID: ${ticketUuid}`);
                 ticket = await incidentService.getIncidentById(ticketUuid, lang || 'en');
                 break;
             // Ajouter d'autres cas pour les différents types de tickets si nécessaire
             default:
-                logger.info(`[CONTROLLER] Calling ticketService.getTicketById for UUID: ${ticketUuid}`);
+                logger.info(`[TICKETS CONTROLLER] Calling ticketService.getTicketById for UUID: ${ticketUuid}`);
                 ticket = await ticketService.getTicketById(ticketUuid, lang || 'en');
                 break;
         }
         
         if (!ticket) {
-            logger.warn(`[CONTROLLER] No ticket found with UUID: ${ticketUuid}`);
+            logger.warn(`[TICKETS CONTROLLER] No ticket found with UUID: ${ticketUuid}`);
             return res.status(404).json({ error: 'Ticket not found' });
         }
         
         res.json(ticket);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in getTicketById:', error);
+        logger.error('[TICKETS CONTROLLER] Error in getTicketById:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
 
 const updateTicket = async (req, res) => {
     try {
-        logger.info(`[CONTROLLER] Processing PATCH /tickets/${req.params.uuid} request`);
+        logger.info(`[TICKETS CONTROLLER] Processing PATCH /tickets/${req.params.uuid} request`);
         const ticketUuid = req.params.uuid;
         
         // Vérifier que l'UUID est valide
         if (!ticketUuid || ticketUuid.trim() === '') {
-            logger.error('[CONTROLLER] Invalid ticket UUID provided');
+            logger.error('[TICKETS CONTROLLER] Invalid ticket UUID provided');
             return res.status(400).json({ error: 'Invalid ticket UUID' });
         }
         
@@ -244,14 +244,14 @@ const updateTicket = async (req, res) => {
         const updatedTicket = await ticketService.updateTicket(ticketUuid, req.body);
         
         if (!updatedTicket) {
-            logger.error(`[CONTROLLER] Failed to update ticket with UUID: ${ticketUuid}`);
+            logger.error(`[TICKETS CONTROLLER] Failed to update ticket with UUID: ${ticketUuid}`);
             return res.status(404).json({ error: 'Ticket not found or update failed' });
         }
         
-        logger.info(`[CONTROLLER] Successfully updated ticket with UUID: ${ticketUuid}`);
+        logger.info(`[TICKETS CONTROLLER] Successfully updated ticket with UUID: ${ticketUuid}`);
         res.json(updatedTicket);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in updateTicket:', error);
+        logger.error('[TICKETS CONTROLLER] Error in updateTicket:', error);
         if (error.constraint) {
             res.status(400).json({ error: 'Invalid reference data' });
         } else if (error.message === 'Not implemented') {
@@ -264,14 +264,14 @@ const updateTicket = async (req, res) => {
 
 const addWatchers = async (req, res) => {
     try {
-        logger.info(`[CONTROLLER] Processing POST /tickets/${req.params.uuid}/watchers request`);
+        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.uuid}/watchers request`);
         const ticketUuid = req.params.uuid;
         const { watch_list } = req.body;
         
         const result = await ticketService.addWatchers(ticketUuid, watch_list);
         res.status(201).json(result);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in addWatchers:', error);
+        logger.error('[TICKETS CONTROLLER] Error in addWatchers:', error);
         if (error.message === 'Ticket not found') {
             res.status(404).json({ error: 'Ticket not found' });
         } else {
@@ -282,7 +282,7 @@ const addWatchers = async (req, res) => {
 
 const removeWatcher = async (req, res) => {
     try {
-        logger.info(`[CONTROLLER] Processing DELETE /tickets/${req.params.uuid}/watchers/${req.params.user_uuid} request`);
+        logger.info(`[TICKETS CONTROLLER] Processing DELETE /tickets/${req.params.uuid}/watchers/${req.params.user_uuid} request`);
         const ticketUuid = req.params.uuid;
         const userUuid = req.params.user_uuid;
         
@@ -294,7 +294,7 @@ const removeWatcher = async (req, res) => {
         
         res.json(result);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in removeWatcher:', error);
+        logger.error('[TICKETS CONTROLLER] Error in removeWatcher:', error);
         if (error.message === 'Ticket not found') {
             res.status(404).json({ error: 'Ticket not found' });
         } else {
@@ -310,25 +310,25 @@ const removeWatcher = async (req, res) => {
  */
 const addChildrenTickets = async (req, res) => {
     try {
-        logger.info(`[CONTROLLER] Processing POST /tickets/${req.params.parent_uuid}/children request`);
+        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.parent_uuid}/children request`);
         const parentUuid = req.params.parent_uuid;
         const { type, children } = req.body;
         
         // Vérifier que l'UUID parent est valide
         if (!parentUuid || parentUuid.trim() === '') {
-            logger.error('[CONTROLLER] Invalid parent ticket UUID provided');
+            logger.error('[TICKETS CONTROLLER] Invalid parent ticket UUID provided');
             return res.status(400).json({ error: 'Invalid parent ticket UUID' });
         }
         
         // Vérifier que le type de dépendance est fourni
         if (!type || type.trim() === '') {
-            logger.error('[CONTROLLER] Dependency type not provided');
+            logger.error('[TICKETS CONTROLLER] Dependency type not provided');
             return res.status(400).json({ error: 'Dependency type is required' });
         }
         
         // Vérifier que la liste des enfants est fournie et valide
         if (!children || !Array.isArray(children) || children.length === 0) {
-            logger.error('[CONTROLLER] Children UUIDs not provided or invalid');
+            logger.error('[TICKETS CONTROLLER] Children UUIDs not provided or invalid');
             return res.status(400).json({ error: 'Children UUIDs must be a non-empty array' });
         }
         
@@ -337,7 +337,7 @@ const addChildrenTickets = async (req, res) => {
         
         res.status(201).json(result);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in addChildrenTickets:', error);
+        logger.error('[TICKETS CONTROLLER] Error in addChildrenTickets:', error);
         if (error.constraint) {
             res.status(400).json({ error: 'Invalid reference data' });
         } else {
@@ -355,11 +355,11 @@ const addChildrenTickets = async (req, res) => {
  */
 const removeChildTicket = async (req, res, parentUuid, childUuid) => {
     try {
-        logger.info(`[CONTROLLER] Processing DELETE /tickets/${parentUuid}/children/${childUuid} request`);
+        logger.info(`[TICKETS CONTROLLER] Processing DELETE /tickets/${parentUuid}/children/${childUuid} request`);
         
         // Vérifier que les UUIDs sont valides
         if (!parentUuid || parentUuid.trim() === '' || !childUuid || childUuid.trim() === '') {
-            logger.error('[CONTROLLER] Invalid parent or child UUID provided');
+            logger.error('[TICKETS CONTROLLER] Invalid parent or child UUID provided');
             return res.status(400).json({ 
                 success: false,
                 message: 'Invalid parent or child UUID'
@@ -374,7 +374,7 @@ const removeChildTicket = async (req, res, parentUuid, childUuid) => {
         
         return res.status(200).json(result);
     } catch (error) {
-        logger.error('[CONTROLLER] Error in removeChildTicket:', error);
+        logger.error('[TICKETS CONTROLLER] Error in removeChildTicket:', error);
         return res.status(500).json({
             success: false,
             message: 'Internal server error',

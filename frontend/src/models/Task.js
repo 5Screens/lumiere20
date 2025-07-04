@@ -216,35 +216,40 @@ export class Task {
         type: 'sTextField',
         placeholder: null,
         required: false,
-        readOnly: true
+        readOnly: true,
+        disabled: true
       },
       closed_at: {
         label: t('common.closure_date'),
         type: 'sTextField',
         placeholder: null,
         required: false,
-        readOnly: true
+        readOnly: true,
+        disabled: true
       },
       uuid: {
         label: t('common.uuid'),
         type: 'sTextField',
         placeholder: null,
         required: false,
-        readOnly: true
+        readOnly: true,
+        disabled: true
       },
       created_at: {
         label: t('common.creation_date'),
         type: 'sTextField',
         placeholder: null,
         required: false,
-        readOnly: true
+        readOnly: true,
+        disabled: true
       },
       updated_at: {
         label: t('common.modification_date'),
         type: 'sTextField',
         placeholder: null,
         required: false,
-        readOnly: true
+        readOnly: true,
+        disabled: true
       }
     };
     
