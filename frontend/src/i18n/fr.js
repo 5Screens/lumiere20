@@ -220,7 +220,7 @@ export default {
     creation_date: 'Créé le',
     modification_date: 'Modifié le', 
     closure_date: 'Fermé le',
-    writer_name: 'Rédacteur',
+    writer_name: 'Créé par',
     uuid: 'Identifiant'
   },
   notifications: {

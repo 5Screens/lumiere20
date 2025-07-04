@@ -20,6 +20,7 @@ export class Task {
       { key: 'assigned_group_name', label: t('task.assigned_team_label'), type: 'text', format: 'text' },
       { key: 'assigned_person_name', label: t('task.assigned_to_label'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
@@ -79,6 +80,8 @@ export class Task {
     this.requested_for_name = data.requested_for_name || '';
     this.assigned_group_name = data.assigned_group_name || '';
     this.assigned_person_name = data.assigned_person_name || '';
+    this.writer_name = data.writer_name || '';
+    this.closed_at = data.closed_at || null;
     
     
     
@@ -100,6 +103,14 @@ export class Task {
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
     
     const fields = {
+      uuid: {
+        label: t('common.uuid'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
       ticket_status_code: {
         label: t('task.status'),
         type: 'sSelectField',
@@ -122,6 +133,22 @@ export class Task {
         type: 'sRichTextEditor',
         placeholder: t('task.description_placeholder'),
         required: isRequired('description')
+      },
+      created_at: {
+        label: t('common.creation_date'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      writer_name: {
+        label: t('common.writer_name'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
       },
       requested_by_uuid: {
         label: t('task.requested_by'),
@@ -211,8 +238,8 @@ export class Task {
         target_uuid: null,
         pickedItems: null
       },
-      writer_name: {
-        label: t('common.writer_name'),
+      updated_at: {
+        label: t('common.modification_date'),
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -221,30 +248,6 @@ export class Task {
       },
       closed_at: {
         label: t('common.closure_date'),
-        type: 'sTextField',
-        placeholder: null,
-        required: false,
-        readOnly: true,
-        disabled: true
-      },
-      uuid: {
-        label: t('common.uuid'),
-        type: 'sTextField',
-        placeholder: null,
-        required: false,
-        readOnly: true,
-        disabled: true
-      },
-      created_at: {
-        label: t('common.creation_date'),
-        type: 'sTextField',
-        placeholder: null,
-        required: false,
-        readOnly: true,
-        disabled: true
-      },
-      updated_at: {
-        label: t('common.modification_date'),
         type: 'sTextField',
         placeholder: null,
         required: false,
