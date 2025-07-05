@@ -274,7 +274,48 @@ export class Change {
     // Fonction utilitaire pour déterminer si un champ est obligatoire
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
-    return {
+    const fields = {
+      // Informations système
+      uuid: {
+        label: t('common.uuid'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      updated_at: {
+        label: t('common.modification_date'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      created_at: {
+        label: t('common.creation_date'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      writer_name: {
+        label: t('common.writer_name'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      closed_at: {
+        label: t('change.closed_at'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
       // Informations générales
       ticket_status_code: {
         label: t('change.status'),
@@ -662,15 +703,19 @@ export class Change {
         type: 'sRichTextEditor',
         placeholder: t('change.post_change_comment_placeholder'),
         required: isRequired('post_change_comment')
-      },
-      closed_at: {
-        label: t('change.closed_at'),
-        type: 'sDatePicker',
-        placeholder: t('change.closed_at_placeholder'),
-        required: isRequired('closed_at'),
-        patchendpoint: 'tickets'
       }
     };
+    
+    // Supprimer les champs système en mode création
+    if (mode === 'for_creation') {
+      delete fields.writer_name;
+      delete fields.closed_at;
+      delete fields.uuid;
+      delete fields.created_at;
+      delete fields.updated_at;
+    }
+    
+    return fields;
   }
 
   toAPI(method) {
