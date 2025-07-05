@@ -129,7 +129,7 @@ export class Incident {
     this.closed_at = data.closed_at || null;
   }
 
-  static getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
@@ -137,7 +137,7 @@ export class Incident {
     const dynamicLabels = new Incident();
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
-    return {
+    const fields = {
       uuid: {
         label: t('common.uuid'),
         type: 'sTextField',
@@ -484,6 +484,21 @@ export class Incident {
         disabled: true
       }
     };
+    
+    // Champs à supprimer en mode création
+    if (mode === 'for_creation') {
+      delete fields.writer_name;
+      delete fields.closed_at;
+      delete fields.uuid;
+      delete fields.created_at;
+      delete fields.updated_at;
+      delete fields.assignment_count;
+      delete fields.assignment_to_count;
+      delete fields.reopen_count;
+      delete fields.standby_count;
+    }
+    
+    return fields;
   }
 
   toAPI(method) {
