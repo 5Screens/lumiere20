@@ -460,6 +460,7 @@ export default {
     
     watch_list: 'Liste de surveillance',
     watch_list_placeholder: 'Ajoutez des observateurs',
+    watch_list_helper_text: 'Choisissez qui est intéressé par le traitement du problème',
     
     impact: 'Impact',
     impact_placeholder: 'Sélectionnez l\'impact',

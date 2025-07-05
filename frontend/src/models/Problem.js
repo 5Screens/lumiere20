@@ -84,7 +84,7 @@ export class Problem {
       { name: 'rel_problem_categories_code', label: i18n.global.t('problem.category') },
       { name: 'impact', label: i18n.global.t('problem.impact') },
       { name: 'urgency', label: i18n.global.t('problem.urgency') },
-      { name: 'assigned_to_group', label: i18n.global.t('problem.assigned_to_group') }
+      { name: 'assigned_to_group', label: i18n.global.t('problem.assigned_group') }
     ];
     
     // Identification des causes
@@ -309,10 +309,11 @@ export class Problem {
       },
       closed_at: {
         label: t('problem.closed_at'),
-        type: 'sDatePicker',
-        placeholder: t('problem.closed_at_placeholder'),
+        type: 'sTextField',
         required: isRequired('closed_at'),
-        patchendpoint: 'tickets'
+        patchendpoint: 'tickets',
+        readOnly: true,
+        disabled: true
       },
       target_resolution_date: {
         label: t('problem.target_resolution_date'),
