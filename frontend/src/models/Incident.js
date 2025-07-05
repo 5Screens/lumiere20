@@ -66,6 +66,17 @@ export class Incident {
     this.requested_for_uuid = data.requested_for_uuid || null;
     this.writer_uuid = data.writer_uuid || null;
     this.configuration_item_uuid = data.configuration_item_uuid || null;
+    
+    // Names for display
+    this.requested_by_name = data.requested_by_name || '';
+    this.requested_for_name = data.requested_for_name || '';
+    this.assigned_group_name = data.assigned_group_name || '';
+    this.assigned_person_name = data.assigned_person_name || '';
+    this.configuration_item_name = data.configuration_item_name || '';
+    this.rel_service_name = data.rel_service_name || '';
+    this.rel_service_offerings_name = data.rel_service_offerings_name || '';
+    this.rel_problem_title = data.rel_problem_title || '';
+    this.rel_change_request_title = data.rel_change_request_title || '';
 
     // Assignment and watching
     this.assigned_to_group = data.assigned_to_group || null;
@@ -161,6 +172,7 @@ export class Incident {
           { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
+        displayFieldAtInitInEditMode: 'requested_by_name',
         required: isRequired('requested_by_uuid')
       },
       requested_for_uuid: {
@@ -176,7 +188,8 @@ export class Incident {
           { key: 'job_role', label: t('person.job_role'), visible: true },
           { key: 'email', label: t('person.email'), visible: true }
         ],
-          required: isRequired('requested_for_uuid')
+        displayFieldAtInitInEditMode: 'requested_for_name',
+        required: isRequired('requested_for_uuid')
       },
       configuration_item_uuid: {
         label: t('incident.configuration_item'),
@@ -189,6 +202,7 @@ export class Incident {
           { key: 'name', label: t('configuration_item.name'), visible: true },
           { key: 'description', label: t('configuration_item.description'), visible: true }
         ],
+        displayFieldAtInitInEditMode: 'configuration_item_name',
         required: isRequired('configuration_item_uuid')
       },
       assigned_to_group: {
@@ -204,6 +218,7 @@ export class Incident {
         columnsConfig: [
           { key: 'group_name', label: t('group.name'), visible: true }
         ],
+        displayFieldAtInitInEditMode: 'assigned_group_name',
         required: isRequired('assigned_to_group'),
         resetable: true
       },
@@ -221,6 +236,7 @@ export class Incident {
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
+        displayFieldAtInitInEditMode: 'assigned_person_name',
         required: isRequired('assigned_to_person'),
         resetable: true
       },
@@ -296,6 +312,7 @@ export class Incident {
           { key: 'cab_name', label: t('service.cab_name'), visible: false },
           { key: 'parent_service_name', label: t('service.parent_service_name'), visible: false }
         ],
+        displayFieldAtInitInEditMode: 'rel_service_name',
         required: isRequired('rel_service')
       },
       rel_service_offerings: {
@@ -319,6 +336,7 @@ export class Incident {
           { key: 'service_name', label: t('service_offering.service_name'), visible: true },
           { key: 'operator_entity_name', label: t('service_offering.operator_entity_name'), visible: false }
         ],
+        displayFieldAtInitInEditMode: 'rel_service_offerings_name',
         required: isRequired('rel_service')
       },
       contact_type: {
@@ -370,6 +388,7 @@ export class Incident {
           { key: 'created_at', label: t('problem.created_at'), visible: true },
           { key: 'writer_name', label: t('problem.writer_name'), visible: false }
         ],
+        displayFieldAtInitInEditMode: 'rel_problem_title',
         required: isRequired('rel_problem_id'),
         resetable: true
       },
@@ -387,6 +406,7 @@ export class Incident {
           { key: 'requested_for_name', label: t('change.requested_for'), visible: true  },
           { key: 'writer_name', label: t('change.writer'), visible: false }
         ],
+        displayFieldAtInitInEditMode: 'rel_change_request_title',
         required: isRequired('rel_change_request'),
         resetable: true
       }
