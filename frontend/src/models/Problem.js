@@ -133,7 +133,7 @@ export class Problem {
     }
   }
 
-  static getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
