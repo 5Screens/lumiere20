@@ -164,7 +164,8 @@ export class Project {
         columnsConfig: [
           { key: 'group_name', label: t('group.name'), visible: true }
         ],
-        required: isRequired('rel_assigned_to_group')
+        required: isRequired('rel_assigned_to_group'),
+        resetable: true
       },
       rel_assigned_to_person: {
         label: t('project.lead_user_id'),
@@ -180,7 +181,8 @@ export class Project {
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
-        required: isRequired('rel_assigned_to_person')
+        required: isRequired('rel_assigned_to_person'),
+        resetable: true
       }
     };
   }
