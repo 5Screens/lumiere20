@@ -184,6 +184,7 @@ export class Problem {
           { key: 'name', label: t('configuration_item.name'), visible: true },
           { key: 'description', label: t('configuration_item.description'), visible: true }
         ],
+        displayFieldAtInitInEditMode: 'configuration_item_name',
         required: isRequired('configuration_item_uuid')
       },
       rel_service: {
@@ -212,6 +213,7 @@ export class Problem {
           { key: 'cab_name', label: t('service.cab_name'), visible: false },
           { key: 'parent_service_name', label: t('service.parent_service_name'), visible: false }
         ],
+        displayFieldAtInitInEditMode: 'rel_service_name',
         required: isRequired('rel_service')
       },
       rel_service_offerings: {
@@ -235,6 +237,7 @@ export class Problem {
           { key: 'service_name', label: t('service_offering.service_name'), visible: true },
           { key: 'operator_entity_name', label: t('service_offering.operator_entity_name'), visible: false }
         ],
+        displayFieldAtInitInEditMode: 'rel_service_offerings_name',
         required: isRequired('rel_service_offerings')
       },
       watch_list: {
@@ -281,6 +284,7 @@ export class Problem {
         columnsConfig: [
           { key: 'group_name', label: t('group.name'), visible: true }
         ],
+        displayFieldAtInitInEditMode: 'assigned_group_name',
         required: isRequired('assigned_to_group'),
         resetable: true
       },
@@ -298,6 +302,7 @@ export class Problem {
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
+        displayFieldAtInitInEditMode: 'assigned_person_name',
         required: isRequired('assigned_to_person'),
         resetable: true
       },
