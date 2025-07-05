@@ -12,6 +12,13 @@ export class Change {
     this.title = data.title || '';
     this.description = data.description || '';
     this.configuration_item_uuid = data.configuration_item_uuid || null;
+    this.writer_name = data.writer_name || null;
+    this.requested_for_name = data.requested_for_name || null;
+    this.assigned_group_name = data.assigned_group_name || null;
+    this.assigned_person_name = data.assigned_person_name || null;
+    this.configuration_item_name = data.configuration_item_name || null;
+    this.rel_service_name = data.rel_service_name || null;
+    this.rel_service_offerings_name = data.rel_service_offerings_name || null;
     
     // Extended attributes
     this.rel_services = data.rel_services || null;
@@ -286,6 +293,7 @@ export class Change {
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'requested_for_name',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
@@ -311,6 +319,7 @@ export class Change {
         endpoint: 'configuration_items',
         displayField: 'name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'configuration_item_name',
         columnsConfig: [
           { key: 'name', label: t('configuration_item.name'), visible: true },
           { key: 'description', label: t('configuration_item.description'), visible: true }
@@ -324,6 +333,7 @@ export class Change {
         endpoint: 'services',
         displayField: 'name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'rel_service_name',
         columnsConfig: [
           { key: 'name', label: t('service.name'), visible: true },
           { key: 'owning_entity_name', label: t('service.owning_entity_name'), visible: true }
@@ -337,6 +347,7 @@ export class Change {
         endpoint: 'service_offerings',
         displayField: 'name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'rel_service_offerings_name',
         columnsConfig: [
           { key: 'name', label: t('service_offering.name'), visible: true },
           { key: 'service_name', label: t('service_offering.service_name'), visible: true }
@@ -362,6 +373,7 @@ export class Change {
             : 'groups',
         displayField: 'group_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'assigned_group_name',
         columnsConfig: [
           { key: 'group_name', label: t('group.name'), visible: true }
         ],
@@ -378,6 +390,7 @@ export class Change {
           : 'groups/members',
         displayField: 'person_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'assigned_person_name',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
