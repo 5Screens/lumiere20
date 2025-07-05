@@ -170,7 +170,13 @@ export default {
         'tasks': 'title',
         'incidents': 'title',
         'problems': 'title',
-        'changes': 'title'
+        'changes': 'title',
+        'projects': 'title',
+        'sprints': 'title',
+        'epics': 'title',
+        'stories': 'title',
+        'defects': 'title',
+        'knowledge': 'title'
       }
       return nameMap[this.objectType] || 'name'
     }
