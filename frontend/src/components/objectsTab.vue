@@ -150,6 +150,21 @@ export default {
       }
       return titleMap[this.objectType] || ''
     },
+    /**
+     * Détermine le nom du champ à utiliser comme identifiant unique pour chaque type d'objet
+     * Cette propriété calculée retourne le nom de l'attribut qui contient
+     * l'identifiant unique pour chaque type d'objet dans l'application
+     * 
+     * Par exemple:
+     * - Pour les symptômes: utilise 'symptom_code' comme identifiant unique
+     * - Pour les autres objets (entités, tickets, tâches, etc.): utilise 'uuid' comme identifiant unique
+     * 
+     * Cette propriété est utilisée notamment dans handleUpdate() pour construire l'id_tab
+     * lors de l'ouverture d'un nouvel onglet avec store.openTab()
+     * Exemple: id_tab: `${this.formType}-form-${row[this.uniqueIdentifier]}-${Date.now()}`
+     * 
+     * @returns {string} Le nom du champ à utiliser comme identifiant unique
+     */
     uniqueIdentifier() {
       const identifierMap = {
         'symptoms': 'symptom_code',
@@ -158,10 +173,31 @@ export default {
         'tasks': 'uuid',
         'incidents': 'uuid',
         'problems': 'uuid',
-        'changes': 'uuid'
+        'changes': 'uuid',
+        'projects': 'uuid',
+        'sprints': 'uuid',
+        'epics': 'uuid',
+        'stories': 'uuid',
+        'defects': 'uuid',
+        'knowledge': 'uuid'
       }
       return identifierMap[this.objectType] || 'uuid'
     },
+    /**
+     * Détermine le nom du champ à utiliser pour afficher le titre d'un onglet
+     * Cette propriété calculée retourne le nom de l'attribut qui contient
+     * le texte à afficher dans le label de l'onglet pour chaque type d'objet
+     * 
+     * Par exemple:
+     * - Pour les symptômes: utilise 'symptom_code' comme identifiant d'affichage
+     * - Pour les projets, tâches, incidents, etc.: utilise 'title' comme identifiant d'affichage
+     * - Pour les entités: utilise 'name' comme identifiant d'affichage
+     * 
+     * Cette propriété est utilisée notamment dans handleUpdate() pour définir le label des onglets
+     * lors de l'ouverture d'un nouvel onglet avec store.openTab()
+     * 
+     * @returns {string} Le nom du champ à utiliser comme identifiant d'affichage
+     */
     nameField() {
       const nameMap = {
         'symptoms': 'symptom_code',
