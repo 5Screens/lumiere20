@@ -28,7 +28,7 @@
         @click="handleChildTabSwitch(tab)"
       >
         <i v-if="tab.icon" :class="tab.icon"></i>
-        <span class="tab-title">{{ $t(tab.label) }}</span>
+        <span class="tab-title">{{ tab.label }}</span>
         <button class="close-tab" @click.stop="store.closeTab(tab.id_tab)">×</button>
       </div>
     </div>
