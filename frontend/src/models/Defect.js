@@ -117,7 +117,7 @@ export class Defect {
         type: 'sFilteredSearchField',
         placeholder: t('defect.detected_by_placeholder'),
         endpoint: 'persons',
-        displayField: 'first_name',
+        displayField: 'person_name',
         valueField: 'uuid',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
@@ -132,7 +132,7 @@ export class Defect {
         type: 'sFilteredSearchField',
         placeholder: t('defect.reported_by_placeholder'),
         endpoint: 'persons',
-        displayField: 'first_name',
+        displayField: 'person_name',
         valueField: 'uuid',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },

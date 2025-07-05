@@ -174,7 +174,7 @@ export class Project {
           rel_assigned_to_group 
             ? `groups/${rel_assigned_to_group}/members` 
             : 'groups/members',
-        displayField: 'first_name',
+        displayField: 'person_name',
         valueField: 'uuid',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },

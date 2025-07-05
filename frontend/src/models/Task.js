@@ -213,7 +213,7 @@ export class Task {
             ? `groups/${assigned_to_group}/members` 
             : `groups/members` ; // Retourne null pour désactiver le champ si aucun groupe n'est sélectionné
         },
-        displayField: 'first_name',
+        displayField: 'person_name',
         displayFieldAtInitInEditMode: 'assigned_person_name',
         valueField: 'uuid',
         editMode: false,
