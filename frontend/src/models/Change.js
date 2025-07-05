@@ -30,7 +30,7 @@ export class Change {
       { name: 'description', label: i18n.global.t('change.description') },
       { name: 'rel_services', label: i18n.global.t('change.service') },
       { name: 'rel_service_offerings', label: i18n.global.t('change.service_offerings') },
-      { name: 'assigned_to_group', label: i18n.global.t('change.assigned_to_group') },
+      { name: 'assigned_to_group', label: i18n.global.t('change.assigned_group') },
       { name: 'assigned_to_person', label: i18n.global.t('change.assigned_to_person') }
     ];
     
