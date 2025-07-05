@@ -141,7 +141,8 @@ export class Problem {
     const dynamicLabels = new Problem();
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
-    return {
+    // Définition de tous les champs
+    const fields = {
       uuid: {
         label: t('common.uuid'),
         type: 'sTextField',
@@ -437,6 +438,18 @@ export class Problem {
         required: isRequired('closure_justification')
       }
     };
+    
+    // Si mode est 'for_creation', supprimer les champs spécifiés
+    if (mode === 'for_creation') {
+      const fieldsToRemove = ['writer_name', 'closed_at', 'uuid', 'created_at', 'updated_at'];
+      fieldsToRemove.forEach(field => {
+        if (fields[field]) {
+          delete fields[field];
+        }
+      });
+    }
+    
+    return fields;
   }
 
   toAPI(method) {
