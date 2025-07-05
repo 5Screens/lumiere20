@@ -56,6 +56,7 @@ export class Problem {
     // Identifiant unique du problème
     this.uuid = data.uuid || null;
     this.writer_uuid = data.writer_uuid || null;
+    this.writer_name = data.writer_name || '';
     this.ticket_status_code = data.ticket_status_code || null;
     this.ticket_type_code = data.ticket_type_code || 'PROBLEM';
 
@@ -64,8 +65,11 @@ export class Problem {
     this.rel_problem_categories_code = data.rel_problem_categories_code || null;
     this.description = data.description || '';
     this.configuration_item_uuid = data.configuration_item_uuid || null;
+    this.configuration_item_name = data.configuration_item_name || '';
     this.rel_service = data.rel_service || null;
+    this.rel_service_name = data.rel_service_name || '';
     this.rel_service_offerings = data.rel_service_offerings || [];
+    this.rel_service_offerings_name = data.rel_service_offerings_name || '';
     this.watch_list = data.watch_list || [];
 
     // Informations d'enregistrement
@@ -73,6 +77,8 @@ export class Problem {
     this.urgency = data.urgency || null;
     this.assigned_to_group = data.assigned_to_group || null;
     this.assigned_to_person = data.assigned_to_person || null;
+    this.assigned_group_name = data.assigned_group_name || '';
+    this.assigned_person_name = data.assigned_person_name || '';
     this.symptoms_description = data.symptoms_description || '';
     this.workaround = data.workaround || '';
     
