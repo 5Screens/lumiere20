@@ -142,6 +142,38 @@ export class Problem {
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
     return {
+      uuid: {
+        label: t('common.uuid'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      writer_name: {
+        label: t('common.writer_name'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      created_at: {
+        label: t('common.creation_date'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      updated_at: {
+        label: t('common.modification_date'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
       ticket_status_code: {
         label: t('problem.status'),
         type: 'sSelectField',
