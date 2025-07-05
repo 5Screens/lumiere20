@@ -224,6 +224,18 @@ export class Project {
     return `tickets?ticket_type=PROJECT&lang=${userProfileStore.language}`;
   }
 
+  /**
+   * Récupère un projet par son ID
+   * @param {string} id - ID du projet à récupérer
+   * @returns {Promise<Project>} Instance du projet récupéré
+   */
+  static async getById(id) {
+    const userProfileStore = useUserProfileStore();
+    const endpoint = `tickets/${id}?lang=${userProfileStore.language}`;
+    const data = await import('@/services/apiService').then(module => module.default.get(endpoint));
+    return new Project(data);
+  }
+
   toAPI(method) {
     const userProfileStore = useUserProfileStore();
     
