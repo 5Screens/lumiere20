@@ -77,6 +77,7 @@ export class Incident {
     this.rel_service_offerings_name = data.rel_service_offerings_name || '';
     this.rel_problem_title = data.rel_problem_title || '';
     this.rel_change_request_title = data.rel_change_request_title || '';
+    this.writer_name = data.writer_name || '';
 
     // Assignment and watching
     this.assigned_to_group = data.assigned_to_group || null;
@@ -137,6 +138,22 @@ export class Incident {
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
     return {
+      uuid: {
+        label: t('common.uuid'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      updated_at: {
+        label: t('common.modification_date'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
       ticket_status_code: {
         label: t('incident.status'),
         type: 'sSelectField',
@@ -158,6 +175,22 @@ export class Incident {
         type: 'sRichTextEditor',
         placeholder: t('incident.description_placeholder'),
         required: isRequired('description')
+      },
+      created_at: {
+        label: t('common.creation_date'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      writer_name: {
+        label: t('common.writer_name'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
       },
       requested_by_uuid: {
         label: t('incident.requested_by'),
@@ -409,6 +442,46 @@ export class Incident {
         displayFieldAtInitInEditMode: 'rel_change_request_title',
         required: isRequired('rel_change_request'),
         resetable: true
+      },
+      closed_at: {
+        label: t('common.closure_date'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      assignment_count: {
+        label: t('incident.assignment_count'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      assignment_to_count: {
+        label: t('incident.assignment_to_count'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      standby_count: {
+        label: t('incident.standby_count'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
+      },
+      reopen_count: {
+        label: t('incident.reopen_count'),
+        type: 'sTextField',
+        placeholder: null,
+        required: false,
+        readOnly: true,
+        disabled: true
       }
     };
   }
