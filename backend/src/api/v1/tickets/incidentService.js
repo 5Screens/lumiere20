@@ -89,6 +89,7 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 t.title,
                 t.description,
                 t.configuration_item_uuid,
+                ci.name as configuration_item_name,
                 t.requested_by_uuid,
                 t.requested_for_uuid,
                 t.writer_uuid,
@@ -127,17 +128,9 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 ) as watch_list,
                 
                 -- Informations sur les tickets liés (problème et demande de changement)
-                (SELECT json_build_object(
-                    'uuid', problem.uuid,
-                    'title', problem.title,
-                    'ticket_status_code', problem.ticket_status_code
-                ) FROM core.tickets problem WHERE problem.uuid = problem_rel.rel_child_ticket_uuid) as problem_info,
+                problem.title as rel_problem_title,
                 
-                (SELECT json_build_object(
-                    'uuid', change_request.uuid,
-                    'title', change_request.title,
-                    'ticket_status_code', change_request.ticket_status_code
-                ) FROM core.tickets change_request WHERE change_request.uuid = change_rel.rel_child_ticket_uuid) as change_request_info,
+                change_request.title as rel_change_request_title,
                 
                 -- Champs spécifiques aux incidents depuis core_extended_attributes
                 t.core_extended_attributes->>'impact' as impact,
@@ -146,6 +139,8 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'cause_code' as cause_code,
                 t.core_extended_attributes->>'rel_service' as rel_service,
                 t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
+                service.name as rel_service_name,
+                service_offerings.name as rel_service_offerings_name,
                 t.core_extended_attributes->>'contact_type' as contact_type,
                 problem_rel.rel_child_ticket_uuid as rel_problem_id,
                 change_rel.rel_child_ticket_uuid as rel_change_request,
@@ -159,8 +154,7 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 COALESCE(contact_types_t.label, t.core_extended_attributes->>'contact_type') as contact_type_label,
                 COALESCE(resolution_codes_t.label, t.core_extended_attributes->>'resolution_code') as resolution_code_label,
                 
-                -- Titre du problème lié si existant
-                problem.title as rel_problem_title,
+
 
                 -- Comptages
                 (t.core_extended_attributes->>'assignment_count')::integer as assignment_count,
@@ -210,7 +204,17 @@ const getIncidentById = async (uuid, lang = 'en') => {
             LEFT JOIN translations.incident_resolution_codes_labels resolution_codes_t ON resolution_codes_t.rel_incident_resolution_code = t.core_extended_attributes->>'resolution_code' AND resolution_codes_t.language = $2
             
             -- Jointure pour récupérer le titre du problème lié
-            LEFT JOIN core.tickets problem ON t.core_extended_attributes->>'rel_problem_id' = problem.uuid::text
+            LEFT JOIN core.tickets problem ON problem_rel.rel_child_ticket_uuid = problem.uuid
+            
+            -- Jointure pour récupérer le titre de la demande de changement liée
+            LEFT JOIN core.tickets change_request ON change_rel.rel_child_ticket_uuid = change_request.uuid
+            
+            -- Jointures pour les services et offres de service
+            LEFT JOIN data.services service ON t.core_extended_attributes->>'rel_service' = service.uuid::text
+            LEFT JOIN data.service_offerings service_offerings ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
+            
+            -- Jointure pour récupérer le nom de l'élément de configuration
+            LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
             
             WHERE t.uuid = $1 AND t.ticket_type_code = 'INCIDENT'
         `;
