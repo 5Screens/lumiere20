@@ -306,18 +306,18 @@ export class Incident {
         displayField: 'name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'name', label: t('service.name'), visible: true },
-          { key: 'description', label: t('service.description'), visible: false },
-          { key: 'start_date', label: t('service.start_date'), visible: false },
-          { key: 'end_date', label: t('service.end_date'), visible: false },
-          { key: 'business_criticality', label: t('service.business_criticality'), visible: false },
-          { key: 'environment', label: t('service.environment'), visible: false },
-          { key: 'price_model', label: t('service.price_model'), visible: false },
-          { key: 'currency', label: t('service.currency'), visible: false },
-          { key: 'created_at', label: t('service.created_at'), visible: false },
-          { key: 'updated_at', label: t('service.updated_at'), visible: false },
-          { key: 'service_name', label: t('service.service_name'), visible: true },
-          { key: 'operator_entity_name', label: t('service.operator_entity_name'), visible: false }
+          { key: 'name', label: t('service_offering.name'), visible: true },
+          { key: 'description', label: t('service_offering.description'), visible: false },
+          { key: 'start_date', label: t('service_offering.start_date'), visible: false },
+          { key: 'end_date', label: t('service_offering.end_date'), visible: false },
+          { key: 'business_criticality', label: t('service_offering.business_criticality'), visible: false },
+          { key: 'environment', label: t('service_offering.environment'), visible: false },
+          { key: 'price_model', label: t('service_offering.price_model'), visible: false },
+          { key: 'currency', label: t('service_offering.currency'), visible: false },
+          { key: 'created_at', label: t('service_offering.created_at'), visible: false },
+          { key: 'updated_at', label: t('service_offering.updated_at'), visible: false },
+          { key: 'service_name', label: t('service_offering.service_name'), visible: true },
+          { key: 'operator_entity_name', label: t('service_offering.operator_entity_name'), visible: false }
         ],
         required: isRequired('rel_service')
       },
@@ -365,12 +365,10 @@ export class Incident {
         displayField: 'title',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'title', label: t('ticket.title'), visible: true },
-          { key: 'ticket_status_code', label: t('ticket.status'), visible: true },
-          { key: 'created_at', label: t('ticket.created_at'), visible: true },
-          { key: 'requested_by_name', label: t('ticket.requested_by_name'), visible: true },
-          { key: 'requested_for_name', label: t('ticket.requested_for_name'), visible: true  },
-          { key: 'writer_name', label: t('ticket.writer_name'), visible: false }
+          { key: 'title', label: t('problem.title'), visible: true },
+          { key: 'ticket_status_code', label: t('problem.status'), visible: true },
+          { key: 'created_at', label: t('problem.created_at'), visible: true },
+          { key: 'writer_name', label: t('problem.writer_name'), visible: false }
         ],
         required: isRequired('rel_problem_id'),
         resetable: true
@@ -383,12 +381,11 @@ export class Incident {
         displayField: 'title',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'title', label: t('ticket.title'), visible: true },
-          { key: 'ticket_status_code', label: t('ticket.status'), visible: true },
-          { key: 'created_at', label: t('ticket.created_at'), visible: true },
-          { key: 'requested_by_name', label: t('ticket.requested_by_name'), visible: true },
-          { key: 'requested_for_name', label: t('ticket.requested_for_name'), visible: true  },
-          { key: 'writer_name', label: t('ticket.writer_name'), visible: false }
+          { key: 'title', label: t('change.title'), visible: true },
+          { key: 'ticket_status_code', label: t('change.status'), visible: true },
+          { key: 'created_at', label: t('change.created_at'), visible: true },
+          { key: 'requested_for_name', label: t('change.requested_for'), visible: true  },
+          { key: 'writer_name', label: t('change.writer'), visible: false }
         ],
         required: isRequired('rel_change_request'),
         resetable: true

@@ -406,6 +406,7 @@ export default {
     assigned_to_placeholder: 'Sélectionnez la personne',
     watch_list: 'Liste de surveillance',
     watch_list_placeholder: 'Ajoutez des observateurs',
+    watch_list_helper_text: 'Choisissez qui est intéressé par le traitement de l\'incident',
     
     impact: 'Impact',
     impact_placeholder: 'Sélectionnez l\'impact',
@@ -439,6 +440,7 @@ export default {
     
   },
   problem: {
+    writer_name: 'Créé par',
     status: 'Statut',
     status_placeholder: 'Sélectionnez un statut',
     title: 'Titre',
@@ -473,8 +475,9 @@ export default {
     symptoms_description_placeholder: 'Décrivez les symptômes observés',
     workaround: 'Solution de contournement',
     workaround_placeholder: 'Décrivez la solution de contournement',
+    created_at: 'Date de création',
+    updated_at: 'Date de modification',
     closed_at: 'Date de clôture',
-    closed_at_placeholder: 'Sélectionnez la date de clôture',
     
     knownerrors_list: 'Erreurs connues associées',
     knownerrors_list_placeholder: 'Sélectionnez les erreurs connues',
@@ -533,11 +536,12 @@ export default {
   },
   change: {
     // Informations générales
+    created_at: 'Créé le',
     status: 'Statut',
     status_placeholder: 'Sélectionnez un statut',
     requested_for: 'Demandé pour',
     requested_for_placeholder: 'Sélectionnez une personne',
-    writer: 'Rédacteur',
+    writer: 'Créé par',
     title: 'Titre',
     title_placeholder: 'Entrez le titre du changement',
     description: 'Description',
