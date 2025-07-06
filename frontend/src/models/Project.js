@@ -21,8 +21,20 @@ export class Project {
     // Assignation (stockée dans rel_tickets_groups_persons)
     this.rel_assigned_to_group = data.rel_assigned_to_group || null; // Référence à une équipe affectée
     this.rel_assigned_to_person = data.rel_assigned_to_person || null; // Référence à l'utilisateur responsable
+    this.assigned_group_name = data.assigned_group_name || ''; // Nom de l'équipe assignée
+    this.assigned_person_name = data.assigned_person_name || ''; // Nom de la personne assignée
     this.access_to_groups = data.access_to_groups || []; // Groupes ayant accès
     this.access_to_users = data.access_to_users || []; // Utilisateurs ayant accès
+    
+    // Compteurs de tickets associés
+    this.defect_count = data.defect_count || 0; // Nombre de défauts
+    this.us_count = data.us_count || 0; // Nombre de user stories
+    this.epic_count = data.epic_count || 0; // Nombre d'épics
+    this.sprint_count = data.sprint_count || 0; // Nombre de sprints
+    
+    // Informations sur l'auteur et les dates
+    this.writer_name = data.writer_name || ''; // Nom de l'auteur
+    this.closed_at = data.closed_at || null; // Date de clôture
     
     // Timestamps
     this.created_at = data.created_at || null;
@@ -38,7 +50,7 @@ export class Project {
     ];
   }
 
-  static getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
@@ -163,6 +175,7 @@ export class Project {
             : 'groups',
         displayField: 'group_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'assigned_group_name',
         columnsConfig: [
           { key: 'group_name', label: t('group.name'), visible: true }
         ],
@@ -179,6 +192,7 @@ export class Project {
             : 'groups/members',
         displayField: 'person_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'assigned_person_name',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
