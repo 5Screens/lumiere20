@@ -160,7 +160,25 @@ const getDefectById = async (uuid, lang = 'en') => {
         }
         
         logger.info(`[DEFECT SERVICE] Successfully retrieved defect with UUID: ${uuid}`);
-        return result.rows[0];
+        
+        // Transformer les tags de format JSON string en tableau d'objets
+        const defect = result.rows[0];
+        if (defect.tags) {
+            try {
+                // Parse la chaîne JSON des tags
+                const parsedTags = JSON.parse(defect.tags);
+                // Transformer chaque tag en objet avec propriété name
+                defect.tags = parsedTags.map(tag => ({ name: tag }));
+            } catch (err) {
+                logger.warn(`[DEFECT SERVICE] Error parsing tags for defect ${uuid}:`, err);
+                // En cas d'erreur, initialiser avec un tableau vide
+                defect.tags = [];
+            }
+        } else {
+            defect.tags = [];
+        }
+        
+        return defect;
     } catch (error) {
         logger.error(`[DEFECT SERVICE] Error fetching defect with UUID ${uuid}:`, error);
         throw error;
