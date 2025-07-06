@@ -112,6 +112,7 @@
             :pickedItems="formData[fieldName]"
             :ressourceEndPoint="field.ressourceEndPoint"
             :fieldName="field.fieldName"
+            :visible="field.visible"
           />
           
           <!-- Sélecteur de date -->
