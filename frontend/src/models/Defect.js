@@ -51,7 +51,7 @@ export class Defect {
     ];
   }
 
-  static getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
@@ -59,8 +59,35 @@ export class Defect {
     const dynamicLabels = new Defect();
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
-    return {
+    // Définition de tous les champs
+    const fields = {
       // Informations générales
+      uuid: {
+        label: t('common.id'),
+        type: 'sTextField',
+        placeholder: t('common.id'),
+        disabled: true
+      },
+      created_at: {
+        label: t('common.created_at'),
+        type: 'sTextField',
+        disabled: true
+      },
+      writer_name: {
+        label: t('common.writer'),
+        type: 'sTextField',
+        disabled: true
+      },
+      updated_at: {
+        label: t('common.updated_at'),
+        type: 'sTextField',
+        disabled: true
+      },
+      closed_at: {
+        label: t('common.closed_at'),
+        type: 'sTextField',
+        disabled: true
+      },
       title: {
         label: t('defect.title'),
         type: 'sTextField',
@@ -210,6 +237,18 @@ export class Defect {
         fieldName: 'DEFECT'
       }
     };
+  
+    // Supprimer les champs système en mode création
+    if (mode === 'for_creation') {
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
+      fieldsToRemove.forEach(field => {
+        if (field in fields) {
+          delete fields[field];
+        }
+      });
+    }
+    
+    return fields;
   }
 
   toAPI(method) {
@@ -236,11 +275,20 @@ export class Defect {
     // Supprimer les attachments car ils sont gérés séparément par le composant sFileUploader
     delete apiData.attachments;
     
-    // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
+    // Pour POST, supprimer les champs spécifiés qui ne doivent pas être envoyés lors de la création
+    if (method.toUpperCase() === 'POST') {
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
+      fieldsToRemove.forEach(field => {
+        if (field in apiData) {
+          delete apiData[field];
+        }
+      });
+    }
+    
+    // Supprimer les valeurs null ou vides
     Object.keys(apiData).forEach(key => {
       const value = apiData[key];
       if (value === null || value === undefined || 
-          (Array.isArray(value) && value.length === 0) || 
           (typeof value === 'string' && value.trim() === '')) {
         delete apiData[key];
       }

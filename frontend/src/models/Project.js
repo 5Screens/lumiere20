@@ -67,6 +67,26 @@ export class Project {
         placeholder: t('common.id'),
         disabled: true
       },
+      created_at: {
+        label: t('common.created_at'),
+        type: 'sTextField',
+        disabled: true
+      },
+      writer_name: {
+        label: t('common.writer'),
+        type: 'sTextField',
+        disabled: true
+      },
+      updated_at: {
+        label: t('common.updated_at'),
+        type: 'sTextField',
+        disabled: true
+      },
+      closed_at: {
+        label: t('common.closed_at'),
+        type: 'sTextField',
+        disabled: true
+      },
       title: {
         label: t('project.name'),
         type: 'sTextField',
@@ -255,7 +275,7 @@ export class Project {
     
     // Si mode est 'for_creation', supprimer les champs spécifiés
     if (mode === 'for_creation') {
-      const fieldsToRemove = ['writer_name', 'closed_at', 'uuid', 'created_at', 'updated_at', 'defect_count', 'us_count', 'epic_count', 'sprint_count'];
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
       fieldsToRemove.forEach(field => {
         if (fields[field]) {
           delete fields[field];
@@ -338,7 +358,7 @@ export class Project {
     
     // Pour POST, supprimer les champs spécifiés qui ne doivent pas être envoyés lors de la création
     if (method.toUpperCase() === 'POST') {
-      const fieldsToRemove = ['writer_name', 'closed_at', 'uuid', 'created_at', 'updated_at', 'defect_count', 'us_count', 'epic_count', 'sprint_count'];
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at', 'defect_count', 'us_count', 'epic_count', 'sprint_count'];
       fieldsToRemove.forEach(field => {
         if (field in apiData) {
           delete apiData[field];
