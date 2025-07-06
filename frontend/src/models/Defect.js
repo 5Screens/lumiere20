@@ -12,14 +12,20 @@ export class Defect {
     
     // Informations sur les personnes
     this.writer_uuid = data.writer_uuid || null; // Personne qui saisit le défaut dans le système
+    this.writer_name = data.writer_name || null; // Nom de la personne qui saisit le défaut
     this.requested_by_uuid = data.requested_by_uuid || null; // Personne qui rapporte le défaut
+    this.requested_by_name = data.requested_by_name || null; // Nom de la personne qui rapporte le défaut
     this.requested_for_uuid = data.requested_for_uuid || null; // Personne qui a détecté le défaut
+    this.requested_for_name = data.requested_for_name || null; // Nom de la personne qui a détecté le défaut
+    this.rel_assigned_to_person = data.rel_assigned_to_person || null; // Personne assignée
+    this.assigned_person_name = data.assigned_person_name || null; // Nom de la personne assignée
     
     // Attributs étendus (core_extended_attributes)
     this.severity = data.severity || null; // Sévérité du défaut
     this.impact_area = data.impact_area || null; // Zone d'impact
     this.environment = data.environment || null; // Environnement où le défaut a été détecté
     this.project_id = data.project_id || null; // Projet associé
+    this.project_name = data.project_name || null; // Nom du projet associé
     this.epic_id = data.epic_id || null; // Epic parent
     this.sprint_id = data.sprint_id || null; // Sprint associé
     this.steps_to_reproduce = data.steps_to_reproduce || ''; // Étapes pour reproduire
@@ -119,6 +125,7 @@ export class Defect {
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'requested_for_name',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true },
@@ -134,6 +141,7 @@ export class Defect {
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'requested_by_name',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true },
@@ -149,6 +157,7 @@ export class Defect {
         endpoint: 'tickets?ticket_type=PROJECT',
         displayField: 'title',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'project_name',
         columnsConfig: [
           { key: 'title', label: t('project.name'), visible: true },
           { key: 'key', label: t('project.key'), visible: true }
@@ -161,7 +170,7 @@ export class Defect {
         placeholder: t('defect.assignee_placeholder'),
         required: isRequired('assignee'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/team/members` : '',
-        fieldName: 'assignee',
+        fieldName: 'rel_assigned_to_person',
         displayField: 'full_name',
         valueField: 'uuid',
         mode: 'creation'
