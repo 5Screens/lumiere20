@@ -52,7 +52,17 @@ const getProjectById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'budget' as budget,
                 t.core_extended_attributes->>'completion_percentage' as completion_percentage,
                 t.core_extended_attributes->>'risk_level' as risk_level,
-                t.core_extended_attributes->>'issue_type_scheme_id' as issue_type_scheme_id,
+                -- Transformation de issue_type_scheme_id en tableau d'objets avec code et libellé
+                (
+                    SELECT json_agg(json_build_object(
+                        'code', symptoms.symptom_code,
+                        'libelle', COALESCE(st.libelle, symptoms.symptom_code)
+                    ))
+                    FROM (
+                        SELECT jsonb_array_elements_text(t.core_extended_attributes->'issue_type_scheme_id') as symptom_code
+                    ) as symptoms
+                    LEFT JOIN translations.symptoms_translation st ON st.symptom_code = symptoms.symptom_code AND st.langue = $2
+                ) as issue_type_scheme_id,
                 t.core_extended_attributes->>'visibility' as visibility,
                 
                 -- Labels traduits pour les champs avec référence
