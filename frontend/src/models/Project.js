@@ -60,6 +60,14 @@ export class Project {
 
     return {
       // Informations générales
+      uuid: {
+        label: t('common.id'),
+        type: 'sTextField',
+        placeholder: t('common.id'),
+        required: false,
+        readonly: true,
+        visible: mode !== 'for_creation'
+      },
       title: {
         label: t('project.name'),
         type: 'sTextField',
@@ -199,6 +207,50 @@ export class Project {
         ],
         required: isRequired('rel_assigned_to_person'),
         resetable: true
+      },
+      
+      // Informations sur l'auteur et les dates
+      writer_name: {
+        label: t('common.writer_name'),
+        type: 'sTextField',
+        disabled: true
+      },
+      closed_at: {
+        label: t('common.closure_date'),
+        type: 'sTextField',
+        disabled: true
+      },
+      created_at: {
+        label: t('common.creation_date'),
+        type: 'sTextField',
+        disabled: true,
+      },
+      updated_at: {
+        label: t('common.modification_date'),
+        type: 'sTextField',
+        disabled: true,
+      },
+      
+      // Compteurs de tickets associés
+      defect_count: {
+        label: t('project.defect_count'),
+        type: 'sTextField',
+        disabled: true
+      },
+      us_count: {
+        label: t('project.us_count'),
+        type: 'sTextField',
+        disabled: true,
+      },
+      epic_count: {
+        label: t('project.epic_count'),
+        type: 'sTextField',
+        disabled: true,
+      },
+      sprint_count: {
+        label: t('project.sprint_count'),
+        type: 'sTextField',
+        disabled: true,
       }
     };
   }
