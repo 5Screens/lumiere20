@@ -146,6 +146,24 @@
             :required="field.required"
             :uuid="objectId"
           />
+          
+          <!-- Liste de tags -->
+          <sTagsList
+            v-else-if="field.type === 'sTagsList'"
+            v-model="formData[fieldName]"
+            :label="field.label"
+            :required="field.required"
+            :placeholder="field.placeholder"
+            :helperText="field.helperText"
+            :comboBox="field.comboBox || false"
+            :sourceEndPoint="getEndpoint(field.sourceEndPoint, formData)"
+            :displayedLabel="field.displayedLabel || 'name'"
+            :fieldName="fieldName"
+            :edition="mode === 'update'"
+            :uuid="objectId"
+            :patchEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
+            @update:success="handleFieldSuccess"
+          />
         </template>
       </template>
       
@@ -177,6 +195,7 @@ import sPickList from '@/components/common/sPickList.vue';
 import sDatePicker from '@/components/common/sDatePicker.vue';
 import sToggleField from '@/components/common/sToggleField.vue';
 import sFileUploader from '@/components/common/sFileUploader.vue';
+import sTagsList from '@/components/common/sTagsList.vue';
 import AuditTable from '@/components/common/auditTable.vue';
 
 // Import du service API
