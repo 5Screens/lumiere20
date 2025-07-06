@@ -80,7 +80,17 @@ const getDefectById = async (uuid, lang = 'en') => {
         // Requête SQL pour récupérer les détails du défaut avec les données d'assignation
         const query = `
             SELECT 
-                t.*,
+                t.uuid,
+                t.title,
+                t.description,
+                t.requested_by_uuid,
+                t.requested_for_uuid,
+                t.writer_uuid,
+                t.ticket_type_code,
+                t.ticket_status_code,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
                 p1.first_name || ' ' || p1.last_name as requested_by_name,
                 p2.first_name || ' ' || p2.last_name as requested_for_name,
                 p3.first_name || ' ' || p3.last_name as writer_name,
@@ -90,39 +100,26 @@ const getDefectById = async (uuid, lang = 'en') => {
                 ts.code as ticket_status_code,
                 
                 -- Informations sur l'équipe assignée
-                g.group_name as assigned_group_name,
                 g.uuid as assigned_to_group,
+                g.group_name as assigned_group_name,
                 
                 -- Informations sur la personne assignée
                 p4.uuid as assigned_to_person,
                 p4.first_name || ' ' || p4.last_name as assigned_person_name,
                 
-                -- Informations sur les observateurs (watchers)
-                (
-                    SELECT json_agg(json_build_object(
-                        'uuid', w.uuid,
-                        'person_uuid', p5.uuid,
-                        'person_name', p5.first_name || ' ' || p5.last_name,
-                        'created_at', w.created_at
-                    ))
-                    FROM core.rel_tickets_groups_persons w
-                    JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
-                    WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
-                ) as watchers,
+                -- Champs spécifiques aux défauts depuis core_extended_attributes
+                t.core_extended_attributes->>'tags' as tags,
+                t.core_extended_attributes->>'severity' as severity,
+                t.core_extended_attributes->>'workaround' as workaround,
+                t.core_extended_attributes->>'environment' as environment,
+                t.core_extended_attributes->>'impact_area' as impact_area,
+                t.core_extended_attributes->>'expected_behavior' as expected_behavior,
+                t.core_extended_attributes->>'steps_to_reproduce' as steps_to_reproduce,
                 
-                -- Champs spécifiques aux défauts
-                def_environment,
-                def_severity,
-                def_version_found,
-                def_version_fixed,
-                def_steps_to_reproduce,
-                def_expected_behavior,
-                def_actual_behavior,
-                def_root_cause,
-                def_resolution,
-                def_test_results,
-                def_verification_date,
-                def_verified_by_uuid
+                -- Labels traduits pour les champs avec référence
+                COALESCE(severity_t.label, t.core_extended_attributes->>'severity') as severity_label,
+                COALESCE(environment_t.label, t.core_extended_attributes->>'environment') as environment_label,
+                COALESCE(impact_area_t.label, t.core_extended_attributes->>'impact_area') as impact_area_label
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
@@ -143,6 +140,14 @@ const getDefectById = async (uuid, lang = 'en') => {
             ) rtgp ON t.uuid = rtgp.rel_ticket
             LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
             LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+            
+            -- Jointures pour les labels traduits des champs de référence
+            LEFT JOIN translations.defect_setup_labels severity_t ON 
+                severity_t.rel_defect_setup_code = t.core_extended_attributes->>'severity' AND severity_t.lang = $2
+            LEFT JOIN translations.defect_setup_labels environment_t ON 
+                environment_t.rel_defect_setup_code = t.core_extended_attributes->>'environment' AND environment_t.lang = $2
+            LEFT JOIN translations.defect_setup_labels impact_area_t ON 
+                impact_area_t.rel_defect_setup_code = t.core_extended_attributes->>'impact_area' AND impact_area_t.lang = $2
             
             WHERE t.uuid = $1 AND t.ticket_type_code = 'DEFECT'
         `;
