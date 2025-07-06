@@ -119,7 +119,23 @@ const getDefectById = async (uuid, lang = 'en') => {
                 -- Labels traduits pour les champs avec référence
                 COALESCE(severity_t.label, t.core_extended_attributes->>'severity') as severity_label,
                 COALESCE(environment_t.label, t.core_extended_attributes->>'environment') as environment_label,
-                COALESCE(impact_area_t.label, t.core_extended_attributes->>'impact_area') as impact_area_label
+                COALESCE(impact_area_t.label, t.core_extended_attributes->>'impact_area') as impact_area_label,
+                
+                -- Récupération du titre et de l'UUID du projet parent
+                (
+                    SELECT parent.title
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                    WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'DEFECT' AND rpc.ended_at IS NULL
+                    LIMIT 1
+                ) as project_name,
+                (
+                    SELECT parent.uuid
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                    WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'DEFECT' AND rpc.ended_at IS NULL
+                    LIMIT 1
+                ) as project_id
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
