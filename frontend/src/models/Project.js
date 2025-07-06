@@ -58,15 +58,14 @@ export class Project {
     const dynamicLabels = new Project();
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
-    return {
+    // Définition de tous les champs
+    const fields = {
       // Informations générales
       uuid: {
         label: t('common.id'),
         type: 'sTextField',
         placeholder: t('common.id'),
-        required: false,
-        readonly: true,
-        visible: mode !== 'for_creation'
+        disabled: true
       },
       title: {
         label: t('project.name'),
@@ -253,6 +252,18 @@ export class Project {
         disabled: true,
       }
     };
+    
+    // Si mode est 'for_creation', supprimer les champs spécifiés
+    if (mode === 'for_creation') {
+      const fieldsToRemove = ['writer_name', 'closed_at', 'uuid', 'created_at', 'updated_at', 'defect_count', 'us_count', 'epic_count', 'sprint_count'];
+      fieldsToRemove.forEach(field => {
+        if (fields[field]) {
+          delete fields[field];
+        }
+      });
+    }
+    
+    return fields;
   }
 
   /**
@@ -324,6 +335,16 @@ export class Project {
     // Créer une copie de l'objet sans l'attribut requiredFields
     const apiData = { ...this };
     delete apiData.requiredFields;
+    
+    // Pour POST, supprimer les champs spécifiés qui ne doivent pas être envoyés lors de la création
+    if (method.toUpperCase() === 'POST') {
+      const fieldsToRemove = ['writer_name', 'closed_at', 'uuid', 'created_at', 'updated_at', 'defect_count', 'us_count', 'epic_count', 'sprint_count'];
+      fieldsToRemove.forEach(field => {
+        if (field in apiData) {
+          delete apiData[field];
+        }
+      });
+    }
     
     // Traiter les listes pour extraire uniquement les UUIDs ou codes selon le champ
     const uuidListFields = ['access_to_groups', 'access_to_users'];
