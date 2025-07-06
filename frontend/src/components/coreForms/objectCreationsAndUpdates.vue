@@ -112,7 +112,7 @@
             :pickedItems="formData[fieldName]"
             :ressourceEndPoint="field.ressourceEndPoint"
             :fieldName="field.fieldName"
-            :visible="field.visible"
+            :visible="typeof field.visible === 'function' ? field.visible(formData) : (field.visible !== undefined ? field.visible : true)"
           />
           
           <!-- Sélecteur de date -->
