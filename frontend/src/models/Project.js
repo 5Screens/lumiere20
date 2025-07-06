@@ -108,6 +108,7 @@ export class Project {
         required: isRequired('visibility'),
         endpoint: `project_setup?lang=${userProfileStore.language}&metadata=visibility`,
         fieldName: 'visibility',
+        displayField: 'label',
         valueField: 'code',
         mode: 'creation'
       },

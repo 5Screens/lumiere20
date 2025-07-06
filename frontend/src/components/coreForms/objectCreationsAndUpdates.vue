@@ -56,6 +56,8 @@
             :uuid="objectId"
             :patchEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
             :fieldName="fieldName"
+            :displayField="field.displayField"
+            :valueField="field.valueField"
             @update:success="handleFieldSuccess"
           />
           
