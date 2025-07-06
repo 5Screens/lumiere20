@@ -95,11 +95,12 @@ export class Project {
         type: 'sPickList',
         placeholder: t('project.issue_type_scheme_id_placeholder'),
         sourceEndPoint: `symptoms?lang=${userProfileStore.language}`,
-        displayedLabel: 'symptom_label',
+        displayedLabel: 'libelle',
         targetEndPoint: 'projects',
         target_uuid: null,
         pickedItems: null,
-        required: isRequired('issue_type_scheme_id')
+        required: isRequired('issue_type_scheme_id'), 
+        visible: true,
       },
       visibility: {
         label: t('project.visibility'),
