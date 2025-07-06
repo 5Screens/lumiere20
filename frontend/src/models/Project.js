@@ -131,7 +131,7 @@ export class Project {
         type: 'sPickList',
         placeholder: t('project.access_to_users_placeholder'),
         sourceEndPoint: 'persons',
-        displayedLabel: 'first_name',
+        displayedLabel: 'person_name',
         targetEndPoint: 'projects',
         target_uuid: null,
         pickedItems: null,

@@ -93,7 +93,33 @@ const getProjectById = async (uuid, lang = 'en') => {
                     WHERE rpc.rel_parent_ticket_uuid = t.uuid 
                     AND rpc.dependency_code = 'SPRINT'
                     AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
-                ) as sprint_count
+                ) as sprint_count,
+                
+                -- Informations sur les utilisateurs ayant accès au projet
+                (
+                    SELECT json_agg(json_build_object(
+                        'uuid', w.uuid,
+                        'person_uuid', p5.uuid,
+                        'person_name', p5.first_name || ' ' || p5.last_name,
+                        'created_at', w.created_at
+                    ))
+                    FROM core.rel_tickets_groups_persons w
+                    JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
+                    WHERE w.rel_ticket = t.uuid AND w.type = 'ACCESS_GRANTED' AND w.rel_assigned_to_group IS NULL AND (w.ended_at IS NULL OR w.ended_at > NOW())
+                ) as access_to_users,
+                
+                -- Informations sur les groupes ayant accès au projet
+                (
+                    SELECT json_agg(json_build_object(
+                        'uuid', w.uuid,
+                        'group_uuid', g2.uuid,
+                        'group_name', g2.group_name,
+                        'created_at', w.created_at
+                    ))
+                    FROM core.rel_tickets_groups_persons w
+                    JOIN configuration.groups g2 ON w.rel_assigned_to_group = g2.uuid
+                    WHERE w.rel_ticket = t.uuid AND w.type = 'ACCESS_GRANTED' AND (w.ended_at IS NULL OR w.ended_at > NOW())
+                ) as access_to_groups
                 
                 -- Autres informations spécifiques aux projets peuvent être ajoutées ici
             FROM core.tickets t
