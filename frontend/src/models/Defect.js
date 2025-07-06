@@ -278,4 +278,16 @@ export class Defect {
     const userProfileStore = useUserProfileStore();
     return `tickets?ticket_type=DEFECT&lang=${userProfileStore.language}`;
   }
+
+  /**
+   * Récupère un défaut par son ID
+   * @param {string} id - ID du défaut à récupérer
+   * @returns {Promise<Defect>} Instance du défaut récupéré
+   */
+  static async getById(id) {
+    const userProfileStore = useUserProfileStore();
+    const endpoint = `tickets/${id}?lang=${userProfileStore.language}`;
+    const data = await import('@/services/apiService').then(module => module.default.get(endpoint));
+    return new Defect(data);
+  }
 }
