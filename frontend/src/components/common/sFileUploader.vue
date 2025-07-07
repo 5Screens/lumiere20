@@ -71,6 +71,16 @@
           >
             <i class="fas fa-eye"></i>
           </button>
+          
+          <!-- Bouton de téléchargement -->
+          <button
+            v-if="file.uuid"
+            class="s-file-uploader__action-button download"
+            @click.stop="downloadFile(file)"
+            :title="t('fileUploader.download', 'Télécharger')"
+          >
+            <i class="fas fa-download"></i>
+          </button>
 
           <!-- Bouton de suppression -->
           <button
@@ -425,6 +435,23 @@ const openPreview = (file) => {
 const closePreview = () => {
   showPreview.value = false
   previewFile.value = null
+}
+
+/**
+ * Télécharge un fichier en forçant le téléchargement au lieu de l'affichage
+ * @param {Object} file - Fichier à télécharger
+ */
+const downloadFile = (file) => {
+  if (!file || !file.uuid) return
+  
+  // Créer un lien temporaire pour le téléchargement
+  const downloadUrl = `${API_BASE_URL}/attachments/${file.uuid}`
+  const link = document.createElement('a')
+  link.href = downloadUrl
+  link.setAttribute('download', file.originalname || file.name) // Force le téléchargement
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 const getPreviewUrl = (file) => {
