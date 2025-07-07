@@ -176,4 +176,16 @@ export class Sprint {
     const userProfileStore = useUserProfileStore();
     return `tickets?ticket_type=SPRINT&lang=${userProfileStore.language}`;
   }
+
+  /**
+   * Récupère un sprint par son ID
+   * @param {string} id - ID du sprint à récupérer
+   * @returns {Promise<Sprint>} Instance du sprint récupéré
+   */
+  static async getById(id) {
+    const userProfileStore = useUserProfileStore();
+    const endpoint = `tickets/${id}?lang=${userProfileStore.language}`;
+    const data = await import('@/services/apiService').then(module => module.default.get(endpoint));
+    return new Sprint(data);
+  }
 }
