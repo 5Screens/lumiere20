@@ -226,6 +226,16 @@ export class Story {
     const apiData = { ...this };
     delete apiData.requiredFields;
     
+    // Pour POST, supprimer les champs spécifiés qui ne doivent pas être envoyés lors de la création
+    if (method.toUpperCase() === 'POST') {
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
+      fieldsToRemove.forEach(field => {
+        if (field in apiData) {
+          delete apiData[field];
+        }
+      });
+    }
+    
     // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
     Object.keys(apiData).forEach(key => {
       const value = apiData[key];
