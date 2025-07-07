@@ -15,7 +15,22 @@ const getSprintById = async (uuid, lang = 'en') => {
         // Requête SQL pour récupérer les détails du sprint avec les données d'assignation
         const query = `
             SELECT 
-                t.*,
+                t.uuid,
+                t.title,
+                t.description,
+                t.requested_by_uuid,
+                t.requested_for_uuid,
+                t.writer_uuid,
+                t.ticket_type_code,
+                t.ticket_status_code,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
+                -- Extraction des attributs spécifiques aux sprints depuis le JSONB
+                t.core_extended_attributes->>'start_date' as start_date,
+                t.core_extended_attributes->>'end_date' as end_date,
+                t.core_extended_attributes->>'actual_velocity' as actual_velocity,
+                t.core_extended_attributes->>'estimated_velocity' as estimated_velocity,
                 p1.first_name || ' ' || p1.last_name as requested_by_name,
                 p2.first_name || ' ' || p2.last_name as requested_for_name,
                 p3.first_name || ' ' || p3.last_name as writer_name,
@@ -43,7 +58,23 @@ const getSprintById = async (uuid, lang = 'en') => {
                     FROM core.rel_tickets_groups_persons w
                     JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
                     WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
-                ) as watchers
+                ) as watchers,
+                
+                -- Récupération du titre et de l'UUID du projet parent
+                (
+                    SELECT parent.title
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                    WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'SPRINT' AND rpc.ended_at IS NULL
+                    LIMIT 1
+                ) as project_name,
+                (
+                    SELECT parent.uuid
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                    WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'SPRINT' AND rpc.ended_at IS NULL
+                    LIMIT 1
+                ) as project_id
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
