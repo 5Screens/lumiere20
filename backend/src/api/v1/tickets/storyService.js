@@ -15,8 +15,16 @@ const getStoryById = async (uuid, lang = 'en') => {
         // Requête SQL pour récupérer les détails de la user story avec les données d'assignation
         const query = `
             SELECT 
-                t.*,
-                p1.first_name || ' ' || p1.last_name as requested_by_name,
+                t.uuid,
+                t.title,
+                t.description,
+                t.requested_for_uuid,
+                t.writer_uuid,
+                t.ticket_type_code,
+                t.ticket_status_code,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
                 p2.first_name || ' ' || p2.last_name as requested_for_name,
                 p3.first_name || ' ' || p3.last_name as writer_name,
                 COALESCE(ttt.label, tt.code) as ticket_type_label,
@@ -25,28 +33,20 @@ const getStoryById = async (uuid, lang = 'en') => {
                 ts.code as ticket_status_code,
                 
                 -- Informations sur l'équipe assignée
-                g.group_name as assigned_group_name,
                 g.uuid as assigned_to_group,
+                g.group_name as assigned_group_name,
                 
                 -- Informations sur la personne assignée
                 p4.uuid as assigned_to_person,
                 p4.first_name || ' ' || p4.last_name as assigned_person_name,
                 
-                -- Informations sur les observateurs (watchers)
-                (
-                    SELECT json_agg(json_build_object(
-                        'uuid', w.uuid,
-                        'person_uuid', p5.uuid,
-                        'person_name', p5.first_name || ' ' || p5.last_name,
-                        'created_at', w.created_at
-                    ))
-                    FROM core.rel_tickets_groups_persons w
-                    JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
-                    WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
-                ) as watchers
+                -- Champs spécifiques aux user stories depuis core_extended_attributes
+                t.core_extended_attributes->>'tags' as tags,
+                t.core_extended_attributes->>'priority' as priority,
+                t.core_extended_attributes->>'story_points' as story_points,
+                t.core_extended_attributes->>'acceptance_criteria' as acceptance_criteria
                 
             FROM core.tickets t
-            LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
             LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
             JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
             JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code

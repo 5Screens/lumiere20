@@ -220,6 +220,18 @@ export class Story {
   }
 
   /**
+   * Récupère une story par son ID
+   * @param {string} id - ID de la story à récupérer
+   * @returns {Promise<Story>} Instance de la story récupérée
+   */
+  static async getById(id) {
+    const userProfileStore = useUserProfileStore();
+    const endpoint = `tickets/${id}?lang=${userProfileStore.language}`;
+    const data = await import('@/services/apiService').then(module => module.default.get(endpoint));
+    return new Story(data);
+  }
+
+  /**
    * Retourne l'endpoint API pour récupérer les tickets de type story
    * @returns {string} URL de l'endpoint API
    */
