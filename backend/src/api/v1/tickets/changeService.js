@@ -308,7 +308,7 @@ const getChangeById = async (uuid, lang = 'en') => {
         // Requête SQL pour récupérer les détails du changement avec les données d'assignation
         const query = `
             SELECT 
-                    t.uuid,
+                t.uuid,
                 t.title,
                 t.description,
                 t.configuration_item_uuid,
