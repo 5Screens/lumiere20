@@ -15,7 +15,16 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
         // Requête SQL pour récupérer les détails de l'article de connaissance avec les données d'assignation
         const query = `
             SELECT 
-                t.*,
+                t.uuid,
+                t.title,
+                t.description,
+                t.configuration_item_uuid,
+                ci.name as configuration_item_name,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
+                t.requested_by_uuid,
+                t.requested_for_uuid,
                 p1.first_name || ' ' || p1.last_name as requested_by_name,
                 p2.first_name || ' ' || p2.last_name as requested_for_name,
                 p3.first_name || ' ' || p3.last_name as writer_name,
@@ -32,20 +41,73 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
                 p4.uuid as assigned_to_person,
                 p4.first_name || ' ' || p4.last_name as assigned_person_name,
                 
-                -- Informations sur les observateurs (watchers)
+                -- Extraction des attributs spécifiques aux articles de connaissance depuis le JSONB
+                t.core_extended_attributes->>'rel_category' as rel_category,
+                COALESCE(
+                    (SELECT ksl.label FROM translations.knowledge_setup_label ksl 
+                    WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND ksl.lang = $2 ),
+                    t.core_extended_attributes->>'rel_category'
+                ) as rel_category_label,
+                t.core_extended_attributes->>'keywords' as keywords,
+                t.core_extended_attributes->>'rel_service' as rel_service,
+                t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
+                service.name as rel_service_name,
+                service_offerings.name as rel_service_offerings_name,
+                t.core_extended_attributes->>'rel_target_audience' as rel_target_audience,
                 (
-                    SELECT json_agg(json_build_object(
-                        'uuid', w.uuid,
-                        'person_uuid', p5.uuid,
-                        'person_name', p5.first_name || ' ' || p5.last_name,
-                        'created_at', w.created_at
-                    ))
-                    FROM core.rel_tickets_groups_persons w
-                    JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
-                    WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
-                ) as watchers
+                    SELECT jsonb_agg(ksl.label)
+                    FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code
+                    JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code
+                    WHERE ksl.lang = $2
+                ) as rel_target_audience_label,
+                t.core_extended_attributes->>'rel_lang' as rel_lang,
+                lang.native_name as rel_lang_name,
+                t.core_extended_attributes->>'rel_confidentiality_level' as rel_confidentiality_level,
+                COALESCE(
+                    (SELECT ksl.label FROM translations.knowledge_setup_label ksl 
+                    WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND ksl.lang = $2),
+                    t.core_extended_attributes->>'rel_confidentiality_level'
+                ) as rel_confidentiality_level_label,
+                t.core_extended_attributes->>'summary' as summary,
+                t.core_extended_attributes->>'prerequisites' as prerequisites,
+                t.core_extended_attributes->>'limitations' as limitations,
+                t.core_extended_attributes->>'security_notes' as security_notes,
+                t.core_extended_attributes->>'rel_ticket_type' as rel_ticket_type,
+                t.core_extended_attributes->>'business_scope' as business_scope,
+                (
+                    SELECT jsonb_agg(ksl.label)
+                    FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code
+                    JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code
+                    WHERE ksl.lang = $2
+                ) as business_scope_label,
+                t.core_extended_attributes->>'version' as version,
+                t.core_extended_attributes->>'last_review_at' as last_review_at,
+                t.core_extended_attributes->>'next_review_at' as next_review_at,
+                t.core_extended_attributes->>'license_type' as license_type,
+                t.core_extended_attributes->>'rel_involved_process' as rel_involved_process,
+                COALESCE(
+                    (SELECT ttt2.label FROM translations.ticket_types_translation ttt2
+                    JOIN configuration.ticket_types tt2 ON tt2.uuid = ttt2.ticket_type_uuid
+                    WHERE tt2.code = t.core_extended_attributes->>'rel_involved_process' AND ttt2.lang = $2),
+                    t.core_extended_attributes->>'rel_involved_process'
+                ) as rel_involved_process_label,
+                
+                -- Nombre de pièces jointes
+                (
+                    SELECT COUNT(*)
+                    FROM core.attachments a
+                    WHERE a.object_uuid = t.uuid
+                ) as attachments_count,
+                
+                -- Nombre de tickets liés
+                (
+                    SELECT COUNT(*)
+                    FROM core.rel_parent_child_tickets rpc
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid
+                ) as tieds_tickets_count
                 
             FROM core.tickets t
+            LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
             LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
             JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
@@ -64,6 +126,11 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
             ) rtgp ON t.uuid = rtgp.rel_ticket
             LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
             LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+            
+            -- Jointures pour les services et langues
+            LEFT JOIN data.services service ON service.uuid = (t.core_extended_attributes->>'rel_service')::uuid
+            LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid = (t.core_extended_attributes->>'rel_service_offerings')::uuid
+            LEFT JOIN translations.languages lang ON lang.code = t.core_extended_attributes->>'rel_lang'
             
             WHERE t.uuid = $1 AND t.ticket_type_code = 'KNOWLEDGE'
         `;
