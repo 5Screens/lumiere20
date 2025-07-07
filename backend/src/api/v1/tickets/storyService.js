@@ -44,7 +44,55 @@ const getStoryById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'tags' as tags,
                 t.core_extended_attributes->>'priority' as priority,
                 t.core_extended_attributes->>'story_points' as story_points,
-                t.core_extended_attributes->>'acceptance_criteria' as acceptance_criteria
+                t.core_extended_attributes->>'acceptance_criteria' as acceptance_criteria,
+                
+                -- Récupération de l'UUID du sprint parent
+                (
+                    SELECT parent.uuid
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                    WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'SPRINT' AND rpc.ended_at IS NULL
+                    LIMIT 1
+                ) as sprint_id,
+                
+                -- Récupération de l'UUID de l'epic parent
+                (
+                    SELECT parent.uuid
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                    WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'EPIC' AND rpc.ended_at IS NULL
+                    LIMIT 1
+                ) as epic_id,
+                
+                -- Récupération du titre du projet parent (deux cas possibles)
+                COALESCE(
+                    -- Cas 1: STORY >>> EPIC >>> PROJECT (story est fille d'une epic qui est fille d'un projet)
+                    (
+                        SELECT project.title
+                        FROM core.rel_parent_child_tickets rpc1
+                        JOIN core.tickets epic ON rpc1.rel_parent_ticket_uuid = epic.uuid
+                        JOIN core.rel_parent_child_tickets rpc2 ON epic.uuid = rpc2.rel_child_ticket_uuid
+                        JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid
+                        WHERE rpc1.rel_child_ticket_uuid = t.uuid 
+                          AND rpc1.dependency_code = 'STORY' 
+                          AND rpc1.ended_at IS NULL
+                          AND rpc2.dependency_code = 'EPIC'
+                          AND rpc2.ended_at IS NULL
+                        LIMIT 1
+                    ),
+                    
+                    -- Cas 2: STORY >>> PROJECT (story est directement fille d'un projet)
+                    (
+                        SELECT parent.title
+                        FROM core.rel_parent_child_tickets rpc
+                        JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                        WHERE rpc.rel_child_ticket_uuid = t.uuid 
+                          AND rpc.dependency_code = 'STORY' 
+                          AND parent.ticket_type_code = 'PROJECT'
+                          AND rpc.ended_at IS NULL
+                        LIMIT 1
+                    )
+                ) as project_name
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
@@ -76,7 +124,25 @@ const getStoryById = async (uuid, lang = 'en') => {
         }
         
         logger.info(`[STORY SERVICE] Successfully retrieved user story with UUID: ${uuid}`);
-        return result.rows[0];
+        
+        // Transformer les tags de format JSON string en tableau d'objets
+        const story = result.rows[0];
+        if (story.tags) {
+            try {
+                // Parse la chaîne JSON des tags
+                const parsedTags = JSON.parse(story.tags);
+                // Transformer chaque tag en objet avec propriété name
+                story.tags = parsedTags.map(tag => ({ name: tag }));
+            } catch (err) {
+                logger.warn(`[STORY SERVICE] Error parsing tags for story ${uuid}:`, err);
+                // En cas d'erreur, initialiser avec un tableau vide
+                story.tags = [];
+            }
+        } else {
+            story.tags = [];
+        }
+        
+        return story;
     } catch (error) {
         logger.error(`[STORY SERVICE] Error fetching user story with UUID ${uuid}:`, error);
         throw error;
