@@ -42,7 +42,7 @@ export class Sprint {
     ];
   }
 
-  static getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
@@ -51,6 +51,53 @@ export class Sprint {
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
     return {
+      // Informations système et métadonnées
+      uuid: {
+        label: t('common.id'),
+        type: 'sTextField',
+        disabled: true
+      },
+      writer_name: {
+        label: t('common.writer_name'),
+        type: 'sTextField',
+        disabled: true
+      },
+      created_at: {
+        label: t('common.creation_date'),
+        type: 'sTextField',
+        disabled: true
+      },
+      updated_at: {
+        label: t('common.modification_date'),
+        type: 'sTextField',
+        disabled: true
+      },
+      closed_at: {
+        label: t('common.closure_date'),
+        type: 'sTextField',
+        disabled: true
+      },
+      attachments_count: {
+        label: t('sprint.attachments_count'),
+        type: 'sTextField',
+        disabled: true
+      },
+      tieds_tickets_count: {
+        label: t('sprint.tieds_tickets_count'),
+        type: 'sTextField',
+        disabled: true
+      },
+      stories_count: {
+        label: t('sprint.stories_count'),
+        type: 'sTextField',
+        disabled: true
+      },
+      tasks_count: {
+        label: t('sprint.tasks_count'),
+        type: 'sTextField',
+        disabled: true
+      },
+      
       // Informations générales
       title: {
         label: t('sprint.name'),
@@ -87,7 +134,8 @@ export class Sprint {
           { key: 'title', label: t('project.name'), visible: true },
           { key: 'key', label: t('project.key'), visible: true }
         ],
-        required: isRequired('project_id')
+        required: isRequired('project_id'),
+        displayFieldAtInitInEditMode: 'project_name'
       },
       start_date: {
         label: t('sprint.start_date'),
