@@ -37,7 +37,7 @@ const getStoryById = async (uuid, lang = 'en') => {
                 g.group_name as assigned_group_name,
                 
                 -- Informations sur la personne assignée
-                p4.uuid as assigned_to_person,
+                p4.uuid as rel_assigned_to_person,
                 p4.first_name || ' ' || p4.last_name as assigned_person_name,
                 
                 -- Champs spécifiques aux user stories depuis core_extended_attributes

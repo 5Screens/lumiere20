@@ -12,10 +12,13 @@ export class Story {
     
     // Informations sur les personnes
     this.writer_uuid = data.writer_uuid || null; // Personne qui saisit la story dans le système
+    this.writer_name = data.writer_name || null; // Nom de la personne qui saisit la story
     this.requested_for_uuid = data.requested_for_uuid || null; // Source du besoin, responsable de l'expression de la valeur
+    this.requested_for_name = data.requested_for_name || null; // Nom de la personne pour qui la story est demandée
     
     // Attributs étendus (core_extended_attributes)
     this.project_id = data.project_id || null; // Projet parent
+    this.project_name = data.project_name || null; // Nom du projet parent
     this.epic_id = data.epic_id || null; // Epic parent
     this.sprint_id = data.sprint_id || null; // Sprint associé
     this.story_points = data.story_points || null; // Points de story
@@ -30,6 +33,7 @@ export class Story {
     // Timestamps
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
+    this.closed_at = data.closed_at || null;
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
@@ -39,7 +43,7 @@ export class Story {
     ];
   }
 
-  static getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
@@ -47,7 +51,8 @@ export class Story {
     const dynamicLabels = new Story();
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
-    return {
+    // Définition de tous les champs
+    const fields = {
       // Informations générales
       project_id: {
         label: t('story.project_id'),
@@ -56,6 +61,7 @@ export class Story {
         endpoint: 'tickets?ticket_type=PROJECT',
         displayField: 'title',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'project_name',
         columnsConfig: [
           { key: 'title', label: t('project.name'), visible: true },
           { key: 'key', label: t('project.key'), visible: true }
@@ -124,6 +130,7 @@ export class Story {
         endpoint: 'persons',
         displayField: 'first_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'requested_for_name',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
@@ -155,8 +162,47 @@ export class Story {
         placeholder: t('story.tags_placeholder'),
         required: isRequired('tags'),
         comboBox: false
+      },
+      // Champs système en lecture seule
+      uuid: {
+        label: t('common.id'),
+        type: 'sTextField',
+        placeholder: t('common.id'),
+        disabled: true
+      },
+      created_at: {
+        label: t('common.created_at'),
+        type: 'sTextField',
+        disabled: true
+      },
+      writer_name: {
+        label: t('common.writer'),
+        type: 'sTextField',
+        disabled: true
+      },
+      updated_at: {
+        label: t('common.updated_at'),
+        type: 'sTextField',
+        disabled: true
+      },
+      closed_at: {
+        label: t('common.closed_at'),
+        type: 'sTextField',
+        disabled: true
       }
     };
+    
+    // Supprimer les champs système en mode création
+    if (mode === 'for_creation') {
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
+      fieldsToRemove.forEach(field => {
+        if (field in fields) {
+          delete fields[field];
+        }
+      });
+    }
+    
+    return fields;
   }
 
   toAPI(method) {
