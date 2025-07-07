@@ -50,7 +50,8 @@ export class Sprint {
     const dynamicLabels = new Sprint();
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
-    return {
+    // Définition de tous les champs
+    const fields = {
       // Informations système et métadonnées
       uuid: {
         label: t('common.id'),
@@ -164,6 +165,18 @@ export class Sprint {
         inputType: 'number'
       }
     };
+    
+    // Supprimer les champs système et métadonnées en mode création
+    if (mode === 'for_creation') {
+      const fieldsToRemove = ['uuid', 'writer_name', 'created_at', 'updated_at', 'closed_at', 'attachments_count', 'tieds_tickets_count', 'stories_count', 'tasks_count'];
+      fieldsToRemove.forEach(field => {
+        if (field in fields) {
+          delete fields[field];
+        }
+      });
+    }
+    
+    return fields;
   }
 
   toAPI(method) {
@@ -186,6 +199,16 @@ export class Sprint {
     // Créer une copie de l'objet sans l'attribut requiredFields
     const apiData = { ...this };
     delete apiData.requiredFields;
+    
+    // Pour POST, supprimer les champs spécifiés qui ne doivent pas être envoyés lors de la création
+    if (method.toUpperCase() === 'POST') {
+      const fieldsToRemove = ['uuid', 'writer_name', 'created_at', 'updated_at', 'closed_at', 'attachments_count', 'tieds_tickets_count', 'stories_count', 'tasks_count'];
+      fieldsToRemove.forEach(field => {
+        if (field in apiData) {
+          delete apiData[field];
+        }
+      });
+    }
     
     // Supprimer tous les attributs qui sont null, undefined, tableaux vides ou chaînes vides
     Object.keys(apiData).forEach(key => {
