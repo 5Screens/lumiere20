@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import apiService from '@/services/apiService'
 
 export class Knowledge_article {
   /**
@@ -46,6 +47,27 @@ export class Knowledge_article {
   static getApiEndpoint() {
     const userProfileStore = useUserProfileStore();
     return `tickets?ticket_type=KNOWLEDGE&lang=${userProfileStore.language}`;
+  }
+
+  /**
+   * Récupère un article de connaissance par son UUID
+   * @param {string} uuid - L'UUID de l'article à récupérer
+   * @returns {Promise<Knowledge_article>} Une promesse résolue avec l'instance de l'article de connaissance
+   */
+  static async getById(uuid) {
+    try {
+      const userProfileStore = useUserProfileStore();
+      const response = await apiService.get(`tickets/${uuid}?ticket_type=KNOWLEDGE&lang=${userProfileStore.language}`);
+      
+      if (response) {
+        return new Knowledge_article(response);
+      }
+      
+      throw new Error('Knowledge article not found');
+    } catch (error) {
+      console.error('Error fetching knowledge article:', error);
+      throw error;
+    }
   }
   constructor(data = {}) {
     // Métadonnées d'identification et de classification
