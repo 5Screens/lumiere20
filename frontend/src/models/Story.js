@@ -171,22 +171,22 @@ export class Story {
         disabled: true
       },
       created_at: {
-        label: t('common.created_at'),
+        label: t('story.created_at'),
         type: 'sTextField',
         disabled: true
       },
       writer_name: {
-        label: t('common.writer'),
+        label: t('story.writer'),
         type: 'sTextField',
         disabled: true
       },
       updated_at: {
-        label: t('common.updated_at'),
+        label: t('story.updated_at'),
         type: 'sTextField',
         disabled: true
       },
       closed_at: {
-        label: t('common.closed_at'),
+        label: t('story.closed_at'),
         type: 'sTextField',
         disabled: true
       }

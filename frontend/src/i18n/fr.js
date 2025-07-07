@@ -715,9 +715,8 @@ export default {
     
     // Timestamps
     created_at: 'Date de création',
-    created_at_placeholder: 'Date de création automatique',
     updated_at: 'Date de mise à jour',
-    updated_at_placeholder: 'Date de mise à jour automatique'
+    closed_at: 'Date de clôture'
   },
 
   knowledge_article: {
