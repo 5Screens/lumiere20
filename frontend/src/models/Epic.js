@@ -12,6 +12,7 @@ export class Epic {
     
     // Attributs étendus (core_extended_attributes)
     this.project_id = data.project_id || null; // Projet parent
+    this.project_name = data.project_name || null; // Nom du projet parent
     this.start_date = data.start_date || null; // Date de début de l'epic
     this.end_date = data.end_date || null; // Date de fin prévue/effective
     this.progress_percent = data.progress_percent || 0; // Pourcentage d'avancement
@@ -23,6 +24,9 @@ export class Epic {
     this.updated_at = data.updated_at || null;
     this.closed_at = data.closed_at || null;
     
+    // Informations sur le créateur
+    this.writer_name = data.writer_name || null;
+    
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
       { name: 'title', label: i18n.global.t('epic.name') },
@@ -31,7 +35,7 @@ export class Epic {
     ];
   }
 
-  static getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
@@ -39,8 +43,13 @@ export class Epic {
     const dynamicLabels = new Epic();
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
-    return {
+    const fields = {
       // Informations générales
+      uuid: {
+        label: t('common.id'),
+        type: 'sTextField',
+        disabled: true
+      },
       title: {
         label: t('epic.name'),
         type: 'sTextField',
@@ -76,7 +85,8 @@ export class Epic {
           { key: 'title', label: t('project.name'), visible: true },
           { key: 'key', label: t('project.key'), visible: true }
         ],
-        required: isRequired('project_id')
+        required: isRequired('project_id'),
+        displayFieldAtInitInEditMode: 'project_name'
       },
       start_date: {
         label: t('epic.start_date'),
@@ -109,8 +119,42 @@ export class Epic {
         placeholder: t('epic.tags_placeholder'),
         required: isRequired('tags'),
         comboBox: false
+      },
+      
+      // Informations sur le créateur et les dates
+      writer_name: {
+        label: t('common.writer_name'),
+        type: 'sTextField',
+        disabled: true
+      },
+      created_at: {
+        label: t('common.creation_date'),
+        type: 'sTextField',
+        disabled: true
+      },
+      updated_at: {
+        label: t('common.modification_date'),
+        type: 'sTextField',
+        disabled: true
+      },
+      closed_at: {
+        label: t('common.closure_date'),
+        type: 'sTextField',
+        disabled: true
       }
     };
+    
+    // Supprimer les champs système en mode création
+    if (mode === 'for_creation') {
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
+      fieldsToRemove.forEach(field => {
+        if (field in fields) {
+          delete fields[field];
+        }
+      });
+    }
+    
+    return fields;
   }
 
   /**
@@ -180,6 +224,16 @@ export class Epic {
     // Créer une copie de l'objet sans l'attribut requiredFields
     const apiData = { ...this };
     delete apiData.requiredFields;
+    
+    // Pour POST, supprimer les champs spécifiés qui ne doivent pas être envoyés lors de la création
+    if (method.toUpperCase() === 'POST') {
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
+      fieldsToRemove.forEach(field => {
+        if (field in apiData) {
+          delete apiData[field];
+        }
+      });
+    }
     
     // Traiter les tags si nécessaire
     if (apiData.tags && Array.isArray(apiData.tags) && apiData.tags.length > 0) {
