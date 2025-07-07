@@ -15,7 +15,17 @@ const getEpicById = async (uuid, lang = 'en') => {
         // Requête SQL pour récupérer les détails de l'epic avec les données d'assignation
         const query = `
             SELECT 
-                t.*,
+                t.uuid,
+                t.title,
+                t.description,
+                t.requested_by_uuid,
+                t.requested_for_uuid,
+                t.writer_uuid,
+                t.ticket_type_code,
+                t.ticket_status_code,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
                 p1.first_name || ' ' || p1.last_name as requested_by_name,
                 p2.first_name || ' ' || p2.last_name as requested_for_name,
                 p3.first_name || ' ' || p3.last_name as writer_name,
@@ -24,26 +34,28 @@ const getEpicById = async (uuid, lang = 'en') => {
                 tt.code as ticket_type_code,
                 ts.code as ticket_status_code,
                 
-                -- Informations sur l'équipe assignée
-                g.group_name as assigned_group_name,
-                g.uuid as assigned_to_group,
+                -- Champs spécifiques aux epics depuis core_extended_attributes
+                t.core_extended_attributes->'tags' as tags,
+                t.core_extended_attributes->>'color' as color,
+                t.core_extended_attributes->>'end_date' as end_date,
+                t.core_extended_attributes->>'start_date' as start_date,
+                t.core_extended_attributes->>'progress_percent' as progress_percent,
                 
-                -- Informations sur la personne assignée
-                p4.uuid as assigned_to_person,
-                p4.first_name || ' ' || p4.last_name as assigned_person_name,
-                
-                -- Informations sur les observateurs (watchers)
+                -- Récupération du titre et de l'UUID du projet parent
                 (
-                    SELECT json_agg(json_build_object(
-                        'uuid', w.uuid,
-                        'person_uuid', p5.uuid,
-                        'person_name', p5.first_name || ' ' || p5.last_name,
-                        'created_at', w.created_at
-                    ))
-                    FROM core.rel_tickets_groups_persons w
-                    JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
-                    WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
-                ) as watchers
+                    SELECT parent.title
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                    WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'EPIC' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL
+                    LIMIT 1
+                ) as project_name,
+                (
+                    SELECT parent.uuid
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+                    WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'EPIC' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL
+                    LIMIT 1
+                ) as project_id
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
@@ -55,15 +67,6 @@ const getEpicById = async (uuid, lang = 'en') => {
                 AND ttt.lang = $2
             LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
                 AND tst.lang = $2
-                
-            -- Jointure pour l'assignation (équipe et personne)
-            LEFT JOIN (
-                SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
-                FROM core.rel_tickets_groups_persons
-                WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
-            ) rtgp ON t.uuid = rtgp.rel_ticket
-            LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
-            LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
             
             WHERE t.uuid = $1 AND t.ticket_type_code = 'EPIC'
         `;
@@ -75,8 +78,25 @@ const getEpicById = async (uuid, lang = 'en') => {
             return null;
         }
         
+        // Transformer les tags de format JSON string en tableau d'objets
+        const epic = result.rows[0];
+/*        if (epic.tags) {
+            try {
+                // Parse la chaîne JSON des tags
+                const parsedTags = JSON.parse(epic.tags);
+                // Transformer chaque tag en objet avec propriété name
+                epic.tags = parsedTags.map(tag => ({ name: tag }));
+            } catch (err) {
+                logger.warn(`[EPIC SERVICE] Error parsing tags for epic ${uuid}:`, err);
+                // En cas d'erreur, initialiser avec un tableau vide
+                epic.tags = [];
+            }
+        } else {
+            epic.tags = [];
+        }
+  */      
         logger.info(`[EPIC SERVICE] Successfully retrieved epic with UUID: ${uuid}`);
-        return result.rows[0];
+        return epic;
     } catch (error) {
         logger.error(`[EPIC SERVICE] Error fetching epic with UUID ${uuid}:`, error);
         throw error;

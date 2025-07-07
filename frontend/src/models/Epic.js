@@ -148,6 +148,18 @@ export class Epic {
     return `tickets?ticket_type=EPIC&lang=${userProfileStore.language}`;
   }
 
+  /**
+   * Récupère un epic par son ID
+   * @param {string} id - ID de l'epic à récupérer
+   * @returns {Promise<Epic>} Instance de l'epic récupéré
+   */
+  static async getById(id) {
+    const userProfileStore = useUserProfileStore();
+    const endpoint = `tickets/${id}?lang=${userProfileStore.language}`;
+    const data = await import('@/services/apiService').then(module => module.default.get(endpoint));
+    return new Epic(data);
+  }
+
   toAPI(method) {
     const userProfileStore = useUserProfileStore();
     
