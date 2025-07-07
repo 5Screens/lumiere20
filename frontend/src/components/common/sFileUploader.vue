@@ -444,14 +444,29 @@ const closePreview = () => {
 const downloadFile = (file) => {
   if (!file || !file.uuid) return
   
-  // Créer un lien temporaire pour le téléchargement
-  const downloadUrl = `${API_BASE_URL}/attachments/${file.uuid}`
-  const link = document.createElement('a')
-  link.href = downloadUrl
-  link.setAttribute('download', file.originalname || file.name) // Force le téléchargement
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+  // Utiliser fetch pour récupérer le fichier en tant que blob
+  fetch(`${API_BASE_URL}/attachments/${file.uuid}`)
+    .then(response => response.blob())
+    .then(blob => {
+      // Créer une URL pour le blob
+      const blobUrl = window.URL.createObjectURL(blob)
+      
+      // Créer un lien temporaire pour le téléchargement
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = file.originalname || file.name // Force le téléchargement
+      document.body.appendChild(link)
+      link.click()
+      
+      // Nettoyer
+      setTimeout(() => {
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(blobUrl)
+      }, 100)
+    })
+    .catch(error => {
+      console.error('Erreur lors du téléchargement du fichier:', error)
+    })
 }
 
 const getPreviewUrl = (file) => {
