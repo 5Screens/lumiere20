@@ -12,10 +12,20 @@ export class Sprint {
     
     // Attributs étendus (core_ext)
     this.project_id = data.project_id || null; // ID du projet associé
+    this.project_name = data.project_name || null; // Nom du projet associé
     this.start_date = data.start_date || null; // Date de début du sprint
     this.end_date = data.end_date || null; // Date de fin du sprint
     this.actual_velocity = data.actual_velocity || null; // Vélocité réelle
     this.estimated_velocity = data.estimated_velocity || null; // Vélocité estimée
+    
+    // Informations sur l'auteur
+    this.writer_name = data.writer_name || null; // Nom de l'auteur du sprint
+    
+    // Compteurs
+    this.attachments_count = data.attachments_count || 0; // Nombre de pièces jointes
+    this.tieds_tickets_count = data.tieds_tickets_count || 0; // Nombre de tickets liés
+    this.stories_count = data.stories_count || 0; // Nombre d'histoires utilisateur
+    this.tasks_count = data.tasks_count || 0; // Nombre de tâches
     
     // Timestamps
     this.created_at = data.created_at || null;
