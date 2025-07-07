@@ -194,6 +194,11 @@ const getDefectById = async (uuid, lang = 'en') => {
             defect.tags = [];
         }
         
+        // Récupérer les pièces jointes associées au défaut
+        const attachmentService = require('../attachments/service');
+        const attachments = await attachmentService.getAttachmentsByObjectUuid(uuid);
+        defect.attachments = attachments;
+        
         return defect;
     } catch (error) {
         logger.error(`[DEFECT SERVICE] Error fetching defect with UUID ${uuid}:`, error);
