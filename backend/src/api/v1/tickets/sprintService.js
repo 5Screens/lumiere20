@@ -39,26 +39,33 @@ const getSprintById = async (uuid, lang = 'en') => {
                 tt.code as ticket_type_code,
                 ts.code as ticket_status_code,
                 
-                -- Informations sur l'équipe assignée
-                g.group_name as assigned_group_name,
-                g.uuid as assigned_to_group,
-                
-                -- Informations sur la personne assignée
-                p4.uuid as assigned_to_person,
-                p4.first_name || ' ' || p4.last_name as assigned_person_name,
-                
-                -- Informations sur les observateurs (watchers)
+                -- Nombre de pièces jointes
                 (
-                    SELECT json_agg(json_build_object(
-                        'uuid', w.uuid,
-                        'person_uuid', p5.uuid,
-                        'person_name', p5.first_name || ' ' || p5.last_name,
-                        'created_at', w.created_at
-                    ))
-                    FROM core.rel_tickets_groups_persons w
-                    JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
-                    WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
-                ) as watchers,
+                    SELECT COUNT(*)
+                    FROM core.attachments a
+                    WHERE a.object_uuid = t.uuid
+                ) as attachments_count,
+                
+                -- Nombre de tickets liés
+                (
+                    SELECT COUNT(*)
+                    FROM core.rel_parent_child_tickets rpc
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid
+                ) as tieds_tickets_count,
+                
+                -- Nombre de tickets de type STORY
+                (
+                    SELECT COUNT(*)
+                    FROM core.rel_parent_child_tickets rpc
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY'
+                ) as stories_count,
+                
+                -- Nombre de tickets de type TASK
+                (
+                    SELECT COUNT(*)
+                    FROM core.rel_parent_child_tickets rpc
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = 'TASK'
+                ) as tasks_count,
                 
                 -- Récupération du titre et de l'UUID du projet parent
                 (
@@ -86,15 +93,6 @@ const getSprintById = async (uuid, lang = 'en') => {
                 AND ttt.lang = $2
             LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
                 AND tst.lang = $2
-                
-            -- Jointure pour l'assignation (équipe et personne)
-            LEFT JOIN (
-                SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
-                FROM core.rel_tickets_groups_persons
-                WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
-            ) rtgp ON t.uuid = rtgp.rel_ticket
-            LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
-            LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
             
             WHERE t.uuid = $1 AND t.ticket_type_code = 'SPRINT'
         `;
