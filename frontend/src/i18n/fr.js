@@ -674,6 +674,7 @@ export default {
     //Compteurs
     stories_count: 'Nombre de stories',
     tasks_count: 'Nombre de tâches',
+    attachments_count: 'Nombre de pièces jointes',
   },
 
   story: {

@@ -27,6 +27,11 @@ export class Epic {
     // Informations sur le créateur
     this.writer_name = data.writer_name || null;
     
+    // Compteurs
+    this.stories_count = data.stories_count || 0;
+    this.tasks_count = data.tasks_count || 0;
+    this.attachments_count = data.attachments_count || 0;
+    
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
       { name: 'title', label: i18n.global.t('epic.name') },
@@ -141,12 +146,27 @@ export class Epic {
         label: t('common.closure_date'),
         type: 'sTextField',
         disabled: true
+      },
+      stories_count: {
+        label: t('epic.stories_count'),
+        type: 'sTextField',
+        disabled: true
+      },
+      tasks_count: {
+        label: t('epic.tasks_count'),
+        type: 'sTextField',
+        disabled: true
+      },
+      attachments_count: {
+        label: t('epic.attachments_count'),
+        type: 'sTextField',
+        disabled: true
       }
     };
     
     // Supprimer les champs système en mode création
     if (mode === 'for_creation') {
-      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at', 'project_name', 'stories_count', 'tasks_count', 'attachments_count'];
       fieldsToRemove.forEach(field => {
         if (field in fields) {
           delete fields[field];
@@ -175,6 +195,7 @@ export class Epic {
       { key: 'progress_percent', label: t('epic.progress_percent'), type: 'text', format: 'text' },
       { key: 'stories_count', label: t('epic.stories_count'), type: 'number', format: 'text' },
       { key: 'tasks_count', label: t('epic.tasks_count'), type: 'number', format: 'text' },
+      { key: 'attachments_count', label: t('epic.attachments_count'), type: 'number', format: 'text' },
       { key: 'color', label: t('epic.color'), type: 'text', format: 'text' },
       { key: 'tags', label: t('epic.tags'), type: 'text', format: 'tags' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
@@ -227,7 +248,7 @@ export class Epic {
     
     // Pour POST, supprimer les champs spécifiés qui ne doivent pas être envoyés lors de la création
     if (method.toUpperCase() === 'POST') {
-      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
+      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at', 'project_name', 'stories_count', 'tasks_count', 'attachments_count'];
       fieldsToRemove.forEach(field => {
         if (field in apiData) {
           delete apiData[field];

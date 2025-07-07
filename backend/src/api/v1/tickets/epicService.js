@@ -55,7 +55,32 @@ const getEpicById = async (uuid, lang = 'en') => {
                     JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
                     WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'EPIC' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL
                     LIMIT 1
-                ) as project_id
+                ) as project_id,
+                
+                -- Nombre de user stories enfants
+                (
+                    SELECT COUNT(*)
+                    FROM core.rel_parent_child_tickets rpc
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+                      AND rpc.dependency_code = 'STORY' 
+                      AND rpc.ended_at IS NULL
+                ) as stories_count,
+                
+                -- Nombre de tâches enfants
+                (
+                    SELECT COUNT(*)
+                    FROM core.rel_parent_child_tickets rpc
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+                      AND rpc.dependency_code = 'TASK' 
+                      AND rpc.ended_at IS NULL
+                ) as tasks_count,
+                
+                -- Nombre de pièces jointes
+                (
+                    SELECT COUNT(*)
+                    FROM core.attachments a
+                    WHERE a.object_uuid = t.uuid
+                ) as attachments_count
                 
             FROM core.tickets t
             LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
