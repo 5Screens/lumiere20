@@ -153,7 +153,7 @@ const getAttachmentsByObject = async (objectType, objectUuid) => {
 /**
  * Récupère les attachments par UUID de l'objet parent, sans préciser le type
  * @param {string} objectUuid - UUID de l'objet parent
- * @returns {Promise<Array>} - Liste des attachments
+ * @returns {Promise<Array>} - Liste des attachments adaptée pour le composant sFileUploader
  */
 const getAttachmentsByObjectUuid = async (objectUuid) => {
   try {
@@ -163,7 +163,17 @@ const getAttachmentsByObjectUuid = async (objectUuid) => {
     `;
     
     const result = await db.query(query, [objectUuid]);
-    return result.rows;
+    
+    // Adapter les noms des propriétés pour le composant sFileUploader
+    const adaptedAttachments = result.rows.map(attachment => ({
+      ...attachment,
+      originalname: attachment.file_name,
+      name: attachment.file_name,
+      mimetype: attachment.mime_type,
+      size: parseInt(attachment.size_bytes) || 0
+    }));
+    
+    return adaptedAttachments;
   } catch (error) {
     logger.error(`Erreur lors de la récupération des attachments par UUID: ${error.message}`);
     throw error;
