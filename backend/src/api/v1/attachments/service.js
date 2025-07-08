@@ -32,9 +32,16 @@ const calculateFileSha256 = (filePath) => {
  * @returns {Promise<string>} - UUID de l'attachment créé
  */
 const createAttachment = async (file, objectType, objectUuid, uploadedBy) => {
+  // Obtenir un client pour la transaction
+  const client = await db.getClient();
+  
   try {
     // Log détaillé des paramètres reçus
     logger.info(`Création d'un attachment - Type: ${objectType}, UUID: ${objectUuid}, Fichier: ${file.originalname}`);
+    
+    // Démarrer une transaction explicite
+    await client.query('BEGIN');
+    logger.info('Transaction démarrée');
     
     // Vérification spécifique pour les articles de connaissance
     if (objectType === 'KNOWLEDGE') {
@@ -76,12 +83,31 @@ const createAttachment = async (file, objectType, objectUuid, uploadedBy) => {
     // Log de la requête SQL
     logger.info(`Exécution de la requête SQL avec les valeurs: ${JSON.stringify(values)}`);
     
-    const result = await db.query(query, values);
-    logger.info(`Attachment créé avec succès - UUID: ${result.rows[0].uuid}`);
+    // Exécuter la requête dans la transaction
+    const result = await client.query(query, values);
+    
+    // Valider la transaction
+    await client.query('COMMIT');
+    logger.info(`Transaction validée (COMMIT) pour l'attachment - UUID: ${result.rows[0].uuid}`);
+    
     return result.rows[0].uuid;
   } catch (error) {
     logger.error(`Erreur lors de la création de l'attachment: ${error.message}`);
+    logger.error(error.stack);
+    
+    // En cas d'erreur, annuler la transaction
+    try {
+      await client.query('ROLLBACK');
+      logger.info('Transaction annulée (ROLLBACK)');
+    } catch (rollbackError) {
+      logger.error(`Erreur lors du rollback: ${rollbackError.message}`);
+    }
+    
     throw error;
+  } finally {
+    // Libérer le client dans tous les cas
+    client.release();
+    logger.info('Client de base de données libéré');
   }
 };
 
