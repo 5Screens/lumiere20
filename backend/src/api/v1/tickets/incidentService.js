@@ -184,8 +184,10 @@ const getIncidentById = async (uuid, lang = 'en') => {
             -- Jointures pour les relations parent-enfant
             LEFT JOIN core.rel_parent_child_tickets problem_rel ON t.uuid = problem_rel.rel_parent_ticket_uuid 
                 AND problem_rel.dependency_code = 'KNOWN_PROBLEM'
+                AND problem_rel.ended_at is null
             LEFT JOIN core.rel_parent_child_tickets change_rel ON t.uuid = change_rel.rel_parent_ticket_uuid 
                 AND change_rel.dependency_code = 'CHANGE_AT_ORIGIN'
+                AND change_rel.ended_at is null
             
             -- Jointures pour les traductions des champs spécifiques aux incidents
             LEFT JOIN configuration.incident_impacts impacts ON t.core_extended_attributes->>'impact' = impacts.code
