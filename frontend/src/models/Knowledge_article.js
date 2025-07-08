@@ -466,6 +466,16 @@ export class Knowledge_article {
     delete apiData.requiredFields;
     delete apiData.attachments;
     
+    // Pour POST, supprimer les champs système qui ne doivent pas être envoyés lors de la création
+    if (method.toUpperCase() === 'POST') {
+      const fieldsToRemove = ['uuid', 'writer_name', 'created_at', 'updated_at', 'closed_at', 'attachments_count', 'tieds_tickets_count'];
+      fieldsToRemove.forEach(field => {
+        if (field in apiData) {
+          delete apiData[field];
+        }
+      });
+    }
+    
     // Traiter les listes selon leur type spécifique
     // 1. Pour rel_target_audience et business_scope, utiliser le code au lieu de l'uuid (sTagsList.vue)
     // 2. Pour keywords et rel_service_offerings, conserver les valeurs telles quelles
