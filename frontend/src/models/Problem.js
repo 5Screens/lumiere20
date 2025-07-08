@@ -441,7 +441,7 @@ export class Problem {
     
     // Si mode est 'for_creation', supprimer les champs spécifiés
     if (mode === 'for_creation') {
-      const fieldsToRemove = ['writer_name', 'closed_at', 'uuid', 'created_at', 'updated_at'];
+      const fieldsToRemove = ['writer_name', 'closed_at', 'uuid', 'created_at', 'updated_at', 'attachments_count', 'tieds_tickets_count'];
       fieldsToRemove.forEach(field => {
         if (fields[field]) {
           delete fields[field];

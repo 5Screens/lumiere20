@@ -76,7 +76,9 @@ export class Knowledge_article {
     this.rel_category = data.rel_category || null;
     this.keywords = data.keywords || [];
     this.rel_service = data.rel_service || null;
+    this.rel_service_name = data.rel_service_name || null;
     this.rel_service_offerings = data.rel_service_offerings || [];
+    this.rel_service_offerings_name = data.rel_service_offerings_name || null;
     this.rel_target_audience = data.rel_target_audience || [];
     this.rel_lang = data.rel_lang || null;
     this.rel_confidentiality_level = data.rel_confidentiality_level || null;
@@ -89,26 +91,33 @@ export class Knowledge_article {
     this.limitations = data.limitations || '';
     this.security_notes = data.security_notes || '';
     this.attachments = data.attachments || [];
+    this.attachments_count = data.attachments_count || 0;
 
     // Contexte opérationnel et liens
     this.configuration_item_uuid = data.configuration_item_uuid || null;
+    this.configuration_item_name = data.configuration_item_name || null;
     this.rel_involved_process = data.rel_involved_process || null;
     this.tickets_list = data.tickets_list || [];
+    this.tieds_tickets_count = data.tieds_tickets_count || 0;
     this.business_scope = data.business_scope || [];
 
     // Gouvernance et cycle de vie
     this.writer_uuid = data.writer_uuid || null;
+    this.writer_name = data.writer_name || null;
     this.ticket_status_code = data.ticket_status_code || null;
     this.version = data.version || '';
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
+    this.closed_at = data.closed_at || null;
     this.last_review_at = data.last_review_at || null;
     this.next_review_at = data.next_review_at || null;
     this.license_type = data.license_type || '';
 
     // Assignation (stockée dans rel_tickets_groups_persons)
     this.assigned_to_group = data.assigned_to_group || null;
+    this.assigned_group_name = data.assigned_group_name || null;
     this.assigned_to_person = data.assigned_to_person || null;
+    this.assigned_person_name = data.assigned_person_name || null;
 
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
@@ -124,7 +133,7 @@ export class Knowledge_article {
     ];
   }
 
-  static getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
@@ -132,7 +141,50 @@ export class Knowledge_article {
     const dynamicLabels = new Knowledge_article();
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
 
-    return {
+    const fields = {
+      // Champs système (lecture seule)
+      uuid: {
+        label: t('common.id'),
+        type: 'sTextField',
+        disabled: true,
+        required: false
+      },
+      writer_name: {
+        label: t('knowledge_article.writer'),
+        type: 'sTextField',
+        disabled: true,
+        required: false
+      },
+      created_at: {
+        label: t('common.creation_date'),
+        type: 'sTextField',
+        disabled: true,
+        required: false
+      },
+      updated_at: {
+        label: t('common.modification_date'),
+        type: 'sTextField',
+        disabled: true,
+        required: false
+      },
+      closed_at: {
+        label: t('common.closing_date'),
+        type: 'sTextField',
+        disabled: true,
+        required: false
+      },
+      attachments_count: {
+        label: t('knowledge_article.attachments_count'),
+        type: 'sTextField',
+        disabled: true,
+        required: false
+      },
+      tieds_tickets_count: {
+        label: t('knowledge_article.tieds_tickets_count'),
+        type: 'sTextField',
+        disabled: true,
+        required: false
+      },
       // Catégorie
       rel_category: {
         label: t('knowledge_article.category'),
@@ -204,6 +256,7 @@ export class Knowledge_article {
         endpoint: 'services',
         displayField: 'name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'rel_service_name',
         columnsConfig: [
           { key: 'name', label: t('service.name'), visible: true },
           { key: 'description', label: t('service.description'), visible: false },
@@ -218,6 +271,7 @@ export class Knowledge_article {
         endpoint: 'service_offerings',
         displayField: 'name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'rel_service_offerings_name',
         columnsConfig: [
           { key: 'name', label: t('service_offering.name'), visible: true },
           { key: 'service_name', label: t('service_offering.service_name'), visible: true }
@@ -234,6 +288,7 @@ export class Knowledge_article {
             : 'groups',
         displayField: 'group_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'assigned_group_name',
         columnsConfig: [
           { key: 'group_name', label: t('group.name'), visible: true }
         ],
@@ -249,6 +304,7 @@ export class Knowledge_article {
           : 'groups/members',
         displayField: 'person_name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'assigned_person_name',
         columnsConfig: [
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
@@ -297,6 +353,7 @@ export class Knowledge_article {
         endpoint: 'configuration_items',
         displayField: 'name',
         valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'configuration_item_name',
         columnsConfig: [
           { key: 'name', label: t('configuration_item.name'), visible: true },
           { key: 'description', label: t('configuration_item.description'), visible: true }
@@ -372,6 +429,18 @@ export class Knowledge_article {
         required: isRequired('license_type')
       }
     };
+    
+    // Supprimer les champs système en mode création
+    if (mode === 'for_creation') {
+      const fieldsToRemove = ['uuid', 'writer_name', 'created_at', 'updated_at', 'closed_at', 'attachments_count', 'tieds_tickets_count'];
+      fieldsToRemove.forEach(field => {
+        if (field in fields) {
+          delete fields[field];
+        }
+      });
+    }
+    
+    return fields;
   }
 
   toAPI(method) {
