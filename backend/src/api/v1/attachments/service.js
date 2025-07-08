@@ -33,8 +33,17 @@ const calculateFileSha256 = (filePath) => {
  */
 const createAttachment = async (file, objectType, objectUuid, uploadedBy) => {
   try {
+    // Log détaillé des paramètres reçus
+    logger.info(`Création d'un attachment - Type: ${objectType}, UUID: ${objectUuid}, Fichier: ${file.originalname}`);
+    
+    // Vérification spécifique pour les articles de connaissance
+    if (objectType === 'KNOWLEDGE') {
+      logger.info(`Traitement spécial pour un article de connaissance - UUID: ${objectUuid}`);
+    }
+    
     // Calculer le hash SHA-256 du fichier
     const sha256 = await calculateFileSha256(file.path);
+    logger.info(`Hash SHA-256 calculé: ${sha256}`);
     
     // Insérer dans la base de données
     const query = `
@@ -64,7 +73,11 @@ const createAttachment = async (file, objectType, objectUuid, uploadedBy) => {
       uploadedBy
     ];
     
+    // Log de la requête SQL
+    logger.info(`Exécution de la requête SQL avec les valeurs: ${JSON.stringify(values)}`);
+    
     const result = await db.query(query, values);
+    logger.info(`Attachment créé avec succès - UUID: ${result.rows[0].uuid}`);
     return result.rows[0].uuid;
   } catch (error) {
     logger.error(`Erreur lors de la création de l'attachment: ${error.message}`);

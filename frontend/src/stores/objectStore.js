@@ -125,7 +125,7 @@ export const useObjectStore = defineStore('object', {
      */
     async uploadPendingAttachments(objectUuid, files, objectType) {
       try {
-        console.info(`[ObjectStore] BISOUS Uploading ${files.length} pending attachments for object ${objectUuid}`)
+        console.info(`[ObjectStore] Uploading ${files.length} pending attachments for object ${objectUuid}`)
         console.info('[ObjectStore] FormData content: objectType:', objectType)
         console.info('[ObjectStore] FormData content: objectUuid:', objectUuid)
         
@@ -134,9 +134,15 @@ export const useObjectStore = defineStore('object', {
           return []
         }
         
+        // Vérifier le type d'objet pour les articles de connaissance
+        if (objectType === 'KNOWLEDGE') {
+          console.info('[ObjectStore] KNOWLEDGE article attachment detected - special handling may be required')
+        }
+        
         // Préparer le FormData pour l'upload multiple
         const formData = new FormData()
-        files.forEach(file => {
+        files.forEach((file, index) => {
+          console.info(`[ObjectStore] Adding file ${index + 1}/${files.length} to FormData:`, file.name, file.size, file.type)
           formData.append('files', file)
         })
         formData.append('objectType', objectType)
@@ -149,12 +155,21 @@ export const useObjectStore = defineStore('object', {
         console.info('[ObjectStore] FormData content: uploadedBy:', this.currentObject.writer_uuid)
         
         // Appeler le service API pour l'upload
+        console.info('[ObjectStore] Calling API for attachment upload with endpoint: attachments/upload-multiple')
         const response = await apiService.uploadFormData('attachments/upload-multiple', formData)
-        console.info('[ObjectStore] Attachments uploaded successfully:', response)
+        console.info('[ObjectStore] Attachments upload API response:', response)
+        
+        // Vérifier si la réponse contient les informations attendues
+        if (response && response.attachments) {
+          console.info(`[ObjectStore] ${response.attachments.length} attachments processed successfully`)
+        } else {
+          console.warn('[ObjectStore] Unexpected response format from attachment upload API:', response)
+        }
         
         return response.attachments || []
       } catch (error) {
         console.error('[ObjectStore] Error uploading attachments:', error)
+        console.error('[ObjectStore] Error details:', error.message, error.stack)
         this.message = `Erreur lors de l'upload des pièces jointes: ${error.message}`
         return []
       }
