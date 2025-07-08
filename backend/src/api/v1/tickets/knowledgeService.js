@@ -122,7 +122,22 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
                     FROM core.rel_parent_child_tickets rpc
                     WHERE rpc.rel_parent_ticket_uuid = t.uuid
                     AND rpc.dependency_code = 'TIED_TICKETS'
-                ) as tieds_tickets_count
+                ) as tieds_tickets_count,
+                
+                -- Liste des tickets liés à la connaissance
+                (
+                    SELECT COALESCE(json_agg(
+                        json_build_object(
+                            'uuid', tick.uuid,
+                            'title', tick.title
+                        )
+                    ), '[]'::json)
+                    FROM core.rel_parent_child_tickets rpc
+                    JOIN core.tickets tick ON rpc.rel_child_ticket_uuid = tick.uuid
+                    WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+                    AND rpc.dependency_code = 'TIED_TICKETS'
+                    AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
+                ) AS tickets_list
                 
             FROM core.tickets t
             LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
