@@ -82,14 +82,21 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'limitations' as limitations,
                 t.core_extended_attributes->>'security_notes' as security_notes,
                 t.core_extended_attributes->>'rel_ticket_type' as rel_ticket_type,
-                (SELECT jsonb_agg(scope)
-                FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope) as business_scope,
                 (
-                    SELECT jsonb_agg(ksl.label)
+                    SELECT jsonb_agg(
+                        jsonb_build_object(
+                            'uuid', ksc.uuid,
+                            'metadata', ksc.metadata,
+                            'code', ksc.code,
+                            'lang', ksl.lang,
+                            'label', ksl.label
+                        )
+                    )
                     FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code
+                    JOIN configuration.knowledge_setup_codes ksc ON ksc.code = scope_code
                     JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code
                     WHERE ksl.lang = $2
-                ) as business_scope_label,
+                ) as business_scope,
                 t.core_extended_attributes->>'version' as version,
                 t.core_extended_attributes->>'last_review_at' as last_review_at,
                 t.core_extended_attributes->>'next_review_at' as next_review_at,
