@@ -48,12 +48,14 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
                     WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND ksl.lang = $2 ),
                     t.core_extended_attributes->>'rel_category'
                 ) as rel_category_label,
-                t.core_extended_attributes->>'keywords' as keywords,
+                (SELECT jsonb_agg(keyword)
+                FROM jsonb_array_elements_text(t.core_extended_attributes->'keywords') as keyword) as keywords,
                 t.core_extended_attributes->>'rel_service' as rel_service,
                 t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
                 service.name as rel_service_name,
                 service_offerings.name as rel_service_offerings_name,
-                t.core_extended_attributes->>'rel_target_audience' as rel_target_audience,
+                (SELECT jsonb_agg(audience)
+                FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience) as rel_target_audience,
                 (
                     SELECT jsonb_agg(ksl.label)
                     FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code
@@ -73,7 +75,8 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'limitations' as limitations,
                 t.core_extended_attributes->>'security_notes' as security_notes,
                 t.core_extended_attributes->>'rel_ticket_type' as rel_ticket_type,
-                t.core_extended_attributes->>'business_scope' as business_scope,
+                (SELECT jsonb_agg(scope)
+                FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope) as business_scope,
                 (
                     SELECT jsonb_agg(ksl.label)
                     FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code
