@@ -121,6 +121,7 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
                     SELECT COUNT(*)
                     FROM core.rel_parent_child_tickets rpc
                     WHERE rpc.rel_parent_ticket_uuid = t.uuid
+                    AND rpc.dependency_code = 'TIED_TICKETS'
                 ) as tieds_tickets_count
                 
             FROM core.tickets t
