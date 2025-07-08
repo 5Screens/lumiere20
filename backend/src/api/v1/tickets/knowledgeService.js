@@ -54,14 +54,21 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
                 t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
                 service.name as rel_service_name,
                 service_offerings.name as rel_service_offerings_name,
-                (SELECT jsonb_agg(audience)
-                FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience) as rel_target_audience,
                 (
-                    SELECT jsonb_agg(ksl.label)
+                    SELECT jsonb_agg(
+                        jsonb_build_object(
+                            'uuid', ksc.uuid,
+                            'metadata', ksc.metadata,
+                            'code', ksc.code,
+                            'lang', ksl.lang,
+                            'label', ksl.label
+                        )
+                    )
                     FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code
+                    JOIN configuration.knowledge_setup_codes ksc ON ksc.code = audience_code
                     JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code
                     WHERE ksl.lang = $2
-                ) as rel_target_audience_label,
+                ) as rel_target_audience,
                 t.core_extended_attributes->>'rel_lang' as rel_lang,
                 lang.native_name as rel_lang_name,
                 t.core_extended_attributes->>'rel_confidentiality_level' as rel_confidentiality_level,
