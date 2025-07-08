@@ -176,7 +176,14 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
         }
         
         logger.info(`[KNOWLEDGE SERVICE] Successfully retrieved knowledge article with UUID: ${uuid}`);
-        return result.rows[0];
+        
+        // Get attachments associated with the knowledge article
+        const attachmentService = require('../attachments/service');
+        const attachments = await attachmentService.getAttachmentsByObjectUuid(uuid);
+        const knowledgeArticle = result.rows[0];
+        knowledgeArticle.attachments = attachments;
+        
+        return knowledgeArticle;
     } catch (error) {
         logger.error(`[KNOWLEDGE SERVICE] Error fetching knowledge article with UUID ${uuid}:`, error);
         throw error;
