@@ -181,7 +181,6 @@ export class Problem {
         placeholder: t('problem.status_placeholder'),
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=PROBLEM`,
-        patchEndpoint: 'problems',
         fieldName: 'ticket_status_code',
         mode: 'creation'
       },

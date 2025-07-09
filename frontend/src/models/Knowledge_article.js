@@ -43,10 +43,19 @@ export class Knowledge_article {
     ];
   }
 
-  // Méthode statique pour obtenir l'endpoint API
-  static getApiEndpoint() {
+  /**
+   * Retourne l'endpoint API pour les tickets de type KNOWLEDGE
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
+   * @returns {string} Endpoint API
+   */
+  static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
-    return `tickets?ticket_type=KNOWLEDGE&lang=${userProfileStore.language}`;
+    
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=KNOWLEDGE&lang=${userProfileStore.language}`;
+    }
   }
 
   /**
