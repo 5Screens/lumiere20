@@ -462,8 +462,54 @@ const ticketValidationSchemas = {
         post_change_comment: Joi.string().allow(null, ''),
         closed_at: Joi.date().allow(null)
     },
-    // KNOWLEDGE: { ... },
-    // etc.
+
+    PROJECT: {
+        key: Joi.string().allow(null, ''),
+        start_date: Joi.date().allow(null),
+        end_date: Joi.date().allow(null),
+        issue_type_scheme_id: Joi.string().allow(null, ''),
+        visibility: Joi.string().allow(null, ''),
+        project_type: Joi.string().allow(null, '')
+    },
+
+    EPIC: {
+        
+    },
+
+    STORY: {
+        
+    },
+
+    SPRINT: {
+        
+    },
+
+    DEFECT: {
+        
+    },
+
+    KNOWLEDGE: {
+        rel_category: Joi.string().allow(null, ''),
+        keywords: Joi.array().items(Joi.string()).allow(null),
+        rel_service: Joi.string().uuid().allow(null, ''),
+        rel_service_offerings: Joi.string().uuid().allow(null, ''),
+        rel_target_audience: Joi.string().uuid().allow(null, ''),
+        rel_lang: Joi.string().allow(null, ''),
+        rel_confidentiality_level: Joi.string().uuid().allow(null, ''),
+        summary: Joi.string().allow(null, ''),
+        prerequisites: Joi.string().allow(null, ''),
+        limitations: Joi.string().allow(null, ''),
+        security_notes: Joi.string().allow(null, ''),
+        rel_ticket_type: Joi.string().uuid().allow(null, ''),
+        business_scope: Joi.string().allow(null, ''),
+        version: Joi.string().allow(null, ''),
+        last_review_at: Joi.date().allow(null),
+        next_review_at: Joi.date().allow(null),
+        license_type: Joi.string().allow(null, ''),
+        rel_involved_process: Joi.string().uuid().allow(null, ''),
+        views_count: Joi.number().integer().min(0).allow(null),
+        feedback_count: Joi.number().integer().min(0).allow(null)
+    }
 };
 
 /**
@@ -484,7 +530,13 @@ const validateUpdateTicket = async (req, res, next) => {
             ...validationSchema,
             ...ticketValidationSchemas.INCIDENT,
             ...ticketValidationSchemas.PROBLEM,
-            ...ticketValidationSchemas.CHANGE
+            ...ticketValidationSchemas.CHANGE,
+            ...ticketValidationSchemas.PROJECT,
+            ...ticketValidationSchemas.EPIC,
+            ...ticketValidationSchemas.STORY,
+            ...ticketValidationSchemas.SPRINT,
+            ...ticketValidationSchemas.DEFECT,
+            ...ticketValidationSchemas.KNOWLEDGE
         };
 
         // Créer le schéma final et valider

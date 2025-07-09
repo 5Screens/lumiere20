@@ -371,8 +371,49 @@ const createKnowledge = (knowledgeData) => {
     };
 };
 
+/**
+ * Met à jour partiellement un article de connaissance par son UUID
+ * @param {string} uuid - UUID de l'article de connaissance à mettre à jour
+ * @param {Object} updateData - Données à mettre à jour
+ * @returns {Promise<Object>} - Détails de l'article de connaissance mis à jour
+ */
+const updateKnowledge = async (uuid, updateData) => {
+    // Définir les champs spécifiques aux articles de connaissance
+    const standardFields = [
+        'title', 'description', 'configuration_item_uuid',
+        'ticket_status_code', 'requested_by_uuid', 'requested_for_uuid',
+        'writer_uuid', 'closed_at'
+    ];
+    
+    const assignmentFields = [
+        'assigned_to_group', 'assigned_to_person'
+    ];
+    
+    const extendedAttributesFields = [
+        'rel_category', 'keywords', 'rel_service', 'rel_service_offerings',
+        'rel_target_audience', 'rel_lang', 'rel_confidentiality_level',
+        'summary', 'prerequisites', 'limitations', 'security_notes',
+        'rel_ticket_type', 'business_scope', 'version',
+        'last_review_at', 'next_review_at', 'license_type', 'rel_involved_process'
+    ];
+    
+    // Utiliser la fonction applyUpdate du service.js
+    const { applyUpdate } = require('./service');
+    return await applyUpdate(
+        uuid,
+        updateData,
+        'KNOWLEDGE',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        getKnowledgeById,
+        '[KNOWLEDGE SERVICE]'
+    );
+};
+
 module.exports = {
     getKnowledgeById,
     getKnowledgeArticles,
-    createKnowledge
+    createKnowledge,
+    updateKnowledge
 };
