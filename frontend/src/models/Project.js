@@ -318,9 +318,14 @@ export class Project {
    * Retourne l'endpoint API pour les projets
    * @returns {string} URL de l'endpoint API
    */
-  static getApiEndpoint() {
+  static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
-    return `tickets?ticket_type=PROJECT&lang=${userProfileStore.language}`;
+    
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=PROJECT&lang=${userProfileStore.language}`;
+    }
   }
 
   /**

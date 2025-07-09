@@ -331,9 +331,14 @@ export class Defect {
    * Retourne l'endpoint API pour les défauts
    * @returns {string} URL de l'endpoint API
    */
-  static getApiEndpoint() {
+  static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
-    return `tickets?ticket_type=DEFECT&lang=${userProfileStore.language}`;
+    
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=DEFECT&lang=${userProfileStore.language}`;
+    }
   }
 
   /**

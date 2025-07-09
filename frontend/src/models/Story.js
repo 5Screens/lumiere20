@@ -291,8 +291,13 @@ export class Story {
    * Retourne l'endpoint API pour récupérer les tickets de type story
    * @returns {string} URL de l'endpoint API
    */
-  static getApiEndpoint() {
+  static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
-    return `tickets?ticket_type=USER_STORY&lang=${userProfileStore.language}`;
+    
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=USER_STORY&lang=${userProfileStore.language}`;
+    }
   }
 }

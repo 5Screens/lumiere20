@@ -253,9 +253,14 @@ export class Sprint {
    * Retourne l'endpoint API pour les tickets de type sprint
    * @returns {string} URL de l'endpoint API
    */
-  static getApiEndpoint() {
+  static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
-    return `tickets?ticket_type=SPRINT&lang=${userProfileStore.language}`;
+    
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=SPRINT&lang=${userProfileStore.language}`;
+    }
   }
 
   /**

@@ -208,9 +208,14 @@ export class Epic {
    * Retourne l'endpoint API pour les tickets de type EPIC
    * @returns {string} Endpoint API
    */
-  static getApiEndpoint() {
+  static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
-    return `tickets?ticket_type=EPIC&lang=${userProfileStore.language}`;
+    
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=EPIC&lang=${userProfileStore.language}`;
+    }
   }
 
   /**
