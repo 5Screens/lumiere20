@@ -493,9 +493,9 @@ const ticketValidationSchemas = {
         keywords: Joi.array().items(Joi.string()).allow(null),
         rel_service: Joi.string().uuid().allow(null, ''),
         rel_service_offerings: Joi.string().uuid().allow(null, ''),
-        rel_target_audience: Joi.string().uuid().allow(null, ''),
+        rel_target_audience: Joi.array().items(Joi.string()).allow(null),
         rel_lang: Joi.string().allow(null, ''),
-        rel_confidentiality_level: Joi.string().uuid().allow(null, ''),
+        rel_confidentiality_level: Joi.string().allow(null, ''),
         summary: Joi.string().allow(null, ''),
         prerequisites: Joi.string().allow(null, ''),
         limitations: Joi.string().allow(null, ''),
@@ -506,7 +506,7 @@ const ticketValidationSchemas = {
         last_review_at: Joi.date().allow(null),
         next_review_at: Joi.date().allow(null),
         license_type: Joi.string().allow(null, ''),
-        rel_involved_process: Joi.string().uuid().allow(null, ''),
+        rel_involved_process: Joi.string().allow(null, ''),
         views_count: Joi.number().integer().min(0).allow(null),
         feedback_count: Joi.number().integer().min(0).allow(null)
     }
