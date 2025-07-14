@@ -427,13 +427,15 @@ export class Knowledge_article {
         label: t('knowledge_article.last_review_at'),
         type: 'sDatePicker',
         placeholder: t('knowledge_article.last_review_at_placeholder'),
-        required: isRequired('last_review_at')
+        required: isRequired('last_review_at'),
+        patchendpoint: 'tickets'
       },
       next_review_at: {
         label: t('knowledge_article.next_review_at'),
         type: 'sDatePicker',
         placeholder: t('knowledge_article.next_review_at_placeholder'),
-        required: isRequired('next_review_at')
+        required: isRequired('next_review_at'),
+        patchendpoint: 'tickets'
       },
       license_type: {
         label: t('knowledge_article.license_type'),
