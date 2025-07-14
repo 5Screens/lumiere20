@@ -330,7 +330,8 @@ export class Knowledge_article {
         sourceEndPoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=target_audience`,
         displayedLabel: 'label',
         fieldName: 'rel_target_audience',
-        mode: 'creation'
+        mode: 'creation',
+        attributeSentToServer: 'code'
       },
       rel_lang: {
         label: t('knowledge_article.lang'),
@@ -399,7 +400,8 @@ export class Knowledge_article {
         placeholder: t('knowledge_article.business_scope_placeholder'),
         sourceEndPoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=business_scope`,
         displayedLabel: 'label',
-        fieldName: 'business_scope'
+        fieldName: 'business_scope',
+        attributeSentToServer: 'code'
       },
 
       // Gouvernance et cycle de vie

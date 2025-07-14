@@ -501,7 +501,7 @@ const ticketValidationSchemas = {
         limitations: Joi.string().allow(null, ''),
         security_notes: Joi.string().allow(null, ''),
         rel_ticket_type: Joi.string().uuid().allow(null, ''),
-        business_scope: Joi.string().allow(null, ''),
+        business_scope: Joi.array().items(Joi.string()).allow(null),
         version: Joi.string().allow(null, ''),
         last_review_at: Joi.date().allow(null),
         next_review_at: Joi.date().allow(null),

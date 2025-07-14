@@ -163,6 +163,7 @@
             :uuid="objectId"
             :patchEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
             @update:success="handleFieldSuccess"
+            :attributeSentToServer="field.attributeSentToServer"
           />
         </template>
       </template>

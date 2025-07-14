@@ -38,6 +38,7 @@
           :combo-box="field.comboBox"
           :visible="typeof field.visible === 'function' ? field.visible(objectStore.currentObject) : (field.visible !== undefined ? field.visible : true)"
           :resetable="field.resetable"
+          :attributeSentToServer="field.attributeSentToServer"
         />
       </div>
     </form>

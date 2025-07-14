@@ -167,6 +167,11 @@ const props = defineProps({
   patchEndpoint: {
     type: String,
     default: ''
+  },
+  // Attribut à envoyer au serveur au lieu de l'objet complet
+  attributeSentToServer: {
+    type: String,
+    default: ''
   }
 })
 
@@ -395,8 +400,23 @@ const confirmChanges = async () => {
   
   try {
     const endpointWithUuid = `${props.patchEndpoint}/${props.uuid}`
+    
+    console.log("selectedTags.value", selectedTags.value)
+    console.log("props.fieldName", props.fieldName)
+    
+    let tagsToSend = selectedTags.value;
+    
+    // Si attributeSentToServer est défini, extraire cet attribut de chaque objet
+    if (props.attributeSentToServer && selectedTags.value.length > 0 && typeof selectedTags.value[0] === 'object') {
+      tagsToSend = selectedTags.value.map(tag => tag[props.attributeSentToServer])
+    }
+    
+    console.log("data", {
+      [props.fieldName]: tagsToSend
+    })
+    
     const data = {
-      [props.fieldName]: selectedTags.value
+      [props.fieldName]: tagsToSend
     }
     
     const response = await apiService.patch(endpointWithUuid, data)
