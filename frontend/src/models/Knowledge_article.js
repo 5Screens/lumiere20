@@ -386,7 +386,9 @@ export class Knowledge_article {
         placeholder: t('knowledge_article.tickets_list_placeholder'),
         sourceEndPoint: 'tickets',
         displayedLabel: 'title',
-        targetEndPoint: 'knowledge_articles',
+        targetEndPoint: 'tickets',
+        ressourceEndPoint: 'children',
+        fieldName: 'TIED_TICKETS',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('tickets_list')
@@ -501,6 +503,7 @@ export class Knowledge_article {
     }
   
     // Traitement pour rel_target_audience et business_scope (utiliser le code)
+    // [14/07/2025 - MO: J'ai ajouté attributeSentToServer a sTagsList pour que les codes soient envoyés lors du patch. Peut être utilisé dans le présent POST]
     ['rel_target_audience', 'business_scope'].forEach(field => {
       if (apiData[field] && Array.isArray(apiData[field]) && apiData[field].length > 0) {
         if (typeof apiData[field][0] === 'object') {
