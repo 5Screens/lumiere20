@@ -42,6 +42,16 @@
       {{ t('fileUploader.required_error') }}
     </div>
 
+    <!-- Indicateur d'avancement -->
+    <div class="s-file-uploader__upload-status" v-if="isUploading">
+      <div class="s-file-uploader__upload-progress">
+        <div class="s-file-uploader__upload-progress-bar"></div>
+      </div>
+      <div class="s-file-uploader__upload-status-text">
+        {{ t('fileUploader.uploading') }}
+      </div>
+    </div>
+
     <!-- Liste des fichiers -->
     <div class="s-file-uploader__file-list" v-if="files.length">
       <div
@@ -129,6 +139,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { API_BASE_URL } from '@/config/config'
 import apiService from '@/services/apiService'
+import { useTabsStore } from '@/stores/tabsStore'
 import '@/assets/styles/sFileUploader.css'
 import '@/assets/styles/ButtonStandard.css'
 
@@ -173,6 +184,7 @@ const emit = defineEmits(['update:modelValue', 'error'])
 
 // Composables
 const { t } = useI18n()
+const tabsStore = useTabsStore()
 
 // État réactif
 const fileInput = ref(null)
@@ -181,6 +193,7 @@ const isDragging = ref(false)
 const showPreview = ref(false)
 const previewFile = ref(null)
 const isUploading = ref(false)
+const uploadProgress = ref(0)
 const uploadErrors = ref([])
 
 // Types de fichiers interdits
@@ -258,12 +271,17 @@ const uploadFilesWithUuid = async (objectUuid, objectType) => {
       
       // Émettre l'événement de mise à jour
       emit('update:modelValue', files.value)
+      
+      // Notification de succès
+      tabsStore.setMessage(t('fileUploader.upload_success', {count: uploadedFiles.length}))
     }
     
     return uploadedFiles
   } catch (error) {
     console.error('Error uploading files:', error)
     emit('error', [error.message || 'Upload failed'])
+    // Notification d'erreur
+    tabsStore.setMessage(t('fileUploader.upload_error') + ': ' + (error.message || 'Upload failed'))
     return []
   } finally {
     isUploading.value = false
@@ -332,6 +350,10 @@ const processFiles = async (fileList) => {
   uploadErrors.value = errors
   if (errors.length) {
     emit('error', errors)
+    // Notification d'erreur pour les fichiers invalides
+    if (errors.length > 0) {
+      tabsStore.setMessage(t('fileUploader.upload_error') + ': ' + errors[0])
+    }
   }
 
   // Si en mode édition ET que nous avons un UUID, uploader les fichiers immédiatement
@@ -398,16 +420,26 @@ const uploadFiles = async (filesToUpload) => {
 
     // Mettre à jour la liste des fichiers
     files.value = [...files.value, ...uploadedFiles]
+    
+    // Émettre l'événement de mise à jour
+    emit('update:modelValue', files.value)
+    
+    // Notification de succès
+    if (uploadedFiles.length > 0) {
+      tabsStore.setMessage(t('fileUploader.upload_success', {count: uploadedFiles.length}))
+    }
   } catch (error) {
-    console.error('Error uploading files:', error)
+    console.error('Erreur lors de l\'upload des fichiers:', error)
     errors.push(error.message || 'Upload failed')
     emit('error', errors)
+    
+    // Notification d'erreur
+    tabsStore.setMessage(t('fileUploader.upload_error') + ': ' + (error.message || 'Upload failed'))
   } finally {
     isUploading.value = false
+    uploadProgress.value = 0 // Réinitialiser l'indicateur visuel d'avancement
   }
 }
-
-
 
 const removeFile = async (file, index) => {
   // Si en mode édition, que le fichier a un UUID et qu'on a un UUID d'objet, le supprimer du serveur

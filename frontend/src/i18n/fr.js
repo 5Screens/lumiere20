@@ -934,6 +934,10 @@ export default {
     preview: 'Prévisualiser',
     delete: 'Supprimer',
     or: ' - ou - ',
-    limits_info: 'LIMITES TAILLE FICHIER : 6 Mo pour les images, 10 Mo pour les autres fichiers'
+    limits_info: 'LIMITES TAILLE FICHIER : 6 Mo pour les images, 10 Mo pour les autres fichiers',
+    uploading: 'Téléchargement en cours...',
+    upload_success: 'Téléchargement réussi de {count} fichier(s)',
+    upload_error: 'Erreur lors du téléchargement',
+    download: 'Télécharger'
   }
 }
