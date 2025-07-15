@@ -1,11 +1,5 @@
 <template>
   <div class="s-file-uploader" :class="{ 'has-error': showError }">
-    <!-- Modal de confirmation pour la suppression -->
-    <YesNoModal
-      v-model="showDeleteConfirmation"
-      :confirmationToDisplay="t('fileUploader.delete_confirm')"
-      @confirm="confirmDelete"
-    />
     
     <!-- Label du composant -->
     <div class="s-file-uploader__label-container" v-if="label">
@@ -146,7 +140,6 @@ import { API_BASE_URL } from '@/config/config'
 import apiService from '@/services/apiService'
 import { useTabsStore } from '@/stores/tabsStore'
 import { useUserProfileStore } from '@/stores/userProfileStore'
-import YesNoModal from '@/components/common/yesNoModal.vue'
 import '@/assets/styles/sFileUploader.css'
 import '@/assets/styles/ButtonStandard.css'
 
@@ -204,10 +197,7 @@ const isUploading = ref(false)
 const uploadProgress = ref(0)
 const uploadErrors = ref([])
 
-// Variables pour la confirmation de suppression
-const showDeleteConfirmation = ref(false)
-const fileToDelete = ref(null)
-const indexToDelete = ref(null)
+// Variables pour la prévisualisation des fichiers
 
 // Types de fichiers interdits
 const FORBIDDEN_MIME_TYPES = [
@@ -456,50 +446,46 @@ const uploadFiles = async (filesToUpload) => {
   }
 }
 
-const removeFile = (file, index) => {
-  // Stocker le fichier et l'index à supprimer pour la confirmation
-  fileToDelete.value = file
-  indexToDelete.value = index
-  
-  // Afficher la modal de confirmation
-  showDeleteConfirmation.value = true
-}
-
-// Fonction appelée lorsque l'utilisateur confirme la suppression
-const confirmDelete = async () => {
-  const file = fileToDelete.value
-  const index = indexToDelete.value
-  
-  if (!file) return
-  
-  // Si en mode édition, que le fichier a un UUID et qu'on a un UUID d'objet, le supprimer du serveur
-  if (props.edition && file.uuid && props.uuid) {
-    try {
-      await apiService.delete(`attachments/${file.uuid}`)
-      files.value = files.value.filter(f => f.uuid !== file.uuid)
-      
-      // Notification de succès
-      tabsStore.setMessage(t('fileUploader.delete_success'))
-    } catch (error) {
-      console.error('Erreur lors de la suppression du fichier:', error)
-      emit('error', [error.message || 'Échec de la suppression'])
-      
-      // Notification d'erreur
-      tabsStore.setMessage(t('fileUploader.delete_error') + ': ' + (error.message || 'Échec de la suppression'))
-      
-      // En cas d'erreur, on supprime quand même le fichier de la liste locale
-      files.value.splice(index, 1)
-    }
-  } else {
-    // Sinon, simplement le retirer de la liste
-    files.value.splice(index, 1)
+const removeFile = async (file, index) => {
+  try {
+    // Utiliser la confirmation globale via tabsStore
+    await tabsStore.confirm(t('fileUploader.delete_confirm'))
     
-    // Notification de succès (même en mode création)
-    tabsStore.setMessage(t('fileUploader.delete_success'))
-  }
+    // Si on arrive ici, l'utilisateur a confirmé la suppression
+    if (!file) return
   
-  // Émettre l'événement de mise à jour
-  emit('update:modelValue', files.value)
+    // Si en mode édition, que le fichier a un UUID et qu'on a un UUID d'objet, le supprimer du serveur
+    if (props.edition && file.uuid && props.uuid) {
+      try {
+        await apiService.delete(`attachments/${file.uuid}`)
+        files.value = files.value.filter(f => f.uuid !== file.uuid)
+        
+        // Notification de succès
+        tabsStore.setMessage(t('fileUploader.delete_success'))
+      } catch (error) {
+        console.error('Erreur lors de la suppression du fichier:', error)
+        emit('error', [error.message || 'Échec de la suppression'])
+        
+        // Notification d'erreur
+        tabsStore.setMessage(t('fileUploader.delete_error') + ': ' + (error.message || 'Échec de la suppression'))
+        
+        // En cas d'erreur, on supprime quand même le fichier de la liste locale
+        files.value.splice(index, 1)
+      }
+    } else {
+      // Sinon, simplement le retirer de la liste
+      files.value.splice(index, 1)
+      
+      // Notification de succès (même en mode création)
+      tabsStore.setMessage(t('fileUploader.delete_success'))
+    }
+    
+    // Émettre l'événement de mise à jour
+    emit('update:modelValue', files.value)
+  } catch (error) {
+    // L'utilisateur a annulé la suppression ou une autre erreur s'est produite
+    console.log('Suppression annulée ou erreur:', error)
+  }
 }
 
 const openPreview = (file) => {

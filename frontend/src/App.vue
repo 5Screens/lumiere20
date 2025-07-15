@@ -141,6 +141,14 @@
         </div>
       </div>
     </div>
+    
+    <!-- Modale de confirmation globale -->
+    <yes-no-modal
+      v-model="tabsStore.showConfirmation"
+      :confirmation-to-display="tabsStore.confirmationMessage"
+      @confirm="tabsStore.handleConfirm"
+      @cancel="tabsStore.handleCancel"
+    />
   </div>
 </template>
 
@@ -152,6 +160,7 @@ import HierarchicalTabs from '@/components/common/hierarchicalTabs.vue'
 import ProfilePane from '@/components/panes/ProfilePane.vue'
 import DynamicPane from '@/components/panes/DynamicPane.vue'
 import ObjectEditView from '@/components/coreForms/objectEditView.vue'
+import YesNoModal from '@/components/common/yesNoModal.vue'
 
 export default {
   name: 'App',
@@ -159,7 +168,8 @@ export default {
     HierarchicalTabs,
     ProfilePane,
     DynamicPane,
-    ObjectEditView
+    ObjectEditView,
+    YesNoModal
   },
   setup() {
     const tabsStore = useTabsStore()

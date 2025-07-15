@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
+import { ref } from 'vue'
 
 /**
  * Store pour la gestion des onglets hiérarchiques
@@ -17,6 +18,13 @@ export const useTabsStore = defineStore('tabs', {
     objectsInEditing: {},
     // Message d'information ou d'erreur
     message: null,
+    // Confirmation modale
+    confirmationMessage: null,
+    // Indique si la modale de confirmation est visible
+    showConfirmation: false,
+    // Callbacks pour la confirmation
+    confirmCallback: null,
+    cancelCallback: null,
     // Nous n'utilisons plus le suivi des entités chargées
   }),
   
@@ -36,6 +44,58 @@ export const useTabsStore = defineStore('tabs', {
     resetMessage() {
       console.log('[TabsStore] Réinitialisation du message')
       this.message = null
+    },
+    
+    /**
+     * Affiche une modale de confirmation et retourne une promesse
+     * @param {string} message - Message de confirmation à afficher
+     * @returns {Promise<boolean>} - Promesse résolue avec true si confirmé, rejetée avec false sinon
+     */
+    confirm(message) {
+      console.log('[TabsStore] Demande de confirmation:', message)
+      this.confirmationMessage = message
+      this.showConfirmation = true
+      
+      return new Promise((resolve, reject) => {
+        this.confirmCallback = () => {
+          console.log('[TabsStore] Confirmation acceptée')
+          this.resetConfirmation()
+          resolve(true)
+        }
+        this.cancelCallback = () => {
+          console.log('[TabsStore] Confirmation rejetée')
+          this.resetConfirmation()
+          reject(false)
+        }
+      })
+    },
+    
+    /**
+     * Gère la confirmation (appelé par le composant yesNoModal)
+     */
+    handleConfirm() {
+      if (this.confirmCallback) {
+        this.confirmCallback()
+      }
+    },
+    
+    /**
+     * Gère l'annulation (appelé par le composant yesNoModal)
+     */
+    handleCancel() {
+      if (this.cancelCallback) {
+        this.cancelCallback()
+      }
+    },
+    
+    /**
+     * Réinitialise l'état de confirmation
+     */
+    resetConfirmation() {
+      this.showConfirmation = false
+      this.confirmationMessage = null
+      this.confirmCallback = null
+      this.cancelCallback = null
     },
 
     /**
