@@ -247,7 +247,8 @@ export class Knowledge_article {
         type: 'sFileUploader',
         placeholder: t('knowledge_article.attachments_placeholder'),
         helperText: t('fileUploader.limits_info'),
-        required: isRequired('attachments')
+        required: isRequired('attachments'),
+        fieldName: 'KNOWLEDGE'
       },
 
 // Métadonnées d'identification et de classification

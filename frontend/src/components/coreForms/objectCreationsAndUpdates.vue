@@ -146,6 +146,7 @@
             :required="field.required"
             :uuid="objectId"
             :edition="mode === 'update'"
+            :fieldName="field.fieldName"
           />
           
           <!-- Liste de tags -->
