@@ -24,6 +24,15 @@ export default {
       sa: 'Sa'
     }
   },
+  common: {
+    confirmation: 'Confirmation',
+    yes: 'Oui',
+    no: 'Non',
+    cancel: 'Annuler',
+    confirm: 'Confirmer',
+    confirm_edit: 'Confirmer la modification',
+    cancel_edit: 'Annuler la modification'
+  },
   nav: {
     myWork: 'Mon Travail',
     create: 'Créer',
@@ -938,6 +947,9 @@ export default {
     uploading: 'Téléchargement en cours...',
     upload_success: 'Téléchargement réussi de {count} fichier(s)',
     upload_error: 'Erreur lors du téléchargement',
-    download: 'Télécharger'
+    download: 'Télécharger',
+    delete_confirm: 'Êtes-vous sûr de vouloir supprimer ce fichier ?',
+    delete_success: 'Fichier supprimé avec succès',
+    delete_error: 'Erreur lors de la suppression du fichier'
   }
 }
