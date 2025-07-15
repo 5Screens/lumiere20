@@ -28,6 +28,7 @@
 .yes-no-modal__header {
   margin-bottom: 1rem;
   text-align: center;
+  color: var(--text-color, #333333);
 }
 
 .yes-no-modal__message {
