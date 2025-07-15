@@ -1,8 +1,7 @@
 <template>
   <Teleport to="body">
-    <transition name="yes-no-modal">
-      <div v-if="isVisible" class="yes-no-modal-overlay" @click.self="handleCancel">
-        <div class="yes-no-modal">
+    <div v-if="isVisible" class="yes-no-modal-overlay" @click.self="handleCancel">
+      <div class="yes-no-modal">
           <div class="yes-no-modal__header">
             <h3>{{ t('yesNoModal.confirmation') }}</h3>
           </div>
@@ -25,7 +24,6 @@
           </div>
         </div>
       </div>
-    </transition>
   </Teleport>
 </template>
 
@@ -39,7 +37,8 @@ export default {
   props: {
     confirmationToDisplay: {
       type: String,
-      required: true
+      required: false,
+      default: ''
     },
     modelValue: {
       type: Boolean,
@@ -53,11 +52,17 @@ export default {
 
     // Watch for changes to modelValue prop
     watch(() => props.modelValue, (newValue) => {
-      isVisible.value = newValue
+      console.log('[YesNoModal] modelValue changé:', newValue, 'message:', props.confirmationToDisplay)
+      // Ne mettre à jour isVisible que si la valeur est true (ouverture)
+      // La fermeture est gérée par handleConfirm/handleCancel
+      if (newValue) {
+        isVisible.value = true
+      }
     })
 
     // Handle confirm action
     const handleConfirm = () => {
+      console.log('[YesNoModal] Confirmation acceptée')
       isVisible.value = false
       emit('update:modelValue', false)
       emit('confirm', true)
@@ -65,6 +70,7 @@ export default {
 
     // Handle cancel action
     const handleCancel = () => {
+      console.log('[YesNoModal] Confirmation annulée')
       isVisible.value = false
       emit('update:modelValue', false)
       emit('cancel', false)

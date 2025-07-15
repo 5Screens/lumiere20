@@ -92,8 +92,10 @@ export const useTabsStore = defineStore('tabs', {
      * Réinitialise l'état de confirmation
      */
     resetConfirmation() {
+      console.log('[TabsStore] Réinitialisation de la confirmation')
       this.showConfirmation = false
-      this.confirmationMessage = null
+      // Utiliser une chaîne vide au lieu de null pour éviter les erreurs de validation de prop
+      this.confirmationMessage = ''
       this.confirmCallback = null
       this.cancelCallback = null
     },
