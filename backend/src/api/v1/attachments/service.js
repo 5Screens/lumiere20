@@ -150,6 +150,8 @@ const deleteAttachment = async (uuid) => {
       throw new Error(`Attachment avec l'UUID ${uuid} non trouvé`);
     }
     
+    console.log(`Suppression de l'attachment ${uuid}`);
+    console.log(`Fichier physique: ${attachment.storage_uri}`);
     // Supprimer le fichier physique
     if (fs.existsSync(attachment.storage_uri)) {
       fs.unlinkSync(attachment.storage_uri);
