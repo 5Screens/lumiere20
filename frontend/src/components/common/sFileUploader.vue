@@ -140,6 +140,7 @@ import { useI18n } from 'vue-i18n'
 import { API_BASE_URL } from '@/config/config'
 import apiService from '@/services/apiService'
 import { useTabsStore } from '@/stores/tabsStore'
+import { useUserProfileStore } from '@/stores/userProfileStore'
 import '@/assets/styles/sFileUploader.css'
 import '@/assets/styles/ButtonStandard.css'
 
@@ -185,6 +186,7 @@ const emit = defineEmits(['update:modelValue', 'error'])
 // Composables
 const { t } = useI18n()
 const tabsStore = useTabsStore()
+const userProfileStore = useUserProfileStore()
 
 // État réactif
 const fileInput = ref(null)
@@ -394,6 +396,7 @@ const uploadFiles = async (filesToUpload) => {
       })
       formData.append('objectType', props.fieldName.toUpperCase())
       formData.append('objectUuid', props.uuid)
+      formData.append('uploadedBy', userProfileStore.id)
 
       // Utiliser apiService pour l'upload avec FormData
       const response = await apiService.uploadFormData('attachments/upload-multiple', formData)
@@ -409,6 +412,7 @@ const uploadFiles = async (filesToUpload) => {
       formData.append('file', file)
       formData.append('objectType', props.fieldName.toUpperCase())
       formData.append('objectUuid', props.uuid)
+      formData.append('uploadedBy', userProfileStore.id)
 
       // Utiliser apiService pour l'upload avec FormData
       const response = await apiService.uploadFormData('attachments/upload', formData)
