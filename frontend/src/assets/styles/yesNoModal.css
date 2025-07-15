@@ -18,9 +18,9 @@
 }
 
 .yes-no-modal {
-  background-color: var(--background-color, #ffffff);
+  background-color: var(--bg-color, #ffffff);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--shadow-color, rgba(0, 0, 0, 0.15));
   padding: 1.5rem;
   width: 100%;
   max-width: 400px;
@@ -66,12 +66,12 @@
 }
 
 .yes-no-modal__button--cancel {
-  background-color: var(--neutral-color, #e0e0e0);
+  background-color: var(--border-color, #e0e0e0);
   color: var(--text-color, #333333);
 }
 
 .yes-no-modal__button--cancel:hover {
-  background-color: var(--neutral-hover, #d0d0d0);
+  background-color: var(--hover-color, #f0f0f0);
   transform: translateY(-2px);
 }
 
