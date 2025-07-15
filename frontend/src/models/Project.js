@@ -121,13 +121,15 @@ export class Project {
         label: t('project.start_date'),
         type: 'sDatePicker',
         placeholder: t('project.start_date_placeholder'),
-        required: isRequired('start_date')
+        required: isRequired('start_date'),
+        patchendpoint: 'tickets'
       },
       end_date: {
         label: t('project.end_date'),
         type: 'sDatePicker',
         placeholder: t('project.end_date_placeholder'),
-        required: isRequired('end_date')
+        required: isRequired('end_date'),
+        patchendpoint: 'tickets'
       },
       issue_type_scheme_id: {
         label: t('project.issue_type_scheme_id'),
@@ -135,7 +137,9 @@ export class Project {
         placeholder: t('project.issue_type_scheme_id_placeholder'),
         sourceEndPoint: `symptoms?lang=${userProfileStore.language}`,
         displayedLabel: 'libelle',
-        targetEndPoint: 'projects',
+        targetEndPoint: 'tickets',
+        ressourceEndPoint: null,//permet de faire un PATCH
+        fieldName: 'issue_type_scheme_id',
         target_uuid: null,
         pickedItems: null,
         required: isRequired('issue_type_scheme_id'), 

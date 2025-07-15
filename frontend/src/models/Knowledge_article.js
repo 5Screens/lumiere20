@@ -302,7 +302,8 @@ export class Knowledge_article {
         columnsConfig: [
           { key: 'group_name', label: t('group.name'), visible: true }
         ],
-        required: isRequired('assigned_to_group')
+        required: isRequired('assigned_to_group'),
+        resetable: true
       },
       assigned_to_person: {
         label: t('knowledge_article.assigned_to_person'),
@@ -319,7 +320,8 @@ export class Knowledge_article {
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
-        required: isRequired('assigned_to_person')
+        required: isRequired('assigned_to_person'),
+        resetable: true
       },
       rel_target_audience: {
         type: 'sTagsList',

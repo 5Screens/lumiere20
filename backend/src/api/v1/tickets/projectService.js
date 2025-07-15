@@ -261,7 +261,49 @@ const getProjects = async (lang) => {
     return ticketService.getTickets(lang, 'PROJECT', baseQuery, additionalJoins, [], servicePrefix);
 };
 
+/**
+ * Met à jour partiellement un projet par son UUID
+ * @param {string} uuid - UUID du projet à mettre à jour
+ * @param {Object} updateData - Données à mettre à jour
+ * @returns {Promise<Object>} - Détails du projet mis à jour
+ */
+const updateProject = async (uuid, updateData) => {
+    // Définir les champs spécifiques aux projets
+    const standardFields = [
+        'title', 'description', 'configuration_item_uuid',
+        'ticket_status_code', 'requested_by_uuid', 'requested_for_uuid'
+    ];
+    
+    const assignmentFields = [
+        'assigned_to_group', 'assigned_to_person'
+    ];
+    
+    const extendedAttributesFields = [
+        'key', 'start_date', 'end_date', 'issue_type_scheme_id',
+        'visibility', 'project_type'
+    ];
+    
+    
+    // Utiliser les fonctions du service.js
+    const { applyUpdate } = require('./service');
+    
+    // Mettre à jour les champs standards, d'assignation et attributs étendus
+    const updatedProject = await applyUpdate(
+        uuid,
+        updateData,
+        'PROJECT',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        getProjectById,
+        '[PROJECT SERVICE]'
+    );
+    
+    return updatedProject;
+};
+
 module.exports = {
     getProjectById,
-    getProjects
+    getProjects,
+    updateProject
 };

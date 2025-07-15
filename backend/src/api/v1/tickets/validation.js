@@ -467,7 +467,7 @@ const ticketValidationSchemas = {
         key: Joi.string().allow(null, ''),
         start_date: Joi.date().allow(null),
         end_date: Joi.date().allow(null),
-        issue_type_scheme_id: Joi.string().allow(null, ''),
+        issue_type_scheme_id: Joi.array().items(Joi.string()).allow(null),
         visibility: Joi.string().allow(null, ''),
         project_type: Joi.string().allow(null, '')
     },
