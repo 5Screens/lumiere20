@@ -491,7 +491,7 @@ const resetSelection = () => {
   emit('update:modelValue', null);
   
   // If in edit mode, track the change
-  if (editMode.value) {
+  if (props.editMode) {
     isEditing.value = true;
     valueChanged.value = true;
   }
