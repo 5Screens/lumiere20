@@ -24,8 +24,8 @@ export default {
       sa: 'Sa'
     }
   },
-  common: {
-    confirmation: 'Confirmation',
+  yesNoModal: {
+    confirmation: 'Demande de confirmation',
     yes: 'Oui',
     no: 'Non',
     cancel: 'Annuler',

@@ -4,7 +4,7 @@
       <div v-if="isVisible" class="yes-no-modal-overlay" @click.self="handleCancel">
         <div class="yes-no-modal">
           <div class="yes-no-modal__header">
-            <h3>{{ t('common.confirmation') }}</h3>
+            <h3>{{ t('yesNoModal.confirmation') }}</h3>
           </div>
           <div class="yes-no-modal__message">
             {{ confirmationToDisplay }}
@@ -14,13 +14,13 @@
               class="yes-no-modal__button yes-no-modal__button--cancel" 
               @click="handleCancel"
             >
-              {{ t('common.no') }}
+              {{ t('yesNoModal.no') }}
             </button>
             <button 
               class="yes-no-modal__button yes-no-modal__button--confirm" 
               @click="handleConfirm"
             >
-              {{ t('common.yes') }}
+              {{ t('yesNoModal.yes') }}
             </button>
           </div>
         </div>
