@@ -7,7 +7,7 @@ class SymptomsService {
         try {
             const query = `
                 SELECT 
-                    st.uuid,
+                    s.uuid,
                     s.code,
                     st.libelle,
                     st.langue
