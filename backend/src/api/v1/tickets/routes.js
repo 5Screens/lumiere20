@@ -67,6 +67,42 @@ router.delete('/:uuid/watchers/:user_uuid', validateRemoveWatcher, (req, res, ne
     ticketController.removeWatcher(req, res);
 });
 
+// Route pour ajouter des groupes d'accès à un projet
+router.post('/:uuid/access-groups', (req, res, next) => {
+    logger.info(`[ROUTES] Handling POST /tickets/${req.params.uuid}/access-groups request`);
+    ticketController.addAccessGroups(req, res);
+});
+
+// Route pour supprimer un groupe d'accès d'un projet
+router.delete('/:uuid/access-groups/:group_uuid', (req, res, next) => {
+    logger.info(`[ROUTES] Handling DELETE /tickets/${req.params.uuid}/access-groups/${req.params.group_uuid} request`);
+    ticketController.removeAccessGroup(req, res);
+});
+
+// Route pour récupérer les groupes d'accès d'un projet
+router.get('/:uuid/access-groups', (req, res, next) => {
+    logger.info(`[ROUTES] Handling GET /tickets/${req.params.uuid}/access-groups request`);
+    ticketController.getAccessGroups(req, res);
+});
+
+// Route pour ajouter des utilisateurs d'accès à un projet
+router.post('/:uuid/access-users', (req, res, next) => {
+    logger.info(`[ROUTES] Handling POST /tickets/${req.params.uuid}/access-users request`);
+    ticketController.addAccessUsers(req, res);
+});
+
+// Route pour supprimer un utilisateur d'accès d'un projet
+router.delete('/:uuid/access-users/:user_uuid', (req, res, next) => {
+    logger.info(`[ROUTES] Handling DELETE /tickets/${req.params.uuid}/access-users/${req.params.user_uuid} request`);
+    ticketController.removeAccessUser(req, res);
+});
+
+// Route pour récupérer les utilisateurs d'accès d'un projet
+router.get('/:uuid/access-users', (req, res, next) => {
+    logger.info(`[ROUTES] Handling GET /tickets/${req.params.uuid}/access-users request`);
+    ticketController.getAccessUsers(req, res);
+});
+
 // Route pour ajouter des relations parent-enfant entre tickets
 router.post('/:parent_uuid/children', (req, res, next) => {
     logger.info(`[ROUTES] Handling POST /tickets/${req.params.parent_uuid}/children request`);

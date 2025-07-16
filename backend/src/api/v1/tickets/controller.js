@@ -303,6 +303,130 @@ const removeWatcher = async (req, res) => {
     }
 };
 
+// Add access groups to a project
+const addAccessGroups = async (req, res) => {
+    try {
+        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.uuid}/access-groups request`);
+        const ticketUuid = req.params.uuid;
+        const { groups } = req.body;
+        
+        const result = await ticketService.addAccessGroups(ticketUuid, groups);
+        res.status(201).json(result);
+    } catch (error) {
+        logger.error('[TICKETS CONTROLLER] Error in addAccessGroups:', error);
+        if (error.message === 'Ticket not found') {
+            res.status(404).json({ error: 'Ticket not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
+// Remove access group from a project
+const removeAccessGroup = async (req, res) => {
+    try {
+        logger.info(`[TICKETS CONTROLLER] Processing DELETE /tickets/${req.params.uuid}/access-groups/${req.params.group_uuid} request`);
+        const ticketUuid = req.params.uuid;
+        const groupUuid = req.params.group_uuid;
+        
+        const result = await ticketService.removeAccessGroup(ticketUuid, groupUuid);
+        
+        if (!result.success && result.message === 'Access group not found or already removed') {
+            return res.status(404).json({ error: result.message });
+        }
+        
+        res.json(result);
+    } catch (error) {
+        logger.error('[TICKETS CONTROLLER] Error in removeAccessGroup:', error);
+        if (error.message === 'Ticket not found') {
+            res.status(404).json({ error: 'Ticket not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
+// Get access groups for a project
+const getAccessGroups = async (req, res) => {
+    try {
+        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/access-groups request`);
+        const ticketUuid = req.params.uuid;
+        const { lang = 'en' } = req.query;
+        
+        const result = await ticketService.getAccessGroups(ticketUuid, lang);
+        res.json(result);
+    } catch (error) {
+        logger.error('[TICKETS CONTROLLER] Error in getAccessGroups:', error);
+        if (error.message === 'Ticket not found') {
+            res.status(404).json({ error: 'Ticket not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
+// Add access users to a project
+const addAccessUsers = async (req, res) => {
+    try {
+        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.uuid}/access-users request`);
+        const ticketUuid = req.params.uuid;
+        const { users } = req.body;
+        
+        const result = await ticketService.addAccessUsers(ticketUuid, users);
+        res.status(201).json(result);
+    } catch (error) {
+        logger.error('[TICKETS CONTROLLER] Error in addAccessUsers:', error);
+        if (error.message === 'Ticket not found') {
+            res.status(404).json({ error: 'Ticket not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
+// Remove access user from a project
+const removeAccessUser = async (req, res) => {
+    try {
+        logger.info(`[TICKETS CONTROLLER] Processing DELETE /tickets/${req.params.uuid}/access-users/${req.params.user_uuid} request`);
+        const ticketUuid = req.params.uuid;
+        const userUuid = req.params.user_uuid;
+        
+        const result = await ticketService.removeAccessUser(ticketUuid, userUuid);
+        
+        if (!result.success && result.message === 'Access user not found or already removed') {
+            return res.status(404).json({ error: result.message });
+        }
+        
+        res.json(result);
+    } catch (error) {
+        logger.error('[TICKETS CONTROLLER] Error in removeAccessUser:', error);
+        if (error.message === 'Ticket not found') {
+            res.status(404).json({ error: 'Ticket not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
+// Get access users for a project
+const getAccessUsers = async (req, res) => {
+    try {
+        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/access-users request`);
+        const ticketUuid = req.params.uuid;
+        const { lang = 'en' } = req.query;
+        
+        const result = await ticketService.getAccessUsers(ticketUuid, lang);
+        res.json(result);
+    } catch (error) {
+        logger.error('[TICKETS CONTROLLER] Error in getAccessUsers:', error);
+        if (error.message === 'Ticket not found') {
+            res.status(404).json({ error: 'Ticket not found' });
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+};
+
 /**
  * Ajoute des relations parent-enfant entre tickets
  * @param {Object} req - Requête Express
@@ -394,6 +518,12 @@ module.exports = {
     updateTicket,
     addWatchers,
     removeWatcher,
+    addAccessGroups,
+    removeAccessGroup,
+    getAccessGroups,
+    addAccessUsers,
+    removeAccessUser,
+    getAccessUsers,
     addChildrenTickets,
     removeChildTicket
 };

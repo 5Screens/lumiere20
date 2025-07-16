@@ -1095,6 +1095,336 @@ const removeWatcher = async (ticketUuid, userUuid) => {
 };
 
 /**
+ * Ajoute des groupes d'accès à un ticket spécifique
+ * @param {string} ticketUuid - UUID du ticket
+ * @param {Array<string>} groups - Liste des UUIDs des groupes à ajouter
+ * @returns {Promise<Object>} - Résultat de l'opération
+ */
+const addAccessGroups = async (ticketUuid, groups) => {
+    logger.info(`[SERVICE] Adding access groups to ticket ${ticketUuid}`);
+    
+    try {
+        // Vérifier que le ticket existe
+        const ticketCheck = await db.query('SELECT uuid FROM core.tickets WHERE uuid = $1', [ticketUuid]);
+        if (ticketCheck.rows.length === 0) {
+            throw new Error('Ticket not found');
+        }
+        
+        // Valider les données d'entrée
+        if (!groups || !Array.isArray(groups) || groups.length === 0) {
+            return {
+                success: false,
+                message: 'Groups list is required and must be a non-empty array'
+            };
+        }
+        
+        const client = await db.getClient();
+        
+        try {
+            await client.query('BEGIN');
+            
+            const insertedGroups = [];
+            
+            for (const groupUuid of groups) {
+                // Vérifier si la relation existe déjà et n'est pas terminée
+                const existingCheck = await client.query(
+                    `SELECT uuid FROM core.rel_tickets_groups_persons 
+                     WHERE rel_ticket = $1 AND rel_assigned_to_group = $2 AND type = 'ACCESS_GRANTED' AND ended_at IS NULL`,
+                    [ticketUuid, groupUuid]
+                );
+                
+                if (existingCheck.rows.length === 0) {
+                    // Insérer la nouvelle relation d'accès
+                    const insertQuery = `
+                        INSERT INTO core.rel_tickets_groups_persons (
+                            uuid, rel_ticket, rel_assigned_to_group, type, created_at
+                        ) VALUES (uuid_generate_v4(), $1, $2, 'ACCESS_GRANTED', NOW())
+                        RETURNING uuid, rel_assigned_to_group
+                    `;
+                    
+                    const result = await client.query(insertQuery, [ticketUuid, groupUuid]);
+                    insertedGroups.push(result.rows[0]);
+                    logger.info(`[SERVICE] Added access group ${groupUuid} to ticket ${ticketUuid}`);
+                } else {
+                    logger.info(`[SERVICE] Access group ${groupUuid} already exists for ticket ${ticketUuid}`);
+                }
+            }
+            
+            await client.query('COMMIT');
+            
+            return {
+                success: true,
+                message: `Successfully added ${insertedGroups.length} access groups`,
+                data: insertedGroups
+            };
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+        
+    } catch (error) {
+        logger.error('[SERVICE] Error in addAccessGroups:', error);
+        throw error;
+    }
+};
+
+/**
+ * Supprime un groupe d'accès d'un ticket spécifique
+ * @param {string} ticketUuid - UUID du ticket
+ * @param {string} groupUuid - UUID du groupe à retirer
+ * @returns {Promise<Object>} - Résultat de l'opération
+ */
+const removeAccessGroup = async (ticketUuid, groupUuid) => {
+    logger.info(`[SERVICE] Removing access group ${groupUuid} from ticket ${ticketUuid}`);
+    
+    try {
+        // Vérifier que le ticket existe
+        const ticketCheck = await db.query('SELECT uuid FROM core.tickets WHERE uuid = $1', [ticketUuid]);
+        if (ticketCheck.rows.length === 0) {
+            throw new Error('Ticket not found');
+        }
+        
+        const updateQuery = `
+            UPDATE core.rel_tickets_groups_persons 
+            SET ended_at = NOW() 
+            WHERE rel_ticket = $1 AND rel_assigned_to_group = $2 AND type = 'ACCESS_GRANTED' AND ended_at IS NULL
+            RETURNING uuid
+        `;
+        
+        const result = await db.query(updateQuery, [ticketUuid, groupUuid]);
+        
+        if (result.rows.length === 0) {
+            return {
+                success: false,
+                message: 'Access group not found or already removed'
+            };
+        }
+        
+        logger.info(`[SERVICE] Successfully removed access group ${groupUuid} from ticket ${ticketUuid}`);
+        
+        return {
+            success: true,
+            message: 'Access group removed successfully'
+        };
+        
+    } catch (error) {
+        logger.error('[SERVICE] Error in removeAccessGroup:', error);
+        throw error;
+    }
+};
+
+/**
+ * Récupère les groupes d'accès d'un ticket spécifique
+ * @param {string} ticketUuid - UUID du ticket
+ * @param {string} lang - Code de langue pour les traductions
+ * @returns {Promise<Array>} - Liste des groupes d'accès
+ */
+const getAccessGroups = async (ticketUuid, lang = 'en') => {
+    logger.info(`[SERVICE] Getting access groups for ticket ${ticketUuid}`);
+    
+    try {
+        // Vérifier que le ticket existe
+        const ticketCheck = await db.query('SELECT uuid FROM core.tickets WHERE uuid = $1', [ticketUuid]);
+        if (ticketCheck.rows.length === 0) {
+            throw new Error('Ticket not found');
+        }
+        
+        const query = `
+            SELECT 
+                rtgp.uuid,
+                rtgp.rel_assigned_to_group as group_uuid,
+                g.name as group_name,
+                rtgp.created_at
+            FROM core.rel_tickets_groups_persons rtgp
+            JOIN configuration.groups g ON g.uuid = rtgp.rel_assigned_to_group
+            WHERE rtgp.rel_ticket = $1 
+              AND rtgp.type = 'ACCESS_GRANTED' 
+              AND rtgp.ended_at IS NULL
+            ORDER BY rtgp.created_at DESC
+        `;
+        
+        const result = await db.query(query, [ticketUuid]);
+        
+        logger.info(`[SERVICE] Found ${result.rows.length} access groups for ticket ${ticketUuid}`);
+        
+        return result.rows;
+        
+    } catch (error) {
+        logger.error('[SERVICE] Error in getAccessGroups:', error);
+        throw error;
+    }
+};
+
+/**
+ * Ajoute des utilisateurs d'accès à un ticket spécifique
+ * @param {string} ticketUuid - UUID du ticket
+ * @param {Array<string>} users - Liste des UUIDs des utilisateurs à ajouter
+ * @returns {Promise<Object>} - Résultat de l'opération
+ */
+const addAccessUsers = async (ticketUuid, users) => {
+    logger.info(`[SERVICE] Adding access users to ticket ${ticketUuid}`);
+    
+    try {
+        // Vérifier que le ticket existe
+        const ticketCheck = await db.query('SELECT uuid FROM core.tickets WHERE uuid = $1', [ticketUuid]);
+        if (ticketCheck.rows.length === 0) {
+            throw new Error('Ticket not found');
+        }
+        
+        // Valider les données d'entrée
+        if (!users || !Array.isArray(users) || users.length === 0) {
+            return {
+                success: false,
+                message: 'Users list is required and must be a non-empty array'
+            };
+        }
+        
+        const client = await db.getClient();
+        
+        try {
+            await client.query('BEGIN');
+            
+            const insertedUsers = [];
+            
+            for (const userUuid of users) {
+                // Vérifier si la relation existe déjà et n'est pas terminée
+                const existingCheck = await client.query(
+                    `SELECT uuid FROM core.rel_tickets_groups_persons 
+                     WHERE rel_ticket = $1 AND rel_assigned_to_person = $2 AND type = 'ACCESS_GRANTED' AND ended_at IS NULL`,
+                    [ticketUuid, userUuid]
+                );
+                
+                if (existingCheck.rows.length === 0) {
+                    // Insérer la nouvelle relation d'accès
+                    const insertQuery = `
+                        INSERT INTO core.rel_tickets_groups_persons (
+                            uuid, rel_ticket, rel_assigned_to_person, type, created_at
+                        ) VALUES (uuid_generate_v4(), $1, $2, 'ACCESS_GRANTED', NOW())
+                        RETURNING uuid, rel_assigned_to_person
+                    `;
+                    
+                    const result = await client.query(insertQuery, [ticketUuid, userUuid]);
+                    insertedUsers.push(result.rows[0]);
+                    logger.info(`[SERVICE] Added access user ${userUuid} to ticket ${ticketUuid}`);
+                } else {
+                    logger.info(`[SERVICE] Access user ${userUuid} already exists for ticket ${ticketUuid}`);
+                }
+            }
+            
+            await client.query('COMMIT');
+            
+            return {
+                success: true,
+                message: `Successfully added ${insertedUsers.length} access users`,
+                data: insertedUsers
+            };
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+        
+    } catch (error) {
+        logger.error('[SERVICE] Error in addAccessUsers:', error);
+        throw error;
+    }
+};
+
+/**
+ * Supprime un utilisateur d'accès d'un ticket spécifique
+ * @param {string} ticketUuid - UUID du ticket
+ * @param {string} userUuid - UUID de l'utilisateur à retirer
+ * @returns {Promise<Object>} - Résultat de l'opération
+ */
+const removeAccessUser = async (ticketUuid, userUuid) => {
+    logger.info(`[SERVICE] Removing access user ${userUuid} from ticket ${ticketUuid}`);
+    
+    try {
+        // Vérifier que le ticket existe
+        const ticketCheck = await db.query('SELECT uuid FROM core.tickets WHERE uuid = $1', [ticketUuid]);
+        if (ticketCheck.rows.length === 0) {
+            throw new Error('Ticket not found');
+        }
+        
+        const updateQuery = `
+            UPDATE core.rel_tickets_groups_persons 
+            SET ended_at = NOW() 
+            WHERE rel_ticket = $1 AND rel_assigned_to_person = $2 AND type = 'ACCESS_GRANTED' AND ended_at IS NULL
+            RETURNING uuid
+        `;
+        
+        const result = await db.query(updateQuery, [ticketUuid, userUuid]);
+        
+        if (result.rows.length === 0) {
+            return {
+                success: false,
+                message: 'Access user not found or already removed'
+            };
+        }
+        
+        logger.info(`[SERVICE] Successfully removed access user ${userUuid} from ticket ${ticketUuid}`);
+        
+        return {
+            success: true,
+            message: 'Access user removed successfully'
+        };
+        
+    } catch (error) {
+        logger.error('[SERVICE] Error in removeAccessUser:', error);
+        throw error;
+    }
+};
+
+/**
+ * Récupère les utilisateurs d'accès d'un ticket spécifique
+ * @param {string} ticketUuid - UUID du ticket
+ * @param {string} lang - Code de langue pour les traductions
+ * @returns {Promise<Array>} - Liste des utilisateurs d'accès
+ */
+const getAccessUsers = async (ticketUuid, lang = 'en') => {
+    logger.info(`[SERVICE] Getting access users for ticket ${ticketUuid}`);
+    
+    try {
+        // Vérifier que le ticket existe
+        const ticketCheck = await db.query('SELECT uuid FROM core.tickets WHERE uuid = $1', [ticketUuid]);
+        if (ticketCheck.rows.length === 0) {
+            throw new Error('Ticket not found');
+        }
+        
+        const query = `
+            SELECT 
+                rtgp.uuid,
+                rtgp.rel_assigned_to_person as user_uuid,
+                p.first_name,
+                p.last_name,
+                p.email,
+                rtgp.created_at
+            FROM core.rel_tickets_groups_persons rtgp
+            JOIN configuration.persons p ON p.uuid = rtgp.rel_assigned_to_person
+            WHERE rtgp.rel_ticket = $1 
+              AND rtgp.type = 'ACCESS_GRANTED' 
+              AND rtgp.ended_at IS NULL
+            ORDER BY rtgp.created_at DESC
+        `;
+        
+        const result = await db.query(query, [ticketUuid]);
+        
+        logger.info(`[SERVICE] Found ${result.rows.length} access users for ticket ${ticketUuid}`);
+        
+        return result.rows;
+        
+    } catch (error) {
+        logger.error('[SERVICE] Error in getAccessUsers:', error);
+        throw error;
+    }
+};
+
+/**
  * Ajoute des relations parent-enfant entre tickets
  * @param {string} parentUuid - UUID du ticket parent
  * @param {string} dependencyType - Type de dépendance (ex: DEPENDENCY_CODE)
@@ -1696,6 +2026,12 @@ module.exports = {
     updateTicket,
     addWatchers,
     removeWatcher,
+    addAccessGroups,
+    removeAccessGroup,
+    getAccessGroups,
+    addAccessUsers,
+    removeAccessUser,
+    getAccessUsers,
     addChildrenTickets,
     removeChildTicket,
     applyUpdate,
