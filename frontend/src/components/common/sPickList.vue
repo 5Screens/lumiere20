@@ -395,12 +395,12 @@ async function confirmChanges() {
       let requestBody;
       
       // Vérifier si fieldName est défini pour déterminer le format du body
-      if (props.fieldName && props.ressourceEndPoint === 'children') {
+      if (props.fieldName && props.ressourceEndPoint ) {
         // Format pour les relations parent-enfant
-        // { "type": "DEPENDENCY_CODE", "children": ["uuid1", "uuid2", ...] }
+        // { "type": "DEPENDENCY_CODE", "[ressourceEndPoint]": ["uuid1", "uuid2", ...] }
         requestBody = {
           type: props.fieldName,
-          children: itemUuids
+          [props.ressourceEndPoint]: itemUuids
         };
         console.log(`Envoi des relations parent-enfant de type ${props.fieldName}:`, itemUuids);
       } else {

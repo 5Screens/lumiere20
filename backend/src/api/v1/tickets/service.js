@@ -1114,7 +1114,7 @@ const addAccessGroups = async (ticketUuid, groups) => {
         if (!groups || !Array.isArray(groups) || groups.length === 0) {
             return {
                 success: false,
-                message: 'Groups list is required and must be a non-empty array'
+                message: 'Access groups list is required and must be a non-empty array'
             };
         }
         
@@ -1278,7 +1278,7 @@ const addAccessUsers = async (ticketUuid, users) => {
         if (!users || !Array.isArray(users) || users.length === 0) {
             return {
                 success: false,
-                message: 'Users list is required and must be a non-empty array'
+                message: 'Access users list is required and must be a non-empty array'
             };
         }
         

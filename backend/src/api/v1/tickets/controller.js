@@ -308,9 +308,9 @@ const addAccessGroups = async (req, res) => {
     try {
         logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.uuid}/access-groups request`);
         const ticketUuid = req.params.uuid;
-        const { groups } = req.body;
+        const { 'access-groups': access_groups } = req.body;
         
-        const result = await ticketService.addAccessGroups(ticketUuid, groups);
+        const result = await ticketService.addAccessGroups(ticketUuid, access_groups);
         res.status(201).json(result);
     } catch (error) {
         logger.error('[TICKETS CONTROLLER] Error in addAccessGroups:', error);
@@ -370,9 +370,9 @@ const addAccessUsers = async (req, res) => {
     try {
         logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.uuid}/access-users request`);
         const ticketUuid = req.params.uuid;
-        const { users } = req.body;
+        const { 'access-users': access_users } = req.body;
         
-        const result = await ticketService.addAccessUsers(ticketUuid, users);
+        const result = await ticketService.addAccessUsers(ticketUuid, access_users);
         res.status(201).json(result);
     } catch (error) {
         logger.error('[TICKETS CONTROLLER] Error in addAccessUsers:', error);
