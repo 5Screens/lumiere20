@@ -315,6 +315,7 @@ const updateProject = async (uuid, updateData) => {
                 SET ended_at = CURRENT_TIMESTAMP,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE rel_ticket = $1 
+                AND type = 'ACCESS_GRANTED'
                   AND ended_at IS NULL
             `;
             

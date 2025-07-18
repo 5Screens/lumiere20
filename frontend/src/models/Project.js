@@ -281,14 +281,17 @@ export class Project {
       }
     };
     
-    // Si mode est 'for_creation', supprimer les champs spécifiés
+    // Supprimer les champs système en mode création
     if (mode === 'for_creation') {
-      const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
-      fieldsToRemove.forEach(field => {
-        if (fields[field]) {
-          delete fields[field];
-        }
-      });
+      delete fields.uuid;
+      delete fields.created_at;
+      delete fields.writer_name;
+      delete fields.updated_at;
+      delete fields.closed_at;
+      delete fields.defect_count;
+      delete fields.us_count;
+      delete fields.epic_count;
+      delete fields.sprint_count;
     }
     
     return fields;
