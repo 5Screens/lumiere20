@@ -268,6 +268,12 @@ const getProjects = async (lang) => {
  * @returns {Promise<Object>} - Détails du projet mis à jour
  */
 const updateProject = async (uuid, updateData) => {
+    const logger = require('../../../config/logger');
+    const db = require('../../../config/database');
+    
+    // Check if visibility is being updated
+    const isVisibilityUpdated = updateData.hasOwnProperty('visibility');
+    
     // Définir les champs spécifiques aux projets
     const standardFields = [
         'title', 'description', 'configuration_item_uuid',
@@ -298,6 +304,34 @@ const updateProject = async (uuid, updateData) => {
         getProjectById,
         '[PROJECT SERVICE]'
     );
+    
+    // If visibility was updated, end all active relations in rel_tickets_groups_persons
+    if (isVisibilityUpdated) {
+        try {
+            logger.info(`[PROJECT SERVICE] Ending active relations for project ${uuid} due to visibility update`);
+            
+            const endRelationsQuery = `
+                UPDATE core.rel_tickets_groups_persons 
+                SET ended_at = CURRENT_TIMESTAMP,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE rel_ticket = $1 
+                  AND ended_at IS NULL
+            `;
+            
+            const result = await db.query(endRelationsQuery, [uuid]);
+            
+            if (result.rowCount > 0) {
+                logger.info(`[PROJECT SERVICE] Ended ${result.rowCount} active relations for project ${uuid}`);
+            } else {
+                logger.info(`[PROJECT SERVICE] No active relations found to end for project ${uuid}`);
+            }
+            
+        } catch (error) {
+            logger.error(`[PROJECT SERVICE] Error ending active relations for project ${uuid}:`, error);
+            // Don't throw the error to avoid breaking the update process
+            // The project update was successful, this is just cleanup
+        }
+    }
     
     return updatedProject;
 };
