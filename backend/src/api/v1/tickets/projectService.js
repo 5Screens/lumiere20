@@ -110,8 +110,7 @@ const getProjectById = async (uuid, lang = 'en') => {
                 -- Informations sur les utilisateurs ayant accès au projet
                 (
                     SELECT json_agg(json_build_object(
-                        'uuid', w.uuid,
-                        'person_uuid', p5.uuid,
+                        'uuid', p5.uuid,
                         'person_name', p5.first_name || ' ' || p5.last_name,
                         'created_at', w.created_at
                     ))
@@ -123,8 +122,7 @@ const getProjectById = async (uuid, lang = 'en') => {
                 -- Informations sur les groupes ayant accès au projet
                 (
                     SELECT json_agg(json_build_object(
-                        'uuid', w.uuid,
-                        'group_uuid', g2.uuid,
+                        'uuid', g2.uuid,
                         'group_name', g2.group_name,
                         'created_at', w.created_at
                     ))
