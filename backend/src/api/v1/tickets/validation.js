@@ -473,15 +473,64 @@ const ticketValidationSchemas = {
     },
 
     EPIC: {
+        // Standard fields
+        title: Joi.string().allow(null, ''),
+        description: Joi.string().allow(null, ''),
+        ticket_status_code: Joi.string().allow(null, ''),
+        ticket_type_code: Joi.string().allow(null, ''),
+        requested_for_uuid: Joi.string().uuid().allow(null, ''),
+        requested_by_uuid: Joi.string().uuid().allow(null, ''),
         
+        // Assignment fields
+        rel_assigned_to_group: Joi.string().uuid().allow(null, ''),
+        rel_assigned_to_person: Joi.string().uuid().allow(null, ''),
+        
+        // Extended attributes
+        tags: Joi.array().items(Joi.string()).allow(null),
+        color: Joi.string().allow(null, ''),
+        end_date: Joi.date().allow(null),
+        start_date: Joi.date().allow(null),
+        progress_percent: Joi.number().allow(null)
     },
 
     STORY: {
+        // Standard fields
+        title: Joi.string().allow(null, ''),
+        description: Joi.string().allow(null, ''),
+        ticket_status_code: Joi.string().allow(null, ''),
+        ticket_type_code: Joi.string().allow(null, ''),
+        requested_for_uuid: Joi.string().uuid().allow(null, ''),
+        requested_by_uuid: Joi.string().uuid().allow(null, ''),
         
+        // Assignment fields
+        rel_assigned_to_group: Joi.string().uuid().allow(null, ''),
+        rel_assigned_to_person: Joi.string().uuid().allow(null, ''),
+        
+        // Extended attributes
+        tags: Joi.array().items(Joi.string()).allow(null),
+        priority: Joi.string().allow(null, ''),
+        story_points: Joi.number().allow(null),
+        acceptance_criteria: Joi.string().allow(null, '')
     },
 
     SPRINT: {
+        // Standard fields
+        title: Joi.string().allow(null, ''),
+        description: Joi.string().allow(null, ''),
+        ticket_status_code: Joi.string().allow(null, ''),
+        ticket_type_code: Joi.string().allow(null, ''),
+        requested_for_uuid: Joi.string().uuid().allow(null, ''),
+        requested_by_uuid: Joi.string().uuid().allow(null, ''),
         
+        // Assignment fields
+        rel_assigned_to_group: Joi.string().uuid().allow(null, ''),
+        rel_assigned_to_person: Joi.string().uuid().allow(null, ''),
+        
+        // Extended attributes
+        end_date: Joi.date().allow(null),
+        start_date: Joi.date().allow(null),
+        actual_velocity: Joi.number().allow(null),
+        estimated_velocity: Joi.number().allow(null)
     },
 
     DEFECT: {

@@ -173,7 +173,47 @@ const getSprints = async (lang) => {
     return ticketService.getTickets(lang, 'SPRINT', baseQuery, additionalJoins, [], servicePrefix);
 };
 
+/**
+ * Updates a sprint partially by its UUID
+ * @param {string} uuid - UUID of the sprint to update
+ * @param {Object} updateData - Data to update
+ * @returns {Promise<Object>} - Updated sprint details
+ */
+const updateSprint = async (uuid, updateData) => {
+    // Define sprint-specific fields
+    const standardFields = [
+        'title', 'description', 'ticket_status_code',
+        'ticket_type_code', 'requested_for_uuid', 'requested_by_uuid'
+    ];
+    
+    const assignmentFields = [
+        'rel_assigned_to_group', 'rel_assigned_to_person'
+    ];
+    
+    const extendedAttributesFields = [
+        'end_date', 'start_date', 'actual_velocity', 'estimated_velocity'
+    ];
+    
+    // Use functions from service.js
+    const { applyUpdate } = require('./service');
+    
+    // Update standard fields, assignment fields and extended attributes
+    const updatedSprint = await applyUpdate(
+        uuid,
+        updateData,
+        'SPRINT',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        getSprintById,
+        '[SPRINT SERVICE]'
+    );
+    
+    return updatedSprint;
+};
+
 module.exports = {
     getSprintById,
-    getSprints
+    getSprints,
+    updateSprint
 };

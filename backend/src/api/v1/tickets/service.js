@@ -986,8 +986,8 @@ const updateTicket = async (uuid, updateData) => {
             const sprintService = require('./sprintService');
             updatedTicket = await sprintService.updateSprint(uuid, updateData);
         }
-        // STORY
-        else if (ticketType === 'STORY') {
+        // USER_STORY
+        else if (ticketType === 'USER_STORY') {
             logger.info(`[SERVICE] Calling storyService.updateStory for UUID: ${uuid}`);
             const storyService = require('./storyService');
             updatedTicket = await storyService.updateStory(uuid, updateData);

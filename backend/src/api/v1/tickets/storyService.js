@@ -274,7 +274,47 @@ const getUserStories = async (lang) => {
     return ticketService.getTickets(lang, 'USER_STORY', baseQuery, additionalJoins, [], servicePrefix);
 };
 
+/**
+ * Updates a user story partially by its UUID
+ * @param {string} uuid - UUID of the user story to update
+ * @param {Object} updateData - Data to update
+ * @returns {Promise<Object>} - Updated user story details
+ */
+const updateStory = async (uuid, updateData) => {
+    // Define story-specific fields
+    const standardFields = [
+        'title', 'description', 'ticket_status_code',
+        'ticket_type_code', 'requested_for_uuid', 'requested_by_uuid'
+    ];
+    
+    const assignmentFields = [
+        'rel_assigned_to_group', 'rel_assigned_to_person'
+    ];
+    
+    const extendedAttributesFields = [
+        'tags', 'priority', 'story_points', 'acceptance_criteria'
+    ];
+    
+    // Use functions from service.js
+    const { applyUpdate } = require('./service');
+    
+    // Update standard fields, assignment fields and extended attributes
+    const updatedStory = await applyUpdate(
+        uuid,
+        updateData,
+        'USER_STORY',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        getStoryById,
+        '[STORY SERVICE]'
+    );
+    
+    return updatedStory;
+};
+
 module.exports = {
     getStoryById,
-    getUserStories
+    getUserStories,
+    updateStory
 };

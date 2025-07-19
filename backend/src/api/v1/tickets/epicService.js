@@ -197,7 +197,47 @@ const getEpics = async (lang) => {
     return ticketService.getTickets(lang, 'EPIC', baseQuery, additionalJoins, [], servicePrefix);
 };
 
+/**
+ * Updates an epic partially by its UUID
+ * @param {string} uuid - UUID of the epic to update
+ * @param {Object} updateData - Data to update
+ * @returns {Promise<Object>} - Updated epic details
+ */
+const updateEpic = async (uuid, updateData) => {
+    // Define epic-specific fields
+    const standardFields = [
+        'title', 'description', 'ticket_status_code',
+        'ticket_type_code', 'requested_for_uuid', 'requested_by_uuid'
+    ];
+    
+    const assignmentFields = [
+        'rel_assigned_to_group', 'rel_assigned_to_person'
+    ];
+    
+    const extendedAttributesFields = [
+        'tags', 'color', 'end_date', 'start_date', 'progress_percent'
+    ];
+    
+    // Use functions from service.js
+    const { applyUpdate } = require('./service');
+    
+    // Update standard fields, assignment fields and extended attributes
+    const updatedEpic = await applyUpdate(
+        uuid,
+        updateData,
+        'EPIC',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        getEpicById,
+        '[EPIC SERVICE]'
+    );
+    
+    return updatedEpic;
+};
+
 module.exports = {
     getEpicById,
-    getEpics
+    getEpics,
+    updateEpic
 };
