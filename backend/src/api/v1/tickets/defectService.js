@@ -206,7 +206,48 @@ const getDefectById = async (uuid, lang = 'en') => {
     }
 };
 
+/**
+ * Updates a defect partially by its UUID
+ * @param {string} uuid - UUID of the defect to update
+ * @param {Object} updateData - Data to update
+ * @returns {Promise<Object>} - Updated defect details
+ */
+const updateDefect = async (uuid, updateData) => {
+    // Define defect-specific fields
+    const standardFields = [
+        'title', 'description', 'ticket_status_code',
+        'ticket_type_code', 'requested_for_uuid', 'requested_by_uuid'
+    ];
+    
+    const assignmentFields = [
+        'assigned_to_group', 'assigned_to_person'
+    ];
+    
+    const extendedAttributesFields = [
+        'tags', 'severity', 'workaround', 'environment',
+        'impact_area', 'expected_behavior', 'steps_to_reproduce'
+    ];
+    
+    // Use functions from service.js
+    const { applyUpdate } = require('./service');
+    
+    // Update standard fields, assignment fields and extended attributes
+    const updatedDefect = await applyUpdate(
+        uuid,
+        updateData,
+        'DEFECT',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        getDefectById,
+        '[DEFECT SERVICE]'
+    );
+    
+    return updatedDefect;
+};
+
 module.exports = {
     getDefects,
-    getDefectById
+    getDefectById,
+    updateDefect
 };

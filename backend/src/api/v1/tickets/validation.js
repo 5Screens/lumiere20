@@ -485,7 +485,26 @@ const ticketValidationSchemas = {
     },
 
     DEFECT: {
+        // Standard fields
+        title: Joi.string().allow(null, ''),
+        description: Joi.string().allow(null, ''),
+        ticket_status_code: Joi.string().allow(null, ''),
+        ticket_type_code: Joi.string().allow(null, ''),
+        requested_for_uuid: Joi.string().uuid().allow(null, ''),
+        requested_by_uuid: Joi.string().uuid().allow(null, ''),
         
+        // Assignment fields
+        assigned_to_group: Joi.string().uuid().allow(null, ''),
+        assigned_to_person: Joi.string().uuid().allow(null, ''),
+        
+        // Extended attributes
+        tags: Joi.array().items(Joi.string()).allow(null),
+        severity: Joi.string().allow(null, ''),
+        workaround: Joi.string().allow(null, ''),
+        environment: Joi.string().allow(null, ''),
+        impact_area: Joi.string().allow(null, ''),
+        expected_behavior: Joi.string().allow(null, ''),
+        steps_to_reproduce: Joi.string().allow(null, '')
     },
 
     KNOWLEDGE: {

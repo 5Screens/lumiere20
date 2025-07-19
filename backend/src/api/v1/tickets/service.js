@@ -279,8 +279,8 @@ const createTicket = async (ticketData) => {
             const forbiddenFields = ['uuid', 'created_at', 'updated_at', 'sprint_id', 'project_id', 'epic_id', 'rel_assigned_to_person'];
             // Fields that go directly in columns
             const columnFields = [
-                'title', 'description', 'configuration_item_uuid', 'writer_uuid',
-                'ticket_type_code', 'ticket_status_code', 'requested_for_uuid', 'requested_by_uuid'
+                'title', 'ticket_status_code','description', 'writer_uuid',
+                'ticket_type_code', 'requested_for_uuid', 'requested_by_uuid'
             ];
             // Everything else goes into core_extended_attributes
             Object.keys(ticketData).forEach(key => {
