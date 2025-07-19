@@ -228,8 +228,11 @@ const updateDefect = async (uuid, updateData) => {
         'impact_area', 'expected_behavior', 'steps_to_reproduce'
     ];
     
+    // Extract project relation to handle separately
+    const projectId = updateData.project_id;
+    
     // Use functions from service.js
-    const { applyUpdate } = require('./service');
+    const { applyUpdate, addChildrenTickets, removeChildTicket } = require('./service');
     
     // Update standard fields, assignment fields and extended attributes
     const updatedDefect = await applyUpdate(
@@ -242,6 +245,40 @@ const updateDefect = async (uuid, updateData) => {
         getDefectById,
         '[DEFECT SERVICE]'
     );
+    
+    // Handle project relation if present
+    if (projectId !== undefined) {
+        logger.info(`[DEFECT SERVICE] Updating project relation for defect ${uuid}`);
+        
+        try {
+            // 1. Récupérer d'abord les relations existantes pour ce type de dépendance
+            const existingRelations = await db.query(
+                `SELECT rel_parent_ticket_uuid FROM core.rel_parent_child_tickets 
+                 WHERE rel_child_ticket_uuid = $1 AND dependency_code = $2 AND ended_at IS NULL`,
+                [uuid, 'DEFECT']
+            );
+            
+            // Logs pour débogage
+            logger.info(`[DEFECT SERVICE] Found ${existingRelations.rowCount} existing project relations for defect ${uuid}`);
+            logger.info(`[DEFECT SERVICE] Existing project relations: ${JSON.stringify(existingRelations.rows)}`);
+            
+            // 2. Supprimer chaque relation existante
+            for (const row of existingRelations.rows) {
+                await removeChildTicket(row.rel_parent_ticket_uuid, uuid);
+                logger.info(`[DEFECT SERVICE] Removed project relation: ${row.rel_parent_ticket_uuid} -> ${uuid}`);
+            }
+            
+            // 3. Ajouter la nouvelle relation si elle existe
+            if (projectId) {
+                await addChildrenTickets(projectId, 'DEFECT', [uuid]);
+                logger.info(`[DEFECT SERVICE] Added new project relation: ${projectId} -> ${uuid}`);
+            } else {
+                logger.info(`[DEFECT SERVICE] No new project relation to add for defect ${uuid}`);
+            }
+        } catch (error) {
+            logger.error(`[DEFECT SERVICE] Error managing project relation for defect ${uuid}:`, error);
+        }
+    }
     
     return updatedDefect;
 };

@@ -546,6 +546,9 @@ const ticketValidationSchemas = {
         assigned_to_group: Joi.string().uuid().allow(null, ''),
         assigned_to_person: Joi.string().uuid().allow(null, ''),
         
+        // Relations
+        project_id: Joi.string().uuid().allow(null, ''),
+        
         // Extended attributes
         tags: Joi.array().items(Joi.string()).allow(null),
         severity: Joi.string().allow(null, ''),
