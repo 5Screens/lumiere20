@@ -274,8 +274,16 @@ export class Defect {
 
     // Supprimer les attachments car ils sont gérés séparément par le composant sFileUploader
     delete apiData.attachments;
-    
-    // Pour POST, supprimer les champs spécifiés qui ne doivent pas être envoyés lors de la création
+  
+  // Traiter les tags si nécessaire
+  if (apiData.tags && Array.isArray(apiData.tags) && apiData.tags.length > 0) {
+    if (typeof apiData.tags[0] === 'object' && apiData.tags[0].name) {
+      // Si les éléments de la liste sont des objets avec un name, extraire uniquement les noms
+      apiData.tags = apiData.tags.map(item => item.name);
+    }
+  }
+  
+  // Pour POST, supprimer les champs spécifiés qui ne doivent pas être envoyés lors de la création
     if (method.toUpperCase() === 'POST') {
       const fieldsToRemove = ['uuid', 'created_at', 'writer_name', 'updated_at', 'closed_at'];
       fieldsToRemove.forEach(field => {
