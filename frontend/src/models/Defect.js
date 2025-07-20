@@ -69,22 +69,22 @@ export class Defect {
         disabled: true
       },
       created_at: {
-        label: t('common.created_at'),
+        label: t('common.creation_date'),
         type: 'sTextField',
         disabled: true
       },
       writer_name: {
-        label: t('common.writer'),
+        label: t('common.writer_name'),
         type: 'sTextField',
         disabled: true
       },
       updated_at: {
-        label: t('common.updated_at'),
+        label: t('common.modification_date'),
         type: 'sTextField',
         disabled: true
       },
       closed_at: {
-        label: t('common.closed_at'),
+        label: t('common.closure_date'),
         type: 'sTextField',
         disabled: true
       },
@@ -192,11 +192,11 @@ export class Defect {
         required: isRequired('project_id'),
         resetable: true
       },
-      rel_assigned_to_person: {
-        label: t('defect.assignee'),
+      assigned_to_person: {
+        label: t('defect.assigned_to_person'),
         type: 'sFilteredSearchField',
-        placeholder: t('defect.assignee_placeholder'),
-        required: isRequired('rel_assigned_to_person'),
+        placeholder: t('defect.assigned_to_person_placeholder'),
+        required: isRequired('assigned_to_person'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/team/members` : '',
         displayField: 'full_name',
         displayFieldAtInitInEditMode: 'assigned_person_name',
@@ -330,7 +330,7 @@ export class Defect {
       { key: 'requested_by_name', label: t('defect.reported_by'), type: 'text', format: 'text' },
       { key: 'requested_for_name', label: t('defect.detected_by'), type: 'text', format: 'text' },
       { key: 'project_title', label: t('defect.project_id'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('defect.assignee'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('defect.assigned_to_person'), type: 'text', format: 'text' },
       { key: 'assigned_group_name', label: t('defect.team_id'), type: 'text', format: 'text' },
       { key: 'steps_to_reproduce', label: t('defect.steps_to_reproduce'), type: 'text', format: 'html' },
       { key: 'expected_behavior', label: t('defect.expected_behavior'), type: 'text', format: 'html' },

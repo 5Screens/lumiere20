@@ -707,9 +707,9 @@ export default {
     team: 'Équipe',
     team_placeholder: 'Sélectionnez l\'équipe en charge de la story',
     team_placeholder_if_empty_project: 'Veuillez d\'abord sélectionner un projet',
-    assignee: 'Assigné à',
-    assignee_placeholder: 'Sélectionnez la personne chargée de réaliser techniquement la story',
-    assignee_placeholder_if_empty_team: 'Veuillez d\'abord sélectionner une équipe',
+    assigned_to_person: 'Assigné à',
+    assigned_to_person_placeholder: 'Sélectionnez la personne chargée de réaliser techniquement la story',
+    assigned_to_person_placeholder_if_empty_team: 'Veuillez d\'abord sélectionner une équipe',
     epic_id: 'Épopée',
     epic_id_placeholder: 'Sélectionnez l\'épopée associée',
     sprint_id: 'Sprint',
@@ -885,8 +885,8 @@ export default {
     // Projet et assignation
     project_id: 'Projet',
     project_id_placeholder: 'Sélectionnez le projet associé',
-    assignee: 'Assigné à',
-    assignee_placeholder: 'Sélectionnez la personne en charge de la correction',
+    assigned_to_person: 'Assigné à',
+    assigned_to_person_placeholder: 'Sélectionnez la personne en charge de la correction',
     team_id: 'Équipe',
     team_id_placeholder: 'Sélectionnez l\'équipe en charge de la correction',
     

@@ -221,7 +221,7 @@ const updateDefect = async (uuid, updateData) => {
     ];
     
     const assignmentFields = [
-        'rel_assigned_to_person'
+        'assigned_to_person'
     ];
     
     const extendedAttributesFields = [
