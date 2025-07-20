@@ -482,8 +482,7 @@ const ticketValidationSchemas = {
         requested_by_uuid: Joi.string().uuid().allow(null, ''),
         
         // Assignment fields
-        rel_assigned_to_group: Joi.string().uuid().allow(null, ''),
-        rel_assigned_to_person: Joi.string().uuid().allow(null, ''),
+        assigned_to_person: Joi.string().uuid().allow(null, ''),
         
         // Extended attributes
         tags: Joi.array().items(Joi.string()).allow(null),
@@ -503,14 +502,18 @@ const ticketValidationSchemas = {
         requested_by_uuid: Joi.string().uuid().allow(null, ''),
         
         // Assignment fields
-        rel_assigned_to_group: Joi.string().uuid().allow(null, ''),
-        rel_assigned_to_person: Joi.string().uuid().allow(null, ''),
+        assigned_to_person: Joi.string().uuid().allow(null, ''),
         
         // Extended attributes
         tags: Joi.array().items(Joi.string()).allow(null),
         priority: Joi.string().allow(null, ''),
         story_points: Joi.number().allow(null),
-        acceptance_criteria: Joi.string().allow(null, '')
+        acceptance_criteria: Joi.string().allow(null, ''),
+
+        // Relations
+        project_id: Joi.string().uuid().allow(null, ''),
+        epic_id: Joi.string().uuid().allow(null, ''),
+        sprint_id: Joi.string().uuid().allow(null, '')
     },
 
     SPRINT: {
@@ -521,10 +524,6 @@ const ticketValidationSchemas = {
         ticket_type_code: Joi.string().allow(null, ''),
         requested_for_uuid: Joi.string().uuid().allow(null, ''),
         requested_by_uuid: Joi.string().uuid().allow(null, ''),
-        
-        // Assignment fields
-        rel_assigned_to_group: Joi.string().uuid().allow(null, ''),
-        rel_assigned_to_person: Joi.string().uuid().allow(null, ''),
         
         // Extended attributes
         end_date: Joi.date().allow(null),
@@ -543,7 +542,6 @@ const ticketValidationSchemas = {
         requested_by_uuid: Joi.string().uuid().allow(null, ''),
         
         // Assignment fields
-        assigned_to_group: Joi.string().uuid().allow(null, ''),
         assigned_to_person: Joi.string().uuid().allow(null, ''),
         
         // Relations

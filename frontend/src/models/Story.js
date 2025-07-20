@@ -28,7 +28,7 @@ export class Story {
     
     // Assignation (stockée dans rel_tickets_groups_persons)
     this.rel_assigned_to_group = data.rel_assigned_to_group || null; // Équipe assignée au projet
-    this.rel_assigned_to_person = data.rel_assigned_to_person || null; // Personne chargée de réaliser techniquement la story
+    this.assigned_to_person = data.rel_assigned_to_person || null; // Personne chargée de réaliser techniquement la story
     
     // Timestamps
     this.created_at = data.created_at || null;
@@ -96,7 +96,7 @@ export class Story {
         valueField: 'uuid',
         mode: 'creation'
       },
-      rel_assigned_to_person: {
+      assigned_to_person: {
         label: t('story.assigned_to_person'),
         type: 'sSelectField',
         placeholder: ({ project_id }) => project_id ? t('story.assigned_to_person_placeholder') : t('story.assigned_to_person_placeholder_if_empty_team'),
