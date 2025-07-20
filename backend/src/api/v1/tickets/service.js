@@ -486,7 +486,7 @@ const createTicket = async (ticketData) => {
             await client.query(accessGroupsQuery, accessGroupsParams);
         }
         
-        // 6. Handle parent-child relationship for SPRINT and EPIC types
+        // 6. Handle parent-child relationship for PROJECT > SPRINT and PROJECT > EPIC types
         if ((isSprint || isEpic) && ticketData.project_id) {
             logger.info(`[SERVICE] Creating parent-child relationship for ${isSprint ? 'SPRINT' : 'EPIC'} ticket with PROJECT ${ticketData.project_id}`);
             

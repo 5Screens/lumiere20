@@ -298,8 +298,10 @@ const updateStory = async (uuid, updateData) => {
     // Use functions from service.js
     const { applyUpdate, addChildrenTickets, removeChildTicket } = require('./service');
     
-    // Extract project ID from updateData
+    // Extract project ID, epic ID and sprint ID from updateData
     const projectId = updateData.project_id;
+    const epicId = updateData.epic_id;
+    const sprintId = updateData.sprint_id;
     
     // Update standard fields, assignment fields and extended attributes
     const updatedStory = await applyUpdate(
@@ -345,6 +347,18 @@ const updateStory = async (uuid, updateData) => {
         } catch (error) {
             logger.error(`[STORY SERVICE] Error managing project relation for user story ${uuid}:`, error);
         }
+    }
+    
+    // Update parent epic if epic_id is present
+    if (epicId) {
+        await updateParentEpic(uuid, epicId);
+        logger.info(`[STORY SERVICE] Updated parent epic for user story ${uuid} to epic ${epicId}`);
+    }
+    
+    // Update parent sprint if sprint_id is present
+    if (sprintId) {
+        await updateParentSprint(uuid, sprintId);
+        logger.info(`[STORY SERVICE] Updated parent sprint for user story ${uuid} to sprint ${sprintId}`);
     }
     
     return updatedStory;
@@ -440,9 +454,102 @@ const updateParentEpic = async (storyUUID, parentEpicUUID) => {
     }
 };
 
+/**
+ * Updates the parent sprint of a user story
+ * @param {string} storyUUID - UUID of the user story
+ * @param {string} parentSprintUUID - UUID of the new parent sprint
+ * @returns {Promise<Object>} - Result of the operation
+ */
+const updateParentSprint = async (storyUUID, parentSprintUUID) => {
+    logger.info(`[STORY SERVICE] Updating parent sprint for story ${storyUUID} to sprint ${parentSprintUUID}`);
+    
+    const client = await db.getClient();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // Step 1: Find current sprint parent of the story
+        logger.info(`[STORY SERVICE] Searching for current sprint parent of story ${storyUUID}`);
+        const currentSprintQuery = `
+            SELECT rpc.rel_parent_ticket_uuid as parent_uuid
+            FROM core.rel_parent_child_tickets rpc
+            INNER JOIN core.tickets t ON t.uuid = rpc.rel_parent_ticket_uuid
+            WHERE rpc.rel_child_ticket_uuid = $1
+            AND rpc.dependency_code = 'STORY'
+            AND rpc.ended_at IS NULL
+            AND t.ticket_type_code = 'SPRINT'
+        `;
+        
+        const currentSprintResult = await client.query(currentSprintQuery, [storyUUID]);
+        
+        if (currentSprintResult.rows.length > 0) {
+            const currentSprintUUID = currentSprintResult.rows[0].parent_uuid;
+            logger.info(`[STORY SERVICE] Found current sprint parent: ${currentSprintUUID}`);
+            
+            // Step 2: End current sprint relationship
+            logger.info(`[STORY SERVICE] Ending current relationship between sprint ${currentSprintUUID} and story ${storyUUID}`);
+            const endRelationQuery = `
+                UPDATE core.rel_parent_child_tickets
+                SET ended_at = NOW(),
+                    updated_at = NOW()
+                WHERE rel_parent_ticket_uuid = $1
+                AND rel_child_ticket_uuid = $2
+                AND dependency_code = 'STORY'
+                AND ended_at IS NULL
+            `;
+            
+            const endResult = await client.query(endRelationQuery, [currentSprintUUID, storyUUID]);
+            logger.info(`[STORY SERVICE] Ended ${endResult.rowCount} sprint relationship(s)`);
+        } else {
+            logger.info(`[STORY SERVICE] No current sprint parent found for story ${storyUUID}`);
+        }
+        
+        // Step 3: Create new relationship with the sprint
+        logger.info(`[STORY SERVICE] Creating new relationship between sprint ${parentSprintUUID} and story ${storyUUID}`);
+        const createRelationQuery = `
+            INSERT INTO core.rel_parent_child_tickets (
+                uuid,
+                rel_parent_ticket_uuid,
+                rel_child_ticket_uuid,
+                dependency_code,
+                created_at,
+                updated_at
+            ) VALUES (
+                uuid_generate_v4(),
+                $1,
+                $2,
+                'STORY',
+                NOW(),
+                NOW()
+            )
+        `;
+        
+        await client.query(createRelationQuery, [parentSprintUUID, storyUUID]);
+        logger.info(`[STORY SERVICE] Successfully created new sprint parent-child relationship`);
+        
+        await client.query('COMMIT');
+        
+        logger.info(`[STORY SERVICE] Successfully updated parent sprint for story ${storyUUID}`);
+        return {
+            success: true,
+            message: 'Parent sprint updated successfully',
+            storyUUID,
+            newParentSprintUUID: parentSprintUUID
+        };
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        logger.error(`[STORY SERVICE] Error updating parent sprint for story ${storyUUID}:`, error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 module.exports = {
     getStoryById,
     getUserStories,
     updateStory,
-    updateParentEpic
+    updateParentEpic,
+    updateParentSprint
 };
