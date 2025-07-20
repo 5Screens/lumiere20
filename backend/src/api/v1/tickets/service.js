@@ -1691,6 +1691,9 @@ const applyUpdate = async (uuid, updateData, ticketType, standardFields, assignm
                 const isUpdatingGroup = assignmentFieldsToUpdate.includes('assigned_to_group');
                 const isUpdatingPerson = assignmentFieldsToUpdate.includes('assigned_to_person');
                 
+                logger.info(`${servicePrefix} Updating assignment fields for ${ticketType.toLowerCase()} with UUID: ${uuid}`);
+                logger.info(`${servicePrefix} Updating group: ${isUpdatingGroup ? 'GROUP' : 'NO'}`);
+                logger.info(`${servicePrefix} Updating person: ${isUpdatingPerson ? 'PERSON' : 'NO'}`);
                 // Cas A: Si on met à jour uniquement rel_assigned_to_person
                 if (isUpdatingPerson && !isUpdatingGroup) {
                     // Récupérer l'assignation courante
@@ -1703,6 +1706,8 @@ const applyUpdate = async (uuid, updateData, ticketType, standardFields, assignm
                     `;
                     
                     const currentAssignment = await client.query(getCurrentAssignmentQuery, [uuid]);
+                    
+                    logger.info(`${servicePrefix} Current assignment: ${JSON.stringify(currentAssignment.rows)}`);
                     
                     if (currentAssignment.rows.length === 0) {
                         logger.warn(`${servicePrefix} No current assignment found for ${ticketType.toLowerCase()} with UUID: ${uuid}`);

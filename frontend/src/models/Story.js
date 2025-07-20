@@ -97,12 +97,12 @@ export class Story {
         mode: 'creation'
       },
       rel_assigned_to_person: {
-        label: t('story.assignee'),
+        label: t('story.assigned_to_person'),
         type: 'sSelectField',
-        placeholder: ({ project_id }) => project_id ? t('story.assignee_placeholder') : t('story.assignee_placeholder_if_empty_team'),
-        required: isRequired('assignee'),
+        placeholder: ({ project_id }) => project_id ? t('story.assigned_to_person_placeholder') : t('story.assigned_to_person_placeholder_if_empty_team'),
+        required: isRequired('assigned_to_person'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/team/members` : '',
-        fieldName: 'assignee',
+        fieldName: 'assigned_to_person',
         displayField: 'full_name',
         valueField: 'uuid',
         mode: 'creation'
@@ -269,7 +269,7 @@ export class Story {
       { key: 'acceptance_criteria', label: t('story.acceptance_criteria'), type: 'text', format: 'html' },
       { key: 'priority', label: t('story.priority'), type: 'text', format: 'text' },
       { key: 'requested_for_name', label: t('story.reporter'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('story.assignee'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('story.assigned_to_person'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];

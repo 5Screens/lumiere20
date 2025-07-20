@@ -189,18 +189,25 @@ export class Defect {
           { key: 'title', label: t('project.name'), visible: true },
           { key: 'key', label: t('project.key'), visible: true }
         ],
-        required: isRequired('project_id')
+        required: isRequired('project_id'),
+        resetable: true
       },
       rel_assigned_to_person: {
         label: t('defect.assignee'),
-        type: 'sSelectField',
+        type: 'sFilteredSearchField',
         placeholder: t('defect.assignee_placeholder'),
-        required: isRequired('assignee'),
+        required: isRequired('rel_assigned_to_person'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/team/members` : '',
-        fieldName: 'rel_assigned_to_person',
         displayField: 'full_name',
+        displayFieldAtInitInEditMode: 'assigned_person_name',
         valueField: 'uuid',
-        mode: 'creation'
+        editMode: false,
+        columnsConfig: [
+          { key: 'first_name', label: t('person.first_name'), visible: true },
+          { key: 'last_name', label: t('person.last_name'), visible: true }
+        ],
+        required: isRequired('assigned_to_person'),
+        resetable: true
       },
       steps_to_reproduce: {
         label: t('defect.steps_to_reproduce'),
