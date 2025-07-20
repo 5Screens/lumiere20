@@ -108,7 +108,7 @@ const getDefectById = async (uuid, lang = 'en') => {
                 p4.first_name || ' ' || p4.last_name as assigned_person_name,
                 
                 -- Champs spécifiques aux défauts depuis core_extended_attributes
-                t.core_extended_attributes->>'tags' as tags,
+                t.core_extended_attributes->'tags' as tags,
                 t.core_extended_attributes->>'severity' as severity,
                 t.core_extended_attributes->>'workaround' as workaround,
                 t.core_extended_attributes->>'environment' as environment,
@@ -177,8 +177,9 @@ const getDefectById = async (uuid, lang = 'en') => {
         
         logger.info(`[DEFECT SERVICE] Successfully retrieved defect with UUID: ${uuid}`);
         
-        // Transformer les tags de format JSON string en tableau d'objets
+        
         const defect = result.rows[0];
+        /* Transformer les tags de format JSON string en tableau d'objets
         if (defect.tags) {
             try {
                 // Parse la chaîne JSON des tags
@@ -192,7 +193,7 @@ const getDefectById = async (uuid, lang = 'en') => {
             }
         } else {
             defect.tags = [];
-        }
+        }*/
         
         // Récupérer les pièces jointes associées au défaut
         const attachmentService = require('../attachments/service');
@@ -220,7 +221,7 @@ const updateDefect = async (uuid, updateData) => {
     ];
     
     const assignmentFields = [
-        'assigned_to_group', 'assigned_to_person'
+        'rel_assigned_to_person'
     ];
     
     const extendedAttributesFields = [

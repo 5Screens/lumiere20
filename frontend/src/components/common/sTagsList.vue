@@ -410,10 +410,10 @@ const confirmChanges = async () => {
     if (props.attributeSentToServer && selectedTags.value.length > 0 && typeof selectedTags.value[0] === 'object') {
       tagsToSend = selectedTags.value.map(tag => tag[props.attributeSentToServer])
     }
-    // Sinon, si les tags sont des objets avec une propriété 'name', extraire automatiquement les noms
+    /* Sinon, si les tags sont des objets avec une propriété 'name', extraire automatiquement les noms
     else if (selectedTags.value.length > 0 && typeof selectedTags.value[0] === 'object' && selectedTags.value[0].name) {
       tagsToSend = selectedTags.value.map(tag => tag.name)
-    }
+    }*/
     
     console.log("data", {
       [props.fieldName]: tagsToSend
