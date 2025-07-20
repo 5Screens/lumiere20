@@ -128,7 +128,7 @@ export class Story {
         type: 'sFilteredSearchField',
         placeholder: t('story.reporter_placeholder'),
         endpoint: 'persons',
-        displayField: 'first_name',
+        displayField: 'person_name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'requested_for_name',
         columnsConfig: [

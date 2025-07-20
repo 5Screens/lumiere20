@@ -296,7 +296,10 @@ const updateStory = async (uuid, updateData) => {
     ];
     
     // Use functions from service.js
-    const { applyUpdate } = require('./service');
+    const { applyUpdate, addChildrenTickets, removeChildTicket } = require('./service');
+    
+    // Extract project ID from updateData
+    const projectId = updateData.project_id;
     
     // Update standard fields, assignment fields and extended attributes
     const updatedStory = await applyUpdate(
@@ -309,6 +312,40 @@ const updateStory = async (uuid, updateData) => {
         getStoryById,
         '[STORY SERVICE]'
     );
+    
+    // Handle project relation if present
+    if (projectId !== undefined) {
+        logger.info(`[STORY SERVICE] Updating project relation for user story ${uuid}`);
+        
+        try {
+            // 1. Récupérer d'abord les relations existantes pour ce type de dépendance
+            const existingRelations = await db.query(
+                `SELECT rel_parent_ticket_uuid FROM core.rel_parent_child_tickets 
+                 WHERE rel_child_ticket_uuid = $1 AND dependency_code = $2 AND ended_at IS NULL`,
+                [uuid, 'STORY']
+            );
+            
+            // Logs pour débogage
+            logger.info(`[STORY SERVICE] Found ${existingRelations.rowCount} existing project relations for user story ${uuid}`);
+            logger.info(`[STORY SERVICE] Existing project relations: ${JSON.stringify(existingRelations.rows)}`);
+            
+            // 2. Supprimer chaque relation existante
+            for (const row of existingRelations.rows) {
+                await removeChildTicket(row.rel_parent_ticket_uuid, uuid);
+                logger.info(`[STORY SERVICE] Removed project relation: ${row.rel_parent_ticket_uuid} -> ${uuid}`);
+            }
+            
+            // 3. Ajouter la nouvelle relation si elle existe
+            if (projectId) {
+                await addChildrenTickets(projectId, 'STORY', [uuid]);
+                logger.info(`[STORY SERVICE] Added new project relation: ${projectId} -> ${uuid}`);
+            } else {
+                logger.info(`[STORY SERVICE] No new project relation to add for user story ${uuid}`);
+            }
+        } catch (error) {
+            logger.error(`[STORY SERVICE] Error managing project relation for user story ${uuid}:`, error);
+        }
+    }
     
     return updatedStory;
 };
