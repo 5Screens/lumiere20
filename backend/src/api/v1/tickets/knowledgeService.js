@@ -48,8 +48,7 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
                     WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND ksl.lang = $2 ),
                     t.core_extended_attributes->>'rel_category'
                 ) as rel_category_label,
-                (SELECT jsonb_agg(keyword)
-                FROM jsonb_array_elements_text(t.core_extended_attributes->'keywords') as keyword) as keywords,
+                t.core_extended_attributes->'keywords' as keywords,
                 t.core_extended_attributes->>'rel_service' as rel_service,
                 t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
                 service.name as rel_service_name,
@@ -207,8 +206,7 @@ const getKnowledgeArticles = async (lang) => {
             WHERE ksl.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND ksl.lang = $1 ),
             t.core_extended_attributes->>'rel_category'
         ) as rel_category_label,
-        t.core_extended_attributes->>'tags' as tags,
-        t.core_extended_attributes->>'keywords' as keywords,
+        t.core_extended_attributes->'keywords' as keywords,
         t.core_extended_attributes->>'visibility' as visibility,
         t.core_extended_attributes->>'summary' as summary,
         t.core_extended_attributes->>'prerequisites' as prerequisites,
