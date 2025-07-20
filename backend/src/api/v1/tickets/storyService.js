@@ -350,8 +350,99 @@ const updateStory = async (uuid, updateData) => {
     return updatedStory;
 };
 
+/**
+ * Updates the parent epic of a user story
+ * @param {string} storyUUID - UUID of the user story
+ * @param {string} parentEpicUUID - UUID of the new parent epic
+ * @returns {Promise<Object>} - Result of the operation
+ */
+const updateParentEpic = async (storyUUID, parentEpicUUID) => {
+    logger.info(`[STORY SERVICE] Updating parent epic for story ${storyUUID} to epic ${parentEpicUUID}`);
+    
+    const client = await db.getClient();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // Step 1: Find current parent of the story
+        logger.info(`[STORY SERVICE] Searching for current parent of story ${storyUUID}`);
+        const currentParentQuery = `
+            SELECT rel_parent_ticket_uuid as parent_uuid
+            FROM core.rel_parent_child_tickets
+            WHERE rel_child_ticket_uuid = $1
+            AND dependency_code = 'STORY'
+            AND ended_at IS NULL
+        `;
+        
+        const currentParentResult = await client.query(currentParentQuery, [storyUUID]);
+        
+        if (currentParentResult.rows.length > 0) {
+            const currentParentUUID = currentParentResult.rows[0].parent_uuid;
+            logger.info(`[STORY SERVICE] Found current parent: ${currentParentUUID}`);
+            
+            // Step 2: End current relationship
+            logger.info(`[STORY SERVICE] Ending current relationship between parent ${currentParentUUID} and story ${storyUUID}`);
+            const endRelationQuery = `
+                UPDATE core.rel_parent_child_tickets
+                SET ended_at = NOW(),
+                    updated_at = NOW()
+                WHERE rel_parent_ticket_uuid = $1
+                AND rel_child_ticket_uuid = $2
+                AND dependency_code = 'STORY'
+                AND ended_at IS NULL
+            `;
+            
+            const endResult = await client.query(endRelationQuery, [currentParentUUID, storyUUID]);
+            logger.info(`[STORY SERVICE] Ended ${endResult.rowCount} relationship(s)`);
+        } else {
+            logger.info(`[STORY SERVICE] No current parent found for story ${storyUUID}`);
+        }
+        
+        // Step 3: Create new relationship with the epic
+        logger.info(`[STORY SERVICE] Creating new relationship between epic ${parentEpicUUID} and story ${storyUUID}`);
+        const createRelationQuery = `
+            INSERT INTO core.rel_parent_child_tickets (
+                uuid,
+                rel_parent_ticket_uuid,
+                rel_child_ticket_uuid,
+                dependency_code,
+                created_at,
+                updated_at
+            ) VALUES (
+                uuid_generate_v4(),
+                $1,
+                $2,
+                'STORY',
+                NOW(),
+                NOW()
+            )
+        `;
+        
+        await client.query(createRelationQuery, [parentEpicUUID, storyUUID]);
+        logger.info(`[STORY SERVICE] Successfully created new parent-child relationship`);
+        
+        await client.query('COMMIT');
+        
+        logger.info(`[STORY SERVICE] Successfully updated parent epic for story ${storyUUID}`);
+        return {
+            success: true,
+            message: 'Parent epic updated successfully',
+            storyUUID,
+            newParentEpicUUID: parentEpicUUID
+        };
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        logger.error(`[STORY SERVICE] Error updating parent epic for story ${storyUUID}:`, error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
 module.exports = {
     getStoryById,
     getUserStories,
-    updateStory
+    updateStory,
+    updateParentEpic
 };

@@ -356,7 +356,7 @@ const createTicket = async (ticketData) => {
         if (isUserStory) {
             logger.info('[SERVICE] Processing USER_STORY assignment');
             // rel_assigned_to_person from body
-            const relAssignedToPerson = ticketData.rel_assigned_to_person || null;
+            const relAssignedToPerson = ticketData.assigned_to_person || null;
             // rel_assigned_to_group = uuid du groupe assigné au ticket ayant le uuid égal à project_id
             let relAssignedToGroup = null;
             if (ticketData.project_id) {
