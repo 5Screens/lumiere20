@@ -41,7 +41,7 @@ const getStoryById = async (uuid, lang = 'en') => {
                 p4.first_name || ' ' || p4.last_name as assigned_person_name,
                 
                 -- Champs spécifiques aux user stories depuis core_extended_attributes
-                t.core_extended_attributes->>'tags' as tags,
+                t.core_extended_attributes->'tags' as tags,
                 t.core_extended_attributes->>'priority' as priority,
                 t.core_extended_attributes->>'story_points' as story_points,
                 t.core_extended_attributes->>'acceptance_criteria' as acceptance_criteria,
@@ -155,8 +155,8 @@ const getStoryById = async (uuid, lang = 'en') => {
         
         logger.info(`[STORY SERVICE] Successfully retrieved user story with UUID: ${uuid}`);
         
-        // Transformer les tags de format JSON string en tableau d'objets
         const story = result.rows[0];
+        /* Transformer les tags de format JSON string en tableau d'objets
         if (story.tags) {
             try {
                 // Parse la chaîne JSON des tags
@@ -170,7 +170,7 @@ const getStoryById = async (uuid, lang = 'en') => {
             }
         } else {
             story.tags = [];
-        }
+        }*/
         
         return story;
     } catch (error) {
