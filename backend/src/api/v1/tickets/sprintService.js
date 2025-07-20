@@ -195,7 +195,10 @@ const updateSprint = async (uuid, updateData) => {
     ];
     
     // Use functions from service.js
-    const { applyUpdate } = require('./service');
+    const { applyUpdate, addChildrenTickets, removeChildTicket } = require('./service');
+    
+    // Extract project ID from updateData
+    const projectId = updateData.project_id;
     
     // Update standard fields, assignment fields and extended attributes
     const updatedSprint = await applyUpdate(
@@ -208,6 +211,40 @@ const updateSprint = async (uuid, updateData) => {
         getSprintById,
         '[SPRINT SERVICE]'
     );
+    
+    // Handle project relation if present
+    if (projectId !== undefined) {
+        logger.info(`[SPRINT SERVICE] Updating project relation for sprint ${uuid}`);
+        
+        try {
+            // 1. Récupérer d'abord les relations existantes pour ce type de dépendance
+            const existingRelations = await db.query(
+                `SELECT rel_parent_ticket_uuid FROM core.rel_parent_child_tickets 
+                 WHERE rel_child_ticket_uuid = $1 AND dependency_code = $2 AND ended_at IS NULL`,
+                [uuid, 'SPRINT']
+            );
+            
+            // Logs pour débogage
+            logger.info(`[SPRINT SERVICE] Found ${existingRelations.rowCount} existing project relations for sprint ${uuid}`);
+            logger.info(`[SPRINT SERVICE] Existing project relations: ${JSON.stringify(existingRelations.rows)}`);
+            
+            // 2. Supprimer chaque relation existante
+            for (const row of existingRelations.rows) {
+                await removeChildTicket(row.rel_parent_ticket_uuid, uuid);
+                logger.info(`[SPRINT SERVICE] Removed project relation: ${row.rel_parent_ticket_uuid} -> ${uuid}`);
+            }
+            
+            // 3. Ajouter la nouvelle relation si elle existe
+            if (projectId) {
+                await addChildrenTickets(projectId, 'SPRINT', [uuid]);
+                logger.info(`[SPRINT SERVICE] Added new project relation: ${projectId} -> ${uuid}`);
+            } else {
+                logger.info(`[SPRINT SERVICE] No new project relation to add for sprint ${uuid}`);
+            }
+        } catch (error) {
+            logger.error(`[SPRINT SERVICE] Error managing project relation for sprint ${uuid}:`, error);
+        }
+    }
     
     return updatedSprint;
 };
