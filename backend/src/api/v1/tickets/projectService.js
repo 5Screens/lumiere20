@@ -474,5 +474,6 @@ const createProject = async (projectData) => {
 module.exports = {
     getProjectById,
     getProjects,
+    createProject,
     updateProject
 };

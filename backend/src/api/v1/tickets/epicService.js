@@ -364,5 +364,6 @@ const createEpic = async (epicData) => {
 module.exports = {
     getEpicById,
     getEpics,
+    createEpic,
     updateEpic
 };

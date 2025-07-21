@@ -330,5 +330,6 @@ const createSprint = async (sprintData) => {
 module.exports = {
     getSprintById,
     getSprints,
+    createSprint,
     updateSprint
 };

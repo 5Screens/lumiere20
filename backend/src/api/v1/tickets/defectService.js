@@ -354,24 +354,16 @@ const createDefect = async (defectData) => {
     const watchList = defectData.watch_list && Array.isArray(defectData.watch_list) ? 
         defectData.watch_list : [];
     
-    // Logique de relations parent-enfant spécifique aux DEFECT
+    // Pour les DEFECT, pas de relations parent-enfant dans applyCreation
+    // Nous les gérerons après avec addChildrenTickets
     const parentChildRelations = [];
-    
-    // DEFECT: parent-child relationship (fille du projet)
-    if (defectData.project_id) {
-        parentChildRelations.push({
-            parentUuid: defectData.project_id,
-            dependencyCode: 'DEFECT'
-        });
-        logger.info(`[DEFECT SERVICE] Prepared DEFECT relationship with PROJECT: ${defectData.project_id}`);
-    }
     
     logger.info('[DEFECT SERVICE] Successfully prepared data for defect creation');
     
     // Appeler applyCreation pour créer effectivement le ticket
-    const { applyCreation } = require('./service');
+    const { applyCreation, addChildrenTickets } = require('./service');
     
-    return await applyCreation(
+    const createdDefect = await applyCreation(
         defectData,
         'DEFECT',
         standardFields,
@@ -382,10 +374,30 @@ const createDefect = async (defectData) => {
         getDefectById,
         '[DEFECT SERVICE]'
     );
+    
+    // DEFECT: parent-child relationship (fille du projet)
+    // Créer la relation PROJECT → DEFECT après la création du defect
+    if (defectData.project_id) {
+        try {
+            logger.info(`[DEFECT SERVICE] Creating DEFECT relationship with PROJECT: ${defectData.project_id}`);
+            await addChildrenTickets(
+                defectData.project_id, // Parent UUID (le projet)
+                'DEFECT', // Type de dépendance
+                [createdDefect.uuid] // Enfant UUID (le defect créé)
+            );
+            logger.info(`[DEFECT SERVICE] Successfully created DEFECT relationship with PROJECT: ${defectData.project_id}`);
+        } catch (relationError) {
+            logger.error(`[DEFECT SERVICE] Error creating DEFECT relationship with PROJECT: ${relationError.message}`);
+            // Ne pas faire échouer la création du defect pour une erreur de relation
+        }
+    }
+    
+    return createdDefect;
 };
 
 module.exports = {
     getDefects,
     getDefectById,
+    createDefect,
     updateDefect
 };
