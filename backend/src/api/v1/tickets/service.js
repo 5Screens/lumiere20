@@ -606,127 +606,41 @@ const getTicketById = async (uuid, lang = 'en') => {
         
         // Selon le type de ticket, importer dynamiquement le service approprié et appeler la fonction spécifique
         // Cette approche évite les dépendances circulaires
-        let result = null;
-        
         switch (ticketType) {
             case 'TASK':
                 const taskService = require('./taskService');
-                result = await taskService.getTaskById(uuid, lang);
-                break;
+                return await taskService.getTaskById(uuid, lang);
             case 'INCIDENT':
                 const incidentService = require('./incidentService');
-                result = await incidentService.getIncidentById(uuid, lang);
-                break;
+                return await incidentService.getIncidentById(uuid, lang);
             case 'PROBLEM':
                 const problemService = require('./problemService');
-                result = await problemService.getProblemById(uuid, lang);
-                break;
+                return await problemService.getProblemById(uuid, lang);
             case 'CHANGE':
                 const changeService = require('./changeService');
-                result = await changeService.getChangeById(uuid, lang);
-                break;
+                return await changeService.getChangeById(uuid, lang);
             case 'KNOWLEDGE':
                 const knowledgeService = require('./knowledgeService');
-                result = await knowledgeService.getKnowledgeById(uuid, lang);
-                break;
+                return await knowledgeService.getKnowledgeById(uuid, lang);
             case 'DEFECT':
                 const defectService = require('./defectService');
-                result = await defectService.getDefectById(uuid, lang);
-                break;
+                return await defectService.getDefectById(uuid, lang);
             case 'USER_STORY':
                 const storyService = require('./storyService');
-                result = await storyService.getStoryById(uuid, lang);
-                break;
+                return await storyService.getStoryById(uuid, lang);
             case 'EPIC':
                 const epicService = require('./epicService');
-                result = await epicService.getEpicById(uuid, lang);
-                break;
+                return await epicService.getEpicById(uuid, lang);
             case 'PROJECT':
                 const projectService = require('./projectService');
-                result = await projectService.getProjectById(uuid, lang);
-                break;
+                return await projectService.getProjectById(uuid, lang);
             case 'SPRINT':
                 const sprintService = require('./sprintService');
-                result = await sprintService.getSprintById(uuid, lang);
-                break;
-            case 'REQUEST':
-                // Pour REQUEST, utiliser la requête générique
-                logger.info(`[SERVICE] Using generic query for REQUEST type`);
-                break;
+                return await sprintService.getSprintById(uuid, lang);
             default:
                 logger.warn(`[SERVICE] Unsupported ticket type: ${ticketType}`);
                 return null;
         }
-        
-        if (ticketType !== 'REQUEST') {
-            return result;
-        }
-        
-        // Requête générique pour REQUEST et types non reconnus
-        const query = `
-            SELECT 
-                t.*,
-                p1.first_name || ' ' || p1.last_name as requested_by_name,
-                p2.first_name || ' ' || p2.last_name as requested_for_name,
-                p3.first_name || ' ' || p3.last_name as writer_name,
-                COALESCE(ttt.label, tt.code) as ticket_type_label,
-                COALESCE(tst.label, ts.code) as ticket_status_label,
-                tt.code as ticket_type_code,
-                ts.code as ticket_status_code,
-                
-                -- Informations sur l'équipe assignée
-                g.group_name as assigned_group_name,
-                g.uuid as assigned_to_group,
-                
-                -- Informations sur la personne assignée
-                p4.uuid as assigned_to_person,
-                p4.first_name || ' ' || p4.last_name as assigned_person_name,
-                
-                -- Informations sur les observateurs (watchers)
-                (
-                    SELECT json_agg(json_build_object(
-                        'uuid', w.uuid,
-                        'person_uuid', p5.uuid,
-                        'person_name', p5.first_name || ' ' || p5.last_name,
-                        'created_at', w.created_at
-                    ))
-                    FROM core.rel_tickets_groups_persons w
-                    JOIN configuration.persons p5 ON w.rel_assigned_to_person = p5.uuid
-                    WHERE w.rel_ticket = t.uuid AND w.type = 'WATCHER' AND (w.ended_at IS NULL OR w.ended_at > NOW())
-                ) as watchers
-                
-            FROM core.tickets t
-            LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
-            LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
-            JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
-            JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
-            JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code 
-            LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid 
-                AND ttt.lang = $2
-            LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid 
-                AND tst.lang = $2
-                
-            -- Jointure pour l'assignation (équipe et personne)
-            LEFT JOIN (
-                SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
-                FROM core.rel_tickets_groups_persons
-                WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
-            ) rtgp ON t.uuid = rtgp.rel_ticket
-            LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
-            LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
-            
-            WHERE t.uuid = $1
-        `;
-        
-        const genericResult = await db.query(query, [uuid, lang]);
-        
-        if (genericResult.rows.length === 0) {
-            logger.warn(`[SERVICE] No ticket found with UUID: ${uuid}`);
-            return null;
-        }
-        
-        logger.info(`[SERVICE] Successfully retrieved ticket with UUID: ${uuid}`);
-        return genericResult.rows[0];
     } catch (error) {
         logger.error(`[SERVICE] Error fetching ticket with UUID ${uuid}:`, error);
         throw error;
@@ -1957,8 +1871,6 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
                         rel_child_ticket_uuid,
                         dependency_code
                     ) VALUES ($1, $2, $3)
-                    ON CONFLICT (rel_parent_ticket_uuid, rel_child_ticket_uuid) 
-                    DO UPDATE SET dependency_code = $3, updated_at = NOW()
                 `;
                 
                 await client.query(relationQuery, [newTicket.uuid, relation.childUuid, relation.dependencyCode]);
