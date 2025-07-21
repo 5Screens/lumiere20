@@ -1,6 +1,7 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 const ticketService = require('./service');
+const { addChildrenTickets, removeChildTicket } = require('./service');
 
 /**
  * Récupère un epic par son UUID
@@ -198,6 +199,50 @@ const getEpics = async (lang) => {
 };
 
 /**
+ * Updates the parent project relation for an epic
+ * @param {string} uuid - UUID of the epic
+ * @param {Object} updateData - Data containing project_id
+ * @returns {Promise<void>}
+ */
+const updateParentProject = async (uuid, updateData) => {
+    const projectId = updateData.project_id;
+    
+    // Handle project relation if present
+    if (projectId !== undefined) {
+        logger.info(`[EPIC SERVICE] Updating project relation for epic ${uuid}`);
+        
+        try {
+            // 1. Récupérer d'abord les relations existantes pour ce type de dépendance
+            const existingRelations = await db.query(
+                `SELECT rel_parent_ticket_uuid FROM core.rel_parent_child_tickets 
+                 WHERE rel_child_ticket_uuid = $1 AND dependency_code = $2 AND ended_at IS NULL`,
+                [uuid, 'EPIC']
+            );
+            
+            // Logs pour débogage
+            logger.info(`[EPIC SERVICE] Found ${existingRelations.rowCount} existing project relations for epic ${uuid}`);
+            logger.info(`[EPIC SERVICE] Existing project relations: ${JSON.stringify(existingRelations.rows)}`);
+            
+            // 2. Supprimer chaque relation existante
+            for (const row of existingRelations.rows) {
+                await removeChildTicket(row.rel_parent_ticket_uuid, uuid);
+                logger.info(`[EPIC SERVICE] Removed project relation: ${row.rel_parent_ticket_uuid} -> ${uuid}`);
+            }
+            
+            // 3. Ajouter la nouvelle relation si elle existe
+            if (projectId) {
+                await addChildrenTickets(projectId, 'EPIC', [uuid]);
+                logger.info(`[EPIC SERVICE] Added new project relation: ${projectId} -> ${uuid}`);
+            } else {
+                logger.info(`[EPIC SERVICE] No new project relation to add for epic ${uuid}`);
+            }
+        } catch (error) {
+            logger.error(`[EPIC SERVICE] Error managing project relation for epic ${uuid}:`, error);
+        }
+    }
+};
+
+/**
  * Updates an epic partially by its UUID
  * @param {string} uuid - UUID of the epic to update
  * @param {Object} updateData - Data to update
@@ -233,6 +278,8 @@ const updateEpic = async (uuid, updateData) => {
         '[EPIC SERVICE]'
     );
     
+    // Handle project relation if present
+    await updateParentProject(uuid, updateData);
     return updatedEpic;
 };
 

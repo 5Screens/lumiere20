@@ -1442,17 +1442,15 @@ const addChildrenTickets = async (parentUuid, dependencyType, childrenUuids) => 
         
         // Préparer la requête pour l'insertion multiple
         const insertPromises = childrenUuids.map(childUuid => {
-            const relationQuery = `
+            const insertQuery = `
                 INSERT INTO core.rel_parent_child_tickets (
                     rel_parent_ticket_uuid,
                     rel_child_ticket_uuid,
                     dependency_code
                 ) VALUES ($1, $2, $3)
-                ON CONFLICT (rel_parent_ticket_uuid, rel_child_ticket_uuid) 
-                DO UPDATE SET dependency_code = $3, updated_at = NOW()
             `;
             
-            return client.query(relationQuery, [parentUuid, childUuid, dependencyType]);
+            return client.query(insertQuery, [parentUuid, childUuid, dependencyType]);
         });
         
         // Exécuter toutes les insertions

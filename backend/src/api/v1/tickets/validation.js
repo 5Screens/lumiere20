@@ -489,7 +489,10 @@ const ticketValidationSchemas = {
         color: Joi.string().allow(null, ''),
         end_date: Joi.date().allow(null),
         start_date: Joi.date().allow(null),
-        progress_percent: Joi.number().allow(null)
+        progress_percent: Joi.number().allow(null),
+
+        //Parent project
+        project_id: Joi.string().uuid().allow(null, ''),
     },
 
     STORY: {
