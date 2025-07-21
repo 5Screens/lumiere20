@@ -97,13 +97,16 @@ export class Epic {
         label: t('epic.start_date'),
         type: 'sDatePicker',
         placeholder: t('epic.start_date_placeholder'),
-        required: isRequired('start_date')
+        required: isRequired('start_date'),
+        patchendpoint: 'tickets',
+        
       },
       end_date: {
         label: t('epic.end_date'),
         type: 'sDatePicker',
         placeholder: t('epic.end_date_placeholder'),
-        required: isRequired('end_date')
+        required: isRequired('end_date'),
+        patchendpoint: 'tickets'        
       },
       progress_percent: {
         label: t('epic.progress_percent'),
