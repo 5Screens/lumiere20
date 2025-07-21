@@ -352,11 +352,11 @@ const updateIncident = async (uuid, updateData) => {
 };
 
 /**
- * Prépare les données pour la création d'un incident
+ * Crée un nouvel incident
  * @param {Object} incidentData - Données pour la création de l'incident
- * @returns {Object} - Objet contenant les champs standards, d'assignation, attributs étendus et observateurs
+ * @returns {Promise<Object>} - Détails de l'incident créé
  */
-const createIncident = (incidentData) => {
+const createIncident = async (incidentData) => {
     logger.info('[INCIDENT SERVICE] Preparing data for incident creation');
     
     // Définir les champs standards pour un incident
@@ -437,13 +437,20 @@ const createIncident = (incidentData) => {
         logger.info(`[INCIDENT SERVICE] Prepared parent-child relation with change request ${relChangeRequest}`);
     }
     
-    return {
+    // Appeler applyCreation pour créer effectivement le ticket
+    const { applyCreation } = require('./service');
+    
+    return await applyCreation(
+        incidentData,
+        'INCIDENT',
         standardFields,
         assignmentFields,
         extendedAttributesFields,
         watchList,
-        parentChildRelations
-    };
+        parentChildRelations,
+        getIncidentById,
+        '[INCIDENT SERVICE]'
+    );
 };
 
 module.exports = {

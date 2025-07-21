@@ -134,11 +134,11 @@ const getChanges = async (lang) => {
 };
 
 /**
- * Prépare les données pour la création d'un changement
+ * Crée un nouveau changement
  * @param {Object} ticketData - Données du ticket à créer
- * @returns {Object} - Données structurées pour la création
+ * @returns {Promise<Object>} - Détails du changement créé
  */
-const createChange = (ticketData) => {
+const createChange = async (ticketData) => {
     logger.info('[CHANGE SERVICE] Preparing data for change creation');
     
     // Définir les champs standards pour le changement
@@ -201,13 +201,20 @@ const createChange = (ticketData) => {
     
     logger.info(`[CHANGE SERVICE] Prepared data for change creation with ${parentChildRelations.length} related tickets`);
     
-    return {
+    // Appeler applyCreation pour créer effectivement le ticket
+    const { applyCreation } = require('./service');
+    
+    return await applyCreation(
+        ticketData,
+        'CHANGE',
         standardFields,
         assignmentFields,
         extendedAttributesFields,
         watchList,
-        parentChildRelations
-    };
+        parentChildRelations,
+        getChangeById,
+        '[CHANGE SERVICE]'
+    );
 };
 
 /**

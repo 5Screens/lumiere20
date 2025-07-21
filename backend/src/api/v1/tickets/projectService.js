@@ -337,6 +337,140 @@ const updateProject = async (uuid, updateData) => {
     return updatedProject;
 };
 
+/**
+ * Crée un nouveau projet
+ * @param {Object} projectData - Données pour la création du projet
+ * @returns {Promise<Object>} - Détails du projet créé
+ */
+const createProject = async (projectData) => {
+    logger.info('[PROJECT SERVICE] Creating new project');
+    
+    // Définir les champs standards pour un projet
+    const standardFields = {
+        title: projectData.title,
+        description: projectData.description,
+        configuration_item_uuid: projectData.configuration_item_uuid,
+        ticket_type_code: 'PROJECT',
+        ticket_status_code: projectData.ticket_status_code || 'NEW',
+        // Pour les projets, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
+        requested_by_uuid: projectData.writer_uuid,
+        requested_for_uuid: projectData.writer_uuid,
+        writer_uuid: projectData.writer_uuid
+    };
+    
+    // Définir les champs d'assignation pour un projet
+    const assignmentFields = {
+        assigned_to_group: projectData.assigned_to_group || projectData.rel_assigned_to_group,
+        assigned_to_person: projectData.assigned_to_person || projectData.rel_assigned_to_person || null
+    };
+    
+    // Définir les attributs étendus pour un projet
+    const extendedAttributesFields = {};
+    
+    // Champs à inclure dans core_extended_attributes pour les projets
+    const projectFields = [
+        'key', 'start_date', 'end_date', 'issue_type_scheme_id',
+        'visibility', 'project_type'
+    ];
+    
+    // Ajouter chaque champ présent dans projectData aux attributs étendus
+    projectFields.forEach(field => {
+        if (projectData[field] !== undefined) {
+            extendedAttributesFields[field] = projectData[field];
+        }
+    });
+    
+    // Gérer la liste des observateurs (watchers)
+    const watchList = projectData.watch_list && Array.isArray(projectData.watch_list) ? 
+        projectData.watch_list : [];
+    
+    // Pas de relations parent-enfant pour les projets lors de la création
+    const parentChildRelations = [];
+    
+    logger.info('[PROJECT SERVICE] Successfully prepared data for project creation');
+    
+    // Appeler applyCreation pour créer effectivement le ticket
+    const { applyCreation } = require('./service');
+    
+    // Créer le projet de base
+    const createdProject = await applyCreation(
+        projectData,
+        'PROJECT',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        watchList,
+        parentChildRelations,
+        getProjectById,
+        '[PROJECT SERVICE]'
+    );
+    
+    // Logique spécifique aux projets : gestion des accès
+    const client = await db.getClient();
+    try {
+        await client.query('BEGIN');
+        
+        // 4. Handle access_to_users for PROJECT type if provided
+        if (projectData.access_to_users && Array.isArray(projectData.access_to_users) && projectData.access_to_users.length > 0) {
+            logger.info(`[PROJECT SERVICE] Processing ${projectData.access_to_users.length} access_to_users for PROJECT ticket`);
+            
+            // Prepare batch insert for access_to_users
+            const accessUsersValues = projectData.access_to_users.map((personUuid, index) => {
+                return `($1, NULL, $${index + 2}, 'ACCESS_GRANTED')`;
+            }).join(', ');
+            
+            const accessUsersQuery = `
+                INSERT INTO core.rel_tickets_groups_persons (
+                    rel_ticket,
+                    rel_assigned_to_group,
+                    rel_assigned_to_person,
+                    type
+                ) VALUES ${accessUsersValues}
+            `;
+            
+            const accessUsersParams = [createdProject.uuid, ...projectData.access_to_users];
+            await client.query(accessUsersQuery, accessUsersParams);
+            logger.info(`[PROJECT SERVICE] Successfully added ${projectData.access_to_users.length} access_to_users`);
+        }
+        
+        // 5. Handle access_to_groups for PROJECT type if provided
+        if (projectData.access_to_groups && Array.isArray(projectData.access_to_groups) && projectData.access_to_groups.length > 0) {
+            logger.info(`[PROJECT SERVICE] Processing ${projectData.access_to_groups.length} access_to_groups for PROJECT ticket`);
+            
+            // Prepare batch insert for access_to_groups
+            const accessGroupsValues = projectData.access_to_groups.map((groupUuid, index) => {
+                return `($1, $${index + 2}, NULL, 'ACCESS_GRANTED')`;
+            }).join(', ');
+            
+            const accessGroupsQuery = `
+                INSERT INTO core.rel_tickets_groups_persons (
+                    rel_ticket,
+                    rel_assigned_to_group,
+                    rel_assigned_to_person,
+                    type
+                ) VALUES ${accessGroupsValues}
+            `;
+            
+            const accessGroupsParams = [createdProject.uuid, ...projectData.access_to_groups];
+            await client.query(accessGroupsQuery, accessGroupsParams);
+            logger.info(`[PROJECT SERVICE] Successfully added ${projectData.access_to_groups.length} access_to_groups`);
+        }
+        
+        await client.query('COMMIT');
+        logger.info('[PROJECT SERVICE] Successfully completed project creation with access management');
+        
+    } catch (error) {
+        await client.query('ROLLBACK');
+        logger.error('[PROJECT SERVICE] Error managing project access:', error);
+        // Don't throw the error as the project was already created successfully
+        // This is just additional access management
+    } finally {
+        client.release();
+    }
+    
+    return createdProject;
+};
+
 module.exports = {
     getProjectById,
     getProjects,

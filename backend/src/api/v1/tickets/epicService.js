@@ -283,6 +283,84 @@ const updateEpic = async (uuid, updateData) => {
     return updatedEpic;
 };
 
+/**
+ * Crée un nouvel epic
+ * @param {Object} epicData - Données pour la création de l'epic
+ * @returns {Promise<Object>} - Détails de l'epic créé
+ */
+const createEpic = async (epicData) => {
+    logger.info('[EPIC SERVICE] Creating new epic');
+    
+    // Définir les champs standards pour un epic
+    const standardFields = {
+        title: epicData.title,
+        description: epicData.description,
+        configuration_item_uuid: epicData.configuration_item_uuid,
+        ticket_type_code: 'EPIC',
+        ticket_status_code: epicData.ticket_status_code || 'NEW',
+        // Pour les epics, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
+        requested_by_uuid: epicData.writer_uuid,
+        requested_for_uuid: epicData.writer_uuid,
+        writer_uuid: epicData.writer_uuid
+    };
+    
+    // Définir les champs d'assignation pour un epic
+    const assignmentFields = {
+        assigned_to_group: epicData.assigned_to_group || epicData.rel_assigned_to_group,
+        assigned_to_person: epicData.assigned_to_person || epicData.rel_assigned_to_person || null
+    };
+    
+    // Définir les attributs étendus pour un epic
+    const extendedAttributesFields = {};
+    
+    // Champs à inclure dans core_extended_attributes pour les epics
+    // project_id n'est pas inclus dans les attributs étendus pour les epics
+    const epicFields = [
+        'start_date', 'end_date', 'progress_percent',
+        'color', 'tags'
+    ];
+    
+    // Ajouter chaque champ présent dans epicData aux attributs étendus
+    epicFields.forEach(field => {
+        if (epicData[field] !== undefined) {
+            extendedAttributesFields[field] = epicData[field];
+        }
+    });
+    
+    // Gérer la liste des observateurs (watchers)
+    const watchList = epicData.watch_list && Array.isArray(epicData.watch_list) ? 
+        epicData.watch_list : [];
+    
+    // Logique de relations parent-enfant pour les epics
+    const parentChildRelations = [];
+    
+    // 6. Handle parent-child relationship for PROJECT > EPIC
+    if (epicData.project_id) {
+        parentChildRelations.push({
+            parentUuid: epicData.project_id,
+            dependencyCode: 'EPIC'
+        });
+        logger.info(`[EPIC SERVICE] Prepared EPIC relationship with PROJECT: ${epicData.project_id}`);
+    }
+    
+    logger.info('[EPIC SERVICE] Successfully prepared data for epic creation');
+    
+    // Appeler applyCreation pour créer effectivement le ticket
+    const { applyCreation } = require('./service');
+    
+    return await applyCreation(
+        epicData,
+        'EPIC',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        watchList,
+        parentChildRelations,
+        getEpicById,
+        '[EPIC SERVICE]'
+    );
+};
+
 module.exports = {
     getEpicById,
     getEpics,

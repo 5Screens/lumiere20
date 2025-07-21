@@ -284,6 +284,106 @@ const updateDefect = async (uuid, updateData) => {
     return updatedDefect;
 };
 
+/**
+ * Crée un nouveau défaut
+ * @param {Object} defectData - Données pour la création du défaut
+ * @returns {Promise<Object>} - Détails du défaut créé
+ */
+const createDefect = async (defectData) => {
+    logger.info('[DEFECT SERVICE] Creating new defect');
+    
+    // Définir les champs standards pour un défaut
+    const standardFields = {
+        title: defectData.title,
+        description: defectData.description,
+        configuration_item_uuid: defectData.configuration_item_uuid,
+        ticket_type_code: 'DEFECT',
+        ticket_status_code: defectData.ticket_status_code || 'NEW',
+        requested_by_uuid: defectData.requested_by_uuid || null,
+        requested_for_uuid: defectData.requested_for_uuid || null,
+        writer_uuid: defectData.writer_uuid
+    };
+    
+    // Logique d'assignation spécifique aux DEFECT
+    const assignmentFields = {};
+    
+    // rel_assigned_to_person from body
+    const relAssignedToPerson = defectData.rel_assigned_to_person || null;
+    
+    // rel_assigned_to_group = uuid du groupe assigné au ticket ayant le uuid égal à project_id
+    let relAssignedToGroup = null;
+    if (defectData.project_id) {
+        try {
+            const groupQuery = `SELECT rel_assigned_to_group FROM core.rel_tickets_groups_persons WHERE rel_ticket = $1 AND type = 'ASSIGNED' LIMIT 1`;
+            const groupResult = await db.query(groupQuery, [defectData.project_id]);
+            if (groupResult.rows.length > 0) {
+                relAssignedToGroup = groupResult.rows[0].rel_assigned_to_group;
+            }
+        } catch (error) {
+            logger.warn(`[DEFECT SERVICE] Could not retrieve group assignment from project ${defectData.project_id}:`, error.message);
+        }
+    }
+    
+    if (relAssignedToGroup || relAssignedToPerson) {
+        assignmentFields.assigned_to_group = relAssignedToGroup;
+        assignmentFields.assigned_to_person = relAssignedToPerson;
+        logger.info('[DEFECT SERVICE] Prepared DEFECT assignment');
+    } else {
+        logger.warn('[DEFECT SERVICE] DEFECT assignment: no group or person found for assignment');
+    }
+    
+    // Définir les attributs étendus pour un défaut
+    const extendedAttributesFields = {};
+    
+    // Remove forbidden fields
+    const forbiddenFields = ['uuid', 'created_at', 'updated_at', 'sprint_id', 'project_id', 'epic_id', 'rel_assigned_to_person'];
+    // Fields that go directly in columns
+    const columnFields = [
+        'title', 'ticket_status_code','description', 'writer_uuid',
+        'ticket_type_code', 'requested_for_uuid', 'requested_by_uuid'
+    ];
+    
+    // Everything else goes into core_extended_attributes
+    Object.keys(defectData).forEach(key => {
+        if (!forbiddenFields.includes(key) && !columnFields.includes(key)) {
+            extendedAttributesFields[key] = defectData[key];
+        }
+    });
+    
+    // Gérer la liste des observateurs (watchers)
+    const watchList = defectData.watch_list && Array.isArray(defectData.watch_list) ? 
+        defectData.watch_list : [];
+    
+    // Logique de relations parent-enfant spécifique aux DEFECT
+    const parentChildRelations = [];
+    
+    // DEFECT: parent-child relationship (fille du projet)
+    if (defectData.project_id) {
+        parentChildRelations.push({
+            parentUuid: defectData.project_id,
+            dependencyCode: 'DEFECT'
+        });
+        logger.info(`[DEFECT SERVICE] Prepared DEFECT relationship with PROJECT: ${defectData.project_id}`);
+    }
+    
+    logger.info('[DEFECT SERVICE] Successfully prepared data for defect creation');
+    
+    // Appeler applyCreation pour créer effectivement le ticket
+    const { applyCreation } = require('./service');
+    
+    return await applyCreation(
+        defectData,
+        'DEFECT',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        watchList,
+        parentChildRelations,
+        getDefectById,
+        '[DEFECT SERVICE]'
+    );
+};
+
 module.exports = {
     getDefects,
     getDefectById,

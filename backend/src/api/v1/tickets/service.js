@@ -76,502 +76,94 @@ const getTickets = async (lang, ticket_type, baseQuery = '', additionalJoins = '
     }
 };
 
+/**
+ * Crée un nouveau ticket en déléguant au service spécialisé selon le type
+ * @param {Object} ticketData - Données du ticket à créer
+ * @returns {Promise<Object>} - Détails du ticket créé
+ */
 const createTicket = async (ticketData) => {
     logger.info('[SERVICE] Creating new ticket');
     
-    // Start a transaction
-    const client = await db.getClient();
-    
     try {
-        await client.query('BEGIN');
+        // Déterminer le type de ticket
+        const ticketType = ticketData.ticket_type_code;
+        logger.info(`[SERVICE] Ticket type: ${ticketType}`);
         
-        // Déterminer si c'est un ticket de type INCIDENT
-        const isIncident = ticketData.ticket_type_code === 'INCIDENT';
-        // Déterminer si c'est un ticket de type PROBLEM
-        const isProblem = ticketData.ticket_type_code === 'PROBLEM';
-        // Déterminer si c'est un ticket de type CHANGE
-        const isChange = ticketData.ticket_type_code === 'CHANGE';
-        // Déterminer si c'est un ticket de type KNOWLEDGE
-        const isKnowledge = ticketData.ticket_type_code === 'KNOWLEDGE';
-        // Déterminer si c'est un ticket de type PROJECT
-        const isProject = ticketData.ticket_type_code === 'PROJECT';
-        // Déterminer si c'est un ticket de type SPRINT
-        const isSprint = ticketData.ticket_type_code === 'SPRINT';
-        // Déterminer si c'est un ticket de type EPIC
-        const isEpic = ticketData.ticket_type_code === 'EPIC';
-        // Déterminer si c'est un ticket de type USER_STORY
-        const isUserStory = ticketData.ticket_type_code === 'USER_STORY';
-        // Déterminer si c'est un ticket de type DEFECT
-        const isDefect = ticketData.ticket_type_code === 'DEFECT';
+        // Importer les services nécessaires
+        const incidentService = require('./incidentService');
+        const problemService = require('./problemService');
+        const changeService = require('./changeService');
+        const knowledgeService = require('./knowledgeService');
+        const taskService = require('./taskService');
+        const projectService = require('./projectService');
+        const sprintService = require('./sprintService');
+        const epicService = require('./epicService');
+        const storyService = require('./storyService');
+        const defectService = require('./defectService');
         
-        logger.info(`[SERVICE] Ticket type is ${isIncident ? 'INCIDENT' : isProblem ? 'PROBLEM' : isChange ? 'CHANGE' : isKnowledge ? 'KNOWLEDGE' : isProject ? 'PROJECT' : isSprint ? 'SPRINT' : isEpic ? 'EPIC' : isUserStory ? 'USER_STORY' : isDefect ? 'DEFECT' : ticketData.ticket_type_code}`);
+        // Utiliser le service approprié selon le type de ticket
+        let createdTicket = null;
         
-        // Préparer les attributs étendus pour le core
-        let coreExtendedAttributes = {};
-        
-        // Si c'est un incident, utiliser le service d'incident pour la création
-        if (isIncident) {
-            logger.info('[SERVICE] Using incidentService.createIncident for INCIDENT ticket');
-            const incidentService = require('./incidentService');
-            
-            // Utiliser createIncident pour préparer les données
-            const incidentData = incidentService.createIncident(ticketData);
-            
-            // Utiliser applyCreation pour créer le ticket
-            return await applyCreation(
-                ticketData,
-                'INCIDENT',
-                incidentData.standardFields,
-                incidentData.assignmentFields,
-                incidentData.extendedAttributesFields,
-                incidentData.watchList,
-                incidentData.parentChildRelations,
-                incidentService.getIncidentById,
-                '[INCIDENT SERVICE]'
-            );
+        // INCIDENT
+        if (ticketType === 'INCIDENT') {
+            logger.info('[SERVICE] Calling incidentService.createIncident');
+            createdTicket = await incidentService.createIncident(ticketData);
+        }
+        // PROBLEM
+        else if (ticketType === 'PROBLEM') {
+            logger.info('[SERVICE] Calling problemService.createProblem');
+            createdTicket = await problemService.createProblem(ticketData);
+        }
+        // CHANGE
+        else if (ticketType === 'CHANGE') {
+            logger.info('[SERVICE] Calling changeService.createChange');
+            createdTicket = await changeService.createChange(ticketData);
+        }
+        // KNOWLEDGE
+        else if (ticketType === 'KNOWLEDGE') {
+            logger.info('[SERVICE] Calling knowledgeService.createKnowledge');
+            createdTicket = await knowledgeService.createKnowledge(ticketData);
+        }
+        // TASK
+        else if (ticketType === 'TASK') {
+            logger.info('[SERVICE] Calling taskService.createTask');
+            createdTicket = await taskService.createTask(ticketData);
+        }
+        // PROJECT
+        else if (ticketType === 'PROJECT') {
+            logger.info('[SERVICE] Calling projectService.createProject');
+            createdTicket = await projectService.createProject(ticketData);
+        }
+        // SPRINT
+        else if (ticketType === 'SPRINT') {
+            logger.info('[SERVICE] Calling sprintService.createSprint');
+            createdTicket = await sprintService.createSprint(ticketData);
+        }
+        // EPIC
+        else if (ticketType === 'EPIC') {
+            logger.info('[SERVICE] Calling epicService.createEpic');
+            createdTicket = await epicService.createEpic(ticketData);
+        }
+        // USER_STORY
+        else if (ticketType === 'USER_STORY') {
+            logger.info('[SERVICE] Calling storyService.createStory');
+            createdTicket = await storyService.createStory(ticketData);
+        }
+        // DEFECT
+        else if (ticketType === 'DEFECT') {
+            logger.info('[SERVICE] Calling defectService.createDefect');
+            createdTicket = await defectService.createDefect(ticketData);
+        }
+        // Type de ticket non pris en charge
+        else {
+            logger.error(`[SERVICE] POST not implemented for ticket type: ${ticketType}`);
+            throw new Error(`Creation not implemented for ticket type: ${ticketType}`);
         }
         
-        // Si c'est un problème, utiliser le service de problème pour la création
-        if (isProblem) {
-            logger.info('[SERVICE] Using problemService.createProblem for PROBLEM ticket');
-            const problemService = require('./problemService');
-            
-            // Utiliser createProblem pour préparer les données
-            const problemData = problemService.createProblem(ticketData);
-            
-            // Utiliser applyCreation pour créer le ticket
-            return await applyCreation(
-                ticketData,
-                'PROBLEM',
-                problemData.standardFields,
-                problemData.assignmentFields,
-                problemData.extendedAttributesFields,
-                problemData.watchList,
-                problemData.parentChildRelations,
-                problemService.getProblemById,
-                '[PROBLEM SERVICE]'
-            );
-        }
-        
-        // Si c'est un changement, utiliser le service de changement pour la création
-        if (isChange) {
-            logger.info('[SERVICE] Using changeService.createChange for CHANGE ticket');
-            const changeService = require('./changeService');
-            
-            // Utiliser createChange pour préparer les données
-            const changeData = changeService.createChange(ticketData);
-            
-            // Utiliser applyCreation pour créer le ticket
-            return await applyCreation(
-                ticketData,
-                'CHANGE',
-                changeData.standardFields,
-                changeData.assignmentFields,
-                changeData.extendedAttributesFields,
-                changeData.watchList,
-                changeData.parentChildRelations,
-                changeService.getChangeById,
-                '[CHANGE SERVICE]'
-            );
-        }
-        
-        // Si c'est un article de connaissance, utiliser le service de connaissance pour la création
-        if (isKnowledge) {
-            logger.info('[SERVICE] Using knowledgeService.createKnowledge for KNOWLEDGE ticket');
-            const knowledgeService = require('./knowledgeService');
-            
-            // Utiliser createKnowledge pour préparer les données
-            const knowledgeData = knowledgeService.createKnowledge(ticketData);
-            
-            // Utiliser applyCreation pour créer le ticket
-            return await applyCreation(
-                ticketData,
-                'KNOWLEDGE',
-                knowledgeData.standardFields,
-                knowledgeData.assignmentFields,
-                knowledgeData.extendedAttributesFields,
-                knowledgeData.watchList,
-                knowledgeData.parentChildRelations,
-                knowledgeService.getKnowledgeById,
-                '[KNOWLEDGE SERVICE]'
-            );
-        }
-        
-        // Si c'est un projet, ajouter les attributs spécifiques aux projets
-        if (isProject) {
-            // Champs à inclure dans core_extended_attributes pour les projets
-            const projectFields = [
-                'key', 'start_date', 'end_date', 'issue_type_scheme_id',
-                'visibility', 'project_type'
-            ];
-            
-            // Ajouter chaque champ présent dans ticketData aux attributs étendus
-            projectFields.forEach(field => {
-                if (ticketData[field] !== undefined) {
-                    coreExtendedAttributes[field] = ticketData[field];
-                }
-            });
-            
-            logger.info('[SERVICE] Prepared core_extended_attributes for PROJECT ticket');
-        }
-        
-        // Si c'est un sprint, ajouter les attributs spécifiques aux sprints
-        if (isSprint) {
-            // Champs à inclure dans core_extended_attributes pour les sprints
-            // project_id n'est pas inclus dans les attributs étendus pour les sprints
-            const sprintFields = [
-                'start_date', 'end_date', 'actual_velocity',
-                'estimated_velocity'
-            ];
-            
-            // Ajouter chaque champ présent dans ticketData aux attributs étendus
-            sprintFields.forEach(field => {
-                if (ticketData[field] !== undefined) {
-                    coreExtendedAttributes[field] = ticketData[field];
-                }
-            });
-            
-            logger.info('[SERVICE] Prepared core_extended_attributes for SPRINT ticket');
-        }
-        
-        // Si c'est un epic, ajouter les attributs spécifiques aux epics
-        if (isEpic) {
-            // Champs à inclure dans core_extended_attributes pour les epics
-            // project_id n'est pas inclus dans les attributs étendus pour les epics
-            const epicFields = [
-                'start_date', 'end_date', 'progress_percent',
-                'color', 'tags'
-            ];
-            
-            // Ajouter chaque champ présent dans ticketData aux attributs étendus
-            epicFields.forEach(field => {
-                if (ticketData[field] !== undefined) {
-                    coreExtendedAttributes[field] = ticketData[field];
-                }
-            });
-            
-            logger.info('[SERVICE] Prepared core_extended_attributes for EPIC ticket');
-        }
-
-        // USER_STORY logic
-        if (isUserStory) {
-            logger.info('[SERVICE] Preparing core_extended_attributes for USER_STORY ticket');
-            // Remove forbidden fields
-            const forbiddenFields = ['uuid', 'created_at', 'updated_at', 'sprint_id', 'project_id', 'epic_id', 'rel_assigned_to_person'];
-            // Fields that go directly in columns
-            const columnFields = [
-                'title', 'description', 'configuration_item_uuid', 'writer_uuid',
-                'ticket_type_code', 'ticket_status_code', 'requested_for_uuid', 'requested_by_uuid'
-            ];
-            // Everything else goes into core_extended_attributes
-            Object.keys(ticketData).forEach(key => {
-                if (!forbiddenFields.includes(key) && !columnFields.includes(key)) {
-                    coreExtendedAttributes[key] = ticketData[key];
-                }
-            });
-            logger.info('[SERVICE] Prepared core_extended_attributes for USER_STORY ticket');
-        }
-        
-        // Si c'est un defect, ajouter les attributs spécifiques aux defects
-        if (isDefect) {
-            logger.info('[SERVICE] Preparing core_extended_attributes for DEFECT ticket');
-            // Remove forbidden fields
-            const forbiddenFields = ['uuid', 'created_at', 'updated_at', 'sprint_id', 'project_id', 'epic_id', 'rel_assigned_to_person'];
-            // Fields that go directly in columns
-            const columnFields = [
-                'title', 'ticket_status_code','description', 'writer_uuid',
-                'ticket_type_code', 'requested_for_uuid', 'requested_by_uuid'
-            ];
-            // Everything else goes into core_extended_attributes
-            Object.keys(ticketData).forEach(key => {
-                if (!forbiddenFields.includes(key) && !columnFields.includes(key)) {
-                    coreExtendedAttributes[key] = ticketData[key];
-                }
-            });
-            logger.info('[SERVICE] Prepared core_extended_attributes for DEFECT ticket');
-        }
-        
-        // 1. Create the ticket
-        const ticketQuery = `
-            INSERT INTO core.tickets (
-                title,
-                description,
-                configuration_item_uuid,
-                requested_by_uuid,
-                requested_for_uuid,
-                writer_uuid,
-                ticket_type_code,
-                ticket_status_code,
-                core_extended_attributes,
-                user_extended_attributes,
-                closed_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-            RETURNING *
-        `;
-        
-        // Pour les problèmes, les projets, les sprints et les epics, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
-        let requestedByUuid = (isProblem || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_by_uuid;
-        let requestedForUuid = (isProblem || isProject || isSprint || isEpic) ? ticketData.writer_uuid : ticketData.requested_for_uuid;
-        // USER_STORY et DEFECT: requested_by_uuid/requested_for_uuid can be empty, use as received
-        if (isUserStory || isDefect) {
-            requestedByUuid = ticketData.requested_by_uuid || null;
-            requestedForUuid = ticketData.requested_for_uuid || null;
-        }
-        const ticketResult = await client.query(ticketQuery, [
-            ticketData.title,
-            ticketData.description,
-            ticketData.configuration_item_uuid,
-            requestedByUuid,
-            requestedForUuid,
-            ticketData.writer_uuid,
-            ticketData.ticket_type_code,
-            ticketData.ticket_status_code,
-            Object.keys(coreExtendedAttributes).length > 0 ? coreExtendedAttributes : null,
-            ticketData.user_extended_attributes || null,
-            ticketData.closed_at || null
-        ]);
-
-        const createdTicket = ticketResult.rows[0];
-        
-        // 3. Handle assignment if provided
-        if (ticketData.assigned_to_group || ticketData.rel_assigned_to_group) {
-            logger.info('[SERVICE] Processing ticket assignment');
-            
-            const assignmentQuery = `
-                INSERT INTO core.rel_tickets_groups_persons (
-                    rel_ticket,
-                    rel_assigned_to_group,
-                    rel_assigned_to_person,
-                    type
-                ) VALUES ($1, $2, $3, 'ASSIGNED')
-            `;
-            
-            await client.query(assignmentQuery, [
-                createdTicket.uuid,
-                ticketData.assigned_to_group || ticketData.rel_assigned_to_group,
-                ticketData.assigned_to_person || ticketData.rel_assigned_to_person || null
-            ]);
-        }
-        // USER_STORY: assignment logic
-        if (isUserStory) {
-            logger.info('[SERVICE] Processing USER_STORY assignment');
-            // rel_assigned_to_person from body
-            const relAssignedToPerson = ticketData.assigned_to_person || null;
-            // rel_assigned_to_group = uuid du groupe assigné au ticket ayant le uuid égal à project_id
-            let relAssignedToGroup = null;
-            if (ticketData.project_id) {
-                const groupQuery = `SELECT rel_assigned_to_group FROM core.rel_tickets_groups_persons WHERE rel_ticket = $1 AND type = 'ASSIGNED' LIMIT 1`;
-                const groupResult = await client.query(groupQuery, [ticketData.project_id]);
-                if (groupResult.rows.length > 0) {
-                    relAssignedToGroup = groupResult.rows[0].rel_assigned_to_group;
-                }
-            }
-            if (relAssignedToGroup || relAssignedToPerson) {
-                const assignmentQuery = `
-                    INSERT INTO core.rel_tickets_groups_persons (
-                        rel_ticket,
-                        rel_assigned_to_group,
-                        rel_assigned_to_person,
-                        type
-                    ) VALUES ($1, $2, $3, 'ASSIGNED')
-                `;
-                await client.query(assignmentQuery, [
-                    createdTicket.uuid,
-                    relAssignedToGroup,
-                    relAssignedToPerson
-                ]);
-                logger.info('[SERVICE] USER_STORY assignment inserted');
-            } else {
-                logger.warn('[SERVICE] USER_STORY assignment: no group or person found for assignment');
-            }
-        }
-        
-        // DEFECT: assignment logic
-        if (isDefect) {
-            logger.info('[SERVICE] Processing DEFECT assignment');
-            // rel_assigned_to_person from body
-            const relAssignedToPerson = ticketData.rel_assigned_to_person || null;
-            // rel_assigned_to_group = uuid du groupe assigné au ticket ayant le uuid égal à project_id
-            let relAssignedToGroup = null;
-            if (ticketData.project_id) {
-                const groupQuery = `SELECT rel_assigned_to_group FROM core.rel_tickets_groups_persons WHERE rel_ticket = $1 AND type = 'ASSIGNED' LIMIT 1`;
-                const groupResult = await client.query(groupQuery, [ticketData.project_id]);
-                if (groupResult.rows.length > 0) {
-                    relAssignedToGroup = groupResult.rows[0].rel_assigned_to_group;
-                }
-            }
-            if (relAssignedToGroup || relAssignedToPerson) {
-                const assignmentQuery = `
-                    INSERT INTO core.rel_tickets_groups_persons (
-                        rel_ticket,
-                        rel_assigned_to_group,
-                        rel_assigned_to_person,
-                        type
-                    ) VALUES ($1, $2, $3, 'ASSIGNED')
-                `;
-                await client.query(assignmentQuery, [
-                    createdTicket.uuid,
-                    relAssignedToGroup,
-                    relAssignedToPerson
-                ]);
-                logger.info('[SERVICE] DEFECT assignment inserted');
-            } else {
-                logger.warn('[SERVICE] DEFECT assignment: no group or person found for assignment');
-            }
-        }
-        
-        // 3. Handle watchers if provided
-        if (ticketData.watch_list && Array.isArray(ticketData.watch_list) && ticketData.watch_list.length > 0) {
-            logger.info(`[SERVICE] Processing ${ticketData.watch_list.length} ticket watchers`);
-            
-            // Prepare batch insert for watchers
-            const watcherValues = ticketData.watch_list.map((personUuid, index) => {
-                return `($1, NULL, $${index + 2}, 'WATCHER')`;
-            }).join(', ');
-            
-            const watcherQuery = `
-                INSERT INTO core.rel_tickets_groups_persons (
-                    rel_ticket,
-                    rel_assigned_to_group,
-                    rel_assigned_to_person,
-                    type
-                ) VALUES ${watcherValues}
-            `;
-            
-            const watcherParams = [createdTicket.uuid, ...ticketData.watch_list];
-            await client.query(watcherQuery, watcherParams);
-        }
-        
-        // 4. Handle access_to_users for PROJECT type if provided
-        if (isProject && ticketData.access_to_users && Array.isArray(ticketData.access_to_users) && ticketData.access_to_users.length > 0) {
-            logger.info(`[SERVICE] Processing ${ticketData.access_to_users.length} access_to_users for PROJECT ticket`);
-            
-            // Prepare batch insert for access_to_users
-            const accessUsersValues = ticketData.access_to_users.map((personUuid, index) => {
-                return `($1, NULL, $${index + 2}, 'ACCESS_GRANTED')`;
-            }).join(', ');
-            
-            const accessUsersQuery = `
-                INSERT INTO core.rel_tickets_groups_persons (
-                    rel_ticket,
-                    rel_assigned_to_group,
-                    rel_assigned_to_person,
-                    type
-                ) VALUES ${accessUsersValues}
-            `;
-            
-            const accessUsersParams = [createdTicket.uuid, ...ticketData.access_to_users];
-            await client.query(accessUsersQuery, accessUsersParams);
-        }
-        
-        // 5. Handle access_to_groups for PROJECT type if provided
-        if (isProject && ticketData.access_to_groups && Array.isArray(ticketData.access_to_groups) && ticketData.access_to_groups.length > 0) {
-            logger.info(`[SERVICE] Processing ${ticketData.access_to_groups.length} access_to_groups for PROJECT ticket`);
-            
-            // Prepare batch insert for access_to_groups
-            const accessGroupsValues = ticketData.access_to_groups.map((groupUuid, index) => {
-                return `($1, $${index + 2}, NULL, 'ACCESS_GRANTED')`;
-            }).join(', ');
-            
-            const accessGroupsQuery = `
-                INSERT INTO core.rel_tickets_groups_persons (
-                    rel_ticket,
-                    rel_assigned_to_group,
-                    rel_assigned_to_person,
-                    type
-                ) VALUES ${accessGroupsValues}
-            `;
-            
-            const accessGroupsParams = [createdTicket.uuid, ...ticketData.access_to_groups];
-            await client.query(accessGroupsQuery, accessGroupsParams);
-        }
-        
-        // 6. Handle parent-child relationship for PROJECT > SPRINT and PROJECT > EPIC types
-        if ((isSprint || isEpic) && ticketData.project_id) {
-            logger.info(`[SERVICE] Creating parent-child relationship for ${isSprint ? 'SPRINT' : 'EPIC'} ticket with PROJECT ${ticketData.project_id}`);
-            
-            const relationQuery = `
-                INSERT INTO core.rel_parent_child_tickets (
-                    rel_parent_ticket_uuid,
-                    rel_child_ticket_uuid,
-                    dependency_code
-                ) VALUES ($1, $2, $3)
-            `;
-            
-            const relationParams = [
-                ticketData.project_id,
-                createdTicket.uuid,
-                isSprint ? 'SPRINT' : 'EPIC'
-            ];
-            
-            await client.query(relationQuery, relationParams);
-            logger.info(`[SERVICE] Created parent-child relationship for ${isSprint ? 'SPRINT' : 'EPIC'} ticket`);
-        }
-        // USER_STORY: parent-child relationship
-        if (isUserStory) {
-            // 5A: epic_id present
-            if (ticketData.epic_id) {
-                logger.info(`[SERVICE] Creating USER_STORY relationship: epic_id=${ticketData.epic_id}`);
-                const relationQuery = `
-                    INSERT INTO core.rel_parent_child_tickets (
-                        rel_parent_ticket_uuid,
-                        rel_child_ticket_uuid,
-                        dependency_code
-                    ) VALUES ($1, $2, 'STORY')
-                `;
-                await client.query(relationQuery, [ticketData.epic_id, createdTicket.uuid]);
-                logger.info('[SERVICE] USER_STORY relationship with EPIC inserted');
-            } else if (ticketData.project_id) {
-                // 5B: epic_id vide, story fille du projet
-                logger.info(`[SERVICE] Creating USER_STORY relationship: project_id=${ticketData.project_id}`);
-                const relationQuery = `
-                    INSERT INTO core.rel_parent_child_tickets (
-                        rel_parent_ticket_uuid,
-                        rel_child_ticket_uuid,
-                        dependency_code
-                    ) VALUES ($1, $2, 'STORY')
-                `;
-                await client.query(relationQuery, [ticketData.project_id, createdTicket.uuid]);
-                logger.info('[SERVICE] USER_STORY relationship with PROJECT inserted');
-            }
-            // 5C: sprint_id présent
-            if (ticketData.sprint_id) {
-                logger.info(`[SERVICE] Creating USER_STORY relationship: sprint_id=${ticketData.sprint_id}`);
-                const relationQuery = `
-                    INSERT INTO core.rel_parent_child_tickets (
-                        rel_parent_ticket_uuid,
-                        rel_child_ticket_uuid,
-                        dependency_code
-                    ) VALUES ($1, $2, 'STORY')
-                `;
-                await client.query(relationQuery, [ticketData.sprint_id, createdTicket.uuid]);
-                logger.info('[SERVICE] USER_STORY relationship with SPRINT inserted');
-            }
-        }
-
-        // DEFECT: parent-child relationship (fille du projet)
-        if (isDefect && ticketData.project_id) {
-            logger.info(`[SERVICE] Creating DEFECT relationship: project_id=${ticketData.project_id}`);
-            const relationQuery = `
-                INSERT INTO core.rel_parent_child_tickets (
-                    rel_parent_ticket_uuid,
-                    rel_child_ticket_uuid,
-                    dependency_code
-                ) VALUES ($1, $2, 'DEFECT')
-            `;
-            await client.query(relationQuery, [ticketData.project_id, createdTicket.uuid]);
-            logger.info('[SERVICE] DEFECT relationship with PROJECT inserted');
-        }
-        
-        await client.query('COMMIT');
         return createdTicket;
-        
     } catch (error) {
-        await client.query('ROLLBACK');
         logger.error('[SERVICE] Error creating ticket:', error);
         throw error;
-    } finally {
-        client.release();
     }
 };
 

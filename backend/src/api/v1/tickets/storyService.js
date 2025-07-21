@@ -546,10 +546,127 @@ const updateParentSprint = async (storyUUID, parentSprintUUID) => {
     }
 };
 
+/**
+ * Crée une nouvelle user story
+ * @param {Object} storyData - Données pour la création de la user story
+ * @returns {Promise<Object>} - Détails de la user story créée
+ */
+const createStory = async (storyData) => {
+    logger.info('[STORY SERVICE] Creating new user story');
+    
+    // Définir les champs standards pour une user story
+    const standardFields = {
+        title: storyData.title,
+        description: storyData.description,
+        configuration_item_uuid: storyData.configuration_item_uuid,
+        ticket_type_code: 'USER_STORY',
+        ticket_status_code: storyData.ticket_status_code || 'NEW',
+        requested_by_uuid: storyData.requested_by_uuid || null,
+        requested_for_uuid: storyData.requested_for_uuid || null,
+        writer_uuid: storyData.writer_uuid
+    };
+    
+    // Logique d'assignation spécifique aux USER_STORY
+    const assignmentFields = {};
+    
+    // rel_assigned_to_person from body
+    const relAssignedToPerson = storyData.assigned_to_person || null;
+    
+    // rel_assigned_to_group = uuid du groupe assigné au ticket ayant le uuid égal à project_id
+    let relAssignedToGroup = null;
+    if (storyData.project_id) {
+        try {
+            const groupQuery = `SELECT rel_assigned_to_group FROM core.rel_tickets_groups_persons WHERE rel_ticket = $1 AND type = 'ASSIGNED' LIMIT 1`;
+            const groupResult = await db.query(groupQuery, [storyData.project_id]);
+            if (groupResult.rows.length > 0) {
+                relAssignedToGroup = groupResult.rows[0].rel_assigned_to_group;
+            }
+        } catch (error) {
+            logger.warn(`[STORY SERVICE] Could not retrieve group assignment from project ${storyData.project_id}:`, error.message);
+        }
+    }
+    
+    if (relAssignedToGroup || relAssignedToPerson) {
+        assignmentFields.assigned_to_group = relAssignedToGroup;
+        assignmentFields.assigned_to_person = relAssignedToPerson;
+        logger.info('[STORY SERVICE] Prepared USER_STORY assignment');
+    } else {
+        logger.warn('[STORY SERVICE] USER_STORY assignment: no group or person found for assignment');
+    }
+    
+    // Définir les attributs étendus pour une user story
+    const extendedAttributesFields = {};
+    
+    // Remove forbidden fields
+    const forbiddenFields = ['uuid', 'created_at', 'updated_at', 'sprint_id', 'project_id', 'epic_id', 'rel_assigned_to_person'];
+    // Fields that go directly in columns
+    const columnFields = [
+        'title', 'description', 'configuration_item_uuid', 'writer_uuid',
+        'ticket_type_code', 'ticket_status_code', 'requested_for_uuid', 'requested_by_uuid'
+    ];
+    
+    // Everything else goes into core_extended_attributes
+    Object.keys(storyData).forEach(key => {
+        if (!forbiddenFields.includes(key) && !columnFields.includes(key)) {
+            extendedAttributesFields[key] = storyData[key];
+        }
+    });
+    
+    // Gérer la liste des observateurs (watchers)
+    const watchList = storyData.watch_list && Array.isArray(storyData.watch_list) ? 
+        storyData.watch_list : [];
+    
+    // Logique de relations parent-enfant spécifique aux USER_STORY
+    const parentChildRelations = [];
+    
+    // 5A: epic_id present
+    if (storyData.epic_id) {
+        parentChildRelations.push({
+            parentUuid: storyData.epic_id,
+            dependencyCode: 'USER_STORY'
+        });
+        logger.info(`[STORY SERVICE] Prepared USER_STORY relationship with EPIC: ${storyData.epic_id}`);
+    } else if (storyData.project_id) {
+        // 5B: epic_id vide, story fille du projet
+        parentChildRelations.push({
+            parentUuid: storyData.project_id,
+            dependencyCode: 'USER_STORY'
+        });
+        logger.info(`[STORY SERVICE] Prepared USER_STORY relationship with PROJECT: ${storyData.project_id}`);
+    }
+    
+    // 5C: sprint_id présent
+    if (storyData.sprint_id) {
+        parentChildRelations.push({
+            parentUuid: storyData.sprint_id,
+            dependencyCode: 'USER_STORY'
+        });
+        logger.info(`[STORY SERVICE] Prepared USER_STORY relationship with SPRINT: ${storyData.sprint_id}`);
+    }
+    
+    logger.info('[STORY SERVICE] Successfully prepared data for user story creation');
+    
+    // Appeler applyCreation pour créer effectivement le ticket
+    const { applyCreation } = require('./service');
+    
+    return await applyCreation(
+        storyData,
+        'USER_STORY',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        watchList,
+        parentChildRelations,
+        getStoryById,
+        '[STORY SERVICE]'
+    );
+};
+
 module.exports = {
     getStoryById,
     getUserStories,
     updateStory,
     updateParentEpic,
-    updateParentSprint
+    updateParentSprint,
+    createStory
 };

@@ -287,11 +287,11 @@ const getKnowledgeArticles = async (lang) => {
 };
 
 /**
- * Prépare les données pour la création d'un article de connaissance
+ * Crée un nouvel article de connaissance
  * @param {Object} knowledgeData - Données pour la création de l'article de connaissance
- * @returns {Object} - Objet contenant les champs standards, d'assignation, attributs étendus et observateurs
+ * @returns {Promise<Object>} - Détails de l'article de connaissance créé
  */
-const createKnowledge = (knowledgeData) => {
+const createKnowledge = async (knowledgeData) => {
     logger.info('[KNOWLEDGE SERVICE] Preparing data for knowledge article creation');
     
     // Définir les champs standards pour un article de connaissance
@@ -360,13 +360,20 @@ const createKnowledge = (knowledgeData) => {
         logger.info(`[KNOWLEDGE SERVICE] Prepared ${knowledgeData.tickets_list.length} tied ticket relations`);
     }
     
-    return {
+    // Appeler applyCreation pour créer effectivement le ticket
+    const { applyCreation } = require('./service');
+    
+    return await applyCreation(
+        knowledgeData,
+        'KNOWLEDGE',
         standardFields,
         assignmentFields,
         extendedAttributesFields,
         watchList,
-        parentChildRelations
-    };
+        parentChildRelations,
+        getKnowledgeById,
+        '[KNOWLEDGE SERVICE]'
+    );
 };
 
 /**

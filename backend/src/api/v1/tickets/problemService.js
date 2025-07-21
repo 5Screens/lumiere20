@@ -245,11 +245,11 @@ const getProblems = async (lang = 'en') => {
 };
 
 /**
- * Prépare les données pour la création d'un problème
+ * Crée un nouveau problème
  * @param {Object} problemData - Données pour la création du problème
- * @returns {Object} - Objet contenant les champs standards, d'assignation, attributs étendus et observateurs
+ * @returns {Promise<Object>} - Détails du problème créé
  */
-const createProblem = (problemData) => {
+const createProblem = async (problemData) => {
     logger.info('[PROBLEM SERVICE] Preparing data for problem creation');
     
     // Définir les champs standards pour un problème
@@ -335,13 +335,20 @@ const createProblem = (problemData) => {
         logger.info(`[PROBLEM SERVICE] Prepared ${problemData.incidents_list.length} incident relations`);
     }
     
-    return {
+    // Appeler applyCreation pour créer effectivement le ticket
+    const { applyCreation } = require('./service');
+    
+    return await applyCreation(
+        problemData,
+        'PROBLEM',
         standardFields,
         assignmentFields,
         extendedAttributesFields,
         watchList,
-        parentChildRelations
-    };
+        parentChildRelations,
+        getProblemById,
+        '[PROBLEM SERVICE]'
+    );
 };
 
 /**

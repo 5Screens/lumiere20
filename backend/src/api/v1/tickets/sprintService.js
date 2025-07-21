@@ -249,6 +249,84 @@ const updateSprint = async (uuid, updateData) => {
     return updatedSprint;
 };
 
+/**
+ * Crée un nouveau sprint
+ * @param {Object} sprintData - Données pour la création du sprint
+ * @returns {Promise<Object>} - Détails du sprint créé
+ */
+const createSprint = async (sprintData) => {
+    logger.info('[SPRINT SERVICE] Creating new sprint');
+    
+    // Définir les champs standards pour un sprint
+    const standardFields = {
+        title: sprintData.title,
+        description: sprintData.description,
+        configuration_item_uuid: sprintData.configuration_item_uuid,
+        ticket_type_code: 'SPRINT',
+        ticket_status_code: sprintData.ticket_status_code || 'NEW',
+        // Pour les sprints, requested_by_uuid = requested_for_uuid = le uuid du rédacteur
+        requested_by_uuid: sprintData.writer_uuid,
+        requested_for_uuid: sprintData.writer_uuid,
+        writer_uuid: sprintData.writer_uuid
+    };
+    
+    // Définir les champs d'assignation pour un sprint
+    const assignmentFields = {
+        assigned_to_group: sprintData.assigned_to_group || sprintData.rel_assigned_to_group,
+        assigned_to_person: sprintData.assigned_to_person || sprintData.rel_assigned_to_person || null
+    };
+    
+    // Définir les attributs étendus pour un sprint
+    const extendedAttributesFields = {};
+    
+    // Champs à inclure dans core_extended_attributes pour les sprints
+    // project_id n'est pas inclus dans les attributs étendus pour les sprints
+    const sprintFields = [
+        'start_date', 'end_date', 'actual_velocity',
+        'estimated_velocity'
+    ];
+    
+    // Ajouter chaque champ présent dans sprintData aux attributs étendus
+    sprintFields.forEach(field => {
+        if (sprintData[field] !== undefined) {
+            extendedAttributesFields[field] = sprintData[field];
+        }
+    });
+    
+    // Gérer la liste des observateurs (watchers)
+    const watchList = sprintData.watch_list && Array.isArray(sprintData.watch_list) ? 
+        sprintData.watch_list : [];
+    
+    // Logique de relations parent-enfant pour les sprints
+    const parentChildRelations = [];
+    
+    // 6. Handle parent-child relationship for PROJECT > SPRINT
+    if (sprintData.project_id) {
+        parentChildRelations.push({
+            parentUuid: sprintData.project_id,
+            dependencyCode: 'SPRINT'
+        });
+        logger.info(`[SPRINT SERVICE] Prepared SPRINT relationship with PROJECT: ${sprintData.project_id}`);
+    }
+    
+    logger.info('[SPRINT SERVICE] Successfully prepared data for sprint creation');
+    
+    // Appeler applyCreation pour créer effectivement le ticket
+    const { applyCreation } = require('./service');
+    
+    return await applyCreation(
+        sprintData,
+        'SPRINT',
+        standardFields,
+        assignmentFields,
+        extendedAttributesFields,
+        watchList,
+        parentChildRelations,
+        getSprintById,
+        '[SPRINT SERVICE]'
+    );
+};
+
 module.exports = {
     getSprintById,
     getSprints,

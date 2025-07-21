@@ -137,6 +137,67 @@ const getTasks = async (lang = 'en') => {
 };
 
 /**
+ * Crée une nouvelle tâche
+ * @param {Object} taskData - Données de la tâche à créer
+ * @returns {Promise<Object>} - Détails de la tâche créée
+ */
+const createTask = async (taskData) => {
+    logger.info('[TASK SERVICE] Preparing data for task creation');
+    
+    try {
+        // Définir les champs standards pour une tâche
+        const standardFields = {
+            title: taskData.title,
+            description: taskData.description,
+            configuration_item_uuid: taskData.configuration_item_uuid,
+            ticket_type_code: 'TASK',
+            ticket_status_code: taskData.ticket_status_code || 'NEW',
+            requested_by_uuid: taskData.requested_by_uuid,
+            requested_for_uuid: taskData.requested_for_uuid,
+            writer_uuid: taskData.writer_uuid
+        };
+        
+        // Définir les champs d'assignation pour une tâche
+        const assignmentFields = {
+            assigned_to_group: taskData.assigned_to_group,
+            assigned_to_person: taskData.assigned_to_person
+        };
+        
+        // Les tâches n'ont pas d'attributs étendus spécifiques définis
+        const extendedAttributesFields = {};
+        
+        // Gérer la liste des observateurs (watchers)
+        const watchList = taskData.watch_list && Array.isArray(taskData.watch_list) ? 
+            taskData.watch_list : [];
+        
+        if (watchList.length > 0) {
+            logger.info(`[TASK SERVICE] Processing ${watchList.length} watchers for task creation`);
+        }
+        
+        // Relations parent-enfant (les tâches n'ont généralement pas de relations spécifiques)
+        const parentChildRelations = [];
+        
+        // Appeler applyCreation pour créer effectivement le ticket
+        const { applyCreation } = require('./service');
+        
+        return await applyCreation(
+            taskData,
+            'TASK',
+            standardFields,
+            assignmentFields,
+            extendedAttributesFields,
+            watchList,
+            parentChildRelations,
+            getTaskById,
+            '[TASK SERVICE]'
+        );
+    } catch (error) {
+        logger.error('[TASK SERVICE] Error creating task:', error);
+        throw error;
+    }
+};
+
+/**
  * Met à jour partiellement une tâche par son UUID
  * @param {string} uuid - UUID de la tâche à mettre à jour
  * @param {Object} updateData - Données à mettre à jour
@@ -174,5 +235,6 @@ const updateTask = async (uuid, updateData) => {
 module.exports = {
     getTaskById,
     getTasks,
+    createTask,
     updateTask
 };
