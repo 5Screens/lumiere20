@@ -19,8 +19,8 @@ export class Project {
     this.project_type = data.project_type || null; // Type de projet
     
     // Assignation (stockée dans rel_tickets_groups_persons)
-    this.rel_assigned_to_group = data.rel_assigned_to_group || null; // Référence à une équipe affectée
-    this.rel_assigned_to_person = data.rel_assigned_to_person || null; // Référence à l'utilisateur responsable
+    this.assigned_to_group = data.rel_assigned_to_group || null; // Référence à une équipe affectée
+    this.assigned_to_person = data.rel_assigned_to_person || null; // Référence à l'utilisateur responsable
     this.assigned_group_name = data.assigned_group_name || ''; // Nom de l'équipe assignée
     this.assigned_person_name = data.assigned_person_name || ''; // Nom de la personne assignée
     this.access_to_groups = data.access_to_groups || []; // Groupes ayant accès
@@ -45,8 +45,8 @@ export class Project {
       { name: 'title', label: i18n.global.t('project.name') },
       { name: 'ticket_status_code', label: i18n.global.t('project.status') },
       { name: 'key', label: i18n.global.t('project.key') },
-      { name: 'rel_assigned_to_group', label: i18n.global.t('project.team_id') },
-      { name: 'rel_assigned_to_person', label: i18n.global.t('project.lead_user_id') }
+      { name: 'assigned_to_group', label: i18n.global.t('project.team_id') },
+      { name: 'assigned_to_person', label: i18n.global.t('project.lead_user_id') }
     ];
   }
 
@@ -200,13 +200,13 @@ export class Project {
       },
       
       // Assignation
-      rel_assigned_to_group: {
+      assigned_to_group: {
         label: t('project.team_id'),
         type: 'sFilteredSearchField',
         placeholder: t('project.team_id_placeholder'),
-        endpoint: ({ rel_assigned_to_person }) => 
-          rel_assigned_to_person 
-            ? `persons/${rel_assigned_to_person}/groups` 
+        endpoint: ({ assigned_to_person }) => 
+          assigned_to_person 
+            ? `persons/${assigned_to_person}/groups` 
             : 'groups',
         displayField: 'group_name',
         valueField: 'uuid',
@@ -214,16 +214,16 @@ export class Project {
         columnsConfig: [
           { key: 'group_name', label: t('group.name'), visible: true }
         ],
-        required: isRequired('rel_assigned_to_group'),
+        required: isRequired('assigned_to_group'),
         resetable: true
       },
-      rel_assigned_to_person: {
+      assigned_to_person: {
         label: t('project.lead_user_id'),
         type: 'sFilteredSearchField',
         placeholder: t('project.lead_user_id_placeholder'),
-        endpoint: ({ rel_assigned_to_group }) => 
-          rel_assigned_to_group 
-            ? `groups/${rel_assigned_to_group}/members` 
+        endpoint: ({ assigned_to_group }) => 
+          assigned_to_group 
+            ? `groups/${assigned_to_group}/members` 
             : 'groups/members',
         displayField: 'person_name',
         valueField: 'uuid',
@@ -232,7 +232,7 @@ export class Project {
           { key: 'first_name', label: t('person.first_name'), visible: true },
           { key: 'last_name', label: t('person.last_name'), visible: true }
         ],
-        required: isRequired('rel_assigned_to_person'),
+        required: isRequired('assigned_to_person'),
         resetable: true
       },
       
