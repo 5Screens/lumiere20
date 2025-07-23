@@ -297,24 +297,16 @@ const createSprint = async (sprintData) => {
     const watchList = sprintData.watch_list && Array.isArray(sprintData.watch_list) ? 
         sprintData.watch_list : [];
     
-    // Logique de relations parent-enfant pour les sprints
+    // Pour les SPRINT, pas de relations parent-enfant dans applyCreation
+    // Nous les gérerons après avec addChildrenTickets
     const parentChildRelations = [];
-    
-    // 6. Handle parent-child relationship for PROJECT > SPRINT
-    if (sprintData.project_id) {
-        parentChildRelations.push({
-            parentUuid: sprintData.project_id,
-            dependencyCode: 'SPRINT'
-        });
-        logger.info(`[SPRINT SERVICE] Prepared SPRINT relationship with PROJECT: ${sprintData.project_id}`);
-    }
     
     logger.info('[SPRINT SERVICE] Successfully prepared data for sprint creation');
     
     // Appeler applyCreation pour créer effectivement le ticket
-    const { applyCreation } = require('./service');
+    const { applyCreation, addChildrenTickets } = require('./service');
     
-    return await applyCreation(
+    const createdSprint = await applyCreation(
         sprintData,
         'SPRINT',
         standardFields,
@@ -325,6 +317,25 @@ const createSprint = async (sprintData) => {
         getSprintById,
         '[SPRINT SERVICE]'
     );
+    
+    // SPRINT: parent-child relationship (fille du projet)
+    // Créer la relation PROJECT → SPRINT après la création du sprint
+    if (sprintData.project_id) {
+        try {
+            logger.info(`[SPRINT SERVICE] Creating SPRINT relationship with PROJECT: ${sprintData.project_id}`);
+            await addChildrenTickets(
+                sprintData.project_id, // Parent UUID (le projet)
+                'SPRINT', // Type de dépendance
+                [createdSprint.uuid] // Enfant UUID (le sprint créé)
+            );
+            logger.info(`[SPRINT SERVICE] Successfully created SPRINT relationship with PROJECT: ${sprintData.project_id}`);
+        } catch (relationError) {
+            logger.error(`[SPRINT SERVICE] Error creating SPRINT relationship with PROJECT: ${relationError.message}`);
+            // Ne pas faire échouer la création du sprint pour une erreur de relation
+        }
+    }
+    
+    return createdSprint;
 };
 
 module.exports = {

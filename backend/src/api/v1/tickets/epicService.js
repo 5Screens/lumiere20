@@ -331,24 +331,16 @@ const createEpic = async (epicData) => {
     const watchList = epicData.watch_list && Array.isArray(epicData.watch_list) ? 
         epicData.watch_list : [];
     
-    // Logique de relations parent-enfant pour les epics
+    // Pour les EPIC, pas de relations parent-enfant dans applyCreation
+    // Nous les gérerons après avec addChildrenTickets
     const parentChildRelations = [];
-    
-    // 6. Handle parent-child relationship for PROJECT > EPIC
-    if (epicData.project_id) {
-        parentChildRelations.push({
-            parentUuid: epicData.project_id,
-            dependencyCode: 'EPIC'
-        });
-        logger.info(`[EPIC SERVICE] Prepared EPIC relationship with PROJECT: ${epicData.project_id}`);
-    }
     
     logger.info('[EPIC SERVICE] Successfully prepared data for epic creation');
     
     // Appeler applyCreation pour créer effectivement le ticket
-    const { applyCreation } = require('./service');
+    const { applyCreation, addChildrenTickets } = require('./service');
     
-    return await applyCreation(
+    const createdEpic = await applyCreation(
         epicData,
         'EPIC',
         standardFields,
@@ -359,6 +351,25 @@ const createEpic = async (epicData) => {
         getEpicById,
         '[EPIC SERVICE]'
     );
+    
+    // EPIC: parent-child relationship (fille du projet)
+    // Créer la relation PROJECT → EPIC après la création de l'epic
+    if (epicData.project_id) {
+        try {
+            logger.info(`[EPIC SERVICE] Creating EPIC relationship with PROJECT: ${epicData.project_id}`);
+            await addChildrenTickets(
+                epicData.project_id, // Parent UUID (le projet)
+                'EPIC', // Type de dépendance
+                [createdEpic.uuid] // Enfant UUID (l'epic créé)
+            );
+            logger.info(`[EPIC SERVICE] Successfully created EPIC relationship with PROJECT: ${epicData.project_id}`);
+        } catch (relationError) {
+            logger.error(`[EPIC SERVICE] Error creating EPIC relationship with PROJECT: ${relationError.message}`);
+            // Ne pas faire échouer la création de l'epic pour une erreur de relation
+        }
+    }
+    
+    return createdEpic;
 };
 
 module.exports = {

@@ -616,40 +616,16 @@ const createStory = async (storyData) => {
     const watchList = storyData.watch_list && Array.isArray(storyData.watch_list) ? 
         storyData.watch_list : [];
     
-    // Logique de relations parent-enfant spécifique aux USER_STORY
+    // Pour les USER_STORY, pas de relations parent-enfant dans applyCreation
+    // Nous les gérerons après avec addChildrenTickets
     const parentChildRelations = [];
-    
-    // 5A: epic_id present
-    if (storyData.epic_id) {
-        parentChildRelations.push({
-            parentUuid: storyData.epic_id,
-            dependencyCode: 'USER_STORY'
-        });
-        logger.info(`[STORY SERVICE] Prepared USER_STORY relationship with EPIC: ${storyData.epic_id}`);
-    } else if (storyData.project_id) {
-        // 5B: epic_id vide, story fille du projet
-        parentChildRelations.push({
-            parentUuid: storyData.project_id,
-            dependencyCode: 'USER_STORY'
-        });
-        logger.info(`[STORY SERVICE] Prepared USER_STORY relationship with PROJECT: ${storyData.project_id}`);
-    }
-    
-    // 5C: sprint_id présent
-    if (storyData.sprint_id) {
-        parentChildRelations.push({
-            parentUuid: storyData.sprint_id,
-            dependencyCode: 'USER_STORY'
-        });
-        logger.info(`[STORY SERVICE] Prepared USER_STORY relationship with SPRINT: ${storyData.sprint_id}`);
-    }
     
     logger.info('[STORY SERVICE] Successfully prepared data for user story creation');
     
     // Appeler applyCreation pour créer effectivement le ticket
-    const { applyCreation } = require('./service');
+    const { applyCreation, addChildrenTickets } = require('./service');
     
-    return await applyCreation(
+    const createdStory = await applyCreation(
         storyData,
         'USER_STORY',
         standardFields,
@@ -660,6 +636,54 @@ const createStory = async (storyData) => {
         getStoryById,
         '[STORY SERVICE]'
     );
+    
+    // USER_STORY: relations parent-enfant multiples possibles
+    // Créer les relations après la création de la story
+    
+    // 5A: epic_id present - EPIC → USER_STORY
+    if (storyData.epic_id) {
+        try {
+            logger.info(`[STORY SERVICE] Creating USER_STORY relationship with EPIC: ${storyData.epic_id}`);
+            await addChildrenTickets(
+                storyData.epic_id, // Parent UUID (l'epic)
+                'USER_STORY', // Type de dépendance
+                [createdStory.uuid] // Enfant UUID (la story créée)
+            );
+            logger.info(`[STORY SERVICE] Successfully created USER_STORY relationship with EPIC: ${storyData.epic_id}`);
+        } catch (relationError) {
+            logger.error(`[STORY SERVICE] Error creating USER_STORY relationship with EPIC: ${relationError.message}`);
+        }
+    } else if (storyData.project_id) {
+        // 5B: epic_id vide, story fille du projet - PROJECT → USER_STORY
+        try {
+            logger.info(`[STORY SERVICE] Creating USER_STORY relationship with PROJECT: ${storyData.project_id}`);
+            await addChildrenTickets(
+                storyData.project_id, // Parent UUID (le projet)
+                'USER_STORY', // Type de dépendance
+                [createdStory.uuid] // Enfant UUID (la story créée)
+            );
+            logger.info(`[STORY SERVICE] Successfully created USER_STORY relationship with PROJECT: ${storyData.project_id}`);
+        } catch (relationError) {
+            logger.error(`[STORY SERVICE] Error creating USER_STORY relationship with PROJECT: ${relationError.message}`);
+        }
+    }
+    
+    // 5C: sprint_id présent - SPRINT → USER_STORY
+    if (storyData.sprint_id) {
+        try {
+            logger.info(`[STORY SERVICE] Creating USER_STORY relationship with SPRINT: ${storyData.sprint_id}`);
+            await addChildrenTickets(
+                storyData.sprint_id, // Parent UUID (le sprint)
+                'USER_STORY', // Type de dépendance
+                [createdStory.uuid] // Enfant UUID (la story créée)
+            );
+            logger.info(`[STORY SERVICE] Successfully created USER_STORY relationship with SPRINT: ${storyData.sprint_id}`);
+        } catch (relationError) {
+            logger.error(`[STORY SERVICE] Error creating USER_STORY relationship with SPRINT: ${relationError.message}`);
+        }
+    }
+    
+    return createdStory;
 };
 
 module.exports = {
