@@ -308,7 +308,7 @@ const createDefect = async (defectData) => {
     const assignmentFields = {};
     
     // rel_assigned_to_person from body
-    const relAssignedToPerson = defectData.rel_assigned_to_person || null;
+    const relAssignedToPerson = defectData.assigned_to_person || null;
     
     // rel_assigned_to_group = uuid du groupe assigné au ticket ayant le uuid égal à project_id
     let relAssignedToGroup = null;
