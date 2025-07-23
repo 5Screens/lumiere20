@@ -646,7 +646,7 @@ const createStory = async (storyData) => {
             logger.info(`[STORY SERVICE] Creating USER_STORY relationship with EPIC: ${storyData.epic_id}`);
             await addChildrenTickets(
                 storyData.epic_id, // Parent UUID (l'epic)
-                'USER_STORY', // Type de dépendance
+                'STORY', // Type de dépendance
                 [createdStory.uuid] // Enfant UUID (la story créée)
             );
             logger.info(`[STORY SERVICE] Successfully created USER_STORY relationship with EPIC: ${storyData.epic_id}`);
@@ -659,7 +659,7 @@ const createStory = async (storyData) => {
             logger.info(`[STORY SERVICE] Creating USER_STORY relationship with PROJECT: ${storyData.project_id}`);
             await addChildrenTickets(
                 storyData.project_id, // Parent UUID (le projet)
-                'USER_STORY', // Type de dépendance
+                'STORY', // Type de dépendance
                 [createdStory.uuid] // Enfant UUID (la story créée)
             );
             logger.info(`[STORY SERVICE] Successfully created USER_STORY relationship with PROJECT: ${storyData.project_id}`);
@@ -674,7 +674,7 @@ const createStory = async (storyData) => {
             logger.info(`[STORY SERVICE] Creating USER_STORY relationship with SPRINT: ${storyData.sprint_id}`);
             await addChildrenTickets(
                 storyData.sprint_id, // Parent UUID (le sprint)
-                'USER_STORY', // Type de dépendance
+                'STORY', // Type de dépendance
                 [createdStory.uuid] // Enfant UUID (la story créée)
             );
             logger.info(`[STORY SERVICE] Successfully created USER_STORY relationship with SPRINT: ${storyData.sprint_id}`);
