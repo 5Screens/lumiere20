@@ -3,6 +3,69 @@ import { useUserProfileStore } from '../stores/userProfileStore'
 import apiService from '@/services/apiService'
 
 export class Change {
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des changements
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'title', label: t('change.title'), type: 'text', format: 'text' },
+      { key: 'description', label: t('change.description'), type: 'text', format: 'html' },
+      { key: 'ticket_type_label', label: t('configuration.ticketTypes'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('change.status'), type: 'text', format: 'text' },
+      { key: 'rel_change_type_label', label: t('change.change_type'), type: 'text', format: 'text' },
+      { key: 'requested_for_name', label: t('change.requested_for'), type: 'text', format: 'text' },
+      { key: 'assigned_group_name', label: t('change.assigned_group'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('change.assigned_to'), type: 'text', format: 'text' },
+      { key: 'rel_service_name', label: t('change.service'), type: 'text', format: 'text' },
+      { key: 'rel_service_offerings_name', label: t('change.service_offerings'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+    ];
+  }
+
+  /**
+   * Retourne l'endpoint API pour les tickets de type CHANGE
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
+   * @returns {string} Endpoint API
+   */
+  static getApiEndpoint(method) {
+    const userProfileStore = useUserProfileStore();
+    
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=CHANGE&lang=${userProfileStore.language}`;
+    }
+  }
+
+  /**
+   * Retourne le nom du champ à utiliser pour le label des onglets enfants
+   * @returns {string} Le nom du champ
+   */
+  static getChildTabLabel() {
+    return 'title';
+  }
+
+  /**
+   * Retourne l'identifiant unique pour ce type d'objet
+   * @returns {string} Le nom du champ identifiant
+   */
+  static getUniqueIdentifier() {
+    return 'uuid';
+  }
+
+  /**
+   * Retourne le titre pour la création d'un nouvel objet
+   * @returns {string} Le titre de création
+   */
+  static getCreateTitle() {
+    return 'Nouveau changement';
+  }
+
   constructor(data = {}) {
     // Informations générales
     this.uuid = data.uuid || null;

@@ -60,6 +60,30 @@ export class Task {
       throw error;
     }
   }
+
+  /**
+   * Retourne le nom du champ à utiliser pour le label des onglets enfants
+   * @returns {string} Le nom du champ
+   */
+  static getChildTabLabel() {
+    return 'title';
+  }
+
+  /**
+   * Retourne l'identifiant unique pour ce type d'objet
+   * @returns {string} Le nom du champ identifiant
+   */
+  static getUniqueIdentifier() {
+    return 'uuid';
+  }
+
+  /**
+   * Retourne le titre pour la création d'un nouvel objet
+   * @returns {string} Le titre de création
+   */
+  static getCreateTitle() {
+    return 'Nouvelle tâche';
+  }
   
   constructor(data = {}) {
     this.uuid = data.uuid || null;

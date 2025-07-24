@@ -2,6 +2,72 @@ import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
 
 export class Project {
+  /**
+   * Retourne les colonnes pour l'affichage dans le tableau des projets
+   * @returns {Array} Tableau de configuration des colonnes
+   */
+  static getColumns() {
+    const { t } = i18n.global;
+    
+    return [
+      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
+      { key: 'key', label: t('project.key'), type: 'text', format: 'text' },
+      { key: 'title', label: t('project.name'), type: 'text', format: 'text' },
+      { key: 'description', label: t('project.description'), type: 'text', format: 'html' },
+      { key: 'ticket_status_label', label: t('project.status'), type: 'text', format: 'text' },
+      { key: 'project_type_label', label: t('project.type'), type: 'text', format: 'text' },
+      { key: 'assigned_group_name', label: t('project.team_id'), type: 'text', format: 'text' },
+      { key: 'assigned_person_name', label: t('project.lead_user_id'), type: 'text', format: 'text' },
+      { key: 'start_date', label: t('project.start_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'end_date', label: t('project.end_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'epic_count', label: t('project.epic_count'), type: 'text', format: 'text' },
+      { key: 'us_count', label: t('project.us_count'), type: 'text', format: 'text' },
+      { key: 'defect_count', label: t('project.defect_count'), type: 'text', format: 'text' },
+      { key: 'sprint_count', label: t('project.sprint_count'), type: 'text', format: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+    ];
+  }
+
+  /**
+   * Retourne l'endpoint API pour les projets
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
+   * @returns {string} Endpoint API
+   */
+  static getApiEndpoint(method) {
+    const userProfileStore = useUserProfileStore();
+    
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'tickets';
+    } else {
+      return `tickets?ticket_type=PROJECT&lang=${userProfileStore.language}`;
+    }
+  }
+
+  /**
+   * Retourne le nom du champ à utiliser pour le label des onglets enfants
+   * @returns {string} Le nom du champ
+   */
+  static getChildTabLabel() {
+    return 'title';
+  }
+
+  /**
+   * Retourne l'identifiant unique pour ce type d'objet
+   * @returns {string} Le nom du champ identifiant
+   */
+  static getUniqueIdentifier() {
+    return 'uuid';
+  }
+
+  /**
+   * Retourne le titre pour la création d'un nouvel objet
+   * @returns {string} Le titre de création
+   */
+  static getCreateTitle() {
+    return 'Nouveau projet';
+  }
+
   constructor(data = {}) {
     // Identifiant unique du projet
     this.uuid = data.uuid || null;

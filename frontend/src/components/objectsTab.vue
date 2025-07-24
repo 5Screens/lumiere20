@@ -134,8 +134,20 @@ export default {
       
       if (selectedRows.length > 0) {
         const modelClass = this.data.class;
+        console.log('[ObjectsTab] DEBUG handleUpdate - objectType:', this.objectType);
+        console.log('[ObjectsTab] DEBUG handleUpdate - this.data:', this.data);
+        console.log('[ObjectsTab] DEBUG handleUpdate - modelClass:', modelClass);
+        console.log('[ObjectsTab] DEBUG handleUpdate - modelClass type:', typeof modelClass);
+        console.log('[ObjectsTab] DEBUG handleUpdate - modelClass.name:', modelClass?.name);
+        console.log('[ObjectsTab] DEBUG handleUpdate - modelClass.getUniqueIdentifier:', typeof modelClass?.getUniqueIdentifier);
+        
         if (!modelClass) {
-          console.error('[ObjectsTab] Aucune classe de modèle définie pour ce type d’objet');
+          console.error('[ObjectsTab] Aucune classe de modele definie pour ce type d objet');
+          return;
+        }
+        
+        if (typeof modelClass.getUniqueIdentifier !== 'function') {
+          console.error('[ObjectsTab] getUniqueIdentifier n est pas une fonction sur modelClass:', modelClass);
           return;
         }
         
