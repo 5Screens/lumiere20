@@ -63,7 +63,7 @@
             v-if="tab.type === 'form'"
             :is="getComponentByType(tab.type)" 
             :mode="tab.mode"
-            :objectClass="tab.objectClass"
+            :objectClass="tab.class"
             :objectId="tab.objectId"
             :tabId="tab.id_tab"
           />

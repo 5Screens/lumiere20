@@ -230,8 +230,8 @@ const props = defineProps({
     default: 'creation',
     validator: (value) => ['creation', 'update'].includes(value)
   },
-  objectType: {
-    type: String,
+  objectClass: {
+    type: Function,
     required: true
   },
   objectId: {
@@ -258,26 +258,55 @@ const formFields = ref({});
 
 // Computed properties
 const title = computed(() => {
+  // Dériver le nom du type depuis la classe
+  const objectTypeName = getObjectTypeFromClass(props.objectClass);
+  
   if (props.mode === 'creation') {
-    return t(`objectCreationsAndUpdates.${props.objectType}Creation`);
+    return t(`objectCreationsAndUpdates.${objectTypeName}Creation`);
   } else {
-    return `${t(`objectCreationsAndUpdates.${props.objectType}Update`)} (${props.objectId || ''})`;
+    return `${t(`objectCreationsAndUpdates.${objectTypeName}Update`)} (${props.objectId || ''})`;
   }
 });
+
+// Fonction utilitaire pour dériver le nom du type depuis la classe
+const getObjectTypeFromClass = (ModelClass) => {
+  if (!ModelClass) return 'unknown';
+  
+  const className = ModelClass.name.toLowerCase();
+  // Mapping des noms de classes vers les noms de types utilisés dans les traductions
+  const classToTypeMap = {
+    'incident': 'incident',
+    'entity': 'entity', 
+    'task': 'task',
+    'problem': 'problem',
+    'change': 'change',
+    'knowledge_article': 'knowledge',
+    'project': 'project',
+    'sprint': 'sprint',
+    'epic': 'epic',
+    'story': 'story',
+    'defect': 'defect',
+    'symptom': 'symptom'
+  };
+  
+  return classToTypeMap[className] || className;
+};
 
 // Fonction pour charger les champs de formulaire de manière asynchrone
 const loadFormFields = async () => {
   if (!modelInstance.value) return;
   
+  const objectTypeName = getObjectTypeFromClass(props.objectClass);
+  
   try {
     // Récupérer les champs rendables du modèle
     if (typeof modelInstance.value.constructor.getRenderableFields === 'function') {
-      console.log(`[loadFormFields] Chargement des champs pour ${props.objectType}`);
+      console.log(`[loadFormFields] Chargement des champs pour ${objectTypeName}`);
       const fields = await modelInstance.value.constructor.getRenderableFields('for_edition');
       formFields.value = fields;
       console.log(`[loadFormFields] Champs chargés avec succès:`, Object.keys(fields));
     } else {
-      console.warn(`[loadFormFields] La méthode getRenderableFields n'existe pas pour ${props.objectType}`);
+      console.warn(`[loadFormFields] La méthode getRenderableFields n'existe pas pour ${objectTypeName}`);
       formFields.value = {};
     }
   } catch (err) {
@@ -289,30 +318,16 @@ const loadFormFields = async () => {
 
 // Méthodes
 const initializeModel = () => {
-  const modelMap = {
-    'entity': Entity,
-    'symptom': Symptom,
-    'task': Task,
-    'tasks': Task,
-    'incident': Incident,
-    'problem': Problem,
-    'change': Change,
-    'knowledge': Knowledge_article,
-    'project': Project,
-    'sprint': Sprint,
-    'epic': Epic,
-    'story': Story,
-    'defect': Defect
-  };
-  
-  const ModelClass = modelMap[props.objectType];
+  const ModelClass = props.objectClass;
   if (ModelClass) {
     modelInstance.value = new ModelClass();
     // Initialiser formData avec les valeurs par défaut du modèle
     formData.value = { ...modelInstance.value };
+    console.log(`[objectCreationsAndUpdates] Modèle initialisé pour la classe: ${ModelClass.name}`);
   } else {
-    console.error(`[objectCreationsAndUpdates] Modèle non trouvé pour le type: ${props.objectType}`);
-    error.value = `Modèle non trouvé pour le type: ${props.objectType}`;
+    const objectTypeName = getObjectTypeFromClass(props.objectClass);
+    console.error(`[objectCreationsAndUpdates] Classe de modèle non trouvée: ${objectTypeName}`);
+    error.value = `No model class found for type: ${objectTypeName}`;
   }
 };
 
@@ -322,34 +337,23 @@ const fetchObjectData = async () => {
   try {
     loading.value = true;
     
-    // Déterminer la classe du modèle en fonction du type d'objet
-    const modelMap = {
-      'entity': Entity,
-      'symptom': Symptom,
-      'task': Task,
-      'incident': Incident,
-      'problem': Problem,
-      'change': Change,
-      'knowledge': Knowledge_article,
-      'project': Project,
-      'sprint': Sprint,
-      'epic': Epic,
-      'story': Story,
-      'defect': Defect
-    };
-    
-    const ModelClass = modelMap[props.objectType];
+    // Utiliser directement la classe du modèle passée en prop
+    const ModelClass = props.objectClass;
     if (!ModelClass) {
-      throw new Error(`No model class found for type: ${props.objectType}`);
+      const objectTypeName = getObjectTypeFromClass(props.objectClass);
+      throw new Error(`No model class found for type: ${objectTypeName}`);
     }
+    
+    const objectTypeName = getObjectTypeFromClass(ModelClass);
+    console.log(`[fetchObjectData] Utilisation de la classe ${ModelClass.name} pour ${objectTypeName}`);
     
     // Utiliser la méthode getById du modèle si elle existe, sinon utiliser l'approche par défaut
     if (typeof ModelClass.getById === 'function') {
-      console.log(`[fetchObjectData] Using getById for ${props.objectType} with ID: ${props.objectId}`);
+      console.log(`[fetchObjectData] Using getById for ${objectTypeName} with ID: ${props.objectId}`);
       modelInstance.value = await ModelClass.getById(props.objectId);
     } else {
-      console.log(`[fetchObjectData] Using direct API call for ${props.objectType} with ID: ${props.objectId}`);
-      const endpoint = `${props.objectType}s/${props.objectId}`;
+      console.log(`[fetchObjectData] Using direct API call for ${objectTypeName} with ID: ${props.objectId}`);
+      const endpoint = `${objectTypeName}s/${props.objectId}`;
       const data = await apiService.get(endpoint);
       modelInstance.value = new ModelClass(data);
     }
