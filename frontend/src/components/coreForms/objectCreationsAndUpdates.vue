@@ -451,7 +451,8 @@ const uploadPendingAttachments = async (objectUuid, files) => {
     files.forEach(file => {
       formData.append('files', file);
     });
-    formData.append('objectType', props.objectType.toUpperCase());
+    const objectTypeName = getObjectTypeFromClass(props.objectClass);
+    formData.append('objectType', objectTypeName.toUpperCase());
     formData.append('objectUuid', objectUuid);
     
     // Si le modèle a un writer_uuid, l'utiliser comme uploadedBy
@@ -460,7 +461,7 @@ const uploadPendingAttachments = async (objectUuid, files) => {
     }
     
     // Logs pour vérifier le contenu du FormData
-    console.log('[uploadPendingAttachments] FormData content: objectType:', props.objectType.toUpperCase());
+    console.log('[uploadPendingAttachments] FormData content: objectType:', objectTypeName.toUpperCase());
     console.log('[uploadPendingAttachments] FormData content: objectUuid:', objectUuid);
     
     // Appeler le service API pour l'upload
@@ -512,12 +513,12 @@ const handleSave = async () => {
     // Obtenir l'endpoint à partir de la méthode statique getApiEndpoint du modèle
     let endpoint;
     const ModelClass = props.objectClass;
+    const objectTypeName = getObjectTypeFromClass(ModelClass);
+    
     console.log(`[handleSave] DEBUG - props.objectClass:`, ModelClass);
     console.log(`[handleSave] DEBUG - ModelClass type:`, typeof ModelClass);
     console.log(`[handleSave] DEBUG - ModelClass.name:`, ModelClass?.name);
     console.log(`[handleSave] DEBUG - ModelClass.getApiEndpoint:`, typeof ModelClass?.getApiEndpoint);
-    
-    const objectTypeName = getObjectTypeFromClass(ModelClass);
     console.log(`[handleSave] DEBUG - objectTypeName dérivé:`, objectTypeName);
     
     if (props.mode === 'creation') {
@@ -586,8 +587,8 @@ const handleSave = async () => {
     emit('saved', response);
     
     // Afficher un message de confirmation via le store
-    console.log(`[handleSave] Affichage du message de confirmation: ${t(`${props.objectType}.saveSuccess`)}`);
-    tabsStore.setMessage(t(`${props.objectType}.saveSuccess`));
+    console.log(`[handleSave] Affichage du message de confirmation: ${t(`${objectTypeName}.saveSuccess`)}`);
+    tabsStore.setMessage(t(`${objectTypeName}.saveSuccess`));
     
     // Fermer l'onglet
     console.log(`[handleSave] Fermeture de l'onglet avec l'ID: ${props.tabId}`);
@@ -614,8 +615,9 @@ const handleFieldChange = (fieldName, value) => {
   formData.value[fieldName] = value;
   
   // Mettre à jour l'objet dans le store
+  const objectTypeName = getObjectTypeFromClass(props.objectClass);
   tabsStore.updateObjectInEditing(props.tabId, {
-    objectType: props.objectType,
+    objectType: objectTypeName,
     objectId: props.objectId,
     data: { ...formData.value }
   });
@@ -623,8 +625,9 @@ const handleFieldChange = (fieldName, value) => {
 
 const handleFieldSuccess = () => {
   // Mettre à jour l'objet dans le store après une modification réussie
+  const objectTypeName = getObjectTypeFromClass(props.objectClass);
   tabsStore.updateObjectInEditing(props.tabId, {
-    objectType: props.objectType,
+    objectType: objectTypeName,
     objectId: props.objectId,
     data: { ...formData.value }
   });
@@ -650,8 +653,9 @@ onMounted(async () => {
   
   // Si c'est un nouvel objet, initialiser dans le store
   if (props.mode === 'creation') {
+    const objectTypeName = getObjectTypeFromClass(props.objectClass);
     tabsStore.setObjectInEditing(props.tabId, {
-      objectType: props.objectType,
+      objectType: objectTypeName,
       objectId: null,
       data: { ...formData.value }
     });
