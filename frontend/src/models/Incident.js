@@ -55,6 +55,30 @@ export class Incident {
       return `tickets?ticket_type=INCIDENT&lang=${userProfileStore.language}`;
     }
   }
+
+  /**
+   * Retourne le nom du champ à utiliser pour le label des onglets enfants
+   * @returns {string} Le nom du champ
+   */
+  static getChildTabLabel() {
+    return 'title';
+  }
+
+  /**
+   * Retourne le nom du champ à utiliser comme identifiant unique
+   * @returns {string} Le nom du champ
+   */
+  static getUniqueIdentifier() {
+    return 'uuid';
+  }
+
+  /**
+   * Retourne la clé de traduction pour le titre de création
+   * @returns {string} La clé de traduction
+   */
+  static getCreateTitle() {
+    return 'objectCreationsAndUpdates.incidentCreation';
+  }
   
   constructor(data = {}) {
     this.uuid = data.uuid || null;

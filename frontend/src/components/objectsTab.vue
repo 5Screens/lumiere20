@@ -89,146 +89,43 @@ export default {
   // Le watcher a été supprimé car il causait une double initialisation
   computed: {
     columns() {
-      // Utiliser les modèles pour obtenir les colonnes
-      const modelMap = {
-        'symptoms': Symptom,
-        'entities': Entity,
-        'tickets': Task,
-        'tasks': Task,
-        'incidents': Incident,
-        'problems': Problem,
-        'changes': Change,
-        'knowledge': Knowledge_article,
-        'projects': Project,
-        'sprints': Sprint,
-        'epics': Epic,
-        'stories': Story,
-        'defects': Defect
+      // Utiliser directement la classe du modèle depuis this.data.class
+      console.log('[ObjectsTab] Calcul des colonnes - data:', this.data);
+      console.log('[ObjectsTab] Calcul des colonnes - objectType:', this.objectType);
+      
+      const modelClass = this.data.class;
+      console.log('[ObjectsTab] Classe du modèle:', modelClass);
+      
+      if (modelClass && typeof modelClass.getColumns === 'function') {
+        const columns = modelClass.getColumns();
+        console.log('[ObjectsTab] Colonnes récupérées:', columns.length, 'colonnes');
+        return columns;
       }
       
-      const model = modelMap[this.objectType]
-      if (model && typeof model.getColumns === 'function') {
-        return model.getColumns()
-      }
-      
-      // Colonnes par défaut si le modèle n'existe pas
+      console.warn('[ObjectsTab] Aucune classe de modèle ou méthode getColumns disponible');
+      // Colonnes par défaut si la classe n'existe pas
       return []
     },
-    formType() {
-      const formTypeMap = {
-        'symptoms': 'symptom',
-        'entities': 'entity',
-        'tickets': 'ticket',
-        'tasks': 'task',
-        'incidents': 'incident',
-        'problems': 'problem',
-        'changes': 'change',
-        'knowledge': 'knowledge',
-        'projects': 'project',
-        'sprints': 'sprint',
-        'epics': 'epic',
-        'stories': 'story',
-        'defects': 'defect'
-      }
-      return formTypeMap[this.objectType] || ''
-    },
-    createTitle() {
-      const titleMap = {
-        'symptoms': 'objectCreationsAndUpdates.symptomCreation',
-        'entities': 'objectCreationsAndUpdates.entityCreation',
-        'tickets': 'objectCreationsAndUpdates.ticketCreation',
-        'tasks': 'objectCreationsAndUpdates.taskCreation',
-        'incidents': 'objectCreationsAndUpdates.incidentCreation',
-        'problems': 'objectCreationsAndUpdates.problemCreation',
-        'changes': 'objectCreationsAndUpdates.changeCreation',
-        'knowledge': 'objectCreationsAndUpdates.knowledgeCreation',
-        'projects': 'objectCreationsAndUpdates.projectCreation',
-        'sprints': 'objectCreationsAndUpdates.sprintCreation',
-        'epics': 'objectCreationsAndUpdates.epicCreation',
-        'stories': 'objectCreationsAndUpdates.storyCreation',
-        'defects': 'objectCreationsAndUpdates.defectCreation'
-      }
-      return titleMap[this.objectType] || ''
-    },
-    /**
-     * Détermine le nom du champ à utiliser comme identifiant unique pour chaque type d'objet
-     * Cette propriété calculée retourne le nom de l'attribut qui contient
-     * l'identifiant unique pour chaque type d'objet dans l'application
-     * 
-     * Par exemple:
-     * - Pour les symptômes: utilise 'symptom_code' comme identifiant unique
-     * - Pour les autres objets (entités, tickets, tâches, etc.): utilise 'uuid' comme identifiant unique
-     * 
-     * Cette propriété est utilisée notamment dans handleUpdate() pour construire l'id_tab
-     * lors de l'ouverture d'un nouvel onglet avec store.openTab()
-     * Exemple: id_tab: `${this.formType}-form-${row[this.uniqueIdentifier]}-${Date.now()}`
-     * 
-     * @returns {string} Le nom du champ à utiliser comme identifiant unique
-     */
-    uniqueIdentifier() {
-      const identifierMap = {
-        'symptoms': 'symptom_code',
-        'entities': 'uuid',
-        'tickets': 'uuid',
-        'tasks': 'uuid',
-        'incidents': 'uuid',
-        'problems': 'uuid',
-        'changes': 'uuid',
-        'projects': 'uuid',
-        'sprints': 'uuid',
-        'epics': 'uuid',
-        'stories': 'uuid',
-        'defects': 'uuid',
-        'knowledge': 'uuid'
-      }
-      return identifierMap[this.objectType] || 'uuid'
-    },
-    /**
-     * Détermine le nom du champ à utiliser pour afficher le titre d'un onglet
-     * Cette propriété calculée retourne le nom de l'attribut qui contient
-     * le texte à afficher dans le label de l'onglet pour chaque type d'objet
-     * 
-     * Par exemple:
-     * - Pour les symptômes: utilise 'symptom_code' comme identifiant d'affichage
-     * - Pour les projets, tâches, incidents, etc.: utilise 'title' comme identifiant d'affichage
-     * - Pour les entités: utilise 'name' comme identifiant d'affichage
-     * 
-     * Cette propriété est utilisée notamment dans handleUpdate() pour définir le label des onglets
-     * lors de l'ouverture d'un nouvel onglet avec store.openTab()
-     * 
-     * @returns {string} Le nom du champ à utiliser comme identifiant d'affichage
-     */
-    nameField() {
-      const nameMap = {
-        'symptoms': 'symptom_code',
-        'entities': 'name',
-        'tickets': 'title',
-        'tasks': 'title',
-        'incidents': 'title',
-        'problems': 'title',
-        'changes': 'title',
-        'projects': 'title',
-        'sprints': 'title',
-        'epics': 'title',
-        'stories': 'title',
-        'defects': 'title',
-        'knowledge': 'title'
-      }
-      return nameMap[this.objectType] || 'name'
-    }
+    // Les computed properties formType, createTitle, uniqueIdentifier et nameField
+    // ont été supprimées car elles sont remplacées par les getters de class
   },
   methods: {
     handleCreate() {
-      // Utiliser le nouveau composant objectCreationsAndUpdates.vue
+      // Utiliser les getters de la classe pour obtenir les informations
+      const modelClass = this.data.class;
+      if (!modelClass) {
+        console.error('[ObjectsTab] Aucune classe de modèle définie pour ce type d’objet');
+        return;
+      }
+      
       this.store.openTab({
-        id_tab: `${this.formType}-form-${Date.now()}`,
-        label: this.createTitle,
-        type: 'objectForm',
+        id_tab: `${this.objectType}-form-${Date.now()}`,
+        label: this.$t(modelClass.getCreateTitle()),
+        type: 'form',
         icon: 'fas fa-plus',
-        data: { 
-          mode: 'creation',
-          objectType: this.formType
-        },
+        mode: 'creation',
+        objectClass: this.objectType,
+        class: modelClass,
         parentId: this.store.activeTabId
       })
     },
@@ -236,6 +133,15 @@ export default {
       const selectedRows = this.$refs.table.filteredData.filter(row => row.selected)
       
       if (selectedRows.length > 0) {
+        const modelClass = this.data.class;
+        if (!modelClass) {
+          console.error('[ObjectsTab] Aucune classe de modèle définie pour ce type d’objet');
+          return;
+        }
+        
+        const uniqueIdentifier = modelClass.getUniqueIdentifier();
+        const childTabLabel = modelClass.getChildTabLabel();
+        
         if (this.objectType === 'symptoms') {
           // Logique spécifique pour les symptômes (grouper par code)
           const uniqueSymptomCodes = [...new Set(selectedRows.map(row => row.symptom_code))]
@@ -243,33 +149,30 @@ export default {
           uniqueSymptomCodes.forEach(symptomCode => {
             if (!symptomCode) return // Ignorer les lignes sans code de symptôme
             
-            // Utiliser le nouveau composant pour les symptômes
             this.store.openTab({
-              id_tab: `${this.formType}-form-${symptomCode}-${Date.now()}`,
+              id_tab: `${this.objectType}-form-${symptomCode}-${Date.now()}`,
               label: symptomCode,
-              type: 'objectForm',
+              type: 'form',
               icon: 'fas fa-edit',
-              data: {
-                mode: 'update',
-                objectType: this.formType,
-                objectId: symptomCode
-              },
+              mode: 'update',
+              objectClass: this.objectType,
+              objectId: symptomCode,
+              class: modelClass,
               parentId: this.store.activeTabId
             })
           })
         } else {
-          // Logique pour les autres types d'objets avec le nouveau composant
+          // Logique pour les autres types d'objets
           selectedRows.forEach(row => {
             this.store.openTab({
-              id_tab: `${this.formType}-form-${row[this.uniqueIdentifier]}-${Date.now()}`,
-              label: row[this.nameField],
-              type: 'objectForm',
+              id_tab: `${this.objectType}-form-${row[uniqueIdentifier]}-${Date.now()}`,
+              label: row[childTabLabel],
+              type: 'form',
               icon: 'fas fa-edit',
-              data: {
-                mode: 'update',
-                objectType: this.formType,
-                objectId: row.uuid
-              },
+              mode: 'update',
+              objectClass: this.objectType,
+              objectId: row.uuid,
+              class: modelClass,
               parentId: this.store.activeTabId
             })
           })
@@ -398,28 +301,14 @@ export default {
       this.$emit('error', error)
     },
     
-    // Utiliser les modèles pour obtenir l'endpoint API
+    // Utiliser les getters de class pour obtenir l'endpoint API
     getApiEndpoint() {
-      const modelMap = {
-        'symptoms': Symptom,
-        'entities': Entity,
-        'tickets': Task,
-        'incidents': Incident,
-        'problems': Problem,
-        'changes': Change,
-        'knowledge': Knowledge_article,
-        'projects': Project,
-        'sprints': Sprint,
-        'stories': Story,
-        'defects': Defect
+      const modelClass = this.data.class;
+      if (modelClass && typeof modelClass.getApiEndpoint === 'function') {
+        return modelClass.getApiEndpoint()
       }
       
-      const model = modelMap[this.objectType]
-      if (model && typeof model.getApiEndpoint === 'function') {
-        return model.getApiEndpoint()
-      }
-      
-      // Endpoint par défaut si le modèle n'existe pas
+      // Endpoint par défaut si la classe n'existe pas
       return this.data.apiEndpoint || this.objectType || ''
     }
   }

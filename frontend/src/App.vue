@@ -225,9 +225,20 @@ export default {
       this.isUnderConstructionVisible = false;
     },
     handleOpenTab(tabData) {
+      // Si la classe est null, afficher un message "En cours de construction"
+      if (tabData.class === null) {
+        this.tabsStore.setMessage({
+          type: 'info',
+          message: this.$t('common.underConstruction')
+        })
+        return
+      }
+      
+      // Ouvrir l'onglet avec les données enrichies
       this.tabsStore.openTab({
         ...tabData,
-        label: this.$t(`tabs.${tabData.type}`)
+        label: this.$t(`tabs.${tabData.type}`),
+        translatedLabel: this.$t(`tabs.${tabData.type}`) // Texte déjà traduit pour éviter la double traduction
       })
     },
     updateTabTitles() {

@@ -24,6 +24,24 @@ export default {
       sa: 'Sa'
     }
   },
+  common: {
+    loading: 'Chargement...',
+    underConstruction: 'Cette fonctionnalité est en cours de construction'
+  },
+  tabs: {
+    symptoms: 'Symptômes',
+    entities: 'Entités',
+    tasks: 'Tâches',
+    incidents: 'Incidents',
+    problems: 'Problèmes',
+    changes: 'Changements',
+    knowledge: 'Base de connaissances',
+    projects: 'Projets',
+    sprints: 'Sprints',
+    epics: 'Épopées',
+    stories: 'Histoires',
+    defects: 'Défauts'
+  },
   yesNoModal: {
     confirmation: 'Demande de confirmation',
     yes: 'Oui',

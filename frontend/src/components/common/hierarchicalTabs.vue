@@ -45,7 +45,7 @@
         >
           <component 
             :is="getComponentByType(tab.type)" 
-            :data="getComponentData(tab)"
+            :data="tab"
             :tabId="tab.id_tab"
           />
         </div>
@@ -60,17 +60,17 @@
           class="tab-content-wrapper"
         >
           <component 
-            v-if="tab.type !== 'objectForm'"
+            v-if="tab.type === 'form'"
             :is="getComponentByType(tab.type)" 
-            :data="getComponentData(tab)"
+            :mode="tab.mode"
+            :objectClass="tab.objectClass"
+            :objectId="tab.objectId"
             :tabId="tab.id_tab"
           />
           <component 
             v-else
             :is="getComponentByType(tab.type)" 
-            :mode="tab.data?.mode"
-            :objectType="tab.data?.objectType"
-            :objectId="tab.data?.objectId"
+            :data="tab"
             :tabId="tab.id_tab"
           />
         </div>
@@ -164,6 +164,7 @@ export default {
     getComponentByType(type) {
       console.log('[HierarchicalTabs] Exécution de getComponentByType()', type);
       const componentMap = {
+        // Grilles - types génériques depuis DynamicPane
         'symptoms': 'ObjectsTab',
         'entities': 'ObjectsTab',
         'tasks': 'ObjectsTab',
@@ -176,44 +177,10 @@ export default {
         'epics': 'ObjectsTab',
         'stories': 'ObjectsTab',
         'defects': 'ObjectsTab',
-        'symptom': 'SymptomsForm',
-        'entity': 'EntityForm',
-        'objectForm': 'ObjectCreationsAndUpdates'
+        // Formulaires - nouveau type unifié
+        'form': 'ObjectCreationsAndUpdates'
       }
       return componentMap[type] || null
-    },
-    
-    // Obtenir les données du composant en fonction de l'onglet
-    getComponentData(tab) {
-      console.log('[HierarchicalTabs] Exécution de getComponentData()', tab);
-      // Pour ObjectsTab, ajouter des données supplémentaires
-      if (tab) {
-        const modelMap = {
-          'symptoms': Symptom,
-          'entities': Entity,
-          'tasks': Task,
-          'incidents': Incident,
-          'problems': Problem,
-          'changes': Change,
-          'knowledge': Knowledge_article,
-          'projects': Project,
-          'sprints': Sprint,
-          'epics': Epic,
-          'stories': Story,
-          'defects': Defect
-        }
-        
-        const model = modelMap[tab.type]
-        if (model && typeof model.getApiEndpoint === 'function') {
-          return {
-            ...tab,
-            apiEndpoint: model.getApiEndpoint("GET"),
-            objectType: tab.type
-          }
-        }
-      }
-      
-      return tab || null
     }
   }
 }

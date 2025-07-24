@@ -76,6 +76,30 @@ export class Entity {
   }
 
   /**
+   * Retourne le nom du champ à utiliser pour le label des onglets enfants
+   * @returns {string} Le nom du champ
+   */
+  static getChildTabLabel() {
+    return 'name';
+  }
+
+  /**
+   * Retourne le nom du champ à utiliser comme identifiant unique
+   * @returns {string} Le nom du champ
+   */
+  static getUniqueIdentifier() {
+    return 'uuid';
+  }
+
+  /**
+   * Retourne la clé de traduction pour le titre de création
+   * @returns {string} La clé de traduction
+   */
+  static getCreateTitle() {
+    return 'objectCreationsAndUpdates.entityCreation';
+  }
+
+  /**
    * Récupère une entité par son UUID
    * @param {string} uuid - L'UUID de l'entité à récupérer
    * @returns {Promise<Entity>} Une promesse résolue avec l'instance de l'entité

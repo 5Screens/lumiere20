@@ -164,21 +164,14 @@ export default {
       }
     },
     handleItemClick(item) {
-      // Ouvrir un onglet via le store ou émettre un événement
-      if (this.store) {
-        this.store.openTab({
-          id: item.tabToOpen,
-          label: item.label,
-          type: item.tabToOpen,
-          icon: item.icon
-        })
-      } else {
-        this.$emit('open-tab', {
-          id: item.tabToOpen,
-          title: this.$t(item.label),
-          type: item.tabToOpen
-        })
-      }
+      // Émettre l'événement open-tab enrichi avec la classe du modèle
+      this.$emit('open-tab', {
+        id: item.tabToOpen,
+        title: this.$t(item.label),
+        type: item.tabToOpen,
+        icon: item.icon,
+        class: item.class
+      })
     },
     toggleSection(sectionId) {
       this.openSections[sectionId] = !this.openSections[sectionId]
