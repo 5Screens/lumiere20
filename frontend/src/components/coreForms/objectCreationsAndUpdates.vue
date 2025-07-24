@@ -223,7 +223,7 @@ const { t } = useI18n();
 // Initialisation du store des onglets
 const tabsStore = useTabsStore();
 
-// Props
+// Props du composant
 const props = defineProps({
   mode: {
     type: String,
@@ -242,7 +242,16 @@ const props = defineProps({
     type: String,
     required: true
   }
-});
+})
+
+// Debug des props reçues
+console.log('[ObjectCreationsAndUpdates] Props reçues:');
+console.log('  - mode:', props.mode);
+console.log('  - objectClass:', props.objectClass);
+console.log('  - objectClass type:', typeof props.objectClass);
+console.log('  - objectClass name:', props.objectClass?.name);
+console.log('  - objectId:', props.objectId);
+console.log('  - tabId:', props.tabId);
 
 // Emits
 const emit = defineEmits(['saved', 'error', 'close-tab']);
@@ -502,38 +511,35 @@ const handleSave = async () => {
     
     // Obtenir l'endpoint à partir de la méthode statique getApiEndpoint du modèle
     let endpoint;
+    const ModelClass = props.objectClass;
+    console.log(`[handleSave] DEBUG - props.objectClass:`, ModelClass);
+    console.log(`[handleSave] DEBUG - ModelClass type:`, typeof ModelClass);
+    console.log(`[handleSave] DEBUG - ModelClass.name:`, ModelClass?.name);
+    console.log(`[handleSave] DEBUG - ModelClass.getApiEndpoint:`, typeof ModelClass?.getApiEndpoint);
+    
+    const objectTypeName = getObjectTypeFromClass(ModelClass);
+    console.log(`[handleSave] DEBUG - objectTypeName dérivé:`, objectTypeName);
+    
     if (props.mode === 'creation') {
-      // Récupérer la classe du modèle à partir du type d'objet
-      const modelMap = {
-        'entity': Entity,
-        'symptom': Symptom,
-        'task': Task,
-        //'tasks': Task,
-        'incident': Incident,
-        'problem': Problem,
-        'change': Change,
-        'knowledge': Knowledge_article,
-        'project': Project,
-        'sprint': Sprint,
-        'epic': Epic,
-        'story': Story,
-        'defect': Defect
-      };
-      
-      const ModelClass = modelMap[props.objectType];
-      
+      // Utiliser directement la classe du modèle passée en prop
       if (ModelClass && typeof ModelClass.getApiEndpoint === 'function') {
         endpoint = ModelClass.getApiEndpoint();
-        console.log(`[handleSave] Endpoint obtenu via getApiEndpoint: ${endpoint}`);
+        console.log(`[handleSave] Endpoint obtenu via getApiEndpoint pour ${objectTypeName}: ${endpoint}`);
       } else {
         // Fallback au cas où la méthode getApiEndpoint n'existe pas
-        endpoint = `${props.objectType}s`;
-        console.log(`[handleSave] Méthode getApiEndpoint non disponible, utilisation du fallback: ${endpoint}`);
+        endpoint = `${objectTypeName}s`;
+        console.log(`[handleSave] Méthode getApiEndpoint non disponible pour ${objectTypeName}, utilisation du fallback: ${endpoint}`);
       }
     } else {
       // Pour les mises à jour, on ajoute l'ID à l'endpoint
-      endpoint = `${props.objectType}s/${props.objectId}`;
-      console.log(`[handleSave] Mode mise à jour, endpoint: ${endpoint}`);
+      if (ModelClass && typeof ModelClass.getApiEndpoint === 'function') {
+        const baseEndpoint = ModelClass.getApiEndpoint();
+        endpoint = `${baseEndpoint}/${props.objectId}`;
+        console.log(`[handleSave] Mode mise à jour pour ${objectTypeName}, endpoint: ${endpoint}`);
+      } else {
+        endpoint = `${objectTypeName}s/${props.objectId}`;
+        console.log(`[handleSave] Mode mise à jour fallback pour ${objectTypeName}, endpoint: ${endpoint}`);
+      }
     }
     
     // Vérifier s'il y a des pièces jointes à uploader dans formData
