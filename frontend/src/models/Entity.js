@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import apiService from '@/services/apiService'
 
 export class Entity {
   constructor(data = {}) {
@@ -71,6 +72,27 @@ export class Entity {
       default:
         console.error('[Entity.getApiEndpoint] Unsupported method:', method);
         return 'entities';
+    }
+  }
+
+  /**
+   * Récupère une entité par son UUID
+   * @param {string} uuid - L'UUID de l'entité à récupérer
+   * @returns {Promise<Entity>} Une promesse résolue avec l'instance de l'entité
+   */
+  static async getById(uuid) {
+    try {
+      const userProfileStore = useUserProfileStore();
+      const response = await apiService.get(`entities/${uuid}?lang=${userProfileStore.language}`);
+      
+      if (response) {
+        return new Entity(response);
+      }
+      
+      throw new Error('Entity not found');
+    } catch (error) {
+      console.error('Error fetching entity:', error);
+      throw error;
     }
   }
 
