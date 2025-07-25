@@ -189,12 +189,11 @@ export const useTabsStore = defineStore('tabs', {
       }
       
       // Vérifier si un onglet avec le même objectId est déjà ouvert
-      if (tab.data && tab.data.objectId) {
+      if (tab.objectId) {
         // Rechercher parmi les onglets enfants si tab.parentId est défini
         const existingTabs = this.tabs.filter(t => 
-          t.data && 
-          t.data.objectId === tab.data.objectId && 
-          t.data.objectType === tab.data.objectType && 
+          t.objectId === tab.objectId && 
+          t.objectClass === tab.objectClass && 
           t.parentId === tab.parentId
         )
         
@@ -229,7 +228,7 @@ export const useTabsStore = defineStore('tabs', {
       const newTab = {
         ...tab,
         id_tab: uuidv4(),
-        timestamp: new Date().toISOString(),
+        //timestamp: new Date().toISOString(),
         loaded: false, // Nouveau champ pour indiquer si l'onglet est chargé
         isActive: false // Indique si l'onglet est actif
       }
