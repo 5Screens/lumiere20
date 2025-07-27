@@ -1,16 +1,4 @@
 import { defineStore } from 'pinia'
-import { Entity } from '@/models/Entity'
-import { Symptom } from '@/models/Symptom'
-import { Task } from '@/models/Task'
-import { Incident } from '@/models/Incident'
-import { Problem } from '@/models/Problem'
-import { Change } from '@/models/Change'
-import { Knowledge_article } from '@/models/Knowledge_article'
-import { Project } from '@/models/Project'
-import { Sprint } from '@/models/Sprint'
-import { Epic } from '@/models/Epic'
-import { Story } from '@/models/Story'
-import { Defect } from '@/models/Defect'
 
 export const usePaneStore = defineStore('pane', {
   state: () => ({
@@ -21,11 +9,11 @@ export const usePaneStore = defineStore('pane', {
         type: 'serviceHub',
         hasSections: false,
         items: [
-          { tabToOpen: 'incidents', icon: 'fas fa-exclamation-circle', label: 'serviceHub.incidents', class: Incident },
-          { tabToOpen: 'problems', icon: 'fas fa-search-minus', label: 'serviceHub.problems', class: Problem },
-          { tabToOpen: 'tasks', icon: 'fas fa-ticket-alt', label: 'serviceHub.tasks', class: Task },
-          { tabToOpen: 'changes', icon: 'fas fa-exchange-alt', label: 'serviceHub.changes', class: Change },
-          { tabToOpen: 'knowledge', icon: 'fas fa-book', label: 'serviceHub.knowledge', class: Knowledge_article }
+          { tabToOpen: 'incidents', icon: 'fas fa-exclamation-circle', label: 'serviceHub.incidents', className: 'Incident' },
+          { tabToOpen: 'problems', icon: 'fas fa-search-minus', label: 'serviceHub.problems', className: 'Problem' },
+          { tabToOpen: 'tasks', icon: 'fas fa-ticket-alt', label: 'serviceHub.tasks', className: 'Task' },
+          { tabToOpen: 'changes', icon: 'fas fa-exchange-alt', label: 'serviceHub.changes', className: 'Change' },
+          { tabToOpen: 'knowledge', icon: 'fas fa-book', label: 'serviceHub.knowledge', className: 'Knowledge_article' }
         ],
         sections: []
       },
@@ -33,12 +21,12 @@ export const usePaneStore = defineStore('pane', {
         type: 'sprintCenter',
         hasSections: false,
         items: [
-          { tabToOpen: 'tasks', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tasks', class: Task },
-          { tabToOpen: 'stories', icon: 'fas fa-book', label: 'sprintCenter.userStories', class: Story },
-          { tabToOpen: 'projects', icon: 'fas fa-project-diagram', label: 'sprintCenter.projects', class: Project },
-          { tabToOpen: 'sprints', icon: 'fas fa-running', label: 'sprintCenter.sprints', class: Sprint },
-          { tabToOpen: 'epics', icon: 'fas fa-bookmark', label: 'sprintCenter.epics', class: Epic },
-          { tabToOpen: 'defects', icon: 'fas fa-bug', label: 'sprintCenter.bugs', class: Defect }
+          { tabToOpen: 'tasks', icon: 'fas fa-ticket-alt', label: 'sprintCenter.tasks', className: 'Task' },
+          { tabToOpen: 'stories', icon: 'fas fa-book', label: 'sprintCenter.userStories', className: 'Story' },
+          { tabToOpen: 'projects', icon: 'fas fa-project-diagram', label: 'sprintCenter.projects', className: 'Project' },
+          { tabToOpen: 'sprints', icon: 'fas fa-running', label: 'sprintCenter.sprints', className: 'Sprint' },
+          { tabToOpen: 'epics', icon: 'fas fa-bookmark', label: 'sprintCenter.epics', className: 'Epic' },
+          { tabToOpen: 'defects', icon: 'fas fa-bug', label: 'sprintCenter.bugs', className: 'Defect' }
         ],
         sections: []
       },
@@ -46,18 +34,18 @@ export const usePaneStore = defineStore('pane', {
         type: 'admin',
         hasSections: false,
         items: [
-          { tabToOpen: 'mail-servers', icon: 'fas fa-mail-bulk', label: 'admin.mailServers', class: null },
-          { tabToOpen: 'email-notifications', icon: 'fas fa-envelope', label: 'admin.emailNotifications', class: null },
-          { tabToOpen: 'sms-notifications', icon: 'fas fa-sms', label: 'admin.smsNotifications', class: null },
-          { tabToOpen: 'authentication', icon: 'fas fa-shield-alt', label: 'admin.authentication', class: null },
-          { tabToOpen: 'ssl-certificates', icon: 'fas fa-certificate', label: 'admin.sslCertificates', class: null },
-          { tabToOpen: 'mfa', icon: 'fas fa-key', label: 'admin.mfa', class: null },
-          { tabToOpen: 'ip-restrictions', icon: 'fas fa-network-wired', label: 'admin.ipRestrictions', class: null },
-          { tabToOpen: 'audit-logs', icon: 'fas fa-history', label: 'admin.auditLogs', class: null },
-          { tabToOpen: 'api-tokens', icon: 'fas fa-key', label: 'admin.apiTokens', class: null },
-          { tabToOpen: 'connectors', icon: 'fas fa-plug', label: 'admin.connectors', class: null },
-          { tabToOpen: 'performance', icon: 'fas fa-tachometer-alt', label: 'admin.performance', class: null },
-          { tabToOpen: 'backup', icon: 'fas fa-database', label: 'admin.backup', class: null }
+          { tabToOpen: 'mail-servers', icon: 'fas fa-mail-bulk', label: 'admin.mailServers', className: null },
+          { tabToOpen: 'email-notifications', icon: 'fas fa-envelope', label: 'admin.emailNotifications', className: null },
+          { tabToOpen: 'sms-notifications', icon: 'fas fa-sms', label: 'admin.smsNotifications', className: null },
+          { tabToOpen: 'authentication', icon: 'fas fa-shield-alt', label: 'admin.authentication', className: null },
+          { tabToOpen: 'ssl-certificates', icon: 'fas fa-certificate', label: 'admin.sslCertificates', className: null },
+          { tabToOpen: 'mfa', icon: 'fas fa-key', label: 'admin.mfa', className: null },
+          { tabToOpen: 'ip-restrictions', icon: 'fas fa-network-wired', label: 'admin.ipRestrictions', className: null },
+          { tabToOpen: 'audit-logs', icon: 'fas fa-history', label: 'admin.auditLogs', className: null },
+          { tabToOpen: 'api-tokens', icon: 'fas fa-key', label: 'admin.apiTokens', className: null },
+          { tabToOpen: 'connectors', icon: 'fas fa-plug', label: 'admin.connectors', className: null },
+          { tabToOpen: 'performance', icon: 'fas fa-tachometer-alt', label: 'admin.performance', className: null },
+          { tabToOpen: 'backup', icon: 'fas fa-database', label: 'admin.backup', className: null }
         ],
         sections: []
       },
@@ -65,8 +53,8 @@ export const usePaneStore = defineStore('pane', {
         type: 'configuration',
         hasSections: false,
         items: [
-          { tabToOpen: 'entities', icon: 'fas fa-cube', label: 'configuration.entities', class: Entity },
-          { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms', class: Symptom }
+          { tabToOpen: 'entities', icon: 'fas fa-cube', label: 'configuration.entities', className: 'Entity' },
+          { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms', className: 'Symptom' }
           /*{ tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
           { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },
           { tabToOpen: 'sites', icon: 'fas fa-sitemap', label: 'configuration.sites' },
@@ -89,42 +77,42 @@ export const usePaneStore = defineStore('pane', {
             id: 'applications',
             label: 'dataPane.applications.title',
             items: [
-              { tabToOpen: 'deployed-applications', icon: 'fas fa-rocket', label: 'dataPane.applications.deployed', class: null },
-              { tabToOpen: 'applications', icon: 'fas fa-cube', label: 'dataPane.applications.application', class: null },
-              { tabToOpen: 'virtual-client', icon: 'fas fa-desktop', label: 'dataPane.applications.virtualClient', class: null }
+              { tabToOpen: 'deployed-applications', icon: 'fas fa-rocket', label: 'dataPane.applications.deployed', className: null },
+              { tabToOpen: 'applications', icon: 'fas fa-cube', label: 'dataPane.applications.application', className: null },
+              { tabToOpen: 'virtual-client', icon: 'fas fa-desktop', label: 'dataPane.applications.virtualClient', className: null }
             ]
           },
           {
             id: 'hardware',
             label: 'dataPane.hardware.title',
             items: [
-              { tabToOpen: 'hardware', icon: 'fas fa-microchip', label: 'dataPane.hardware.hardware', class: null },
-              { tabToOpen: 'deployed-hardware', icon: 'fas fa-server', label: 'dataPane.hardware.deployedHardware', class: null },
-              { tabToOpen: 'workstation', icon: 'fas fa-desktop', label: 'dataPane.hardware.workstation', class: null },
-              { tabToOpen: 'server', icon: 'fas fa-server', label: 'dataPane.hardware.server', class: null },
-              { tabToOpen: 'storage', icon: 'fas fa-hdd', label: 'dataPane.hardware.storage', class: null },
-              { tabToOpen: 'rack', icon: 'fas fa-layer-group', label: 'dataPane.hardware.rack', class: null },
-              { tabToOpen: 'ups', icon: 'fas fa-plug', label: 'dataPane.hardware.ups', class: null }
+              { tabToOpen: 'hardware', icon: 'fas fa-microchip', label: 'dataPane.hardware.hardware', className: null },
+              { tabToOpen: 'deployed-hardware', icon: 'fas fa-server', label: 'dataPane.hardware.deployedHardware', className: null },
+              { tabToOpen: 'workstation', icon: 'fas fa-desktop', label: 'dataPane.hardware.workstation', className: null },
+              { tabToOpen: 'server', icon: 'fas fa-server', label: 'dataPane.hardware.server', className: null },
+              { tabToOpen: 'storage', icon: 'fas fa-hdd', label: 'dataPane.hardware.storage', className: null },
+              { tabToOpen: 'rack', icon: 'fas fa-layer-group', label: 'dataPane.hardware.rack', className: null },
+              { tabToOpen: 'ups', icon: 'fas fa-plug', label: 'dataPane.hardware.ups', className: null }
             ]
           },
           {
             id: 'network',
             label: 'dataPane.network.title',
             items: [
-              { tabToOpen: 'firewall', icon: 'fas fa-shield-alt', label: 'dataPane.network.firewall', class: null },
-              { tabToOpen: 'switch', icon: 'fas fa-network-wired', label: 'dataPane.network.switch', class: null },
-              { tabToOpen: 'router', icon: 'fas fa-wifi', label: 'dataPane.network.router', class: null },
-              { tabToOpen: 'routing-rule', icon: 'fas fa-route', label: 'dataPane.network.routingRule', class: null },
-              { tabToOpen: 'network-printer', icon: 'fas fa-print', label: 'dataPane.network.printer', class: null },
-              { tabToOpen: 'zone-cluster', icon: 'fas fa-project-diagram', label: 'dataPane.network.zoneCluster', class: null }
+              { tabToOpen: 'firewall', icon: 'fas fa-shield-alt', label: 'dataPane.network.firewall', className: null },
+              { tabToOpen: 'switch', icon: 'fas fa-network-wired', label: 'dataPane.network.switch', className: null },
+              { tabToOpen: 'router', icon: 'fas fa-wifi', label: 'dataPane.network.router', className: null },
+              { tabToOpen: 'routing-rule', icon: 'fas fa-route', label: 'dataPane.network.routingRule', className: null },
+              { tabToOpen: 'network-printer', icon: 'fas fa-print', label: 'dataPane.network.printer', className: null },
+              { tabToOpen: 'zone-cluster', icon: 'fas fa-project-diagram', label: 'dataPane.network.zoneCluster', className: null }
             ]
           },
           {
             id: 'virtualization',
             label: 'dataPane.virtualization.title',
             items: [
-              { tabToOpen: 'virtual-rack-billing', icon: 'fas fa-file-invoice-dollar', label: 'dataPane.virtualization.billing', class: null },
-              { tabToOpen: 'farm', icon: 'fas fa-server', label: 'dataPane.virtualization.farm', class: null }
+              { tabToOpen: 'virtual-rack-billing', icon: 'fas fa-file-invoice-dollar', label: 'dataPane.virtualization.billing', className: null },
+              { tabToOpen: 'farm', icon: 'fas fa-server', label: 'dataPane.virtualization.farm', className: null }
             ]
           },
           {

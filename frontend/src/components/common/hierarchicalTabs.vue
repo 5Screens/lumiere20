@@ -63,7 +63,7 @@
             v-if="tab.type === 'form'"
             :is="getComponentByType(tab.type)" 
             :mode="tab.mode"
-            :objectClass="tab.class"
+            :objectClass="getClassByName(tab.className)"
             :objectId="tab.objectId"
             :tabId="tab.id_tab"
           />
@@ -81,22 +81,11 @@
 
 <script>
 import { useTabsStore } from '@/stores/tabsStore'
+import { getClassByName } from '@/services/classMapping'
 import ObjectsTab from '@/components/objectsTab.vue'
 import SymptomsForm from '@/components/coreForms/symptomsForm.vue'
 import EntityForm from '@/components/coreForms/entityForm.vue'
 import ObjectCreationsAndUpdates from '@/components/coreForms/objectCreationsAndUpdates.vue'
-import { Entity } from '@/models/Entity'
-import { Symptom } from '@/models/Symptom'
-import { Task } from '@/models/Task'
-import { Incident } from '@/models/Incident'
-import { Problem } from '@/models/Problem'
-import { Change } from '@/models/Change'
-import { Knowledge_article } from '@/models/Knowledge_article'
-import { Project } from '@/models/Project'
-import { Sprint } from '@/models/Sprint'
-import { Epic } from '@/models/Epic'
-import { Story } from '@/models/Story'
-import { Defect } from '@/models/Defect'
 
 export default {
   name: 'HierarchicalTabs',

@@ -170,7 +170,7 @@ export default {
         title: this.$t(item.label),
         type: item.tabToOpen,
         icon: item.icon,
-        class: item.class
+        className: item.className
       })
     },
     toggleSection(sectionId) {

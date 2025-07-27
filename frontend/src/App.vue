@@ -226,7 +226,7 @@ export default {
     },
     handleOpenTab(tabData) {
       // Si la classe est null, afficher un message "En cours de construction"
-      if (tabData.class === null) {
+      if (tabData.className === null) {
         this.tabsStore.setMessage({
           type: 'info',
           message: this.$t('common.underConstruction')

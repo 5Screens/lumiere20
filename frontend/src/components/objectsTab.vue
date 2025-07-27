@@ -29,28 +29,20 @@
 </template>
 
 <script>
-import ReusableTableTab from './common/reusableTableTab.vue'
-import TabControlButtons from './common/tabControlButtons.vue'
 import { useTabsStore } from '@/stores/tabsStore'
-import { Entity } from '@/models/Entity'
-import { Symptom } from '@/models/Symptom'
-import { Task } from '@/models/Task'
-import { Incident } from '@/models/Incident'
-import { Problem } from '@/models/Problem'
-import { Change } from '@/models/Change'
-import { Knowledge_article } from '@/models/Knowledge_article'
-import { Project } from '@/models/Project'
-import { Sprint } from '@/models/Sprint'
-import { Epic } from '@/models/Epic'
-import { Story } from '@/models/Story'
-import { Defect } from '@/models/Defect'
+import { useI18n } from 'vue-i18n'
+import { useUserProfileStore } from '@/stores/userProfileStore'
+import { getClassByName } from '@/services/classMapping'
+import reusableTableTab from '@/components/common/reusableTableTab.vue'
+import tabControlButtons from '@/components/common/tabControlButtons.vue'
+import apiService from '@/services/apiService'
 import '../assets/styles/tab.css'
 
 export default {
   name: 'ObjectsTab',
   components: {
-    ReusableTableTab,
-    TabControlButtons
+    reusableTableTab,
+    tabControlButtons
   },
   props: {
     data: {
@@ -89,11 +81,21 @@ export default {
   // Le watcher a été supprimé car il causait une double initialisation
   computed: {
     columns() {
-      // Utiliser directement la classe du modèle depuis this.data.class
+      // Utiliser le service classMapping pour récupérer la classe depuis le nom
       console.log('[ObjectsTab] Calcul des colonnes - data:', this.data);
       console.log('[ObjectsTab] Calcul des colonnes - objectType:', this.objectType);
       
-      const modelClass = this.data.class;
+      // Récupérer la classe depuis le nom de classe ou depuis this.data.class (fallback)
+      let modelClass = this.data.class;
+      if (!modelClass && this.data.className) {
+        modelClass = getClassByName(this.data.className);
+        console.log('[ObjectsTab] Classe récupérée via classMapping:', modelClass);
+        // Mettre à jour l'onglet avec la classe reconstruite pour éviter de refaire le mapping
+        if (modelClass) {
+          this.data.class = modelClass;
+        }
+      }
+      
       console.log('[ObjectsTab] Classe du modèle:', modelClass);
       
       if (modelClass && typeof modelClass.getColumns === 'function') {
@@ -315,12 +317,25 @@ export default {
     
     // Utiliser les getters de class pour obtenir l'endpoint API
     getApiEndpoint() {
-      const modelClass = this.data.class;
+      // Récupérer la classe depuis le nom de classe ou depuis this.data.class (fallback)
+      let modelClass = this.data.class;
+      if (!modelClass && this.data.className) {
+        modelClass = getClassByName(this.data.className);
+        console.log('[ObjectsTab] Classe récupérée via classMapping pour endpoint:', modelClass);
+        // Mettre à jour l'onglet avec la classe reconstruite
+        if (modelClass) {
+          this.data.class = modelClass;
+        }
+      }
+      
       if (modelClass && typeof modelClass.getApiEndpoint === 'function') {
-        return modelClass.getApiEndpoint()
+        const endpoint = modelClass.getApiEndpoint();
+        console.log('[ObjectsTab] Endpoint API récupéré:', endpoint);
+        return endpoint;
       }
       
       // Endpoint par défaut si la classe n'existe pas
+      console.warn('[ObjectsTab] Aucune classe trouvée, utilisation de l\'endpoint par défaut');
       return this.data.apiEndpoint || this.objectType || ''
     }
   }
