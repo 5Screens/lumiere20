@@ -168,7 +168,6 @@ export default {
       this.$emit('open-tab', {
         id: item.tabToOpen,
         title: this.$t(item.label),
-        type: item.tabToOpen,
         icon: item.icon,
         className: item.className
       })

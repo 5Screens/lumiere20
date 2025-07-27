@@ -157,8 +157,7 @@ export const useTabsStore = defineStore('tabs', {
       // Vérifier si un onglet avec le même id est déjà ouvert (cas de DynamicPane.vue)
       if (tab.id) {
         const existingTabsById = this.tabs.filter(t => 
-          t.type === tab.type && 
-          (t.id === tab.id || t.type === tab.id)
+          t.id === tab.id
         )
         
         if (existingTabsById.length > 0) {

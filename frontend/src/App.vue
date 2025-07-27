@@ -237,15 +237,15 @@ export default {
       // Ouvrir l'onglet avec les données enrichies
       this.tabsStore.openTab({
         ...tabData,
-        label: this.$t(`tabs.${tabData.type}`),
-        translatedLabel: this.$t(`tabs.${tabData.type}`) // Texte déjà traduit pour éviter la double traduction
+        label: this.$t(`tabs.${tabData.id}`),
+        translatedLabel: this.$t(`tabs.${tabData.id}`) // Texte déjà traduit pour éviter la double traduction
       })
     },
     updateTabTitles() {
       // Mise à jour des titres des onglets en fonction de la langue
       this.tabsStore.tabs = this.tabsStore.tabs.map(tab => ({
         ...tab,
-        label: this.$t(`tabs.${tab.type}`)
+        label: this.$t(`tabs.${tab.id}`)
       }))
     },
     showCreateModal() {

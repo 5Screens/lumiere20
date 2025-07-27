@@ -43,8 +43,7 @@
           v-show="store.isParentTabActive(tab.id_tab)"
           class="tab-content-wrapper"
         >
-          <component 
-            :is="getComponentByType(tab.type)" 
+          <ObjectsTab 
             :data="tab"
             :tabId="tab.id_tab"
           />
@@ -59,18 +58,10 @@
           v-show="store.activeChildTabId === tab.id_tab"
           class="tab-content-wrapper"
         >
-          <component 
-            v-if="tab.type === 'form'"
-            :is="getComponentByType(tab.type)" 
+          <ObjectCreationsAndUpdates 
             :mode="tab.mode"
             :objectClass="getClassByName(tab.className)"
             :objectId="tab.objectId"
-            :tabId="tab.id_tab"
-          />
-          <component 
-            v-else
-            :is="getComponentByType(tab.type)" 
-            :data="tab"
             :tabId="tab.id_tab"
           />
         </div>
@@ -83,16 +74,12 @@
 import { useTabsStore } from '@/stores/tabsStore'
 import { getClassByName } from '@/services/classMapping'
 import ObjectsTab from '@/components/objectsTab.vue'
-import SymptomsForm from '@/components/coreForms/symptomsForm.vue'
-import EntityForm from '@/components/coreForms/entityForm.vue'
 import ObjectCreationsAndUpdates from '@/components/coreForms/objectCreationsAndUpdates.vue'
 
 export default {
   name: 'HierarchicalTabs',
   components: {
     ObjectsTab,
-    SymptomsForm,
-    EntityForm,
     ObjectCreationsAndUpdates
   },
   setup() {
@@ -150,29 +137,6 @@ export default {
       if (!wasActive) {
         console.info(`[HierarchicalTabs] Changement d'onglet enfant : ${tab.id_tab}`)
       }
-    },
-    
-    // Obtenir le nom du composant en fonction du type d'onglet
-    getComponentByType(type) {
-      console.log('[HierarchicalTabs] Exécution de getComponentByType()', type);
-      const componentMap = {
-        // Grilles - types génériques depuis DynamicPane
-        'symptoms': 'ObjectsTab',
-        'entities': 'ObjectsTab',
-        'tasks': 'ObjectsTab',
-        'incidents': 'ObjectsTab',
-        'problems': 'ObjectsTab',
-        'changes': 'ObjectsTab',
-        'knowledge': 'ObjectsTab',
-        'projects': 'ObjectsTab',
-        'sprints': 'ObjectsTab',
-        'epics': 'ObjectsTab',
-        'stories': 'ObjectsTab',
-        'defects': 'ObjectsTab',
-        // Formulaires - nouveau type unifié
-        'form': 'ObjectCreationsAndUpdates'
-      }
-      return componentMap[type] || null
     }
   }
 }
