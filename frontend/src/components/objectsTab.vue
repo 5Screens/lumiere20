@@ -172,6 +172,7 @@ export default {
               objectClass: this.objectType,
               objectId: symptomCode,
               class: modelClass,
+              className: modelClass ? modelClass.name : this.data.className, // Ajouter className pour la sérialisation
               parentId: this.store.activeTabId
             })
           })
@@ -187,6 +188,7 @@ export default {
               objectClass: this.objectType,
               objectId: row.uuid,
               class: modelClass,
+              className: modelClass ? modelClass.name : this.data.className, // Ajouter className pour la sérialisation
               parentId: this.store.activeTabId
             })
           })

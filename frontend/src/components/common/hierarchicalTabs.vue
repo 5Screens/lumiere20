@@ -98,7 +98,10 @@ export default {
   setup() {
     console.log('[HierarchicalTabs] Exécution de setup()')
     const store = useTabsStore()
-    return { store }
+    return { 
+      store,
+      getClassByName // Exposer la fonction au template
+    }
   },
   computed: {
   },
