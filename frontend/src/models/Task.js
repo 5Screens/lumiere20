@@ -128,7 +128,7 @@ export class Task {
     
     const fields = {
       uuid: {
-        label: t('common.uuid'),
+        label: 'common.uuid',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -136,9 +136,9 @@ export class Task {
         disabled: true
       },
       ticket_status_code: {
-        label: t('task.status'),
+        label: 'task.status',
         type: 'sSelectField',
-        placeholder: t('task.status_placeholder'),
+        placeholder: 'task.status_placeholder',
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=TASK`,
         patchEndpoint: 'tickets',
@@ -153,13 +153,13 @@ export class Task {
         required: isRequired('title')
       },
       description: {
-        label: t('task.description'),
+        label: 'task.description',
         type: 'sRichTextEditor',
-        placeholder: t('task.description_placeholder'),
+        placeholder: 'task.description_placeholder',
         required: isRequired('description')
       },
       created_at: {
-        label: t('common.creation_date'),
+        label: 'common.creation_date',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -167,7 +167,7 @@ export class Task {
         disabled: true
       },
       writer_name: {
-        label: t('common.writer_name'),
+        label: 'common.writer_name',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -175,43 +175,43 @@ export class Task {
         disabled: true
       },
       requested_by_uuid: {
-        label: t('task.requested_by'),
+        label: 'task.requested_by',
         type: 'sFilteredSearchField',
-        placeholder: t('task.requested_by_placeholder'),
+        placeholder: 'task.requested_by_placeholder',
         endpoint: 'persons',
         displayField: 'person_name',
         displayFieldAtInitInEditMode: 'requested_by_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true },
-          { key: 'job_role', label: t('person.job_role'), visible: true },
-          { key: 'email', label: t('person.email'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'email', label: 'person.email', visible: true }
         ],
         required: isRequired('requested_by_uuid')
       },
       requested_for_uuid: {
-        label: t('task.requested_for'),
+        label: 'task.requested_for',
         type: 'sFilteredSearchField',
-        placeholder: t('task.requested_for_placeholder'),
+        placeholder: 'task.requested_for_placeholder',
         endpoint: 'persons',
         displayField: 'person_name',
         displayFieldAtInitInEditMode: 'requested_for_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true },
-          { key: 'job_role', label: t('person.job_role'), visible: true },
-          { key: 'email', label: t('person.email'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'email', label: 'person.email', visible: true }
         ],
         required: isRequired('requested_for_uuid')
       },
       assigned_to_group: {
-        label: t('task.assigned_team_label'),
+        label: 'task.assigned_team_label',
         type: 'sFilteredSearchField',
-        placeholder: t('task.assigned_team_placeholder'),
+        placeholder: 'task.assigned_team_placeholder',
         endpoint: ({ assigned_to_person }) => {
           return assigned_to_person 
             ? `persons/${assigned_to_person}/groups` 
@@ -222,16 +222,16 @@ export class Task {
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'group_name', label: t('group.name'), visible: true },
-          { key: 'phone', label: t('group.phone'), visible: true }
+          { key: 'group_name', label: 'group.name', visible: true },
+          { key: 'phone', label: 'group.phone', visible: true }
         ],
         required: isRequired('assigned_to_group'),
         resetable: true
       },
       assigned_to_person: {
-        label: t('task.assigned_to_label'),
+        label: 'task.assigned_to_label',
         type: 'sFilteredSearchField',
-        placeholder: t('task.assigned_to_placeholder'),
+        placeholder: 'task.assigned_to_placeholder',
         endpoint: ({ assigned_to_group }) => {
           return assigned_to_group 
             ? `groups/${assigned_to_group}/members` 
@@ -242,17 +242,17 @@ export class Task {
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true }
         ],
         required: isRequired('assigned_to_person'),
         resetable: true
       },
       watch_list: {
-        label: t('task.watcher'),
+        label: 'task.watcher',
         type: "sPickList",
-        helperText: t('task.watcher_helper_text'),
-        placeholder: t('task.watcher_placeholder'),
+        helperText: 'task.watcher_helper_text',
+        placeholder: 'task.watcher_placeholder',
         required: isRequired('watch_list'),
         edition: false,
         sourceEndPoint: "persons",
@@ -263,7 +263,7 @@ export class Task {
         pickedItems: null
       },
       updated_at: {
-        label: t('common.modification_date'),
+        label: 'common.modification_date',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -271,7 +271,7 @@ export class Task {
         disabled: true
       },
       closed_at: {
-        label: t('common.closure_date'),
+        label: 'common.closure_date',
         type: 'sTextField',
         placeholder: null,
         required: false,

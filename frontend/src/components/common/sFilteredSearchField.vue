@@ -81,7 +81,7 @@
             <table class="s-filtered-search-field__table">
               <thead>
                 <tr>
-                  <th v-for="column in visibleColumns" :key="column.field">{{ column.label }}</th>
+                  <th v-for="column in visibleColumns" :key="column.field">{{ $t(column.label) }}</th>
                 </tr>
               </thead>
               <tbody>
