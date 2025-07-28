@@ -126,8 +126,9 @@ export default {
         type: 'form',
         icon: 'fas fa-plus',
         mode: 'creation',
-        objectClass: this.objectType,
+        objectClass: modelClass,
         class: modelClass,
+        className: modelClass ? modelClass.name : this.data.className,
         parentId: this.store.activeTabId
       })
     },
