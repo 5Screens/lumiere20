@@ -117,7 +117,6 @@ export class Project {
   }
 
   static getRenderableFields(mode = 'for_creation') {
-    const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
@@ -128,47 +127,47 @@ export class Project {
     const fields = {
       // Informations générales
       uuid: {
-        label: t('common.id'),
+        label: 'common.id',
         type: 'sTextField',
-        placeholder: t('common.id'),
+        placeholder: 'common.id',
         disabled: true
       },
       created_at: {
-        label: t('common.created_at'),
+        label: 'common.created_at',
         type: 'sTextField',
         disabled: true
       },
       writer_name: {
-        label: t('common.writer'),
+        label: 'common.writer',
         type: 'sTextField',
         disabled: true
       },
       updated_at: {
-        label: t('common.updated_at'),
+        label: 'common.updated_at',
         type: 'sTextField',
         disabled: true
       },
       closed_at: {
-        label: t('common.closed_at'),
+        label: 'common.closed_at',
         type: 'sTextField',
         disabled: true
       },
       title: {
-        label: t('project.name'),
+        label: 'project.name',
         type: 'sTextField',
-        placeholder: t('project.name_placeholder'),
+        placeholder: 'project.name_placeholder',
         required: isRequired('title')
       },
       description: {
-        label: t('project.description'),
+        label: 'project.description',
         type: 'sRichTextEditor',
-        placeholder: t('project.description_placeholder'),
+        placeholder: 'project.description_placeholder',
         required: isRequired('description')
       },
       ticket_status_code: {
-        label: t('project.status'),
+        label: 'project.status',
         type: 'sSelectField',
-        placeholder: t('project.status_placeholder'),
+        placeholder: 'project.status_placeholder',
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=PROJECT`,
         patchEndpoint: 'projects',
@@ -178,29 +177,29 @@ export class Project {
       
       // Attributs étendus
       key: {
-        label: t('project.key'),
+        label: 'project.key',
         type: 'sTextField',
-        placeholder: t('project.key_placeholder'),
+        placeholder: 'project.key_placeholder',
         required: isRequired('key')
       },
       start_date: {
-        label: t('project.start_date'),
+        label: 'project.start_date',
         type: 'sDatePicker',
-        placeholder: t('project.start_date_placeholder'),
+        placeholder: 'project.start_date_placeholder',
         required: isRequired('start_date'),
         patchendpoint: 'tickets'
       },
       end_date: {
-        label: t('project.end_date'),
+        label: 'project.end_date',
         type: 'sDatePicker',
-        placeholder: t('project.end_date_placeholder'),
+        placeholder: 'project.end_date_placeholder',
         required: isRequired('end_date'),
         patchendpoint: 'tickets'
       },
       issue_type_scheme_id: {
-        label: t('project.issue_type_scheme_id'),
+        label: 'project.issue_type_scheme_id',
         type: 'sPickList',
-        placeholder: t('project.issue_type_scheme_id_placeholder'),
+        placeholder: 'project.issue_type_scheme_id_placeholder',
         sourceEndPoint: `symptoms?lang=${userProfileStore.language}`,
         displayedLabel: 'libelle',
         targetEndPoint: 'tickets',
@@ -212,9 +211,9 @@ export class Project {
         visible: true,
       },
       visibility: {
-        label: t('project.visibility'),
+        label: 'project.visibility',
         type: 'sSelectField',
-        placeholder: t('project.visibility_placeholder'),
+        placeholder: 'project.visibility_placeholder',
         required: isRequired('visibility'),
         endpoint: `project_setup?lang=${userProfileStore.language}&metadata=visibility`,
         fieldName: 'visibility',
@@ -223,9 +222,9 @@ export class Project {
         mode: 'creation'
       },
       access_to_groups: {
-        label: t('project.access_to_groups'),
+        label: 'project.access_to_groups',
         type: 'sPickList',
-        placeholder: t('project.access_to_groups_placeholder'),
+        placeholder: 'project.access_to_groups_placeholder',
         sourceEndPoint: 'groups',
         displayedLabel: 'group_name',
         targetEndPoint: 'tickets',
@@ -239,9 +238,9 @@ export class Project {
         }
       },
       access_to_users: {
-        label: t('project.access_to_users'),
+        label: 'project.access_to_users',
         type: 'sPickList',
-        placeholder: t('project.access_to_users_placeholder'),
+        placeholder: 'project.access_to_users_placeholder',
         sourceEndPoint: 'persons',
         displayedLabel: 'person_name',
         targetEndPoint: 'tickets',
@@ -255,9 +254,9 @@ export class Project {
         }
       },
       project_type: {
-        label: t('project.project_type'),
+        label: 'project.project_type',
         type: 'sSelectField',
-        placeholder: t('project.project_type_placeholder'),
+        placeholder: 'project.project_type_placeholder',
         required: isRequired('project_type'),
         endpoint: `project_setup?lang=${userProfileStore.language}&metadata=category`,
         fieldName: 'project_type',
@@ -267,9 +266,9 @@ export class Project {
       
       // Assignation
       assigned_to_group: {
-        label: t('project.team_id'),
+        label: 'project.team_id',
         type: 'sFilteredSearchField',
-        placeholder: t('project.team_id_placeholder'),
+        placeholder: 'project.team_id_placeholder',
         endpoint: ({ assigned_to_person }) => 
           assigned_to_person 
             ? `persons/${assigned_to_person}/groups` 
@@ -278,15 +277,15 @@ export class Project {
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'assigned_group_name',
         columnsConfig: [
-          { key: 'group_name', label: t('group.name'), visible: true }
+          { key: 'group_name', label: 'group.name', visible: true }
         ],
         required: isRequired('assigned_to_group'),
         resetable: true
       },
       assigned_to_person: {
-        label: t('project.lead_user_id'),
+        label: 'project.lead_user_id',
         type: 'sFilteredSearchField',
-        placeholder: t('project.lead_user_id_placeholder'),
+        placeholder: 'project.lead_user_id_placeholder',
         endpoint: ({ assigned_to_group }) => 
           assigned_to_group 
             ? `groups/${assigned_to_group}/members` 
@@ -295,8 +294,8 @@ export class Project {
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'assigned_person_name',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true }
         ],
         required: isRequired('assigned_to_person'),
         resetable: true
@@ -304,44 +303,44 @@ export class Project {
       
       // Informations sur l'auteur et les dates
       writer_name: {
-        label: t('common.writer_name'),
+        label: 'common.writer_name',
         type: 'sTextField',
         disabled: true
       },
       closed_at: {
-        label: t('common.closure_date'),
+        label: 'common.closure_date',
         type: 'sTextField',
         disabled: true
       },
       created_at: {
-        label: t('common.creation_date'),
+        label: 'common.creation_date',
         type: 'sTextField',
         disabled: true,
       },
       updated_at: {
-        label: t('common.modification_date'),
+        label: 'common.modification_date',
         type: 'sTextField',
         disabled: true,
       },
       
       // Compteurs de tickets associés
       defect_count: {
-        label: t('project.defect_count'),
+        label: 'project.defect_count',
         type: 'sTextField',
         disabled: true
       },
       us_count: {
-        label: t('project.us_count'),
+        label: 'project.us_count',
         type: 'sTextField',
         disabled: true,
       },
       epic_count: {
-        label: t('project.epic_count'),
+        label: 'project.epic_count',
         type: 'sTextField',
         disabled: true,
       },
       sprint_count: {
-        label: t('project.sprint_count'),
+        label: 'project.sprint_count',
         type: 'sTextField',
         disabled: true,
       }
