@@ -118,6 +118,7 @@ class SymptomsService {
                     SELECT 
                         s.uuid,
                         s.code as symptom_code,
+                        st.uuid as translation_uuid,
                         st.libelle,
                         st.langue,
                         st.created_at,
