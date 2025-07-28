@@ -41,7 +41,6 @@ export class Epic {
   }
 
   static getRenderableFields(mode = 'for_creation') {
-    const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
@@ -51,26 +50,26 @@ export class Epic {
     const fields = {
       // Informations générales
       uuid: {
-        label: t('common.id'),
+        label: 'common.id',
         type: 'sTextField',
         disabled: true
       },
       title: {
-        label: t('epic.name'),
+        label: 'epic.name',
         type: 'sTextField',
-        placeholder: t('epic.name_placeholder'),
+        placeholder: 'epic.name_placeholder',
         required: isRequired('title')
       },
       description: {
-        label: t('epic.description'),
+        label: 'epic.description',
         type: 'sRichTextEditor',
-        placeholder: t('epic.description_placeholder'),
+        placeholder: 'epic.description_placeholder',
         required: isRequired('description')
       },
       ticket_status_code: {
-        label: t('epic.status'),
+        label: 'epic.status',
         type: 'sSelectField',
-        placeholder: t('epic.status_placeholder'),
+        placeholder: 'epic.status_placeholder',
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=EPIC`,
         patchEndpoint: 'tickets',
@@ -80,88 +79,88 @@ export class Epic {
       
       // Attributs étendus
       project_id: {
-        label: t('epic.project_id'),
+        label: 'epic.project_id',
         type: 'sFilteredSearchField',
-        placeholder: t('epic.project_id_placeholder'),
+        placeholder: 'epic.project_id_placeholder',
         endpoint: 'tickets?ticket_type=PROJECT',
         displayField: 'title',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'title', label: t('project.name'), visible: true },
-          { key: 'key', label: t('project.key'), visible: true }
+          { key: 'title', label: 'project.name', visible: true },
+          { key: 'key', label: 'project.key', visible: true }
         ],
         required: isRequired('project_id'),
         displayFieldAtInitInEditMode: 'project_name'
       },
       start_date: {
-        label: t('epic.start_date'),
+        label: 'epic.start_date',
         type: 'sDatePicker',
-        placeholder: t('epic.start_date_placeholder'),
+        placeholder: 'epic.start_date_placeholder',
         required: isRequired('start_date'),
         patchendpoint: 'tickets',
         
       },
       end_date: {
-        label: t('epic.end_date'),
+        label: 'epic.end_date',
         type: 'sDatePicker',
-        placeholder: t('epic.end_date_placeholder'),
+        placeholder: 'epic.end_date_placeholder',
         required: isRequired('end_date'),
         patchendpoint: 'tickets'        
       },
       progress_percent: {
-        label: t('epic.progress_percent'),
+        label: 'epic.progress_percent',
         type: 'sTextField',
-        placeholder: t('epic.progress_percent_placeholder'),
+        placeholder: 'epic.progress_percent_placeholder',
         required: isRequired('progress_percent'),
         inputType: 'number'
       },
       color: {
-        label: t('epic.color'),
+        label: 'epic.color',
         type: 'sTextField',
-        placeholder: t('epic.color_placeholder'),
+        placeholder: 'epic.color_placeholder',
         required: isRequired('color')
       },
       tags: {
-        label: t('epic.tags'),
+        label: 'epic.tags',
         type: 'sTagsList',
-        placeholder: t('epic.tags_placeholder'),
+        placeholder: 'epic.tags_placeholder',
         required: isRequired('tags'),
         comboBox: false
       },
       
       // Informations sur le créateur et les dates
       writer_name: {
-        label: t('common.writer_name'),
+        label: 'common.writer_name',
         type: 'sTextField',
         disabled: true
       },
       created_at: {
-        label: t('common.creation_date'),
+        label: 'common.creation_date',
         type: 'sTextField',
         disabled: true
       },
       updated_at: {
-        label: t('common.modification_date'),
+        label: 'common.modification_date',
         type: 'sTextField',
         disabled: true
       },
       closed_at: {
-        label: t('common.closure_date'),
+        label: 'common.closure_date',
         type: 'sTextField',
         disabled: true
       },
       stories_count: {
-        label: t('epic.stories_count'),
+        label: 'epic.stories_count',
         type: 'sTextField',
         disabled: true
       },
       tasks_count: {
-        label: t('epic.tasks_count'),
+        label: 'epic.tasks_count',
         type: 'sTextField',
         disabled: true
       },
       attachments_count: {
-        label: t('epic.attachments_count'),
+        label: 'epic.attachments_count',
         type: 'sTextField',
         disabled: true
       }
