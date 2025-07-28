@@ -164,17 +164,25 @@ export default {
   entities: {
     name: 'Nome da entidade',
     entity_id: 'ID da Entidade',
+    name_placeholder: 'Nome da entidade',
+    entity_id_placeholder: 'ID da Entidade',
     external_id: 'ID Externo',
+    external_id_placeholder: 'ID Externo',
     entity_type: 'Tipo de Entidade',
+    entity_type_placeholder: 'Tipo de Entidade',
     is_active: 'Ativo',
     location: 'Localização da sede',
-    parent: 'Entidade pai',
+    parent: 'Entidade principal',
+    parent_placeholder: 'Entidade principal',
+    headquarters_location: 'Localização da sede',
+    headquarters_location_placeholder: 'Localização da sede',
     saveSuccess: 'Entidade salva com sucesso',
     saveError: 'Erro ao salvar a entidade',
     updateSuccess: 'Entidade atualizada com sucesso',
-    budget_approver_name: 'Aprovador do Orçamento',
+    budget_approver: 'Aprovador de orçamento',
+    budget_approver_placeholder: 'Selecione um aprovador de orçamento',
     createTitle: 'Nova entidade',
-    updateTitle: 'Editar entidade'
+    updateTitle: 'Editar a entidade'
   },
   errors: {
     identificationLabel: 'Erro',

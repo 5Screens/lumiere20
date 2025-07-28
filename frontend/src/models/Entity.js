@@ -121,7 +121,6 @@ export class Entity {
   }
 
   static getRenderableFields() {
-    const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
@@ -130,88 +129,88 @@ export class Entity {
     
     return {
       name: {
-        label: t('entity.name'),
+        label: 'entities.name',
         type: 'sTextField',
-        placeholder: t('entity.name_placeholder'),
+        placeholder: 'entities.name_placeholder',
         required: isRequired('name')
       },
       entity_id: {
-        label: t('entity.entity_id'),
+        label: 'entities.entity_id',
         type: 'sTextField',
-        placeholder: t('entity.entity_id_placeholder'),
+        placeholder: 'entities.entity_id_placeholder',
         required: isRequired('entity_id')
       },
       entity_type: {
-        label: t('entity.entity_type'),
+        label: 'entities.entity_type',
         type: 'sSelectField',
-        placeholder: t('entity.entity_type_placeholder'),
+        placeholder: 'entities.entity_type_placeholder',
         required: isRequired('entity_type'),
         endpoint: `entity_types?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'entity_type',
         mode: 'creation'
       },
       parent_entity_uuid: {
-        label: t('entity.parent_entity'),
+        label: 'entities.parent',
         type: 'sFilteredSearchField',
-        placeholder: t('entity.parent_entity_placeholder'),
+        placeholder: 'entities.parent_placeholder',
         endpoint: 'entities',
         displayField: 'name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'name', label: t('entity.name'), visible: true },
-          { key: 'entity_id', label: t('entity.entity_id'), visible: true },
-          { key: 'entity_type', label: t('entity.entity_type'), visible: true }
+          { key: 'name', label: 'entities.name', visible: true },
+          { key: 'entity_id', label: 'entities.entity_id', visible: true },
+          { key: 'entity_type', label: 'entities.entity_type', visible: true }
         ],
         required: isRequired('parent_entity_uuid')
       },
       external_id: {
-        label: t('entity.external_id'),
+        label: 'entities.external_id',
         type: 'sTextField',
-        placeholder: t('entity.external_id_placeholder'),
+        placeholder: 'entities.external_id_placeholder',
         required: isRequired('external_id')
       },
       headquarters_location_uuid: {
-        label: t('entity.headquarters_location'),
+        label: 'entities.headquarters_location',
         type: 'sFilteredSearchField',
-        placeholder: t('entity.headquarters_location_placeholder'),
+        placeholder: 'entities.headquarters_location_placeholder',
         endpoint: 'locations',
         displayField: 'name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'name', label: t('location.name'), visible: true },
-          { key: 'address', label: t('location.address'), visible: true },
-          { key: 'city', label: t('location.city'), visible: true },
-          { key: 'country', label: t('location.country'), visible: true }
+          { key: 'name', label: 'location.name', visible: true },
+          { key: 'address', label: 'location.address', visible: true },
+          { key: 'city', label: 'location.city', visible: true },
+          { key: 'country', label: 'location.country', visible: true }
         ],
         required: isRequired('headquarters_location_uuid')
       },
       is_active: {
-        label: t('entity.is_active'),
+        label: 'entities.is_active',
         type: 'sSelectField',
-        placeholder: t('entity.is_active_placeholder'),
+        placeholder: 'entities.is_active_placeholder',
         required: isRequired('is_active'),
         options: [
-          { value: 'Yes', label: t('common.yes') },
-          { value: 'No', label: t('common.no') }
+          { value: 'Yes', label: 'common.yes' },
+          { value: 'No', label: 'common.no' }
         ],
         fieldName: 'is_active',
         mode: 'creation'
       },
       budget_approver_uuid: {
-        label: t('entity.budget_approver'),
+        label: 'entities.budget_approver',
         type: 'sFilteredSearchField',
-        placeholder: t('entity.budget_approver_placeholder'),
+        placeholder: 'entities.budget_approver_placeholder',
         endpoint: 'persons',
         displayField: 'first_name',
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true },
-          { key: 'job_role', label: t('person.job_role'), visible: true },
-          { key: 'email', label: t('person.email'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'email', label: 'person.email', visible: true }
         ],
         required: isRequired('budget_approver_uuid')
       }

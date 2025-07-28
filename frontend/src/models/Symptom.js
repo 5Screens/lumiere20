@@ -74,7 +74,6 @@ export class Symptom {
   }
 
   static getRenderableFields() {
-    const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
@@ -83,25 +82,25 @@ export class Symptom {
     
     return {
       symptom_code: {
-        label: t('symptom.code'),
+        label: 'symptom.code',
         type: 'sTextField',
-        placeholder: t('symptom.code_placeholder'),
+        placeholder: 'symptom.code_placeholder',
         required: isRequired('symptom_code')
       },
       libelle: {
-        label: t('symptom.label'),
+        label: 'symptom.label',
         type: 'sTextField',
-        placeholder: t('symptom.label_placeholder'),
+        placeholder: 'symptom.label_placeholder',
         required: isRequired('libelle')
       },
       langue: {
-        label: t('symptom.language'),
+        label: 'symptom.language',
         type: 'sSelectField',
-        placeholder: t('symptom.language_placeholder'),
+        placeholder: 'symptom.language_placeholder',
         required: isRequired('langue'),
         options: [
-          { value: 'fr', label: t('common.french') },
-          { value: 'en', label: t('common.english') }
+          { value: 'fr', label: 'common.french' },
+          { value: 'en', label: 'common.english' }
         ],
         fieldName: 'langue',
         mode: 'creation'
