@@ -82,7 +82,7 @@ export class Task {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouvelle tâche';
+    return 'objectCreationsAndUpdates.taskCreation';
   }
   
   constructor(data = {}) {

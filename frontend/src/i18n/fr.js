@@ -80,7 +80,6 @@ export default {
     taskCreation: 'Créer une tâche',
     taskUpdate: 'Modifier la tâche',
 
-
     // Titres pour les incidents
     incidentCreation: 'Créer un incident',
     incidentUpdate: 'Modifier l\'incident',

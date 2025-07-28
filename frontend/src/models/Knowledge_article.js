@@ -100,7 +100,7 @@ export class Knowledge_article {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouvel article de connaissance';
+    return 'objectCreationsAndUpdates.knowledgeCreation';
   }
   constructor(data = {}) {
     // Métadonnées d'identification et de classification

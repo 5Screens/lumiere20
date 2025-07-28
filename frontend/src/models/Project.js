@@ -65,7 +65,7 @@ export class Project {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouveau projet';
+    return 'objectCreationsAndUpdates.projectCreation';
   }
 
   constructor(data = {}) {

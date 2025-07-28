@@ -321,6 +321,6 @@ export class Story {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouvelle user story';
+    return 'objectCreationsAndUpdates.storyCreation';
   }
 }

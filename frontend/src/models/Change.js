@@ -27,7 +27,7 @@ export class Change {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouveau changement';
+    return 'objectCreationsAndUpdates.changeCreation';
   }
 
   constructor(data = {}) {
@@ -131,45 +131,44 @@ export class Change {
   }
 
   static getColumns() {
-    const { t } = i18n.global;
     
     return [
-      { key: 'uuid', label: t('common.id'), visible: false },
-      { key: 'title', label: t('change.title'), visible: true },
-      { key: 'ticket_type_label', label: t('configuration.ticketTypes'), visible: true },
-      { key: 'change_type_label', label: t('change.type'), visible: true },
-      { key: 'ticket_status_label', label: t('change.status'), visible: true },
-      { key: 'rel_service_name', label: t('change.service'), visible: true },
-      { key: 'rel_service_offerings_name', label: t('change.service_offerings'), visible: true },
-      { key: 'description', label: t('change.description'), visible: true, type: 'text', format: 'html' },
-      { key: 'configuration_item_name', label: t('change.configuration_item'), visible: true },
-      { key: 'writer_name', label: t('change.writer'), visible: true },
-      { key: 'requested_for_name', label: t('change.requested_for'), visible: true },
-      { key: 'assigned_group_name', label: t('change.assigned_group'), visible: true },
-      { key: 'assigned_person_name', label: t('change.assigned_to_person'), visible: true },
-      { key: 'created_at', label: t('common.creation_date'), visible: true },
-      { key: 'updated_at', label: t('common.modification_date'), visible: true },
-      { key: 'requested_start_date_at', label: t('change.requested_start_date'), visible: true },
-      { key: 'planned_start_date_at', label: t('change.planned_start_date'), visible: true },
-      { key: 'requested_end_date_at', label: t('change.requested_end_date'), visible: true },
-      { key: 'planned_end_date_at', label: t('change.planned_end_date'), visible: true },
-      { key: 'validated_at', label: t('change.validated_at'), visible: true },
-      { key: 'actual_start_date_at', label: t('change.actual_start_date'), visible: true },
-      { key: 'actual_end_date_at', label: t('change.actual_end_date'), visible: true },
-      { key: 'closed_at', label: t('change.closed_at'), visible: true },
-      { key: 'change_justifications_label', label: t('change.justification'), visible: true },
-      { key: 'change_objective_label', label: t('change.objective'), visible: true },
-      { key: 'test_plan', label: t('change.test_plan'), visible: true, type: 'text', format: 'html' },
-      { key: 'implementation_plan', label: t('change.implementation_plan'), visible: true, type: 'text', format: 'html' },
-      { key: 'rollbcak_plan', label: t('change.rollback_plan'), visible: true, type: 'text', format: 'html' },
-      { key: 'post_implementation_plan', label: t('change.post_implementation_plan'), visible: true, type: 'text', format: 'html' },
-      { key: 'cab_comments', label: t('change.cab_comments'), visible: true, type: 'text', format: 'html' },
-      { key: 'cab_validation_status_label', label: t('change.cab_validation_status'), visible: true },
-      { key: 'required_validations_labels', label: t('change.required_validations'), visible: true, type: 'text', format: 'tags' },
-      { key: 'elapsed_time', label: t('change.elapsed_time'), visible: true },
-      { key: 'success_criteria', label: t('change.success_criteria'), visible: true, type: 'text', format: 'html' },
-      { key: 'post_change_evaluation_label', label: t('change.post_change_evaluation'), visible: true },
-      { key: 'post_change_comment', label: t('change.post_change_comment'), visible: true, type: 'text', format: 'html' }
+      { key: 'uuid', label: 'common.id', visible: false },
+      { key: 'title', label: 'change.title', visible: true },
+      { key: 'ticket_type_label', label: 'configuration.ticketTypes', visible: true },
+      { key: 'change_type_label', label: 'change.type', visible: true },
+      { key: 'ticket_status_label', label: 'change.status', visible: true },
+      { key: 'rel_service_name', label: 'change.service', visible: true },
+      { key: 'rel_service_offerings_name', label: 'change.service_offerings', visible: true },
+      { key: 'description', label: 'change.description', visible: true, type: 'text', format: 'html' },
+      { key: 'configuration_item_name', label: 'change.configuration_item', visible: true },
+      { key: 'writer_name', label: 'change.writer', visible: true },
+      { key: 'requested_for_name', label: 'change.requested_for', visible: true },
+      { key: 'assigned_group_name', label: 'change.assigned_group', visible: true },
+      { key: 'assigned_person_name', label: 'change.assigned_to_person', visible: true },
+      { key: 'created_at', label: 'common.creation_date', visible: true },
+      { key: 'updated_at', label: 'common.modification_date', visible: true },
+      { key: 'requested_start_date_at', label: 'change.requested_start_date', visible: true },
+      { key: 'planned_start_date_at', label: 'change.planned_start_date', visible: true },
+      { key: 'requested_end_date_at', label: 'change.requested_end_date', visible: true },
+      { key: 'planned_end_date_at', label: 'change.planned_end_date', visible: true },
+      { key: 'validated_at', label: 'change.validated_at', visible: true },
+      { key: 'actual_start_date_at', label: 'change.actual_start_date', visible: true },
+      { key: 'actual_end_date_at', label: 'change.actual_end_date', visible: true },
+      { key: 'closed_at', label: 'change.closed_at', visible: true },
+      { key: 'change_justifications_label', label: 'change.justification', visible: true },
+      { key: 'change_objective_label', label: 'change.objective', visible: true },
+      { key: 'test_plan', label: 'change.test_plan', visible: true, type: 'text', format: 'html' },
+      { key: 'implementation_plan', label: 'change.implementation_plan', visible: true, type: 'text', format: 'html' },
+      { key: 'rollbcak_plan', label: 'change.rollback_plan', visible: true, type: 'text', format: 'html' },
+      { key: 'post_implementation_plan', label: 'change.post_implementation_plan', visible: true, type: 'text', format: 'html' },
+      { key: 'cab_comments', label: 'change.cab_comments', visible: true, type: 'text', format: 'html' },
+      { key: 'cab_validation_status_label', label: 'change.cab_validation_status', visible: true },
+      { key: 'required_validations_labels', label: 'change.required_validations', visible: true, type: 'text', format: 'tags' },
+      { key: 'elapsed_time', label: 'change.elapsed_time', visible: true },
+      { key: 'success_criteria', label: 'change.success_criteria', visible: true, type: 'text', format: 'html' },
+      { key: 'post_change_evaluation_label', label: 'change.post_change_evaluation', visible: true },
+      { key: 'post_change_comment', label: 'change.post_change_comment', visible: true, type: 'text', format: 'html' }
     ];
   }
 
@@ -253,7 +252,7 @@ export class Change {
     const fields = {
       // Informations système
       uuid: {
-        label: t('common.uuid'),
+        label: 'common.uuid',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -261,7 +260,7 @@ export class Change {
         disabled: true
       },
       updated_at: {
-        label: t('common.modification_date'),
+        label: 'common.modification_date',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -269,7 +268,7 @@ export class Change {
         disabled: true
       },
       created_at: {
-        label: t('common.creation_date'),
+        label: 'common.creation_date',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -277,7 +276,7 @@ export class Change {
         disabled: true
       },
       writer_name: {
-        label: t('common.writer_name'),
+        label: 'common.writer_name',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -285,7 +284,7 @@ export class Change {
         disabled: true
       },
       closed_at: {
-        label: t('change.closed_at'),
+        label: 'change.closed_at',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -294,9 +293,9 @@ export class Change {
       },
       // Informations générales
       ticket_status_code: {
-        label: t('change.status'),
+        label: 'change.status',
         type: 'sSelectField',
-        placeholder: t('change.status_placeholder'),
+        placeholder: 'change.status_placeholder',
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=CHANGE`,
         patchEndpoint: 'changes',
@@ -304,86 +303,86 @@ export class Change {
         mode: 'creation'
       },
       requested_for_uuid: {
-        label: t('change.requested_for'),
+        label: 'change.requested_for',
         type: 'sFilteredSearchField',
-        placeholder: t('change.requested_for_placeholder'),
+        placeholder: 'change.requested_for_placeholder',
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'requested_for_name',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true }
         ],
         required: isRequired('requested_for_uuid')
       },
       title: {
-        label: t('change.title'),
+        label: 'change.title',
         type: 'sTextField',
-        placeholder: t('change.title_placeholder'),
+        placeholder: 'change.title_placeholder',
         required: isRequired('title')
       },
       description: {
-        label: t('change.description'),
+        label: 'change.description',
         type: 'sRichTextEditor',
-        placeholder: t('change.description_placeholder'),
+        placeholder: 'change.description_placeholder',
         required: isRequired('description')
       },
       configuration_item_uuid: {
-        label: t('change.configuration_item'),
+        label: 'change.configuration_item',
         type: 'sFilteredSearchField',
-        placeholder: t('change.configuration_item_placeholder'),
+        placeholder: 'change.configuration_item_placeholder',
         endpoint: 'configuration_items',
         displayField: 'name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'configuration_item_name',
         columnsConfig: [
-          { key: 'name', label: t('configuration_item.name'), visible: true },
-          { key: 'description', label: t('configuration_item.description'), visible: true }
+          { key: 'name', label: 'configuration_item.name', visible: true },
+          { key: 'description', label: 'configuration_item.description', visible: true }
         ],
         required: isRequired('configuration_item_uuid')
       },
       rel_services: {
-        label: t('change.service'),
+        label: 'change.service',
         type: 'sFilteredSearchField',
-        placeholder: t('change.service_placeholder'),
+        placeholder: 'change.service_placeholder',
         endpoint: 'services',
         displayField: 'name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'rel_service_name',
         columnsConfig: [
-          { key: 'name', label: t('service.name'), visible: true },
-          { key: 'owning_entity_name', label: t('service.owning_entity_name'), visible: true }
+          { key: 'name', label: 'service.name', visible: true },
+          { key: 'owning_entity_name', label: 'service.owning_entity_name', visible: true }
         ],
         required: isRequired('rel_services')
       },
       rel_service_offerings: {
-        label: t('change.service_offerings'),
+        label: 'change.service_offerings',
         type: 'sFilteredSearchField',
-        placeholder: t('change.service_offerings_placeholder'),
+        placeholder: 'change.service_offerings_placeholder',
         endpoint: 'service_offerings',
         displayField: 'name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'rel_service_offerings_name',
         columnsConfig: [
-          { key: 'name', label: t('service_offering.name'), visible: true },
-          { key: 'service_name', label: t('service_offering.service_name'), visible: true }
+          { key: 'name', label: 'service_offering.name', visible: true },
+          { key: 'service_name', label: 'service_offering.service_name', visible: true }
         ],
         required: isRequired('rel_service_offerings')
       },
       rel_change_type_code: {
-        label: t('change.type'),
+        label: 'change.type',
         type: 'sSelectField',
-        placeholder: t('change.type_placeholder'),
+        placeholder: 'change.type_placeholder',
         required: isRequired('rel_change_type_code'),
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=type`,
         fieldName: 'rel_change_type_code',
         mode: 'creation'
       },
       assigned_to_group: {
-        label: t('change.assigned_group'),
+        label: 'change.assigned_group',
         type: 'sFilteredSearchField',
-        placeholder: t('change.assigned_group_placeholder'),
+        placeholder: 'change.assigned_group_placeholder',
         endpoint: ({ assigned_to_person }) => 
           assigned_to_person 
             ? `persons/${assigned_to_person}/groups` 
@@ -392,15 +391,15 @@ export class Change {
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'assigned_group_name',
         columnsConfig: [
-          { key: 'group_name', label: t('group.name'), visible: true }
+          { key: 'group_name', label: 'group.name', visible: true }
         ],
         required: isRequired('assigned_to_group'),
         resetable: true
       },
       assigned_to_person: {
-        label: t('change.assigned_to_person'),
+        label: 'change.assigned_to_person',
         type: 'sFilteredSearchField',
-        placeholder: t('change.assigned_to_person_placeholder'),
+        placeholder: 'change.assigned_to_person_placeholder',
         endpoint: ({ assigned_to_group }) => 
           assigned_to_group 
           ? `groups/${assigned_to_group}/members` 
@@ -409,8 +408,8 @@ export class Change {
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'assigned_person_name',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true }
         ],
         required: isRequired('assigned_to_person'),
         resetable: true
@@ -418,45 +417,45 @@ export class Change {
       
       // Evaluation du Risque
       r_q1: {
-        label: dynamicLabels.r_q1_label || t('change.risk_q1'),
+        label: dynamicLabels.r_q1_label,
         type: 'sSelectField',
-        placeholder: t('change.risk_q1_placeholder'),
+        placeholder: 'change.risk_q1_placeholder',
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q1`,
         fieldName: 'r_q1',
         mode: 'creation',
         required: isRequired('r_q1')
       },
       r_q2: {
-        label: dynamicLabels.r_q2_label || t('change.risk_q2'),
+        label: dynamicLabels.r_q2_label,
         type: 'sSelectField',
-        placeholder: t('change.risk_q2_placeholder'),
+        placeholder: 'change.risk_q2_placeholder',
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q2`,
         fieldName: 'r_q2',
         mode: 'creation',
         required: isRequired('r_q2')
       },
       r_q3: {
-        label: dynamicLabels.r_q3_label || t('change.risk_q3'),
+        label: dynamicLabels.r_q3_label,
         type: 'sSelectField',
-        placeholder: t('change.risk_q3_placeholder'),
+        placeholder: 'change.risk_q3_placeholder',
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q3`,
         fieldName: 'r_q3',
         mode: 'creation',
         required: isRequired('r_q3') 
       },
       r_q4: {
-        label: dynamicLabels.r_q4_label || t('change.risk_q4'),
+        label: dynamicLabels.r_q4_label,
         type: 'sSelectField',
-        placeholder: t('change.risk_q4_placeholder'),
+        placeholder: 'change.risk_q4_placeholder',
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q4`,
         fieldName: 'r_q4',
         mode: 'creation',
         required: isRequired('r_q4')
       },
       r_q5: {
-        label: dynamicLabels.r_q5_label || t('change.risk_q5'),
+        label: dynamicLabels.r_q5_label,
         type: 'sSelectField',
-        placeholder: t('change.risk_q5_placeholder'),
+        placeholder: 'change.risk_q5_placeholder',
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=r_q5`,
         fieldName: 'r_q5',
         mode: 'creation',
@@ -465,36 +464,36 @@ export class Change {
       
       // Evaluation de l'impact
       i_q1: {
-        label: dynamicLabels.i_q1_label || t('change.impact_q1'),
+        label: dynamicLabels.i_q1_label,
         type: 'sSelectField',
-        placeholder: t('change.impact_q1_placeholder'),
+        placeholder: 'change.impact_q1_placeholder',
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q1`,
         fieldName: 'i_q1',
         mode: 'creation',
         required: isRequired('i_q1')
       },
       i_q2: {
-        label: dynamicLabels.i_q2_label || t('change.impact_q2'),
+        label: dynamicLabels.i_q2_label,
         type: 'sSelectField',
-        placeholder: t('change.impact_q2_placeholder'),
+        placeholder: 'change.impact_q2_placeholder',
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q2`,
         fieldName: 'i_q2',
         mode: 'creation',
         required: isRequired('i_q2')
       },
       i_q3: {
-        label: dynamicLabels.i_q3_label || t('change.impact_q3'),
+        label: dynamicLabels.i_q3_label,
         type: 'sSelectField',
-        placeholder: t('change.impact_q3_placeholder'),
+        placeholder: 'change.impact_q3_placeholder',
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q3`,
         fieldName: 'i_q3',
         mode: 'creation',
         required: isRequired('i_q3')
       },
       i_q4: {
-        label: dynamicLabels.i_q4_label || t('change.impact_q4'),
+        label: dynamicLabels.i_q4_label,
         type: 'sSelectField',
-        placeholder: t('change.impact_q4_placeholder'),
+        placeholder: 'change.impact_q4_placeholder',
         endpoint: `change_options?lang=${userProfileStore.language}&question_id=i_q4`,
         fieldName: 'i_q4',
         mode: 'creation',
@@ -503,96 +502,96 @@ export class Change {
       
       // Planification
       requested_start_date_at: {
-        label: t('change.requested_start_date'),
+        label: 'change.requested_start_date',
         type: 'sDatePicker',
-        placeholder: t('change.requested_start_date_placeholder'),
+        placeholder: 'change.requested_start_date_placeholder',
         required: isRequired('requested_start_date_at'),
         patchendpoint: 'tickets'
       },
       requested_end_date_at: {
-        label: t('change.requested_end_date'),
+        label: 'change.requested_end_date',
         type: 'sDatePicker',
-        placeholder: t('change.requested_end_date_placeholder'),
+        placeholder: 'change.requested_end_date_placeholder',
         required: isRequired('requested_end_date_at'),
         patchendpoint: 'tickets'
       },
       planned_start_date_at: {
-        label: t('change.planned_start_date'),
+        label: 'change.planned_start_date',
         type: 'sDatePicker',
-        placeholder: t('change.planned_start_date_placeholder'),
+        placeholder: 'change.planned_start_date_placeholder',
         required: isRequired('planned_start_date_at'),
         patchendpoint: 'tickets'
       },
       planned_end_date_at: {
-        label: t('change.planned_end_date'),
+        label: 'change.planned_end_date',
         type: 'sDatePicker',
-        placeholder: t('change.planned_end_date_placeholder'),
+        placeholder: 'change.planned_end_date_placeholder',
         required: isRequired('planned_end_date_at'),
         patchendpoint: 'tickets'
       },
       rel_change_justifications_code: {
-        label: t('change.justification'),
+        label: 'change.justification',
         type: 'sSelectField',
-        placeholder: t('change.justification_placeholder'),
+        placeholder: 'change.justification_placeholder',
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=justification`,
         fieldName: 'rel_change_justifications_code',
         mode: 'creation',
         required: isRequired('rel_change_justifications_code')
       },
       rel_change_objective: {
-        label: t('change.objective'),
+        label: 'change.objective',
         type: 'sSelectField',
-        placeholder: t('change.objective_placeholder'),
+        placeholder: 'change.objective_placeholder',
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=objective`,
         fieldName: 'rel_change_objective',
         mode: 'creation',
         required: isRequired('rel_change_objective')
       },
       test_plan: {
-        label: t('change.test_plan'),
+        label: 'change.test_plan',
         type: 'sRichTextEditor',
-        placeholder: t('change.test_plan_placeholder'),
+        placeholder: 'change.test_plan_placeholder',
         required: isRequired('test_plan')
       },
       implementation_plan: {
-        label: t('change.implementation_plan'),
+        label: 'change.implementation_plan',
         type: 'sRichTextEditor',
-        placeholder: t('change.implementation_plan_placeholder'),
+        placeholder: 'change.implementation_plan_placeholder',
         required: isRequired('implementation_plan')
       },
       rollbcak_plan: {
-        label: t('change.rollback_plan'),
+        label: 'change.rollback_plan',
         type: 'sRichTextEditor',
-        placeholder: t('change.rollback_plan_placeholder'),
+        placeholder: 'change.rollback_plan_placeholder',
         required: isRequired('rollbcak_plan')
       },
       post_implementation_plan: {
-        label: t('change.post_implementation_plan'),
+        label: 'change.post_implementation_plan',
         type: 'sRichTextEditor',
-        placeholder: t('change.post_implementation_plan_placeholder'),
+        placeholder: 'change.post_implementation_plan_placeholder',
         required: isRequired('post_implementation_plan')
       },
       
       // Validation et autorisation
       cab_comments: {
-        label: t('change.cab_comments'),
+        label: 'change.cab_comments',
         type: 'sRichTextEditor',
-        placeholder: t('change.cab_comments_placeholder'),
+        placeholder: 'change.cab_comments_placeholder',
         required: isRequired('cab_comments')
       },
       rel_cab_validation_status: {
-        label: t('change.cab_validation_status'),
+        label: 'change.cab_validation_status',
         type: 'sSelectField',
-        placeholder: t('change.cab_validation_status_placeholder'),
+        placeholder: 'change.cab_validation_status_placeholder',
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=cab_validation_status`,
         fieldName: 'rel_cab_validation_status',
         mode: 'creation',
         required: isRequired('rel_cab_validation_status')
       },
       required_validations: {
-        label: t('change.required_validations'),
+        label: 'change.required_validations',
         type: 'sPickList',
-        placeholder: t('change.required_validations_placeholder'),
+        placeholder: 'change.required_validations_placeholder',
         sourceEndPoint: `change_setup?lang=${userProfileStore.language}&metadata=validation_level`,
         displayedLabel: 'label',
         targetEndPoint: 'tickets',
@@ -603,18 +602,18 @@ export class Change {
         required: isRequired('required_validations')
       },
       validated_at: {
-        label: t('change.validated_at'),
+        label: 'change.validated_at',
         type: 'sDatePicker',
-        placeholder: t('change.validated_at_placeholder'),
+        placeholder: 'change.validated_at_placeholder',
         required: isRequired('validated_at'),
         patchendpoint: 'tickets'
       },
       
       // Exécution et suivi
       related_tickets: {
-        label: t('change.related_tickets'),
+        label: 'change.related_tickets',
         type: 'sPickList',
-        placeholder: t('change.related_tickets_placeholder'),
+        placeholder: 'change.related_tickets_placeholder',
         sourceEndPoint: 'tickets',
         displayedLabel: 'title',
         targetEndPoint: 'tickets',
@@ -625,30 +624,30 @@ export class Change {
         required: isRequired('related_tickets')
       },
       actual_start_date_at: {
-        label: t('change.actual_start_date'),
+        label: 'change.actual_start_date',
         type: 'sDatePicker',
-        placeholder: t('change.actual_start_date_placeholder'),
+        placeholder: 'change.actual_start_date_placeholder',
         required: isRequired('actual_start_date_at'),
         patchendpoint: 'tickets'
       },
       actual_end_date_at: {
-        label: t('change.actual_end_date'),
+        label: 'change.actual_end_date',
         type: 'sDatePicker',
-        placeholder: t('change.actual_end_date_placeholder'),
+        placeholder: 'change.actual_end_date_placeholder',
         required: isRequired('actual_end_date_at'),
         patchendpoint: 'tickets'
       },
       elapsed_time: {
-        label: t('change.elapsed_time'),
+        label: 'change.elapsed_time',
         type: 'sTextField',
-        placeholder: t('change.elapsed_time_placeholder'),
+        placeholder: 'change.elapsed_time_placeholder',
         inputType: 'number',
         required: isRequired('elapsed_time')
       },
       watch_list: {
-        label: t('change.watch_list'),
+        label: 'change.watch_list',
         type: 'sPickList',
-        placeholder: t('change.watch_list_placeholder'),
+        placeholder: 'change.watch_list_placeholder',
         sourceEndPoint: 'persons',
         displayedLabel: 'person_name',
         targetEndPoint: 'tickets',
@@ -660,24 +659,24 @@ export class Change {
       
       // Clôture et évaluation finale
       success_criteria: {
-        label: t('change.success_criteria'),
+        label: 'change.success_criteria',
         type: 'sRichTextEditor',
-        placeholder: t('change.success_criteria_placeholder'),
+        placeholder: 'change.success_criteria_placeholder',
         required: isRequired('success_criteria')
       },
       post_change_evaluation: {
-        label: t('change.post_change_evaluation'),
+        label: 'change.post_change_evaluation',
         type: 'sSelectField',
-        placeholder: t('change.post_change_evaluation_placeholder'),
+        placeholder: 'change.post_change_evaluation_placeholder',
         endpoint: `change_setup?lang=${userProfileStore.language}&toSelect=yes&metadata=post_implementation_evaluation`,
         fieldName: 'post_change_evaluation',
         mode: 'creation',
         required: isRequired('post_change_evaluation')
       },
       post_change_comment: {
-        label: t('change.post_change_comment'),
+        label: 'change.post_change_comment',
         type: 'sRichTextEditor',
-        placeholder: t('change.post_change_comment_placeholder'),
+        placeholder: 'change.post_change_comment_placeholder',
         required: isRequired('post_change_comment')
       }
     };

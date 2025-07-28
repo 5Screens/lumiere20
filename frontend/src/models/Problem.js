@@ -73,7 +73,7 @@ export class Problem {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouveau problème';
+    return 'objectCreationsAndUpdates.problemCreation';
   }
   
   constructor(data = {}) {

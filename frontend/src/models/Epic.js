@@ -241,7 +241,7 @@ export class Epic {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouvel epic';
+    return 'objectCreationsAndUpdates.epicCreation';
   }
 
   /**

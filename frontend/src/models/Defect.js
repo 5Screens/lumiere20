@@ -376,7 +376,7 @@ export class Defect {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouveau défaut';
+    return 'objectCreationsAndUpdates.defectCreation';
   }
 
   /**

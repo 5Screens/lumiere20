@@ -70,7 +70,7 @@ export class Symptom {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouveau symptôme';
+    return 'objectCreationsAndUpdates.symptomCreation';
   }
 
   static getRenderableFields() {

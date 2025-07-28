@@ -283,7 +283,7 @@ export class Sprint {
    * @returns {string} Le titre de création
    */
   static getCreateTitle() {
-    return 'Nouveau sprint';
+    return 'objectCreationsAndUpdates.sprintCreation';
   }
 
   /**
