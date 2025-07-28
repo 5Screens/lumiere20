@@ -52,7 +52,6 @@ export class Defect {
   }
 
   static getRenderableFields(mode = 'for_creation') {
-    const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
@@ -63,41 +62,41 @@ export class Defect {
     const fields = {
       // Informations générales
       uuid: {
-        label: t('common.id'),
+        label: 'common.id',
         type: 'sTextField',
-        placeholder: t('common.id'),
+        placeholder: 'common.id',
         disabled: true
       },
       created_at: {
-        label: t('common.creation_date'),
+        label: 'common.creation_date',
         type: 'sTextField',
         disabled: true
       },
       writer_name: {
-        label: t('common.writer_name'),
+        label: 'common.writer_name',
         type: 'sTextField',
         disabled: true
       },
       updated_at: {
-        label: t('common.modification_date'),
+        label: 'common.modification_date',
         type: 'sTextField',
         disabled: true
       },
       closed_at: {
-        label: t('common.closure_date'),
+        label: 'common.closure_date',
         type: 'sTextField',
         disabled: true
       },
       title: {
-        label: t('defect.title'),
+        label: 'defect.title',
         type: 'sTextField',
-        placeholder: t('defect.title_placeholder'),
+        placeholder: 'defect.title_placeholder',
         required: isRequired('title')
       },
       ticket_status_code: {
-        label: t('defect.status'),
+        label: 'defect.status',
         type: 'sSelectField',
-        placeholder: t('defect.status_placeholder'),
+        placeholder: 'defect.status_placeholder',
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=DEFECT`,
         patchEndpoint: 'defects',
@@ -107,15 +106,15 @@ export class Defect {
         mode: 'creation'
       },
       description: {
-        label: t('defect.description'),
+        label: 'defect.description',
         type: 'sRichTextEditor',
-        placeholder: t('defect.description_placeholder'),
+        placeholder: 'defect.description_placeholder',
         required: isRequired('description')
       },
       severity: {
-        label: t('defect.severity'),
+        label: 'defect.severity',
         type: 'sSelectField',
-        placeholder: t('defect.severity_placeholder'),
+        placeholder: 'defect.severity_placeholder',
         required: isRequired('severity'),
         endpoint: `defect_setup?lang=${userProfileStore.language}&metadata=SEVERITY`,
         fieldName: 'severity',
@@ -124,9 +123,9 @@ export class Defect {
         mode: 'creation'
       },
       impact_area: {
-        label: t('defect.impact_area'),
+        label: 'defect.impact_area',
         type: 'sSelectField',
-        placeholder: t('defect.impact_area_placeholder'),
+        placeholder: 'defect.impact_area_placeholder',
         required: isRequired('impact_area'),
         endpoint: `defect_setup?lang=${userProfileStore.language}&metadata=IMPACT`,
         fieldName: 'impact_area',
@@ -135,9 +134,9 @@ export class Defect {
         mode: 'creation'
       },
       environment: {
-        label: t('defect.environment'),
+        label: 'defect.environment',
         type: 'sSelectField',
-        placeholder: t('defect.environment_placeholder'),
+        placeholder: 'defect.environment_placeholder',
         required: isRequired('environment'),
         endpoint: `defect_setup?lang=${userProfileStore.language}&metadata=ENVIRONMENT`,
         fieldName: 'environment',
@@ -146,56 +145,56 @@ export class Defect {
         mode: 'creation'
       },
       requested_for_uuid: {
-        label: t('defect.detected_by'),
+        label: 'defect.detected_by',
         type: 'sFilteredSearchField',
-        placeholder: t('defect.detected_by_placeholder'),
+        placeholder: 'defect.detected_by_placeholder',
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'requested_for_name',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true },
-          { key: 'job_role', label: t('person.job_role'), visible: true },
-          { key: 'email', label: t('person.email'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'email', label: 'person.email', visible: true }
         ],
         required: isRequired('requested_for_uuid')
       },
       requested_by_uuid: {
-        label: t('defect.reported_by'),
+        label: 'defect.reported_by',
         type: 'sFilteredSearchField',
-        placeholder: t('defect.reported_by_placeholder'),
+        placeholder: 'defect.reported_by_placeholder',
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'requested_by_name',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true },
-          { key: 'job_role', label: t('person.job_role'), visible: true },
-          { key: 'email', label: t('person.email'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'email', label: 'person.email', visible: true }
         ],
         required: isRequired('requested_by_uuid')
       },
       project_id: {
-        label: t('defect.project_id'),
+        label: 'defect.project_id',
         type: 'sFilteredSearchField',
-        placeholder: t('defect.project_id_placeholder'),
+        placeholder: 'defect.project_id_placeholder',
         endpoint: 'tickets?ticket_type=PROJECT',
         displayField: 'title',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'project_name',
         columnsConfig: [
-          { key: 'title', label: t('project.name'), visible: true },
-          { key: 'key', label: t('project.key'), visible: true }
+          { key: 'title', label: 'project.name', visible: true },
+          { key: 'key', label: 'project.key', visible: true }
         ],
         required: isRequired('project_id'),
         resetable: true
       },
       assigned_to_person: {
-        label: t('defect.assigned_to_person'),
+        label: 'defect.assigned_to_person',
         type: 'sFilteredSearchField',
-        placeholder: t('defect.assigned_to_person_placeholder'),
+        placeholder: 'defect.assigned_to_person_placeholder',
         required: isRequired('assigned_to_person'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/team/members` : '',
         displayField: 'full_name',
@@ -203,42 +202,42 @@ export class Defect {
         valueField: 'uuid',
         editMode: false,
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true }
         ],
         required: isRequired('assigned_to_person'),
         resetable: true
       },
       steps_to_reproduce: {
-        label: t('defect.steps_to_reproduce'),
+        label: 'defect.steps_to_reproduce',
         type: 'sRichTextEditor',
-        placeholder: t('defect.steps_to_reproduce_placeholder'),
+        placeholder: 'defect.steps_to_reproduce_placeholder',
         required: isRequired('steps_to_reproduce')
       },
       expected_behavior: {
-        label: t('defect.expected_behavior'),
+        label: 'defect.expected_behavior',
         type: 'sRichTextEditor',
-        placeholder: t('defect.expected_behavior_placeholder'),
+        placeholder: 'defect.expected_behavior_placeholder',
         required: isRequired('expected_behavior')
       },
       workaround: {
-        label: t('defect.workaround'),
+        label: 'defect.workaround',
         type: 'sRichTextEditor',
-        placeholder: t('defect.workaround_placeholder'),
+        placeholder: 'defect.workaround_placeholder',
         required: isRequired('workaround')
       },
       tags: {
-        label: t('defect.tags'),
+        label: 'defect.tags',
         type: 'sTagsList',
-        placeholder: t('defect.tags_placeholder'),
+        placeholder: 'defect.tags_placeholder',
         required: isRequired('tags'),
         comboBox: false
       },
       attachments: {
-        label: t('defect.attachments'),
+        label: 'defect.attachments',
         type: 'sFileUploader',
-        placeholder: t('defect.attachments_placeholder'),
-        helperText: t('defect.attachments_helper_text'),
+        placeholder: 'defect.attachments_placeholder',
+        helperText: 'defect.attachments_helper_text',
         required: isRequired('attachments'),
         edition: false,
         fieldName: 'DEFECT'

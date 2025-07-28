@@ -44,7 +44,6 @@ export class Story {
   }
 
   static getRenderableFields(mode = 'for_creation') {
-    const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
@@ -55,29 +54,29 @@ export class Story {
     const fields = {
       // Informations générales
       project_id: {
-        label: t('story.project_id'),
+        label: 'story.project_id',
         type: 'sFilteredSearchField',
-        placeholder: t('story.project_id_placeholder'),
+        placeholder: 'story.project_id_placeholder',
         endpoint: 'tickets?ticket_type=PROJECT',
         displayField: 'title',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'project_name',
         columnsConfig: [
-          { key: 'title', label: t('project.name'), visible: true },
-          { key: 'key', label: t('project.key'), visible: true }
+          { key: 'title', label: 'project.name', visible: true },
+          { key: 'key', label: 'project.key', visible: true }
         ],
         required: isRequired('project_id')
       },
       title: {
-        label: t('story.title'),
+        label: 'story.title',
         type: 'sTextField',
-        placeholder: t('story.title_placeholder'),
+        placeholder: 'story.title_placeholder',
         required: isRequired('title')
       },
       epic_id: {
-        label: t('story.epic_id'),
+        label: 'story.epic_id',
         type: 'sSelectField',
-        placeholder: t('story.epic_id_placeholder'),
+        placeholder: 'story.epic_id_placeholder',
         required: isRequired('epic_id'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/epics` : '',
         fieldName: 'epic_id',
@@ -86,9 +85,9 @@ export class Story {
         mode: 'creation'
       },
       sprint_id: {
-        label: t('story.sprint_id'),
+        label: 'story.sprint_id',
         type: 'sSelectField',
-        placeholder: t('story.sprint_id_placeholder'),
+        placeholder: 'story.sprint_id_placeholder',
         required: isRequired('sprint_id'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/sprints` : '',
         fieldName: 'sprint_id',
@@ -97,9 +96,9 @@ export class Story {
         mode: 'creation'
       },
       assigned_to_person: {
-        label: t('story.assigned_to_person'),
+        label: 'story.assigned_to_person',
         type: 'sSelectField',
-        placeholder: ({ project_id }) => project_id ? t('story.assigned_to_person_placeholder') : t('story.assigned_to_person_placeholder_if_empty_team'),
+        placeholder: ({ project_id }) => project_id ? 'story.assigned_to_person_placeholder' : 'story.assigned_to_person_placeholder_if_empty_team',
         required: isRequired('assigned_to_person'),
         endpoint: ({ project_id }) => project_id ? `tickets/${project_id}/team/members` : '',
         fieldName: 'assigned_to_person',
@@ -108,15 +107,15 @@ export class Story {
         mode: 'creation'
       },
       description: {
-        label: t('story.description'),
+        label: 'story.description',
         type: 'sRichTextEditor',
-        placeholder: t('story.description_placeholder'),
+        placeholder: 'story.description_placeholder',
         required: isRequired('description')
       },
       ticket_status_code: {
-        label: t('story.status'),
+        label: 'story.status',
         type: 'sSelectField',
-        placeholder: t('story.status_placeholder'),
+        placeholder: 'story.status_placeholder',
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=USER_STORY`,
         patchEndpoint: 'tickets',
@@ -124,69 +123,69 @@ export class Story {
         mode: 'creation'
       },
       requested_for_uuid: {
-        label: t('story.reporter'),
+        label: 'story.reporter',
         type: 'sFilteredSearchField',
-        placeholder: t('story.reporter_placeholder'),
+        placeholder: 'story.reporter_placeholder',
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'requested_for_name',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true }
         ],
         required: isRequired('requested_for_uuid')
       },
       story_points: {
-        label: t('story.story_points'),
+        label: 'story.story_points',
         type: 'sTextField',
-        placeholder: t('story.story_points_placeholder'),
+        placeholder: 'story.story_points_placeholder',
         required: isRequired('story_points'),
         inputType: 'number'
       },
       priority: {
-        label: t('story.priority'),
+        label: 'story.priority',
         type: 'sTextField',
-        placeholder: t('story.priority_placeholder'),
+        placeholder: 'story.priority_placeholder',
         required: isRequired('priority')
       },
       acceptance_criteria: {
-        label: t('story.acceptance_criteria'),
+        label: 'story.acceptance_criteria',
         type: 'sRichTextEditor',
-        placeholder: t('story.acceptance_criteria_placeholder'),
+        placeholder: 'story.acceptance_criteria_placeholder',
         required: isRequired('acceptance_criteria')
       },
       tags: {
-        label: t('story.tags'),
+        label: 'story.tags',
         type: 'sTagsList',
-        placeholder: t('story.tags_placeholder'),
+        placeholder: 'story.tags_placeholder',
         required: isRequired('tags'),
         comboBox: false
       },
       // Champs système en lecture seule
       uuid: {
-        label: t('common.id'),
+        label: 'common.id',
         type: 'sTextField',
-        placeholder: t('common.id'),
+        placeholder: 'common.id',
         disabled: true
       },
       created_at: {
-        label: t('story.created_at'),
+        label: 'story.created_at',
         type: 'sTextField',
         disabled: true
       },
       writer_name: {
-        label: t('story.writer'),
+        label: 'story.writer',
         type: 'sTextField',
         disabled: true
       },
       updated_at: {
-        label: t('story.updated_at'),
+        label: 'story.updated_at',
         type: 'sTextField',
         disabled: true
       },
       closed_at: {
-        label: t('story.closed_at'),
+        label: 'story.closed_at',
         type: 'sTextField',
         disabled: true
       }
