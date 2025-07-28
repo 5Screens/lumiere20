@@ -154,7 +154,6 @@ export class Incident {
   }
 
   static getRenderableFields(mode = 'for_creation') {
-    const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
@@ -163,7 +162,7 @@ export class Incident {
 
     const fields = {
       uuid: {
-        label: t('common.uuid'),
+        label: 'common.uuid',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -171,7 +170,7 @@ export class Incident {
         disabled: true
       },
       updated_at: {
-        label: t('common.modification_date'),
+        label: 'common.modification_date',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -179,9 +178,9 @@ export class Incident {
         disabled: true
       },
       ticket_status_code: {
-        label: t('incident.status'),
+        label: 'incident.status',
         type: 'sSelectField',
-        placeholder: t('incident.status_placeholder'),
+        placeholder: 'incident.status_placeholder',
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=INCIDENT`,
         patchEndpoint: 'incidents',
@@ -189,19 +188,19 @@ export class Incident {
         mode: 'creation'
       },
       title: {
-        label: t('incident.title'),
+        label: 'incident.title',
         type: 'sTextField',
-        placeholder: t('incident.title_placeholder'),
+        placeholder: 'incident.title_placeholder',
         required: isRequired('title')
       },
       description: {
-        label: t('incident.description'),
+        label: 'incident.description',
         type: 'sRichTextEditor',
-        placeholder: t('incident.description_placeholder'),
+        placeholder: 'incident.description_placeholder',
         required: isRequired('description')
       },
       created_at: {
-        label: t('common.creation_date'),
+        label: 'common.creation_date',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -209,7 +208,7 @@ export class Incident {
         disabled: true
       },
       writer_name: {
-        label: t('common.writer_name'),
+        label: 'common.writer_name',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -217,55 +216,55 @@ export class Incident {
         disabled: true
       },
       requested_by_uuid: {
-        label: t('incident.requested_by'),
+        label: 'incident.requested_by',
         type: 'sFilteredSearchField',
-        placeholder: t('incident.requested_by_placeholder'),
+        placeholder: 'incident.requested_by_placeholder',
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true },
-          { key: 'job_role', label: t('person.job_role'), visible: true },
-          { key: 'email', label: t('person.email'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'email', label: 'person.email', visible: true }
         ],
         displayFieldAtInitInEditMode: 'requested_by_name',
         required: isRequired('requested_by_uuid')
       },
       requested_for_uuid: {
-        label: t('incident.requested_for'),
+        label: 'incident.requested_for',
         type: 'sFilteredSearchField',
-        placeholder: t('incident.requested_for_placeholder'),
+        placeholder: 'incident.requested_for_placeholder',
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true },
-          { key: 'job_role', label: t('person.job_role'), visible: true },
-          { key: 'email', label: t('person.email'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'email', label: 'person.email', visible: true }
         ],
         displayFieldAtInitInEditMode: 'requested_for_name',
         required: isRequired('requested_for_uuid')
       },
       configuration_item_uuid: {
-        label: t('incident.configuration_item'),
+        label: 'incident.configuration_item',
         type: 'sFilteredSearchField',
-        placeholder: t('incident.configuration_item_placeholder'),
+        placeholder: 'incident.configuration_item_placeholder',
         endpoint: 'configuration_items',
         displayField: 'name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'name', label: t('configuration_item.name'), visible: true },
-          { key: 'description', label: t('configuration_item.description'), visible: true }
+          { key: 'name', label: 'configuration_item.name', visible: true },
+          { key: 'description', label: 'configuration_item.description', visible: true }
         ],
         displayFieldAtInitInEditMode: 'configuration_item_name',
         required: isRequired('configuration_item_uuid')
       },
       assigned_to_group: {
-        label: t('incident.assigned_group'),
+        label: 'incident.assigned_group',
         type: 'sFilteredSearchField',
-        placeholder: t('incident.assigned_group_placeholder'),
+        placeholder: 'incident.assigned_group_placeholder',
         endpoint: ({ assigned_to_person }) => 
           assigned_to_person 
             ? `persons/${assigned_to_person}/groups` 
@@ -273,16 +272,16 @@ export class Incident {
         displayField: 'group_name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'group_name', label: t('group.name'), visible: true }
+          { key: 'group_name', label: 'group.name', visible: true }
         ],
         displayFieldAtInitInEditMode: 'assigned_group_name',
         required: isRequired('assigned_to_group'),
         resetable: true
       },
       assigned_to_person: {
-        label: t('incident.assigned_to'),
+        label: 'incident.assigned_to',
         type: 'sFilteredSearchField',
-        placeholder: t('incident.assigned_to_placeholder'),
+        placeholder: 'incident.assigned_to_placeholder',
         endpoint: ({ assigned_to_group }) => 
           assigned_to_group 
           ? `groups/${assigned_to_group}/members` 
@@ -290,18 +289,18 @@ export class Incident {
         displayField: 'person_name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true }
         ],
         displayFieldAtInitInEditMode: 'assigned_person_name',
         required: isRequired('assigned_to_person'),
         resetable: true
       },
       watch_list: {
-        label: t('incident.watch_list'),
+        label: 'incident.watch_list',
         type: "sPickList",
-        helperText: t('incident.watch_list_helper_text'),
-        placeholder: t('incident.watch_list_placeholder'),
+        helperText: 'incident.watch_list_helper_text',
+        placeholder: 'incident.watch_list_placeholder',
         sourceEndPoint: "persons",
         displayedLabel: "person_name",
         targetEndPoint: "tickets",
@@ -311,9 +310,9 @@ export class Incident {
         required: isRequired('watch_list'),
       },
       impact: {
-        label: t('incident.impact'),
+        label: 'incident.impact',
         type: 'sSelectField',
-        placeholder: t('incident.impact_placeholder'),
+        placeholder: 'incident.impact_placeholder',
         required: isRequired('impact'),
         endpoint: `incident_impacts?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'impact',
@@ -321,9 +320,9 @@ export class Incident {
         mode: 'creation'
       },
       urgency: {
-        label: t('incident.urgency'),
+        label: 'incident.urgency',
         type: 'sSelectField',
-        placeholder: t('incident.urgency_placeholder'),
+        placeholder: 'incident.urgency_placeholder',
         required: isRequired('urgency'),
         endpoint: `incident_urgencies?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'urgency',
@@ -331,9 +330,9 @@ export class Incident {
         mode: 'creation'
       },
       priority: {
-        label: t('incident.priority'),
+        label: 'incident.priority',
         type: 'sSelectField',
-        placeholder: t('incident.priority_placeholder'),
+        placeholder: 'incident.priority_placeholder',
         endpoint: ({ impact, urgency }) => 
           impact && urgency 
             ? `incident_priorities?incident_impacts=${impact}&incident_urgencies=${urgency}` 
@@ -344,62 +343,62 @@ export class Incident {
         required: isRequired('priority')
       },
       rel_service: {
-        label: t('incident.service'),
+        label: 'incident.service',
         type: 'sFilteredSearchField',
-        placeholder: t('incident.service_placeholder'),
+        placeholder: 'incident.service_placeholder',
         endpoint: 'services',
         displayField: 'name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'name', label: t('service.name'), visible: true },
-          { key: 'description', label: t('service.description'), visible: false },
-          { key: 'business_criticality', label: t('service.business_criticality'), visible: false },
-          { key: 'lifecycle_status', label: t('service.lifecycle_status'), visible: false },
-          { key: 'version', label: t('service.version'), visible: false },
-          { key: 'operational', label: t('service.operational'), visible: false },
-          { key: 'legal_regulatory', label: t('service.legal_regulatory'), visible: false },
-          { key: 'reputational', label: t('service.reputational'), visible: false },
-          { key: 'financial', label: t('service.financial'), visible: false }, 
-          { key: 'comments', label: t('service.comments'), visible: false },
-          { key: 'created_at', label: t('service.created_at'), visible: false },
-          { key: 'updated_at', label: t('service.updated_at'), visible: false },
-          { key: 'owning_entity_name', label: t('service.owning_entity_name'), visible: true },
-          { key: 'owned_by_name', label: t('service.owned_by_name'), visible: true },
-          { key: 'managed_by_name', label: t('service.managed_by_name'), visible: false },
-          { key: 'cab_name', label: t('service.cab_name'), visible: false },
-          { key: 'parent_service_name', label: t('service.parent_service_name'), visible: false }
+          { key: 'name', label: 'service.name', visible: true },
+          { key: 'description', label: 'service.description', visible: false },
+          { key: 'business_criticality', label: 'service.business_criticality', visible: false },
+          { key: 'lifecycle_status', label: 'service.lifecycle_status', visible: false },
+          { key: 'version', label: 'service.version', visible: false },
+          { key: 'operational', label: 'service.operational', visible: false },
+          { key: 'legal_regulatory', label: 'service.legal_regulatory', visible: false },
+          { key: 'reputational', label: 'service.reputational', visible: false },
+          { key: 'financial', label: 'service.financial', visible: false }, 
+          { key: 'comments', label: 'service.comments', visible: false },
+          { key: 'created_at', label: 'service.created_at', visible: false },
+          { key: 'updated_at', label: 'service.updated_at', visible: false },
+          { key: 'owning_entity_name', label: 'service.owning_entity_name', visible: true },
+          { key: 'owned_by_name', label: 'service.owned_by_name', visible: true },
+          { key: 'managed_by_name', label: 'service.managed_by_name', visible: false },
+          { key: 'cab_name', label: 'service.cab_name', visible: false },
+          { key: 'parent_service_name', label: 'service.parent_service_name', visible: false }
         ],
         displayFieldAtInitInEditMode: 'rel_service_name',
         required: isRequired('rel_service')
       },
       rel_service_offerings: {
-        label: t('incident.service_offerings'),
+        label: 'incident.service_offerings',
         type: 'sFilteredSearchField',
-        placeholder: t('incident.service_offerings_placeholder'),
+        placeholder: 'incident.service_offerings_placeholder',
         endpoint: 'service_offerings',
         displayField: 'name',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'name', label: t('service_offering.name'), visible: true },
-          { key: 'description', label: t('service_offering.description'), visible: false },
-          { key: 'start_date', label: t('service_offering.start_date'), visible: false },
-          { key: 'end_date', label: t('service_offering.end_date'), visible: false },
-          { key: 'business_criticality', label: t('service_offering.business_criticality'), visible: false },
-          { key: 'environment', label: t('service_offering.environment'), visible: false },
-          { key: 'price_model', label: t('service_offering.price_model'), visible: false },
-          { key: 'currency', label: t('service_offering.currency'), visible: false },
-          { key: 'created_at', label: t('service_offering.created_at'), visible: false },
-          { key: 'updated_at', label: t('service_offering.updated_at'), visible: false },
-          { key: 'service_name', label: t('service_offering.service_name'), visible: true },
-          { key: 'operator_entity_name', label: t('service_offering.operator_entity_name'), visible: false }
+          { key: 'name', label: 'service_offering.name', visible: true },
+          { key: 'description', label: 'service_offering.description', visible: false },
+          { key: 'start_date', label: 'service_offering.start_date', visible: false },
+          { key: 'end_date', label: 'service_offering.end_date', visible: false },
+          { key: 'business_criticality', label: 'service_offering.business_criticality', visible: false },
+          { key: 'environment', label: 'service_offering.environment', visible: false },
+          { key: 'price_model', label: 'service_offering.price_model', visible: false },
+          { key: 'currency', label: 'service_offering.currency', visible: false },
+          { key: 'created_at', label: 'service_offering.created_at', visible: false },
+          { key: 'updated_at', label: 'service_offering.updated_at', visible: false },
+          { key: 'service_name', label: 'service_offering.service_name', visible: true },
+          { key: 'operator_entity_name', label: 'service_offering.operator_entity_name', visible: false }
         ],
         displayFieldAtInitInEditMode: 'rel_service_offerings_name',
         required: isRequired('rel_service')
       },
       contact_type: {
-        label: t('incident.contact_type'),
+        label: 'incident.contact_type',
         type: 'sSelectField',
-        placeholder: t('incident.contact_type_placeholder'),
+        placeholder: 'incident.contact_type_placeholder',
         endpoint: `contact_types?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'contact_type',
         patchEndpoint: 'incidents',
@@ -407,15 +406,15 @@ export class Incident {
         required: isRequired('contact_type')
       },
       resolution_notes: {
-        label: t('incident.resolution_notes'),
+        label: 'incident.resolution_notes',
         type: 'sRichTextEditor',
-        placeholder: t('incident.resolution_notes_placeholder'),
+        placeholder: 'incident.resolution_notes_placeholder',
         required: isRequired('resolution_notes')
       },
       resolution_code: {
-        label: t('incident.resolution_code'),
+        label: 'incident.resolution_code',
         type: 'sSelectField',
-        placeholder: t('incident.resolution_code_placeholder'),
+        placeholder: 'incident.resolution_code_placeholder',
         endpoint: `incident_resolution_codes?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'resolution_code',
         patchEndpoint: 'incidents',
@@ -423,9 +422,9 @@ export class Incident {
         required: isRequired('resolution_code')
       },
       cause_code: {
-        label: t('incident.cause_code'),
+        label: 'incident.cause_code',
         type: 'sSelectField',
-        placeholder: t('incident.cause_code_placeholder'),
+        placeholder: 'incident.cause_code_placeholder',
         endpoint: `incident_cause_codes?lang=${userProfileStore.language}&toSelect=yes`,
         fieldName: 'cause_code',
         patchEndpoint: 'incidents',
@@ -433,42 +432,42 @@ export class Incident {
         required: isRequired('cause_code')  
       },
       rel_problem_id: {
-        label: t('incident.problem_id'),
+        label: 'incident.problem_id',
         type: 'sFilteredSearchField',
-        placeholder: t('incident.problem_id_placeholder'),
+        placeholder: 'incident.problem_id_placeholder',
         endpoint: 'tickets?ticket_type=PROBLEM',
         displayField: 'title',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'title', label: t('problem.title'), visible: true },
-          { key: 'ticket_status_code', label: t('problem.status'), visible: true },
-          { key: 'created_at', label: t('problem.created_at'), visible: true },
-          { key: 'writer_name', label: t('problem.writer_name'), visible: false }
+          { key: 'title', label: 'problem.title', visible: true },
+          { key: 'ticket_status_code', label: 'problem.status', visible: true },
+          { key: 'created_at', label: 'problem.created_at', visible: true },
+          { key: 'writer_name', label: 'problem.writer_name', visible: false }
         ],
         displayFieldAtInitInEditMode: 'rel_problem_title',
         required: isRequired('rel_problem_id'),
         resetable: true
       },
       rel_change_request: { 
-        label: t('incident.change_request'),
+        label: 'incident.change_request',
         type: 'sFilteredSearchField',
-        placeholder: t('incident.change_request_placeholder'),
+        placeholder: 'incident.change_request_placeholder',
         endpoint: 'tickets?ticket_type=CHANGE',
         displayField: 'title',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'title', label: t('change.title'), visible: true },
-          { key: 'ticket_status_code', label: t('change.status'), visible: true },
-          { key: 'created_at', label: t('change.created_at'), visible: true },
-          { key: 'requested_for_name', label: t('change.requested_for'), visible: true  },
-          { key: 'writer_name', label: t('change.writer'), visible: false }
+          { key: 'title', label: 'change.title', visible: true },
+          { key: 'ticket_status_code', label: 'change.status', visible: true },
+          { key: 'created_at', label: 'change.created_at', visible: true },
+          { key: 'requested_for_name', label: 'change.requested_for', visible: true  },
+          { key: 'writer_name', label: 'change.writer', visible: false }
         ],
         displayFieldAtInitInEditMode: 'rel_change_request_title',
         required: isRequired('rel_change_request'),
         resetable: true
       },
       closed_at: {
-        label: t('common.closure_date'),
+        label: 'common.closure_date',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -476,7 +475,7 @@ export class Incident {
         disabled: true
       },
       assignment_count: {
-        label: t('incident.assignment_count'),
+        label: 'incident.assignment_count',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -484,7 +483,7 @@ export class Incident {
         disabled: true
       },
       assignment_to_count: {
-        label: t('incident.assignment_to_count'),
+        label: 'incident.assignment_to_count',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -492,7 +491,7 @@ export class Incident {
         disabled: true
       },
       standby_count: {
-        label: t('incident.standby_count'),
+        label: 'incident.standby_count',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -500,7 +499,7 @@ export class Incident {
         disabled: true
       },
       reopen_count: {
-        label: t('incident.reopen_count'),
+        label: 'incident.reopen_count',
         type: 'sTextField',
         placeholder: null,
         required: false,
