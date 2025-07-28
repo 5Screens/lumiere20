@@ -167,7 +167,6 @@ export class Knowledge_article {
   }
 
   static getRenderableFields(mode = 'for_creation') {
-    const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
@@ -177,52 +176,52 @@ export class Knowledge_article {
     const fields = {
       // Champs système (lecture seule)
       uuid: {
-        label: t('common.id'),
+        label: 'common.id',
         type: 'sTextField',
         disabled: true,
         required: false
       },
       writer_name: {
-        label: t('knowledge_article.writer'),
+        label: 'knowledge_article.writer',
         type: 'sTextField',
         disabled: true,
         required: false
       },
       created_at: {
-        label: t('common.creation_date'),
+        label: 'common.creation_date',
         type: 'sTextField',
         disabled: true,
         required: false
       },
       updated_at: {
-        label: t('common.modification_date'),
+        label: 'common.modification_date',
         type: 'sTextField',
         disabled: true,
         required: false
       },
       closed_at: {
-        label: t('common.closing_date'),
+        label: 'common.closing_date',
         type: 'sTextField',
         disabled: true,
         required: false
       },
       attachments_count: {
-        label: t('knowledge_article.attachments_count'),
+        label: 'knowledge_article.attachments_count',
         type: 'sTextField',
         disabled: true,
         required: false
       },
       tieds_tickets_count: {
-        label: t('knowledge_article.tieds_tickets_count'),
+        label: 'knowledge_article.tieds_tickets_count',
         type: 'sTextField',
         disabled: true,
         required: false
       },
       // Catégorie
       rel_category: {
-        label: t('knowledge_article.category'),
+        label: 'knowledge_article.category',
         type: 'sSelectField',
-        placeholder: t('knowledge_article.category_placeholder'),
+        placeholder: 'knowledge_article.category_placeholder',
         required: isRequired('rel_category'),
         endpoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=category`,
         fieldName: 'rel_category',
@@ -231,91 +230,91 @@ export class Knowledge_article {
       },
       // Contenu et structure de l'article
       title: {
-        label: t('knowledge_article.title'),
+        label: 'knowledge_article.title',
         type: 'sTextField',
-        placeholder: t('knowledge_article.title_placeholder'),
+        placeholder: 'knowledge_article.title_placeholder',
         required: isRequired('title')
       },
       summary: {
-        label: t('knowledge_article.summary'),
+        label: 'knowledge_article.summary',
         type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.summary_placeholder'),
+        placeholder: 'knowledge_article.summary_placeholder',
         required: isRequired('summary')
       },
       description: {
-        label: t('knowledge_article.description'),
+        label: 'knowledge_article.description',
         type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.description_placeholder'),
+        placeholder: 'knowledge_article.description_placeholder',
         required: isRequired('description')
       },
       prerequisites: {
-        label: t('knowledge_article.prerequisites'),
+        label: 'knowledge_article.prerequisites',
         type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.prerequisites_placeholder'),
+        placeholder: 'knowledge_article.prerequisites_placeholder',
         required: isRequired('prerequisites')
       },
       limitations: {
-        label: t('knowledge_article.limitations'),
+        label: 'knowledge_article.limitations',
         type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.limitations_placeholder'),
+        placeholder: 'knowledge_article.limitations_placeholder',
         required: isRequired('limitations')
       },
       security_notes: {
-        label: t('knowledge_article.security_notes'),
+        label: 'knowledge_article.security_notes',
         type: 'sRichTextEditor',
-        placeholder: t('knowledge_article.security_notes_placeholder'),
+        placeholder: 'knowledge_article.security_notes_placeholder',
         required: isRequired('security_notes')
       },
       attachments: {
-        label: t('knowledge_article.attachments'),
+        label: 'knowledge_article.attachments',
         type: 'sFileUploader',
-        placeholder: t('knowledge_article.attachments_placeholder'),
-        helperText: t('fileUploader.limits_info'),
+        placeholder: 'knowledge_article.attachments_placeholder',
+        helperText: 'fileUploader.limits_info',
         required: isRequired('attachments'),
         fieldName: 'KNOWLEDGE'
       },
 
 // Métadonnées d'identification et de classification
       keywords: {
-        label: t('knowledge_article.keywords'),
+        label: 'knowledge_article.keywords',
         type: 'sTagsList',
-        placeholder: t('knowledge_article.keywords_placeholder'),
+        placeholder: 'knowledge_article.keywords_placeholder',
         required: isRequired('keywords'),
         comboBox: false
       },
       rel_service: {
-        label: t('knowledge_article.service'),
+        label: 'knowledge_article.service',
         type: 'sFilteredSearchField',
-        placeholder: t('knowledge_article.service_placeholder'),
+        placeholder: 'knowledge_article.service_placeholder',
         endpoint: 'services',
         displayField: 'name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'rel_service_name',
         columnsConfig: [
-          { key: 'name', label: t('service.name'), visible: true },
-          { key: 'description', label: t('service.description'), visible: false },
-          { key: 'owning_entity_name', label: t('service.owning_entity_name'), visible: true }
+          { key: 'name', label: 'service.name', visible: true },
+          { key: 'description', label: 'service.description', visible: false },
+          { key: 'owning_entity_name', label: 'service.owning_entity_name', visible: true }
         ],
         required: isRequired('rel_service')
       },
       rel_service_offerings: {
-        label: t('knowledge_article.service_offerings'),
+        label: 'knowledge_article.service_offerings',
         type: 'sFilteredSearchField',
-        placeholder: t('knowledge_article.service_offerings_placeholder'),
+        placeholder: 'knowledge_article.service_offerings_placeholder',
         endpoint: 'service_offerings',
         displayField: 'name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'rel_service_offerings_name',
         columnsConfig: [
-          { key: 'name', label: t('service_offering.name'), visible: true },
-          { key: 'service_name', label: t('service_offering.service_name'), visible: true }
+          { key: 'name', label: 'service_offering.name', visible: true },
+          { key: 'service_name', label: 'service_offering.service_name', visible: true }
         ],
         required: isRequired('rel_service_offerings')
       },
       assigned_to_group: {
-        label: t('knowledge_article.assigned_group'),
+        label: 'knowledge_article.assigned_group',
         type: 'sFilteredSearchField',
-        placeholder: t('knowledge_article.assigned_group_placeholder'),
+        placeholder: 'knowledge_article.assigned_group_placeholder',
         endpoint: ({ assigned_to_person }) => 
           assigned_to_person 
             ? `persons/${assigned_to_person}/groups` 
@@ -324,15 +323,15 @@ export class Knowledge_article {
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'assigned_group_name',
         columnsConfig: [
-          { key: 'group_name', label: t('group.name'), visible: true }
+          { key: 'group_name', label: 'group.name', visible: true }
         ],
         required: isRequired('assigned_to_group'),
         resetable: true
       },
       assigned_to_person: {
-        label: t('knowledge_article.assigned_to_person'),
+        label: 'knowledge_article.assigned_to_person',
         type: 'sFilteredSearchField',
-        placeholder: t('knowledge_article.assigned_to_person_placeholder'),
+        placeholder: 'knowledge_article.assigned_to_person_placeholder',
         endpoint: ({ assigned_to_group }) => 
           assigned_to_group 
           ? `groups/${assigned_to_group}/members` 
@@ -341,8 +340,8 @@ export class Knowledge_article {
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'assigned_person_name',
         columnsConfig: [
-          { key: 'first_name', label: t('person.first_name'), visible: true },
-          { key: 'last_name', label: t('person.last_name'), visible: true }
+          { key: 'first_name', label: 'person.first_name', visible: true },
+          { key: 'last_name', label: 'person.last_name', visible: true }
         ],
         required: isRequired('assigned_to_person'),
         resetable: true
@@ -352,8 +351,8 @@ export class Knowledge_article {
         comboBox: true,
         edition: false,
         required: isRequired('rel_target_audience'),
-        label: t('knowledge_article.target_audience'),
-        placeholder: t('knowledge_article.target_audience_placeholder'),
+        label: 'knowledge_article.target_audience',
+        placeholder: 'knowledge_article.target_audience_placeholder',
         sourceEndPoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=target_audience`,
         displayedLabel: 'label',
         fieldName: 'rel_target_audience',
@@ -361,18 +360,18 @@ export class Knowledge_article {
         attributeSentToServer: 'code'
       },
       rel_lang: {
-        label: t('knowledge_article.lang'),
+        label: 'knowledge_article.lang',
         type: 'sSelectField',
-        placeholder: t('knowledge_article.lang_placeholder'),
+        placeholder: 'knowledge_article.lang_placeholder',
         required: isRequired('rel_lang'),
         endpoint: 'languages?is_active=yes',
         fieldName: 'rel_lang',
         mode: 'creation'
       },
       rel_confidentiality_level: {
-        label: t('knowledge_article.confidentiality_level'),
+        label: 'knowledge_article.confidentiality_level',
         type: 'sSelectField',
-        placeholder: t('knowledge_article.confidentiality_level_placeholder'),
+        placeholder: 'knowledge_article.confidentiality_level_placeholder',
         required: isRequired('rel_confidentiality_level'),
         endpoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=confidentiality_level`,
         fieldName: 'rel_confidentiality_level',
@@ -384,23 +383,23 @@ export class Knowledge_article {
 
       // Contexte opérationnel et liens
       configuration_item_uuid: {
-        label: t('knowledge_article.configuration_item'),
+        label: 'knowledge_article.configuration_item',
         type: 'sFilteredSearchField',
-        placeholder: t('knowledge_article.configuration_item_placeholder'),
+        placeholder: 'knowledge_article.configuration_item_placeholder',
         endpoint: 'configuration_items',
         displayField: 'name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'configuration_item_name',
         columnsConfig: [
-          { key: 'name', label: t('configuration_item.name'), visible: true },
-          { key: 'description', label: t('configuration_item.description'), visible: true }
+          { key: 'name', label: 'configuration_item.name', visible: true },
+          { key: 'description', label: 'configuration_item.description', visible: true }
         ],
         required: isRequired('configuration_item_uuid')
       },
       rel_involved_process: {
-        label: t('knowledge_article.involved_process'),
+        label: 'knowledge_article.involved_process',
         type: 'sSelectField',
-        placeholder: t('knowledge_article.involved_process_placeholder'),
+        placeholder: 'knowledge_article.involved_process_placeholder',
         required: isRequired('rel_involved_process'),
         endpoint: `ticket_types?lang=${userProfileStore.language}`,
         fieldName: 'rel_involved_process',
@@ -408,9 +407,9 @@ export class Knowledge_article {
         valueField: 'code'
       },
       tickets_list: {
-        label: t('knowledge_article.tickets_list'),
+        label: 'knowledge_article.tickets_list',
         type: 'sPickList',
-        placeholder: t('knowledge_article.tickets_list_placeholder'),
+        placeholder: 'knowledge_article.tickets_list_placeholder',
         sourceEndPoint: 'tickets',
         displayedLabel: 'title',
         targetEndPoint: 'tickets',
@@ -425,8 +424,8 @@ export class Knowledge_article {
         comboBox: true,
         edition: false,
         required: isRequired('business_scope'),
-        label: t('knowledge_article.business_scope'),
-        placeholder: t('knowledge_article.business_scope_placeholder'),
+        label: 'knowledge_article.business_scope',
+        placeholder: 'knowledge_article.business_scope_placeholder',
         sourceEndPoint: `knowledge_setup?lang=${userProfileStore.language}&metadata=business_scope`,
         displayedLabel: 'label',
         fieldName: 'business_scope',
@@ -435,9 +434,9 @@ export class Knowledge_article {
 
       // Gouvernance et cycle de vie
       ticket_status_code: {
-        label: t('knowledge_article.publication_status'),
+        label: 'knowledge_article.publication_status',
         type: 'sSelectField',
-        placeholder: t('knowledge_article.publication_status_placeholder'),
+        placeholder: 'knowledge_article.publication_status_placeholder',
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=KNOWLEDGE`,
         fieldName: 'ticket_status_code',
@@ -445,29 +444,29 @@ export class Knowledge_article {
         valueField: 'value'
       },
       version: {
-        label: t('knowledge_article.version'),
+        label: 'knowledge_article.version',
         type: 'sTextField',
-        placeholder: t('knowledge_article.version_placeholder'),
+        placeholder: 'knowledge_article.version_placeholder',
         required: isRequired('version')
       },
       last_review_at: {
-        label: t('knowledge_article.last_review_at'),
+        label: 'knowledge_article.last_review_at',
         type: 'sDatePicker',
-        placeholder: t('knowledge_article.last_review_at_placeholder'),
+        placeholder: 'knowledge_article.last_review_at_placeholder',
         required: isRequired('last_review_at'),
         patchendpoint: 'tickets'
       },
       next_review_at: {
-        label: t('knowledge_article.next_review_at'),
+        label: 'knowledge_article.next_review_at',
         type: 'sDatePicker',
-        placeholder: t('knowledge_article.next_review_at_placeholder'),
+        placeholder: 'knowledge_article.next_review_at_placeholder',
         required: isRequired('next_review_at'),
         patchendpoint: 'tickets'
       },
       license_type: {
-        label: t('knowledge_article.license_type'),
+        label: 'knowledge_article.license_type',
         type: 'sTextField',
-        placeholder: t('knowledge_article.license_type_placeholder'),
+        placeholder: 'knowledge_article.license_type_placeholder',
         required: isRequired('license_type')
       }
     };
