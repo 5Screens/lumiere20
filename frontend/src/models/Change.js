@@ -3,44 +3,8 @@ import { useUserProfileStore } from '../stores/userProfileStore'
 import apiService from '@/services/apiService'
 
 export class Change {
-  /**
-   * Retourne les colonnes pour l'affichage dans le tableau des changements
-   * @returns {Array} Tableau de configuration des colonnes
-   */
-  static getColumns() {
-    const { t } = i18n.global;
-    
-    return [
-      { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
-      { key: 'title', label: t('change.title'), type: 'text', format: 'text' },
-      { key: 'description', label: t('change.description'), type: 'text', format: 'html' },
-      { key: 'ticket_type_label', label: t('configuration.ticketTypes'), type: 'text', format: 'text' },
-      { key: 'ticket_status_label', label: t('change.status'), type: 'text', format: 'text' },
-      { key: 'rel_change_type_label', label: t('change.change_type'), type: 'text', format: 'text' },
-      { key: 'requested_for_name', label: t('change.requested_for'), type: 'text', format: 'text' },
-      { key: 'assigned_group_name', label: t('change.assigned_group'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('change.assigned_to'), type: 'text', format: 'text' },
-      { key: 'rel_service_name', label: t('change.service'), type: 'text', format: 'text' },
-      { key: 'rel_service_offerings_name', label: t('change.service_offerings'), type: 'text', format: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
-    ];
-  }
 
-  /**
-   * Retourne l'endpoint API pour les tickets de type CHANGE
-   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
-   * @returns {string} Endpoint API
-   */
-  static getApiEndpoint(method) {
-    const userProfileStore = useUserProfileStore();
-    
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'tickets';
-    } else {
-      return `tickets?ticket_type=CHANGE&lang=${userProfileStore.language}`;
-    }
-  }
+
 
   /**
    * Retourne le nom du champ à utiliser pour le label des onglets enfants
@@ -164,57 +128,6 @@ export class Change {
     
     // Timestamps
     this.updated_at = data.updated_at || null;
-  }
-
-  static async toAPI(data) {
-    return {
-      uuid: data.uuid,
-      requested_for_uuid: data.requested_for_uuid,
-      ticket_status_code: data.ticket_status_code,
-      ticket_type_code: 'CHANGE',
-      title: data.title,
-      description: data.description,
-      configuration_item_uuid: data.configuration_item_uuid,
-      extended_attributes: {
-        rel_services: data.rel_services,
-        rel_service_offerings: data.rel_service_offerings,
-        rel_change_type_code: data.rel_change_type_code,
-        r_q1: data.r_q1,
-        r_q2: data.r_q2,
-        r_q3: data.r_q3,
-        r_q4: data.r_q4,
-        r_q5: data.r_q5,
-        i_q1: data.i_q1,
-        i_q2: data.i_q2,
-        i_q3: data.i_q3,
-        i_q4: data.i_q4,
-        requested_start_date_at: data.requested_start_date_at,
-        requested_end_date_at: data.requested_end_date_at,
-        planned_start_date_at: data.planned_start_date_at,
-        planned_end_date_at: data.planned_end_date_at,
-        rel_change_justifications_code: data.rel_change_justifications_code,
-        rel_change_objective: data.rel_change_objective,
-        test_plan: data.test_plan,
-        implementation_plan: data.implementation_plan,
-        rollbcak_plan: data.rollbcak_plan,
-        post_implementation_plan: data.post_implementation_plan,
-        cab_comments: data.cab_comments,
-        rel_cab_validation_status: data.rel_cab_validation_status,
-        required_validations: data.required_validations,
-        validated_at: data.validated_at,
-        related_tickets: data.related_tickets,
-        actual_start_date_at: data.actual_start_date_at,
-        actual_end_date_at: data.actual_end_date_at,
-        elapsed_time: data.elapsed_time,
-        watch_list: data.watch_list,
-        success_criteria: data.success_criteria,
-        post_change_evaluation: data.post_change_evaluation,
-        post_change_comment: data.post_change_comment,
-        closed_at: data.closed_at
-      },
-      assigned_to_group: data.assigned_to_group,
-      assigned_to_person: data.assigned_to_person
-    }
   }
 
   static getColumns() {
