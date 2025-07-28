@@ -37,13 +37,10 @@ export class Sprint {
       { name: 'title', label: i18n.global.t('sprint.name') },
       { name: 'ticket_status_code', label: i18n.global.t('sprint.state') },
       { name: 'project_id', label: i18n.global.t('sprint.project_id') },
-      { name: 'start_date', label: i18n.global.t('sprint.start_date') },
-      { name: 'end_date', label: i18n.global.t('sprint.end_date') }
     ];
   }
 
   static getRenderableFields(mode = 'for_creation') {
-    const { t } = i18n.global;
     const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
@@ -54,68 +51,68 @@ export class Sprint {
     const fields = {
       // Informations système et métadonnées
       uuid: {
-        label: t('common.id'),
+        label: 'common.id',
         type: 'sTextField',
         disabled: true
       },
       writer_name: {
-        label: t('common.writer_name'),
+        label: 'common.writer_name',
         type: 'sTextField',
         disabled: true
       },
       created_at: {
-        label: t('common.creation_date'),
+        label: 'common.creation_date',
         type: 'sTextField',
         disabled: true
       },
       updated_at: {
-        label: t('common.modification_date'),
+        label: 'common.modification_date',
         type: 'sTextField',
         disabled: true
       },
       closed_at: {
-        label: t('common.closure_date'),
+        label: 'common.closure_date',
         type: 'sTextField',
         disabled: true
       },
       attachments_count: {
-        label: t('sprint.attachments_count'),
+        label: 'sprint.attachments_count',
         type: 'sTextField',
         disabled: true
       },
       tieds_tickets_count: {
-        label: t('sprint.tieds_tickets_count'),
+        label: 'sprint.tieds_tickets_count',
         type: 'sTextField',
         disabled: true
       },
       stories_count: {
-        label: t('sprint.stories_count'),
+        label: 'sprint.stories_count',
         type: 'sTextField',
         disabled: true
       },
       tasks_count: {
-        label: t('sprint.tasks_count'),
+        label: 'sprint.tasks_count',
         type: 'sTextField',
         disabled: true
       },
       
       // Informations générales
       title: {
-        label: t('sprint.name'),
+        label: 'sprint.name',
         type: 'sTextField',
-        placeholder: t('sprint.name_placeholder'),
+        placeholder: 'sprint.name_placeholder',
         required: isRequired('title')
       },
       description: {
-        label: t('sprint.goal'),
+        label: 'sprint.goal',
         type: 'sRichTextEditor',
-        placeholder: t('sprint.goal_placeholder'),
+        placeholder: 'sprint.goal_placeholder',
         required: isRequired('description')
       },
       ticket_status_code: {
-        label: t('sprint.state'),
+        label: 'sprint.state',
         type: 'sSelectField',
-        placeholder: t('sprint.state_placeholder'),
+        placeholder: 'sprint.state_placeholder',
         required: isRequired('ticket_status_code'),
         endpoint: `ticket_status?lang=${userProfileStore.language}&toSelect=yes&ticket_type=SPRINT`,
         patchEndpoint: 'sprints',
@@ -125,44 +122,44 @@ export class Sprint {
       
       // Attributs étendus
       project_id: {
-        label: t('sprint.project_id'),
+        label: 'sprint.project_id',
         type: 'sFilteredSearchField',
-        placeholder: t('sprint.project_id_placeholder'),
+        placeholder: 'sprint.project_id_placeholder',
         endpoint: 'tickets?ticket_type=PROJECT',
         displayField: 'title',
         valueField: 'uuid',
         columnsConfig: [
-          { key: 'title', label: t('project.name'), visible: true },
-          { key: 'key', label: t('project.key'), visible: true }
+          { key: 'title', label: 'project.name', visible: true },
+          { key: 'key', label: 'project.key', visible: true }
         ],
         required: isRequired('project_id'),
         displayFieldAtInitInEditMode: 'project_name'
       },
       start_date: {
-        label: t('sprint.start_date'),
+        label: 'sprint.start_date',
         type: 'sDatePicker',
-        placeholder: t('sprint.start_date_placeholder'),
+        placeholder: 'sprint.start_date_placeholder',
         required: isRequired('start_date'),
         patchendpoint: 'tickets'
       },
       end_date: {
-        label: t('sprint.end_date'),
+        label: 'sprint.end_date',
         type: 'sDatePicker',
-        placeholder: t('sprint.end_date_placeholder'),
+        placeholder: 'sprint.end_date_placeholder',
         required: isRequired('end_date'),
         patchendpoint: 'tickets'
       },
       actual_velocity: {
-        label: t('sprint.actual_velocity'),
+        label: 'sprint.actual_velocity',
         type: 'sTextField',
-        placeholder: t('sprint.actual_velocity_placeholder'),
+        placeholder: 'sprint.actual_velocity_placeholder',
         required: isRequired('actual_velocity'),
         inputType: 'number'
       },
       estimated_velocity: {
-        label: t('sprint.estimated_velocity'),
+        label: 'sprint.estimated_velocity',
         type: 'sTextField',
-        placeholder: t('sprint.estimated_velocity_placeholder'),
+        placeholder: 'sprint.estimated_velocity_placeholder',
         required: isRequired('estimated_velocity'),
         inputType: 'number'
       }
