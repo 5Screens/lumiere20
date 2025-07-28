@@ -146,10 +146,10 @@ export class Task {
         mode: 'creation'
       },
       title: {
-        editmode: false,
-        label: t('task.title'),
         type: 'sTextField',
-        placeholder: 'Entrez le titre',
+        editmode: false,
+        label: 'task.title',
+        placeholder: 'task.title_placeholder',
         required: isRequired('title')
       },
       description: {

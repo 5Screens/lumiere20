@@ -28,10 +28,10 @@
           <sTextField
             v-if="field.type === 'sTextField'"
             v-model="formData[fieldName]"
-            :label="field.label"
+            :label="field.label ? $t(field.label) : null"
             :required="field.required"
-            :placeholder="field.placeholder"
-            :helperText="field.helperText"
+            :placeholder="field.placeholder ? $t(field.placeholder) : null"
+            :helperText="field.helperText ? $t(field.helperText) : null"
             :disabled="field.disabled"
             :readonly="field.readonly"
             :inputType="field.inputType"

@@ -373,6 +373,7 @@ export default {
   },
   task: {
     title: 'Titre',
+    title_placeholder: 'Entrez le titre',
     description: 'Description',
     description_placeholder: 'Entrez la description',
     configuration_item: 'Configuration Item',
