@@ -92,6 +92,67 @@ class SymptomsService {
         }
     }
 
+    async getSymptomByUuid(uuid, lang = null) {
+        logger.info(`[SERVICE] getSymptomByUuid - Starting database query for symptom UUID: ${uuid}, language: ${lang}`);
+        try {
+            let query, params;
+            
+            if (lang) {
+                // Si une langue est spécifiée, retourner seulement cette traduction
+                query = `
+                    SELECT 
+                        s.uuid,
+                        s.code as symptom_code,
+                        st.libelle,
+                        st.langue,
+                        st.created_at,
+                        st.updated_at
+                    FROM configuration.symptoms s
+                    JOIN translations.symptoms_translation st ON s.code = st.symptom_code
+                    WHERE s.uuid = $1 AND st.langue = $2
+                `;
+                params = [uuid, lang];
+            } else {
+                // Si aucune langue spécifiée, retourner toutes les traductions
+                query = `
+                    SELECT 
+                        s.uuid,
+                        s.code as symptom_code,
+                        st.libelle,
+                        st.langue,
+                        st.created_at,
+                        st.updated_at
+                    FROM configuration.symptoms s
+                    JOIN translations.symptoms_translation st ON s.code = st.symptom_code
+                    WHERE s.uuid = $1
+                    ORDER BY st.langue ASC
+                `;
+                params = [uuid];
+            }
+            
+            const result = await pool.query(query, params);
+            
+            if (result.rows.length === 0) {
+                logger.info(`[SERVICE] getSymptomByUuid - No symptom found with UUID: ${uuid}`);
+                return null;
+            }
+            
+            if (lang) {
+                // Retourner un seul objet pour une langue spécifique
+                const symptom = result.rows[0];
+                logger.info(`[SERVICE] getSymptomByUuid - Query executed successfully, found symptom for language: ${lang}`);
+                return symptom;
+            } else {
+                // Retourner toutes les traductions
+                logger.info(`[SERVICE] getSymptomByUuid - Query executed successfully, found ${result.rows.length} translations`);
+                return result.rows;
+            }
+        } catch (error) {
+            logger.error(`[SERVICE] getSymptomByUuid - Database error: ${error.message}`);
+            throw error;
+        }
+    }
+
     async createSymptom(symptomData) {
         logger.info('[SERVICE] createSymptom - Starting transaction');
         const client = await pool.connect();

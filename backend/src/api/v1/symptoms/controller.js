@@ -72,6 +72,34 @@ class SymptomsController {
         }
     }
 
+    async getSymptomByUuid(req, res) {
+        logger.info('[CONTROLLER] getSymptomByUuid - Starting to process request');
+        try {
+            const { uuid } = req.params;
+            const { lang } = req.query;
+            logger.info(`[CONTROLLER] getSymptomByUuid - Fetching symptom with UUID: ${uuid}, language: ${lang}`);
+            
+            const symptom = await symptomsService.getSymptomByUuid(uuid, lang);
+            
+            if (!symptom) {
+                logger.info(`[CONTROLLER] getSymptomByUuid - No symptom found with UUID: ${uuid}`);
+                return res.status(404).json({
+                    success: false,
+                    message: `Aucun symptôme trouvé avec l'UUID: ${uuid}`
+                });
+            }
+            
+            logger.info(`[CONTROLLER] getSymptomByUuid - Successfully retrieved symptom with UUID: ${uuid}`);
+            return res.status(200).json(symptom);
+        } catch (error) {
+            logger.error(`[CONTROLLER] getSymptomByUuid - Error: ${error.message}`);
+            return res.status(500).json({
+                success: false,
+                message: 'Une erreur est survenue lors de la récupération du symptôme'
+            });
+        }
+    }
+
     async createSymptom(req, res) {
         logger.info('[CONTROLLER] createSymptom - Starting to process request');
         try {

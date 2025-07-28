@@ -46,6 +46,19 @@ router.get(
     symptomsController.getSymptomByCode
 );
 
+// Route pour obtenir un symptôme par son UUID
+//http://localhost:3000/api/v1/symptoms/550e8400-e29b-41d4-a716-446655440000
+//http://localhost:3000/api/v1/symptoms/550e8400-e29b-41d4-a716-446655440000?lang=fr
+router.get(
+    '/:uuid',
+    (req, res, next) => {
+        logger.info(`[ROUTES] GET /api/v1/symptoms/:uuid - Route handler started with uuid=${req.params.uuid}, lang=${req.query.lang}`);
+        next();
+    },
+    validate(symptomsValidation.getSymptomByUuid),
+    symptomsController.getSymptomByUuid
+);
+
 // Route pour créer un nouveau symptôme via un POST
 //http://localhost:3000/api/v1/symptoms
 router.post(

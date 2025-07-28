@@ -20,6 +20,26 @@ const getSymptomByCode = {
     })
 };
 
+const getSymptomByUuid = {
+    params: Joi.object({
+        uuid: Joi.string().uuid().required()
+            .messages({
+                'string.guid': 'L\'UUID doit être un UUID valide',
+                'any.required': 'L\'UUID est requis'
+            })
+    }),
+    query: Joi.object({
+        lang: Joi.string().length(2).optional()
+            .messages({
+                'string.length': 'Le code de langue doit contenir exactement 2 caractères',
+                'string.empty': 'Le code de langue ne peut pas être vide'
+            })
+    }).options({ 
+        abortEarly: false,
+        stripUnknown: true 
+    })
+};
+
 const createSymptom = {
     body: Joi.object({
         code: Joi.string().max(50).required(),
@@ -105,6 +125,7 @@ const validateGetSymptomsWithLang = async (req, res, next) => {
 module.exports = {
     getSymptoms,
     getSymptomByCode,
+    getSymptomByUuid,
     createSymptom,
     validateSymptom,
     validateGetSymptomsWithLang

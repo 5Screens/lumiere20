@@ -156,27 +156,7 @@ export default {
         const uniqueIdentifier = modelClass.getUniqueIdentifier();
         const childTabLabel = modelClass.getChildTabLabel();
         
-        if (this.objectType === 'symptoms') {
-          // Logique spécifique pour les symptômes (grouper par code)
-          const uniqueSymptomCodes = [...new Set(selectedRows.map(row => row.symptom_code))]
-          
-          uniqueSymptomCodes.forEach(symptomCode => {
-            if (!symptomCode) return // Ignorer les lignes sans code de symptôme
-            
-            this.store.openTab({
-              id_tab: `${this.objectType}-form-${symptomCode}-${Date.now()}`,
-              label: symptomCode,
-              type: 'form',
-              icon: 'fas fa-edit',
-              mode: 'update',
-              objectClass: this.objectType,
-              objectId: symptomCode,
-              class: modelClass,
-              className: modelClass ? modelClass.name : this.data.className, // Ajouter className pour la sérialisation
-              parentId: this.store.activeTabId
-            })
-          })
-        } else {
+ {
           // Logique pour les autres types d'objets
           selectedRows.forEach(row => {
             this.store.openTab({
