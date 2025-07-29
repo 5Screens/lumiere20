@@ -83,11 +83,11 @@ export default {
     columns() {
       // Utiliser le service classMapping pour récupérer la classe depuis le nom
       console.log('[ObjectsTab] Calcul des colonnes - data:', this.data);
-      console.log('[ObjectsTab] Calcul des colonnes - objectType:', this.objectType);
       
-      // Récupérer la classe depuis le nom de classe ou depuis this.data.class (fallback)
+      // Récupérer la classe depuis le nom de classe ou depuis this.data.class 
+      // Le getApiEndpoint a pu etre appelé avant et dans ce cas la classe est mise à jour)
       let modelClass = this.data.class;
-      if (!modelClass && this.data.className) {
+      if (!this.data.className) {
         modelClass = getClassByName(this.data.className);
         console.log('[ObjectsTab] Classe récupérée via classMapping:', modelClass);
         // Mettre à jour l'onglet avec la classe reconstruite pour éviter de refaire le mapping
