@@ -10,7 +10,9 @@ class SymptomsService {
                     s.uuid,
                     s.code,
                     st.libelle,
-                    st.langue
+                    st.langue,
+                    s.created_at,
+                    s.updated_at
                 FROM translations.symptoms_translation st
                 JOIN configuration.symptoms s ON s.code = st.symptom_code
                 WHERE st.langue = $1

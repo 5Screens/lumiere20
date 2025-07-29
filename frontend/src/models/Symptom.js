@@ -28,10 +28,10 @@ export class Symptom {
     const { t } = i18n.global;
     
     return [
-      { key: 'uuid', label: t('common.id'), type: 'uuid' },
+      { key: 'uuid', label:  t('common.id'), type: 'uuid' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'symptom_code', label: t('symptoms.code'), type: 'text' },
+      { key: 'code', label: t('symptoms.code'), type: 'text' },
       { key: 'libelle', label: t('symptoms.name'), type: 'text' },
       { key: 'langue', label: t('language.title'), type: 'text' }
     ];
@@ -46,7 +46,7 @@ export class Symptom {
     const userProfileStore = useUserProfileStore();
     
     if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'symptoms/:uuid';
+      return 'symptoms';
     } else {
       return `symptoms?lang=${userProfileStore.language}`;
     }
@@ -115,9 +115,9 @@ export class Symptom {
         placeholder: 'symptom.code_placeholder',
         required: isRequired('symptom_code')
       },
-      libelle: {
+      symptoms_labels: {
         label: 'symptom.label',
-        type: 'sTextField',
+        type: 'MLTextField',
         placeholder: 'symptom.label_placeholder',
         required: isRequired('libelle')
       }
@@ -130,7 +130,7 @@ export class Symptom {
     // Base object with common fields
     const baseFields = {
       symptom_code: this.symptom_code,
-      libelle: this.libelle,
+      symptoms_labels: this.libelle,
       langue: this.langue
     };
     
