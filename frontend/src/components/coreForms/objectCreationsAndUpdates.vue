@@ -292,12 +292,13 @@ const loadFormFields = async () => {
   if (!modelInstance.value) return;
   
   const objectTypeName = getObjectTypeFromClass(props.objectClass);
+  const mode = props.mode === 'creation' ? 'for_creation' : 'for_edition';
   
   try {
     // Récupérer les champs rendables du modèle
     if (typeof modelInstance.value.constructor.getRenderableFields === 'function') {
-      console.log(`[loadFormFields] Chargement des champs pour ${objectTypeName}`);
-      const fields = await modelInstance.value.constructor.getRenderableFields('for_edition');
+      console.log(`[loadFormFields] Chargement des champs pour ${objectTypeName} en mode ${mode}`);
+      const fields = await modelInstance.value.constructor.getRenderableFields(mode);
       formFields.value = fields;
       console.log(`[loadFormFields] Champs chargés avec succès:`, Object.keys(fields));
     } else {
