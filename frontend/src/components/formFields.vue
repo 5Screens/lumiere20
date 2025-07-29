@@ -12,9 +12,9 @@
           :is="components[field.type]"
           :modelValue="objectStore.currentObject[key]"
           @update:modelValue="updateStoreField(key, $event)"
-          :label="field.label"
+          :label="field.label ? t(field.label) : null"
           :required="field.required"
-          :placeholder="field.placeholder"
+          :placeholder="field.placeholder ? t(field.placeholder) : null"
           :disabled="field.disabled"
           :multiline="field.multiline"
           :options="field.options"
@@ -33,7 +33,7 @@
           :table="field.table"
           :field-name="key"
           :edition="field.edition"
-          :helper-text="field.helperText"
+          :helper-text="field.helperText ? t(field.helperText) : null"
           :input-type="field.inputType"
           :combo-box="field.comboBox"
           :visible="typeof field.visible === 'function' ? field.visible(objectStore.currentObject) : (field.visible !== undefined ? field.visible : true)"
@@ -47,6 +47,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import sTextField from './common/sTextField.vue'
 import sFilteredSearchField from './common/sFilteredSearchField.vue'
 import sSelectField from './common/sSelectField.vue'
@@ -96,6 +97,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'submit'])
 const objectStore = useObjectStore()
+const { t } = useI18n()
 
 const fields = ref({})
 const isLoading = ref(true)
