@@ -87,8 +87,7 @@ export class Symptom {
    */
   static async getById(uuid) {
     try {
-      const userProfileStore = useUserProfileStore();
-      const response = await apiService.get(`symptoms/${uuid}?lang=${userProfileStore.language}`);
+      const response = await apiService.get(`symptoms/${uuid}`);
       
       if (response) {
         return new Symptom(response);
@@ -102,7 +101,6 @@ export class Symptom {
   }
 
   static getRenderableFields() {
-    const userProfileStore = useUserProfileStore();
     
     // Fonction utilitaire pour déterminer si un champ est obligatoire
     const dynamicLabels = new Symptom();
@@ -117,7 +115,7 @@ export class Symptom {
       },
       symptoms_labels: {
         label: 'symptom.label',
-        type: 'MLTextField',
+        type: 'sMLTextField',
         placeholder: 'symptom.label_placeholder',
         required: isRequired('libelle')
       }

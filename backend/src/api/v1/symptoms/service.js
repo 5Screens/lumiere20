@@ -118,17 +118,19 @@ class SymptomsService {
                 // Si aucune langue spécifiée, retourner toutes les traductions
                 query = `
                     SELECT 
-                        s.uuid,
+                        s.uuid as symptom_uuid,
                         s.code as symptom_code,
-                        st.uuid as translation_uuid,
-                        st.libelle,
-                        st.langue,
-                        st.created_at,
-                        st.updated_at
+                        json_agg(
+                            json_build_object(
+                                'symptom_label_uuid', st.uuid,
+                                'symptom_label_lang_code', st.langue,
+                                'symptom_label', st.libelle
+                            ) ORDER BY st.langue ASC
+                        ) as symptoms_labels
                     FROM configuration.symptoms s
                     JOIN translations.symptoms_translation st ON s.code = st.symptom_code
                     WHERE s.uuid = $1
-                    ORDER BY st.langue ASC
+                    GROUP BY s.uuid, s.code
                 `;
                 params = [uuid];
             }
@@ -146,9 +148,10 @@ class SymptomsService {
                 logger.info(`[SERVICE] getSymptomByUuid - Query executed successfully, found symptom for language: ${lang}`);
                 return symptom;
             } else {
-                // Retourner toutes les traductions
-                logger.info(`[SERVICE] getSymptomByUuid - Query executed successfully, found ${result.rows.length} translations`);
-                return result.rows;
+                // Retourner l'objet avec toutes les traductions
+                const symptom = result.rows[0];
+                logger.info(`[SERVICE] getSymptomByUuid - Query executed successfully, found symptom with ${symptom.symptoms_labels.length} translations`);
+                return symptom;
             }
         } catch (error) {
             logger.error(`[SERVICE] getSymptomByUuid - Database error: ${error.message}`);
