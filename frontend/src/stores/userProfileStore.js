@@ -12,9 +12,9 @@ export const useUserProfileStore = defineStore('userProfile', {
     // Liste des rôles de l'utilisateur (admin, editor, viewer, etc.)
     roles: [],
     // Thème de l'interface (light/dark)
-    theme: 'light',
+    theme: 'dark',
     // Langue de l'interface (fr/en/es/pt)
-    language: 'en'
+    language: 'fr'
   }),
 
   actions: {
