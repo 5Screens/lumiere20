@@ -167,6 +167,19 @@
             @update:success="handleFieldSuccess"
             :attributeSentToServer="field.attributeSentToServer"
           />
+          
+          <!-- Champ de texte multilingue -->
+          <sMLTextField
+            v-else-if="field.type === 'sMLTextField'"
+            v-model="formData[fieldName]"
+            :global_label="field.label ? $t(field.label) : null"
+            :required="field.required"
+            :disabled="field.disabled"
+            :patchendpoint="mode === 'update' && objectId ? (modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : '') : ''"
+            @update:modelValue="handleFieldChange(fieldName, $event)"
+            @update:success="handleFieldSuccess"
+            @field-change-cancelled="() => {}"
+          />
         </template>
       </template>
       
@@ -199,6 +212,7 @@ import sDatePicker from '@/components/common/sDatePicker.vue';
 import sToggleField from '@/components/common/sToggleField.vue';
 import sFileUploader from '@/components/common/sFileUploader.vue';
 import sTagsList from '@/components/common/sTagsList.vue';
+import sMLTextField from '@/components/common/sMLTextField.vue';
 import AuditTable from '@/components/common/auditTable.vue';
 
 // Import du service API et du service de mapping de classes
