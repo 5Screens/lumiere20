@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import apiService from '../services/apiService'
 
 export class Symptom {
   constructor(data = {}) {
@@ -42,10 +43,12 @@ export class Symptom {
    * @returns {string} Endpoint API
    */
   static getApiEndpoint(method) {
+    const userProfileStore = useUserProfileStore();
+    
     if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
       return 'symptoms/:uuid';
     } else {
-      return 'symptoms';
+      return `symptoms?lang=${userProfileStore.language}`;
     }
   }
 
@@ -77,6 +80,27 @@ export class Symptom {
     return 'objectCreationsAndUpdates.symptomUpdate';
   }
 
+  /**
+   * Récupère un symptôme par son UUID
+   * @param {string} uuid - L'UUID du symptôme à récupérer
+   * @returns {Promise<Symptom>} Une promesse résolue avec l'instance du symptôme
+   */
+  static async getById(uuid) {
+    try {
+      const userProfileStore = useUserProfileStore();
+      const response = await apiService.get(`symptoms/${uuid}?lang=${userProfileStore.language}`);
+      
+      if (response) {
+        return new Symptom(response);
+      }
+      
+      throw new Error('Symptom not found');
+    } catch (error) {
+      console.error('Error fetching symptom:', error);
+      throw error;
+    }
+  }
+
   static getRenderableFields() {
     const userProfileStore = useUserProfileStore();
     
@@ -96,18 +120,6 @@ export class Symptom {
         type: 'sTextField',
         placeholder: 'symptom.label_placeholder',
         required: isRequired('libelle')
-      },
-      langue: {
-        label: 'symptom.language',
-        type: 'sSelectField',
-        placeholder: 'symptom.language_placeholder',
-        required: isRequired('langue'),
-        options: [
-          { value: 'fr', label: 'common.french' },
-          { value: 'en', label: 'common.english' }
-        ],
-        fieldName: 'langue',
-        mode: 'creation'
       }
     };
   }
