@@ -23,7 +23,12 @@ app.use(pinia)
 
 // Initialize user profile store, theme and language
 const userProfileStore = useUserProfileStore()
+
+// Définir le thème et la langue depuis le store persistant
 document.documentElement.setAttribute('data-theme', userProfileStore.theme)
-i18n.global.locale = userProfileStore.language
+
+// S'assurer que la langue est définie avant le montage de l'application
+i18n.global.locale.value = userProfileStore.language
+console.log(`Langue initialisée depuis le store: ${userProfileStore.language}`)
 
 app.mount('#app')

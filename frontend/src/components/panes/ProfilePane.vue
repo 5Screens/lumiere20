@@ -68,10 +68,6 @@ export default {
   beforeUnmount() {
     // Nettoyage de l'écouteur d'événement lors de la destruction du composant
     document.removeEventListener('mousedown', this.handleClickOutside)
-  },
-  created() {
-    // Initialiser la langue actuelle
-    this.userProfileStore.language = this.locale
   }
 }
 </script>

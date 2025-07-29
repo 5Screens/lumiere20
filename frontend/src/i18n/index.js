@@ -13,7 +13,7 @@ const messages = {
 
 export default createI18n({
   legacy: false,
-  locale: 'fr', // langue par défaut
+  // La locale sera définie dans main.js à partir du store
   fallbackLocale: 'en', // langue de secours
   messages
 })
