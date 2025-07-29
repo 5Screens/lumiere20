@@ -60,9 +60,9 @@
         >
           <ObjectCreationsAndUpdates 
             :mode="tab.mode"
-            :objectClass="getClassByName(tab.className)"
             :objectId="tab.objectId"
             :tabId="tab.id_tab"
+            :className="tab.className"
           />
         </div>
       </keep-alive>

@@ -75,6 +75,10 @@ export class Problem {
   static getCreateTitle() {
     return 'objectCreationsAndUpdates.problemCreation';
   }
+
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.problemUpdate';
+  }
   
   constructor(data = {}) {
     // Identifiant unique du problème

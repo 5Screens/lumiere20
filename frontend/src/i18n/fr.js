@@ -230,7 +230,8 @@ export default {
     noTranslations: 'Veuillez saisir au moins une traduction pour le symptôme',
     requiredFields: 'Veuillez saisir tous les champs obligatoires', 
     selectOneRow: 'Veuillez sélectionner une valeur',
-    requiredField: 'Champ obligatoire'
+    requiredField: 'Champ obligatoire',
+    noClassFound: 'Aucune classe trouvée',
   },
   common: {
     id: 'Identifiant',

@@ -79,6 +79,10 @@ export class Incident {
   static getCreateTitle() {
     return 'objectCreationsAndUpdates.incidentCreation';
   }
+
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.incidentUpdate';
+  }
   
   constructor(data = {}) {
     this.uuid = data.uuid || null;

@@ -68,6 +68,10 @@ export class Project {
     return 'objectCreationsAndUpdates.projectCreation';
   }
 
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.projectUpdate';
+  }
+  
   constructor(data = {}) {
     // Identifiant unique du projet
     this.uuid = data.uuid || null;

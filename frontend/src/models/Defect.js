@@ -380,6 +380,14 @@ export class Defect {
   }
 
   /**
+   * Retourne le titre pour la mise à jour d'un objet
+   * @returns {string} Le titre de mise à jour
+   */
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.defectUpdate';
+  }
+
+  /**
    * Récupère un défaut par son ID
    * @param {string} id - ID du défaut à récupérer
    * @returns {Promise<Defect>} Instance du défaut récupéré

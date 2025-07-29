@@ -286,6 +286,10 @@ export class Sprint {
     return 'objectCreationsAndUpdates.sprintCreation';
   }
 
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.sprintUpdate';
+  }
+
   /**
    * Récupère un sprint par son ID
    * @param {string} id - ID du sprint à récupérer

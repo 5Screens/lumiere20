@@ -245,6 +245,14 @@ export class Epic {
   }
 
   /**
+   * Retourne le titre pour la mise à jour d'un objet
+   * @returns {string} Le titre de mise à jour
+   */
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.epicUpdate';
+  }
+
+  /**
    * Récupère un epic par son ID
    * @param {string} id - ID de l'epic à récupérer
    * @returns {Promise<Epic>} Instance de l'epic récupéré

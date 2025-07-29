@@ -73,6 +73,10 @@ export class Symptom {
     return 'objectCreationsAndUpdates.symptomCreation';
   }
 
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.symptomUpdate';
+  }
+
   static getRenderableFields() {
     const userProfileStore = useUserProfileStore();
     

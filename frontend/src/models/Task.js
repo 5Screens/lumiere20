@@ -84,6 +84,10 @@ export class Task {
   static getCreateTitle() {
     return 'objectCreationsAndUpdates.taskCreation';
   }
+
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.taskUpdate';
+  }
   
   constructor(data = {}) {
     this.uuid = data.uuid || null;

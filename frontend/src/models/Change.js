@@ -30,6 +30,10 @@ export class Change {
     return 'objectCreationsAndUpdates.changeCreation';
   }
 
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.changeUpdate';
+  }
+
   constructor(data = {}) {
     // Informations générales
     this.uuid = data.uuid || null;

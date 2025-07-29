@@ -201,8 +201,9 @@ import sFileUploader from '@/components/common/sFileUploader.vue';
 import sTagsList from '@/components/common/sTagsList.vue';
 import AuditTable from '@/components/common/auditTable.vue';
 
-// Import du service API
+// Import du service API et du service de mapping de classes
 import apiService from '@/services/apiService';
+import { getClassByName } from '@/services/classMapping.js';
 
 const { t } = useI18n();
 
@@ -216,15 +217,15 @@ const props = defineProps({
     default: 'creation',
     validator: (value) => ['creation', 'update'].includes(value)
   },
-  objectClass: {
-    type: Function,
-    required: true
-  },
   objectId: {
     type: String,
     default: null
   },
   tabId: {
+    type: String,
+    required: true
+  },
+  className: {
     type: String,
     required: true
   }
@@ -233,9 +234,7 @@ const props = defineProps({
 // Debug des props reçues
 console.log('[ObjectCreationsAndUpdates] Props reçues:');
 console.log('  - mode:', props.mode);
-console.log('  - objectClass:', props.objectClass);
-console.log('  - objectClass type:', typeof props.objectClass);
-console.log('  - objectClass name:', props.objectClass?.name);
+console.log('  - className:', props.className);
 console.log('  - objectId:', props.objectId);
 console.log('  - tabId:', props.tabId);
 
@@ -251,23 +250,30 @@ const auditData = ref([]);
 const validationErrors = ref({});
 const formFields = ref({});
 
+// Computed property pour obtenir la classe du modèle à partir du nom de classe
+const objectClass = computed(() => {
+  const ModelClass = getClassByName(props.className);
+  console.log(`[objectCreationsAndUpdates] Classe obtenue pour ${props.className}:`, ModelClass);
+  return ModelClass;
+});
+
 // Computed properties
 const title = computed(() => {
-  // Dériver le nom du type depuis la classe
-  const objectTypeName = getObjectTypeFromClass(props.objectClass);
+  if (!objectClass.value) return t('common.noClassFound');
   
   if (props.mode === 'creation') {
-    return t(`objectCreationsAndUpdates.${objectTypeName}Creation`);
+    return t(objectClass.value.getCreateTitle());
   } else {
-    return `${t(`objectCreationsAndUpdates.${objectTypeName}Update`)} (${props.objectId || ''})`;
+    // En mode édition, on ajoute l'ID de l'objet
+    return `${t(objectClass.value.getUpdateTitle())} (${props.objectId || ''})`;
   }
 });
 
-// Fonction utilitaire pour dériver le nom du type depuis la classe
-const getObjectTypeFromClass = (ModelClass) => {
-  if (!ModelClass) return 'unknown';
+// Fonction utilitaire pour obtenir le nom du type pour les traductions
+const getObjectTypeName = () => {
+  if (!objectClass.value) return 'unknown';
   
-  const className = ModelClass.name.toLowerCase();
+  const className = objectClass.value.name.toLowerCase();
   // Mapping des noms de classes vers les noms de types utilisés dans les traductions
   const classToTypeMap = {
     'incident': 'incident',
@@ -287,11 +293,13 @@ const getObjectTypeFromClass = (ModelClass) => {
   return classToTypeMap[className] || className;
 };
 
+
+
 // Fonction pour charger les champs de formulaire de manière asynchrone
 const loadFormFields = async () => {
   if (!modelInstance.value) return;
   
-  const objectTypeName = getObjectTypeFromClass(props.objectClass);
+  const objectTypeName = getObjectTypeName();
   const mode = props.mode === 'creation' ? 'for_creation' : 'for_edition';
   
   try {
@@ -314,16 +322,15 @@ const loadFormFields = async () => {
 
 // Méthodes
 const initializeModel = () => {
-  const ModelClass = props.objectClass;
+  const ModelClass = objectClass.value;
   if (ModelClass) {
     modelInstance.value = new ModelClass();
     // Initialiser formData avec les valeurs par défaut du modèle
     formData.value = { ...modelInstance.value };
     console.log(`[objectCreationsAndUpdates] Modèle initialisé pour la classe: ${ModelClass.name}`);
   } else {
-    const objectTypeName = getObjectTypeFromClass(props.objectClass);
-    console.error(`[objectCreationsAndUpdates] Classe de modèle non trouvée: ${objectTypeName}`);
-    error.value = `No model class found for type: ${objectTypeName}`;
+    console.error(`[objectCreationsAndUpdates] Classe de modèle non trouvée pour: ${props.className}`);
+    error.value = `No model class found for type: ${props.className}`;
   }
 };
 
@@ -333,14 +340,13 @@ const fetchObjectData = async () => {
   try {
     loading.value = true;
     
-    // Utiliser directement la classe du modèle passée en prop
-    const ModelClass = props.objectClass;
+    // Utiliser la classe du modèle obtenue via getClassByName
+    const ModelClass = objectClass.value;
     if (!ModelClass) {
-      const objectTypeName = getObjectTypeFromClass(props.objectClass);
-      throw new Error(`No model class found for type: ${objectTypeName}`);
+      throw new Error(`No model class found for className: ${props.className}`);
     }
     
-    const objectTypeName = getObjectTypeFromClass(ModelClass);
+    const objectTypeName = getObjectTypeName();
     console.log(`[fetchObjectData] Utilisation de la classe ${ModelClass.name} pour ${objectTypeName}`);
     
     // Utiliser la méthode getById du modèle si elle existe, sinon utiliser l'approche par défaut

@@ -100,6 +100,14 @@ export class Entity {
   }
 
   /**
+   * Retourne la clé de traduction pour le titre de mise à jour
+   * @returns {string} La clé de traduction
+   */
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.entityUpdate';
+  }
+
+  /**
    * Récupère une entité par son UUID
    * @param {string} uuid - L'UUID de l'entité à récupérer
    * @returns {Promise<Entity>} Une promesse résolue avec l'instance de l'entité

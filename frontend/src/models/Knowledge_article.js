@@ -102,6 +102,11 @@ export class Knowledge_article {
   static getCreateTitle() {
     return 'objectCreationsAndUpdates.knowledgeCreation';
   }
+
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.knowledgeUpdate';
+  }
+  
   constructor(data = {}) {
     // Métadonnées d'identification et de classification
     this.uuid = data.uuid || null;

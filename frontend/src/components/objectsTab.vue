@@ -126,9 +126,7 @@ export default {
         type: 'form',
         icon: 'fas fa-plus',
         mode: 'creation',
-        objectClass: modelClass,
-        class: modelClass,
-        className: modelClass ? modelClass.name : this.data.className,
+        className: this.data.className,
         parentId: this.store.activeTabId
       })
     },
@@ -163,10 +161,8 @@ export default {
               type: 'form',
               icon: 'fas fa-edit',
               mode: 'update',
-              objectClass: this.objectType,
               objectId: row.uuid,
-              class: modelClass,
-              className: modelClass ? modelClass.name : this.data.className, // Ajouter className pour la sérialisation
+              className: this.data.className,
               parentId: this.store.activeTabId
             })
           })

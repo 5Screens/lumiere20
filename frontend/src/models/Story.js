@@ -323,4 +323,8 @@ export class Story {
   static getCreateTitle() {
     return 'objectCreationsAndUpdates.storyCreation';
   }
+
+  static getUpdateTitle() {
+    return 'objectCreationsAndUpdates.storyUpdate';
+  }
 }
