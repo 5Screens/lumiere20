@@ -269,32 +269,6 @@ const title = computed(() => {
   }
 });
 
-// Fonction utilitaire pour obtenir le nom du type pour les traductions
-const getObjectTypeName = () => {
-  if (!objectClass.value) return 'unknown';
-  
-  const className = objectClass.value.name.toLowerCase();
-  // Mapping des noms de classes vers les noms de types utilisés dans les traductions
-  const classToTypeMap = {
-    'incident': 'incident',
-    'entity': 'entity', 
-    'task': 'task',
-    'problem': 'problem',
-    'change': 'change',
-    'knowledge_article': 'knowledge',
-    'project': 'project',
-    'sprint': 'sprint',
-    'epic': 'epic',
-    'story': 'story',
-    'defect': 'defect',
-    'symptom': 'symptom'
-  };
-  
-  return classToTypeMap[className] || className;
-};
-
-
-
 // Fonction pour charger les champs de formulaire de manière asynchrone
 const loadFormFields = async () => {
   if (!modelInstance.value) return;
@@ -345,7 +319,7 @@ const fetchObjectData = async () => {
       throw new Error(`No model class found for className: ${props.className}`);
     }
     
-    const objectTypeName = getObjectTypeName();
+    const objectTypeName = props.className;
     console.log(`[fetchObjectData] Utilisation de la classe ${ModelClass.name} pour ${objectTypeName}`);
     
     // Utiliser la méthode getById du modèle si elle existe, sinon utiliser l'approche par défaut
