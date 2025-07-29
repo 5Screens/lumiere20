@@ -107,6 +107,23 @@ export class Symptom {
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
     
     return {
+      symptom_uuid: {
+        label: 'symptom.uuid',
+        type: 'sTextField',
+        placeholder: 'symptom.uuid_placeholder'
+      },
+      created_at: {
+        label: 'symptom.created_at',
+        type: 'sTextField',
+        placeholder: 'symptom.created_at_placeholder',
+        disabled: true
+      },
+      updated_at: {
+        label: 'symptom.updated_at',
+        type: 'sTextField',
+        placeholder: 'symptom.updated_at_placeholder',
+        disabled: true
+      },
       symptom_code: {
         label: 'symptom.code',
         type: 'sTextField',
@@ -117,7 +134,10 @@ export class Symptom {
         label: 'symptom.label',
         type: 'sMLTextField',
         placeholder: 'symptom.label_placeholder',
-        required: isRequired('libelle')
+        required: isRequired('libelle'),
+        label_uuid: 'symptom_label_uuid',
+        label_lang_code: 'symptom_label_lang_code',
+        label: 'symptom_label'
       }
     };
   }

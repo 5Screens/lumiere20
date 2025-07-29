@@ -120,13 +120,15 @@ class SymptomsService {
                     SELECT 
                         s.uuid as symptom_uuid,
                         s.code as symptom_code,
+                        s.created_at,
+                        s.updated_at,
                         json_agg(
                             json_build_object(
-                                'symptom_label_uuid', st.uuid,
-                                'symptom_label_lang_code', st.langue,
-                                'symptom_label', st.libelle
+                                'label_uuid', st.uuid,
+                                'label_lang_code', st.langue,
+                                'label', st.libelle
                             ) ORDER BY st.langue ASC
-                        ) as symptoms_labels
+                        ) as labels
                     FROM configuration.symptoms s
                     JOIN translations.symptoms_translation st ON s.code = st.symptom_code
                     WHERE s.uuid = $1
@@ -150,7 +152,7 @@ class SymptomsService {
             } else {
                 // Retourner l'objet avec toutes les traductions
                 const symptom = result.rows[0];
-                logger.info(`[SERVICE] getSymptomByUuid - Query executed successfully, found symptom with ${symptom.symptoms_labels.length} translations`);
+                logger.info(`[SERVICE] getSymptomByUuid - Query executed successfully, found symptom with ${symptom.labels.length} translations`);
                 return symptom;
             }
         } catch (error) {
