@@ -443,7 +443,7 @@ const uploadPendingAttachments = async (objectUuid, files) => {
     files.forEach(file => {
       formData.append('files', file);
     });
-    const objectTypeName = getObjectTypeFromClass(props.objectClass);
+    const objectTypeName = props.className;
     formData.append('objectType', objectTypeName.toUpperCase());
     formData.append('objectUuid', objectUuid);
     
@@ -504,17 +504,17 @@ const handleSave = async () => {
     
     // Obtenir l'endpoint à partir de la méthode statique getApiEndpoint du modèle
     let endpoint;
-    const ModelClass = props.objectClass;
-    const objectTypeName = getObjectTypeFromClass(ModelClass);
+    const ModelClass = objectClass.value; // Utiliser la computed property au lieu de props.objectClass
+    const objectTypeName = props.className;
     
-    console.log(`[handleSave] DEBUG - props.objectClass:`, ModelClass);
+    console.log(`[handleSave] DEBUG - objectClass.value:`, ModelClass);
     console.log(`[handleSave] DEBUG - ModelClass type:`, typeof ModelClass);
     console.log(`[handleSave] DEBUG - ModelClass.name:`, ModelClass?.name);
     console.log(`[handleSave] DEBUG - ModelClass.getApiEndpoint:`, typeof ModelClass?.getApiEndpoint);
     console.log(`[handleSave] DEBUG - objectTypeName dérivé:`, objectTypeName);
     
     if (props.mode === 'creation') {
-      // Utiliser directement la classe du modèle passée en prop
+      // Utiliser la classe du modèle depuis la computed property
       if (ModelClass && typeof ModelClass.getApiEndpoint === 'function') {
         endpoint = ModelClass.getApiEndpoint();
         console.log(`[handleSave] Endpoint obtenu via getApiEndpoint pour ${objectTypeName}: ${endpoint}`);
