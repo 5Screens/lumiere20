@@ -204,20 +204,6 @@ import AuditTable from '@/components/common/auditTable.vue';
 // Import du service API
 import apiService from '@/services/apiService';
 
-// Import des modèles
-import { Entity } from '@/models/Entity';
-import { Symptom } from '@/models/Symptom';
-import { Task } from '@/models/Task';
-import { Incident } from '@/models/Incident';
-import { Problem } from '@/models/Problem';
-import { Change } from '@/models/Change';
-import { Knowledge_article } from '@/models/Knowledge_article';
-import { Project } from '@/models/Project';
-import { Sprint } from '@/models/Sprint';
-import { Epic } from '@/models/Epic';
-import { Story } from '@/models/Story';
-import { Defect } from '@/models/Defect';
-
 const { t } = useI18n();
 
 // Initialisation du store des onglets
