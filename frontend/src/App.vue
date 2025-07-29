@@ -236,9 +236,7 @@ export default {
       
       // Ouvrir l'onglet avec les données enrichies
       this.tabsStore.openTab({
-        ...tabData,
-        label: this.$t(`tabs.${tabData.id}`),
-        translatedLabel: this.$t(`tabs.${tabData.id}`) // Texte déjà traduit pour éviter la double traduction
+        ...tabData
       })
     },
     updateTabTitles() {

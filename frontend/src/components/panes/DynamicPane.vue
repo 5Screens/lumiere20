@@ -167,7 +167,7 @@ export default {
       // Émettre l'événement open-tab enrichi avec la classe du modèle
       this.$emit('open-tab', {
         id: item.tabToOpen,
-        title: this.$t(item.label),
+        label: item.label,
         icon: item.icon,
         className: item.className
       })
