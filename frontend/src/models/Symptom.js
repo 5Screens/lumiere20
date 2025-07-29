@@ -6,7 +6,7 @@ export class Symptom {
   constructor(data = {}) {
     // Identifiant unique du symptôme
     this.uuid = data.uuid || null;
-    this.symptom_code = data.symptom_code || '';
+    this.code = data.code || '';
     this.libelle = data.libelle || '';
     this.langue = data.langue || '';
     this.created_at = data.created_at || null;
@@ -107,10 +107,11 @@ export class Symptom {
     const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
     
     return {
-      symptom_uuid: {
+      uuid: {
         label: 'symptom.uuid',
         type: 'sTextField',
-        placeholder: 'symptom.uuid_placeholder'
+        placeholder: 'symptom.uuid_placeholder',
+        disabled: true
       },
       created_at: {
         label: 'symptom.created_at',
@@ -124,20 +125,17 @@ export class Symptom {
         placeholder: 'symptom.updated_at_placeholder',
         disabled: true
       },
-      symptom_code: {
+      code: {
         label: 'symptom.code',
         type: 'sTextField',
         placeholder: 'symptom.code_placeholder',
-        required: isRequired('symptom_code')
+        required: isRequired('code')
       },
       symptoms_labels: {
         label: 'symptom.label',
         type: 'sMLTextField',
         placeholder: 'symptom.label_placeholder',
         required: isRequired('libelle'),
-        label_uuid: 'symptom_label_uuid',
-        label_lang_code: 'symptom_label_lang_code',
-        label: 'symptom_label'
       }
     };
   }

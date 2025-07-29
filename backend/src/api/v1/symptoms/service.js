@@ -118,8 +118,8 @@ class SymptomsService {
                 // Si aucune langue spécifiée, retourner toutes les traductions
                 query = `
                     SELECT 
-                        s.uuid as symptom_uuid,
-                        s.code as symptom_code,
+                        s.uuid as uuid,
+                        s.code as code,
                         s.created_at,
                         s.updated_at,
                         json_agg(
