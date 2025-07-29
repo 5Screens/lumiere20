@@ -300,26 +300,20 @@ export default {
     
     // Utiliser les getters de class pour obtenir l'endpoint API
     getApiEndpoint() {
-      // Récupérer la classe depuis le nom de classe ou depuis this.data.class (fallback)
-      let modelClass = this.data.class;
-      if (!modelClass && this.data.className) {
-        modelClass = getClassByName(this.data.className);
-        console.log('[ObjectsTab] Classe récupérée via classMapping pour endpoint:', modelClass);
-        // Mettre à jour l'onglet avec la classe reconstruite
-        if (modelClass) {
-          this.data.class = modelClass;
-        }
-      }
+      // Récupérer la classe depuis le nom de classe
+      let modelClass = null;
       
-      if (modelClass && typeof modelClass.getApiEndpoint === 'function') {
-        const endpoint = modelClass.getApiEndpoint();
-        console.log('[ObjectsTab] Endpoint API récupéré:', endpoint);
-        return endpoint;
+      modelClass = getClassByName(this.data.className);
+      console.log('[ObjectsTab] Classe récupérée via classMapping pour endpoint:', modelClass);
+      // Mettre à jour l'onglet avec la classe reconstruite
+      if (modelClass) {
+        this.data.class = modelClass;
       }
-      
-      // Endpoint par défaut si la classe n'existe pas
-      console.warn('[ObjectsTab] Aucune classe trouvée, utilisation de l\'endpoint par défaut');
-      return this.data.apiEndpoint || this.objectType || ''
+          
+      const endpoint = modelClass.getApiEndpoint();
+      console.log('[ObjectsTab] Endpoint API récupéré:', endpoint);
+      return endpoint;
+
     }
   }
 }
