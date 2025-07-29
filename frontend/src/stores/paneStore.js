@@ -119,23 +119,23 @@ export const usePaneStore = defineStore('pane', {
             id: 'database',
             label: 'dataPane.database.title',
             items: [
-              { tabToOpen: 'database-catalog', icon: 'fas fa-database', label: 'dataPane.database.catalog', class: null },
-              { tabToOpen: 'database-instance', icon: 'fas fa-database', label: 'dataPane.database.instance', class: null }
+              { tabToOpen: 'database-catalog', icon: 'fas fa-database', label: 'dataPane.database.catalog', className: null },
+              { tabToOpen: 'database-instance', icon: 'fas fa-database', label: 'dataPane.database.instance', className: null }
             ]
           },
           {
             id: 'contracts',
             label: 'dataPane.contracts.title',
             items: [
-              { tabToOpen: 'contract', icon: 'fas fa-file-contract', label: 'dataPane.contracts.contract', class: null },
-              { tabToOpen: 'software-license', icon: 'fas fa-key', label: 'dataPane.contracts.license', class: null }
+              { tabToOpen: 'contract', icon: 'fas fa-file-contract', label: 'dataPane.contracts.contract', className: null },
+              { tabToOpen: 'software-license', icon: 'fas fa-key', label: 'dataPane.contracts.license', className: null }
             ]
           },
           {
             id: 'cloud',
             label: 'dataPane.cloud.title',
             items: [
-              { tabToOpen: 'cloud-service', icon: 'fas fa-cloud-upload-alt', label: 'dataPane.cloud.service', class: null }
+              { tabToOpen: 'cloud-service', icon: 'fas fa-cloud-upload-alt', label: 'dataPane.cloud.service', className: null }
             ]
           }
         ]

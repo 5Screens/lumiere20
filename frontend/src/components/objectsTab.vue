@@ -156,10 +156,7 @@ export default {
         
         const uniqueIdentifier = modelClass.getUniqueIdentifier();
         const childTabLabel = modelClass.getChildTabLabel();
-        
- {
-          // Logique pour les autres types d'objets
-          selectedRows.forEach(row => {
+        selectedRows.forEach(row => {
             this.store.openTab({
               id_tab: `${this.objectType}-form-${row[uniqueIdentifier]}-${Date.now()}`,
               label: row[childTabLabel],
@@ -173,7 +170,7 @@ export default {
               parentId: this.store.activeTabId
             })
           })
-        }
+
       } else {
         this.$emit('error', {
           message: this.$t('errors.selectRowsForUpdate')
