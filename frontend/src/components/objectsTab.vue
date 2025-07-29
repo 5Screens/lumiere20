@@ -57,7 +57,6 @@ export default {
   },
   data() {
     return {
-      apiUrl: this.getApiEndpoint("GET"),
       selectedRow: null,
       objectType: this.data.objectType || '',
       loading: false
@@ -98,16 +97,21 @@ export default {
       
       console.log('[ObjectsTab] Classe du modèle:', modelClass);
       
-      if (modelClass && typeof modelClass.getColumns === 'function') {
-        const columns = modelClass.getColumns();
-        console.log('[ObjectsTab] Colonnes récupérées:', columns.length, 'colonnes');
-        return columns;
+      if (!modelClass) {
+        console.error('[ObjectsTab] Aucune classe de modèle trouvée pour', this.data.className);
+        return [];
       }
       
-      console.warn('[ObjectsTab] Aucune classe de modèle ou méthode getColumns disponible');
-      // Colonnes par défaut si la classe n'existe pas
-      return []
+      return modelClass.getColumns();
     },
+    // Nouvelle propriété calculée pour apiUrl qui sera réactive aux changements de langue
+    apiUrl() {
+      // Récupérer l'endpoint API à chaque fois que cette propriété est accédée
+      // Cela garantit que les changements de langue sont pris en compte
+      const endpoint = this.getApiEndpoint("GET");
+      console.log('[ObjectsTab] apiUrl recalculée:', endpoint);
+      return endpoint;
+    }
     // Les computed properties formType, createTitle, uniqueIdentifier et nameField
     // ont été supprimées car elles sont remplacées par les getters de class
   },
