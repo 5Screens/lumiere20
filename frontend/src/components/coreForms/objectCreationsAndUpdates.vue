@@ -299,18 +299,17 @@ const getObjectTypeName = () => {
 const loadFormFields = async () => {
   if (!modelInstance.value) return;
   
-  const objectTypeName = getObjectTypeName();
   const mode = props.mode === 'creation' ? 'for_creation' : 'for_edition';
   
   try {
     // Récupérer les champs rendables du modèle
     if (typeof modelInstance.value.constructor.getRenderableFields === 'function') {
-      console.log(`[loadFormFields] Chargement des champs pour ${objectTypeName} en mode ${mode}`);
+      console.log(`[loadFormFields] Chargement des champs pour ${props.className} en mode ${mode}`);
       const fields = await modelInstance.value.constructor.getRenderableFields(mode);
       formFields.value = fields;
       console.log(`[loadFormFields] Champs chargés avec succès:`, Object.keys(fields));
     } else {
-      console.warn(`[loadFormFields] La méthode getRenderableFields n'existe pas pour ${objectTypeName}`);
+      console.warn(`[loadFormFields] La méthode getRenderableFields n'existe pas pour ${props.className}`);
       formFields.value = {};
     }
   } catch (err) {
@@ -608,9 +607,7 @@ const handleFieldChange = (fieldName, value) => {
   formData.value[fieldName] = value;
   
   // Mettre à jour l'objet dans le store
-  const objectTypeName = getObjectTypeFromClass(props.objectClass);
   tabsStore.updateObjectInEditing(props.tabId, {
-    objectType: objectTypeName,
     objectId: props.objectId,
     data: { ...formData.value }
   });
@@ -618,9 +615,8 @@ const handleFieldChange = (fieldName, value) => {
 
 const handleFieldSuccess = () => {
   // Mettre à jour l'objet dans le store après une modification réussie
-  const objectTypeName = getObjectTypeFromClass(props.objectClass);
+  
   tabsStore.updateObjectInEditing(props.tabId, {
-    objectType: objectTypeName,
     objectId: props.objectId,
     data: { ...formData.value }
   });
@@ -646,9 +642,8 @@ onMounted(async () => {
   
   // Si c'est un nouvel objet, initialiser dans le store
   if (props.mode === 'creation') {
-    const objectTypeName = getObjectTypeFromClass(props.objectClass);
     tabsStore.setObjectInEditing(props.tabId, {
-      objectType: objectTypeName,
+      objectType: props.className,
       objectId: null,
       data: { ...formData.value }
     });
