@@ -171,7 +171,7 @@ const handleInput = (langCode, value) => {
   emit('update:modelValue', updatedValue)
   
   // Update editing state if in edit mode
-  if (patchendpoint.value) {
+  if (props.patchendpoint) {
     const originalValue = originalValues[langCode] || ''
     editingStates[langCode].valueChanged = value !== originalValue
   }
