@@ -232,8 +232,13 @@ class SymptomsService {
             const currentCode = currentCodeResult.rows[0].code;
             logger.info(`[SERVICE] updateSymptom - Current symptom code: ${currentCode}`);
 
-            // Mettre à jour le code dans la table symptoms
+            // Mettre à jour le code dans les tables en utilisant les contraintes différées
             if (symptomData.code && symptomData.code !== currentCode) {
+                // Différer la vérification de la contrainte de clé étrangère
+                await client.query('SET CONSTRAINTS symptoms_translation_symptom_code_fkey DEFERRED');
+                logger.info('[SERVICE] updateSymptom - Foreign key constraint deferred');
+                
+                // Mettre à jour le code dans la table symptoms
                 const updateSymptomQuery = `
                     UPDATE configuration.symptoms 
                     SET code = $1, updated_at = CURRENT_TIMESTAMP 

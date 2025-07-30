@@ -128,11 +128,6 @@ CREATE TRIGGER validate_ticket_status_dates
     FOR EACH ROW
     EXECUTE FUNCTION valiupdated_at_date();
 
-CREATE TRIGGER validate_symptoms_dates
-    BEFORE UPDATE ON configuration.symptoms
-    FOR EACH ROW
-    EXECUTE FUNCTION valiupdated_at_date();
-
 CREATE TRIGGER validate_ticket_types_translation_dates
     BEFORE UPDATE ON translations.ticket_types_translation
     FOR EACH ROW

@@ -257,12 +257,17 @@ CREATE TABLE translations.ticket_status_translation (
 -- Symptoms Translation
 CREATE TABLE translations.symptoms_translation (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    symptom_code VARCHAR(50) NOT NULL REFERENCES configuration.symptoms(code) ON DELETE RESTRICT,
+    symptom_code VARCHAR(50) NOT NULL,
     lang VARCHAR(5) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(symptom_code, lang)
+    UNIQUE(symptom_code, lang),
+    CONSTRAINT symptoms_translation_symptom_code_fkey 
+        FOREIGN KEY (symptom_code) 
+        REFERENCES configuration.symptoms(code) 
+        ON DELETE RESTRICT 
+        DEFERRABLE INITIALLY IMMEDIATE
 );
 
 -- Tables de Relations --

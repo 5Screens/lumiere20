@@ -1,11 +1,3 @@
--- Function pour mettre à jour automatiquement la date de modification
-CREATE OR REPLACE FUNCTION update_date_modification()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.date_modification = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
 -- Function pour valider le format email
 CREATE OR REPLACE FUNCTION validate_email(email TEXT)
