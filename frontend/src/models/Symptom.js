@@ -13,8 +13,8 @@ export class Symptom {
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
-      { name: 'code', label: i18n.global.t('symptomsTable.headers.symptomCode') },
-      { name: 'labels', label: i18n.global.t('symptomsTable.headers.symptomLabel') }
+      { name: 'code', label: 'symptom.code' },
+      { name: 'labels', label: 'symptom.label' }
     ];
   }
 
@@ -98,46 +98,55 @@ export class Symptom {
     }
   }
 
-  static getRenderableFields() {
-    
-    // Fonction utilitaire pour déterminer si un champ est obligatoire
-    const dynamicLabels = new Symptom();
-    const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
-    
-    return {
-      uuid: {
-        label: 'symptom.uuid',
-        type: 'sTextField',
-        placeholder: 'symptom.uuid_placeholder',
-        disabled: true
-      },
-      created_at: {
-        label: 'symptom.created_at',
-        type: 'sTextField',
-        placeholder: 'symptom.created_at_placeholder',
-        disabled: true
-      },
-      updated_at: {
-        label: 'symptom.updated_at',
-        type: 'sTextField',
-        placeholder: 'symptom.updated_at_placeholder',
-        disabled: true
-      },
-      code: {
-        label: 'symptom.code',
-        type: 'sTextField',
-        placeholder: 'symptom.code_placeholder',
-        required: isRequired('code')
-      },
-      labels: {
-        label: 'symptom.labels',
-        type: 'sMLTextField',
-        placeholder: 'symptom.label_placeholder',
-        required: isRequired('libelle'),
-        patchEndpoint: 'symptoms_translations',
-      }
-    };
+  static getRenderableFields(mode = 'for_creation') {
+  
+  // Fonction utilitaire pour déterminer si un champ est obligatoire
+  const dynamicLabels = new Symptom();
+  const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
+  
+  const fields = {
+    uuid: {
+      label: 'symptom.uuid',
+      type: 'sTextField',
+      placeholder: 'symptom.uuid_placeholder',
+      disabled: true
+    },
+    created_at: {
+      label: 'symptom.created_at',
+      type: 'sTextField',
+      placeholder: 'symptom.created_at_placeholder',
+      disabled: true
+    },
+    updated_at: {
+      label: 'symptom.updated_at',
+      type: 'sTextField',
+      placeholder: 'symptom.updated_at_placeholder',
+      disabled: true
+    },
+    code: {
+      label: 'symptom.code',
+      type: 'sTextField',
+      placeholder: 'symptom.code_placeholder',
+      required: isRequired('code')
+    },
+    labels: {
+      label: 'symptom.labels',
+      type: 'sMLTextField',
+      placeholder: 'symptom.label_placeholder',
+      required: isRequired('labels'),
+      patchEndpoint: 'symptoms_translations',
+    }
+  };
+  
+  // Supprimer les champs système en mode création
+  if (mode === 'for_creation') {
+    delete fields.uuid;
+    delete fields.created_at;
+    delete fields.updated_at;
   }
+  
+  return fields;
+}
 
   toAPI(method) {
     console.log('[Symptom.toAPI] Starting conversion to API format', { method });
@@ -150,8 +159,14 @@ export class Symptom {
     
     switch (method.toUpperCase()) {
       case 'POST':
-        console.log('[Symptom.toAPI] Processing POST request - returning all base fields');
-        return baseFields;
+        console.log('[Symptom.toAPI] Processing POST request - returning base fields without system fields');
+        // Créer une copie des champs de base
+        const postData = { ...baseFields };
+        // Supprimer les champs système pour POST
+        delete postData.uuid;
+        delete postData.created_at;
+        delete postData.updated_at;
+        return postData;
         
       case 'PUT':
         console.log('[Symptom.toAPI] Processing PUT request - returning all fields with uuid');
