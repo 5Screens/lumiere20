@@ -46,7 +46,7 @@
         />
         
         <div 
-          v-if="editingStates[lang.code]?.isEditing && editingStates[lang.code]?.valueChanged && patchendpoint" 
+          v-if="editingStates[lang.code]?.isEditing && editingStates[lang.code]?.valueChanged && edition" 
           class="s-ml-text-field__actions"
         >
           <RgButton
@@ -88,6 +88,10 @@ const props = defineProps({
   patchendpoint: {
     type: String,
     default: ''
+  },
+  edition: {
+    type: Boolean,
+    default: false
   }
 })
 
