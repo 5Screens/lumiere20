@@ -134,6 +134,7 @@ export class Symptom {
         type: 'sMLTextField',
         placeholder: 'symptom.label_placeholder',
         required: isRequired('libelle'),
+        patchEndpoint: 'symptoms_translations',
       }
     };
   }

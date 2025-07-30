@@ -175,7 +175,7 @@
             :global_label="field.label ? $t(field.label) : null"
             :required="field.required"
             :disabled="field.disabled"
-            :patchendpoint="mode === 'update' && objectId ? (modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : '') : ''"
+            :patchendpoint="field.patchEndpoint"
             @update:modelValue="handleFieldChange(fieldName, $event)"
             @update:success="handleFieldSuccess"
             @field-change-cancelled="() => {}"
