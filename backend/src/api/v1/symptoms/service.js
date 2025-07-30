@@ -16,7 +16,7 @@ class SymptomsService {
                 FROM translations.symptoms_translation st
                 JOIN configuration.symptoms s ON s.code = st.symptom_code
                 WHERE st.langue = $1
-                ORDER BY st.libelle ASC
+                ORDER BY updated_at DESC
             `;
             
             const result = await pool.query(query, [lang]);

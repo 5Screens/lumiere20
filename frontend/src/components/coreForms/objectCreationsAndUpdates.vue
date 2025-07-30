@@ -7,7 +7,7 @@
           icon="fas fa-save"
           variant="primary"
           :loading="loading"
-          @click="handleSave"
+          @click="handleSaveOrUpdate"
           :title="$t('common.save')"
           label=""
         />
@@ -590,6 +590,25 @@ const handleSave = async () => {
     console.log('[handleSave] Fin du traitement, désactivation du chargement');
     loading.value = false;
   }
+};
+
+// Méthode principale qui détermine quelle action effectuer selon le mode
+const handleSaveOrUpdate = () => {
+  console.log(`[handleSaveOrUpdate] Mode actuel: ${props.mode}`);
+  
+  if (props.mode === 'update') {
+    console.log('[handleSaveOrUpdate] Mode update détecté, appel de handleUpdate');
+    handleUpdate();
+  } else {
+    console.log('[handleSaveOrUpdate] Mode création détecté, appel de handleSave');
+    handleSave();
+  }
+};
+
+// Méthode pour gérer les mises à jour (à compléter plus tard)
+const handleUpdate = () => {
+  console.log('[handleUpdate] Méthode handleUpdate appelée - à implémenter');
+  // TODO: Implémenter la logique de mise à jour
 };
 
 const handleFieldChange = (fieldName, value) => {
