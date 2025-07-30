@@ -43,7 +43,7 @@ export class Symptom {
   static getApiEndpoint(method) {
     const userProfileStore = useUserProfileStore();
     
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+    if (method === 'POST' || method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
       return 'symptoms';
     } else {
       return `symptoms?lang=${userProfileStore.language}`;
@@ -166,6 +166,11 @@ export class Symptom {
         delete postData.uuid;
         delete postData.created_at;
         delete postData.updated_at;
+        // Supprimer les uuid des labels
+        postData.labels = postData.labels.map(label => {
+          delete label.label_uuid;
+          return label;
+        });
         return postData;
         
       case 'PUT':

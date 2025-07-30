@@ -177,18 +177,18 @@ class SymptomsService {
             const symptomResult = await client.query(symptomQuery, [symptomData.code]);
             logger.info(`[SERVICE] createSymptom - Inserted into configuration.symptoms with code: ${symptomData.code}`);
 
-            // Insérer les traductions
+            // Insérer les traductions (labels)
             const translationQuery = `
                 INSERT INTO translations.symptoms_translation (symptom_code, langue, libelle)
                 VALUES ($1, $2, $3)
                 RETURNING *
             `;
 
-            const translationPromises = symptomData.translations.map(translation =>
+            const translationPromises = symptomData.labels.map(label =>
                 client.query(translationQuery, [
                     symptomData.code,
-                    translation.langue,
-                    translation.libelle
+                    label.label_lang_code,
+                    label.label
                 ])
             );
 
@@ -200,7 +200,11 @@ class SymptomsService {
 
             return {
                 code: symptomResult.rows[0].code,
-                translations: translationResults.map(result => result.rows[0])
+                labels: translationResults.map(result => ({
+                    label_uuid: result.rows[0].uuid,
+                    label_lang_code: result.rows[0].langue,
+                    label: result.rows[0].libelle
+                }))
             };
         } catch (error) {
             await client.query('ROLLBACK');

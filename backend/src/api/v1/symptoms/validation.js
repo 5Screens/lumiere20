@@ -43,10 +43,10 @@ const getSymptomByUuid = {
 const createSymptom = {
     body: Joi.object({
         code: Joi.string().max(50).required(),
-        translations: Joi.array().items(
+        labels: Joi.array().items(
             Joi.object({
-                langue: Joi.string().length(2).required(),
-                libelle: Joi.string().max(255).required()
+                label_lang_code: Joi.string().length(2).required(),
+                label: Joi.string().max(255).required()
             })
         ).min(1).required()
     }).options({ 

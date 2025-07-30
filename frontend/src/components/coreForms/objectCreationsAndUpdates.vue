@@ -505,7 +505,7 @@ const handleSave = async () => {
     if (props.mode === 'creation') {
       // Utiliser la classe du modèle depuis la computed property
       if (ModelClass && typeof ModelClass.getApiEndpoint === 'function') {
-        endpoint = ModelClass.getApiEndpoint();
+        endpoint = ModelClass.getApiEndpoint('POST');
         console.log(`[handleSave] Endpoint obtenu via getApiEndpoint pour ${objectTypeName}: ${endpoint}`);
       } else {
         // Fallback au cas où la méthode getApiEndpoint n'existe pas
@@ -515,7 +515,7 @@ const handleSave = async () => {
     } else {
       // Pour les mises à jour, on ajoute l'ID à l'endpoint
       if (ModelClass && typeof ModelClass.getApiEndpoint === 'function') {
-        const baseEndpoint = ModelClass.getApiEndpoint();
+        const baseEndpoint = ModelClass.getApiEndpoint('PUT');
         endpoint = `${baseEndpoint}/${props.objectId}`;
         console.log(`[handleSave] Mode mise à jour pour ${objectTypeName}, endpoint: ${endpoint}`);
       } else {
