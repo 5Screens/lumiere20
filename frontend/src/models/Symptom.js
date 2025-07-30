@@ -130,7 +130,7 @@ export class Symptom {
         required: isRequired('code')
       },
       labels: {
-        label: 'symptom.label',
+        label: 'symptom.labels',
         type: 'sMLTextField',
         placeholder: 'symptom.label_placeholder',
         required: isRequired('libelle'),

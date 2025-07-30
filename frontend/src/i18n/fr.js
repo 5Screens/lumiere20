@@ -176,11 +176,12 @@ export default {
     performance: 'Performances de la plateforme',
     backup: 'Sauvegarde et restauration'
   },
-  symptoms: {
-    createTitle: 'Créer un symptôme',
-    updateTitle: 'Modifier le symptôme {code}',
-    name: 'Nom du symptôme',
+  symptom: {
+    uuid: 'Identifiant',
+    created_at: 'Créé le',
+    updated_at: 'Dernière mise à jour le',
     code: 'Code du symptôme',
+    labels: 'Libellés du symptôme dans les langues actives',
     saveSuccess: 'Symptôme enregistré avec succès',
     saveError: 'Erreur lors de l\'enregistrement du symptôme',
     updateSuccess: 'Traductions mises à jour avec succès',
