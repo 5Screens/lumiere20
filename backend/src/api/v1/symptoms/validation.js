@@ -55,6 +55,27 @@ const createSymptom = {
     })
 };
 
+const updateSymptom = {
+    params: Joi.object({
+        uuid: Joi.string().uuid().required()
+            .messages({
+                'string.guid': 'L\'UUID doit être un UUID valide',
+                'any.required': 'L\'UUID est requis'
+            })
+    }),
+    body: Joi.object({
+        code: Joi.string().max(50).required()
+            .messages({
+                'string.max': 'Le code ne peut pas dépasser 50 caractères',
+                'any.required': 'Le code est requis',
+                'string.empty': 'Le code ne peut pas être vide'
+            })
+    }).options({ 
+        abortEarly: false,
+        stripUnknown: true 
+    })
+};
+
 // Nouveau schéma pour la validation du paramètre lang
 const getSymptomsWithLang = {
     query: Joi.object({
@@ -127,6 +148,7 @@ module.exports = {
     getSymptomByCode,
     getSymptomByUuid,
     createSymptom,
+    updateSymptom,
     validateSymptom,
     validateGetSymptomsWithLang
 };

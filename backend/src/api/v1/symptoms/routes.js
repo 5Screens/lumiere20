@@ -59,6 +59,18 @@ router.get(
     symptomsController.getSymptomByUuid
 );
 
+// Route pour mettre à jour un symptôme par son UUID via un PATCH
+//http://localhost:3000/api/v1/symptoms/550e8400-e29b-41d4-a716-446655440000
+router.patch(
+    '/:uuid',
+    (req, res, next) => {
+        logger.info(`[ROUTES] PATCH /api/v1/symptoms/:uuid - Route handler started with uuid=${req.params.uuid}`);
+        next();
+    },
+    validate(symptomsValidation.updateSymptom),
+    symptomsController.updateSymptom
+);
+
 // Route pour créer un nouveau symptôme via un POST
 //http://localhost:3000/api/v1/symptoms
 router.post(

@@ -125,6 +125,41 @@ class SymptomsController {
             });
         }
     }
+
+    async updateSymptom(req, res) {
+        logger.info('[CONTROLLER] updateSymptom - Starting to process request');
+        try {
+            const { uuid } = req.params;
+            const symptomData = req.body;
+            
+            logger.info(`[CONTROLLER] updateSymptom - Updating symptom with UUID: ${uuid}`);
+            const updatedSymptom = await symptomsService.updateSymptom(uuid, symptomData);
+            
+            logger.info('[CONTROLLER] updateSymptom - Symptom updated successfully');
+            return res.status(200).json(updatedSymptom);
+        } catch (error) {
+            logger.error(`[CONTROLLER] updateSymptom - Error: ${error.message}`);
+            
+            if (error.message.includes('not found')) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Symptôme non trouvé'
+                });
+            }
+            
+            if (error.code === '23505') { // Code d'erreur PostgreSQL pour violation de contrainte unique
+                return res.status(409).json({
+                    success: false,
+                    message: 'Un symptôme avec ce code existe déjà'
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Une erreur est survenue lors de la mise à jour du symptôme'
+            });
+        }
+    }
 }
 
 module.exports = new SymptomsController();

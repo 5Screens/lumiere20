@@ -211,6 +211,65 @@ class SymptomsService {
             logger.info('[SERVICE] createSymptom - Database client released');
         }
     }
+
+    async updateSymptom(uuid, symptomData) {
+        logger.info(`[SERVICE] updateSymptom - Starting transaction for UUID: ${uuid}`);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            logger.info('[SERVICE] updateSymptom - Transaction started');
+
+            // Récupérer le code actuel du symptôme
+            const getCurrentCodeQuery = `
+                SELECT code FROM configuration.symptoms WHERE uuid = $1
+            `;
+            const currentCodeResult = await client.query(getCurrentCodeQuery, [uuid]);
+            
+            if (currentCodeResult.rows.length === 0) {
+                throw new Error(`Symptom with UUID ${uuid} not found`);
+            }
+            
+            const currentCode = currentCodeResult.rows[0].code;
+            logger.info(`[SERVICE] updateSymptom - Current symptom code: ${currentCode}`);
+
+            // Mettre à jour le code dans la table symptoms
+            if (symptomData.code && symptomData.code !== currentCode) {
+                const updateSymptomQuery = `
+                    UPDATE configuration.symptoms 
+                    SET code = $1, updated_at = CURRENT_TIMESTAMP 
+                    WHERE uuid = $2
+                    RETURNING code
+                `;
+                const symptomResult = await client.query(updateSymptomQuery, [symptomData.code, uuid]);
+                logger.info(`[SERVICE] updateSymptom - Updated symptom code from ${currentCode} to ${symptomData.code}`);
+                
+                // Mettre à jour les codes dans la table de traductions
+                const updateTranslationCodesQuery = `
+                    UPDATE translations.symptoms_translation 
+                    SET symptom_code = $1, updated_at = CURRENT_TIMESTAMP 
+                    WHERE symptom_code = $2
+                `;
+                const translationResult = await client.query(updateTranslationCodesQuery, [symptomData.code, currentCode]);
+                logger.info(`[SERVICE] updateSymptom - Updated ${translationResult.rowCount} translation codes from ${currentCode} to ${symptomData.code}`);
+            } else {
+                logger.info('[SERVICE] updateSymptom - No code change requested or code is identical');
+            }
+
+            await client.query('COMMIT');
+            logger.info('[SERVICE] updateSymptom - Transaction committed successfully');
+
+            // Récupérer et retourner le symptôme mis à jour
+            const updatedSymptom = await this.getSymptomByUuid(uuid);
+            return updatedSymptom;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            logger.error(`[SERVICE] updateSymptom - Transaction rolled back due to error: ${error.message}`);
+            throw error;
+        } finally {
+            client.release();
+            logger.info('[SERVICE] updateSymptom - Database client released');
+        }
+    }
 }
 
 module.exports = new SymptomsService();
