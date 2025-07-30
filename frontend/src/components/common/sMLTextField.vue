@@ -121,8 +121,16 @@ const getFlagEmoji = (langCode) => {
 }
 
 const getValueForLanguage = (langCode) => {
+  console.log(`[sMLTextField] getValueForLanguage called with langCode: ${langCode}`)
+  console.log('[sMLTextField] modelValue:', props.modelValue)
+  
   const item = props.modelValue?.find(item => item.label_lang_code === langCode)
-  return item?.label || ''
+  console.log(`[sMLTextField] Found item for ${langCode}:`, item)
+  
+  const value = item?.label || ''
+  console.log(`[sMLTextField] Returning value for ${langCode}:`, value)
+  
+  return value
 }
 
 const getUuidForLanguage = (langCode) => {
@@ -257,25 +265,46 @@ const cancelChange = (langCode) => {
 
 // Initialize component
 const loadActiveLanguages = async () => {
+  console.log('[sMLTextField] Starting loadActiveLanguages...')
+  
   try {
+    console.log('[sMLTextField] Calling API: languages?is_active=yes')
     const response = await apiService.get('languages?is_active=yes')
+    console.log('[sMLTextField] API response received:', response)
+    
     activeLanguages.value = response || []
+    console.log('[sMLTextField] Active languages set:', activeLanguages.value.length, 'languages found')
     
     // Initialize editing states for all languages
+    console.log('[sMLTextField] Initializing editing states for all languages...')
     activeLanguages.value.forEach(lang => {
+      console.log('[sMLTextField] Initializing editing state for language:', lang.code)
       initializeEditingState(lang.code)
     })
     
     // Store original values if in edit mode
     if (props.patchendpoint) {
+      console.log('[sMLTextField] Patch endpoint detected, storing original values...')
       activeLanguages.value.forEach(lang => {
-        originalValues[lang.code] = getValueForLanguage(lang.code)
+        const originalValue = getValueForLanguage(lang.code)
+        originalValues[lang.code] = originalValue
+        console.log(`[sMLTextField] Original value for ${lang.code}:`, originalValue)
       })
+    } else {
+      console.log('[sMLTextField] No patch endpoint, skipping original values storage')
     }
     
+    console.log('[sMLTextField] loadActiveLanguages completed successfully')
+    
   } catch (error) {
-    console.error('Error loading active languages:', error)
+    console.error('[sMLTextField] Error loading active languages:', error)
+    console.error('[sMLTextField] Error details:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response
+    })
     activeLanguages.value = []
+    console.log('[sMLTextField] Active languages reset to empty array due to error')
   }
 }
 

@@ -7,16 +7,14 @@ export class Symptom {
     // Identifiant unique du symptôme
     this.uuid = data.uuid || null;
     this.code = data.code || '';
-    this.libelle = data.libelle || '';
-    this.langue = data.langue || '';
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
+    this.labels = data.labels || [];
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
-      { name: 'symptom_code', label: i18n.global.t('symptomsTable.headers.symptomCode') },
-      { name: 'libelle', label: i18n.global.t('symptomsTable.headers.symptomLabel') },
-      { name: 'langue', label: i18n.global.t('symptomsTable.headers.symptomLanguage') }
+      { name: 'code', label: i18n.global.t('symptomsTable.headers.symptomCode') },
+      { name: 'labels', label: i18n.global.t('symptomsTable.headers.symptomLabel') }
     ];
   }
 
@@ -131,7 +129,7 @@ export class Symptom {
         placeholder: 'symptom.code_placeholder',
         required: isRequired('code')
       },
-      symptoms_labels: {
+      labels: {
         label: 'symptom.label',
         type: 'sMLTextField',
         placeholder: 'symptom.label_placeholder',
@@ -145,9 +143,8 @@ export class Symptom {
     
     // Base object with common fields
     const baseFields = {
-      symptom_code: this.symptom_code,
-      symptoms_labels: this.libelle,
-      langue: this.langue
+      code: this.code,
+      labels: this.labels,
     };
     
     switch (method.toUpperCase()) {
