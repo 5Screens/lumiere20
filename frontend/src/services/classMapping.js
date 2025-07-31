@@ -15,6 +15,7 @@ import { Sprint } from '@/models/Sprint'
 import { Epic } from '@/models/Epic'
 import { Story } from '@/models/Story'
 import { Defect } from '@/models/Defect'
+import { ContactType } from '@/models/ContactType'
 
 /**
  * Mapping des noms de classes vers les classes JavaScript
@@ -31,7 +32,8 @@ const CLASS_MAP = {
   'Sprint': Sprint,
   'Epic': Epic,
   'Story': Story,
-  'Defect': Defect
+  'Defect': Defect,
+  'ContactType': ContactType
 }
 
 /**

@@ -60,6 +60,44 @@ const validateGetContactTypes = async (req, res, next) => {
     }
 };
 
+const validateUpdateContactType = {
+    params: Joi.object({
+        uuid: Joi.string().uuid().required()
+            .messages({
+                'string.guid': 'L\'UUID doit être un UUID valide',
+                'any.required': 'L\'UUID est requis'
+            })
+    }),
+    body: Joi.object({
+        code: Joi.string().max(50).required()
+            .messages({
+                'string.max': 'Le code ne peut pas dépasser 50 caractères',
+                'any.required': 'Le code est requis',
+                'string.empty': 'Le code ne peut pas être vide'
+            })
+    }).options({ 
+        abortEarly: false,
+        stripUnknown: true 
+    })
+};
+
+const validateCreateContactType = {
+    body: Joi.object({
+        code: Joi.string().max(50).required(),
+        labels: Joi.array().items(
+            Joi.object({
+                label_lang_code: Joi.string().length(2).required(),
+                label: Joi.string().max(255).required()
+            })
+        ).min(1).required()
+    }).options({ 
+        abortEarly: false,
+        stripUnknown: true 
+    })
+};
+
 module.exports = {
-    validateGetContactTypes
+    validateGetContactTypes,
+    validateUpdateContactType,
+    validateCreateContactType
 };
