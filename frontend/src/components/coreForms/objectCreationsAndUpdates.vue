@@ -594,10 +594,28 @@ const handleSaveOrUpdate = () => {
   }
 };
 
-// Méthode pour gérer les mises à jour (à compléter plus tard)
+// Méthode pour gérer les mises à jour
 const handleUpdate = () => {
-  console.log('[handleUpdate] Méthode handleUpdate appelée - à implémenter');
-  // TODO: Implémenter la logique de mise à jour
+  console.log('[handleUpdate] Déclenchement des mises à jour des composants de formulaire');
+  
+  // Déclencher les mises à jour en simulant un clic sur tous les boutons de confirmation visibles
+  // Cela va déclencher les méthodes confirmChange/confirmChanges des composants en mode édition
+  const confirmButtons = document.querySelectorAll('.rg-button--confirm');
+  
+  if (confirmButtons.length > 0) {
+    console.log(`[handleUpdate] ${confirmButtons.length} bouton(s) de confirmation trouvé(s)`);
+    
+    confirmButtons.forEach((button, index) => {
+      if (button.offsetParent !== null) { // Vérifier que le bouton est visible
+        console.log(`[handleUpdate] Clic sur le bouton de confirmation ${index + 1}`);
+        button.click();
+      }
+    });
+    
+    console.log('[handleUpdate] Tous les boutons de confirmation ont été cliqués');
+  } else {
+    console.log('[handleUpdate] Aucun bouton de confirmation trouvé - aucune modification en attente');
+  }
 };
 
 const handleFieldChange = (fieldName, value) => {
