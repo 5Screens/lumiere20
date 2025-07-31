@@ -502,27 +502,16 @@ const handleSave = async () => {
     console.log(`[handleSave] DEBUG - ModelClass.getApiEndpoint:`, typeof ModelClass?.getApiEndpoint);
     console.log(`[handleSave] DEBUG - objectTypeName dérivé:`, objectTypeName);
     
-    if (props.mode === 'creation') {
-      // Utiliser la classe du modèle depuis la computed property
-      if (ModelClass && typeof ModelClass.getApiEndpoint === 'function') {
-        endpoint = ModelClass.getApiEndpoint('POST');
-        console.log(`[handleSave] Endpoint obtenu via getApiEndpoint pour ${objectTypeName}: ${endpoint}`);
-      } else {
-        // Fallback au cas où la méthode getApiEndpoint n'existe pas
-        endpoint = `${objectTypeName}s`;
-        console.log(`[handleSave] Méthode getApiEndpoint non disponible pour ${objectTypeName}, utilisation du fallback: ${endpoint}`);
-      }
+    // Utiliser la classe du modèle depuis la computed property
+    if (ModelClass && typeof ModelClass.getApiEndpoint === 'function') {
+      endpoint = ModelClass.getApiEndpoint('POST');
+      console.log(`[handleSave] Endpoint obtenu via getApiEndpoint pour ${objectTypeName}: ${endpoint}`);
     } else {
-      // Pour les mises à jour, on ajoute l'ID à l'endpoint
-      if (ModelClass && typeof ModelClass.getApiEndpoint === 'function') {
-        const baseEndpoint = ModelClass.getApiEndpoint('PUT');
-        endpoint = `${baseEndpoint}/${props.objectId}`;
-        console.log(`[handleSave] Mode mise à jour pour ${objectTypeName}, endpoint: ${endpoint}`);
-      } else {
-        endpoint = `${objectTypeName}s/${props.objectId}`;
-        console.log(`[handleSave] Mode mise à jour fallback pour ${objectTypeName}, endpoint: ${endpoint}`);
-      }
+      // Fallback au cas où la méthode getApiEndpoint n'existe pas
+      endpoint = `${objectTypeName}s`;
+      console.log(`[handleSave] Méthode getApiEndpoint non disponible pour ${objectTypeName}, utilisation du fallback: ${endpoint}`);
     }
+
     
     // Vérifier s'il y a des pièces jointes à uploader dans formData
     let pendingAttachments = [];
