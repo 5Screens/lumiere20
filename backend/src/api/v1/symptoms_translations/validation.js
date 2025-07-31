@@ -1,21 +1,6 @@
 const Joi = require('joi');
 const logger = require('../../../config/logger');
 
-const updateSymptomTranslation = {
-    params: Joi.object({
-        uuid: Joi.string().uuid().required()
-    }).options({ 
-        abortEarly: false,
-        stripUnknown: true 
-    }),
-    body: Joi.object({
-        libelle: Joi.string().max(255).required()
-    }).options({ 
-        abortEarly: false,
-        stripUnknown: true 
-    })
-};
-
 const patchSymptomTranslation = {
     params: Joi.object({
         uuid: Joi.string().uuid().required()
@@ -44,7 +29,6 @@ const validateSymptomTranslation = (schema, data) => {
 };
 
 module.exports = {
-    updateSymptomTranslation,
     patchSymptomTranslation,
     validateSymptomTranslation
 };
