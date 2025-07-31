@@ -594,23 +594,34 @@ const handleSaveOrUpdate = () => {
   }
 };
 
-// Méthode pour gérer les mises à jour
-const handleUpdate = () => {
+// Méthode pour gérer les mises à jour (optimisée pour les performances)
+const handleUpdate = async () => {
   console.log('[handleUpdate] Déclenchement des mises à jour des composants de formulaire');
   
   // Déclencher les mises à jour en simulant un clic sur tous les boutons de confirmation visibles
-  // Cela va déclencher les méthodes confirmChange/confirmChanges des composants en mode édition
+  // Avec des délais pour éviter la surcharge du navigateur
   const confirmButtons = document.querySelectorAll('.rg-button--confirm');
   
   if (confirmButtons.length > 0) {
     console.log(`[handleUpdate] ${confirmButtons.length} bouton(s) de confirmation trouvé(s)`);
     
-    confirmButtons.forEach((button, index) => {
+    // Traiter les boutons un par un avec un délai pour éviter la surcharge
+    for (let i = 0; i < confirmButtons.length; i++) {
+      const button = confirmButtons[i];
+      
       if (button.offsetParent !== null) { // Vérifier que le bouton est visible
-        console.log(`[handleUpdate] Clic sur le bouton de confirmation ${index + 1}`);
+        console.log(`[handleUpdate] Clic sur le bouton de confirmation ${i + 1}/${confirmButtons.length}`);
+        
+        // Cliquer sur le bouton
         button.click();
+        
+        // Attendre un court délai pour permettre au navigateur de traiter l'événement
+        // avant de passer au suivant (seulement s'il y a plus d'un bouton)
+        if (confirmButtons.length > 1 && i < confirmButtons.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 50)); // 50ms de délai
+        }
       }
-    });
+    }
     
     console.log('[handleUpdate] Tous les boutons de confirmation ont été cliqués');
   } else {
