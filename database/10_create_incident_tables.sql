@@ -159,12 +159,17 @@ $$;
 
 CREATE TABLE translations.contact_types_labels (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_contact_type_code VARCHAR(50) NOT NULL REFERENCES configuration.contact_types(code),
+    rel_contact_type_code VARCHAR(50) NOT NULL,
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(rel_contact_type_code, language)
+    UNIQUE(rel_contact_type_code, language),
+    CONSTRAINT contact_types_labels_rel_contact_type_code_fkey 
+        FOREIGN KEY (rel_contact_type_code) 
+        REFERENCES configuration.contact_types(code) 
+        ON DELETE RESTRICT 
+        DEFERRABLE INITIALLY IMMEDIATE
 );
 
 -- Create incident_resolution_codes table

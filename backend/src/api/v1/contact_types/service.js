@@ -114,6 +114,10 @@ async function updateContactType(uuid, contactTypeData) {
     try {
         await client.query('BEGIN');
         logger.info('[SERVICE] updateContactType - Transaction started');
+        
+        // Différer la contrainte de clé étrangère pour permettre la mise à jour du code
+        await client.query('SET CONSTRAINTS contact_types_labels_rel_contact_type_code_fkey DEFERRED');
+        logger.info('[SERVICE] updateContactType - Foreign key constraint deferred');
 
         // Récupérer le code actuel du type de contact
         const getCurrentCodeQuery = `
