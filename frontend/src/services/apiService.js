@@ -1,5 +1,6 @@
 // services/apiService.js
 import { API_BASE_URL } from '@/config/config';
+import { useTabsStore } from '@/stores/tabsStore';
 
 /**
  * Service pour gérer les appels API
@@ -43,6 +44,8 @@ export default {
       return data;
     } catch (error) {
       console.error(`[API Error] GET ${endpoint}:`, error);
+      const tabsStore = useTabsStore()
+      tabsStore.setMessage('Error getting ' + endpoint + ' : ' + error.message)
       throw error;
     }
   },
@@ -87,6 +90,8 @@ export default {
       return responseData;
     } catch (error) {
       console.error(`[API Error] POST ${endpoint}:`, error);
+      const tabsStore = useTabsStore()
+      tabsStore.setMessage('Error posting ' + endpoint + ' : ' + error.message)
       throw error;
     }
   },
@@ -115,6 +120,8 @@ export default {
       return await response.json();
     } catch (error) {
       console.error(`Erreur lors de la requête PUT à ${endpoint}:`, error);
+      const tabsStore = useTabsStore()
+      tabsStore.setMessage('Error putting ' + endpoint + ' : ' + error.message)
       throw error;
     }
   },
@@ -146,6 +153,8 @@ export default {
       return responseData;
     } catch (error) {
       console.error(`[API Error] DELETE ${endpoint}:`, error);
+      const tabsStore = useTabsStore()
+      tabsStore.setMessage('Error deleting ' + endpoint + ' : ' + error.message)
       throw error;
     }
   },
@@ -183,6 +192,8 @@ export default {
       return responseData;
     } catch (error) {
       console.error(`[API Error] PATCH ${endpoint}:`, error);
+      const tabsStore = useTabsStore()
+      tabsStore.setMessage('Error patching ' + endpoint + ' : ' + error.message)
       throw error;
     }
   },
@@ -269,6 +280,8 @@ export default {
       return responseData;
     } catch (error) {
       console.error(`[API Error] POST FormData ${endpoint}:`, error);
+      const tabsStore = useTabsStore()
+      tabsStore.setMessage('Error uploading to ' + endpoint + ' : ' + error.message)
       throw error;
     }
   }
