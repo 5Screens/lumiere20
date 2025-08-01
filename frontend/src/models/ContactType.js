@@ -30,8 +30,8 @@ export class ContactType {
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'code', label: t('contactType.code'), type: 'text' },
-      { key: 'label', label: t('contactType.name'), type: 'text' },
-      { key: 'language', label: t('language.title'), type: 'text' }
+      { key: 'label', label: t('contactType.label'), type: 'text' },
+      { key: 'lang', label: t('language.title'), type: 'text' }
     ];
   }
 
