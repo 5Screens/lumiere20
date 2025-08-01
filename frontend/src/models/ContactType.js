@@ -10,6 +10,11 @@ export class ContactType {
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
     this.labels = data.labels || [];
+    //Ajouter code dans un attribut parent_code pour chacun des item de labels
+    this.labels.forEach(label => {
+      label.parent_code = this.code;
+    });
+    
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [

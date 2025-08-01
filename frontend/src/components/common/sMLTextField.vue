@@ -202,30 +202,55 @@ const confirmChange = async (langCode) => {
   const uuid = getUuidForLanguage(langCode)
   const newValue = getValueForLanguage(langCode)
   
-  if (!uuid || !props.patchendpoint) {
-    console.error('Missing UUID or patch endpoint for confirmation')
+  if (!props.patchendpoint) {
+    console.error('Missing patch endpoint for confirmation')
     return
   }
   
   editingStates[langCode].isUpdating = true
   
   try {
-    const response = await apiService.patch(`${props.patchendpoint}/${uuid}`, {
-      label: newValue
-    })
+    let response
     
-    // Update original value and reset editing state
-    originalValues[langCode] = newValue
-    editingStates[langCode].isEditing = false
-    editingStates[langCode].valueChanged = false
-    editingStates[langCode].isUpdating = false
-    
-    emit('update:success', {
-      success: true,
-      fieldName: `label_${langCode}`,
-      value: newValue,
-      error: null
-    })
+    if (uuid) {
+      // Case 1: UUID exists - use PATCH to update existing label
+      response = await apiService.patch(`${props.patchendpoint}/${uuid}`, {
+        label: newValue
+      })
+      
+      // Update original value and reset editing state
+      originalValues[langCode] = newValue
+      editingStates[langCode].isEditing = false
+      editingStates[langCode].valueChanged = false
+      editingStates[langCode].isUpdating = false
+      
+      emit('update:success', {
+        success: true,
+        fieldName: `label_${langCode}`,
+        value: newValue,
+        error: null
+      })
+    } else {
+      // Case 2: UUID is empty - use POST to create new label
+      response = await apiService.post(props.patchendpoint, {
+        label: newValue,
+        parent_code: props.parent_code,
+        lang_code: langCode
+      })
+      
+      // Update original value and reset editing state
+      originalValues[langCode] = newValue
+      editingStates[langCode].isEditing = false
+      editingStates[langCode].valueChanged = false
+      editingStates[langCode].isUpdating = false
+      
+      emit('update:success', {
+        success: true,
+        fieldName: `label_${langCode}`,
+        value: newValue,
+        error: null
+      })
+    }
     
   } catch (error) {
     console.error('Error updating field:', error)

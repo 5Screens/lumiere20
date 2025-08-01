@@ -1,6 +1,17 @@
 const Joi = require('joi');
 const logger = require('../../../config/logger');
 
+const createContactTypeLabel = {
+    body: Joi.object({
+        label: Joi.string().max(255).required(),
+        parent_code: Joi.string().max(50).required(),
+        lang_code: Joi.string().max(10).required()
+    }).options({ 
+        abortEarly: false,
+        stripUnknown: true 
+    })
+};
+
 const patchContactTypeLabel = {
     params: Joi.object({
         uuid: Joi.string().uuid().required()
@@ -29,6 +40,7 @@ const validateContactTypeLabel = (schema, data) => {
 };
 
 module.exports = {
+    createContactTypeLabel,
     patchContactTypeLabel,
     validateContactTypeLabel
 };
