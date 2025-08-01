@@ -138,8 +138,14 @@ const getValueForLanguage = (langCode) => {
 }
 
 const getUuidForLanguage = (langCode) => {
-  const item = props.modelValue?.find(item => item.label_lang_code === langCode)
-  return item?.label_uuid || null
+  const item = props.modelValue.find(item => item.label_lang_code === langCode)
+  return item ? item.uuid : null
+}
+
+const getParentCode = () => {
+  // Récupérer le parent_code depuis n'importe quelle traduction existante
+  const existingItem = props.modelValue.find(item => item.parent_code)
+  return existingItem ? existingItem.parent_code : null
 }
 
 const initializeEditingState = (langCode) => {
@@ -231,10 +237,20 @@ const confirmChange = async (langCode) => {
         error: null
       })
     } else {
+      const parentCode = getParentCode()
+      console.log('Creating new label for language:', langCode)
+      console.log('Parent code:', parentCode)
+      console.log('New value:', newValue)
+      
+      if (!parentCode) {
+        console.error('No parent_code found in existing translations')
+        throw new Error('Parent code not found')
+      }
+      
       // Case 2: UUID is empty - use POST to create new label
       response = await apiService.post(props.patchendpoint, {
         label: newValue,
-        parent_code: props.parent_code,
+        parent_code: parentCode,
         lang_code: langCode
       })
       
