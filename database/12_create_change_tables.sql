@@ -37,7 +37,7 @@ $$;
 
 CREATE TABLE translations.change_questions_labels (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_change_question_code VARCHAR(50) NOT NULL REFERENCES configuration.change_questions_codes(code) ON DELETE CASCADE,
+    rel_change_question_code VARCHAR(50) NOT NULL REFERENCES configuration.change_questions_codes(code) ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
     lang VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -75,7 +75,7 @@ $$;
 
 CREATE TABLE translations.change_options_labels (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_change_option_code VARCHAR(50) NOT NULL REFERENCES configuration.change_options_codes(code) ON DELETE CASCADE,
+    rel_change_option_code VARCHAR(50) NOT NULL REFERENCES configuration.change_options_codes(code) ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
     lang VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -111,7 +111,7 @@ $$;
 
 CREATE TABLE translations.change_setup_label (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_change_setup_code VARCHAR(50) NOT NULL REFERENCES configuration.change_setup_codes(code) ON DELETE CASCADE,
+    rel_change_setup_code VARCHAR(50) NOT NULL REFERENCES configuration.change_setup_codes(code) ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
     lang VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

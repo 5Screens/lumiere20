@@ -235,7 +235,7 @@ CREATE TABLE configuration.locations (
 -- Ticket Types Translation
 CREATE TABLE translations.ticket_types_translation (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    ticket_type_uuid UUID NOT NULL REFERENCES configuration.ticket_types(uuid) ON DELETE RESTRICT,
+    ticket_type_uuid UUID NOT NULL REFERENCES configuration.ticket_types(uuid) ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE,
     lang VARCHAR(5) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -246,7 +246,7 @@ CREATE TABLE translations.ticket_types_translation (
 -- Ticket Status Translation
 CREATE TABLE translations.ticket_status_translation (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    ticket_status_uuid UUID NOT NULL REFERENCES configuration.ticket_status(uuid) ON DELETE RESTRICT,
+    ticket_status_uuid UUID NOT NULL REFERENCES configuration.ticket_status(uuid) ON DELETE RESTRICT DEFERRABLE INITIALLY IMMEDIATE,
     lang VARCHAR(5) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

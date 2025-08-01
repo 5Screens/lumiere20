@@ -36,7 +36,7 @@ $$;
 
 CREATE TABLE translations.knowledge_setup_label (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_change_setup_code VARCHAR(50) NOT NULL REFERENCES configuration.knowledge_setup_codes(code) ON DELETE CASCADE,
+    rel_change_setup_code VARCHAR(50) NOT NULL REFERENCES configuration.knowledge_setup_codes(code) ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
     lang VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

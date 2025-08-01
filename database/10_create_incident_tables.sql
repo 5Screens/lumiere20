@@ -102,7 +102,7 @@ $$;
 
 CREATE TABLE translations.incident_urgencies_labels (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_incident_urgency_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_urgencies(code),
+    rel_incident_urgency_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_urgencies(code) DEFERRABLE INITIALLY IMMEDIATE,
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -121,7 +121,7 @@ $$;
 
 CREATE TABLE translations.incident_impacts_labels (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_incident_impact_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_impacts(code),
+    rel_incident_impact_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_impacts(code) DEFERRABLE INITIALLY IMMEDIATE,
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -140,7 +140,7 @@ $$;
 
 CREATE TABLE translations.incident_cause_codes_labels (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_incident_cause_code_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_cause_codes(code),
+    rel_incident_cause_code_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_cause_codes(code) DEFERRABLE INITIALLY IMMEDIATE,
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -199,7 +199,7 @@ $$;
 
 CREATE TABLE translations.incident_resolution_codes_labels (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_incident_resolution_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_resolution_codes(code),
+    rel_incident_resolution_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_resolution_codes(code) DEFERRABLE INITIALLY IMMEDIATE,
     language VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
