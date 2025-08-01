@@ -139,7 +139,7 @@ const getValueForLanguage = (langCode) => {
 
 const getUuidForLanguage = (langCode) => {
   const item = props.modelValue.find(item => item.label_lang_code === langCode)
-  return item ? item.uuid : null
+  return item ? item.label_uuid : null
 }
 
 const getParentCode = () => {
@@ -217,7 +217,8 @@ const confirmChange = async (langCode) => {
   
   try {
     let response
-    
+    //afficher le uuid dans les logs du navigateur
+    console.log('[sMLTextField] [confirmChange] - UUID:', uuid)
     if (uuid) {
       // Case 1: UUID exists - use PATCH to update existing label
       response = await apiService.patch(`${props.patchendpoint}/${uuid}`, {
