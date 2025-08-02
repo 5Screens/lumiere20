@@ -106,9 +106,17 @@ class DefectSetupController {
             });
         } catch (error) {
             logger.error(`[CONTROLLER] createDefectSetup - Error: ${error.message}`);
+            
+            if (error.code === '23505') { // Code d'erreur PostgreSQL pour violation de contrainte unique
+                return res.status(409).json({
+                    success: false,
+                    message: 'Un defect setup avec ce code existe déjà'
+                });
+            }
+            
             return res.status(500).json({
                 success: false,
-                message: 'An error occurred while creating defect setup'
+                message: 'Une erreur est survenue lors de la création du defect setup'
             });
         }
     }
