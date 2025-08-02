@@ -139,6 +139,13 @@ async function updateKnowledgeSetup(uuid, knowledgeSetupData) {
         await client.query('SET CONSTRAINTS knowledge_setup_label_rel_change_setup_code_fkey DEFERRED');
         logger.info('[SERVICE] updateKnowledgeSetup - Foreign key constraint deferred');
         
+        // Récupérer l'ancien code AVANT la mise à jour pour les traductions
+        const oldCodeQuery = `SELECT code FROM configuration.knowledge_setup_codes WHERE uuid = $1`;
+        const oldCodeResult = await client.query(oldCodeQuery, [uuid]);
+        const oldCode = oldCodeResult.rows[0]?.code;
+        
+        logger.info(`[SERVICE] updateKnowledgeSetup - Old code: ${oldCode}, New code: ${knowledgeSetupData.code}`);
+        
         // Mise à jour de la table principale
         const updateKnowledgeSetupQuery = `
             UPDATE configuration.knowledge_setup_codes 
@@ -163,20 +170,18 @@ async function updateKnowledgeSetup(uuid, knowledgeSetupData) {
         logger.info(`[SERVICE] updateKnowledgeSetup - Knowledge setup updated successfully for UUID: ${uuid}`);
         
         // Mise à jour des codes dans les traductions si le code a changé
-        if (knowledgeSetupData.code) {
+        if (knowledgeSetupData.code && oldCode && oldCode !== knowledgeSetupData.code) {
             const updateTranslationCodesQuery = `
                 UPDATE translations.knowledge_setup_label 
                 SET 
                     rel_change_setup_code = $1,
                     updated_at = CURRENT_TIMESTAMP
-                WHERE rel_change_setup_code = (
-                    SELECT code FROM configuration.knowledge_setup_codes WHERE uuid = $2
-                )
+                WHERE rel_change_setup_code = $2
             `;
             
             const translationResult = await client.query(updateTranslationCodesQuery, [
                 knowledgeSetupData.code,
-                uuid
+                oldCode
             ]);
             
             logger.info(`[SERVICE] updateKnowledgeSetup - Updated ${translationResult.rowCount} translation records`);

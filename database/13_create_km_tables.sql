@@ -36,12 +36,17 @@ $$;
 
 CREATE TABLE translations.knowledge_setup_label (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_change_setup_code VARCHAR(50) NOT NULL REFERENCES configuration.knowledge_setup_codes(code) ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+    rel_change_setup_code VARCHAR(50) NOT NULL,
     lang VARCHAR(10) NOT NULL,
     label VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(rel_change_setup_code, lang)
+    UNIQUE(rel_change_setup_code, lang),
+    CONSTRAINT knowledge_setup_label_rel_change_setup_code_fkey 
+        FOREIGN KEY (rel_change_setup_code) 
+        REFERENCES configuration.knowledge_setup_codes(code) 
+        ON DELETE CASCADE 
+        DEFERRABLE INITIALLY IMMEDIATE
 );
 
 -- 3. Create knowledge_article_versions table
