@@ -131,6 +131,10 @@ export default {
     // Titres pour les types de contact
     contactTypeCreation: 'Créer un type de contact',
     contactTypeUpdate: 'Modifier le type de contact',
+    
+    // Titres pour les types de défaut
+    defectSetupCreation: 'Créer un type de défaut',
+    defectSetupUpdate: 'Modifier le type de défaut',
   },
   sprintCenter: {
     title: 'Centre Sprint',
@@ -163,6 +167,7 @@ export default {
     export: 'Exporter',
     refresh: 'Rafraîchir',
     contactTypes: 'Types de contact',
+    defectSetup: 'Types de bug'
   },
   admin: {
     title: 'Administration',
@@ -995,6 +1000,31 @@ export default {
     updated_at: 'Mis à jour le',
     labels: 'Libellés',
     parent_code: 'Code parent',
+    saveSuccess: 'Type de contact enregistré avec succès',
+    saveError: 'Erreur lors de l\'enregistrement du type de contact',
+    updateSuccess: 'Type de contact mis à jour avec succès',
+    updateError: 'Erreur lors de la mise à jour du type de contact',
+    deleteSuccess: 'Type de contact supprimé avec succès',
+    deleteError: 'Erreur lors de la suppression du type de contact',
+    noTranslations: 'Veuillez saisir au moins une traduction pour le type de contact',
+    requiredFields: 'Veuillez saisir tous les champs obligatoires',
+    selectOneRowForUpdate: 'Veuillez sélectionner une ligne à modifier',
+    selectRowsForUpdate: 'Veuillez sélectionner au moins une ligne à modifier',
+    selectRowsForDelete: 'Veuillez sélectionner au moins une ligne à supprimer',
+    noClassFound: 'Aucune classe trouvée',
+    selectOneRow: 'Veuillez sélectionner une valeur',
+    requiredField: 'Champ obligatoire'
+  },
+  defectSetup: {
+    code: 'Code',
+    label: 'Libellé',
+    lang: 'Langue',
+    uuid: 'UUID',
+    created_at: 'Créé le',
+    updated_at: 'Mis à jour le',
+    labels: 'Libellés',
+    parent_code: 'Code parent',
+    metadata: 'Relatif aux classes d\'objets',
     saveSuccess: 'Type de contact enregistré avec succès',
     saveError: 'Erreur lors de l\'enregistrement du type de contact',
     updateSuccess: 'Type de contact mis à jour avec succès',

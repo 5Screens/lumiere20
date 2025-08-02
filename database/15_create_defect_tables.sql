@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS configuration.defect_setup_codes (
 -- Création de la table defect_setup_labels
 CREATE TABLE IF NOT EXISTS translations.defect_setup_labels (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_defect_setup_code TEXT NOT NULL REFERENCES configuration.defect_setup_codes(code) ON DELETE CASCADE,
+    rel_defect_setup_code TEXT NOT NULL REFERENCES configuration.defect_setup_codes(code) ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
     lang VARCHAR(2) NOT NULL,
     label TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
