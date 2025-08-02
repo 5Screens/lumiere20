@@ -1,177 +1,277 @@
+const db = require('../../../config/database');
 const { pool } = require('../../../config/database');
 const logger = require('../../../config/logger');
 
-/**
- * Récupère les données de configuration des articles de connaissance
- * @param {string} lang - Code de langue (optionnel)
- * @param {string} metadata - Type de métadonnées à filtrer (optionnel)
- * @param {string} toSelect - Si 'yes', renvoie les données au format value/label pour les composants de sélection
- * @returns {Promise<Array|Object>} - Liste des configurations des articles de connaissance
- */
-const getKnowledgeSetup = async (lang, metadata, toSelect) => {
-    // Convertir metadata en majuscules si fourni pour correspondre au format de la base de données
-    const upperMetadata = metadata ? metadata.toUpperCase() : metadata;
-    
-    logger.info(`[SERVICE] Getting knowledge setup data. Language: ${lang || 'all'}, Metadata: ${upperMetadata || 'all'}`);
-    
+async function getAllKnowledgeSetup(lang = null) {
+    logger.info(`[SERVICE] getAllKnowledgeSetup - Starting database query for all knowledge setup, language: ${lang || 'all'}`);
     try {
-        let query;
-        let params = [];
-        let paramIndex = 1;
+        let query, params;
         
-        // Construction de la requête en fonction des paramètres
-        if (lang && upperMetadata) {
-            // Filtrer par langue et metadata
+        if (lang) {
+            // Si une langue est spécifiée, retourner seulement cette traduction
             query = `
                 SELECT 
-                    ksc.uuid, 
+                    ksc.uuid,
                     ksc.metadata,
-                    ksc.code, 
+                    ksc.code,
+                    ksl.label,
                     ksl.lang,
-                    ksl.label
+                    ksc.created_at,
+                    ksc.updated_at
                 FROM configuration.knowledge_setup_codes ksc
-                JOIN translations.knowledge_setup_label ksl 
-                    ON ksc.code = ksl.rel_change_setup_code
-                WHERE ksl.lang = $${paramIndex++}
-                AND ksc.metadata = $${paramIndex++}
-                ORDER BY ksc.metadata, ksc.code, ksl.lang
+                LEFT JOIN translations.knowledge_setup_label ksl ON ksc.code = ksl.rel_change_setup_code
+                WHERE ksl.lang = $1 OR ksl.lang IS NULL
+                ORDER BY ksc.metadata, ksc.code, ksl.label
             `;
-            params.push(lang, upperMetadata);
-        } else if (lang) {
-            // Filtrer par langue uniquement
-            query = `
-                SELECT 
-                    ksc.uuid, 
-                    ksc.metadata,
-                    ksc.code, 
-                    ksl.lang,
-                    ksl.label
-                FROM configuration.knowledge_setup_codes ksc
-                JOIN translations.knowledge_setup_label ksl 
-                    ON ksc.code = ksl.rel_change_setup_code
-                WHERE ksl.lang = $${paramIndex++}
-                ORDER BY ksc.metadata, ksc.code, ksl.lang
-            `;
-            params.push(lang);
-        } else if (upperMetadata) {
-            // Filtrer par metadata uniquement
-            query = `
-                SELECT 
-                    ksc.uuid, 
-                    ksc.metadata,
-                    ksc.code, 
-                    ksl.lang,
-                    ksl.label
-                FROM configuration.knowledge_setup_codes ksc
-                JOIN translations.knowledge_setup_label ksl 
-                    ON ksc.code = ksl.rel_change_setup_code
-                WHERE ksc.metadata = $${paramIndex++}
-                ORDER BY ksc.metadata, ksc.code, ksl.lang
-            `;
-            params.push(upperMetadata);
+            params = [lang];
         } else {
-            // Aucun filtre, récupérer toutes les données
+            // Si aucune langue spécifiée, retourner toutes les traductions groupées
             query = `
                 SELECT 
-                    ksc.uuid, 
+                    ksc.uuid,
                     ksc.metadata,
-                    ksc.code, 
-                    ksl.lang,
-                    ksl.label
+                    ksc.code,
+                    ksc.created_at,
+                    ksc.updated_at,
+                    COALESCE(
+                        json_agg(
+                            CASE WHEN ksl.uuid IS NOT NULL THEN
+                                json_build_object(
+                                    'label_uuid', ksl.uuid,
+                                    'label_lang_code', ksl.lang,
+                                    'label', ksl.label
+                                )
+                            END
+                        ) FILTER (WHERE ksl.uuid IS NOT NULL), 
+                        '[]'::json
+                    ) as labels
                 FROM configuration.knowledge_setup_codes ksc
-                JOIN translations.knowledge_setup_label ksl 
-                    ON ksc.code = ksl.rel_change_setup_code
-                ORDER BY ksc.metadata, ksc.code, ksl.lang
+                LEFT JOIN translations.knowledge_setup_label ksl ON ksc.code = ksl.rel_change_setup_code
+                GROUP BY ksc.uuid, ksc.metadata, ksc.code, ksc.created_at, ksc.updated_at
+                ORDER BY ksc.metadata, ksc.code
             `;
+            params = [];
+        }
+        
+        const result = await pool.query(query, params);
+        logger.info(`[SERVICE] getAllKnowledgeSetup - Query executed successfully, returned ${result.rows.length} rows`);
+        return result.rows;
+    } catch (error) {
+        logger.error(`[SERVICE] getAllKnowledgeSetup - Database error: ${error.message}`);
+        throw error;
+    }
+}
+
+async function getKnowledgeSetupByUuid(uuid, lang = null) {
+    logger.info(`[SERVICE] getKnowledgeSetupByUuid - Starting query for UUID: ${uuid}, language: ${lang || 'all'}`);
+    try {
+        let query, params;
+        
+        if (lang) {
+            // Si une langue est spécifiée, retourner seulement cette traduction
+            query = `
+                SELECT 
+                    ksc.uuid,
+                    ksc.metadata,
+                    ksc.code,
+                    ksl.label,
+                    ksl.lang,
+                    ksc.created_at,
+                    ksc.updated_at
+                FROM configuration.knowledge_setup_codes ksc
+                LEFT JOIN translations.knowledge_setup_label ksl ON ksc.code = ksl.rel_change_setup_code
+                WHERE ksc.uuid = $1 AND (ksl.lang = $2 OR ksl.lang IS NULL)
+                ORDER BY ksl.label
+            `;
+            params = [uuid, lang];
+        } else {
+            // Si aucune langue spécifiée, retourner toutes les traductions groupées
+            query = `
+                SELECT 
+                    ksc.uuid,
+                    ksc.metadata,
+                    ksc.code,
+                    ksc.created_at,
+                    ksc.updated_at,
+                    COALESCE(
+                        json_agg(
+                            CASE WHEN ksl.uuid IS NOT NULL THEN
+                                json_build_object(
+                                    'label_uuid', ksl.uuid,
+                                    'label_lang_code', ksl.lang,
+                                    'label', ksl.label
+                                )
+                            END
+                        ) FILTER (WHERE ksl.uuid IS NOT NULL), 
+                        '[]'::json
+                    ) as labels
+                FROM configuration.knowledge_setup_codes ksc
+                LEFT JOIN translations.knowledge_setup_label ksl ON ksc.code = ksl.rel_change_setup_code
+                WHERE ksc.uuid = $1
+                GROUP BY ksc.uuid, ksc.metadata, ksc.code, ksc.created_at, ksc.updated_at
+            `;
+            params = [uuid];
         }
         
         const result = await pool.query(query, params);
         
-        logger.info(`[SERVICE] Found ${result.rows.length} knowledge setup entries`);
-        
-        // Si toSelect=yes, transformer les données au format value/label pour les composants de sélection
-        if (toSelect === 'yes') {
-            logger.info('[SERVICE] Transforming data to value/label format for select component');
-            
-            // Si une langue spécifique est demandée et un metadata spécifique, on renvoie directement un tableau de value/label
-            if (lang && lowerMetadata) {
-                const selectArray = [];
-                
-                result.rows.forEach(row => {
-                    selectArray.push({
-                        value: row.code,
-                        label: row.label
-                    });
-                });
-                
-                return selectArray;
-            }
-            // Si une langue spécifique est demandée mais pas de metadata spécifique
-            else if (lang) {
-                const selectData = {};
-                
-                result.rows.forEach(row => {
-                    if (!selectData[row.metadata]) {
-                        selectData[row.metadata] = [];
-                    }
-                    
-                    selectData[row.metadata].push({
-                        value: row.code,
-                        label: row.label
-                    });
-                });
-                
-                return selectData;
-            } 
-            // Si pas de langue spécifique, on renvoie un objet avec les traductions par langue
-            else {
-                const selectData = {};
-                
-                result.rows.forEach(row => {
-                    if (!selectData[row.metadata]) {
-                        selectData[row.metadata] = {};
-                    }
-                    
-                    if (!selectData[row.metadata][row.lang]) {
-                        selectData[row.metadata][row.lang] = [];
-                    }
-                    
-                    selectData[row.metadata][row.lang].push({
-                        value: row.code,
-                        label: row.label
-                    });
-                });
-                
-                return selectData;
-            }
+        if (result.rows.length === 0) {
+            logger.warn(`[SERVICE] getKnowledgeSetupByUuid - No knowledge setup found for UUID: ${uuid}`);
+            return null;
         }
         
-        // Format standard: retourner les données sans regroupement par code
-        const formattedData = [];
-        
-        result.rows.forEach(row => {
-            formattedData.push({
-                uuid: row.uuid,
-                metadata: row.metadata,
-                code: row.code,
-                lang: row.lang,
-                label: row.label
-            });
-        });
-        
-        // Si la requête inclut des métadonnées mais qu'aucun résultat n'est trouvé, renvoyer un tableau vide
-        if (upperMetadata && formattedData.length === 0) {
-            logger.info(`[SERVICE] No data found for metadata: ${upperMetadata}`);
-            return [];
-        }
-        
-        return formattedData;
+        logger.info(`[SERVICE] getKnowledgeSetupByUuid - Knowledge setup found for UUID: ${uuid}`);
+        return result.rows[0];
     } catch (error) {
-        logger.error(`[SERVICE] Error getting knowledge setup data: ${error.message}`);
+        logger.error(`[SERVICE] getKnowledgeSetupByUuid - Database error: ${error.message}`);
+        throw error;
+    }
+}
+
+async function updateKnowledgeSetup(uuid, knowledgeSetupData) {
+    logger.info(`[SERVICE] updateKnowledgeSetup - Starting update for UUID: ${uuid}`);
+    
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        // Différer la contrainte de clé étrangère pour permettre la mise à jour du code
+        await client.query('SET CONSTRAINTS knowledge_setup_label_rel_change_setup_code_fkey DEFERRED');
+        logger.info('[SERVICE] updateKnowledgeSetup - Foreign key constraint deferred');
+        
+        // Mise à jour de la table principale
+        const updateKnowledgeSetupQuery = `
+            UPDATE configuration.knowledge_setup_codes 
+            SET 
+                code = $1,
+                metadata = $2,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE uuid = $3
+            RETURNING *
+        `;
+        
+        const knowledgeSetupResult = await client.query(updateKnowledgeSetupQuery, [
+            knowledgeSetupData.code,
+            knowledgeSetupData.metadata,
+            uuid
+        ]);
+        
+        if (knowledgeSetupResult.rows.length === 0) {
+            throw new Error(`Knowledge setup with UUID ${uuid} not found`);
+        }
+        
+        logger.info(`[SERVICE] updateKnowledgeSetup - Knowledge setup updated successfully for UUID: ${uuid}`);
+        
+        // Mise à jour des codes dans les traductions si le code a changé
+        if (knowledgeSetupData.code) {
+            const updateTranslationCodesQuery = `
+                UPDATE translations.knowledge_setup_label 
+                SET 
+                    rel_change_setup_code = $1,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE rel_change_setup_code = (
+                    SELECT code FROM configuration.knowledge_setup_codes WHERE uuid = $2
+                )
+            `;
+            
+            const translationResult = await client.query(updateTranslationCodesQuery, [
+                knowledgeSetupData.code,
+                uuid
+            ]);
+            
+            logger.info(`[SERVICE] updateKnowledgeSetup - Updated ${translationResult.rowCount} translation records`);
+        }
+        
+        await client.query('COMMIT');
+        logger.info(`[SERVICE] updateKnowledgeSetup - Transaction committed successfully for UUID: ${uuid}`);
+        
+        return knowledgeSetupResult.rows[0];
+    } catch (error) {
+        await client.query('ROLLBACK');
+        logger.error(`[SERVICE] updateKnowledgeSetup - Transaction rolled back due to error: ${error.message}`);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+async function createKnowledgeSetup(knowledgeSetupData) {
+    logger.info('[SERVICE] createKnowledgeSetup - Starting creation of new knowledge setup');
+    
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        // Insertion dans la table principale
+        const insertKnowledgeSetupQuery = `
+            INSERT INTO configuration.knowledge_setup_codes (code, metadata)
+            VALUES ($1, $2)
+            RETURNING *
+        `;
+        
+        const knowledgeSetupResult = await client.query(insertKnowledgeSetupQuery, [
+            knowledgeSetupData.code,
+            knowledgeSetupData.metadata
+        ]);
+        
+        const newKnowledgeSetup = knowledgeSetupResult.rows[0];
+        logger.info(`[SERVICE] createKnowledgeSetup - Knowledge setup created with UUID: ${newKnowledgeSetup.uuid}`);
+        
+        // Insertion des traductions
+        if (knowledgeSetupData.labels && knowledgeSetupData.labels.length > 0) {
+            for (const label of knowledgeSetupData.labels) {
+                const insertLabelQuery = `
+                    INSERT INTO translations.knowledge_setup_label (rel_change_setup_code, lang, label)
+                    VALUES ($1, $2, $3)
+                `;
+                
+                await client.query(insertLabelQuery, [
+                    newKnowledgeSetup.code,
+                    label.label_lang_code,
+                    label.label
+                ]);
+            }
+            logger.info(`[SERVICE] createKnowledgeSetup - ${knowledgeSetupData.labels.length} labels inserted`);
+        }
+        
+        await client.query('COMMIT');
+        logger.info(`[SERVICE] createKnowledgeSetup - Transaction committed successfully`);
+        
+        return newKnowledgeSetup;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        logger.error(`[SERVICE] createKnowledgeSetup - Transaction rolled back due to error: ${error.message}`);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+// Legacy method for backward compatibility
+const getKnowledgeSetup = async (lang, metadata, toSelect) => {
+    logger.info(`[SERVICE] getKnowledgeSetup (legacy) - Language: ${lang || 'all'}, Metadata: ${metadata || 'all'}`);
+    
+    try {
+        const results = await getAllKnowledgeSetup(lang);
+        
+        if (toSelect === 'yes') {
+            return results.map(row => ({
+                value: row.code,
+                label: row.label
+            }));
+        }
+        
+        return results;
+    } catch (error) {
+        logger.error(`[SERVICE] getKnowledgeSetup (legacy) - Error: ${error.message}`);
         throw error;
     }
 };
 
 module.exports = {
+    getAllKnowledgeSetup,
+    getKnowledgeSetupByUuid,
+    updateKnowledgeSetup,
+    createKnowledgeSetup,
     getKnowledgeSetup
 };

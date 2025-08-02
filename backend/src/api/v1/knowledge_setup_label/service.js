@@ -1,0 +1,65 @@
+const db = require('../../../config/database');
+const logger = require('../../../config/logger');
+
+async function createKnowledgeSetupLabel(labelData) {
+    logger.info('[SERVICE] createKnowledgeSetupLabel - Starting database operation');
+    try {
+        const { label, parent_code, lang_code } = labelData;
+        
+        logger.info(`[SERVICE] createKnowledgeSetupLabel - Creating label for parent_code: ${parent_code}, lang: ${lang_code}`);
+        
+        const query = `
+            INSERT INTO translations.knowledge_setup_label (rel_change_setup_code, lang, label)
+            VALUES ($1, $2, $3)
+            RETURNING uuid, rel_change_setup_code, lang, label, created_at, updated_at
+        `;
+        
+        const result = await db.query(query, [parent_code, lang_code, label]);
+        
+        if (result.rows.length === 0) {
+            throw new Error('Failed to create knowledge setup label');
+        }
+        
+        const createdLabel = result.rows[0];
+        logger.info(`[SERVICE] createKnowledgeSetupLabel - Label created successfully with UUID: ${createdLabel.uuid}`);
+        
+        return createdLabel;
+    } catch (error) {
+        logger.error(`[SERVICE] createKnowledgeSetupLabel - Database error: ${error.message}`);
+        throw error;
+    }
+}
+
+async function patchKnowledgeSetupLabel(uuid, newLabel) {
+    logger.info(`[SERVICE] patchKnowledgeSetupLabel - Starting database operation for UUID: ${uuid}`);
+    try {
+        logger.info(`[SERVICE] patchKnowledgeSetupLabel - Updating label to: ${newLabel}`);
+        
+        const query = `
+            UPDATE translations.knowledge_setup_label 
+            SET label = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE uuid = $2
+            RETURNING uuid, rel_change_setup_code, lang, label, created_at, updated_at
+        `;
+        
+        const result = await db.query(query, [newLabel, uuid]);
+        
+        if (result.rows.length === 0) {
+            logger.info(`[SERVICE] patchKnowledgeSetupLabel - No label found with UUID: ${uuid}`);
+            return null;
+        }
+        
+        const updatedLabel = result.rows[0];
+        logger.info(`[SERVICE] patchKnowledgeSetupLabel - Label updated successfully for UUID: ${uuid}`);
+        
+        return updatedLabel;
+    } catch (error) {
+        logger.error(`[SERVICE] patchKnowledgeSetupLabel - Database error: ${error.message}`);
+        throw error;
+    }
+}
+
+module.exports = {
+    createKnowledgeSetupLabel,
+    patchKnowledgeSetupLabel
+};

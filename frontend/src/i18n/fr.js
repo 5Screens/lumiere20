@@ -135,6 +135,10 @@ export default {
     // Titres pour les types de défaut
     defectSetupCreation: 'Créer un type de défaut',
     defectSetupUpdate: 'Modifier le type de défaut',
+
+    // Titres pour les types de défaut
+    knowledgeSetupCreation: 'Créer un type de connaissance',
+    knowledgeSetupUpdate: 'Modifier le type de connaissance',
   },
   sprintCenter: {
     title: 'Centre Sprint',
@@ -167,7 +171,8 @@ export default {
     export: 'Exporter',
     refresh: 'Rafraîchir',
     contactTypes: 'Gestion des type de contacts',
-    defectSetup: 'Gestion des anomalies'
+    defectSetup: 'Gestion des anomalies',
+    knowledgeSetup: 'Gestion des articles de connaissance'
   },
   admin: {
     title: 'Administration',
@@ -945,6 +950,20 @@ export default {
     attachments_count: 'Nombre de pièces jointes'
   },
   
+  knowledgeSetup: {
+    // Configuration des connaissances
+    code: 'Code',
+    code_placeholder: 'Entrez le code de configuration',
+    label: 'Libellé',
+    label_placeholder: 'Entrez le libellé',
+    description: 'Description',
+    description_placeholder: 'Entrez une description',
+    is_active: 'Actif',
+    created_at: 'Créé le',
+    updated_at: 'Modifié le',
+    metadata: 'Métadonnées',
+  },
+
   sprint: {
     // Informations générales
     name: 'Nom du sprint',
