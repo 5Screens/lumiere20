@@ -350,6 +350,10 @@ const fetchObjectData = async () => {
     
     formData.value = { ...modelInstance.value };
     
+    // Debug log pour vérifier les labels dans formData
+    console.log('[objectCreationsAndUpdates] formData.value after assignment:', formData.value);
+    console.log('[objectCreationsAndUpdates] formData.value.labels:', formData.value.labels);
+    
     // Charger les champs du formulaire après avoir récupéré l'instance du modèle
     await loadFormFields();
   } catch (err) {

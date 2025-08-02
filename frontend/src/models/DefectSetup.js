@@ -12,6 +12,10 @@ export class DefectSetup {
     this.updated_at = data.updated_at || null;
     this.labels = data.labels || [];
     
+    // Debug logs pour vérifier les labels
+    console.log('[DefectSetup Constructor] data received:', data);
+    console.log('[DefectSetup Constructor] labels assigned:', this.labels);
+    
     // Ajouter code dans un attribut parent_code pour chacun des item de labels
     this.labels.forEach(label => {
       label.parent_code = this.code;
@@ -92,11 +96,10 @@ export class DefectSetup {
    */
   static async getById(uuid) {
     try {
-      const userProfileStore = useUserProfileStore();
-      const response = await apiService.get(`defect_setup/${uuid}?lang=${userProfileStore.language}`);
+      const response = await apiService.get(`defect_setup/${uuid}`);
       
-      if (response && response.data) {
-        return new DefectSetup(response.data);
+      if (response) {
+        return new DefectSetup(response);
       }
       
       throw new Error('Defect setup not found');

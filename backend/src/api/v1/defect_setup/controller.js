@@ -33,20 +33,17 @@ class DefectSetupController {
                 logger.info(`[CONTROLLER] getDefectSetupByUuid - No defect setup found with UUID: ${uuid}`);
                 return res.status(404).json({
                     success: false,
-                    message: `No defect setup found with UUID: ${uuid}`
+                    message: `Aucun defect setup trouvé avec l'UUID: ${uuid}`
                 });
             }
             
             logger.info('[CONTROLLER] getDefectSetupByUuid - Successfully retrieved defect setup');
-            return res.status(200).json({
-                success: true,
-                data: defectSetup
-            });
+            return res.status(200).json(defectSetup);
         } catch (error) {
             logger.error(`[CONTROLLER] getDefectSetupByUuid - Error: ${error.message}`);
             return res.status(500).json({
                 success: false,
-                message: 'An error occurred while retrieving defect setup'
+                message: 'Une erreur est survenue lors de la récupération du defect setup'
             });
         }
     }
