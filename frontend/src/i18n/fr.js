@@ -961,7 +961,7 @@ export default {
     is_active: 'Actif',
     created_at: 'Créé le',
     updated_at: 'Modifié le',
-    metadata: 'Métadonnées',
+    metadata: 'Classe d\'information',
   },
 
   sprint: {
