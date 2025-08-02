@@ -55,7 +55,8 @@ export const usePaneStore = defineStore('pane', {
         items: [
           { tabToOpen: 'entities', icon: 'fas fa-cube', label: 'configuration.entities', className: 'Entity' },
           { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms', className: 'Symptom' },
-          { tabToOpen: 'contact_types', icon: 'fas fa-phone', label: 'configuration.contactTypes', className: 'ContactType' }
+          { tabToOpen: 'contact_types', icon: 'fas fa-phone', label: 'configuration.contactTypes', className: 'ContactType' },
+          { tabToOpen: 'defect_setup', icon: 'fas fa-cogs', label: 'configuration.defectSetup', className: 'DefectSetup' }
           /*{ tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
           { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },
           { tabToOpen: 'sites', icon: 'fas fa-sitemap', label: 'configuration.sites' },

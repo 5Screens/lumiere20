@@ -16,6 +16,7 @@ import { Epic } from '@/models/Epic'
 import { Story } from '@/models/Story'
 import { Defect } from '@/models/Defect'
 import { ContactType } from '@/models/ContactType'
+import { DefectSetup } from '@/models/DefectSetup'
 
 /**
  * Mapping des noms de classes vers les classes JavaScript
@@ -33,7 +34,8 @@ const CLASS_MAP = {
   'Epic': Epic,
   'Story': Story,
   'Defect': Defect,
-  'ContactType': ContactType
+  'ContactType': ContactType,
+  'DefectSetup': DefectSetup
 }
 
 /**
