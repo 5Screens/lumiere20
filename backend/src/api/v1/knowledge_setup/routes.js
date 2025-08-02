@@ -12,6 +12,14 @@ const logger = require('../../../config/logger');
 // GET /api/v1/knowledge_setup - Récupère tous les knowledge setup
 router.get('/', validateGetKnowledgeSetupQuery, (req, res) => {
     logger.info('[ROUTES] GET /api/v1/knowledge_setup - Route handler started');
+    
+    // Si le paramètre metadata est présent, utiliser getKnowledgeSetup
+    if (req.query.metadata) {
+        logger.info('[ROUTES] GET /api/v1/knowledge_setup - Using getKnowledgeSetup due to metadata parameter');
+        return knowledgeSetupController.getKnowledgeSetup(req, res);
+    }
+    
+    // Sinon, utiliser getAllKnowledgeSetup
     return knowledgeSetupController.getAllKnowledgeSetup(req, res);
 });
 

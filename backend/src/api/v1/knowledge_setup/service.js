@@ -269,23 +269,38 @@ async function createKnowledgeSetup(knowledgeSetupData) {
     }
 }
 
-// Legacy method for backward compatibility
+// Method for filtering by metadata (not legacy, still needed!)
 const getKnowledgeSetup = async (lang, metadata, toSelect) => {
-    logger.info(`[SERVICE] getKnowledgeSetup (legacy) - Language: ${lang || 'all'}, Metadata: ${metadata || 'all'}`);
+    logger.info(`[SERVICE] getKnowledgeSetup - Getting knowledge setup data for metadata: ${metadata}, language: ${lang}`);
     
     try {
-        const results = await getAllKnowledgeSetup(lang);
+        // Convert metadata to uppercase before using in query
+        const metadataUpper = metadata ? metadata.toUpperCase() : null;
+        
+        const query = `
+            SELECT 
+                ksc.code,
+                ksl.label
+            FROM configuration.knowledge_setup_codes ksc
+            LEFT JOIN translations.knowledge_setup_label ksl 
+                ON ksl.rel_change_setup_code = ksc.code 
+                AND ksl.lang = $1
+            WHERE ksc.metadata = $2
+            ORDER BY ksl.label;
+        `;
+        const result = await db.query(query, [lang, metadataUpper]);
+        logger.info(`[SERVICE] getKnowledgeSetup - Successfully retrieved ${result.rows.length} knowledge setup entries`);
         
         if (toSelect === 'yes') {
-            return results.map(row => ({
+            return result.rows.map(row => ({
                 value: row.code,
                 label: row.label
             }));
         }
         
-        return results;
+        return result.rows;
     } catch (error) {
-        logger.error(`[SERVICE] getKnowledgeSetup (legacy) - Error: ${error.message}`);
+        logger.error(`[SERVICE] getKnowledgeSetup - Error getting knowledge setup data: ${error.message}`);
         throw error;
     }
 };
