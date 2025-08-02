@@ -146,28 +146,43 @@ async function updateKnowledgeSetup(uuid, knowledgeSetupData) {
         
         logger.info(`[SERVICE] updateKnowledgeSetup - Old code: ${oldCode}, New code: ${knowledgeSetupData.code}`);
         
-        // Mise à jour de la table principale
-        const updateKnowledgeSetupQuery = `
-            UPDATE configuration.knowledge_setup_codes 
-            SET 
-                code = $1,
-                metadata = $2,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE uuid = $3
-            RETURNING *
-        `;
+        // Mettre à jour les champs dans la table knowledge_setup_codes si nécessaire
+        const updateFields = [];
+        const updateValues = [];
+        let paramIndex = 1;
         
-        const knowledgeSetupResult = await client.query(updateKnowledgeSetupQuery, [
-            knowledgeSetupData.code,
-            knowledgeSetupData.metadata,
-            uuid
-        ]);
-        
-        if (knowledgeSetupResult.rows.length === 0) {
-            throw new Error(`Knowledge setup with UUID ${uuid} not found`);
+        if (knowledgeSetupData.code && knowledgeSetupData.code !== oldCode) {
+            updateFields.push(`code = $${paramIndex}`);
+            updateValues.push(knowledgeSetupData.code);
+            paramIndex++;
         }
         
-        logger.info(`[SERVICE] updateKnowledgeSetup - Knowledge setup updated successfully for UUID: ${uuid}`);
+        if (knowledgeSetupData.metadata) {
+            updateFields.push(`metadata = $${paramIndex}`);
+            updateValues.push(knowledgeSetupData.metadata);
+            paramIndex++;
+        }
+        
+        if (updateFields.length > 0) {
+            updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+            updateValues.push(uuid);
+            
+            const updateKnowledgeSetupQuery = `
+                UPDATE configuration.knowledge_setup_codes 
+                SET ${updateFields.join(', ')}
+                WHERE uuid = $${paramIndex}
+                RETURNING *
+            `;
+            const knowledgeSetupResult = await client.query(updateKnowledgeSetupQuery, updateValues);
+            
+            if (knowledgeSetupResult.rows.length === 0) {
+                throw new Error(`Knowledge setup with UUID ${uuid} not found`);
+            }
+            
+            logger.info(`[SERVICE] updateKnowledgeSetup - Knowledge setup updated successfully for UUID: ${uuid}`);
+        } else {
+            logger.info('[SERVICE] updateKnowledgeSetup - No fields to update in knowledge_setup_codes table');
+        }
         
         // Mise à jour des codes dans les traductions si le code a changé
         if (knowledgeSetupData.code && oldCode && oldCode !== knowledgeSetupData.code) {
@@ -190,7 +205,9 @@ async function updateKnowledgeSetup(uuid, knowledgeSetupData) {
         await client.query('COMMIT');
         logger.info(`[SERVICE] updateKnowledgeSetup - Transaction committed successfully for UUID: ${uuid}`);
         
-        return knowledgeSetupResult.rows[0];
+        // Récupérer et retourner le knowledge setup mis à jour
+        const updatedKnowledgeSetup = await getKnowledgeSetupByUuid(uuid);
+        return updatedKnowledgeSetup;
     } catch (error) {
         await client.query('ROLLBACK');
         logger.error(`[SERVICE] updateKnowledgeSetup - Transaction rolled back due to error: ${error.message}`);

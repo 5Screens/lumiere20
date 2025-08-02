@@ -151,7 +151,7 @@ export class KnowledgeSetup {
         type: 'sMLTextField',
         placeholder: 'knowledgeSetup.label_placeholder',
         required: isRequired('labels'),
-        patchEndpoint: 'knowledge_setup_labels',
+        patchEndpoint: 'knowledge_setup_label',
       }
     };
     
