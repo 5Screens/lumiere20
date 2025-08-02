@@ -6,9 +6,17 @@ class DefectSetupController {
     async getAllDefectSetup(req, res) {
         logger.info('[CONTROLLER] getAllDefectSetup - Starting to process request');
         try {
-            const { lang } = req.query;
-            logger.info(`[CONTROLLER] getAllDefectSetup - Retrieving all defect setup with language: ${lang || 'all'}`);
+            const { lang, metadata } = req.query;
             
+            // Si metadata est présent, utiliser la méthode legacy
+            if (metadata) {
+                logger.info(`[CONTROLLER] getAllDefectSetup - Redirecting to legacy method for metadata: ${metadata}`);
+                const defectSetups = await defectSetupService.getDefectSetup(lang, metadata);
+                logger.info(`[CONTROLLER] getAllDefectSetup - Successfully retrieved ${defectSetups.length} legacy defect setup records`);
+                return res.status(200).json(defectSetups);
+            }
+            
+            logger.info(`[CONTROLLER] getAllDefectSetup - Retrieving all defect setup with language: ${lang || 'all'}`);
             const defectSetups = await defectSetupService.getAllDefectSetup(lang);
             
             logger.info(`[CONTROLLER] getAllDefectSetup - Successfully retrieved ${defectSetups.length} defect setup records`);

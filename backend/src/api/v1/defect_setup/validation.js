@@ -3,12 +3,15 @@ const logger = require('../../../config/logger');
 
 // Schema for getting all defect setup
 const getAllDefectSetupSchema = Joi.object({
-    lang: Joi.string().length(2).optional()
+    lang: Joi.string().length(2).optional(),
+    environment: Joi.string().optional(),
+    metadata: Joi.string().optional()
 });
 
 // Schema for getting defect setup by UUID
 const getDefectSetupByUuidSchema = Joi.object({
-    lang: Joi.string().length(2).optional()
+    lang: Joi.string().length(2).optional(),
+    environment: Joi.string().optional()
 });
 
 // Schema for updating defect setup
@@ -32,7 +35,7 @@ const createDefectSetupSchema = Joi.object({
 // Legacy schema
 const getDefectSetupSchema = Joi.object({
     lang: Joi.string().length(2).required(),
-    metadata: Joi.string().required()
+    metadata: Joi.string().optional()
 });
 
 const validateQuery = (schema) => {

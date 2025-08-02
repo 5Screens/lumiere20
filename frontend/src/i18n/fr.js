@@ -160,14 +160,14 @@ export default {
     supportGroups: 'Groupes de support',
     roles: 'Rôles et permissions',
     ticketStatus: 'Statuts des tickets',
-    symptoms: 'Symptômes',
+    symptoms: 'Gestion des symptômes',
     ticketTypes: 'Types de tickets',
     workflows: 'Workflows',
     import: 'Importer',
     export: 'Exporter',
     refresh: 'Rafraîchir',
-    contactTypes: 'Types de contact',
-    defectSetup: 'Types de bug'
+    contactTypes: 'Gestion des type de contacts',
+    defectSetup: 'Gestion des anomalies'
   },
   admin: {
     title: 'Administration',
@@ -1024,7 +1024,7 @@ export default {
     updated_at: 'Mis à jour le',
     labels: 'Libellés',
     parent_code: 'Code parent',
-    metadata: 'Relatif aux classes d\'objets',
+    metadata: 'Classes de donnees',
     saveSuccess: 'Type de contact enregistré avec succès',
     saveError: 'Erreur lors de l\'enregistrement du type de contact',
     updateSuccess: 'Type de contact mis à jour avec succès',
