@@ -5,6 +5,18 @@ const validate = require('../../../middleware/validate');
 const symptomsTranslationsValidation = require('./validation');
 const logger = require('../../../config/logger');
 
+// Route POST pour créer une nouvelle traduction de symptôme
+// http://localhost:3000/api/v1/symptoms_translations
+router.post(
+    '/',
+    (req, res, next) => {
+        logger.info('[ROUTES] POST /api/v1/symptoms_translations - Route handler started');
+        next();
+    },
+    validate(symptomsTranslationsValidation.createSymptomTranslation),
+    symptomsTranslationsController.createSymptomTranslation
+);
+
 // Route PATCH pour mettre à jour le label d'une traduction de symptôme par son UUID
 //http://localhost:3000/api/v1/symptoms_translations/bbd05e49-34d9-47bd-add8-fceaacaca6e2
 router.patch(
