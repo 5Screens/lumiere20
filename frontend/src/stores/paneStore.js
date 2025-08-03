@@ -57,7 +57,8 @@ export const usePaneStore = defineStore('pane', {
           { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms', className: 'Symptom' },
           { tabToOpen: 'contact_types', icon: 'fas fa-phone', label: 'configuration.contactTypes', className: 'ContactType' },
           { tabToOpen: 'defect_setup', icon: 'fas fa-cogs', label: 'configuration.defectSetup', className: 'DefectSetup' },
-          { tabToOpen: 'knowledge_setup', icon: 'fas fa-book-open', label: 'configuration.knowledgeSetup', className: 'KnowledgeSetup' }
+          { tabToOpen: 'knowledge_setup', icon: 'fas fa-book-open', label: 'configuration.knowledgeSetup', className: 'KnowledgeSetup' },
+          { tabToOpen: 'projectSetup', icon: 'fas fa-project-diagram', label: 'configuration.projectSetup', className: 'ProjectSetup' }
           /*{ tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
           { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },
           { tabToOpen: 'sites', icon: 'fas fa-sitemap', label: 'configuration.sites' },

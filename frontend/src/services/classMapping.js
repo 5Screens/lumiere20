@@ -18,6 +18,7 @@ import { Defect } from '@/models/Defect'
 import { ContactType } from '@/models/ContactType'
 import { DefectSetup } from '@/models/DefectSetup'
 import { KnowledgeSetup } from '@/models/KnowledgeSetup'
+import { ProjectSetup } from '@/models/ProjectSetup'
 
 /**
  * Mapping des noms de classes vers les classes JavaScript
@@ -37,7 +38,8 @@ const CLASS_MAP = {
   'Defect': Defect,
   'ContactType': ContactType,
   'DefectSetup': DefectSetup,
-  'KnowledgeSetup': KnowledgeSetup
+  'KnowledgeSetup': KnowledgeSetup,
+  'ProjectSetup': ProjectSetup
 }
 
 /**
