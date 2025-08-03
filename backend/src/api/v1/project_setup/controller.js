@@ -9,9 +9,15 @@ const logger = require('../../../config/logger');
 const getAllProjectSetup = async (req, res) => {
     logger.info('[CONTROLLER] getAllProjectSetup - Starting request processing');
     
+    const { lang, metadata, toSelect } = req.query;
+    
+    // Si metadata ou toSelect est fourni, router vers la méthode legacy qui gère ces cas
+    if (metadata || toSelect) {
+        logger.info('[CONTROLLER] getAllProjectSetup - metadata or toSelect provided, routing to legacy method');
+        return getProjectSetup(req, res);
+    }
+    
     try {
-        const { lang } = req.query;
-        
         const projectSetupData = await projectSetupService.getAllProjectSetup(lang);
         
         logger.info(`[CONTROLLER] getAllProjectSetup - Successfully retrieved ${projectSetupData.length} project setup records`);
