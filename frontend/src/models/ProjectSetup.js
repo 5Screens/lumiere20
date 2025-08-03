@@ -63,12 +63,11 @@ export class ProjectSetup {
   }
 
   /**
-   * Retourne le label pour l'onglet enfant des labels
-   * @returns {string} Label de l'onglet
+   * Retourne le nom du champ à utiliser pour le label de l'onglet enfant
+   * @returns {string} Nom du champ
    */
   static getChildTabLabel() {
-    const { t } = i18n.global;
-    return t('projectSetup.labels');
+    return 'code';
   }
 
   /**
@@ -76,7 +75,7 @@ export class ProjectSetup {
    * @returns {string} Identifiant unique
    */
   static getUniqueIdentifier() {
-    return 'projectSetup';
+    return 'uuid';
   }
 
   /**
