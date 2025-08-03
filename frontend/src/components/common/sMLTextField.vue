@@ -92,6 +92,10 @@ const props = defineProps({
   edition: {
     type: Boolean,
     default: false
+  },
+  parentUuid: {
+    type: String,
+    default: ''
   }
 })
 
@@ -238,20 +242,18 @@ const confirmChange = async (langCode) => {
         error: null
       })
     } else {
-      const parentCode = getParentCode()
-      console.log('Creating new label for language:', langCode)
-      console.log('Parent code:', parentCode)
-      console.log('New value:', newValue)
+      console.log('[sMLTextField] [confirmChange] - Creating new label for language:', langCode)
+      console.log('[sMLTextField] [confirmChange] - New value:', newValue)
       
-      if (!parentCode) {
-        console.error('No parent_code found in existing translations')
-        throw new Error('Parent code not found')
+      if (!props.parentUuid) {
+        console.error('[sMLTextField] [confirmChange] - No parent_uuid found in existing translations')
+        throw new Error('Parent uuid not found')
       }
       
       // Case 2: UUID is empty - use POST to create new label
       response = await apiService.post(props.patchendpoint, {
         label: newValue,
-        parent_code: parentCode,
+        parent_uuid: props.parentUuid,
         lang_code: langCode
       })
       

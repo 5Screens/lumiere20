@@ -6,13 +6,13 @@ class KnowledgeSetupLabelsController {
     async createKnowledgeSetupLabel(req, res) {
         logger.info('[CONTROLLER] createKnowledgeSetupLabel - Starting to process request');
         try {
-            const { label, parent_code, lang_code } = req.body;
+            const { label, parent_uuid, lang_code } = req.body;
             
-            logger.info(`[CONTROLLER] createKnowledgeSetupLabel - Creating label for parent_code: ${parent_code}, lang_code: ${lang_code}`);
+            logger.info(`[CONTROLLER] createKnowledgeSetupLabel - Creating label for parent_uuid: ${parent_uuid}, lang_code: ${lang_code}`);
             
             const createdLabel = await knowledgeSetupLabelsService.createKnowledgeSetupLabel({
                 label,
-                parent_code,
+                parent_uuid,
                 lang_code
             });
             

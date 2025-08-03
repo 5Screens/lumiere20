@@ -177,6 +177,7 @@
             :disabled="field.disabled"
             :patchendpoint="field.patchEndpoint"
             :edition="mode === 'update'"
+            :parentUuid="objectId"
             @update:modelValue="handleFieldChange(fieldName, $event)"
             @update:success="handleFieldSuccess"
             @field-change-cancelled="() => {}"
