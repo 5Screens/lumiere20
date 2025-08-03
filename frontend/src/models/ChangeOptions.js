@@ -234,21 +234,6 @@ export class ChangeOptions {
     return apiData;
   }
 
-  /**
-   * Retourne le composant Vue à utiliser dans la grille
-   * @returns {string} Nom du composant
-   */
-  static get vueComponentToUseInGrid() {
-    return 'ObjectsTab';
-  }
-
-  /**
-   * Retourne le composant Vue à utiliser dans le formulaire
-   * @returns {string} Nom du composant
-   */
-  static get vueComponentToUseInForm() {
-    return 'ObjectCreationsAndUpdates';
-  }
 }
 
 export default ChangeOptions;
