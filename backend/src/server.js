@@ -34,6 +34,7 @@ const incidentResolutionCodesRoutes = require('./api/v1/incident_resolution_code
 const problemCategoriesRoutes = require('./api/v1/problem_categories/routes');
 const changeSetupRoutes = require('./api/v1/change_setup/routes');
 const changeQuestionsRoutes = require('./api/v1/change_questions/routes');
+const changeQuestionsLabelsRoutes = require('./api/v1/change_questions_labels/routes');
 const changeOptionsRoutes = require('./api/v1/change_options/routes');
 const changeOptionsLabelsRoutes = require('./api/v1/change_options_labels/routes');
 const knowledgeSetupRoutes = require('./api/v1/knowledge_setup/routes');
@@ -81,6 +82,7 @@ app.use('/api/v1/incident_resolution_codes', incidentResolutionCodesRoutes);
 app.use('/api/v1/problem_categories', problemCategoriesRoutes);
 app.use('/api/v1/change_setup', changeSetupRoutes);
 app.use('/api/v1/change_questions', changeQuestionsRoutes);
+app.use('/api/v1/change_questions_labels', changeQuestionsLabelsRoutes);
 app.use('/api/v1/change_options', changeOptionsRoutes);
 app.use('/api/v1/change_options_labels', changeOptionsLabelsRoutes);
 app.use('/api/v1/knowledge_setup', knowledgeSetupRoutes);
