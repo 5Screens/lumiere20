@@ -451,6 +451,9 @@ export default {
     
     configuration_item: 'Élément de configuration',
     configuration_item_placeholder: 'Sélectionnez l\'élément de configuration',
+
+    symptoms: 'Que se passe-t-il ?',
+    symptoms_placeholder: 'Sélectionnez les symptômes',
     
     assigned_group: 'Groupe assigné',
     assigned_group_placeholder: 'Sélectionnez le groupe',

@@ -17,7 +17,7 @@ export class Incident {
       { key: 'ticket_type_label', label: t('configuration.ticketTypes'), type: 'text', format: 'text' },
       { key: 'ticket_status_label', label: t('incident.status'), type: 'text', format: 'text' },
       { key: 'configuration_item_name', label: t('incident.configuration_item'), type: 'text', format: 'text' },
-      { key: 'symptoms_name', label: t('incident.symptoms'), type: 'text', format: 'text' },
+      { key: 'symptoms_label', label: t('incident.symptoms'), type: 'text', format: 'text' },
       { key: 'impact_label', label: t('incident.impact'), type: 'text', format: 'text' },
       { key: 'urgency_label', label: t('incident.urgency'), type: 'text', format: 'text' },
       { key: 'priority', label: t('incident.priority'), type: 'text', format: 'text' },
@@ -95,6 +95,7 @@ export class Incident {
     this.requested_for_uuid = data.requested_for_uuid || null;
     this.writer_uuid = data.writer_uuid || null;
     this.configuration_item_uuid = data.configuration_item_uuid || null;
+    this.symptoms_uuid = data.symptoms_uuid || null;
     
     // Names for display
     this.requested_by_name = data.requested_by_name || '';

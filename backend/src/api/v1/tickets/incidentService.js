@@ -38,7 +38,7 @@ const getIncidents = async (lang) => {
         service.name as rel_service_name,
         service_offerings.name as rel_service_offerings_name,
         t.core_extended_attributes->>'symptoms_uuid' as symptoms_uuid,
-        COALESCE(symptoms_label.label, t.core_extended_attributes->>'symptoms_uuid') as symptoms_label,
+        COALESCE(symptoms_t.libelle, t.core_extended_attributes->>'symptoms_uuid') as symptoms_label
     `;
     
     // Définition des jointures spécifiques aux incidents
@@ -69,8 +69,10 @@ const getIncidents = async (lang) => {
         LEFT JOIN data.service_offerings service_offerings 
             ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
         -- Jointures pour les symptômes
-        LEFT JOIN data.symptoms symptoms_label
+        LEFT JOIN configuration.symptoms symptoms 
             ON t.core_extended_attributes->>'symptoms_uuid' = symptoms.uuid::text
+        LEFT JOIN translations.symptoms_translation symptoms_t 
+            ON symptoms.code = symptoms_t.symptom_code AND symptoms_t.langue = $1
     `;
     
     // Utilisation de la fonction getTickets factorisée
@@ -151,6 +153,7 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 change_rel.rel_child_ticket_uuid as rel_change_request,
                 t.core_extended_attributes->>'resolution_code' as resolution_code,
                 t.core_extended_attributes->>'resolution_notes' as resolution_notes,
+                t.core_extended_attributes->>'symptoms_uuid' as symptoms_uuid,
                 
                 -- Labels traduits pour les champs avec référence
                 COALESCE(impacts_t.label, t.core_extended_attributes->>'impact') as impact_label,
@@ -158,6 +161,7 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 COALESCE(cause_codes_t.label, t.core_extended_attributes->>'cause_code') as cause_code_label,
                 COALESCE(contact_types_t.label, t.core_extended_attributes->>'contact_type') as contact_type_label,
                 COALESCE(resolution_codes_t.label, t.core_extended_attributes->>'resolution_code') as resolution_code_label,
+                COALESCE(symptoms_t.libelle, t.core_extended_attributes->>'symptoms_uuid') as symptoms_label,
                 
 
 
@@ -220,6 +224,10 @@ const getIncidentById = async (uuid, lang = 'en') => {
             LEFT JOIN data.services service ON t.core_extended_attributes->>'rel_service' = service.uuid::text
             LEFT JOIN data.service_offerings service_offerings ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
             
+            -- Jointures pour les symptômes
+            LEFT JOIN configuration.symptoms symptoms ON t.core_extended_attributes->>'symptoms_uuid' = symptoms.uuid::text
+            LEFT JOIN translations.symptoms_translation symptoms_t ON symptoms.code = symptoms_t.symptom_code AND symptoms_t.langue = $2
+            
             -- Jointure pour récupérer le nom de l'élément de configuration
             LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
             
@@ -262,7 +270,7 @@ const updateIncident = async (uuid, updateData) => {
         'impact', 'urgency', 'priority', 'cause_code', 'rel_service', 
         'contact_type', 'reopen_count', 'standby_count',
         'resolution_code', 'assignment_count', 'resolution_notes',
-        'rel_service_offerings'
+        'rel_service_offerings', 'symptoms_uuid'
     ];
     
     // Extraire les relations parent-enfant pour les traiter séparément

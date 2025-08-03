@@ -357,6 +357,7 @@ const ticketValidationSchemas = {
             Joi.array().items(Joi.string().uuid())
         ),
         contact_type: Joi.string(),
+        symptoms_uuid: Joi.string().uuid().allow(null, ''),
         
         // Informations de résolution
         resolution_notes: Joi.string().allow('', null),
