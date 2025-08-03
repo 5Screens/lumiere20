@@ -17,6 +17,7 @@ export class Incident {
       { key: 'ticket_type_label', label: t('configuration.ticketTypes'), type: 'text', format: 'text' },
       { key: 'ticket_status_label', label: t('incident.status'), type: 'text', format: 'text' },
       { key: 'configuration_item_name', label: t('incident.configuration_item'), type: 'text', format: 'text' },
+      { key: 'symptoms_name', label: t('incident.symptoms'), type: 'text', format: 'text' },
       { key: 'impact_label', label: t('incident.impact'), type: 'text', format: 'text' },
       { key: 'urgency_label', label: t('incident.urgency'), type: 'text', format: 'text' },
       { key: 'priority', label: t('incident.priority'), type: 'text', format: 'text' },
@@ -117,11 +118,13 @@ export class Incident {
       { name: 'ticket_status_code', label: i18n.global.t('incident.status') },
       { name: 'title', label: i18n.global.t('incident.title') },
       { name: 'description', label: i18n.global.t('incident.description') },
+      { name: 'requested_by_uuid', label: i18n.global.t('incident.requested_by') },
       { name: 'requested_for_uuid', label: i18n.global.t('incident.requested_for') },
       { name: 'impact', label: i18n.global.t('incident.impact') },
       { name: 'urgency', label: i18n.global.t('incident.urgency') },
       { name: 'priority', label: i18n.global.t('incident.priority') },
-      { name: 'assigned_to_group', label: i18n.global.t('incident.assigned_group') }
+      { name: 'assigned_to_group', label: i18n.global.t('incident.assigned_group') },
+      { name: 'symptoms_uuid', label: i18n.global.t('incident.symptoms') }
     ];
 
     // Impact and priority
@@ -264,6 +267,16 @@ export class Incident {
         ],
         displayFieldAtInitInEditMode: 'configuration_item_name',
         required: isRequired('configuration_item_uuid')
+      },
+      symptoms_uuid: {
+        label: 'incident.symptoms',
+        type: 'sSelectField',
+        placeholder: 'incident.symptoms_placeholder',
+        required: isRequired('symptoms_uuid'),
+        endpoint: `symptoms?lang=${userProfileStore.language}&toSelect=yes`,
+        displayField: 'libelle',
+        valueField: 'uuid',
+        visible: true,
       },
       assigned_to_group: {
         label: 'incident.assigned_group',

@@ -36,7 +36,9 @@ const getIncidents = async (lang) => {
         (t.core_extended_attributes->>'assignment_to_count')::integer as assignment_to_count,
         t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
         service.name as rel_service_name,
-        service_offerings.name as rel_service_offerings_name
+        service_offerings.name as rel_service_offerings_name,
+        t.core_extended_attributes->>'symptoms_uuid' as symptoms_uuid,
+        COALESCE(symptoms_label.label, t.core_extended_attributes->>'symptoms_uuid') as symptoms_label,
     `;
     
     // Définition des jointures spécifiques aux incidents
@@ -66,6 +68,9 @@ const getIncidents = async (lang) => {
             ON t.core_extended_attributes->>'rel_service' = service.uuid::text
         LEFT JOIN data.service_offerings service_offerings 
             ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
+        -- Jointures pour les symptômes
+        LEFT JOIN data.symptoms symptoms_label
+            ON t.core_extended_attributes->>'symptoms_uuid' = symptoms.uuid::text
     `;
     
     // Utilisation de la fonction getTickets factorisée
@@ -386,7 +391,7 @@ const createIncident = async (incidentData) => {
         'resolution_notes', 'resolution_code', 'cause_code',
         'sla_pickup_due_at', 'assigned_to_at', 
         'sla_resolution_due_at', 'resolved_at', 'reopen_count', 'assignment_count',
-        'assignment_to_count', 'standby_count', 'contact_type'
+        'assignment_to_count', 'standby_count', 'contact_type', 'symptoms_uuid'
     ];
     
     // Ajouter chaque champ présent dans incidentData aux attributs étendus

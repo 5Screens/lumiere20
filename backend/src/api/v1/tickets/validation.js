@@ -105,7 +105,8 @@ const validateCreateTicket = (req, res, next) => {
         assignment_to_count: Joi.number().allow(null),
         standby_count: Joi.number().allow(null),
         closed_at: Joi.date().allow(null),
-        contact_type: Joi.string().allow(null, '')
+        contact_type: Joi.string().allow(null, ''),
+        symptoms_uuid: Joi.string().uuid().allow(null, '')
     };
     
     // Champs spécifiques aux problèmes
