@@ -6,13 +6,13 @@ class DefectSetupLabelsController {
     async createDefectSetupLabel(req, res) {
         logger.info('[CONTROLLER] createDefectSetupLabel - Starting to process request');
         try {
-            const { label, parent_code, lang_code } = req.body;
+            const { label, parent_uuid, lang_code } = req.body;
             
-            logger.info(`[CONTROLLER] createDefectSetupLabel - Creating label for parent_code: ${parent_code}, lang_code: ${lang_code}`);
+            logger.info(`[CONTROLLER] createDefectSetupLabel - Creating label for parent_uuid: ${parent_uuid}, lang_code: ${lang_code}`);
             
             const createdLabel = await defectSetupLabelsService.createDefectSetupLabel({
                 label,
-                parent_code,
+                parent_uuid,
                 lang_code
             });
             

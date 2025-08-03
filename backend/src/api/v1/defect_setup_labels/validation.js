@@ -4,7 +4,7 @@ const logger = require('../../../config/logger');
 // Schema for creating defect setup label
 const createDefectSetupLabelSchema = Joi.object({
     label: Joi.string().required(),
-    parent_code: Joi.string().required(),
+    parent_uuid: Joi.string().uuid().required(),
     lang_code: Joi.string().length(2).required()
 });
 
