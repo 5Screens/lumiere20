@@ -41,7 +41,6 @@ export class ChangeQuestions {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid' },
       { key: 'metadata', label: t('changeQuestions.metadata'), type: 'text' },
-      { key: 'question_id', label: t('changeQuestions.question_id'), type: 'text' },
       { key: 'label', label: t('changeQuestions.label'), type: 'text' },
       { key: 'lang', label: t('language.title'), type: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },

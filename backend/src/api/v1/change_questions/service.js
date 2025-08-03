@@ -18,7 +18,10 @@ const getAllChangeQuestions = async (lang) => {
                     cqc.code,
                     cqc.metadata,
                     cqc.question_id,
-                    cql.label
+                    cql.lang,
+                    cql.label,
+                    cqc.created_at,
+                    cqc.updated_at
                 FROM configuration.change_questions_codes cqc
                 LEFT JOIN translations.change_questions_labels cql 
                     ON cqc.code = cql.rel_change_question_code 
@@ -33,7 +36,9 @@ const getAllChangeQuestions = async (lang) => {
                     cqc.metadata,
                     cqc.question_id,
                     cql.lang,
-                    cql.label
+                    cql.label,
+                    cqc.created_at,
+                    cqc.updated_at
                 FROM configuration.change_questions_codes cqc
                 LEFT JOIN translations.change_questions_labels cql 
                     ON cqc.code = cql.rel_change_question_code
@@ -91,15 +96,16 @@ const getChangeQuestionByUuid = async (uuid) => {
                 cqc.created_at,
                 cqc.updated_at,
                 COALESCE(
-                    json_object_agg(
-                        cql.lang, 
-                        json_build_object(
-                            'uuid', cql.uuid,
-                            'label', cql.label,
-                            'lang', cql.lang
-                        )
-                    ) FILTER (WHERE cql.lang IS NOT NULL), 
-                    '{}'
+                    json_agg(
+                        CASE WHEN cql.uuid IS NOT NULL THEN
+                            json_build_object(
+                                'label_uuid', cql.uuid,
+                                'label_lang_code', cql.lang,
+                                'label', cql.label
+                            )
+                        END
+                    ) FILTER (WHERE cql.uuid IS NOT NULL), 
+                    '[]'::json
                 ) as labels
             FROM configuration.change_questions_codes cqc
             LEFT JOIN translations.change_questions_labels cql 

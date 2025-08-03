@@ -147,6 +147,11 @@ export default {
     // Titres pour les types de défaut
     changeOptionsCreation: 'Créer une réponses aux Q&R d\'analyse de risque et d\'impact de changement',
     changeOptionsUpdate: 'Modifier une réponse aux Q&R d\'analyse de risque et d\'impact de changement',
+    
+    // Titres pour les questions de changement
+    changeQuestionsCreation: 'Créer une question de changement',
+    changeQuestionsUpdate: 'Modifier une question de changement',
+
   },
   sprintCenter: {
     title: 'Centre Sprint',
@@ -182,7 +187,8 @@ export default {
     defectSetup: 'Gestion des anomalies',
     knowledgeSetup: 'Gestion des articles de connaissance',
     projectSetup: 'Gestion des paramètres de projet',
-    changeOptions: 'Q/R d\'analyse d\'impact et de risque'
+    changeOptions: 'Q/R d\'analyse d\'impact et de risque',
+    changeQuestions: 'Questions de changement'
   },
   admin: {
     title: 'Administration',
@@ -1114,6 +1120,32 @@ export default {
     updateSuccess: 'Type de contact mis à jour avec succès',
     updateError: 'Erreur lors de la mise à jour du type de contact',
     deleteSuccess: 'Type de contact supprimé avec succès',
+    deleteError: 'Erreur lors de la suppression du type de contact',
+    noTranslations: 'Veuillez saisir au moins une traduction pour le type de contact',
+    requiredFields: 'Veuillez saisir tous les champs obligatoires',
+    selectOneRowForUpdate: 'Veuillez sélectionner une ligne à modifier',
+    selectRowsForUpdate: 'Veuillez sélectionner au moins une ligne à modifier',
+    selectRowsForDelete: 'Veuillez sélectionner au moins une ligne à supprimer',
+    noClassFound: 'Aucune classe trouvée',
+    selectOneRow: 'Veuillez sélectionner une valeur',
+    requiredField: 'Champ obligatoire'
+  },
+  changeQuestions: {
+    code: 'Code',
+    label: 'Libellé',
+    lang: 'Langue',
+    uuid: 'UUID',
+    created_at: 'Créé le',
+    updated_at: 'Mis à jour le',
+    labels: 'Libellés',
+    parent_code: 'Code parent',
+    metadata: 'Impact / Risque',
+    question_id: 'Code question',
+    saveSuccess: 'Question de changement enregistrée avec succès',
+    saveError: 'Erreur lors de l\'enregistrement de la question de changement',
+    updateSuccess: 'Question de changement mise à jour avec succès',
+    updateError: 'Erreur lors de la mise à jour de la question de changement',
+    deleteSuccess: 'Question de changement supprimée avec succès',
     deleteError: 'Erreur lors de la suppression du type de contact',
     noTranslations: 'Veuillez saisir au moins une traduction pour le type de contact',
     requiredFields: 'Veuillez saisir tous les champs obligatoires',
