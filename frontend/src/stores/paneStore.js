@@ -60,7 +60,8 @@ export const usePaneStore = defineStore('pane', {
           { tabToOpen: 'knowledge_setup', icon: 'fas fa-book-open', label: 'configuration.knowledgeSetup', className: 'KnowledgeSetup' },
           { tabToOpen: 'projectSetup', icon: 'fas fa-project-diagram', label: 'configuration.projectSetup', className: 'ProjectSetup' },
           { tabToOpen: 'changeOptions', icon: 'fas fa-exchange-alt', label: 'configuration.changeOptions', className: 'ChangeOptions' },
-          { tabToOpen: 'changeQuestions', icon: 'fas fa-question-circle', label: 'configuration.changeQuestions', className: 'ChangeQuestions' }
+          { tabToOpen: 'changeQuestions', icon: 'fas fa-question-circle', label: 'configuration.changeQuestions', className: 'ChangeQuestions' },
+          { tabToOpen: 'changeSetup', icon: 'fas fa-cog', label: 'configuration.changeSetup', className: 'ChangeSetup' }
           /*{ tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
           { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },
           { tabToOpen: 'sites', icon: 'fas fa-sitemap', label: 'configuration.sites' },

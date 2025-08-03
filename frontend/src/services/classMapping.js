@@ -21,6 +21,7 @@ import { KnowledgeSetup } from '@/models/KnowledgeSetup'
 import { ProjectSetup } from '@/models/ProjectSetup'
 import { ChangeOptions } from '@/models/ChangeOptions'
 import { ChangeQuestions } from '@/models/ChangeQuestions'
+import { ChangeSetup } from '@/models/ChangeSetup'
 
 /**
  * Mapping des noms de classes vers les classes JavaScript
@@ -43,7 +44,8 @@ const CLASS_MAP = {
   'KnowledgeSetup': KnowledgeSetup,
   'ProjectSetup': ProjectSetup,
   'ChangeOptions': ChangeOptions,
-  'ChangeQuestions': ChangeQuestions
+  'ChangeQuestions': ChangeQuestions,
+  'ChangeSetup': ChangeSetup
 }
 
 /**
