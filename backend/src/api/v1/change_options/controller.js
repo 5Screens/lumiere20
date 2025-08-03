@@ -8,6 +8,13 @@ const getAllChangeOptions = async (req, res) => {
     logger.info('[CONTROLLER] getAllChangeOptions - Starting to process request');
     
     const lang = req.query.lang;
+    const questionId = req.query.question_id;
+    
+    // Si question_id est fourni, router vers la méthode legacy qui gère ce cas
+    if (questionId) {
+        logger.info('[CONTROLLER] getAllChangeOptions - question_id provided, routing to legacy method');
+        return getChangeOptions(req, res);
+    }
     
     try {
         const changeOptions = await changeOptionsService.getAllChangeOptions(lang);
