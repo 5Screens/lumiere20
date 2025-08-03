@@ -84,7 +84,7 @@ export class ProjectSetup {
    */
   static getCreateTitle() {
     const { t } = i18n.global;
-    return t('projectSetup.create');
+    return t('objectCreationsAndUpdates.projectSetupCreation');
   }
 
   /**
@@ -93,7 +93,7 @@ export class ProjectSetup {
    */
   static getUpdateTitle() {
     const { t } = i18n.global;
-    return t('projectSetup.update');
+    return t('objectCreationsAndUpdates.projectSetupUpdate');
   }
 
   /**
@@ -103,8 +103,7 @@ export class ProjectSetup {
    */
   static async getById(uuid) {
     try {
-      const userProfileStore = useUserProfileStore();
-      const response = await apiService.get(`project_setup/${uuid}?lang=${userProfileStore.language}`);
+      const response = await apiService.get(`project_setup/${uuid}`);
       
       if (response) {
         return new ProjectSetup(response);
@@ -119,40 +118,65 @@ export class ProjectSetup {
 
   /**
    * Retourne les champs à afficher dans le formulaire
-   * @returns {Array} Configuration des champs du formulaire
+   * @param {string} mode - Mode d'affichage ('for_creation' ou 'for_edition')
+   * @returns {Object} Configuration des champs du formulaire
    */
-  getRenderableFields() {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     
-    return [
-      {
+    const fields = {
+      uuid: {
+        label: 'projectSetup.uuid',
+        type: 'sTextField',
+        placeholder: 'projectSetup.uuid_placeholder',
+        disabled: true
+      },
+      created_at: {
+        label: 'projectSetup.created_at',
+        type: 'sTextField',
+        placeholder: 'projectSetup.created_at_placeholder',
+        disabled: true
+      },
+      updated_at: {
+        label: 'projectSetup.updated_at',
+        type: 'sTextField',
+        placeholder: 'projectSetup.updated_at_placeholder',
+        disabled: true
+      },
+      code: {
         name: 'code',
-        label: t('projectSetup.code'),
+        label: 'projectSetup.code',
         type: 'sTextField',
         required: true,
-        placeholder: t('projectSetup.code_placeholder'),
+        placeholder: 'projectSetup.code_placeholder',
         maxlength: 50
       },
-      {
+      metadata: {
         name: 'metadata',
-        label: t('projectSetup.metadata'),
+        label: 'projectSetup.metadata',
         type: 'sTextField',
         required: false,
-        placeholder: t('projectSetup.metadata_placeholder'),
+        placeholder: 'projectSetup.metadata_placeholder',
         maxlength: 50
       },
-      {
-        name: 'labels',
-        label: t('projectSetup.labels'),
-        type: 'sPickList',
+      labels: {
+        label: 'projectSetup.labels',
+        type: 'sMLTextField',
+        placeholder: 'projectSetup.label_placeholder',
         required: false,
-        sourceEndPoint: 'project_setup_label',
-        targetEndPoint: 'project_setup_label',
-        target_uuid: this.uuid,
-        displayedLabel: 'label',
-        patchEndpoint: 'project_setup_label'
+        patchEndpoint: 'project_setup_label',
       }
-    ];
+    };
+
+     // Supprimer les champs système en mode création
+     if (mode === 'for_creation') {
+      delete fields.uuid;
+      delete fields.created_at;
+      delete fields.updated_at;
+    }
+    
+
+    return fields;
   }
 
   /**
