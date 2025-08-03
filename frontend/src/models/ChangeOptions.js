@@ -42,14 +42,14 @@ export class ChangeOptions {
     
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'code', label: t('changeOptions.code'), type: 'text' },
       { key: 'metadata', label: t('changeOptions.metadata'), type: 'text' },
       { key: 'question_id', label: t('changeOptions.question_id'), type: 'text' },
-      { key: 'weight', label: t('changeOptions.weight'), type: 'number' },
       { key: 'label', label: t('changeOptions.label'), type: 'text' },
-      { key: 'lang', label: t('language.title'), type: 'text' }
+      { key: 'weight', label: t('changeOptions.weight'), type: 'number' },
+      { key: 'lang', label: t('language.title'), type: 'text' },
+      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+
     ];
   }
 
@@ -162,7 +162,8 @@ export class ChangeOptions {
         type: 'sTextField',
         required: false,
         placeholder: 'changeOptions.metadata_placeholder',
-        maxlength: 50
+        maxlength: 50,
+        disabled: true
       },
       question_id: {
         name: 'question_id',
@@ -170,7 +171,8 @@ export class ChangeOptions {
         type: 'sTextField',
         required: false,
         placeholder: 'changeOptions.question_id_placeholder',
-        maxlength: 100
+        maxlength: 100,
+        disabled: true
       },
       weight: {
         name: 'weight',

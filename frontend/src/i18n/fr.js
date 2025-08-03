@@ -143,6 +143,10 @@ export default {
     // Titres pour les types de défaut
     projectSetupCreation: 'Créer un type de projet',
     projectSetupUpdate: 'Modifier le type de projet',
+    
+    // Titres pour les types de défaut
+    changeOptionsCreation: 'Créer une réponses aux Q&R d\'analyse de risque et d\'impact de changement',
+    changeOptionsUpdate: 'Modifier une réponse aux Q&R d\'analyse de risque et d\'impact de changement',
   },
   sprintCenter: {
     title: 'Centre Sprint',
@@ -177,7 +181,8 @@ export default {
     contactTypes: 'Gestion des type de contacts',
     defectSetup: 'Gestion des anomalies',
     knowledgeSetup: 'Gestion des articles de connaissance',
-    projectSetup: 'Gestion des paramètres de projet'
+    projectSetup: 'Gestion des paramètres de projet',
+    changeOptions: 'Q/R d\'analyse d\'impact et de risque'
   },
   admin: {
     title: 'Administration',
@@ -1101,7 +1106,7 @@ export default {
     updated_at: 'Mis à jour le',
     labels: 'Libellés',
     parent_code: 'Code parent',
-    metadata: 'Classes de donnees',
+    metadata: 'Impact / Risque',
     question_id: 'Question',
     weight: 'Poids',
     saveSuccess: 'Type de contact enregistré avec succès',
