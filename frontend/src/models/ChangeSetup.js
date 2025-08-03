@@ -39,6 +39,7 @@ export class ChangeSetup {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid' },
       { key: 'metadata', label: t('changeSetup.metadata'), type: 'text' },
+      { key: 'code', label: t('changeSetup.code'), type: 'text' },
       { key: 'label', label: t('changeSetup.label'), type: 'text' },
       { key: 'lang', label: t('language.title'), type: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
