@@ -6,13 +6,13 @@ class ContactTypesLabelsController {
     async createContactTypeLabel(req, res) {
         logger.info('[CONTROLLER] createContactTypeLabel - Starting to process request');
         try {
-            const { label, parent_code, lang_code } = req.body;
+            const { label, parent_uuid, lang_code } = req.body;
             
-            logger.info(`[CONTROLLER] createContactTypeLabel - Creating label for parent_code: ${parent_code}, lang_code: ${lang_code}`);
+            logger.info(`[CONTROLLER] createContactTypeLabel - Creating label for parent_uuid: ${parent_uuid}, lang_code: ${lang_code}`);
             
             const createdLabel = await contactTypesLabelsService.createContactTypeLabel({
                 label,
-                parent_code,
+                parent_uuid,
                 lang_code
             });
             

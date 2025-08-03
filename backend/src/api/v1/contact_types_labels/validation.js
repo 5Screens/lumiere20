@@ -4,7 +4,7 @@ const logger = require('../../../config/logger');
 const createContactTypeLabel = {
     body: Joi.object({
         label: Joi.string().max(255).required(),
-        parent_code: Joi.string().max(50).required(),
+        parent_uuid: Joi.string().uuid().required(),
         lang_code: Joi.string().max(10).required()
     }).options({ 
         abortEarly: false,
