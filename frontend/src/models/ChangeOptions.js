@@ -125,83 +125,77 @@ export class ChangeOptions {
    * @param {string} mode - Mode du formulaire ('create' ou 'update')
    * @returns {Array} Configuration des champs du formulaire
    */
-  getRenderableFields(mode = 'create') {
+  static getRenderableFields(mode = 'for_creation') {
     const { t } = i18n.global;
     
-    const fields = [
-      {
+    const fields = {
+      uuid: {
+        label: 'changeOptions.uuid',
+        type: 'sTextField',
+        placeholder: 'changeOptions.uuid_placeholder',
+        disabled: true
+      },
+      created_at: {
+        label: 'changeOptions.created_at',
+        type: 'sTextField',
+        placeholder: 'changeOptions.created_at_placeholder',
+        disabled: true
+      },
+      updated_at: {
+        label: 'changeOptions.updated_at',
+        type: 'sTextField',
+        placeholder: 'changeOptions.updated_at_placeholder',
+        disabled: true
+      },
+      code: {
         name: 'code',
-        label: t('changeOptions.code'),
-        type: 'text',
+        label: 'changeOptions.code',
+        type: 'sTextField',
         required: true,
-        placeholder: t('changeOptions.code_placeholder'),
-        maxlength: 50
+        placeholder: 'changeOptions.code_placeholder',
+        maxlength: 50,
+        disabled: true
       },
-      {
+      metadata: {
         name: 'metadata',
-        label: t('changeOptions.metadata'),
-        type: 'text',
+        label: 'changeOptions.metadata',
+        type: 'sTextField',
         required: false,
-        placeholder: t('changeOptions.metadata_placeholder'),
+        placeholder: 'changeOptions.metadata_placeholder',
         maxlength: 50
       },
-      {
+      question_id: {
         name: 'question_id',
-        label: t('changeOptions.question_id'),
-        type: 'text',
+        label: 'changeOptions.question_id',
+        type: 'sTextField',
         required: false,
-        placeholder: t('changeOptions.question_id_placeholder'),
+        placeholder: 'changeOptions.question_id_placeholder',
         maxlength: 100
       },
-      {
+      weight: {
         name: 'weight',
-        label: t('changeOptions.weight'),
-        type: 'number',
+        label: 'changeOptions.weight',
+        type: 'sTextField',
+        inputType: 'number',
         required: false,
-        placeholder: t('changeOptions.weight_placeholder'),
+        placeholder: 'changeOptions.weight_placeholder',
         min: 0
+      },
+      labels: {
+        label: 'changeOptions.labels',
+        type: 'sMLTextField',
+        placeholder: 'changeOptions.label_placeholder',
+        required: false,
+        patchEndpoint: 'change_options_labels',
       }
-    ];
+    };
 
-    // Ajouter les champs système seulement en mode mise à jour
-    if (mode === 'update') {
-      fields.unshift(
-        {
-          name: 'uuid',
-          label: t('common.id'),
-          type: 'text',
-          required: false,
-          readonly: true
-        }
-      );
-      
-      fields.push(
-        {
-          name: 'created_at',
-          label: t('common.creation_date'),
-          type: 'datetime',
-          required: false,
-          readonly: true
-        },
-        {
-          name: 'updated_at',
-          label: t('common.modification_date'),
-          type: 'datetime',
-          required: false,
-          readonly: true
-        }
-      );
+    // Supprimer les champs système en mode création
+    if (mode === 'for_creation') {
+      delete fields.uuid;
+      delete fields.created_at;
+      delete fields.updated_at;
     }
-
-    // Ajouter le champ labels pour la gestion multilingue
-    fields.push({
-      name: 'labels',
-      label: t('changeOptions.labels'),
-      type: 'multilingual_labels',
-      required: true,
-      patchEndpoint: 'change_options_labels',
-      languages: ['fr', 'en', 'es', 'pt']
-    });
 
     return fields;
   }
