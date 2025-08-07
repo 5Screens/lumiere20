@@ -23,6 +23,7 @@ import { ChangeOptions } from '@/models/ChangeOptions'
 import { ChangeQuestions } from '@/models/ChangeQuestions'
 import { ChangeSetup } from '@/models/ChangeSetup'
 import { ProblemCategories } from '@/models/ProblemCategories'
+import { EntitySetup } from '@/models/EntitySetup'
 
 /**
  * Mapping des noms de classes vers les classes JavaScript
@@ -47,7 +48,8 @@ const CLASS_MAP = {
   'ChangeOptions': ChangeOptions,
   'ChangeQuestions': ChangeQuestions,
   'ChangeSetup': ChangeSetup,
-  'ProblemCategories': ProblemCategories
+  'ProblemCategories': ProblemCategories,
+  'EntitySetup': EntitySetup
 }
 
 /**
