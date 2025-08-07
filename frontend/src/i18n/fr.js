@@ -141,8 +141,8 @@ export default {
     knowledgeSetupUpdate: 'Modifier le type de connaissance',
     
     // Titres pour les types de défaut
-    projectSetupCreation: 'Créer un type de projet',
-    projectSetupUpdate: 'Modifier le type de projet',
+    projectSetupCreation: 'Créer nouvelle metadonnee projet et sa traduction',
+    projectSetupUpdate: 'Modifier une metadonnee projet et sa traduction',
     
     // Titres pour les types de défaut
     changeOptionsCreation: 'Créer une réponses aux Q&R d\'analyse de risque et d\'impact de changement',
@@ -195,7 +195,6 @@ export default {
     changeQuestions: 'Questions de changement',
     changeSetup: 'Gestion des changements',
     problemCategories: 'Catégories de problème', 
-
   },
   admin: {
     title: 'Administration',
@@ -1058,7 +1057,7 @@ export default {
     updated_at: 'Mis à jour le',
     labels: 'Libellés',
     parent_code: 'Code parent',
-    metadata: 'Classes de donnees',
+    metadata: 'Meta-donnees',
     noClassFound: 'Aucune classe trouvée',
     selectOneRow: 'Veuillez sélectionner une valeur',
     requiredField: 'Champ obligatoire'
@@ -1072,7 +1071,7 @@ export default {
     updated_at: 'Mis à jour le',
     labels: 'Libellés',
     parent_code: 'Code parent',
-    metadata: 'Classes de donnees',
+    metadata: 'Méta-donnees',
     noClassFound: 'Aucune classe trouvée',
     selectOneRow: 'Veuillez sélectionner une valeur',
     requiredField: 'Champ obligatoire'
