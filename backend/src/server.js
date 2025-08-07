@@ -46,6 +46,8 @@ const projectSetupLabelRoutes = require('./api/v1/project_setup_label/routes');
 const defectSetupRoutes = require('./api/v1/defect_setup/routes');
 const entitySetupRoutes = require('./api/v1/entity_setup/routes');
 const entitySetupLabelsRoutes = require('./api/v1/entity_setup_labels/routes');
+const incidentSetupRoutes = require('./api/v1/incident_setup/routes');
+const incidentSetupLabelsRoutes = require('./api/v1/incident_setup_labels/routes');
 
 // Middleware
 app.use(cors());
@@ -98,6 +100,8 @@ app.use('/api/v1/project_setup_label', projectSetupLabelRoutes);
 app.use('/api/v1/defect_setup', defectSetupRoutes);
 app.use('/api/v1/entity_setup', entitySetupRoutes);
 app.use('/api/v1/entity_setup_labels', entitySetupLabelsRoutes);
+app.use('/api/v1/incident_setup', incidentSetupRoutes);
+app.use('/api/v1/incident_setup_labels', incidentSetupLabelsRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
