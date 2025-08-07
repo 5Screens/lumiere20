@@ -13,6 +13,8 @@
 /* Élément table - structure les données en lignes et colonnes */
 table {
   width: 100%;
+  /* Allow natural column sizing (revert fixed layout to enable wide tables) */
+  table-layout: auto;
   border-collapse: collapse;
   color: var(--text-color);
 }
@@ -47,10 +49,19 @@ tbody tr:hover {
 /* Conteneur interne du tableau - permet le défilement vertical */
 .table-container {
   flex: 1;
+  /* Revert to auto so the container only scrolls when needed */
   overflow-y: auto;
   min-height: 0;
   width: 100%;
   position: relative;
+}
+
+/* Keep a stable vertical gutter at the PAGE level to avoid horizontal shift when content height changes */
+html, body {
+  overflow-y: scroll;          /* always reserve space for vertical scrollbar */
+}
+html {
+  scrollbar-gutter: stable;    /* modern browsers: reserve gutter even when no scrollbar */
 }
 
 /* Pied de tableau - reste visible en bas même lors du défilement */
@@ -486,7 +497,10 @@ th:first-child .th-content {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Keep constant dimensions regardless of state */
+  box-sizing: border-box;
   border: 1px solid var(--border-color);
+  border-width: 1px; /* explicit to avoid any change on active/hover */
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;

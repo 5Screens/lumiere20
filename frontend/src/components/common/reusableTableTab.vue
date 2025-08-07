@@ -5,7 +5,7 @@
       <table>
         <thead>
           <tr>
-            <th class="resizable" v-if="selectable">
+            <th class="resizable" v-if="selectable" :style="getThWidthStyle(-1)">
               <div class="th-content">
                 <input type="checkbox" 
                        @change="toggleAllRows" 
@@ -14,7 +14,7 @@
                 <div class="resize-handle" @mousedown="startResize($event, 0)"></div>
               </div>
             </th>
-            <th v-for="(column, index) in columns" :key="column.key" class="resizable">
+            <th v-for="(column, index) in columns" :key="column.key" class="resizable" :style="getThWidthStyle(index)">
               <div class="th-content">
                 <div @click="sortBy(column.key)" class="sortable">
                   {{ column.label }}
@@ -73,9 +73,10 @@
               @click="toggleRowSelection(row)"
               :class="{ 'selected-row': row.selected }"
               style="cursor: pointer;">
-            <td v-if="selectable" @click.stop><input type="checkbox" v-model="row.selected" /></td>
-            <td v-for="column in columns" 
+            <td v-if="selectable" @click.stop :style="getTdWidthStyle(-1)"><input type="checkbox" v-model="row.selected" /></td>
+            <td v-for="(column, cIndex) in columns" 
                 :key="column.key"
+                :style="getTdWidthStyle(cIndex)"
                 :title="column.format !== 'tags' ? row[column.key] : ''"
                 @contextmenu.prevent="showCopyIcon($event, row[column.key])">
               <span v-if="column.format === 'html'" v-html="formatCellContent(row[column.key], column.format)"></span>
@@ -194,7 +195,9 @@ export default {
       sortColumn: '',
       sortDirection: 'asc',
       selectAll: false,
+      // Column widths: index 0 is the selectable column when selectable=true, followed by the data columns
       columnWidths: [],
+      measureTimeoutId: null,
       showCopyIconAt: null,
       copyContent: '',
       isFading: false,
@@ -305,7 +308,44 @@ export default {
       }
     }
   },
+  mounted() {
+    // Measure widths after first render
+    this.$nextTick(() => {
+      this.measureColumnWidths()
+    })
+    window.addEventListener('resize', this.measureColumnWidths)
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.measureColumnWidths)
+  },
   methods: {
+    // Return width style for header cells. Index -1 refers to the selectable column when enabled.
+    getThWidthStyle(index) {
+      const idx = this.selectable ? (index === -1 ? 0 : index + 1) : index
+      const width = this.columnWidths[idx]
+      if (!width) return {}
+      return { width: width + 'px', minWidth: width + 'px', maxWidth: width + 'px' }
+    },
+    // Return width style for body cells. Index -1 refers to the selectable column when enabled.
+    getTdWidthStyle(index) {
+      const idx = this.selectable ? (index === -1 ? 0 : index + 1) : index
+      const width = this.columnWidths[idx]
+      if (!width) return {}
+      return { width: width + 'px', minWidth: width + 'px', maxWidth: width + 'px' }
+    },
+    // Measure header TH widths and lock them
+    measureColumnWidths() {
+      this.$nextTick(() => {
+        const headerRow = this.$el.querySelector('thead tr:first-child')
+        if (!headerRow) return
+        const ths = headerRow.querySelectorAll('th')
+        if (!ths || ths.length === 0) return
+        const widths = Array.from(ths).map(th => Math.ceil(th.getBoundingClientRect().width))
+        if (widths.some(w => w > 0)) {
+          this.columnWidths = widths
+        }
+      })
+    },
     /**
      * Récupère les données depuis l'API en utilisant le service API centralisé
      */
@@ -326,6 +366,8 @@ export default {
           };
         });
         console.log('[ReusableTableTab] Données traitées et stockées dans tableData');
+        // After data is set, measure and lock widths once
+        this.$nextTick(() => this.measureColumnWidths())
       } catch (error) {
         console.error('[ReusableTableTab] Erreur lors de la récupération des données:', error);
         this.$emit('error', error.message || 'Erreur lors de la récupération des données');
@@ -438,7 +480,8 @@ export default {
       if (!this.resizing) return
       
       const dx = event.pageX - this.startX
-      const newWidth = (this.columnWidths[this.currentResizingColumn] || 100) + dx
+      const current = this.columnWidths[this.currentResizingColumn] || 100
+      const newWidth = current + dx
       
       if (newWidth >= 50) {
         this.columnWidths[this.currentResizingColumn] = newWidth
@@ -472,11 +515,11 @@ export default {
       const filterIcon = event.target.closest('.filter-icon')
       const rect = filterIcon.getBoundingClientRect()
       
-      // Position the advanced filter aligned with the left edge of the column,
-      // right below the filter icon, with a small vertical offset
+      // Positionner le filtre avancé pour que son coin supérieur gauche
+      // soit adjacent au coin inférieur droit du bouton de filtre
       this.filterPosition = {
-        x: rect.left + window.scrollX,
-        y: rect.bottom + window.scrollY + 4
+        x: rect.right + window.scrollX,
+        y: rect.bottom + window.scrollY
       }
       
       // Ajouter un petit délai pour s'assurer que le DOM est mis à jour
@@ -523,8 +566,8 @@ export default {
           
           const newRect = filterIcon.getBoundingClientRect()
           this.filterPosition = {
-            x: newRect.left + window.scrollX,
-            y: newRect.bottom + window.scrollY + 4
+            x: newRect.right + window.scrollX,
+            y: newRect.bottom + window.scrollY
           }
         }
         
