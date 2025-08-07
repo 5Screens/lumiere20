@@ -153,8 +153,10 @@ export class Entity {
         type: 'sSelectField',
         placeholder: 'entities.entity_type_placeholder',
         required: isRequired('entity_type'),
-        endpoint: `entity_types?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `entity_setup?lang=${userProfileStore.language}&metadata=CATEGORY`,
         fieldName: 'entity_type',
+        valueField: 'code',
+        displayField: 'label',
         mode: 'creation'
       },
       parent_entity_uuid: {

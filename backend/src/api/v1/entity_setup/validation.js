@@ -5,7 +5,8 @@ const logger = require('../../../config/logger');
  * Schéma de validation pour la récupération de tous les entity setups
  */
 const getAllEntitySetupSchema = Joi.object({
-    lang: Joi.string().max(10).optional().default('en')
+    lang: Joi.string().max(10).optional(),
+    metadata: Joi.string().max(50).optional()
 });
 
 /**

@@ -6,10 +6,18 @@ const logger = require('../../../config/logger');
  */
 async function getAllEntitySetup(req, res) {
     try {
-        const { lang = 'en' } = req.query;
-        logger.info(`[CONTROLLER] getAllEntitySetup - Request received for language: ${lang}`);
+        const { lang, metadata } = req.query;
+        logger.info(`[CONTROLLER] getAllEntitySetup - Request received. Lang: ${lang || 'all'}, Metadata: ${metadata || 'all'}`);
         
-        const entitySetups = await entitySetupService.getAllEntitySetup(lang);
+        // Si des paramètres de filtrage sont fournis, utiliser la nouvelle fonction getEntitySetup
+        if (lang || metadata) {
+            const entitySetups = await entitySetupService.getEntitySetup(lang, metadata);
+            logger.info(`[CONTROLLER] getAllEntitySetup - Successfully retrieved ${entitySetups.length} entity setups with filters`);
+            return res.json(entitySetups);
+        }
+        
+        // Sinon, utiliser l'ancienne fonction pour la rétrocompatibilité
+        const entitySetups = await entitySetupService.getAllEntitySetup(lang || 'en');
         
         logger.info(`[CONTROLLER] getAllEntitySetup - Successfully retrieved ${entitySetups.length} entity setups`);
         res.json(entitySetups);

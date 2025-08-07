@@ -3,6 +3,99 @@ const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 
 /**
+ * Récupère les données de configuration des entités
+ * @param {string} lang - Code de langue (optionnel)
+ * @param {string} metadata - Type de métadonnées à filtrer (optionnel)
+ * @returns {Promise<Array>} - Liste des configurations d'entité
+ */
+const getEntitySetup = async (lang, metadata) => {
+    // Convertir metadata en majuscules si fourni
+    const upperMetadata = metadata ? metadata.toUpperCase() : metadata;
+    
+    logger.info(`[SERVICE] Getting entity setup data. Language: ${lang || 'all'}, Metadata: ${upperMetadata || 'all'}`);
+    
+    try {
+        let query;
+        let params = [];
+        let paramIndex = 1;
+        
+        // Construction de la requête en fonction des paramètres
+        if (lang && upperMetadata) {
+            // Filtrer par langue et metadata
+            query = `
+                SELECT 
+                    esc.uuid, 
+                    esc.metadata,
+                    esc.code, 
+                    esl.lang,
+                    esl.label
+                FROM configuration.entity_setup_codes esc
+                JOIN translations.entity_setup_labels esl 
+                    ON esc.code = esl.rel_entity_setup_code
+                WHERE esl.lang = $${paramIndex++}
+                AND esc.metadata = $${paramIndex++}
+                ORDER BY esc.metadata, esc.code, esl.lang
+            `;
+            params.push(lang, upperMetadata);
+        } else if (lang) {
+            // Filtrer par langue uniquement
+            query = `
+                SELECT 
+                    esc.uuid, 
+                    esc.metadata,
+                    esc.code, 
+                    esl.lang,
+                    esl.label
+                FROM configuration.entity_setup_codes esc
+                JOIN translations.entity_setup_labels esl 
+                    ON esc.code = esl.rel_entity_setup_code
+                WHERE esl.lang = $${paramIndex++}
+                ORDER BY esc.metadata, esc.code, esl.lang
+            `;
+            params.push(lang);
+        } else if (upperMetadata) {
+            // Filtrer par metadata uniquement
+            query = `
+                SELECT 
+                    esc.uuid, 
+                    esc.metadata,
+                    esc.code, 
+                    esl.lang,
+                    esl.label
+                FROM configuration.entity_setup_codes esc
+                JOIN translations.entity_setup_labels esl 
+                    ON esc.code = esl.rel_entity_setup_code
+                WHERE esc.metadata = $${paramIndex++}
+                ORDER BY esc.metadata, esc.code, esl.lang
+            `;
+            params.push(upperMetadata);
+        } else {
+            // Aucun filtre - récupérer tout
+            query = `
+                SELECT 
+                    esc.uuid, 
+                    esc.metadata,
+                    esc.code, 
+                    esl.lang,
+                    esl.label
+                FROM configuration.entity_setup_codes esc
+                LEFT JOIN translations.entity_setup_labels esl 
+                    ON esc.code = esl.rel_entity_setup_code
+                ORDER BY esc.metadata, esc.code, esl.lang
+            `;
+        }
+        
+        const result = await db.query(query, params);
+        logger.info(`[SERVICE] Entity setup query executed successfully, found ${result.rows.length} records`);
+        
+        return result.rows;
+    } catch (error) {
+        logger.error(`[SERVICE] Error in getEntitySetup: ${error.message}`);
+        throw error;
+    }
+};
+
+/**
  * Récupère tous les entity_setup_codes avec leurs traductions dans la langue spécifiée
  * @param {string} lang - Code de langue pour les traductions
  * @returns {Array} Liste des entity setups avec traductions
@@ -233,6 +326,7 @@ async function createEntitySetup(entitySetupData) {
 }
 
 module.exports = {
+    getEntitySetup,
     getAllEntitySetup,
     getEntitySetupByUuid,
     updateEntitySetup,
