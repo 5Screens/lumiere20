@@ -217,6 +217,13 @@ export class IncidentSetup {
       });
     }
 
+    // Supprimer les valeurs vides ou nulles
+    Object.keys(apiData).forEach(key => {
+      if (apiData[key] === null || apiData[key] === undefined || apiData[key] === '') {
+        delete apiData[key];
+      }
+    });
+
     return apiData;
   }
 }
