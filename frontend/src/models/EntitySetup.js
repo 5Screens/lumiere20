@@ -48,21 +48,16 @@ export class EntitySetup {
 
   /**
    * Retourne l'endpoint API pour les entity setups
-   * @param {string} method - Méthode HTTP (GET, POST, PATCH, DELETE)
-   * @returns {string} URL de l'endpoint
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
+   * @returns {string} Endpoint API
    */
-  static getApiEndpoint(method = 'GET') {
-    const baseUrl = 'entity_setup';
+  static getApiEndpoint(method) {
+    const userProfileStore = useUserProfileStore();
     
-    switch (method.toUpperCase()) {
-      case 'GET':
-      case 'POST':
-        return baseUrl;
-      case 'PATCH':
-      case 'DELETE':
-        return baseUrl; // L'UUID sera ajouté dynamiquement
-      default:
-        return baseUrl;
+    if (method === 'POST' || method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      return 'entity_setup';
+    } else {
+      return `entity_setup?lang=${userProfileStore.language}`;
     }
   }
 
@@ -122,43 +117,62 @@ export class EntitySetup {
 
   /**
    * Retourne les champs à afficher dans le formulaire
-   * @param {string} mode - Mode d'affichage ('create' ou 'update')
-   * @returns {Array} Configuration des champs du formulaire
+   * @param {string} mode - Mode d'affichage ('for_creation' ou 'for_update')
+   * @returns {Object} Configuration des champs du formulaire
    */
-  static getRenderableFields(mode = 'create') {
-    const { t } = i18n.global;
+  static getRenderableFields(mode = 'for_creation') {
     
-    const fields = [
-      {
-        name: 'code',
-        label: t('entitySetup.code'),
-        type: 'text',
-        required: true,
-        placeholder: t('entitySetup.codePlaceholder'),
-        maxlength: 50
+    // Fonction utilitaire pour déterminer si un champ est obligatoire
+    const dynamicLabels = new EntitySetup();
+    const isRequired = (fieldName) => dynamicLabels.requiredFields.some(field => field.name === fieldName);
+    
+    const fields = {
+      uuid: {
+        label: 'entitySetup.uuid',
+        type: 'sTextField',
+        placeholder: 'entitySetup.uuid_placeholder',
+        disabled: true
       },
-      {
-        name: 'metadata',
-        label: t('entitySetup.metadata'),
-        type: 'text',
-        required: false,
-        placeholder: t('entitySetup.metadataPlaceholder'),
-        maxlength: 50
+      created_at: {
+        label: 'entitySetup.created_at',
+        type: 'sTextField',
+        placeholder: 'entitySetup.created_at_placeholder',
+        disabled: true
+      },
+      updated_at: {
+        label: 'entitySetup.updated_at',
+        type: 'sTextField',
+        placeholder: 'entitySetup.updated_at_placeholder',
+        disabled: true
+      },
+      code: {
+        label: 'entitySetup.code',
+        type: 'sTextField',
+        placeholder: 'entitySetup.code_placeholder',
+        required: isRequired('code')
+      },
+      metadata: {
+        label: 'entitySetup.metadata',
+        type: 'sTextField',
+        placeholder: 'entitySetup.metadata_placeholder',
+        required: false
+      },
+      labels: {
+        label: 'entitySetup.labels',
+        type: 'sMLTextField',
+        placeholder: 'entitySetup.label_placeholder',
+        required: isRequired('labels'),
+        patchEndpoint: 'entity_setup_labels'
       }
-    ];
-
-    // En mode création, ajouter les champs de traduction
-    if (mode === 'create') {
-      fields.push({
-        name: 'labels',
-        label: t('entitySetup.labels'),
-        type: 'multiLangText',
-        required: true,
-        patchEndpoint: 'entity_setup_labels',
-        languages: ['fr', 'en', 'es', 'pt']
-      });
+    };
+    
+    // Supprimer les champs système en mode création
+    if (mode === 'for_creation') {
+      delete fields.uuid;
+      delete fields.created_at;
+      delete fields.updated_at;
     }
-
+    
     return fields;
   }
 
