@@ -28,7 +28,7 @@
         @click="handleChildTabSwitch(tab)"
       >
         <i v-if="tab.icon" :class="tab.icon"></i>
-        <span class="tab-title" :title="tab.label">{{ tab.label.length > 15 ? tab.label.substring(0, 15) + '...' : tab.label }}</span>
+        <span class="tab-title" :title="tab.label">{{ tab.label && tab.label.length > 15 ? tab.label.substring(0, 15) + '...' : (tab.label || 'Sans titre') }}</span>
         <button class="close-tab" @click.stop="store.closeTab(tab.id_tab)">×</button>
       </div>
     </div>

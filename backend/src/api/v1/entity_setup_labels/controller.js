@@ -16,10 +16,7 @@ async function createEntitySetupLabel(req, res) {
         });
         
         logger.info(`[CONTROLLER] createEntitySetupLabel - Successfully created entity setup label with UUID: ${createdLabel.uuid}`);
-        res.status(201).json({
-            success: true,
-            data: createdLabel
-        });
+        res.status(201).json(createdLabel);
     } catch (error) {
         logger.error(`[CONTROLLER] createEntitySetupLabel - Error: ${error.message}`);
         
@@ -57,10 +54,7 @@ async function patchEntitySetupLabel(req, res) {
         }
         
         logger.info(`[CONTROLLER] patchEntitySetupLabel - Successfully updated entity setup label for UUID: ${uuid}`);
-        res.json({
-            success: true,
-            data: updatedLabel
-        });
+        res.json(updatedLabel);
     } catch (error) {
         logger.error(`[CONTROLLER] patchEntitySetupLabel - Error: ${error.message}`);
         res.status(500).json({

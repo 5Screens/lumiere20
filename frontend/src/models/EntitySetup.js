@@ -67,12 +67,11 @@ export class EntitySetup {
   }
 
   /**
-   * Retourne le label pour l'onglet enfant
-   * @returns {string} Label de l'onglet enfant
+   * Retourne le nom de la propriété à utiliser comme label pour l'onglet enfant
+   * @returns {string} Nom de la propriété pour le label
    */
   static getChildTabLabel() {
-    const { t } = i18n.global;
-    return t('entitySetup.labels');
+    return 'label'; // Utilise la propriété 'label' des données
   }
 
   /**
@@ -126,7 +125,7 @@ export class EntitySetup {
    * @param {string} mode - Mode d'affichage ('create' ou 'update')
    * @returns {Array} Configuration des champs du formulaire
    */
-  getRenderableFields(mode = 'create') {
+  static getRenderableFields(mode = 'create') {
     const { t } = i18n.global;
     
     const fields = [

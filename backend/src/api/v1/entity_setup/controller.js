@@ -12,10 +12,7 @@ async function getAllEntitySetup(req, res) {
         const entitySetups = await entitySetupService.getAllEntitySetup(lang);
         
         logger.info(`[CONTROLLER] getAllEntitySetup - Successfully retrieved ${entitySetups.length} entity setups`);
-        res.json({
-            success: true,
-            data: entitySetups
-        });
+        res.json(entitySetups);
     } catch (error) {
         logger.error(`[CONTROLLER] getAllEntitySetup - Error: ${error.message}`);
         res.status(500).json({
@@ -44,10 +41,7 @@ async function getEntitySetupByUuid(req, res) {
         }
         
         logger.info(`[CONTROLLER] getEntitySetupByUuid - Successfully retrieved entity setup for UUID: ${uuid}`);
-        res.json({
-            success: true,
-            data: entitySetup
-        });
+        res.json(entitySetup);
     } catch (error) {
         logger.error(`[CONTROLLER] getEntitySetupByUuid - Error: ${error.message}`);
         res.status(500).json({
@@ -69,10 +63,7 @@ async function updateEntitySetup(req, res) {
         const updatedEntitySetup = await entitySetupService.updateEntitySetup(uuid, entitySetupData);
         
         logger.info(`[CONTROLLER] updateEntitySetup - Successfully updated entity setup for UUID: ${uuid}`);
-        res.json({
-            success: true,
-            data: updatedEntitySetup
-        });
+        res.json(updatedEntitySetup);
     } catch (error) {
         logger.error(`[CONTROLLER] updateEntitySetup - Error: ${error.message}`);
         
@@ -101,10 +92,7 @@ async function createEntitySetup(req, res) {
         const createdEntitySetup = await entitySetupService.createEntitySetup(entitySetupData);
         
         logger.info(`[CONTROLLER] createEntitySetup - Successfully created entity setup with UUID: ${createdEntitySetup.uuid}`);
-        res.status(201).json({
-            success: true,
-            data: createdEntitySetup
-        });
+        res.status(201).json(createdEntitySetup);
     } catch (error) {
         logger.error(`[CONTROLLER] createEntitySetup - Error: ${error.message}`);
         
