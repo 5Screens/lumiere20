@@ -126,16 +126,6 @@
       
       <!-- Zone B -->
       <div class="filter-values">
-        <!-- Select All Option -->
-        <div class="filter-value-item">
-          <div class="checkbox-container">
-            <input type="checkbox" 
-                   v-model="advancedFilterSelectAll" 
-                   @change="toggleAdvancedFilterAll" />
-          </div>
-          <div class="value-label">(select all)</div>
-        </div>
-        
         <!-- Blanks Option -->
         <div v-if="hasBlankValues" class="filter-value-item">
           <div class="checkbox-container">
@@ -216,8 +206,7 @@ export default {
       currentFilterColumn: null,
       filterPosition: { x: 0, y: 0 },
       advancedFilterSearch: '',
-      advancedFilterSelectAll: false,
-      advancedFilterBlanks: true,
+      advancedFilterBlanks: false,
       selectedAdvancedFilterValues: [],
       advancedFilters: {},
       scrollListener: null
@@ -240,16 +229,18 @@ export default {
             }
           }
           
-          // Vérification du filtre avancé
+          // Vérification du filtre avancé (inclusion). Si aucun critère choisi, ne pas filtrer.
           if (this.advancedFilters[key]) {
             const filter = this.advancedFilters[key]
             const isBlank = value === null || value === undefined || value === ''
-            
-            if (isBlank) {
-              return filter.blanks
+            const hasAnyConstraint = !!filter.blanks || (Array.isArray(filter.values) && filter.values.length > 0)
+            if (!hasAnyConstraint) {
+              return true
             }
-            
-            return filter.values.includes(value.toString())
+            if (isBlank) {
+              return !!filter.blanks
+            }
+            return Array.isArray(filter.values) && filter.values.includes((value ?? '').toString())
           }
           
           return true
@@ -509,17 +500,16 @@ export default {
         }
       }, 0)
       
-      // Initialiser les valeurs du filtre
+      // Initialiser les valeurs du filtre (par défaut: aucun critère -> tout affiché)
       if (!this.advancedFilters[column.key]) {
         this.advancedFilters[column.key] = {
-          blanks: true,
-          values: [...this.uniqueValues]  // Utiliser le spread operator pour créer une copie
+          blanks: false,
+          values: []
         }
       }
       
-      this.advancedFilterBlanks = this.advancedFilters[column.key].blanks
-      this.selectedAdvancedFilterValues = [...this.advancedFilters[column.key].values]
-      this.advancedFilterSelectAll = this.selectedAdvancedFilterValues.length === this.uniqueValues.length
+      this.advancedFilterBlanks = !!this.advancedFilters[column.key].blanks
+      this.selectedAdvancedFilterValues = [...(this.advancedFilters[column.key].values || [])]
       this.advancedFilterSearch = ''
       
       // Afficher la fenêtre après avoir tout initialisé
@@ -558,15 +548,6 @@ export default {
       }
     },
     
-    toggleAdvancedFilterAll() {
-      if (this.advancedFilterSelectAll) {
-        this.selectedAdvancedFilterValues = [...this.uniqueValues]
-      } else {
-        this.selectedAdvancedFilterValues = []
-      }
-      this.updateAdvancedFilter()
-    },
-    
     updateAdvancedFilter() {
       if (!this.currentFilterColumn) return
       
@@ -575,19 +556,14 @@ export default {
         blanks: this.advancedFilterBlanks,
         values: [...this.selectedAdvancedFilterValues]
       }
-      
-      // Mettre à jour l'état "select all" en fonction des valeurs sélectionnées
-      this.advancedFilterSelectAll = 
-        this.selectedAdvancedFilterValues.length === this.uniqueValues.length
     },
     
     hasActiveAdvancedFilter(columnKey) {
       const filter = this.advancedFilters[columnKey]
       if (!filter) return false
       
-      // Vérifier si tous les filtres sont actifs (équivalent à aucun filtre)
-      const allValuesSelected = filter.values.length === this.uniqueValues.length
-      return !allValuesSelected || !filter.blanks
+      // Actif si au moins une contrainte est choisie (valeurs ou blanks)
+      return !!filter.blanks || (Array.isArray(filter.values) && filter.values.length > 0)
     }
   },
   created() {
