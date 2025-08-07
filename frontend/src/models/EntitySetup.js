@@ -82,8 +82,7 @@ export class EntitySetup {
    * @returns {string} Titre de création
    */
   static getCreateTitle() {
-    const { t } = i18n.global;
-    return t('entitySetup.create');
+    return 'objectCreationsAndUpdates.entitySetupCreation';
   }
 
   /**
@@ -91,8 +90,7 @@ export class EntitySetup {
    * @returns {string} Titre de mise à jour
    */
   static getUpdateTitle() {
-    const { t } = i18n.global;
-    return t('entitySetup.update');
+    return 'objectCreationsAndUpdates.entitySetupUpdate';
   }
 
   /**

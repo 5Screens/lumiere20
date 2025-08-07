@@ -156,6 +156,14 @@ export default {
     problemCategoriesCreation: 'Créer une catégorie de problème',
     problemCategoriesUpdate: 'Modifier une catégorie de problème',
 
+    // Titres pour les types de défaut
+    entitySetupCreation: 'Créer une nouvelle metadonnee entite et sa traduction',
+    entitySetupUpdate: 'Modifier une metadonnee entite et ses traductions',
+
+    // Titres pour les types de défaut
+    incidentSetupCreation: 'Créer une nouvelle metadonnee incident et sa traduction',
+    incidentSetupUpdate: 'Modifier une metadonnee incident et ses traductions',
+
   },
   sprintCenter: {
     title: 'Centre Sprint',
@@ -195,6 +203,8 @@ export default {
     changeQuestions: 'Questions de changement',
     changeSetup: 'Gestion des changements',
     problemCategories: 'Catégories de problème', 
+    entitySetup: 'Gestion des paramètres d\'entite',
+    incidentSetup: 'Gestion des paramètres d\'incident',
   },
   admin: {
     title: 'Administration',
@@ -1134,5 +1144,23 @@ export default {
     noClassFound: 'Aucune classe trouvée',
     selectOneRow: 'Veuillez sélectionner une valeur',
     requiredField: 'Champ obligatoire'
+  },
+  incidentSetup: {
+    code: 'Code',
+    code_placeholder: 'Entrez un code interne',
+    label: 'Libellé',
+    lang: 'Langue',
+    uuid: 'UUID',
+    created_at: 'Créé le',
+    updated_at: 'Mis à jour le',
+    labels: 'Libellés',
+    parent_code: 'Code parent',
+    metadata: 'Méta-donnees',
+    metadata_placeholder: 'Entrez la meta-donnee concernée par cette traduction',
+    noClassFound: 'Aucune classe trouvée',
+    selectOneRow: 'Veuillez sélectionner une valeur',
+    requiredField: 'Champ obligatoire',
+    value: 'Valeur',
+    value_placeholder: 'Si utilisé dans la matrice de priorité entrez une valeur. Sinon laissez vide.',
   }
 }

@@ -40,6 +40,7 @@ export class IncidentSetup {
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid' },
       { key: 'metadata', label: t('incidentSetup.metadata'), type: 'text' },
+      { key: 'code', label: t('incidentSetup.code'), type: 'text' },
       { key: 'label', label: t('incidentSetup.label'), type: 'text' },
       { key: 'lang', label: t('language.title'), type: 'text' },
       { key: 'value', label: t('incidentSetup.value'), type: 'number' },
@@ -69,8 +70,7 @@ export class IncidentSetup {
    * @returns {string} Label de l'onglet
    */
   static getChildTabLabel() {
-    const { t } = i18n.global;
-    return t('incidentSetup.labels');
+    return 'label';
   }
 
   /**
@@ -86,8 +86,7 @@ export class IncidentSetup {
    * @returns {string} Titre de création
    */
   static getCreateTitle() {
-    const { t } = i18n.global;
-    return t('incidentSetup.create_title');
+    return 'incidentSetup.create_title';
   }
 
   /**
@@ -95,8 +94,7 @@ export class IncidentSetup {
    * @returns {string} Titre de mise à jour
    */
   static getUpdateTitle() {
-    const { t } = i18n.global;
-    return t('incidentSetup.update_title');
+    return 'incidentSetup.update_title';
   }
 
   /**
