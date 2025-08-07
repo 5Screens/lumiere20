@@ -155,7 +155,9 @@ export class EntitySetup {
         label: 'entitySetup.metadata',
         type: 'sTextField',
         placeholder: 'entitySetup.metadata_placeholder',
-        required: false
+        required: false,
+        //disabled = true si mode edition sinon enabled
+        disabled: mode === 'for_edition'
       },
       labels: {
         label: 'entitySetup.labels',

@@ -1118,5 +1118,21 @@ export default {
     noClassFound: 'Aucune classe trouvée',
     selectOneRow: 'Veuillez sélectionner une valeur',
     requiredField: 'Champ obligatoire'
+  },
+  entitySetup: {
+    code: 'Code',
+    code_placeholder: 'Entrez un code interne',
+    label: 'Libellé',
+    lang: 'Langue',
+    uuid: 'UUID',
+    created_at: 'Créé le',
+    updated_at: 'Mis à jour le',
+    labels: 'Libellés',
+    parent_code: 'Code parent',
+    metadata: 'Méta-donnees',
+    metadata_placeholder: 'Entrez la meta-donnee concernée par cette traduction',
+    noClassFound: 'Aucune classe trouvée',
+    selectOneRow: 'Veuillez sélectionner une valeur',
+    requiredField: 'Champ obligatoire'
   }
 }
