@@ -472,11 +472,11 @@ export default {
       const filterIcon = event.target.closest('.filter-icon')
       const rect = filterIcon.getBoundingClientRect()
       
-      // Positionner le filtre avancé pour que son coin supérieur gauche
-      // soit adjacent au coin inférieur droit du bouton de filtre
+      // Position the advanced filter aligned with the left edge of the column,
+      // right below the filter icon, with a small vertical offset
       this.filterPosition = {
-        x: rect.right + window.scrollX,
-        y: rect.bottom + window.scrollY
+        x: rect.left + window.scrollX,
+        y: rect.bottom + window.scrollY + 4
       }
       
       // Ajouter un petit délai pour s'assurer que le DOM est mis à jour
@@ -523,8 +523,8 @@ export default {
           
           const newRect = filterIcon.getBoundingClientRect()
           this.filterPosition = {
-            x: newRect.right + window.scrollX,
-            y: newRect.bottom + window.scrollY
+            x: newRect.left + window.scrollX,
+            y: newRect.bottom + window.scrollY + 4
           }
         }
         
