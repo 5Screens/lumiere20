@@ -13,8 +13,8 @@
 /* Élément table - structure les données en lignes et colonnes */
 table {
   width: 100%;
-  /* Allow natural column sizing (revert fixed layout to enable wide tables) */
-  table-layout: auto;
+  /* Use fixed layout so columns share equal widths initially (still overridable inline) */
+  table-layout: fixed;
   border-collapse: collapse;
   color: var(--text-color);
 }
@@ -357,13 +357,8 @@ th[class="sortable"] .sort-icon template:last-child {
   color: var(--text-color);
 }
 
-/* Style pour la colonne ID - plus étroite pour afficher les identifiants */
-td:nth-child(2) {
-  width: 80px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+/* Note: widths are now controlled uniformly; keep default for column 2 */
+/* td:nth-child(2) width rule removed to allow uniform sizing */
 
 /* Icône de copie - permet de copier le contenu de la cellule */
 .copy-icon {
@@ -387,6 +382,96 @@ td:nth-child(2) {
 /* Effet au survol de l'icône de copie - agrandissement */
 .copy-icon:hover {
   transform: scale(1.1);
+}
+
+/* ----------------------------- */
+/* Uniform sizing + smaller fonts */
+/* ----------------------------- */
+thead tr:first-child th {
+  height: 40px;
+}
+thead tr:first-child th .th-content {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+tbody td {
+  /* 20px row height: 12px line + 4px top + 4px bottom */
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 12px;
+}
+thead tr:first-child th {
+  font-size: 12px;
+}
+
+/* ----------------------------- */
+/* Cell container + ellipsis     */
+/* ----------------------------- */
+td .cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 20px;
+  padding-right: 18px; /* space for ellipsis trigger */
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  border-radius: 4px;
+}
+td .cell-inner {
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ellipsis-trigger {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary-color);
+  opacity: 0.9;
+  cursor: pointer;
+  font-weight: bold;
+  user-select: none;
+}
+.ellipsis-trigger:hover {
+  opacity: 1;
+}
+
+/* ----------------------------- */
+/* Selected cell highlight       */
+/* ----------------------------- */
+.cell-selected {
+  background-color: rgba(30, 144, 255, 0.08); /* subtle bluish */
+  box-shadow: 0 0 0 2px var(--primary-color) inset;
+}
+
+/* ----------------------------- */
+/* Popover for truncated content */
+/* ----------------------------- */
+.cell-popover {
+  position: fixed;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.25);
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+}
+.cell-popover .cell-popover-content {
+  position: absolute;
+  left: var(--popover-left, 0);
+  top: var(--popover-top, 0);
+  max-width: 600px;
+  max-height: 50vh;
+  overflow: auto;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 /* Styles pour les tags - affichage de mots-clés sous forme de badges colorés */

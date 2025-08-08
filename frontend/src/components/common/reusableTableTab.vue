@@ -77,17 +77,30 @@
             <td v-for="(column, cIndex) in columns" 
                 :key="column.key"
                 :style="getTdWidthStyle(cIndex)"
-                :title="column.format !== 'tags' ? row[column.key] : ''"
+                @click.stop="selectCell(row, column)"
                 @contextmenu.prevent="showCopyIcon($event, row[column.key])">
-              <span v-if="column.format === 'html'" v-html="formatCellContent(row[column.key], column.format)"></span>
-              <div v-else-if="column.format === 'tags'" class="tags-container">
-                <template v-if="row[column.key] && Array.isArray(row[column.key])">
-                  <span v-for="(tag, tagIndex) in row[column.key]" 
-                       :key="tagIndex" 
-                       class="tag">{{ tag }}</span>
-                </template>
+              <div class="cell" :class="{ 'cell-selected': isSelectedCell(row, column) }">
+                <div
+                  class="cell-inner"
+                  :ref="setCellRef(row.uuid, column.key)"
+                  v-if="column.format === 'html'"
+                  v-html="formatCellContent(row[column.key], column.format)">
+                </div>
+                <div v-else-if="column.format === 'tags'" class="tags-container">
+                  <template v-if="row[column.key] && Array.isArray(row[column.key])">
+                    <span v-for="(tag, tagIndex) in row[column.key]" 
+                         :key="tagIndex" 
+                         class="tag">{{ tag }}</span>
+                  </template>
+                </div>
+                <div v-else class="cell-inner" :ref="setCellRef(row.uuid, column.key)">
+                  {{ formatCellContent(row[column.key], column.format) }}
+                </div>
+                <span
+                  v-if="shouldShowEllipsis(row, column)"
+                  class="ellipsis-trigger"
+                  @click.stop="openCellPopover(row, column, $event)">...</span>
               </div>
-              <span v-else>{{ formatCellContent(row[column.key], column.format) }}</span>
             </td>
           </tr>
         </transition-group>
@@ -152,6 +165,13 @@
       </div>
     </div>
   </div>
+  <!-- Popover for truncated cell content -->
+  <div v-if="cellPopover.visible" class="cell-popover" @click.self="closeCellPopover">
+    <div class="cell-popover-content" :style="cellPopoverContentStyle" @mousedown.stop>
+      <div v-if="cellPopover.format === 'html'" v-html="cellPopover.content"></div>
+      <div v-else>{{ cellPopover.content }}</div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -212,7 +232,13 @@ export default {
       advancedFilterBlanks: false,
       selectedAdvancedFilterValues: [],
       advancedFilters: {},
-      scrollListener: null
+      scrollListener: null,
+      // Cell selection & truncation
+      selectedCell: { rowUuid: null, colKey: null },
+      cellRefs: {},
+      truncatedCells: {},
+      cellPopover: { visible: false, x: 0, y: 0, content: '', format: null },
+      rafId: null
     }
   },
   computed: {
@@ -306,17 +332,39 @@ export default {
         left: `${this.filterPosition.x}px`,
         top: `${this.filterPosition.y}px`
       }
+    },
+    cellPopoverContentStyle() {
+      return {
+        left: `${this.cellPopover.x}px`,
+        top: `${this.cellPopover.y}px`
+      }
     }
   },
+  updated() {
+    // Ensure ellipsis state is kept in sync after any reactive update
+    this.scheduleTruncationRecompute()
+  },
   mounted() {
-    // Measure widths after first render
+    // Use the bottom mounted() as the effective one; ensure init + truncation
     this.$nextTick(() => {
+      this.initializeColumnWidths()
       this.measureColumnWidths()
+      this.recomputeAllTruncation()
     })
-    window.addEventListener('resize', this.measureColumnWidths)
+    window.addEventListener('resize', this.scheduleTruncationRecompute)
+    const tableContainer = this.$el.querySelector('.table-container')
+    if (tableContainer) {
+      tableContainer.addEventListener('scroll', this.closeCellPopover)
+    }
+    document.addEventListener('click', this.closeCellPopover)
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.measureColumnWidths)
+    window.removeEventListener('resize', this.scheduleTruncationRecompute)
+    const tableContainer = this.$el && this.$el.querySelector ? this.$el.querySelector('.table-container') : null
+    if (tableContainer) {
+      tableContainer.removeEventListener('scroll', this.closeCellPopover)
+    }
+    document.removeEventListener('click', this.closeCellPopover)
   },
   methods: {
     // Return width style for header cells. Index -1 refers to the selectable column when enabled.
@@ -486,19 +534,85 @@ export default {
       if (newWidth >= 50) {
         this.columnWidths[this.currentResizingColumn] = newWidth
         this.startX = event.pageX
+        this.scheduleTruncationRecompute()
       }
     },
     stopResize() {
       this.resizing = false
       document.removeEventListener('mousemove', this.handleResize)
       document.removeEventListener('mouseup', this.stopResize)
+      this.recomputeAllTruncation()
     },
     toggleRowSelection(row) {
       row.selected = !row.selected;
       this.$emit('row-selected');
     },
     initializeColumnWidths() {
-      this.columnWidths = new Array(this.columns.length + (this.selectable ? 1 : 0)).fill(100)
+      // Compute uniform initial widths (keep checkbox column narrow)
+      const totalCols = this.columns.length + (this.selectable ? 1 : 0)
+      const container = this.$el && this.$el.querySelector ? this.$el.querySelector('.table-container') : null
+      const containerWidth = container ? container.clientWidth : 800
+      const checkboxWidth = this.selectable ? 28 : 0
+      const dataCols = this.columns.length
+      const available = Math.max(100, containerWidth - checkboxWidth)
+      const equalWidth = Math.max(80, Math.floor(available / (dataCols || 1)))
+      const widths = []
+      if (this.selectable) widths.push(checkboxWidth)
+      for (let i = 0; i < dataCols; i++) widths.push(equalWidth)
+      this.columnWidths = widths
+    },
+    // Cell helpers
+    cellKey(rowUuid, colKey) {
+      return `${rowUuid}::${colKey}`
+    },
+    setCellRef(rowUuid, colKey) {
+      const key = this.cellKey(rowUuid, colKey)
+      return (el) => {
+        if (el) {
+          this.cellRefs[key] = el
+        } else {
+          delete this.cellRefs[key]
+          delete this.truncatedCells[key]
+        }
+      }
+    },
+    scheduleTruncationRecompute() {
+      if (this.rafId) cancelAnimationFrame(this.rafId)
+      this.rafId = requestAnimationFrame(() => {
+        this.recomputeAllTruncation()
+      })
+    },
+    recomputeAllTruncation() {
+      Object.keys(this.cellRefs).forEach(key => {
+        const el = this.cellRefs[key]
+        if (el) {
+          this.truncatedCells[key] = el.scrollWidth > el.clientWidth
+        }
+      })
+    },
+    shouldShowEllipsis(row, column) {
+      if (!column || column.format === 'tags') return false
+      const key = this.cellKey(row.uuid, column.key)
+      return !!this.truncatedCells[key]
+    },
+    openCellPopover(row, column, event) {
+      const raw = row[column.key]
+      this.cellPopover = {
+        visible: true,
+        x: event.clientX + 8,
+        y: event.clientY + 8,
+        content: this.formatCellContent(raw, column.format),
+        format: column.format || null
+      }
+    },
+    closeCellPopover() {
+      if (this.cellPopover.visible) this.cellPopover.visible = false
+    },
+    selectCell(row, column) {
+      this.selectedCell = { rowUuid: row.uuid, colKey: column.key }
+    },
+    isSelectedCell(row, column) {
+      return this.selectedCell.rowUuid === row.uuid && this.selectedCell.colKey === column.key
     },
     // Nouvelles méthodes pour le filtrage avancé
     openAdvancedFilter(column, event) {
