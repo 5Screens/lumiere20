@@ -414,7 +414,7 @@ td .cell {
   align-items: center;
   width: 100%;
   min-height: 20px;
-  padding-right: 18px; /* space for ellipsis trigger */
+  padding-right: 26px; /* space for larger ellipsis trigger */
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
   border-radius: 4px;
 }
@@ -433,6 +433,9 @@ td .cell-inner {
   opacity: 0.9;
   cursor: pointer;
   font-weight: bold;
+  font-size: 18px; /* larger for visibility */
+  line-height: 1;
+  padding: 0 2px;
   user-select: none;
 }
 .ellipsis-trigger:hover {
