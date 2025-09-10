@@ -84,8 +84,8 @@
                   class="cell-inner"
                   :ref="setCellRef(row.uuid, column.key)"
                   v-if="column.format === 'html'"
+                  v-html="formatCellContent(row[column.key], column.format)"
                 >
-                  {{ formatCellContent(row[column.key], column.format) }}
                 </div>
                 <div v-else-if="column.format === 'tags'" class="tags-container">
                   <template v-if="row[column.key] && Array.isArray(row[column.key])">

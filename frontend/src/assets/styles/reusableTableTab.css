@@ -413,7 +413,7 @@ td .cell {
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 20px;
+  height: 20px; /* Hauteur fixe au lieu de min-height */
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
   border-radius: 4px;
 }
@@ -423,6 +423,18 @@ td .cell-inner {
   white-space: nowrap;
   text-overflow: ellipsis;
   margin-right: 4px; /* espace entre le texte tronqué et l'ellipsis cliquable */
+  height: 12px; /* Hauteur fixe pour uniformité */
+  line-height: 12px; /* Même hauteur que la line-height des cellules */
+}
+
+/* Styles spécifiques pour le contenu HTML dans les cellules */
+td .cell-inner * {
+  display: inline !important; /* Force tous les éléments HTML à être inline */
+  margin: 0 !important; /* Supprime les marges */
+  padding: 0 !important; /* Supprime les paddings */
+  line-height: inherit !important; /* Hérite de la line-height du parent */
+  font-size: inherit !important; /* Hérite de la taille de police */
+  vertical-align: baseline !important; /* Alignement vertical uniforme */
 }
 .ellipsis-trigger {
   flex-shrink: 0;
