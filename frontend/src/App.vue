@@ -152,6 +152,7 @@
     
     <!-- Popover global pour contenu tronqué -->
     <div v-if="popoverStore.isVisible" 
+         :key="`popover-${popoverStore.position.x}-${popoverStore.position.y}-${Date.now()}`"
          class="global-popover" 
          :style="popoverPositionStyle"
          @click.stop>
