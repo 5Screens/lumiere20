@@ -1,8 +1,8 @@
 <template>
   <div class="reusable-table-tab">
     <!-- Tableau -->
-    <div class="table-container">
-      <table>
+    <div class="table-container" ref="tableContainer">
+      <table ref="tableEl">
         <thead>
           <tr>
             <th class="resizable" v-if="selectable" :style="getThWidthStyle(-1)">
@@ -338,21 +338,21 @@ export default {
     this.scheduleTruncationRecompute()
   },
   mounted() {
-    // Use the bottom mounted() as the effective one; ensure init + truncation
+    // Initialize column widths and truncation after initial render
     this.$nextTick(() => {
       this.initializeColumnWidths()
       this.measureColumnWidths()
       this.recomputeAllTruncation()
     })
     window.addEventListener('resize', this.scheduleTruncationRecompute)
-    const tableContainer = this.$el.querySelector('.table-container')
+    const tableContainer = this.$refs.tableContainer
     if (tableContainer) {
       tableContainer.addEventListener('scroll', this.hidePopoverOnScroll)
     }
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.scheduleTruncationRecompute)
-    const tableContainer = this.$el && this.$el.querySelector ? this.$el.querySelector('.table-container') : null
+    const tableContainer = this.$refs.tableContainer || null
     if (tableContainer) {
       tableContainer.removeEventListener('scroll', this.hidePopoverOnScroll)
     }
@@ -375,7 +375,11 @@ export default {
     // Measure header TH widths and lock them
     measureColumnWidths() {
       this.$nextTick(() => {
-        const headerRow = this.$el.querySelector('thead tr:first-child')
+        const tableEl = this.$refs.tableEl
+        if (!tableEl) return
+        const headerRow = (tableEl.tHead && tableEl.tHead.rows && tableEl.tHead.rows[0])
+          ? tableEl.tHead.rows[0]
+          : tableEl.querySelector('thead tr:first-child')
         if (!headerRow) return
         const ths = headerRow.querySelectorAll('th')
         if (!ths || ths.length === 0) return
@@ -541,7 +545,7 @@ export default {
     initializeColumnWidths() {
       // Compute uniform initial widths (keep checkbox column narrow)
       const totalCols = this.columns.length + (this.selectable ? 1 : 0)
-      const container = this.$el && this.$el.querySelector ? this.$el.querySelector('.table-container') : null
+      const container = this.$refs.tableContainer || null
       const containerWidth = container ? container.clientWidth : 800
       const checkboxWidth = this.selectable ? 28 : 0
       const dataCols = this.columns.length
@@ -676,7 +680,7 @@ export default {
       this.showAdvancedFilter = true
       
       // Ajouter des écouteurs d'événements pour suivre le défilement
-      const tableContainer = document.querySelector('.table-container')
+      const tableContainer = this.$refs.tableContainer
       if (tableContainer) {
         this.scrollListener = () => {
           if (!this.showAdvancedFilter) return
@@ -700,7 +704,7 @@ export default {
       this.advancedFilterSearch = ''
       
       // Supprimer les écouteurs d'événements
-      const tableContainer = document.querySelector('.table-container')
+      const tableContainer = this.$refs.tableContainer
       if (tableContainer && this.scrollListener) {
         tableContainer.removeEventListener('scroll', this.scrollListener)
         window.removeEventListener('scroll', this.scrollListener)
@@ -738,9 +742,6 @@ export default {
     })
     // L'appel à fetchData() a été supprimé ici pour éviter la double initialisation
     // Le chargement des données est maintenant géré uniquement par le composant parent (objectsTab.vue)
-  },
-  mounted() {
-    this.initializeColumnWidths()
   }
 }
 </script>
