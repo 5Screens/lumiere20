@@ -152,6 +152,7 @@
     
     <!-- Popover global pour contenu tronqué -->
     <div v-if="popoverStore.isVisible" 
+         ref="globalPopover"
          :key="`popover-${popoverStore.position.x}-${popoverStore.position.y}-${Date.now()}`"
          class="global-popover" 
          :style="popoverPositionStyle"
@@ -214,10 +215,30 @@ export default {
       if (!this.popoverStore.isVisible) return {}
       
       const { x, y } = this.popoverStore.position
+      const margin = 10
+      const maxWidth = window.innerWidth
+
+      // Measure the rendered popover width if possible; fallback to a conservative value
+      let popoverWidth = 0
+      const popoverEl = this.$refs.globalPopover
+      if (popoverEl) {
+        const contentEl = popoverEl.querySelector('.global-popover-content')
+        popoverWidth = (contentEl && contentEl.offsetWidth) ? contentEl.offsetWidth : popoverEl.offsetWidth
+      }
+      if (!popoverWidth) popoverWidth = 300
+
+      // If the popover overflows on the right, shift it left by the exact overflow delta
+      // Trigger: x + popoverWidth > maxWidth - margin
+      // delta = (x + popoverWidth) - (maxWidth - margin)
+      // adjustedX = x - delta
+      let adjustedX = x
+      const overflowRight = (x + popoverWidth) - (maxWidth - margin)
+      if (overflowRight > 0) {
+        adjustedX = x - overflowRight
+      }
       
-      // Position brute sans ajustement
       return {
-        left: `${x}px`,
+        left: `${adjustedX}px`,
         top: `${y}px`,
         maxWidth: '600px',
         maxHeight: '50vh'
