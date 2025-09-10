@@ -213,28 +213,13 @@ export default {
       if (!this.popoverStore.isVisible) return {}
       
       const { x, y } = this.popoverStore.position
-      const maxWidth = 600
-      const maxHeight = window.innerHeight * 0.5
       
-      // Ajuster la position si le popover dépasse de l'écran
-      let adjustedX = x
-      let adjustedY = y
-      
-      // Vérifier le débordement horizontal
-      if (x + maxWidth > window.innerWidth) {
-        adjustedX = window.innerWidth - maxWidth - 20
-      }
-      
-      // Vérifier le débordement vertical
-      if (y + maxHeight > window.innerHeight) {
-        adjustedY = window.innerHeight - maxHeight - 20
-      }
-      
+      // Position brute sans ajustement
       return {
-        left: `${Math.max(10, adjustedX)}px`,
-        top: `${Math.max(10, adjustedY)}px`,
-        maxWidth: `${maxWidth}px`,
-        maxHeight: `${maxHeight}px`
+        left: `${x}px`,
+        top: `${y}px`,
+        maxWidth: '600px',
+        maxHeight: '50vh'
       }
     }
   },
