@@ -166,22 +166,20 @@
       </div>
     </div>
   </div>
-  <!-- Popover for truncated cell content -->
-  <div v-if="cellPopover.visible" class="cell-popover" @click.self="closeCellPopover">
-    <div class="cell-popover-content" :style="cellPopoverContentStyle" @mousedown.stop>
-      <div v-if="cellPopover.format === 'html'" v-html="cellPopover.content"></div>
-      <div v-else>{{ cellPopover.content }}</div>
-    </div>
-  </div>
 </template>
 
 <script>
 // Import du service API centralisé pour gérer les appels HTTP
 import apiService from '@/services/apiService'
+import { usePopoverStore } from '@/stores/popoverStore'
 
 export default {
   name: 'ReusableTableTab',
   emits: ['row-selected', 'error'],
+  setup() {
+    const popoverStore = usePopoverStore()
+    return { popoverStore }
+  },
   props: {
     apiUrl: {
       type: String,
@@ -238,7 +236,6 @@ export default {
       selectedCell: { rowUuid: null, colKey: null },
       cellRefs: {},
       truncatedCells: {},
-      cellPopover: { visible: false, x: 0, y: 0, content: '', format: null },
       rafId: null
     }
   },
@@ -334,12 +331,6 @@ export default {
         top: `${this.filterPosition.y}px`
       }
     },
-    cellPopoverContentStyle() {
-      return {
-        left: `${this.cellPopover.x}px`,
-        top: `${this.cellPopover.y}px`
-      }
-    }
   },
   updated() {
     // Ensure ellipsis state is kept in sync after any reactive update
@@ -355,17 +346,15 @@ export default {
     window.addEventListener('resize', this.scheduleTruncationRecompute)
     const tableContainer = this.$el.querySelector('.table-container')
     if (tableContainer) {
-      tableContainer.addEventListener('scroll', this.closeCellPopover)
+      tableContainer.addEventListener('scroll', this.hidePopoverOnScroll)
     }
-    document.addEventListener('click', this.closeCellPopover)
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.scheduleTruncationRecompute)
     const tableContainer = this.$el && this.$el.querySelector ? this.$el.querySelector('.table-container') : null
     if (tableContainer) {
-      tableContainer.removeEventListener('scroll', this.closeCellPopover)
+      tableContainer.removeEventListener('scroll', this.hidePopoverOnScroll)
     }
-    document.removeEventListener('click', this.closeCellPopover)
   },
   methods: {
     // Return width style for header cells. Index -1 refers to the selectable column when enabled.
@@ -598,16 +587,23 @@ export default {
     },
     openCellPopover(row, column, event) {
       const raw = row[column.key]
-      this.cellPopover = {
-        visible: true,
-        x: event.clientX + 8,
-        y: event.clientY + 8,
-        content: this.formatCellContent(raw, column.format),
-        format: column.format || null
-      }
+      const content = this.formatCellContent(raw, column.format)
+      const format = column.format || null
+      
+      // Utiliser le store global pour afficher le popover
+      this.popoverStore.showPopover(
+        content,
+        format,
+        event.clientX + 8,
+        event.clientY + 8,
+        event.target
+      )
     },
-    closeCellPopover() {
-      if (this.cellPopover.visible) this.cellPopover.visible = false
+    hidePopoverOnScroll() {
+      // Fermer le popover lors du défilement
+      if (this.popoverStore.isVisible) {
+        this.popoverStore.hidePopover()
+      }
     },
     selectCell(row, column) {
       this.selectedCell = { rowUuid: row.uuid, colKey: column.key }
@@ -705,6 +701,11 @@ export default {
         tableContainer.removeEventListener('scroll', this.scrollListener)
         window.removeEventListener('scroll', this.scrollListener)
         window.removeEventListener('resize', this.scrollListener)
+      }
+      
+      // Fermer aussi le popover si ouvert
+      if (this.popoverStore.isVisible) {
+        this.popoverStore.hidePopover()
       }
     },
     

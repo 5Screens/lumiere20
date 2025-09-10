@@ -149,6 +149,17 @@
       @confirm="tabsStore.handleConfirm"
       @cancel="tabsStore.handleCancel"
     />
+    
+    <!-- Popover global pour contenu tronqué -->
+    <div v-if="popoverStore.isVisible" 
+         class="global-popover" 
+         :style="popoverPositionStyle"
+         @click.stop>
+      <div class="global-popover-content">
+        <div v-if="popoverStore.format === 'html'" v-html="popoverStore.content"></div>
+        <div v-else>{{ popoverStore.content }}</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -156,6 +167,7 @@
 import { useTabsStore } from '@/stores/tabsStore'
 import { useObjectStore } from '@/stores/objectStore'
 import { usePaneStore } from '@/stores/paneStore'
+import { usePopoverStore } from '@/stores/popoverStore'
 import HierarchicalTabs from '@/components/common/hierarchicalTabs.vue'
 import ProfilePane from '@/components/panes/ProfilePane.vue'
 import DynamicPane from '@/components/panes/DynamicPane.vue'
@@ -175,6 +187,7 @@ export default {
     const tabsStore = useTabsStore()
     const objectStore = useObjectStore()
     const paneStore = usePaneStore()
+    const popoverStore = usePopoverStore()
     
     // Types de panneaux disponibles
     const paneTypes = ['admin', 'configuration', 'data', 'serviceHub', 'sprintCenter']
@@ -183,6 +196,7 @@ export default {
       tabsStore, 
       objectStore,
       paneStore,
+      popoverStore,
       paneTypes
     }
   },
@@ -192,6 +206,36 @@ export default {
       isCreateModalVisible: false,
       isUnderConstructionVisible: false,
       underConstructionType: ''
+    }
+  },
+  computed: {
+    popoverPositionStyle() {
+      if (!this.popoverStore.isVisible) return {}
+      
+      const { x, y } = this.popoverStore.position
+      const maxWidth = 600
+      const maxHeight = window.innerHeight * 0.5
+      
+      // Ajuster la position si le popover dépasse de l'écran
+      let adjustedX = x
+      let adjustedY = y
+      
+      // Vérifier le débordement horizontal
+      if (x + maxWidth > window.innerWidth) {
+        adjustedX = window.innerWidth - maxWidth - 20
+      }
+      
+      // Vérifier le débordement vertical
+      if (y + maxHeight > window.innerHeight) {
+        adjustedY = window.innerHeight - maxHeight - 20
+      }
+      
+      return {
+        left: `${Math.max(10, adjustedX)}px`,
+        top: `${Math.max(10, adjustedY)}px`,
+        maxWidth: `${maxWidth}px`,
+        maxHeight: `${maxHeight}px`
+      }
     }
   },
   methods: {
@@ -256,7 +300,22 @@ export default {
       this.objectStore.resetMessage()
       this.tabsStore.resetMessage()
     },
-
+    handleGlobalClick(event) {
+      // Fermer le popover si clic en dehors
+      if (this.popoverStore.isVisible) {
+        const popover = document.querySelector('.global-popover')
+        if (popover && !popover.contains(event.target)) {
+          this.popoverStore.hidePopover()
+        }
+      }
+    }
+  },
+  mounted() {
+    // Écouter les clics globaux pour fermer le popover
+    document.addEventListener('click', this.handleGlobalClick)
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleGlobalClick)
   }
 }
 </script>
@@ -327,5 +386,43 @@ export default {
 @keyframes slideIn {
   from { transform: translateY(-20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+/* Styles pour le popover global */
+.global-popover {
+  position: fixed;
+  z-index: 3000;
+  pointer-events: none;
+  animation: popoverFadeIn 0.2s ease-out;
+}
+
+.global-popover-content {
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  overflow: auto;
+  pointer-events: auto;
+  user-select: text;
+  transform-origin: top left;
+  animation: popoverSlideIn 0.2s ease-out;
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popoverSlideIn {
+  from { 
+    transform: scale(0.9) translateY(-8px);
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 }
 </style>

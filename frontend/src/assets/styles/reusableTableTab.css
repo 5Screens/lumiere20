@@ -464,31 +464,8 @@ td .cell-inner * {
 }
 
 /* ----------------------------- */
-/* Popover for truncated content */
+/* Popover styles moved to App.vue */
 /* ----------------------------- */
-.cell-popover {
-  position: fixed;
-  z-index: 2000;
-  background: rgba(0, 0, 0, 0.25);
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-}
-.cell-popover .cell-popover-content {
-  position: absolute;
-  left: var(--popover-left, 0);
-  top: var(--popover-top, 0);
-  max-width: 600px;
-  max-height: 50vh;
-  overflow: auto;
-  background: var(--bg-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 12px;
-  box-shadow: 0 4px 12px var(--shadow-color);
-}
 
 /* Styles pour les tags - affichage de mots-clés sous forme de badges colorés */
 .tags-container {
