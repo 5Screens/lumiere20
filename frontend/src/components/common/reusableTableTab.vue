@@ -78,7 +78,7 @@
                 :key="column.key"
                 :style="getTdWidthStyle(cIndex)"
                 :class="{ 'cell-selected-td': isSelectedCell(row, column) }"
-                @click.stop="selectCell(row, column)"
+                @click="selectCell(row, column)"
                 @contextmenu.prevent="showCopyIcon($event, row[column.key])">
               <div class="cell" :class="{ 'cell-selected': isSelectedCell(row, column) }">
                 <div
@@ -608,8 +608,11 @@ export default {
     },
     selectCell(row, column) {
       this.selectedCell = { rowUuid: row.uuid, colKey: column.key }
-      // Déclencher aussi la sélection de ligne pour maintenir la compatibilité
-      this.toggleRowSelection(row)
+      // Explicitly close the global popover when clicking a cell
+      if (this.popoverStore.isVisible) {
+        this.popoverStore.hidePopover()
+      }
+      // Do not toggle row selection here; let the row's click handler handle it via event bubbling
     },
     isSelectedCell(row, column) {
       return this.selectedCell.rowUuid === row.uuid && this.selectedCell.colKey === column.key
