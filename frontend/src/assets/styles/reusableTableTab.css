@@ -414,7 +414,7 @@ td .cell {
   align-items: center;
   width: 100%;
   min-height: 20px;
-  padding-right: 16px; /* space for larger ellipsis trigger */
+  padding-right: 20px; /* space for larger ellipsis trigger */
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
   border-radius: 4px;
 }
@@ -423,20 +423,25 @@ td .cell-inner {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  margin-right: 4px; /* espace entre le texte tronqué et l'ellipsis cliquable */
 }
 .ellipsis-trigger {
   position: absolute;
-  right: 6px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--primary-color);
   opacity: 0.9;
   cursor: pointer;
   font-weight: bold;
-  font-size: 18px; /* larger for visibility */
+  font-size: 20px; /* plus grande pour meilleure visibilité */
   line-height: 1;
-  padding: 0 2px;
+  padding: 2px 4px;
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px; /* hauteur fixe pour centrage vertical */
 }
 .ellipsis-trigger:hover {
   opacity: 1;
