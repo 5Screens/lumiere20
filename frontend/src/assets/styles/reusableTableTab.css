@@ -397,7 +397,7 @@ thead tr:first-child th .th-content {
 }
 tbody td {
   /* 20px row height: 12px line + 4px top + 4px bottom */
-  padding: 4px 8px;
+  padding: 4px 12px;
   font-size: 12px;
   line-height: 12px;
 }
@@ -414,7 +414,7 @@ td .cell {
   align-items: center;
   width: 100%;
   min-height: 20px;
-  padding-right: 26px; /* space for larger ellipsis trigger */
+  padding-right: 16px; /* space for larger ellipsis trigger */
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
   border-radius: 4px;
 }
