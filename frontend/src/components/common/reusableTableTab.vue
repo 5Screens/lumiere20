@@ -77,6 +77,7 @@
             <td v-for="(column, cIndex) in columns" 
                 :key="column.key"
                 :style="getTdWidthStyle(cIndex)"
+                :class="{ 'cell-selected-td': isSelectedCell(row, column) }"
                 @click.stop="selectCell(row, column)"
                 @contextmenu.prevent="showCopyIcon($event, row[column.key])">
               <div class="cell" :class="{ 'cell-selected': isSelectedCell(row, column) }">

@@ -460,7 +460,20 @@ td .cell-inner * {
 /* ----------------------------- */
 .cell-selected {
   background-color: rgba(30, 144, 255, 0.08); /* subtle bluish */
-  box-shadow: 0 0 0 2px var(--primary-color) inset;
+}
+
+/* Apply the blue outline on the actual TD so it hugs the cell border exactly */
+td.cell-selected-td {
+  position: relative; /* establish containing block for the overlay */
+}
+td.cell-selected-td::after {
+  content: "";
+  position: absolute;
+  inset: 0; /* align with the inner edge of the cell border (padding box) */
+  pointer-events: none;
+  border: 2px solid var(--primary-color);
+  border-radius: 0; /* crisp corners to match table cells */
+  box-sizing: border-box;
 }
 
 /* ----------------------------- */
