@@ -459,12 +459,13 @@ td .cell-inner * {
 /* Selected cell highlight       */
 /* ----------------------------- */
 .cell-selected {
-  background-color: rgba(30, 144, 255, 0.08); /* subtle bluish */
+  background-color: transparent; /* background now applied on TD to reach borders */
 }
 
 /* Apply the blue outline on the actual TD so it hugs the cell border exactly */
 td.cell-selected-td {
   position: relative; /* establish containing block for the overlay */
+  background-color: rgba(30, 144, 255, 0.08); /* subtle bluish covering full cell incl. padding */
 }
 td.cell-selected-td::after {
   content: "";
