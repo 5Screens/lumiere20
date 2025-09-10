@@ -431,12 +431,13 @@ td .cell-inner {
   cursor: pointer;
   font-weight: bold;
   font-size: 20px; /* plus grande pour meilleure visibilité */
-  line-height: 12px; /* même line-height que le texte de la cellule */
+  line-height: 1; /* line-height unitaire pour éviter les décalages */
   padding: 0 4px;
   user-select: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 12px; /* même hauteur que la line-height du texte */
 }
 .ellipsis-trigger:hover {
   opacity: 1;

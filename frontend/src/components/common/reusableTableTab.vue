@@ -556,7 +556,7 @@ export default {
       const checkboxWidth = this.selectable ? 28 : 0
       const dataCols = this.columns.length
       const available = Math.max(100, containerWidth - checkboxWidth)
-      const equalWidth = Math.max(80, Math.floor(available / (dataCols || 1)))
+      const equalWidth = Math.max(130, Math.floor(available / (dataCols || 1)))
       const widths = []
       if (this.selectable) widths.push(checkboxWidth)
       for (let i = 0; i < dataCols; i++) widths.push(equalWidth)
