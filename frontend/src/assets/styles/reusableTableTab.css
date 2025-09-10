@@ -399,7 +399,7 @@ tbody td {
   /* 20px row height: 12px line + 4px top + 4px bottom */
   padding: 4px 12px;
   font-size: 12px;
-  line-height: 12px;
+  line-height: 1.2; /* allow enough room for ascenders/descenders */
 }
 thead tr:first-child th {
   font-size: 12px;
@@ -423,8 +423,7 @@ td .cell-inner {
   white-space: nowrap;
   text-overflow: ellipsis;
   margin-right: 4px; /* espace entre le texte tronqué et l'ellipsis cliquable */
-  height: 12px; /* Hauteur fixe pour uniformité */
-  line-height: 12px; /* Même hauteur que la line-height des cellules */
+  line-height: 1.2; /* inherit-friendly; prevents clipping of g/p/é accents */
 }
 
 /* Styles spécifiques pour le contenu HTML dans les cellules */
