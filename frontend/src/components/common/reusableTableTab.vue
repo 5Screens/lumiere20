@@ -73,7 +73,7 @@
               @click="toggleRowSelection(row)"
               :class="{ 'selected-row': row.selected }"
               style="cursor: pointer;">
-            <td v-if="selectable" @click.stop :style="getTdWidthStyle(-1)"><input type="checkbox" v-model="row.selected" /></td>
+            <td v-if="selectable" @click.stop :style="getTdWidthStyle(-1)"><input type="checkbox" v-model="row.selected" @change="$emit('row-selected')" /></td>
             <td v-for="(column, cIndex) in columns" 
                 :key="column.key"
                 :style="getTdWidthStyle(cIndex)"
