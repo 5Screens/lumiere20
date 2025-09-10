@@ -611,6 +611,8 @@ export default {
     },
     selectCell(row, column) {
       this.selectedCell = { rowUuid: row.uuid, colKey: column.key }
+      // Déclencher aussi la sélection de ligne pour maintenir la compatibilité
+      this.toggleRowSelection(row)
     },
     isSelectedCell(row, column) {
       return this.selectedCell.rowUuid === row.uuid && this.selectedCell.colKey === column.key
