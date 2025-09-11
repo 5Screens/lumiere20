@@ -156,14 +156,14 @@ const getProblemById = async (uuid, lang = 'en') => {
                 AND pcl.lang = $2
                 
             -- Jointure pour la traduction des impacts
-            LEFT JOIN translations.incident_impacts_labels iil ON
-                iil.rel_incident_impact_code = t.core_extended_attributes->>'impact'
-                AND iil.language = $2
+            LEFT JOIN translations.incident_setup_labels iil ON
+                iil.rel_incident_setup_code = t.core_extended_attributes->>'impact'
+                AND iil.lang = $2
                 
             -- Jointure pour la traduction des urgences
-            LEFT JOIN translations.incident_urgencies_labels iul ON
-                iul.rel_incident_urgency_code = t.core_extended_attributes->>'urgency'
-                AND iul.language = $2
+            LEFT JOIN translations.incident_setup_labels iul ON
+                iul.rel_incident_setup_code = t.core_extended_attributes->>'urgency'
+                AND iul.lang = $2
             
             WHERE t.uuid = $1 AND t.ticket_type_code = 'PROBLEM'
         `;
@@ -230,14 +230,14 @@ const getProblems = async (lang = 'en') => {
             AND pcl.lang = $1
             
         -- Jointure pour la traduction des impacts
-        LEFT JOIN translations.incident_impacts_labels iil ON
-            iil.rel_incident_impact_code = t.core_extended_attributes->>'impact'
-            AND iil.language = $1
+        LEFT JOIN translations.incident_setup_labels iil ON
+            iil.rel_incident_setup_code = t.core_extended_attributes->>'impact'
+            AND iil.lang = $1
             
         -- Jointure pour la traduction des urgences
-        LEFT JOIN translations.incident_urgencies_labels iul ON
-            iul.rel_incident_urgency_code = t.core_extended_attributes->>'urgency'
-            AND iul.language = $1
+        LEFT JOIN translations.incident_setup_labels iul ON
+            iul.rel_incident_setup_code = t.core_extended_attributes->>'urgency'
+            AND iul.lang = $1
     `;
     
     // Utilisation de la fonction getTickets factorisée
