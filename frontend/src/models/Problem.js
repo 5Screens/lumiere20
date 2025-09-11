@@ -317,8 +317,11 @@ export class Problem {
         type: 'sSelectField',
         placeholder: 'problem.impact_placeholder',
         required: isRequired('impact'),
-        endpoint: `incident_impacts?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `incident_setup?lang=${userProfileStore.language}&metadata=IMPACT`,
+        displayField: 'label',
+        valueField: 'code',
         fieldName: 'impact',
+        patchEndpoint: 'problems',
         mode: 'creation'
       },
       urgency: {
@@ -326,8 +329,11 @@ export class Problem {
         type: 'sSelectField',
         placeholder: 'problem.urgency_placeholder',
         required: isRequired('urgency'),
-        endpoint: `incident_urgencies?lang=${userProfileStore.language}&toSelect=yes`,
+        endpoint: `incident_setup?lang=${userProfileStore.language}&metadata=URGENCY`,
+        displayField: 'label',
+        valueField: 'code',
         fieldName: 'urgency',
+        patchEndpoint: 'problems',
         mode: 'creation'
       },
       assigned_to_group: {
