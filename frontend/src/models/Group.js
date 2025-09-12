@@ -164,9 +164,15 @@ export class Group {
         type: 'sFilteredSearchField',
         required: false,
         placeholder: 'groups.supervisor_placeholder',
-        sourceEndPoint: 'persons',
-        displayedLabel: 'person_name',
-        valueField: 'uuid'
+        endpoint: 'persons',
+        displayField: 'person_name',
+        valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'supervisor_name',
+        columnsConfig: [
+          { key: 'person_name', label: 'person_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'active', label: 'person.active', visible: true }
+        ]
       },
       rel_manager: {
         name: 'rel_manager',
@@ -174,11 +180,17 @@ export class Group {
         type: 'sFilteredSearchField',
         required: false,
         placeholder: 'groups.manager_placeholder',
-        sourceEndPoint: 'persons',
-        displayedLabel: 'person_name',
-        valueField: 'uuid'
+        endpoint: 'persons',
+        displayField: 'person_name',
+        valueField: 'uuid',
+        displayFieldAtInitInEditMode: 'manager_name',
+        columnsConfig: [
+          { key: 'person_name', label: 'person_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'active', label: 'person.active', visible: true }
+        ]
       },
-      rel_schedule: {
+      /*rel_schedule: {
         name: 'rel_schedule',
         label: 'groups.schedule',
         type: 'sFilteredSearchField',
@@ -187,7 +199,7 @@ export class Group {
         sourceEndPoint: 'schedules',
         displayedLabel: 'schedule_name',
         valueField: 'uuid'
-      },
+      },*/
       email: {
         name: 'email',
         label: 'groups.email',
