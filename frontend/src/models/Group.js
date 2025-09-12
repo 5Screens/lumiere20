@@ -39,6 +39,7 @@ export class Group {
       { key: 'description', label: t('groups.description'), type: 'text' },
       { key: 'supervisor_name', label: t('groups.supervisor'), type: 'text' },
       { key: 'manager_name', label: t('groups.manager'), type: 'text' },
+      { key: 'persons_count', label: t('groups.persons_count'), type: 'number' },
       { key: 'email', label: t('groups.email'), type: 'text' },
       { key: 'phone', label: t('groups.phone'), type: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
@@ -216,6 +217,19 @@ export class Group {
         required: false,
         placeholder: 'groups.phone_placeholder',
         maxlength: 50
+      },
+      persons_list: {
+        label: 'groups.persons_list',
+        type: "sPickList",
+        helperText: 'groups.persons_list_helper_text',
+        placeholder: 'groups.persons_list_placeholder',
+        sourceEndPoint: "persons",
+        displayedLabel: "person_name",
+        targetEndPoint: "groups",
+        ressourceEndPoint: 'members',
+        target_uuid: null,
+        pickedItems: null,
+        required: false,
       }
     };
 

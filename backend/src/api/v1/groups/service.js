@@ -25,7 +25,13 @@ class GroupService {
                     g.email,
                     g.phone,
                     g.created_at,
-                    g.updated_at
+                    g.updated_at,
+                    COALESCE(
+                        (SELECT COUNT(*) 
+                         FROM configuration.rel_persons_groups rpg 
+                         WHERE rpg.rel_group = g.uuid), 
+                        0
+                    ) as persons_count
                 FROM configuration.groups g
                 LEFT JOIN configuration.persons supervisor ON g.rel_supervisor = supervisor.uuid
                 LEFT JOIN configuration.persons manager ON g.rel_manager = manager.uuid
@@ -63,7 +69,19 @@ class GroupService {
                     g.email,
                     g.phone,
                     g.created_at,
-                    g.updated_at
+                    g.updated_at,
+                    -- Informations sur les membres du groupe
+                    (
+                        SELECT json_agg(json_build_object(
+                            'uuid', rpg.uuid,
+                            'person_uuid', p.uuid,
+                            'person_name', p.first_name || ' ' || p.last_name,
+                            'created_at', rpg.created_at
+                        ))
+                        FROM configuration.rel_persons_groups rpg
+                        JOIN configuration.persons p ON rpg.rel_member = p.uuid
+                        WHERE rpg.rel_group = g.uuid
+                    ) as persons_list
                 FROM configuration.groups g
                 LEFT JOIN configuration.persons supervisor ON g.rel_supervisor = supervisor.uuid
                 LEFT JOIN configuration.persons manager ON g.rel_manager = manager.uuid
