@@ -2,31 +2,28 @@
 -- Description: Population of incident-related tables with test data
 -- Date: 2025-04-07
 
--- Populate incident_urgencies table
-INSERT INTO configuration.incident_urgencies (code, value) VALUES
-('CRITICAL', 1),
-('HIGH', 2),
-('MEDIUM', 3),
-('LOW', 4);
-
--- Populate incident_impacts table
-INSERT INTO configuration.incident_impacts (code, value) VALUES
-('ENTERPRISE', 1),
-('DEPARTMENT', 2),
-('WORKGROUP', 3),
-('USER', 4);
-
--- Populate incident_cause_codes table
-INSERT INTO configuration.incident_cause_codes (code) VALUES
-('HARDWARE_FAILURE'),
-('SOFTWARE_BUG'),
-('NETWORK_ISSUE'),
-('HUMAN_ERROR'),
-('SECURITY_BREACH'),
-('THIRD_PARTY_OUTAGE'),
-('CONFIGURATION_ERROR'),
-('CAPACITY_ISSUE'),
-('UNKNOWN');
+-- Populate incident_setup_codes table (replaces incident_urgencies, incident_impacts, incident_cause_codes, incident_resolution_codes)
+INSERT INTO configuration.incident_setup_codes (metadata, code, value) VALUES
+-- Urgencies
+('URGENCY', 'CRITICAL', 1),
+('URGENCY', 'HIGH', 2),
+('URGENCY', 'MEDIUM', 3),
+('URGENCY', 'LOW', 4),
+-- Impacts
+('IMPACT', 'ENTERPRISE', 1),
+('IMPACT', 'DEPARTMENT', 2),
+('IMPACT', 'WORKGROUP', 3),
+('IMPACT', 'USER', 4),
+-- Cause codes
+('CAUSE_CODE', 'HARDWARE_FAILURE', NULL),
+('CAUSE_CODE', 'SOFTWARE_BUG', NULL),
+('CAUSE_CODE', 'NETWORK_ISSUE', NULL),
+('CAUSE_CODE', 'HUMAN_ERROR', NULL),
+('CAUSE_CODE', 'SECURITY_BREACH', NULL),
+('CAUSE_CODE', 'THIRD_PARTY_OUTAGE', NULL),
+('CAUSE_CODE', 'CONFIGURATION_ERROR', NULL),
+('CAUSE_CODE', 'CAPACITY_ISSUE', NULL),
+('CAUSE_CODE', 'UNKNOWN', NULL);
 
 -- Populate contact_types table
 INSERT INTO configuration.contact_types (code) VALUES
@@ -38,7 +35,7 @@ INSERT INTO configuration.contact_types (code) VALUES
 ('SOCIAL_MEDIA'),
 ('AUTOMATED_ALERT');
 
--- Populate incident_priorities table (based on urgency and impact)
+-- Populate incident_priorities table (updated to reference incident_setup_codes)
 INSERT INTO configuration.incident_priorities (code, rel_incident_urgency_code, rel_incident_impact_code, priority_level) VALUES
 -- Critical urgency combinations
 ('P1', 'CRITICAL', 'ENTERPRISE', 1),
@@ -64,8 +61,9 @@ INSERT INTO configuration.incident_priorities (code, rel_incident_urgency_code, 
 ('P5', 'LOW', 'WORKGROUP', 5),
 ('P5', 'LOW', 'USER', 5);
 
--- Populate incident_urgencies_labels table (English and French)
-INSERT INTO translations.incident_urgencies_labels (rel_incident_urgency_code, language, label) VALUES
+-- Populate incident_setup_labels table (replaces all incident-related labels tables)
+INSERT INTO translations.incident_setup_labels (rel_incident_setup_code, lang, label) VALUES
+-- Urgency labels (English and French)
 ('CRITICAL', 'en', 'Critical'),
 ('HIGH', 'en', 'High'),
 ('MEDIUM', 'en', 'Medium'),
@@ -73,10 +71,8 @@ INSERT INTO translations.incident_urgencies_labels (rel_incident_urgency_code, l
 ('CRITICAL', 'fr', 'Critique'),
 ('HIGH', 'fr', 'Élevée'),
 ('MEDIUM', 'fr', 'Moyenne'),
-('LOW', 'fr', 'Faible');
-
--- Populate incident_impacts_labels table (English and French)
-INSERT INTO translations.incident_impacts_labels (rel_incident_impact_code, language, label) VALUES
+('LOW', 'fr', 'Faible'),
+-- Impact labels (English and French)
 ('ENTERPRISE', 'en', 'Enterprise-wide'),
 ('DEPARTMENT', 'en', 'Department'),
 ('WORKGROUP', 'en', 'Workgroup'),
@@ -84,10 +80,8 @@ INSERT INTO translations.incident_impacts_labels (rel_incident_impact_code, lang
 ('ENTERPRISE', 'fr', 'Entreprise entière'),
 ('DEPARTMENT', 'fr', 'Département'),
 ('WORKGROUP', 'fr', 'Groupe de travail'),
-('USER', 'fr', 'Utilisateur unique');
-
--- Populate incident_cause_codes_labels table (English and French)
-INSERT INTO translations.incident_cause_codes_labels (rel_incident_cause_code_code, language, label) VALUES
+('USER', 'fr', 'Utilisateur unique'),
+-- Cause code labels (English and French)
 ('HARDWARE_FAILURE', 'en', 'Hardware Failure'),
 ('SOFTWARE_BUG', 'en', 'Software Bug'),
 ('NETWORK_ISSUE', 'en', 'Network Issue'),
@@ -124,21 +118,23 @@ INSERT INTO translations.contact_types_labels (rel_contact_type_code, language, 
 ('SOCIAL_MEDIA', 'fr', 'Réseaux sociaux'),
 ('AUTOMATED_ALERT', 'fr', 'Alerte automatisée');
 
--- Populate incident_resolution_codes table
-INSERT INTO configuration.incident_resolution_codes (code) VALUES
-('FIXED'),
-('WORKAROUND_PROVIDED'),
-('SELF_RESOLVED'),
-('DUPLICATE'),
-('NOT_REPRODUCIBLE'),
-('KNOWN_ISSUE'),
-('THIRD_PARTY_RESOLUTION'),
-('CONFIGURATION_CHANGE'),
-('NO_ACTION_REQUIRED'),
-('REFERRED_TO_CHANGE');
+-- Add resolution codes to incident_setup_codes table
+INSERT INTO configuration.incident_setup_codes (metadata, code, value) VALUES
+-- Resolution codes
+('RESOLUTION_CODE', 'FIXED', NULL),
+('RESOLUTION_CODE', 'WORKAROUND_PROVIDED', NULL),
+('RESOLUTION_CODE', 'SELF_RESOLVED', NULL),
+('RESOLUTION_CODE', 'DUPLICATE', NULL),
+('RESOLUTION_CODE', 'NOT_REPRODUCIBLE', NULL),
+('RESOLUTION_CODE', 'KNOWN_ISSUE', NULL),
+('RESOLUTION_CODE', 'THIRD_PARTY_RESOLUTION', NULL),
+('RESOLUTION_CODE', 'CONFIGURATION_CHANGE', NULL),
+('RESOLUTION_CODE', 'NO_ACTION_REQUIRED', NULL),
+('RESOLUTION_CODE', 'REFERRED_TO_CHANGE', NULL);
 
--- Populate incident_resolution_codes_labels table (English and French)
-INSERT INTO translations.incident_resolution_codes_labels (rel_incident_resolution_code, language, label) VALUES
+-- Add resolution code labels to incident_setup_labels table
+INSERT INTO translations.incident_setup_labels (rel_incident_setup_code, lang, label) VALUES
+-- Resolution code labels (English and French)
 ('FIXED', 'en', 'Fixed'),
 ('WORKAROUND_PROVIDED', 'en', 'Workaround Provided'),
 ('SELF_RESOLVED', 'en', 'Self Resolved'),
