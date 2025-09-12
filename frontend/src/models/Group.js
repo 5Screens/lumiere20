@@ -18,6 +18,7 @@ export class Group {
     this.phone = data.phone || '';
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
+    this.persons_list = data.persons_list || [];
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
