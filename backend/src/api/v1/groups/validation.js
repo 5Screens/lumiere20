@@ -64,9 +64,29 @@ const validateUuid = (uuid, paramName = 'UUID') => {
     return { value };
 };
 
+const addMultipleMembersSchema = Joi.object({
+    type: Joi.string().valid('members').required(),
+    members: Joi.array().items(Joi.string().uuid()).min(1).required()
+}).options({
+    abortEarly: false,
+    stripUnknown: true
+});
+
+const validateAddMultipleMembers = (data) => {
+    logger.info('[VALIDATION] Starting add multiple members validation');
+    const { error, value } = addMultipleMembersSchema.validate(data);
+    if (error) {
+        logger.error(`[VALIDATION] Add multiple members validation failed: ${error.details.map(d => d.message).join(', ')}`);
+        return { error };
+    }
+    logger.info('[VALIDATION] Add multiple members validation successful');
+    return { value };
+};
+
 module.exports = {
     groupSchema,
     validateGroup,
     validateGroupPatch,
-    validateUuid
+    validateUuid,
+    validateAddMultipleMembers
 };

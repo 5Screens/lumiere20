@@ -270,6 +270,96 @@ class GroupService {
         }
     }
 
+    async addMultipleGroupMembers(groupUuid, memberUuids) {
+        logger.info(`[SERVICE] addMultipleGroupMembers - Starting database operation for group: ${groupUuid}, members: ${memberUuids.length}`);
+        
+        const client = await pool.connect();
+        const results = {
+            added: [],
+            skipped: [],
+            errors: []
+        };
+
+        try {
+            await client.query('BEGIN');
+
+            for (const userUuid of memberUuids) {
+                try {
+                    // Vérifier d'abord que l'utilisateur existe
+                    const userCheckQuery = `
+                        SELECT uuid, first_name, last_name 
+                        FROM configuration.persons 
+                        WHERE uuid = $1`;
+                    
+                    const userResult = await client.query(userCheckQuery, [userUuid]);
+                    if (userResult.rows.length === 0) {
+                        results.errors.push({
+                            user_uuid: userUuid,
+                            error: 'User not found'
+                        });
+                        continue;
+                    }
+
+                    // Vérifier si l'utilisateur est déjà membre du groupe
+                    const existingMemberQuery = `
+                        SELECT uuid FROM configuration.rel_persons_groups 
+                        WHERE rel_group = $1 AND rel_member = $2`;
+                    
+                    const existingResult = await client.query(existingMemberQuery, [groupUuid, userUuid]);
+                    if (existingResult.rows.length > 0) {
+                        results.skipped.push({
+                            user_uuid: userUuid,
+                            user_name: `${userResult.rows[0].first_name} ${userResult.rows[0].last_name}`,
+                            reason: 'Already a member of this group'
+                        });
+                        continue;
+                    }
+
+                    // Insérer la relation groupe-membre
+                    const insertQuery = `
+                        INSERT INTO configuration.rel_persons_groups (rel_group, rel_member)
+                        VALUES ($1, $2)
+                        RETURNING 
+                            uuid,
+                            rel_group,
+                            rel_member,
+                            created_at`;
+                    
+                    const insertResult = await client.query(insertQuery, [groupUuid, userUuid]);
+                    
+                    // Enrichir le résultat avec les informations de l'utilisateur
+                    const enrichedResult = {
+                        ...insertResult.rows[0],
+                        user_name: `${userResult.rows[0].first_name} ${userResult.rows[0].last_name}`,
+                        user_first_name: userResult.rows[0].first_name,
+                        user_last_name: userResult.rows[0].last_name
+                    };
+                    
+                    results.added.push(enrichedResult);
+                    logger.info(`[SERVICE] addMultipleGroupMembers - Member added: ${userUuid} to group ${groupUuid}`);
+
+                } catch (memberError) {
+                    logger.error(`[SERVICE] addMultipleGroupMembers - Error adding member ${userUuid}: ${memberError.message}`);
+                    results.errors.push({
+                        user_uuid: userUuid,
+                        error: memberError.message
+                    });
+                }
+            }
+
+            await client.query('COMMIT');
+            logger.info(`[SERVICE] addMultipleGroupMembers - Operation completed. Added: ${results.added.length}, Skipped: ${results.skipped.length}, Errors: ${results.errors.length}`);
+            
+            return results;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            logger.error(`[SERVICE] addMultipleGroupMembers - Transaction error: ${error.message}`);
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
     async addGroupMember(groupUuid, userUuid) {
         logger.info(`[SERVICE] addGroupMember - Starting database operation for group: ${groupUuid}, user: ${userUuid}`);
         try {

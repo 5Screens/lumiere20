@@ -228,6 +228,7 @@ export class Group {
         displayedLabel: "person_name",
         targetEndPoint: "groups",
         ressourceEndPoint: 'members',
+        fieldName: 'members',
         target_uuid: null,
         pickedItems: null,
         required: false,
