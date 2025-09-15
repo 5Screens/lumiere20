@@ -102,7 +102,11 @@ class GroupService {
 
     async createGroup(groupData) {
         logger.info('[SERVICE] createGroup - Starting database operation');
+        const client = await pool.connect();
+        
         try {
+            await client.query('BEGIN');
+            
             const {
                 group_name,
                 support_level,
@@ -111,10 +115,12 @@ class GroupService {
                 rel_manager,
                 rel_schedule,
                 email,
-                phone
+                phone,
+                members
             } = groupData;
 
-            const query = `
+            // Créer le groupe
+            const groupQuery = `
                 INSERT INTO configuration.groups (
                     group_name,
                     support_level,
@@ -138,7 +144,7 @@ class GroupService {
                     created_at,
                     updated_at`;
             
-            const values = [
+            const groupValues = [
                 group_name,
                 support_level,
                 description,
@@ -149,12 +155,49 @@ class GroupService {
                 phone
             ];
             
-            const result = await pool.query(query, values);
-            logger.info(`[SERVICE] createGroup - Group created successfully with UUID: ${result.rows[0].uuid}`);
-            return result.rows[0];
+            const groupResult = await client.query(groupQuery, groupValues);
+            const newGroup = groupResult.rows[0];
+            logger.info(`[SERVICE] createGroup - Group created successfully with UUID: ${newGroup.uuid}`);
+
+            // Ajouter les membres si fournis
+            if (members && Array.isArray(members) && members.length > 0) {
+                logger.info(`[SERVICE] createGroup - Adding ${members.length} members to group: ${newGroup.uuid}`);
+                
+                for (const memberUuid of members) {
+                    try {
+                        // Vérifier que la personne existe
+                        const personCheckQuery = `
+                            SELECT uuid FROM configuration.persons 
+                            WHERE uuid = $1`;
+                        
+                        const personResult = await client.query(personCheckQuery, [memberUuid]);
+                        if (personResult.rows.length === 0) {
+                            logger.warn(`[SERVICE] createGroup - Person not found: ${memberUuid}, skipping`);
+                            continue;
+                        }
+
+                        // Ajouter la relation groupe-membre
+                        const memberQuery = `
+                            INSERT INTO configuration.rel_persons_groups (rel_group, rel_member)
+                            VALUES ($1, $2)`;
+                        
+                        await client.query(memberQuery, [newGroup.uuid, memberUuid]);
+                        logger.info(`[SERVICE] createGroup - Member added: ${memberUuid} to group ${newGroup.uuid}`);
+                    } catch (memberError) {
+                        logger.error(`[SERVICE] createGroup - Error adding member ${memberUuid}: ${memberError.message}`);
+                        // Continue avec les autres membres même si un échoue
+                    }
+                }
+            }
+
+            await client.query('COMMIT');
+            return newGroup;
         } catch (error) {
+            await client.query('ROLLBACK');
             logger.error(`[SERVICE] createGroup - Error: ${error.message}`);
             throw error;
+        } finally {
+            client.release();
         }
     }
 

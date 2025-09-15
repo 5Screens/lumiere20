@@ -262,9 +262,17 @@ export class Group {
       phone: this.phone
     };
 
+    // Ajouter persons_list comme "members" pour l'API (comme dans watch_list -> watchers)
+    if (this.persons_list && Array.isArray(this.persons_list)) {
+      // Extraire seulement les UUIDs des personnes si c'est un tableau d'objets
+      apiData.members = this.persons_list.map(person => 
+        typeof person === 'string' ? person : person.person_uuid || person.uuid
+      );
+    }
+
     // Supprimer les champs système pour POST
     if (method.toUpperCase() === 'POST') {
-      const fieldsToRemove = ['uuid', 'created_at', 'updated_at', 'supervisor_name', 'manager_name'];
+      const fieldsToRemove = ['uuid', 'created_at', 'updated_at', 'supervisor_name', 'manager_name', 'persons_list'];
       fieldsToRemove.forEach(field => {
         delete apiData[field];
       });

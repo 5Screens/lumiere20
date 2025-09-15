@@ -10,7 +10,8 @@ const groupSchema = Joi.object({
     rel_manager: Joi.string().uuid().allow(null),
     rel_schedule: Joi.string().uuid().allow(null),
     email: Joi.string().email().allow(null, ''),
-    phone: Joi.string().allow(null, '')
+    phone: Joi.string().allow(null, ''),
+    members: Joi.array().items(Joi.string().uuid()).allow(null)
 }).options({ 
     abortEarly: false,
     stripUnknown: true 
