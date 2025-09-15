@@ -208,7 +208,7 @@ CREATE TABLE configuration.locations (
     name VARCHAR(255) NOT NULL,
     primary_entity_uuid UUID REFERENCES configuration.entities(uuid),
     field_service_group_uuid UUID REFERENCES configuration.groups(uuid),
-    status VARCHAR(50),
+    rel_status_uuid UUID REFERENCES configuration.ticket_status(uuid),
     site_created_on TIMESTAMP WITH TIME ZONE,
     site_id VARCHAR(100),
     type VARCHAR(100),
