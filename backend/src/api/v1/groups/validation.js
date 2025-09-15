@@ -52,8 +52,21 @@ const validateGroupPatch = (groupPatch) => {
     return { value };
 };
 
+const validateUuid = (uuid, paramName = 'UUID') => {
+    logger.info(`[VALIDATION] Starting ${paramName} validation`);
+    const uuidSchema = Joi.string().uuid().required();
+    const { error, value } = uuidSchema.validate(uuid);
+    if (error) {
+        logger.error(`[VALIDATION] ${paramName} validation failed: ${error.details.map(d => d.message).join(', ')}`);
+        return { error };
+    }
+    logger.info(`[VALIDATION] ${paramName} validation successful`);
+    return { value };
+};
+
 module.exports = {
     groupSchema,
     validateGroup,
-    validateGroupPatch
+    validateGroupPatch,
+    validateUuid
 };

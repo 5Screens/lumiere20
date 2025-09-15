@@ -70,6 +70,16 @@ router.patch('/:uuid', (req, res) => {
     return groupController.updateGroupField(req, res);
 });
 
+// POST /api/v1/groups/:group_uuid/members/:user_uuid
+router.post('/:group_uuid/members/:user_uuid', (req, res) => {
+    logger.info(`[ROUTES] POST /api/v1/groups/${req.params.group_uuid}/members/${req.params.user_uuid} - Route handler started`);
+    return groupController.addMemberToGroup(req, res);
+});
 
+// DELETE /api/v1/groups/:group_uuid/members/:user_uuid
+router.delete('/:group_uuid/members/:user_uuid', (req, res) => {
+    logger.info(`[ROUTES] DELETE /api/v1/groups/${req.params.group_uuid}/members/${req.params.user_uuid} - Route handler started`);
+    return groupController.removeMemberFromGroup(req, res);
+});
 
 module.exports = router;

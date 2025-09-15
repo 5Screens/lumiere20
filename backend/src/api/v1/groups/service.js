@@ -269,6 +269,77 @@ class GroupService {
             throw error;
         }
     }
+
+    async addGroupMember(groupUuid, userUuid) {
+        logger.info(`[SERVICE] addGroupMember - Starting database operation for group: ${groupUuid}, user: ${userUuid}`);
+        try {
+            // Vérifier d'abord que l'utilisateur existe
+            const userCheckQuery = `
+                SELECT uuid, first_name, last_name 
+                FROM configuration.persons 
+                WHERE uuid = $1`;
+            
+            const userResult = await pool.query(userCheckQuery, [userUuid]);
+            if (userResult.rows.length === 0) {
+                const error = new Error('User not found');
+                error.code = '23503'; // Simulate foreign key constraint violation
+                throw error;
+            }
+
+            // Insérer la relation groupe-membre
+            const insertQuery = `
+                INSERT INTO configuration.rel_persons_groups (rel_group, rel_member)
+                VALUES ($1, $2)
+                RETURNING 
+                    uuid,
+                    rel_group,
+                    rel_member,
+                    created_at`;
+            
+            const result = await pool.query(insertQuery, [groupUuid, userUuid]);
+            
+            // Enrichir le résultat avec les informations de l'utilisateur
+            const enrichedResult = {
+                ...result.rows[0],
+                user_name: `${userResult.rows[0].first_name} ${userResult.rows[0].last_name}`,
+                user_first_name: userResult.rows[0].first_name,
+                user_last_name: userResult.rows[0].last_name
+            };
+            
+            logger.info(`[SERVICE] addGroupMember - Member added successfully: ${userUuid} to group ${groupUuid}`);
+            return enrichedResult;
+        } catch (error) {
+            logger.error(`[SERVICE] addGroupMember - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async removeGroupMember(groupUuid, userUuid) {
+        logger.info(`[SERVICE] removeGroupMember - Starting database operation for group: ${groupUuid}, user: ${userUuid}`);
+        try {
+            const deleteQuery = `
+                DELETE FROM configuration.rel_persons_groups
+                WHERE rel_group = $1 AND rel_member = $2
+                RETURNING 
+                    uuid,
+                    rel_group,
+                    rel_member,
+                    created_at`;
+            
+            const result = await pool.query(deleteQuery, [groupUuid, userUuid]);
+            
+            if (result.rows.length === 0) {
+                logger.warn(`[SERVICE] removeGroupMember - No relation found between group ${groupUuid} and user ${userUuid}`);
+                return null;
+            }
+            
+            logger.info(`[SERVICE] removeGroupMember - Member removed successfully: ${userUuid} from group ${groupUuid}`);
+            return result.rows[0];
+        } catch (error) {
+            logger.error(`[SERVICE] removeGroupMember - Error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new GroupService();

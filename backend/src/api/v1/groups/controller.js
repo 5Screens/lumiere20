@@ -1,6 +1,6 @@
 const groupService = require('./service');
 const logger = require('../../../config/logger');
-const { validateGroup, validateGroupPatch } = require('./validation');
+const { validateGroup, validateGroupPatch, validateUuid } = require('./validation');
 
 class GroupController {
     async getAllGroups(req, res) {
@@ -152,6 +152,126 @@ class GroupController {
             logger.error(`[CONTROLLER] getAllGroupMembers - Error: ${error.message}`);
             res.status(500).json({ 
                 error: 'An error occurred while retrieving group members' 
+            });
+        }
+    }
+
+    async addMemberToGroup(req, res) {
+        const groupUuid = req.params.group_uuid;
+        const userUuid = req.params.user_uuid;
+        logger.info(`[CONTROLLER] addMemberToGroup - Processing request for group: ${groupUuid}, user: ${userUuid}`);
+        
+        try {
+            // Valider les UUID des paramètres
+            const groupValidation = validateUuid(groupUuid, 'Group UUID');
+            if (groupValidation.error) {
+                logger.warn(`[CONTROLLER] addMemberToGroup - Invalid group UUID: ${groupUuid}`);
+                return res.status(400).json({
+                    error: 'Invalid group UUID format',
+                    details: groupValidation.error.details.map(d => d.message)
+                });
+            }
+
+            const userValidation = validateUuid(userUuid, 'User UUID');
+            if (userValidation.error) {
+                logger.warn(`[CONTROLLER] addMemberToGroup - Invalid user UUID: ${userUuid}`);
+                return res.status(400).json({
+                    error: 'Invalid user UUID format',
+                    details: userValidation.error.details.map(d => d.message)
+                });
+            }
+
+            // Vérifier que le groupe existe
+            const group = await groupService.getGroupByUuid(groupUuid);
+            if (!group) {
+                logger.warn(`[CONTROLLER] addMemberToGroup - Group not found with UUID: ${groupUuid}`);
+                return res.status(404).json({
+                    error: 'Group not found'
+                });
+            }
+
+            // Ajouter le membre au groupe
+            const result = await groupService.addGroupMember(groupUuid, userUuid);
+            logger.info(`[CONTROLLER] addMemberToGroup - Member added successfully to group: ${groupUuid}`);
+            
+            return res.status(201).json({
+                message: 'Member added to group successfully',
+                data: result
+            });
+        } catch (error) {
+            logger.error(`[CONTROLLER] addMemberToGroup - Error: ${error.message}`);
+            
+            if (error.code === '23505') { // PostgreSQL unique constraint violation
+                return res.status(409).json({
+                    error: 'User is already a member of this group'
+                });
+            }
+            
+            if (error.code === '23503') { // PostgreSQL foreign key constraint violation
+                return res.status(404).json({
+                    error: 'User not found'
+                });
+            }
+            
+            return res.status(500).json({
+                error: 'An error occurred while adding member to group'
+            });
+        }
+    }
+
+    async removeMemberFromGroup(req, res) {
+        const groupUuid = req.params.group_uuid;
+        const userUuid = req.params.user_uuid;
+        logger.info(`[CONTROLLER] removeMemberFromGroup - Processing request for group: ${groupUuid}, user: ${userUuid}`);
+        
+        try {
+            // Valider les UUID des paramètres
+            const groupValidation = validateUuid(groupUuid, 'Group UUID');
+            if (groupValidation.error) {
+                logger.warn(`[CONTROLLER] removeMemberFromGroup - Invalid group UUID: ${groupUuid}`);
+                return res.status(400).json({
+                    error: 'Invalid group UUID format',
+                    details: groupValidation.error.details.map(d => d.message)
+                });
+            }
+
+            const userValidation = validateUuid(userUuid, 'User UUID');
+            if (userValidation.error) {
+                logger.warn(`[CONTROLLER] removeMemberFromGroup - Invalid user UUID: ${userUuid}`);
+                return res.status(400).json({
+                    error: 'Invalid user UUID format',
+                    details: userValidation.error.details.map(d => d.message)
+                });
+            }
+
+            // Vérifier que le groupe existe
+            const group = await groupService.getGroupByUuid(groupUuid);
+            if (!group) {
+                logger.warn(`[CONTROLLER] removeMemberFromGroup - Group not found with UUID: ${groupUuid}`);
+                return res.status(404).json({
+                    error: 'Group not found'
+                });
+            }
+
+            // Supprimer le membre du groupe
+            const result = await groupService.removeGroupMember(groupUuid, userUuid);
+            
+            if (!result) {
+                logger.warn(`[CONTROLLER] removeMemberFromGroup - Member not found in group: ${groupUuid}`);
+                return res.status(404).json({
+                    error: 'Member not found in this group'
+                });
+            }
+            
+            logger.info(`[CONTROLLER] removeMemberFromGroup - Member removed successfully from group: ${groupUuid}`);
+            
+            return res.json({
+                message: 'Member removed from group successfully'
+            });
+        } catch (error) {
+            logger.error(`[CONTROLLER] removeMemberFromGroup - Error: ${error.message}`);
+            return res.status(500).json({
+                error: 'An error occurred while removing member from group'
             });
         }
     }
