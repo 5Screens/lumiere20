@@ -99,7 +99,9 @@ export default {
     storyCreation: 'Criar uma história',
     storyUpdate: 'Editar a história',
     defectCreation: 'Criar um defeito',
-    defectUpdate: 'Editar o defeito'
+    defectUpdate: 'Editar o defeito',
+    groupCreation: 'Criar um grupo',
+    groupUpdate: 'Editar o grupo'
   },
   sprintCenter: {
     title: 'Centro de Sprint',
@@ -130,7 +132,8 @@ export default {
     workflows: 'Fluxos de Trabalho',
     import: 'Importar',
     export: 'Exportar',
-    refresh: 'Atualizar'
+    refresh: 'Atualizar',
+    groups: 'Grupos'
   },
   admin: {
     title: 'Administração',
@@ -879,6 +882,28 @@ export default {
     delete_confirm: 'Tem certeza de que deseja excluir este arquivo?',
     delete_success: 'Arquivo excluído com sucesso',
     delete_error: 'Erro ao excluir o arquivo'
+  },
+  groups: {
+    group_name: 'Nome do grupo',
+    group_name_placeholder: 'Digite o nome do grupo',
+    support_level: 'Nível de suporte',
+    support_level_placeholder: 'Selecione o nível de suporte',
+    description: 'Descrição',
+    description_placeholder: 'Digite a descrição',
+    supervisor: 'Supervisor',
+    supervisor_placeholder: 'Selecione o supervisor',
+    manager: 'Gerente',
+    manager_placeholder: 'Selecione o gerente',
+    schedule: 'Horário',
+    schedule_placeholder: 'Selecione o horário',
+    email: 'Email',
+    email_placeholder: 'Digite o email do grupo',
+    phone: 'Telefone',
+    phone_placeholder: 'Digite o telefone do grupo',
+    persons_list: 'Lista de pessoas',
+    persons_list_placeholder: 'Selecione as pessoas',
+    persons_list_helper_text: 'Use as setas para adicionar ou remover pessoas',
+    persons_count: 'Número de pessoas'
   }
 }
 

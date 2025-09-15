@@ -838,5 +838,28 @@ export default {
     delete_confirm: 'Are you sure you want to delete this file?',
     delete_success: 'File deleted successfully',
     delete_error: 'Error during file deletion'
-  }
+  },
+  groups: {
+    group_name: 'Group name',
+    group_name_placeholder: 'Enter group name',
+    support_level: 'Support level',
+    support_level_placeholder: 'Select support level',
+    description: 'Description',
+    description_placeholder: 'Enter description',
+    supervisor: 'Supervisor',
+    supervisor_placeholder: 'Select supervisor',
+    manager: 'Manager',
+    manager_placeholder: 'Select manager',
+    schedule: 'Schedule',
+    schedule_placeholder: 'Select schedule',
+    email: 'Email',
+    email_placeholder: 'Enter email',
+    phone: 'Phone',
+    phone_placeholder: 'Enter phone',
+    persons_list: 'Persons list',
+    persons_list_placeholder: 'Select persons',
+    persons_list_helper_text: 'Use arrows to add or remove persons',
+    persons_count: 'Number of persons'
+    
+  } 
 }
