@@ -164,6 +164,10 @@ export default {
     incidentSetupCreation: 'Créer une nouvelle metadonnee incident et sa traduction',
     incidentSetupUpdate: 'Modifier une metadonnee incident et ses traductions',
 
+    // Titres pour les groupes
+    groupCreation: 'Créer un nouveau groupe',
+    groupUpdate: 'Modifier un groupe',
+
   },
   sprintCenter: {
     title: 'Centre Sprint',
@@ -205,6 +209,7 @@ export default {
     problemCategories: 'Catégories de problème', 
     entitySetup: 'Gestion des paramètres d\'entite',
     incidentSetup: 'Gestion des paramètres d\'incident',
+    groups: 'Gestion des groupes',
   },
   admin: {
     title: 'Administration',
@@ -1162,5 +1167,30 @@ export default {
     requiredField: 'Champ obligatoire',
     value: 'Valeur',
     value_placeholder: 'Si utilisé dans la matrice de priorité entrez une valeur. Sinon laissez vide.',
+  },
+  groups: {
+    uuid: 'Identifiant unique',
+    created_at: 'Créé le',
+    updated_at: 'Mis à jour le',
+    group_name: 'Nom du groupe',
+    group_name_placeholder: 'Entrez le nom du groupe',
+    support_level: 'Niveau de support',
+    support_level_placeholder: 'Sélectionnez un niveau de support',
+    description: 'Description',
+    description_placeholder: 'Entrez une description',
+    supervisor: 'Superviseur',
+    supervisor_placeholder: 'Sélectionnez un superviseur',
+    manager: 'Manager',
+    manager_placeholder: 'Sélectionnez un manager',
+    schedule: 'Horaires',
+    schedule_placeholder: 'Sélectionnez un horaire',
+    email: 'Email',
+    email_placeholder: 'Entrez l\'email du groupe',
+    phone: 'Téléphone',
+    phone_placeholder: 'Entrez le numéro de téléphone du groupe s\'il existe',
+    persons_list: 'Membres',
+    persons_list_placeholder: 'Sélectionnez les membres du groupe',
+    persons_list_helper_text: 'Utilisez les flèches pour ajouter ou supprimer des membres',
+    persons_count: 'Nombre de membres'
   }
 }
