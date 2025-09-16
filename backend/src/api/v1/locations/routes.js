@@ -7,11 +7,6 @@ const logger = require('../../../config/logger');
 router.get('/', (req, res, next) => {
     logger.info('[ROUTES] GET /api/v1/locations - Route handler started');
     
-    if (req.query.uuid) {
-        logger.info(`[ROUTES] GET /api/v1/locations - UUID parameter detected: ${req.query.uuid}`);
-        return locationController.getLocationByUuid(req, res);
-    }
-    
     if (req.query.active !== undefined) {
         if (req.query.active.toLowerCase() === 'yes') {
             logger.info('[ROUTES] GET /api/v1/locations - Active=yes parameter detected, filtering active locations');
@@ -26,6 +21,12 @@ router.get('/', (req, res, next) => {
     
     next();
 }, locationController.getAllLocations.bind(locationController));
+
+// GET /api/v1/locations/:uuid - Get location by UUID (route parameter)
+router.get('/:uuid', (req, res) => {
+    logger.info(`[ROUTES] GET /api/v1/locations/:uuid - Route handler started for UUID: ${req.params.uuid}`);
+    return locationController.getLocationByUuid(req, res);
+});
 
 // GET /api/v1/locations/getChildLocations/count
 router.get('/getChildLocations/count', (req, res) => {

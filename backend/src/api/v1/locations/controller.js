@@ -26,15 +26,8 @@ class LocationController {
     }
 
     async getLocationByUuid(req, res) {
-        const uuid = req.query.uuid;
-        const lang = req.query.lang;
-        
-        if (!lang) {
-            logger.warn('[CONTROLLER] getLocationByUuid - Missing lang parameter');
-            return res.status(400).json({
-                error: 'lang parameter is required (e.g., ?lang=fr)'
-            });
-        }
+        const uuid = req.params.uuid;
+        const lang = req.query.lang || 'fr'; // Default to French if not specified
         
         logger.info(`[CONTROLLER] getLocationByUuid - Processing request for UUID: ${uuid} with language: ${lang}`);
         try {

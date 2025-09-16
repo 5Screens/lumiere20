@@ -92,7 +92,22 @@ class LocationService {
                     l.field_service_group_uuid,
                     g.group_name as field_service_group_name,
                     l.created_at,
-                    l.updated_at
+                    l.updated_at,
+                    -- Liste des occupants de la localisation
+                    (
+                        SELECT json_agg(json_build_object(
+                            'uuid', p.uuid,
+                            'person_name', p.first_name || ' ' || p.last_name,
+                            'first_name', p.first_name,
+                            'last_name', p.last_name,
+                            'job_role', p.job_role,
+                            'email', p.email,
+                            'business_phone', p.business_phone,
+                            'business_mobile_phone', p.business_mobile_phone
+                        ))
+                        FROM configuration.persons p
+                        WHERE p.ref_location_uuid = l.uuid
+                    ) as occupants_list
                 FROM configuration.locations l
                 LEFT JOIN configuration.locations parent ON l.parent_uuid = parent.uuid
                 LEFT JOIN configuration.entities entity ON l.primary_entity_uuid = entity.uuid
