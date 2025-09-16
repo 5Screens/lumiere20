@@ -40,4 +40,57 @@ router.get('/getEntityLocations/count', (req, res) => {
     return locationController.getEntityLocationsCount(req, res);
 });
 
+// POST /api/v1/locations
+router.post('/', (req, res) => {
+    logger.info('[ROUTES] POST /api/v1/locations - Route handler started');
+    return locationController.createLocation(req, res);
+});
+
+// PATCH /api/v1/locations/:uuid
+router.patch('/:uuid', (req, res) => {
+    logger.info('[ROUTES] PATCH /api/v1/locations/:uuid - Route handler started');
+    
+    // Validate allowed fields in request body
+    const allowedFields = [
+        'name', 'site_id', 'type', 'rel_status_uuid', 'business_criticality', 
+        'opening_hours', 'time_zone', 'street', 'city', 'state_province', 
+        'country', 'postal_code', 'phone', 'comments', 'site_created_on',
+        'alternative_site_reference', 'wan_design', 'network_telecom_service',
+        'parent_uuid', 'primary_entity_uuid', 'field_service_group_uuid'
+    ];
+    const requestFields = Object.keys(req.body);
+    
+    const invalidFields = requestFields.filter(field => !allowedFields.includes(field));
+    if (invalidFields.length > 0) {
+        logger.warn(`[ROUTES] PATCH /api/v1/locations/:uuid - Invalid fields detected in request body: ${invalidFields.join(', ')}`);
+        return res.status(400).json({
+            error: 'Invalid fields in request body',
+            invalidFields: invalidFields
+        });
+    }
+
+    // Add UUID from URL params to the request
+    req.locationUuid = req.params.uuid;
+    
+    return locationController.updateLocationField(req, res);
+});
+
+// POST /api/v1/locations/:location_uuid/occupants (ajout multiple)
+router.post('/:location_uuid/occupants', (req, res) => {
+    logger.info(`[ROUTES] POST /api/v1/locations/${req.params.location_uuid}/occupants - Route handler started for multiple occupants`);
+    return locationController.addMultipleOccupantsToLocation(req, res);
+});
+
+// POST /api/v1/locations/:location_uuid/occupants/:user_uuid
+router.post('/:location_uuid/occupants/:user_uuid', (req, res) => {
+    logger.info(`[ROUTES] POST /api/v1/locations/${req.params.location_uuid}/occupants/${req.params.user_uuid} - Route handler started`);
+    return locationController.addOccupantToLocation(req, res);
+});
+
+// DELETE /api/v1/locations/:location_uuid/occupants/:user_uuid
+router.delete('/:location_uuid/occupants/:user_uuid', (req, res) => {
+    logger.info(`[ROUTES] DELETE /api/v1/locations/${req.params.location_uuid}/occupants/${req.params.user_uuid} - Route handler started`);
+    return locationController.removeOccupantFromLocation(req, res);
+});
+
 module.exports = router;

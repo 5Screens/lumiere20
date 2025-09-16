@@ -26,6 +26,7 @@ import { ProblemCategories } from '@/models/ProblemCategories'
 import { EntitySetup } from '@/models/EntitySetup'
 import { IncidentSetup } from '@/models/IncidentSetup'
 import { Group } from '@/models/Group'
+import { Location } from '@/models/Location'
 
 /**
  * Mapping des noms de classes vers les classes JavaScript
@@ -53,7 +54,8 @@ const CLASS_MAP = {
   'ProblemCategories': ProblemCategories,
   'EntitySetup': EntitySetup,
   'IncidentSetup': IncidentSetup,
-  'Group': Group
+  'Group': Group,
+  'Location': Location
 }
 
 /**

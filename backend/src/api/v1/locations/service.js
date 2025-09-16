@@ -243,6 +243,220 @@ class LocationService {
             throw error;
         }
     }
+
+    async updateLocation(uuid, locationData) {
+        logger.info(`[SERVICE] updateLocation - Starting database operation for UUID: ${uuid}`);
+        try {
+            // Construire la requête dynamiquement en fonction des champs fournis
+            const fields = Object.keys(locationData);
+            const values = Object.values(locationData);
+            
+            // Ajouter l'UUID à la fin des valeurs
+            values.push(uuid);
+            
+            // Construire la partie SET de la requête
+            const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
+            
+            const query = `
+                UPDATE configuration.locations
+                SET ${setClause}, updated_at = CURRENT_TIMESTAMP
+                WHERE uuid = $${values.length}
+                RETURNING 
+                    uuid,
+                    name,
+                    site_id,
+                    type,
+                    rel_status_uuid,
+                    business_criticality,
+                    opening_hours,
+                    time_zone,
+                    street,
+                    city,
+                    state_province,
+                    country,
+                    postal_code,
+                    phone,
+                    comments,
+                    site_created_on,
+                    alternative_site_reference,
+                    wan_design,
+                    network_telecom_service,
+                    parent_uuid,
+                    primary_entity_uuid,
+                    field_service_group_uuid,
+                    created_at,
+                    updated_at`;
+            
+            const result = await pool.query(query, values);
+            
+            if (result.rows.length === 0) {
+                return null;
+            }
+            
+            logger.info(`[SERVICE] updateLocation - Location updated successfully: ${uuid}`);
+            return result.rows[0];
+        } catch (error) {
+            logger.error(`[SERVICE] updateLocation - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async createLocation(locationData) {
+        logger.info('[SERVICE] createLocation - Starting database operation');
+        try {
+            // Extraire occupants_list s'il existe
+            const { occupants_list, ...locationFields } = locationData;
+            
+            // Construire la requête d'insertion pour la location
+            const fields = Object.keys(locationFields);
+            const values = Object.values(locationFields);
+            const placeholders = fields.map((_, index) => `$${index + 1}`).join(', ');
+            
+            const query = `
+                INSERT INTO configuration.locations (${fields.join(', ')})
+                VALUES (${placeholders})
+                RETURNING 
+                    uuid,
+                    name,
+                    site_id,
+                    type,
+                    rel_status_uuid,
+                    business_criticality,
+                    opening_hours,
+                    time_zone,
+                    street,
+                    city,
+                    state_province,
+                    country,
+                    postal_code,
+                    phone,
+                    comments,
+                    site_created_on,
+                    alternative_site_reference,
+                    wan_design,
+                    network_telecom_service,
+                    parent_uuid,
+                    primary_entity_uuid,
+                    field_service_group_uuid,
+                    created_at,
+                    updated_at`;
+            
+            const result = await pool.query(query, values);
+            const newLocation = result.rows[0];
+            
+            // Si des occupants sont fournis, les ajouter
+            if (occupants_list && Array.isArray(occupants_list) && occupants_list.length > 0) {
+                await this.addOccupantsToLocation(newLocation.uuid, occupants_list);
+            }
+            
+            logger.info(`[SERVICE] createLocation - Location created successfully: ${newLocation.uuid}`);
+            return newLocation;
+        } catch (error) {
+            logger.error(`[SERVICE] createLocation - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async addOccupantToLocation(locationUuid, personUuid) {
+        logger.info(`[SERVICE] addOccupantToLocation - Adding person ${personUuid} to location ${locationUuid}`);
+        try {
+            // Vérifier que la location existe
+            const locationExists = await pool.query(
+                'SELECT uuid FROM configuration.locations WHERE uuid = $1',
+                [locationUuid]
+            );
+            
+            if (locationExists.rows.length === 0) {
+                throw new Error('Location not found');
+            }
+            
+            // Vérifier que la personne existe
+            const personExists = await pool.query(
+                'SELECT uuid FROM configuration.persons WHERE uuid = $1',
+                [personUuid]
+            );
+            
+            if (personExists.rows.length === 0) {
+                throw new Error('Person not found');
+            }
+            
+            // Mettre à jour la personne pour l'assigner à cette location
+            const query = `
+                UPDATE configuration.persons 
+                SET ref_location_uuid = $1, updated_at = CURRENT_TIMESTAMP
+                WHERE uuid = $2
+                RETURNING uuid, first_name, last_name`;
+            
+            const result = await pool.query(query, [locationUuid, personUuid]);
+            
+            logger.info(`[SERVICE] addOccupantToLocation - Person added successfully to location`);
+            return result.rows[0];
+        } catch (error) {
+            logger.error(`[SERVICE] addOccupantToLocation - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async addOccupantsToLocation(locationUuid, personUuids) {
+        logger.info(`[SERVICE] addOccupantsToLocation - Adding ${personUuids.length} persons to location ${locationUuid}`);
+        try {
+            // Vérifier que la location existe
+            const locationExists = await pool.query(
+                'SELECT uuid FROM configuration.locations WHERE uuid = $1',
+                [locationUuid]
+            );
+            
+            if (locationExists.rows.length === 0) {
+                throw new Error('Location not found');
+            }
+            
+            // Mettre à jour toutes les personnes en une seule requête
+            const placeholders = personUuids.map((_, index) => `$${index + 2}`).join(', ');
+            const query = `
+                UPDATE configuration.persons 
+                SET ref_location_uuid = $1, updated_at = CURRENT_TIMESTAMP
+                WHERE uuid IN (${placeholders})
+                RETURNING uuid, first_name, last_name`;
+            
+            const result = await pool.query(query, [locationUuid, ...personUuids]);
+            
+            logger.info(`[SERVICE] addOccupantsToLocation - ${result.rows.length} persons added successfully to location`);
+            return result.rows;
+        } catch (error) {
+            logger.error(`[SERVICE] addOccupantsToLocation - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async removeOccupantFromLocation(locationUuid, personUuid) {
+        logger.info(`[SERVICE] removeOccupantFromLocation - Removing person ${personUuid} from location ${locationUuid}`);
+        try {
+            // Vérifier que la personne est bien dans cette location
+            const personInLocation = await pool.query(
+                'SELECT uuid FROM configuration.persons WHERE uuid = $1 AND ref_location_uuid = $2',
+                [personUuid, locationUuid]
+            );
+            
+            if (personInLocation.rows.length === 0) {
+                throw new Error('Person not found in this location');
+            }
+            
+            // Retirer la personne de la location
+            const query = `
+                UPDATE configuration.persons 
+                SET ref_location_uuid = NULL, updated_at = CURRENT_TIMESTAMP
+                WHERE uuid = $1 AND ref_location_uuid = $2
+                RETURNING uuid, first_name, last_name`;
+            
+            const result = await pool.query(query, [personUuid, locationUuid]);
+            
+            logger.info(`[SERVICE] removeOccupantFromLocation - Person removed successfully from location`);
+            return result.rows[0];
+        } catch (error) {
+            logger.error(`[SERVICE] removeOccupantFromLocation - Error: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 module.exports = new LocationService();
