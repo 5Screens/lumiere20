@@ -74,99 +74,56 @@ export default {
     knowledge: 'Connaissances',
   },
   
-  // Section pour le composant objectCreationsAndUpdates
   objectCreationsAndUpdates: {
-    //Titre pour les tasks
     taskCreation: 'Créer une tâche',
     taskUpdate: 'Modifier la tâche',
-
-    // Titres pour les incidents
     incidentCreation: 'Créer un incident',
     incidentUpdate: 'Modifier l\'incident',
-    
-    // Titres pour les symptômes
     symptomCreation: 'Créer un symptôme',
     symptomUpdate: 'Modifier le symptôme',
-    
-    // Titres pour les entités
     entityCreation: 'Créer une entité',
     entityUpdate: 'Modifier l\'entité',
-    
-    // Titres pour les tâches
     ticketCreation: 'Créer une tâche',
     ticketUpdate: 'Modifier la tâche',
-    
-    // Titres pour les problèmes
     problemCreation: 'Créer un problème',
     problemUpdate: 'Modifier le problème',
-    
-    // Titres pour les changements
     changeCreation: 'Créer un changement',
     changeUpdate: 'Modifier le changement',
-    
-    // Titres pour les articles de connaissance
     knowledgeCreation: 'Créer un article de connaissance',
     knowledgeUpdate: 'Modifier l\'article de connaissance',
-    
-    // Titres pour les projets
     projectCreation: 'Créer un projet',
     projectUpdate: 'Modifier le projet',
-    
-    // Titres pour les sprints
     sprintCreation: 'Créer un sprint',
     sprintUpdate: 'Modifier le sprint',
-    
-    // Titres pour les épopées
     epicCreation: 'Créer une épopée',
     epicUpdate: 'Modifier l\'épopée',
-    
-    // Titres pour les histoires
     storyCreation: 'Créer une histoire',
     storyUpdate: 'Modifier l\'histoire',
-    
-    // Titres pour les défauts
     defectCreation: 'Créer un défaut',
     defectUpdate: 'Modifier le défaut',
-    
-    // Titres pour les types de contact
     contactTypeCreation: 'Créer un type de contact',
     contactTypeUpdate: 'Modifier le type de contact',
-    
-    // Titres pour les types de défaut
     defectSetupCreation: 'Créer un type de défaut',
     defectSetupUpdate: 'Modifier le type de défaut',
-
-    // Titres pour les types de défaut
     knowledgeSetupCreation: 'Créer un type de connaissance',
     knowledgeSetupUpdate: 'Modifier le type de connaissance',
-    
-    // Titres pour les types de défaut
     projectSetupCreation: 'Créer nouvelle metadonnee projet et sa traduction',
     projectSetupUpdate: 'Modifier une metadonnee projet et sa traduction',
-    
-    // Titres pour les types de défaut
     changeOptionsCreation: 'Créer une réponses aux Q&R d\'analyse de risque et d\'impact de changement',
     changeOptionsUpdate: 'Modifier une réponse aux Q&R d\'analyse de risque et d\'impact de changement',
-    
-    // Titres pour les questions de changement
     changeQuestionsCreation: 'Créer une question de changement',
     changeQuestionsUpdate: 'Modifier une question de changement',
-
-    // Titres pour les catégories de problème
+    problemCategoriesCreation: 'Créer une catégorie de problème',
     problemCategoriesCreation: 'Créer une catégorie de problème',
     problemCategoriesUpdate: 'Modifier une catégorie de problème',
-
-    // Titres pour les types de défaut
     entitySetupCreation: 'Créer une nouvelle metadonnee entite et sa traduction',
     entitySetupUpdate: 'Modifier une metadonnee entite et ses traductions',
-
-    // Titres pour les types de défaut
     incidentSetupCreation: 'Créer une nouvelle metadonnee incident et sa traduction',
     incidentSetupUpdate: 'Modifier une metadonnee incident et ses traductions',
-
-    // Titres pour les groupes
     groupCreation: 'Créer un nouveau groupe',
     groupUpdate: 'Modifier un groupe',
+    locationCreation: 'Créer une nouvelle localisation',
+    locationUpdate: 'Modifier une localisation'
 
   },
   sprintCenter: {
@@ -1199,8 +1156,20 @@ export default {
     type:'Type',
     status:'Statut',
     business_criticality:'Criticité métier',
+    opening_hours:'Horaires d\'ouverture',
+    time_zone:'Fuseau horaire',
+    street:'Adresse',
     city:'Ville',
+    state_province:'Région/Province',
     country:'Pays',
+    postal_code:'Code postal',
+    phone:'Téléphone',
+    comments:'Commentaires',
+    site_created_on:'Date de création',
+    alternative_site_reference:'Référence de site externe',
+    wan_design:'Conception WAN',
+    network_telecom_service:'Service de télécommunication',
+    parent_location_name:'Localisation parente',
     primary_entity:'Entité principale',
     field_service_group:'Support de proximité',
     occupants_count:'Nombre d\'occupants',

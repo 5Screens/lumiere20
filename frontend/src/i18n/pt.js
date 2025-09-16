@@ -101,7 +101,9 @@ export default {
     defectCreation: 'Criar um defeito',
     defectUpdate: 'Editar o defeito',
     groupCreation: 'Criar um grupo',
-    groupUpdate: 'Editar o grupo'
+    groupUpdate: 'Editar o grupo',
+    locationCreation: 'Criar uma localização',
+    locationUpdate: 'Editar a localização'
   },
   sprintCenter: {
     title: 'Centro de Sprint',
@@ -904,6 +906,32 @@ export default {
     persons_list_placeholder: 'Selecione as pessoas',
     persons_list_helper_text: 'Use as setas para adicionar ou remover pessoas',
     persons_count: 'Número de pessoas'
+  },
+  locations: {
+    name: 'Nome da localização',
+    site_id:'Identificador interno',
+    type:'Tipo',
+    status:'Status',
+    business_criticality:'Criticidade de negócio',
+    opening_hours:'Horários de funcionamento',
+    time_zone:'Fuso horário',
+    street:'Endereço',
+    city:'Cidade',
+    state_province:'Estado/Provincia',
+    country:'País',
+    postal_code:'Código postal',
+    phone:'Telefone',
+    comments:'Comentários',
+    site_created_on:'Data de criação',
+    alternative_site_reference:'Referência de site externo',
+    wan_design:'Conceito WAN',
+    network_telecom_service:'Serviço de telecomunicação',
+    parent_location_name:'Localização pai',
+    primary_entity:'Entidade principal',
+    field_service_group:'Suporte de campo',
+    occupants_count:'Número de ocupantes',
+    created_at:'Criado em',
+    updated_at:'Atualizado em'
   }
 }
 

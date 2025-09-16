@@ -99,7 +99,11 @@ export default {
     storyCreation: 'Create a story',
     storyUpdate: 'Edit story',
     defectCreation: 'Create a defect',
-    defectUpdate: 'Edit defect'
+    defectUpdate: 'Edit defect',
+    groupCreation: 'Create a group',
+    groupUpdate: 'Edit group',
+    locationCreation: 'Create a location',
+    locationUpdate: 'Edit location'
   },
   sprintCenter: {
     title: 'Sprint Centre',
@@ -861,5 +865,31 @@ export default {
     persons_list_helper_text: 'Use arrows to add or remove persons',
     persons_count: 'Number of persons'
     
-  } 
+  } ,
+  locations: {
+    name: 'Location name',
+    site_id:'Internal identifier',
+    type:'Type',
+    status:'Status',
+    business_criticality:'Business criticality',
+    opening_hours:'Opening hours',
+    time_zone:'Time zone',
+    street:'Street',
+    city:'City',
+    state_province:'State/Province',
+    country:'Country',
+    postal_code:'Postal code',
+    phone:'Phone',
+    comments:'Comments',
+    site_created_on:'Created on',
+    alternative_site_reference:'External site reference',
+    wan_design:'WAN design',
+    network_telecom_service:'Network telecom service',
+    parent_location_name:'Parent location',
+    primary_entity:'Primary entity',
+    field_service_group:'Field service group',
+    occupants_count:'Occupants count',
+    created_at:'Created at',
+    updated_at:'Updated at'
+  }
 }
