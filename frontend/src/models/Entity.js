@@ -184,7 +184,10 @@ export class Entity {
         label: 'entities.headquarters_location',
         type: 'sFilteredSearchField',
         placeholder: 'entities.headquarters_location_placeholder',
-        endpoint: 'locations',
+        endpoint: () => {
+          const userProfileStore = useUserProfileStore();
+          return `locations?lang=${userProfileStore.language}`;
+        },
         displayField: 'name',
         valueField: 'uuid',
         editMode: false,
@@ -192,7 +195,8 @@ export class Entity {
           { key: 'name', label: 'location.name', visible: true },
           { key: 'address', label: 'location.address', visible: true },
           { key: 'city', label: 'location.city', visible: true },
-          { key: 'country', label: 'location.country', visible: true }
+          { key: 'country', label: 'location.country', visible: true },
+          { key: 'status_label', label: 'location.status', visible: true }
         ],
         required: isRequired('headquarters_location_uuid')
       },

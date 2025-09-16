@@ -328,14 +328,18 @@ export class Location {
         type: 'sFilteredSearchField',
         required: false,
         placeholder: 'locations.parent_location_placeholder',
-        endpoint: 'locations',
+        endpoint: () => {
+          const userProfileStore = useUserProfileStore();
+          return `locations?lang=${userProfileStore.language}`;
+        },
         displayField: 'name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'parent_location_name',
         columnsConfig: [
           { key: 'name', label: 'locations.name', visible: true },
           { key: 'city', label: 'locations.city', visible: true },
-          { key: 'country', label: 'locations.country', visible: true }
+          { key: 'country', label: 'locations.country', visible: true },
+          { key: 'status_label', label: 'locations.status', visible: true },
         ]
       },
       primary_entity_uuid: {
