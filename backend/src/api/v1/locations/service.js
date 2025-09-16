@@ -31,6 +31,7 @@ class LocationService {
                     parent.name as parent_location_name,
                     entity.name as primary_entity_name,
                     g.group_name as field_service_group_name,
+                    COALESCE(occupants.occupants_count, 0) as occupants_count,
                     l.created_at,
                     l.updated_at
                 FROM configuration.locations l
@@ -39,6 +40,14 @@ class LocationService {
                 LEFT JOIN configuration.groups g ON l.field_service_group_uuid = g.uuid
                 LEFT JOIN configuration.ticket_status ts ON l.rel_status_uuid = ts.uuid
                 LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $1
+                LEFT JOIN (
+                    SELECT 
+                        ref_location_uuid,
+                        COUNT(*) as occupants_count
+                    FROM configuration.persons 
+                    WHERE ref_location_uuid IS NOT NULL
+                    GROUP BY ref_location_uuid
+                ) occupants ON l.uuid = occupants.ref_location_uuid
                 ORDER BY l.name ASC`;
             
             const result = await pool.query(query, [lang]);
