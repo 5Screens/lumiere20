@@ -134,7 +134,8 @@ export default {
     workflows: 'Workflows',
     import: 'Import',
     export: 'Export',
-    refresh: 'Refresh'
+    refresh: 'Refresh',
+    groups: 'Groups',
   },
   admin: {
     title: 'Administration',
