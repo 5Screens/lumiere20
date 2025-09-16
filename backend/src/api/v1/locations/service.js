@@ -2,8 +2,8 @@ const { pool } = require('../../../config/database');
 const logger = require('../../../config/logger');
 
 class LocationService {
-    async getAllLocations() {
-        logger.info('[SERVICE] getAllLocations - Starting database query');
+    async getAllLocations(lang = 'fr') {
+        logger.info(`[SERVICE] getAllLocations - Starting database query with language: ${lang}`);
         try {
             const query = `
                 SELECT 
@@ -11,7 +11,9 @@ class LocationService {
                     l.name, 
                     l.site_id,
                     l.type,
-                    l.status,
+                    l.rel_status_uuid,
+                    ts.code as status_code,
+                    tst.label as status_label,
                     l.business_criticality,
                     l.opening_hours,
                     l.time_zone,
@@ -35,9 +37,11 @@ class LocationService {
                 LEFT JOIN configuration.locations parent ON l.parent_uuid = parent.uuid
                 LEFT JOIN configuration.entities entity ON l.primary_entity_uuid = entity.uuid
                 LEFT JOIN configuration.groups g ON l.field_service_group_uuid = g.uuid
+                LEFT JOIN configuration.ticket_status ts ON l.rel_status_uuid = ts.uuid
+                LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $1
                 ORDER BY l.name ASC`;
             
-            const result = await pool.query(query);
+            const result = await pool.query(query, [lang]);
             logger.info(`[SERVICE] getAllLocations - Query executed successfully, found ${result.rows.length} records`);
             return result.rows;
         } catch (error) {
@@ -46,8 +50,8 @@ class LocationService {
         }
     }
 
-    async getLocationByUuid(uuid) {
-        logger.info(`[SERVICE] getLocationByUuid - Starting database query for UUID: ${uuid}`);
+    async getLocationByUuid(uuid, lang = 'fr') {
+        logger.info(`[SERVICE] getLocationByUuid - Starting database query for UUID: ${uuid} with language: ${lang}`);
         try {
             const query = `
                 SELECT 
@@ -55,7 +59,9 @@ class LocationService {
                     l.name, 
                     l.site_id,
                     l.type,
-                    l.status,
+                    l.rel_status_uuid,
+                    ts.code as status_code,
+                    tst.label as status_label,
                     l.business_criticality,
                     l.opening_hours,
                     l.time_zone,
@@ -82,9 +88,11 @@ class LocationService {
                 LEFT JOIN configuration.locations parent ON l.parent_uuid = parent.uuid
                 LEFT JOIN configuration.entities entity ON l.primary_entity_uuid = entity.uuid
                 LEFT JOIN configuration.groups g ON l.field_service_group_uuid = g.uuid
+                LEFT JOIN configuration.ticket_status ts ON l.rel_status_uuid = ts.uuid
+                LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $2
                 WHERE l.uuid = $1`;
             
-            const result = await pool.query(query, [uuid]);
+            const result = await pool.query(query, [uuid, lang]);
             
             if (result.rows.length === 0) {
                 return null;
@@ -97,8 +105,8 @@ class LocationService {
         }
     }
 
-    async getActiveLocations() {
-        logger.info('[SERVICE] getActiveLocations - Starting database query');
+    async getActiveLocations(lang = 'fr') {
+        logger.info(`[SERVICE] getActiveLocations - Starting database query with language: ${lang}`);
         try {
             const query = `
                 SELECT 
@@ -106,7 +114,9 @@ class LocationService {
                     l.name, 
                     l.site_id,
                     l.type,
-                    l.status,
+                    l.rel_status_uuid,
+                    ts.code as status_code,
+                    tst.label as status_label,
                     l.business_criticality,
                     l.opening_hours,
                     l.time_zone,
@@ -130,10 +140,12 @@ class LocationService {
                 LEFT JOIN configuration.locations parent ON l.parent_uuid = parent.uuid
                 LEFT JOIN configuration.entities entity ON l.primary_entity_uuid = entity.uuid
                 LEFT JOIN configuration.groups g ON l.field_service_group_uuid = g.uuid
-                WHERE UPPER(l.status) = 'ACTIVE'
+                LEFT JOIN configuration.ticket_status ts ON l.rel_status_uuid = ts.uuid
+                LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $1
+                WHERE ts.code = 'ACTIVE' AND ts.rel_ticket_type = 'LOCATION'
                 ORDER BY l.name ASC`;
             
-            const result = await pool.query(query);
+            const result = await pool.query(query, [lang]);
             logger.info(`[SERVICE] getActiveLocations - Query executed successfully, found ${result.rows.length} active records`);
             return result.rows;
         } catch (error) {

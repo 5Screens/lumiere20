@@ -4,8 +4,17 @@ const logger = require('../../../config/logger');
 class LocationController {
     async getAllLocations(req, res) {
         logger.info('[CONTROLLER] getAllLocations - Starting to process request');
+        
+        const lang = req.query.lang;
+        if (!lang) {
+            logger.warn('[CONTROLLER] getAllLocations - Missing lang parameter');
+            return res.status(400).json({
+                error: 'lang parameter is required (e.g., ?lang=fr)'
+            });
+        }
+        
         try {
-            const locations = await locationService.getAllLocations();
+            const locations = await locationService.getAllLocations(lang);
             logger.info(`[CONTROLLER] getAllLocations - Successfully retrieved ${locations.length} locations`);
             res.json(locations);
         } catch (error) {
@@ -18,9 +27,18 @@ class LocationController {
 
     async getLocationByUuid(req, res) {
         const uuid = req.query.uuid;
-        logger.info(`[CONTROLLER] getLocationByUuid - Processing request for UUID: ${uuid}`);
+        const lang = req.query.lang;
+        
+        if (!lang) {
+            logger.warn('[CONTROLLER] getLocationByUuid - Missing lang parameter');
+            return res.status(400).json({
+                error: 'lang parameter is required (e.g., ?lang=fr)'
+            });
+        }
+        
+        logger.info(`[CONTROLLER] getLocationByUuid - Processing request for UUID: ${uuid} with language: ${lang}`);
         try {
-            const location = await locationService.getLocationByUuid(uuid);
+            const location = await locationService.getLocationByUuid(uuid, lang);
             
             if (!location) {
                 logger.warn(`[CONTROLLER] getLocationByUuid - Location not found with UUID: ${uuid}`);
@@ -41,8 +59,17 @@ class LocationController {
 
     async getActiveLocations(req, res) {
         logger.info('[CONTROLLER] getActiveLocations - Starting to process request');
+        
+        const lang = req.query.lang;
+        if (!lang) {
+            logger.warn('[CONTROLLER] getActiveLocations - Missing lang parameter');
+            return res.status(400).json({
+                error: 'lang parameter is required (e.g., ?lang=fr)'
+            });
+        }
+        
         try {
-            const activeLocations = await locationService.getActiveLocations();
+            const activeLocations = await locationService.getActiveLocations(lang);
             logger.info(`[CONTROLLER] getActiveLocations - Successfully retrieved ${activeLocations.length} active locations`);
             res.json(activeLocations);
         } catch (error) {
