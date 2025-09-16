@@ -190,12 +190,14 @@ export class Location {
         type: 'sFilteredSearchField',
         required: false,
         placeholder: 'locations.status_placeholder',
-        endpoint: 'ticket_status?rel_ticket_type=LOCATION',
+        endpoint: () => {
+          const userProfileStore = useUserProfileStore();
+          return `ticket_status?ticket_type=LOCATION&lang=${userProfileStore.language}`;
+        },
         displayField: 'label',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'status_label',
         columnsConfig: [
-          { key: 'code', label: 'status.code', visible: true },
           { key: 'label', label: 'status.label', visible: true }
         ]
       },

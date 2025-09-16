@@ -1192,5 +1192,19 @@ export default {
     persons_list_placeholder: 'Sélectionnez les membres du groupe',
     persons_list_helper_text: 'Utilisez les flèches pour ajouter ou supprimer des membres',
     persons_count: 'Nombre de membres'
+  },
+  locations: {
+    name: 'Nom de la localisation',
+    site_id:'Identifiant interne',
+    type:'Type',
+    status:'Statut',
+    business_criticality:'Criticité métier',
+    city:'Ville',
+    country:'Pays',
+    primary_entity:'Entité principale',
+    field_service_group:'Support de proximité',
+    occupants_count:'Nombre d\'occupants',
+    created_at:'Créé le',
+    updated_at:'Mis à jour le'
   }
 }
