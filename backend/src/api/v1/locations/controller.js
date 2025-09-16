@@ -315,7 +315,7 @@ class LocationController {
                 });
             }
 
-            const result = await locationService.addOccupantsToLocation(locationUuid, value.occupants_list);
+            const result = await locationService.addOccupantsToLocation(locationUuid, value.occupants);
             logger.info(`[CONTROLLER] addMultipleOccupantsToLocation - ${result.length} persons added successfully to location`);
             
             return res.status(201).json({

@@ -1169,7 +1169,7 @@ export default {
     alternative_site_reference:'Référence de site externe',
     wan_design:'Conception WAN',
     network_telecom_service:'Service de télécommunication',
-    parent_location_name:'Localisation parente',
+    parent_location:'Localisation parente',
     primary_entity:'Entité principale',
     field_service_group:'Support de proximité',
     occupants_count:'Nombre d\'occupants',

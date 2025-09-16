@@ -59,7 +59,7 @@ const locationPatchSchema = Joi.object({
 
 const addOccupantSchema = Joi.object({
     type: Joi.string().valid('occupant').required(),
-    occupants_list: Joi.array().items(Joi.string().uuid()).required()
+    occupants: Joi.array().items(Joi.string().uuid()).required()
 }).options({
     abortEarly: false,
     stripUnknown: true

@@ -886,7 +886,7 @@ export default {
     alternative_site_reference:'External site reference',
     wan_design:'WAN design',
     network_telecom_service:'Network telecom service',
-    parent_location_name:'Parent location',
+    parent_location:'Parent location',
     primary_entity:'Primary entity',
     field_service_group:'Field service group',
     occupants_count:'Occupants count',

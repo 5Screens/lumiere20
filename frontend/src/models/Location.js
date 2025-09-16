@@ -297,8 +297,9 @@ export class Location {
         label: 'locations.site_created_on',
         type: 'sDatePicker',
         required: false,
-        placeholder: 'locations.site_created_on_placeholder'
-      },
+        placeholder: 'locations.site_created_on_placeholder',
+        patchendpoint: 'locations'
+        },
       alternative_site_reference: {
         name: 'alternative_site_reference',
         label: 'locations.alternative_site_reference',
@@ -376,9 +377,9 @@ export class Location {
         displayedLabel: "person_name",
         targetEndPoint: "locations",
         ressourceEndPoint: 'occupants',
-        fieldName: 'occupants',
+        fieldName: 'occupant',
         target_uuid: null,
-        pickedItems: null,
+        pickedItems: null,  
         required: false,
       }
     };

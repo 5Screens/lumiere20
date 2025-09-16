@@ -926,7 +926,7 @@ export default {
     alternative_site_reference:'Referência de site externo',
     wan_design:'Conceito WAN',
     network_telecom_service:'Serviço de telecomunicação',
-    parent_location_name:'Localização pai',
+    parent_location:'Localização pai',
     primary_entity:'Entidade principal',
     field_service_group:'Suporte de campo',
     occupants_count:'Número de ocupantes',
