@@ -65,6 +65,13 @@ const addOccupantSchema = Joi.object({
     stripUnknown: true
 });
 
+const addLocationsSchema = Joi.object({
+    locations: Joi.array().items(Joi.string().uuid()).required()
+}).options({
+    abortEarly: false,
+    stripUnknown: true
+});
+
 const validateLocation = (location) => {
     logger.info('[VALIDATION] Starting location validation');
     const { error, value } = locationSchema.validate(location);
@@ -98,6 +105,17 @@ const validateAddOccupants = (occupantData) => {
     return { value };
 };
 
+const validateAddLocations = (locationsData) => {
+    logger.info('[VALIDATION] Starting add locations validation');
+    const { error, value } = addLocationsSchema.validate(locationsData);
+    if (error) {
+        logger.error(`[VALIDATION] Add locations validation failed: ${error.details.map(d => d.message).join(', ')}`);
+        return { error };
+    }
+    logger.info('[VALIDATION] Add locations validation successful');
+    return { value };
+};
+
 const validateUuid = (uuid) => {
     logger.info(`[VALIDATION] Starting UUID validation for: ${uuid}`);
     const uuidSchema = Joi.string().uuid().required();
@@ -114,5 +132,6 @@ module.exports = {
     validateLocation,
     validateLocationPatch,
     validateAddOccupants,
+    validateAddLocations,
     validateUuid
 };

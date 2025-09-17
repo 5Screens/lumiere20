@@ -1174,6 +1174,10 @@ export default {
     field_service_group:'Support de proximité',
     occupants_count:'Nombre d\'occupants',
     created_at:'Créé le',
-    updated_at:'Mis à jour le'
+    updated_at:'Mis à jour le',
+    locations_count:'Nombre de sous-emplacements',
+    locations_list:'Sous-emplacements',
+    locations_list_helper_text:'Utilisez les flèches pour ajouter ou supprimer des sous-emplacements',
+    locations_list_placeholder:'Rechercher un sous-emplacements'
   }
 }

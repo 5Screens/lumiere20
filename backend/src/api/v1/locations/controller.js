@@ -1,6 +1,6 @@
 const locationService = require('./service');
 const logger = require('../../../config/logger');
-const { validateLocation, validateLocationPatch, validateAddOccupants, validateUuid } = require('./validation');
+const { validateLocation, validateLocationPatch, validateAddOccupants, validateAddLocations, validateUuid } = require('./validation');
 
 class LocationController {
     async getAllLocations(req, res) {
@@ -375,6 +375,96 @@ class LocationController {
             
             return res.status(500).json({
                 error: 'An error occurred while removing person from location'
+            });
+        }
+    }
+
+    async addMultipleChildLocationsToLocation(req, res) {
+        const parentLocationUuid = req.params.location_uuid;
+        
+        logger.info(`[CONTROLLER] addMultipleChildLocationsToLocation - Processing request for parent location ${parentLocationUuid}`);
+        
+        try {
+            // Validate parent location UUID
+            const locationValidation = validateUuid(parentLocationUuid);
+            if (locationValidation.error) {
+                logger.warn(`[CONTROLLER] addMultipleChildLocationsToLocation - Invalid parent location UUID: ${parentLocationUuid}`);
+                return res.status(400).json({
+                    error: 'Invalid parent location UUID format'
+                });
+            }
+
+            // Validate request body
+            const { error, value } = validateAddLocations(req.body);
+            if (error) {
+                logger.warn(`[CONTROLLER] addMultipleChildLocationsToLocation - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
+                return res.status(400).json({
+                    error: 'Invalid request data',
+                    details: error.details.map(d => d.message)
+                });
+            }
+
+            const result = await locationService.addChildLocationsToLocation(parentLocationUuid, value.locations);
+            logger.info(`[CONTROLLER] addMultipleChildLocationsToLocation - ${result.length} child locations added successfully to parent location`);
+            
+            return res.status(201).json({
+                message: `${result.length} child locations added to parent location successfully`,
+                locations: result
+            });
+        } catch (error) {
+            logger.error(`[CONTROLLER] addMultipleChildLocationsToLocation - Error: ${error.message}`);
+            
+            if (error.message === 'Parent location not found') {
+                return res.status(404).json({ error: 'Parent location not found' });
+            }
+            
+            return res.status(500).json({
+                error: 'An error occurred while adding child locations to parent location'
+            });
+        }
+    }
+
+    async removeChildLocationFromLocation(req, res) {
+        const parentLocationUuid = req.params.location_uuid;
+        const childLocationUuid = req.params.child_location_uuid;
+        
+        logger.info(`[CONTROLLER] removeChildLocationFromLocation - Processing request to remove child location ${childLocationUuid} from parent location ${parentLocationUuid}`);
+        
+        try {
+            // Validate parent location UUID
+            const parentLocationValidation = validateUuid(parentLocationUuid);
+            if (parentLocationValidation.error) {
+                logger.warn(`[CONTROLLER] removeChildLocationFromLocation - Invalid parent location UUID: ${parentLocationUuid}`);
+                return res.status(400).json({
+                    error: 'Invalid parent location UUID format'
+                });
+            }
+
+            // Validate child location UUID
+            const childLocationValidation = validateUuid(childLocationUuid);
+            if (childLocationValidation.error) {
+                logger.warn(`[CONTROLLER] removeChildLocationFromLocation - Invalid child location UUID: ${childLocationUuid}`);
+                return res.status(400).json({
+                    error: 'Invalid child location UUID format'
+                });
+            }
+
+            const result = await locationService.removeChildLocationFromLocation(parentLocationUuid, childLocationUuid);
+            logger.info(`[CONTROLLER] removeChildLocationFromLocation - Child location removed successfully from parent location`);
+            
+            return res.json({
+                message: 'Child location removed from parent location successfully',
+                location: result
+            });
+        } catch (error) {
+            logger.error(`[CONTROLLER] removeChildLocationFromLocation - Error: ${error.message}`);
+            
+            if (error.message === 'Child location not found in this parent location') {
+                return res.status(404).json({ error: 'Child location not found in this parent location' });
+            }
+            
+            return res.status(500).json({
+                error: 'An error occurred while removing child location from parent location'
             });
         }
     }

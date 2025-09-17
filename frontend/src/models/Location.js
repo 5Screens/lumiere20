@@ -34,8 +34,7 @@ export class Location {
     this.field_service_group_name = data.field_service_group_name || '';
     this.occupants_count = data.occupants_count || 0;
     this.occupants_list = data.occupants_list || [];
-    this.localisations_count = data.localisations_count || 0;
-    this.localisations_list = data.localisations_list || [];
+    this.locations_list = data.locations_list || [];
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
     
@@ -76,7 +75,7 @@ export class Location {
       { key: 'primary_entity_name', label: t('locations.primary_entity'), type: 'text' },
       { key: 'field_service_group_name', label: t('locations.field_service_group'), type: 'text' },
       { key: 'occupants_count', label: t('locations.occupants_count'), type: 'number' },
-      { key: 'localisations_count', label: t('locations.localisations_count'), type: 'number' },
+      { key: 'locations_count', label: t('locations.locations_count'), type: 'number' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
@@ -389,19 +388,19 @@ export class Location {
         pickedItems: null,  
         required: false,
       },
-      localisations_list: {
-        label: 'locations.localisations_list',
+      locations_list: {
+        label: 'locations.locations_list',
         type: "sPickList",
-        helperText: 'locations.localisations_list_helper_text',
-        placeholder: 'locations.localisations_list_placeholder',
+        helperText: 'locations.locations_list_helper_text',
+        placeholder: 'locations.locations_list_placeholder',
         sourceEndPoint: () => {
           const userProfileStore = useUserProfileStore();
           return `locations?lang=${userProfileStore.language}`;
         },
         displayedLabel: "name",
         targetEndPoint: "locations",
-        ressourceEndPoint: 'localisations',
-        fieldName: 'localisation',
+        ressourceEndPoint: 'locations',
+        fieldName: 'locations_list',
         target_uuid: null,
         pickedItems: null,  
         required: false,

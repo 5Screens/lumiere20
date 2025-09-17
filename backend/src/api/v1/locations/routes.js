@@ -93,4 +93,16 @@ router.delete('/:location_uuid/occupants/:user_uuid', (req, res) => {
     return locationController.removeOccupantFromLocation(req, res);
 });
 
+// POST /api/v1/locations/:location_uuid/locations (ajout multiple de localisations enfants)
+router.post('/:location_uuid/locations', (req, res) => {
+    logger.info(`[ROUTES] POST /api/v1/locations/${req.params.location_uuid}/locations - Route handler started for multiple child locations`);
+    return locationController.addMultipleChildLocationsToLocation(req, res);
+});
+
+// DELETE /api/v1/locations/:location_uuid/locations/:child_location_uuid
+router.delete('/:location_uuid/locations/:child_location_uuid', (req, res) => {
+    logger.info(`[ROUTES] DELETE /api/v1/locations/${req.params.location_uuid}/locations/${req.params.child_location_uuid} - Route handler started`);
+    return locationController.removeChildLocationFromLocation(req, res);
+});
+
 module.exports = router;

@@ -32,7 +32,7 @@ class LocationService {
                     entity.name as primary_entity_name,
                     g.group_name as field_service_group_name,
                     COALESCE(occupants.occupants_count, 0) as occupants_count,
-                    COALESCE(child_locations.localisations_count, 0) as localisations_count,
+                    COALESCE(child_locations.locations_count, 0) as locations_count,
                     l.created_at,
                     l.updated_at
                 FROM configuration.locations l
@@ -52,7 +52,7 @@ class LocationService {
                 LEFT JOIN (
                     SELECT 
                         parent_uuid,
-                        COUNT(*) as localisations_count
+                        COUNT(*) as locations_count
                     FROM configuration.locations 
                     WHERE parent_uuid IS NOT NULL
                     GROUP BY parent_uuid
@@ -134,7 +134,7 @@ class LocationService {
                         LEFT JOIN configuration.ticket_status child_ts ON child.rel_status_uuid = child_ts.uuid
                         LEFT JOIN translations.ticket_status_translation child_tst ON child_ts.uuid = child_tst.ticket_status_uuid AND child_tst.lang = $2
                         WHERE child.parent_uuid = l.uuid
-                    ) as localisations_list
+                    ) as locations_list
                 FROM configuration.locations l
                 LEFT JOIN configuration.locations parent ON l.parent_uuid = parent.uuid
                 LEFT JOIN configuration.entities entity ON l.primary_entity_uuid = entity.uuid
@@ -481,6 +481,67 @@ class LocationService {
             return result.rows[0];
         } catch (error) {
             logger.error(`[SERVICE] removeOccupantFromLocation - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async addChildLocationsToLocation(parentLocationUuid, childLocationUuids) {
+        logger.info(`[SERVICE] addChildLocationsToLocation - Adding ${childLocationUuids.length} child locations to parent location ${parentLocationUuid}`);
+        try {
+            // Vérifier que la location parent existe
+            const parentLocationExists = await pool.query(
+                'SELECT uuid FROM configuration.locations WHERE uuid = $1',
+                [parentLocationUuid]
+            );
+            
+            if (parentLocationExists.rows.length === 0) {
+                throw new Error('Parent location not found');
+            }
+            
+            // Mettre à jour toutes les locations enfants en une seule requête
+            const placeholders = childLocationUuids.map((_, index) => `$${index + 2}`).join(', ');
+            const query = `
+                UPDATE configuration.locations 
+                SET parent_uuid = $1, updated_at = CURRENT_TIMESTAMP
+                WHERE uuid IN (${placeholders})
+                RETURNING uuid, name, site_id, type`;
+            
+            const result = await pool.query(query, [parentLocationUuid, ...childLocationUuids]);
+            
+            logger.info(`[SERVICE] addChildLocationsToLocation - ${result.rows.length} child locations added successfully to parent location`);
+            return result.rows;
+        } catch (error) {
+            logger.error(`[SERVICE] addChildLocationsToLocation - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async removeChildLocationFromLocation(parentLocationUuid, childLocationUuid) {
+        logger.info(`[SERVICE] removeChildLocationFromLocation - Removing child location ${childLocationUuid} from parent location ${parentLocationUuid}`);
+        try {
+            // Vérifier que la location enfant est bien dans cette location parent
+            const childInParent = await pool.query(
+                'SELECT uuid FROM configuration.locations WHERE uuid = $1 AND parent_uuid = $2',
+                [childLocationUuid, parentLocationUuid]
+            );
+            
+            if (childInParent.rows.length === 0) {
+                throw new Error('Child location not found in this parent location');
+            }
+            
+            // Retirer la location enfant de la location parent
+            const query = `
+                UPDATE configuration.locations 
+                SET parent_uuid = NULL, updated_at = CURRENT_TIMESTAMP
+                WHERE uuid = $1 AND parent_uuid = $2
+                RETURNING uuid, name, site_id, type`;
+            
+            const result = await pool.query(query, [childLocationUuid, parentLocationUuid]);
+            
+            logger.info(`[SERVICE] removeChildLocationFromLocation - Child location removed successfully from parent location`);
+            return result.rows[0];
+        } catch (error) {
+            logger.error(`[SERVICE] removeChildLocationFromLocation - Error: ${error.message}`);
             throw error;
         }
     }
