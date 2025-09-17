@@ -128,7 +128,7 @@ CREATE TABLE configuration.entities (
     external_id VARCHAR(100),
     entity_type VARCHAR(50) NOT NULL CHECK (entity_type IN ('COMPANY', 'BRANCH', 'DEPARTMENT', 'SUPPLIER', 'CUSTOMER')), 
     budget_approver_uuid UUID REFERENCES configuration.persons(uuid),
-    headquarters_location VARCHAR(255),
+    rel_headquarters_location VARCHAR(255),
     is_active BOOLEAN NOT NULL DEFAULT true,
     parent_uuid UUID REFERENCES configuration.entities(uuid),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

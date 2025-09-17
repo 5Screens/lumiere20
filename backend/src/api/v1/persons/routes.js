@@ -17,6 +17,12 @@ router.get('/',
     controller.getPersons
 );
 
+// GET /api/v1/persons/:uuid
+router.get('/:uuid',
+    validate({ params: personUuidParamSchema, query: getPersonsQuerySchema }),
+    controller.getPersonByUuid
+);
+
 // GET /api/v1/persons/:uuid/groups
 router.get('/:uuid/groups',
     validate({ params: personUuidParamSchema }),
