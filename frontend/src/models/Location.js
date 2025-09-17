@@ -34,6 +34,8 @@ export class Location {
     this.field_service_group_name = data.field_service_group_name || '';
     this.occupants_count = data.occupants_count || 0;
     this.occupants_list = data.occupants_list || [];
+    this.localisations_count = data.localisations_count || 0;
+    this.localisations_list = data.localisations_list || [];
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
     
@@ -74,6 +76,7 @@ export class Location {
       { key: 'primary_entity_name', label: t('locations.primary_entity'), type: 'text' },
       { key: 'field_service_group_name', label: t('locations.field_service_group'), type: 'text' },
       { key: 'occupants_count', label: t('locations.occupants_count'), type: 'number' },
+      { key: 'localisations_count', label: t('locations.localisations_count'), type: 'number' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
@@ -385,6 +388,23 @@ export class Location {
         target_uuid: null,
         pickedItems: null,  
         required: false,
+      },
+      localisations_list: {
+        label: 'locations.localisations_list',
+        type: "sPickList",
+        helperText: 'locations.localisations_list_helper_text',
+        placeholder: 'locations.localisations_list_placeholder',
+        sourceEndPoint: () => {
+          const userProfileStore = useUserProfileStore();
+          return `locations?lang=${userProfileStore.language}`;
+        },
+        displayedLabel: "name",
+        targetEndPoint: "locations",
+        ressourceEndPoint: 'localisations',
+        fieldName: 'localisation',
+        target_uuid: null,
+        pickedItems: null,  
+        required: false,
       }
     };
 
@@ -436,9 +456,17 @@ export class Location {
       );
     }
 
+    // Ajouter localisations_list pour l'API
+    if (this.localisations_list && Array.isArray(this.localisations_list)) {
+      // Extraire seulement les UUIDs des localisations si c'est un tableau d'objets
+      apiData.localisations_list = this.localisations_list.map(location => 
+        typeof location === 'string' ? location : location.uuid
+      );
+    }
+
     // Supprimer les champs système pour POST
     if (method.toUpperCase() === 'POST') {
-      const fieldsToRemove = ['uuid', 'created_at', 'updated_at', 'status_code', 'status_label', 'parent_location_name', 'primary_entity_name', 'field_service_group_name', 'occupants_count'];
+      const fieldsToRemove = ['uuid', 'created_at', 'updated_at', 'status_code', 'status_label', 'parent_location_name', 'primary_entity_name', 'field_service_group_name', 'occupants_count', 'localisations_count'];
       fieldsToRemove.forEach(field => {
         delete apiData[field];
       });

@@ -32,6 +32,7 @@ class LocationService {
                     entity.name as primary_entity_name,
                     g.group_name as field_service_group_name,
                     COALESCE(occupants.occupants_count, 0) as occupants_count,
+                    COALESCE(child_locations.localisations_count, 0) as localisations_count,
                     l.created_at,
                     l.updated_at
                 FROM configuration.locations l
@@ -48,6 +49,14 @@ class LocationService {
                     WHERE ref_location_uuid IS NOT NULL
                     GROUP BY ref_location_uuid
                 ) occupants ON l.uuid = occupants.ref_location_uuid
+                LEFT JOIN (
+                    SELECT 
+                        parent_uuid,
+                        COUNT(*) as localisations_count
+                    FROM configuration.locations 
+                    WHERE parent_uuid IS NOT NULL
+                    GROUP BY parent_uuid
+                ) child_locations ON l.uuid = child_locations.parent_uuid
                 ORDER BY l.name ASC`;
             
             const result = await pool.query(query, [lang]);
@@ -107,7 +116,25 @@ class LocationService {
                         ))
                         FROM configuration.persons p
                         WHERE p.ref_location_uuid = l.uuid
-                    ) as occupants_list
+                    ) as occupants_list,
+                    -- Liste des localisations enfants
+                    (
+                        SELECT json_agg(json_build_object(
+                            'uuid', child.uuid,
+                            'name', child.name,
+                            'site_id', child.site_id,
+                            'type', child.type,
+                            'city', child.city,
+                            'country', child.country,
+                            'business_criticality', child.business_criticality,
+                            'status_code', child_ts.code,
+                            'status_label', child_tst.label
+                        ))
+                        FROM configuration.locations child
+                        LEFT JOIN configuration.ticket_status child_ts ON child.rel_status_uuid = child_ts.uuid
+                        LEFT JOIN translations.ticket_status_translation child_tst ON child_ts.uuid = child_tst.ticket_status_uuid AND child_tst.lang = $2
+                        WHERE child.parent_uuid = l.uuid
+                    ) as localisations_list
                 FROM configuration.locations l
                 LEFT JOIN configuration.locations parent ON l.parent_uuid = parent.uuid
                 LEFT JOIN configuration.entities entity ON l.primary_entity_uuid = entity.uuid
