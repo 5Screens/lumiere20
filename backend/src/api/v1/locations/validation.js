@@ -24,7 +24,8 @@ const locationSchema = Joi.object({
     parent_uuid: Joi.string().uuid().allow(null),
     primary_entity_uuid: Joi.string().uuid().allow(null),
     field_service_group_uuid: Joi.string().uuid().allow(null),
-    occupants_list: Joi.array().items(Joi.string().uuid()).allow(null)
+    occupants_list: Joi.array().items(Joi.string().uuid()).allow(null),
+    locations_list: Joi.array().items(Joi.string().uuid()).allow(null)
 }).options({ 
     abortEarly: false,
     stripUnknown: true 

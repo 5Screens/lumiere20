@@ -331,8 +331,8 @@ class LocationService {
     async createLocation(locationData) {
         logger.info('[SERVICE] createLocation - Starting database operation');
         try {
-            // Extraire occupants_list s'il existe
-            const { occupants_list, ...locationFields } = locationData;
+            // Extraire occupants_list et locations_list s'ils existent
+            const { occupants_list, locations_list, ...locationFields } = locationData;
             
             // Construire la requête d'insertion pour la location
             const fields = Object.keys(locationFields);
@@ -374,6 +374,11 @@ class LocationService {
             // Si des occupants sont fournis, les ajouter
             if (occupants_list && Array.isArray(occupants_list) && occupants_list.length > 0) {
                 await this.addOccupantsToLocation(newLocation.uuid, occupants_list);
+            }
+            
+            // Si des localisations enfants sont fournies, les ajouter
+            if (locations_list && Array.isArray(locations_list) && locations_list.length > 0) {
+                await this.addChildLocationsToLocation(newLocation.uuid, locations_list);
             }
             
             logger.info(`[SERVICE] createLocation - Location created successfully: ${newLocation.uuid}`);

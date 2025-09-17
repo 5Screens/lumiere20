@@ -34,6 +34,7 @@ export class Location {
     this.field_service_group_name = data.field_service_group_name || '';
     this.occupants_count = data.occupants_count || 0;
     this.occupants_list = data.occupants_list || [];
+    this.locations_count = data.locations_count || 0;
     this.locations_list = data.locations_list || [];
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
@@ -456,16 +457,16 @@ export class Location {
     }
 
     // Ajouter localisations_list pour l'API
-    if (this.localisations_list && Array.isArray(this.localisations_list)) {
+    if (this.locations_list && Array.isArray(this.locations_list)) {
       // Extraire seulement les UUIDs des localisations si c'est un tableau d'objets
-      apiData.localisations_list = this.localisations_list.map(location => 
+      apiData.locations_list = this.locations_list.map(location => 
         typeof location === 'string' ? location : location.uuid
       );
     }
 
     // Supprimer les champs système pour POST
     if (method.toUpperCase() === 'POST') {
-      const fieldsToRemove = ['uuid', 'created_at', 'updated_at', 'status_code', 'status_label', 'parent_location_name', 'primary_entity_name', 'field_service_group_name', 'occupants_count', 'localisations_count'];
+      const fieldsToRemove = ['uuid', 'created_at', 'updated_at', 'status_code', 'status_label', 'parent_location_name', 'primary_entity_name', 'field_service_group_name', 'occupants_count', 'locations_count'];
       fieldsToRemove.forEach(field => {
         delete apiData[field];
       });
