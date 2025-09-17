@@ -2,25 +2,55 @@ const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 
 /**
- * Get all persons from the database
+ * Get all persons from the database with additional statistics
  * @param {string} [lang] - Optional language parameter for localization
- * @returns {Promise<Array>} Array of persons with person_name field added
+ * @returns {Promise<Array>} Array of persons with person_name field and statistics
  */
 const getAllPersons = async (lang) => {
     try {
-        logger.info('Service - Getting all persons');
+        logger.info('[SERVICE] - Getting all persons with statistics');
         const query = `
-            SELECT *, 
-                   first_name || ' ' || last_name AS person_name
-            FROM configuration.persons
-            ORDER BY last_name, first_name
+            SELECT p.*, 
+                   p.first_name || ' ' || p.last_name AS person_name,
+                   
+                   -- Nombre de tickets enregistrés (requested_for_uuid)
+                   (SELECT COUNT(*) 
+                    FROM core.tickets t 
+                    WHERE t.requested_for_uuid = p.uuid) AS raised_tickets_count,
+                   
+                   -- Nombre de groupes dont la personne est membre
+                   (SELECT COUNT(*) 
+                    FROM configuration.rel_persons_groups rpg 
+                    WHERE rpg.rel_member = p.uuid) AS member_of_group_count,
+                   
+                   -- Nombre de tickets assignés à la personne
+                   (SELECT COUNT(*) 
+                    FROM core.rel_tickets_groups_persons rtgp 
+                    WHERE rtgp.rel_assigned_to_person = p.uuid 
+                      AND rtgp.type = 'ASSIGNED'
+                      AND rtgp.ended_at IS NULL) AS assigned_tickets_count,
+                   
+                   -- Nombre de tickets observés par la personne
+                   (SELECT COUNT(*) 
+                    FROM core.rel_tickets_groups_persons rtgp 
+                    WHERE rtgp.rel_assigned_to_person = p.uuid 
+                      AND rtgp.type = 'WATCHER'
+                      AND rtgp.ended_at IS NULL) AS watched_tickets_count,
+                   
+                   -- Nombre d'entités pour lesquelles la personne est approbateur budgétaire
+                   (SELECT COUNT(*) 
+                    FROM configuration.entities e 
+                    WHERE e.budget_approver_uuid = p.uuid) AS budget_approver_count
+                   
+            FROM configuration.persons p
+            ORDER BY p.last_name, p.first_name
             LIMIT 100
         `;
         const { rows } = await db.query(query);
-        logger.info(`Service - Retrieved ${rows.length} persons`);
+        logger.info(`[SERVICE] - Retrieved ${rows.length} persons with statistics`);
         return rows;
     } catch (error) {
-        logger.error('Service - Error getting persons:', error);
+        logger.error('[SERVICE] - Error getting persons with statistics:', error);
         throw error;
     }
 };
