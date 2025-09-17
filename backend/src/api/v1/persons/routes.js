@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 const validate = require('../../../middleware/validate');
-const { getPersonsQuerySchema, personUuidParamSchema } = require('./validation');
+const { getPersonsQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema } = require('./validation');
 const logger = require('../../../config/logger');
 
 // Log middleware for this route
@@ -21,6 +21,18 @@ router.get('/',
 router.get('/:uuid',
     validate({ params: personUuidParamSchema, query: getPersonsQuerySchema }),
     controller.getPersonByUuid
+);
+
+// PATCH /api/v1/persons/:uuid
+router.patch('/:uuid',
+    validate({ params: personUuidParamSchema, body: updatePersonSchema }),
+    controller.updatePerson
+);
+
+// POST /api/v1/persons
+router.post('/',
+    validate({ body: createPersonSchema }),
+    controller.createPerson
 );
 
 // GET /api/v1/persons/:uuid/groups

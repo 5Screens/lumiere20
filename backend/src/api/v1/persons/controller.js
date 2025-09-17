@@ -78,8 +78,77 @@ const getPersonGroups = async (req, res) => {
     }
 };
 
+/**
+ * Update a person by UUID
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const updatePerson = async (req, res) => {
+    try {
+        const { uuid } = req.params;
+        const personData = req.body;
+        
+        logger.info(`[CONTROLLER] - Updating person with UUID: ${uuid}`);
+        
+        const updatedPerson = await service.updatePerson(uuid, personData);
+        
+        if (!updatedPerson) {
+            logger.info(`[CONTROLLER] - Person not found with UUID: ${uuid}`);
+            return res.status(404).json({ 
+                error: 'Person not found',
+                message: `No person found with UUID: ${uuid}`
+            });
+        }
+        
+        logger.info(`[CONTROLLER] - Successfully updated person with UUID: ${uuid}`);
+        res.json(updatedPerson);
+    } catch (error) {
+        logger.error(`[CONTROLLER] - Error updating person with UUID: ${req.params.uuid}:`, error);
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+};
+
+/**
+ * Create a new person
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const createPerson = async (req, res) => {
+    try {
+        const personData = req.body;
+        
+        logger.info('[CONTROLLER] - Creating new person');
+        
+        const newPerson = await service.createPerson(personData);
+        
+        logger.info(`[CONTROLLER] - Successfully created person with UUID: ${newPerson.uuid}`);
+        res.status(201).json(newPerson);
+    } catch (error) {
+        logger.error('[CONTROLLER] - Error creating person:', error);
+        
+        // Gestion spécifique des erreurs de contrainte unique (email)
+        if (error.code === '23505') {
+            return res.status(409).json({
+                error: 'Conflict',
+                message: 'A person with this email already exists',
+                details: error.detail
+            });
+        }
+        
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+};
+
 module.exports = {
     getPersons,
     getPersonByUuid,
-    getPersonGroups
+    getPersonGroups,
+    updatePerson,
+    createPerson
 };

@@ -66,6 +66,7 @@ export const usePaneStore = defineStore('pane', {
           { tabToOpen: 'problemCategories', icon: 'fas fa-tags', label: 'configuration.problemCategories', className: 'ProblemCategories' },
           { tabToOpen: 'incidentSetup', icon: 'fas fa-exclamation-triangle', label: 'configuration.incidentSetup', className: 'IncidentSetup' },
           { tabToOpen: 'groups', icon: 'fas fa-users', label: 'configuration.groups', className: 'Group' },
+          { tabToOpen: 'persons', icon: 'fas fa-user', label: 'configuration.persons', className: 'Person' },
           { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations', className: 'Location' }
           /*{ tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
           { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },

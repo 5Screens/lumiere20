@@ -26,6 +26,7 @@ import { ProblemCategories } from '@/models/ProblemCategories'
 import { EntitySetup } from '@/models/EntitySetup'
 import { IncidentSetup } from '@/models/IncidentSetup'
 import { Group } from '@/models/Group'
+import { Person } from '@/models/Person'
 import { Location } from '@/models/Location'
 
 /**
@@ -55,6 +56,7 @@ const CLASS_MAP = {
   'EntitySetup': EntitySetup,
   'IncidentSetup': IncidentSetup,
   'Group': Group,
+  'Person': Person,
   'Location': Location
 }
 

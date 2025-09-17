@@ -206,8 +206,186 @@ const getPersonGroups = async (personUuid) => {
     }
 };
 
+/**
+ * Update a person by UUID
+ * @param {string} uuid - UUID of the person to update
+ * @param {Object} personData - Data to update
+ * @returns {Promise<Object|null>} Updated person object or null if not found
+ */
+const updatePerson = async (uuid, personData) => {
+    try {
+        logger.info(`[SERVICE] - Updating person with UUID: ${uuid}`);
+        
+        // Extraire groups si présent pour traitement séparé
+        const { groups, ...personFields } = personData;
+        
+        // Construire la requête dynamiquement en fonction des champs fournis
+        const fields = Object.keys(personFields);
+        const values = Object.values(personFields);
+        
+        // Ajouter l'UUID à la fin des valeurs
+        values.push(uuid);
+        
+        // Construire la partie SET de la requête
+        const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
+        
+        const query = `
+            UPDATE configuration.persons
+            SET ${setClause}, updated_at = CURRENT_TIMESTAMP
+            WHERE uuid = $${values.length}
+            RETURNING 
+                uuid,
+                first_name,
+                last_name,
+                first_name || ' ' || last_name AS person_name,
+                job_role,
+                ref_entity_uuid,
+                password_needs_reset,
+                locked_out,
+                active,
+                critical_user,
+                external_user,
+                date_format,
+                internal_id,
+                email,
+                notification,
+                time_zone,
+                ref_location_uuid,
+                floor,
+                room,
+                ref_approving_manager_uuid,
+                business_phone,
+                business_mobile_phone,
+                personal_mobile_phone,
+                language,
+                roles,
+                photo,
+                created_at,
+                updated_at`;
+        
+        const result = await db.query(query, values);
+        
+        if (result.rows.length === 0) {
+            logger.info(`[SERVICE] - Person not found with UUID: ${uuid}`);
+            return null;
+        }
+        
+        // Gérer les groupes si fournis
+        if (groups && Array.isArray(groups)) {
+            await updatePersonGroups(uuid, groups);
+        }
+        
+        logger.info(`[SERVICE] - Person updated successfully: ${uuid}`);
+        return result.rows[0];
+    } catch (error) {
+        logger.error(`[SERVICE] - Error updating person with UUID: ${uuid}:`, error);
+        throw error;
+    }
+};
+
+/**
+ * Update person groups relationships
+ * @param {string} personUuid - UUID of the person
+ * @param {Array} groupUuids - Array of group UUIDs
+ */
+const updatePersonGroups = async (personUuid, groupUuids) => {
+    try {
+        logger.info(`[SERVICE] - Updating groups for person: ${personUuid}`);
+        
+        // Supprimer toutes les relations existantes
+        await db.query(
+            'DELETE FROM configuration.rel_persons_groups WHERE rel_member = $1',
+            [personUuid]
+        );
+        
+        // Ajouter les nouvelles relations
+        if (groupUuids.length > 0) {
+            const insertPromises = groupUuids.map(groupUuid => 
+                db.query(
+                    'INSERT INTO configuration.rel_persons_groups (rel_member, rel_group) VALUES ($1, $2)',
+                    [personUuid, groupUuid]
+                )
+            );
+            
+            await Promise.all(insertPromises);
+            logger.info(`[SERVICE] - Added ${groupUuids.length} group relationships for person: ${personUuid}`);
+        }
+    } catch (error) {
+        logger.error(`[SERVICE] - Error updating person groups: ${error.message}`);
+        throw error;
+    }
+};
+
+/**
+ * Create a new person
+ * @param {Object} personData - Person data to create
+ * @returns {Promise<Object>} Created person object
+ */
+const createPerson = async (personData) => {
+    try {
+        logger.info('[SERVICE] - Creating new person');
+        
+        // Extraire groups si présent pour traitement séparé
+        const { groups, ...personFields } = personData;
+        
+        // Construire la requête d'insertion
+        const fields = Object.keys(personFields);
+        const values = Object.values(personFields);
+        const placeholders = fields.map((_, index) => `$${index + 1}`).join(', ');
+        
+        const query = `
+            INSERT INTO configuration.persons (${fields.join(', ')})
+            VALUES (${placeholders})
+            RETURNING 
+                uuid,
+                first_name,
+                last_name,
+                first_name || ' ' || last_name AS person_name,
+                job_role,
+                ref_entity_uuid,
+                password_needs_reset,
+                locked_out,
+                active,
+                critical_user,
+                external_user,
+                date_format,
+                internal_id,
+                email,
+                notification,
+                time_zone,
+                ref_location_uuid,
+                floor,
+                room,
+                ref_approving_manager_uuid,
+                business_phone,
+                business_mobile_phone,
+                personal_mobile_phone,
+                language,
+                roles,
+                photo,
+                created_at,
+                updated_at`;
+        
+        const result = await db.query(query, values);
+        const newPerson = result.rows[0];
+        
+        // Ajouter les groupes si fournis
+        if (groups && Array.isArray(groups) && groups.length > 0) {
+            await updatePersonGroups(newPerson.uuid, groups);
+        }
+        
+        logger.info(`[SERVICE] - Person created successfully: ${newPerson.uuid}`);
+        return newPerson;
+    } catch (error) {
+        logger.error(`[SERVICE] - Error creating person: ${error.message}`);
+        throw error;
+    }
+};
+
 module.exports = {
     getAllPersons,
     getPersonByUuid,
-    getPersonGroups
+    getPersonGroups,
+    updatePerson,
+    createPerson
 };
