@@ -19,6 +19,9 @@ const getAllPersons = async (lang) => {
                    -- Informations de la localisation
                    l.name as ref_location_name,
                    
+                   -- Informations du manager approbateur
+                   manager.first_name || ' ' || manager.last_name as ref_approving_manager_name,
+                   
                    -- Nombre de tickets enregistrés (requested_for_uuid)
                    (SELECT COUNT(*) 
                     FROM core.tickets t 
@@ -51,6 +54,7 @@ const getAllPersons = async (lang) => {
             FROM configuration.persons p
             LEFT JOIN configuration.entities e ON p.ref_entity_uuid = e.uuid
             LEFT JOIN configuration.locations l ON p.ref_location_uuid = l.uuid
+            LEFT JOIN configuration.persons manager ON p.ref_approving_manager_uuid = manager.uuid
             ORDER BY p.last_name, p.first_name
             LIMIT 100
         `;

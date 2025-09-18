@@ -1263,6 +1263,8 @@ export default {
     password_placeholder:'Entrez le mot de passe',
     date_format:'Format de date',
     date_format_placeholder:'Format de date préféré (ex: DD/MM/YYYY)',
+    photo:'Photo',
+    photo_placeholder:'URL ou chemin vers la photo de profil',
     uuid:'Identifiant unique',
     uuid_placeholder:'Identifiant unique généré automatiquement',
     
