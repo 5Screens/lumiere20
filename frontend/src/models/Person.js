@@ -322,7 +322,10 @@ export class Person {
         type: 'sFilteredSearchField',
         required: false,
         placeholder: 'persons.location_placeholder',
-        endpoint: 'locations',
+        endpoint: () => {
+          const userProfileStore = useUserProfileStore();
+          return `locations?lang=${userProfileStore.language}`;
+        },
         displayField: 'name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'ref_location_name',
