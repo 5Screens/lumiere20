@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 const validate = require('../../../middleware/validate');
-const { getPersonsQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema, addPersonGroupsSchema, personGroupUuidParamSchema } = require('./validation');
+const { getPersonsQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema, addPersonGroupsSchema, personGroupUuidParamSchema, addApproverEntitiesSchema, personEntityUuidParamSchema } = require('./validation');
 const logger = require('../../../config/logger');
 
 // Log middleware for this route
@@ -51,6 +51,18 @@ router.post('/:uuid/groups',
 router.delete('/:uuid/groups/:group_uuid',
     validate({ params: personGroupUuidParamSchema }),
     controller.removePersonGroup
+);
+
+// POST /api/v1/persons/:uuid/approver-entities
+router.post('/:uuid/approver-entities',
+    validate({ params: personUuidParamSchema, body: addApproverEntitiesSchema }),
+    controller.addApproverEntities
+);
+
+// DELETE /api/v1/persons/:uuid/approver-entities/:entity_uuid
+router.delete('/:uuid/approver-entities/:entity_uuid',
+    validate({ params: personEntityUuidParamSchema }),
+    controller.removeApproverEntity
 );
 
 module.exports = router;

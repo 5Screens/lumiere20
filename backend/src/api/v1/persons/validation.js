@@ -81,11 +81,24 @@ const personGroupUuidParamSchema = Joi.object({
     group_uuid: Joi.string().guid({ version: 'uuidv4' }).required()
 });
 
+// Validation schema for adding approver entities to a person
+const addApproverEntitiesSchema = Joi.object({
+    'approver-entities': Joi.array().items(Joi.string().guid({ version: 'uuidv4' })).min(1).required()
+});
+
+// Validation schema for person and entity UUID parameters
+const personEntityUuidParamSchema = Joi.object({
+    uuid: Joi.string().guid({ version: 'uuidv4' }).required(),
+    entity_uuid: Joi.string().guid({ version: 'uuidv4' }).required()
+});
+
 module.exports = {
     getPersonsQuerySchema,
     personUuidParamSchema,
     createPersonSchema,
     updatePersonSchema,
     addPersonGroupsSchema,
-    personGroupUuidParamSchema
+    personGroupUuidParamSchema,
+    addApproverEntitiesSchema,
+    personEntityUuidParamSchema
 };

@@ -232,6 +232,93 @@ const removePersonGroup = async (req, res) => {
     }
 };
 
+/**
+ * Add approver entities to a person
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const addApproverEntities = async (req, res) => {
+    try {
+        const { uuid } = req.params;
+        const { 'approver-entities': entities } = req.body;
+        
+        logger.info(`[CONTROLLER] - Setting person ${uuid} as budget approver for entities`);
+        
+        const result = await service.addApproverEntities(uuid, entities);
+        
+        logger.info(`[CONTROLLER] - Successfully processed approver entities assignment for person: ${uuid}`);
+        res.status(200).json(result);
+    } catch (error) {
+        logger.error(`[CONTROLLER] - Error setting person as budget approver with UUID: ${req.params.uuid}:`, error);
+        
+        if (error.message === 'Person not found') {
+            return res.status(404).json({
+                error: 'Person not found',
+                message: `No person found with UUID: ${req.params.uuid}`
+            });
+        }
+        
+        if (error.message.startsWith('Entities not found:')) {
+            return res.status(404).json({
+                error: 'Entities not found',
+                message: error.message
+            });
+        }
+        
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+};
+
+/**
+ * Remove a person as budget approver from an entity
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const removeApproverEntity = async (req, res) => {
+    try {
+        const { uuid, entity_uuid } = req.params;
+        
+        logger.info(`[CONTROLLER] - Removing person ${uuid} as budget approver from entity ${entity_uuid}`);
+        
+        const result = await service.removeApproverEntity(uuid, entity_uuid);
+        
+        if (!result.success) {
+            logger.info(`[CONTROLLER] - Person ${uuid} is not budget approver for entity ${entity_uuid}`);
+            return res.status(404).json({
+                error: 'Approver relation not found',
+                message: result.message
+            });
+        }
+        
+        logger.info(`[CONTROLLER] - Successfully removed person ${uuid} as budget approver from entity: ${entity_uuid}`);
+        res.status(200).json(result);
+    } catch (error) {
+        logger.error(`[CONTROLLER] - Error removing person as budget approver with UUID: ${req.params.uuid}:`, error);
+        
+        if (error.message === 'Person not found') {
+            return res.status(404).json({
+                error: 'Person not found',
+                message: `No person found with UUID: ${req.params.uuid}`
+            });
+        }
+        
+        if (error.message === 'Entity not found') {
+            return res.status(404).json({
+                error: 'Entity not found',
+                message: `No entity found with UUID: ${req.params.entity_uuid}`
+            });
+        }
+        
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+};
+
 module.exports = {
     getPersons,
     getPersonByUuid,
@@ -239,5 +326,7 @@ module.exports = {
     updatePerson,
     createPerson,
     addPersonGroups,
-    removePersonGroup
+    removePersonGroup,
+    addApproverEntities,
+    removeApproverEntity
 };

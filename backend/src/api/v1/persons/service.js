@@ -513,6 +513,123 @@ const removePersonGroup = async (personUuid, groupUuid) => {
     }
 };
 
+/**
+ * Add approver entities to a person (set person as budget approver for entities)
+ * @param {string} personUuid - UUID of the person
+ * @param {Array<string>} entityUuids - Array of entity UUIDs to set as approver for
+ * @returns {Promise<Object>} Result of the operation
+ */
+const addApproverEntities = async (personUuid, entityUuids) => {
+    try {
+        logger.info(`[SERVICE] - Setting person ${personUuid} as budget approver for ${entityUuids.length} entities`);
+        
+        // Vérifier que la personne existe
+        const personCheck = await db.query('SELECT uuid FROM configuration.persons WHERE uuid = $1', [personUuid]);
+        if (personCheck.rows.length === 0) {
+            throw new Error('Person not found');
+        }
+        
+        // Vérifier que toutes les entités existent
+        const entitiesCheck = await db.query(
+            'SELECT uuid FROM configuration.entities WHERE uuid = ANY($1)',
+            [entityUuids]
+        );
+        
+        if (entitiesCheck.rows.length !== entityUuids.length) {
+            const foundEntityUuids = entitiesCheck.rows.map(row => row.uuid);
+            const missingEntities = entityUuids.filter(uuid => !foundEntityUuids.includes(uuid));
+            throw new Error(`Entities not found: ${missingEntities.join(', ')}`);
+        }
+        
+        // Mettre à jour les entités pour définir la personne comme approbateur budgétaire
+        const updateQuery = `
+            UPDATE configuration.entities 
+            SET budget_approver_uuid = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE uuid = ANY($2)
+            RETURNING uuid, name`;
+        
+        const result = await db.query(updateQuery, [personUuid, entityUuids]);
+        
+        logger.info(`[SERVICE] - Successfully set person ${personUuid} as budget approver for ${result.rows.length} entities`);
+        
+        return {
+            success: true,
+            personUuid,
+            updatedEntities: result.rows.length,
+            totalRequested: entityUuids.length,
+            entities: result.rows,
+            message: `Person set as budget approver for ${result.rows.length} entities`
+        };
+        
+    } catch (error) {
+        logger.error(`[SERVICE] - Error setting person ${personUuid} as budget approver: ${error.message}`);
+        throw error;
+    }
+};
+
+/**
+ * Remove a person as budget approver from an entity
+ * @param {string} personUuid - UUID of the person
+ * @param {string} entityUuid - UUID of the entity to remove approval from
+ * @returns {Promise<Object>} Result of the operation
+ */
+const removeApproverEntity = async (personUuid, entityUuid) => {
+    try {
+        logger.info(`[SERVICE] - Removing person ${personUuid} as budget approver from entity: ${entityUuid}`);
+        
+        // Vérifier que la personne existe
+        const personCheck = await db.query('SELECT uuid FROM configuration.persons WHERE uuid = $1', [personUuid]);
+        if (personCheck.rows.length === 0) {
+            throw new Error('Person not found');
+        }
+        
+        // Vérifier que l'entité existe
+        const entityCheck = await db.query('SELECT uuid, name FROM configuration.entities WHERE uuid = $1', [entityUuid]);
+        if (entityCheck.rows.length === 0) {
+            throw new Error('Entity not found');
+        }
+        
+        // Vérifier que la personne est bien l'approbateur budgétaire de cette entité
+        const approverCheck = await db.query(
+            'SELECT uuid FROM configuration.entities WHERE uuid = $1 AND budget_approver_uuid = $2',
+            [entityUuid, personUuid]
+        );
+        
+        if (approverCheck.rows.length === 0) {
+            logger.info(`[SERVICE] - Person ${personUuid} is not the budget approver for entity ${entityUuid}`);
+            return {
+                success: false,
+                personUuid,
+                entityUuid,
+                message: 'Person is not the budget approver for this entity'
+            };
+        }
+        
+        // Supprimer la relation (mettre budget_approver_uuid à NULL)
+        const updateQuery = `
+            UPDATE configuration.entities 
+            SET budget_approver_uuid = NULL, updated_at = CURRENT_TIMESTAMP
+            WHERE uuid = $1 AND budget_approver_uuid = $2
+            RETURNING uuid, name`;
+        
+        const result = await db.query(updateQuery, [entityUuid, personUuid]);
+        
+        logger.info(`[SERVICE] - Successfully removed person ${personUuid} as budget approver from entity: ${entityUuid}`);
+        
+        return {
+            success: true,
+            personUuid,
+            entityUuid,
+            entity: result.rows[0],
+            message: 'Person removed as budget approver from entity'
+        };
+        
+    } catch (error) {
+        logger.error(`[SERVICE] - Error removing person ${personUuid} as budget approver from entity ${entityUuid}: ${error.message}`);
+        throw error;
+    }
+};
+
 module.exports = {
     getAllPersons,
     getPersonByUuid,
@@ -520,5 +637,7 @@ module.exports = {
     updatePerson,
     createPerson,
     addPersonGroups,
-    removePersonGroup
+    removePersonGroup,
+    addApproverEntities,
+    removeApproverEntity
 };
