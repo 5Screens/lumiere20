@@ -326,7 +326,9 @@ export class Person {
           { key: 'name', label: 'locations.name', visible: true },
           { key: 'city', label: 'locations.city', visible: true },
           { key: 'country', label: 'locations.country', visible: true }
-        ]
+        ],
+        // Affichage enrichi avec ville et pays
+        displayTemplate: '{name} - {city}, {country}'
       },
       floor: {
         name: 'floor',
@@ -398,6 +400,14 @@ export class Person {
         type: 'sTextField',
         required: false,
         placeholder: 'persons.photo_placeholder'
+      },
+      roles: {
+        name: 'roles',
+        label: 'persons.roles',
+        type: 'sRichTextEditor',
+        required: false,
+        placeholder: 'persons.roles_placeholder',
+        helperText: 'persons.roles_helper_text'
       },
       // Listes d'objets liés avec sPickList
       member_of_group_list: {
