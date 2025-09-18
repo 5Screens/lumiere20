@@ -447,8 +447,6 @@ export class Person {
       }
     };
 
-    // Ajouter les listes en mode update uniquement
-    if (mode === 'for_update') {
       fields.raised_tickets_list = {
         label: 'persons.raised_tickets_list',
         type: "sPickList",
@@ -496,13 +494,16 @@ export class Person {
         required: false,
         readonly: true
       };
-    }
+    
 
     // Supprimer les champs système en mode création
     if (mode === 'for_creation') {
       delete fields.uuid;
       delete fields.created_at;
       delete fields.updated_at;
+      delete fields.raised_tickets_list;
+      delete fields.assigned_tickets_list;
+      delete fields.watched_tickets_list;
     }
 
     return fields;
