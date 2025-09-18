@@ -275,12 +275,56 @@ export default {
         })
       }).sort((a, b) => {
         if (!this.sortColumn) return 0
-        const aVal = a[this.sortColumn]
-        const bVal = b[this.sortColumn]
-        if (this.sortDirection === 'asc') {
-          return aVal > bVal ? 1 : -1
+        
+        // Trouver le type de la colonne
+        const column = this.columns.find(col => col.key === this.sortColumn)
+        const columnType = column ? column.type : 'text'
+        
+        let aVal = a[this.sortColumn]
+        let bVal = b[this.sortColumn]
+        
+        // Gestion des valeurs nulles/undefined
+        if (aVal === null || aVal === undefined) aVal = ''
+        if (bVal === null || bVal === undefined) bVal = ''
+        
+        // Tri spécifique selon le type de colonne
+        if (columnType === 'number') {
+          // Conversion en nombre pour le tri numérique
+          const aNum = parseFloat(aVal) || 0
+          const bNum = parseFloat(bVal) || 0
+          
+          if (this.sortDirection === 'asc') {
+            return aNum - bNum
+          }
+          return bNum - aNum
+        } else if (columnType === 'date') {
+          // Tri par date
+          const aDate = new Date(aVal)
+          const bDate = new Date(bVal)
+          
+          if (this.sortDirection === 'asc') {
+            return aDate - bDate
+          }
+          return bDate - aDate
+        } else if (columnType === 'boolean') {
+          // Tri booléen (false avant true)
+          const aBool = Boolean(aVal)
+          const bBool = Boolean(bVal)
+          
+          if (this.sortDirection === 'asc') {
+            return aBool === bBool ? 0 : (aBool ? 1 : -1)
+          }
+          return aBool === bBool ? 0 : (aBool ? -1 : 1)
+        } else {
+          // Tri alphabétique pour text et autres types
+          const aStr = String(aVal).toLowerCase()
+          const bStr = String(bVal).toLowerCase()
+          
+          if (this.sortDirection === 'asc') {
+            return aStr.localeCompare(bStr)
+          }
+          return bStr.localeCompare(aStr)
         }
-        return aVal < bVal ? 1 : -1
       })
     },
     
