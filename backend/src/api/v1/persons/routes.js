@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 const validate = require('../../../middleware/validate');
-const { getPersonsQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema } = require('./validation');
+const { getPersonsQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema, addPersonGroupsSchema, personGroupUuidParamSchema } = require('./validation');
 const logger = require('../../../config/logger');
 
 // Log middleware for this route
@@ -39,6 +39,18 @@ router.post('/',
 router.get('/:uuid/groups',
     validate({ params: personUuidParamSchema }),
     controller.getPersonGroups
+);
+
+// POST /api/v1/persons/:uuid/groups
+router.post('/:uuid/groups',
+    validate({ params: personUuidParamSchema, body: addPersonGroupsSchema }),
+    controller.addPersonGroups
+);
+
+// DELETE /api/v1/persons/:uuid/groups/:group_uuid
+router.delete('/:uuid/groups/:group_uuid',
+    validate({ params: personGroupUuidParamSchema }),
+    controller.removePersonGroup
 );
 
 module.exports = router;

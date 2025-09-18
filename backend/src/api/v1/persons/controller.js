@@ -145,10 +145,99 @@ const createPerson = async (req, res) => {
     }
 };
 
+/**
+ * Add groups to a person
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const addPersonGroups = async (req, res) => {
+    try {
+        const { uuid } = req.params;
+        const { groups } = req.body;
+        
+        logger.info(`[CONTROLLER] - Adding groups to person with UUID: ${uuid}`);
+        
+        const result = await service.addPersonGroups(uuid, groups);
+        
+        logger.info(`[CONTROLLER] - Successfully processed group addition for person: ${uuid}`);
+        res.status(200).json(result);
+    } catch (error) {
+        logger.error(`[CONTROLLER] - Error adding groups to person with UUID: ${req.params.uuid}:`, error);
+        
+        if (error.message === 'Person not found') {
+            return res.status(404).json({
+                error: 'Person not found',
+                message: `No person found with UUID: ${req.params.uuid}`
+            });
+        }
+        
+        if (error.message.startsWith('Groups not found:')) {
+            return res.status(404).json({
+                error: 'Groups not found',
+                message: error.message
+            });
+        }
+        
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+};
+
+/**
+ * Remove a group from a person
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const removePersonGroup = async (req, res) => {
+    try {
+        const { uuid, group_uuid } = req.params;
+        
+        logger.info(`[CONTROLLER] - Removing group ${group_uuid} from person with UUID: ${uuid}`);
+        
+        const result = await service.removePersonGroup(uuid, group_uuid);
+        
+        if (!result.success) {
+            logger.info(`[CONTROLLER] - No relation found between person ${uuid} and group ${group_uuid}`);
+            return res.status(404).json({
+                error: 'Relation not found',
+                message: result.message
+            });
+        }
+        
+        logger.info(`[CONTROLLER] - Successfully removed group ${group_uuid} from person: ${uuid}`);
+        res.status(200).json(result);
+    } catch (error) {
+        logger.error(`[CONTROLLER] - Error removing group from person with UUID: ${req.params.uuid}:`, error);
+        
+        if (error.message === 'Person not found') {
+            return res.status(404).json({
+                error: 'Person not found',
+                message: `No person found with UUID: ${req.params.uuid}`
+            });
+        }
+        
+        if (error.message === 'Group not found') {
+            return res.status(404).json({
+                error: 'Group not found',
+                message: `No group found with UUID: ${req.params.group_uuid}`
+            });
+        }
+        
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+};
+
 module.exports = {
     getPersons,
     getPersonByUuid,
     getPersonGroups,
     updatePerson,
-    createPerson
+    createPerson,
+    addPersonGroups,
+    removePersonGroup
 };

@@ -394,10 +394,131 @@ const createPerson = async (personData) => {
     }
 };
 
+/**
+ * Add groups to a person
+ * @param {string} personUuid - UUID of the person
+ * @param {Array<string>} groupUuids - Array of group UUIDs to add
+ * @returns {Promise<Object>} Result of the operation
+ */
+const addPersonGroups = async (personUuid, groupUuids) => {
+    try {
+        logger.info(`[SERVICE] - Adding ${groupUuids.length} groups to person: ${personUuid}`);
+        
+        // Vérifier que la personne existe
+        const personCheck = await db.query('SELECT uuid FROM configuration.persons WHERE uuid = $1', [personUuid]);
+        if (personCheck.rows.length === 0) {
+            throw new Error('Person not found');
+        }
+        
+        // Vérifier que tous les groupes existent
+        const groupsCheck = await db.query(
+            'SELECT uuid FROM configuration.groups WHERE uuid = ANY($1)',
+            [groupUuids]
+        );
+        
+        if (groupsCheck.rows.length !== groupUuids.length) {
+            const foundGroupUuids = groupsCheck.rows.map(row => row.uuid);
+            const missingGroups = groupUuids.filter(uuid => !foundGroupUuids.includes(uuid));
+            throw new Error(`Groups not found: ${missingGroups.join(', ')}`);
+        }
+        
+        // Préparer les valeurs pour l'insertion
+        const values = [];
+        const placeholders = [];
+        let paramIndex = 1;
+        
+        groupUuids.forEach(groupUuid => {
+            values.push(personUuid, groupUuid);
+            placeholders.push(`($${paramIndex}, $${paramIndex + 1})`);
+            paramIndex += 2;
+        });
+        
+        // Insérer les relations (ON CONFLICT DO NOTHING pour éviter les doublons)
+        const insertQuery = `
+            INSERT INTO configuration.rel_persons_groups (rel_member, rel_group)
+            VALUES ${placeholders.join(', ')}
+            ON CONFLICT (rel_member, rel_group) DO NOTHING
+            RETURNING rel_member, rel_group`;
+        
+        const result = await db.query(insertQuery, values);
+        
+        logger.info(`[SERVICE] - Successfully added ${result.rows.length} new group relations for person: ${personUuid}`);
+        
+        return {
+            success: true,
+            personUuid,
+            addedGroups: result.rows.length,
+            totalRequested: groupUuids.length,
+            message: `Added ${result.rows.length} new group relations (${groupUuids.length - result.rows.length} were already existing)`
+        };
+        
+    } catch (error) {
+        logger.error(`[SERVICE] - Error adding groups to person ${personUuid}: ${error.message}`);
+        throw error;
+    }
+};
+
+/**
+ * Remove a group from a person
+ * @param {string} personUuid - UUID of the person
+ * @param {string} groupUuid - UUID of the group to remove
+ * @returns {Promise<Object>} Result of the operation
+ */
+const removePersonGroup = async (personUuid, groupUuid) => {
+    try {
+        logger.info(`[SERVICE] - Removing group ${groupUuid} from person: ${personUuid}`);
+        
+        // Vérifier que la personne existe
+        const personCheck = await db.query('SELECT uuid FROM configuration.persons WHERE uuid = $1', [personUuid]);
+        if (personCheck.rows.length === 0) {
+            throw new Error('Person not found');
+        }
+        
+        // Vérifier que le groupe existe
+        const groupCheck = await db.query('SELECT uuid FROM configuration.groups WHERE uuid = $1', [groupUuid]);
+        if (groupCheck.rows.length === 0) {
+            throw new Error('Group not found');
+        }
+        
+        // Supprimer la relation
+        const deleteQuery = `
+            DELETE FROM configuration.rel_persons_groups 
+            WHERE rel_member = $1 AND rel_group = $2
+            RETURNING rel_member, rel_group`;
+        
+        const result = await db.query(deleteQuery, [personUuid, groupUuid]);
+        
+        if (result.rows.length === 0) {
+            logger.info(`[SERVICE] - No relation found between person ${personUuid} and group ${groupUuid}`);
+            return {
+                success: false,
+                personUuid,
+                groupUuid,
+                message: 'No relation found between person and group'
+            };
+        }
+        
+        logger.info(`[SERVICE] - Successfully removed group ${groupUuid} from person: ${personUuid}`);
+        
+        return {
+            success: true,
+            personUuid,
+            groupUuid,
+            message: 'Group relation removed successfully'
+        };
+        
+    } catch (error) {
+        logger.error(`[SERVICE] - Error removing group ${groupUuid} from person ${personUuid}: ${error.message}`);
+        throw error;
+    }
+};
+
 module.exports = {
     getAllPersons,
     getPersonByUuid,
     getPersonGroups,
     updatePerson,
-    createPerson
+    createPerson,
+    addPersonGroups,
+    removePersonGroup
 };

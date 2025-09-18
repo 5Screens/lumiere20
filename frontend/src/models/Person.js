@@ -439,7 +439,7 @@ export class Person {
         sourceEndPoint: "entities",
         displayedLabel: "name",
         targetEndPoint: "persons",
-        ressourceEndPoint: 'budget_approver',
+        ressourceEndPoint: 'approver-entities',
         fieldName: 'budget_approver',
         target_uuid: null,
         pickedItems: null,

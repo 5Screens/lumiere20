@@ -70,9 +70,22 @@ const updatePersonSchema = Joi.object({
     groups: Joi.array().items(Joi.string().guid({ version: 'uuidv4' })).optional()
 }).min(1); // Au moins un champ doit être fourni pour la mise à jour
 
+// Validation schema for adding groups to a person
+const addPersonGroupsSchema = Joi.object({
+    groups: Joi.array().items(Joi.string().guid({ version: 'uuidv4' })).min(1).required()
+});
+
+// Validation schema for person and group UUID parameters
+const personGroupUuidParamSchema = Joi.object({
+    uuid: Joi.string().guid({ version: 'uuidv4' }).required(),
+    group_uuid: Joi.string().guid({ version: 'uuidv4' }).required()
+});
+
 module.exports = {
     getPersonsQuerySchema,
     personUuidParamSchema,
     createPersonSchema,
-    updatePersonSchema
+    updatePersonSchema,
+    addPersonGroupsSchema,
+    personGroupUuidParamSchema
 };
