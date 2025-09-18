@@ -234,7 +234,11 @@ export default {
     modification_date: 'Last updated on',
     closure_date: 'Closed on',
     writer_name: 'Created by',
-    uuid: 'Identifier'
+    uuid: 'Identifier',
+    created_at: 'Created at',
+    updated_at: 'Updated at',
+    assigned_at: 'Assigned at',
+    no_data: 'No data'
   },
   notifications: {
     title: 'Notification',
@@ -923,6 +927,20 @@ export default {
     member_of_group_count: 'Member of Groups Count',
     assigned_tickets_count: 'Assigned Tickets Count',
     watched_tickets_count: 'Watched Tickets Count',
-    budget_approver_count: 'Budget Approver Count'
+    budget_approver_count: 'Budget Approver Count',
+    
+    // Lists
+    raised_tickets_list: 'Raised Tickets',
+    raised_tickets_list_helper_text: 'List of tickets raised by this person',
+    raised_tickets_list_placeholder: 'Raised tickets (read-only)',
+    no_raised_tickets: 'No raised tickets',
+    assigned_tickets_list: 'Assigned Tickets',
+    assigned_tickets_list_helper_text: 'List of tickets assigned to this person',
+    assigned_tickets_list_placeholder: 'Assigned tickets (read-only)',
+    no_assigned_tickets: 'No assigned tickets',
+    watched_tickets_list: 'Watched Tickets',
+    watched_tickets_list_helper_text: 'List of tickets watched by this person',
+    watched_tickets_list_placeholder: 'Watched tickets (read-only)',
+    no_watched_tickets: 'No watched tickets'
   }
 }

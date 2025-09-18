@@ -187,6 +187,20 @@
             @update:success="handleFieldSuccess"
             @field-change-cancelled="() => {}"
           />
+          
+          <!-- Champ tableau en lecture seule -->
+          <sTableField
+            v-else-if="field.type === 'sTableField'"
+            v-model="formData[fieldName]"
+            :label="field.label ? $t(field.label) : null"
+            :helperText="field.helperText ? $t(field.helperText) : null"
+            :required="field.required"
+            :columns="field.columns"
+            :itemsPerPage="field.itemsPerPage || 5"
+            :showPagination="field.showPagination !== false"
+            :noDataText="field.noDataText ? $t(field.noDataText) : null"
+            :maxHeight="field.maxHeight || 300"
+          />
         </template>
       </template>
       
@@ -220,6 +234,7 @@ import sToggleField from '@/components/common/sToggleField.vue';
 import sFileUploader from '@/components/common/sFileUploader.vue';
 import sTagsList from '@/components/common/sTagsList.vue';
 import sMLTextField from '@/components/common/sMLTextField.vue';
+import sTableField from '@/components/common/sTableField.vue';
 import AuditTable from '@/components/common/auditTable.vue';
 
 // Import du service API et du service de mapping de classes

@@ -447,48 +447,51 @@ export class Person {
       },
       raised_tickets_list: {
         label: 'persons.raised_tickets_list',
-        type: "sPickList",
+        type: "sTableField",
         helperText: 'persons.raised_tickets_list_helper_text',
-        placeholder: 'persons.raised_tickets_list_placeholder',
-        sourceEndPoint: "tickets",
-        displayedLabel: "title",
-        targetEndPoint: "persons",
-        ressourceEndPoint: 'raised_tickets',
-        fieldName: 'raised_tickets',
-        target_uuid: null,
-        pickedItems: null,
         required: false,
-        readonly: true
+        columns: [
+          { key: 'title', label: 'tickets.title', visible: true },
+          { key: 'ticket_type_code', label: 'tickets.type', visible: true, format: 'badge' },
+          { key: 'ticket_status_code', label: 'tickets.status', visible: true, format: 'badge' },
+          { key: 'created_at', label: 'common.created_at', visible: true, format: 'date' },
+          { key: 'writer_name', label: 'tickets.writer', visible: true }
+        ],
+        itemsPerPage: 5,
+        showPagination: true,
+        noDataText: 'persons.no_raised_tickets'
       },
       assigned_tickets_list: {
         label: 'persons.assigned_tickets_list',
-        type: "sPickList",
+        type: "sTableField",
         helperText: 'persons.assigned_tickets_list_helper_text',
-        placeholder: 'persons.assigned_tickets_list_placeholder',
-        sourceEndPoint: "tickets",
-        displayedLabel: "title",
-        targetEndPoint: "persons",
-        ressourceEndPoint: 'assigned_tickets',
-        fieldName: 'assigned_tickets',
-        target_uuid: null,
-        pickedItems: null,
         required: false,
-        readonly: true
+        columns: [
+          { key: 'title', label: 'tickets.title', visible: true },
+          { key: 'ticket_type_code', label: 'tickets.type', visible: true, format: 'badge' },
+          { key: 'ticket_status_code', label: 'tickets.status', visible: true, format: 'badge' },
+          { key: 'assigned_at', label: 'common.assigned_at', visible: true, format: 'date' },
+          { key: 'group_name', label: 'groups.name', visible: true }
+        ],
+        itemsPerPage: 5,
+        showPagination: true,
+        noDataText: 'persons.no_assigned_tickets'
       },
       watched_tickets_list: {
         label: 'persons.watched_tickets_list',
-        type: "sPickList",
+        type: "sTableField",
         helperText: 'persons.watched_tickets_list_helper_text',
-        placeholder: 'persons.watched_tickets_list_placeholder',
-        sourceEndPoint: "tickets",
-        displayedLabel: "title",
-        targetEndPoint: "persons",
-        ressourceEndPoint: 'watched_tickets',
-        fieldName: 'watched_tickets',
-        target_uuid: null,
-        pickedItems: null,
         required: false,
-        readonly: true
+        columns: [
+          { key: 'title', label: 'tickets.title', visible: true },
+          { key: 'ticket_type_code', label: 'tickets.type', visible: true, format: 'badge' },
+          { key: 'ticket_status_code', label: 'tickets.status', visible: true, format: 'badge' },
+          { key: 'created_at', label: 'common.created_at', visible: true, format: 'date' },
+          { key: 'writer_name', label: 'tickets.writer', visible: true }
+        ],
+        itemsPerPage: 5,
+        showPagination: true,
+        noDataText: 'persons.no_watched_tickets'
       }
     }
 
