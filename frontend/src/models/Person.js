@@ -249,35 +249,35 @@ export class Person {
       password_needs_reset: {
         name: 'password_needs_reset',
         label: 'persons.password_needs_reset',
-        type: 'sCheckbox',
+        type: 'sToggleField',
         required: false,
         placeholder: 'persons.password_needs_reset_placeholder'
       },
       locked_out: {
         name: 'locked_out',
         label: 'persons.locked_out',
-        type: 'sCheckbox',
+        type: 'sToggleField',
         required: false,
         placeholder: 'persons.locked_out_placeholder'
       },
       active: {
         name: 'active',
         label: 'persons.active',
-        type: 'sCheckbox',
+        type: 'sToggleField',
         required: false,
         placeholder: 'persons.active_placeholder'
       },
       critical_user: {
         name: 'critical_user',
         label: 'persons.critical_user',
-        type: 'sCheckbox',
+        type: 'sToggleField',
         required: false,
         placeholder: 'persons.critical_user_placeholder'
       },
       external_user: {
         name: 'external_user',
         label: 'persons.external_user',
-        type: 'sCheckbox',
+        type: 'sToggleField',
         required: false,
         placeholder: 'persons.external_user_placeholder'
       },
