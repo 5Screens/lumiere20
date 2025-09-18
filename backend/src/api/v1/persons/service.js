@@ -55,7 +55,7 @@ const getAllPersons = async (lang) => {
             LEFT JOIN configuration.entities e ON p.ref_entity_uuid = e.uuid
             LEFT JOIN configuration.locations l ON p.ref_location_uuid = l.uuid
             LEFT JOIN configuration.persons manager ON p.ref_approving_manager_uuid = manager.uuid
-            ORDER BY p.last_name, p.first_name
+            ORDER BY p.updated_at DESC
             LIMIT 100
         `;
         const { rows } = await db.query(query);
