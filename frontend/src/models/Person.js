@@ -408,14 +408,14 @@ export class Person {
         required: false,
         placeholder: 'persons.photo_placeholder'
       },
-      roles: {
+      /*roles: {
         name: 'roles',
         label: 'persons.roles',
         type: 'sRichTextEditor',
         required: false,
         placeholder: 'persons.roles_placeholder',
         helperText: 'persons.roles_helper_text'
-      },
+      },*/
       // Listes d'objets liés avec sPickList
       member_of_group_list: {
         label: 'persons.member_of_group_list',
@@ -440,7 +440,7 @@ export class Person {
         displayedLabel: "name",
         targetEndPoint: "persons",
         ressourceEndPoint: 'approver-entities',
-        fieldName: 'budget_approver',
+        fieldName: 'entities_list',
         target_uuid: null,
         pickedItems: null,
         required: false,
