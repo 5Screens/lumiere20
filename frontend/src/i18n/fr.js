@@ -123,7 +123,10 @@ export default {
     groupCreation: 'Créer un nouveau groupe',
     groupUpdate: 'Modifier un groupe',
     locationCreation: 'Créer une nouvelle localisation',
-    locationUpdate: 'Modifier une localisation'
+    locationUpdate: 'Modifier une localisation',
+    personCreation: 'Créer une nouvelle personne',
+    personUpdate: 'Modifier une personne',
+    
 
   },
   sprintCenter: {
