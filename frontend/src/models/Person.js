@@ -15,13 +15,13 @@ export class Person {
     this.password = data.password || '';
     this.password_needs_reset = data.password_needs_reset || false;
     this.locked_out = data.locked_out || false;
-    this.active = data.active || true;
+    this.active = data.active !== undefined ? data.active : true;
     this.critical_user = data.critical_user || false;
     this.external_user = data.external_user || false;
     this.date_format = data.date_format || '';
     this.internal_id = data.internal_id || '';
     this.email = data.email || '';
-    this.notification = data.notification || true;
+    this.notification = data.notification !== undefined ? data.notification : true;
     this.time_zone = data.time_zone || '';
     this.ref_location_uuid = data.ref_location_uuid || null;
     this.ref_location_name = data.ref_location_name || '';
