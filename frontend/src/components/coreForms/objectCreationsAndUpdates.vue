@@ -136,6 +136,11 @@
             v-model="formData[fieldName]"
             :label="field.label ? $t(field.label) : null"
             :required="field.required"
+            :mode="mode === 'update' ? 'edit' : 'create'"
+            :uuid="objectId"
+            :patchEndpoint="modelInstance ? modelInstance.constructor.getApiEndpoint('PATCH') : ''"
+            :fieldName="fieldName"
+            @update:success="handleFieldSuccess"
           />
           
           <!-- Uploader de fichiers -->

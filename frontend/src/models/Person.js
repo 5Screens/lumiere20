@@ -300,7 +300,7 @@ export class Person {
       notification: {
         name: 'notification',
         label: 'persons.notification',
-        type: 'sCheckbox',
+        type: 'sToggleField',
         required: false,
         placeholder: 'persons.notification_placeholder'
       },
