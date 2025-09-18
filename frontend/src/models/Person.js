@@ -444,10 +444,8 @@ export class Person {
         target_uuid: null,
         pickedItems: null,
         required: false,
-      }
-    };
-
-      fields.raised_tickets_list = {
+      },
+      raised_tickets_list: {
         label: 'persons.raised_tickets_list',
         type: "sPickList",
         helperText: 'persons.raised_tickets_list_helper_text',
@@ -461,9 +459,8 @@ export class Person {
         pickedItems: null,
         required: false,
         readonly: true
-      };
-
-      fields.assigned_tickets_list = {
+      },
+      assigned_tickets_list: {
         label: 'persons.assigned_tickets_list',
         type: "sPickList",
         helperText: 'persons.assigned_tickets_list_helper_text',
@@ -477,9 +474,8 @@ export class Person {
         pickedItems: null,
         required: false,
         readonly: true
-      };
-
-      fields.watched_tickets_list = {
+      },
+      watched_tickets_list: {
         label: 'persons.watched_tickets_list',
         type: "sPickList",
         helperText: 'persons.watched_tickets_list_helper_text',
@@ -493,8 +489,8 @@ export class Person {
         pickedItems: null,
         required: false,
         readonly: true
-      };
-    
+      }
+    }
 
     // Supprimer les champs système en mode création
     if (mode === 'for_creation') {
