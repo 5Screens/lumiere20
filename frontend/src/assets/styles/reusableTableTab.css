@@ -1,5 +1,37 @@
 /* Styles pour le composant de tableau réutilisable - permet d'afficher des données en lignes et colonnes avec fonctionnalités avancées */
 
+/* Styles pour l'affichage des valeurs booléennes */
+.boolean-cell {
+  text-align: center;
+}
+
+.boolean-true {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.boolean-true i {
+  margin-right: 4px;
+}
+
+.boolean-false {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.boolean-false i {
+  margin-right: 4px;
+}
+
+.boolean-null {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.boolean-null i {
+  margin-right: 4px;
+}
+
 /* Conteneur principal du tableau - organise tous les éléments en colonne */
 .reusable-table-tab {
   width: 100%;

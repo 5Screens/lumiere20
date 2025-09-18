@@ -95,6 +95,17 @@
                          class="tag">{{ tag }}</span>
                   </template>
                 </div>
+                <div v-else-if="column.type === 'boolean'" class="cell-inner boolean-cell" :ref="setCellRef(row.uuid, column.key)">
+                  <span v-if="row[column.key] === true" class="boolean-true">
+                    <i class="fas fa-check-circle"></i> {{ $t('common.yes') }}
+                  </span>
+                  <span v-else-if="row[column.key] === false" class="boolean-false">
+                    <i class="fas fa-times-circle"></i> {{ $t('common.no') }}
+                  </span>
+                  <span v-else class="boolean-null">
+                    <i class="fas fa-question-circle"></i> {{ $t('common.na') }}
+                  </span>
+                </div>
                 <div v-else class="cell-inner" :ref="setCellRef(row.uuid, column.key)">
                   {{ formatCellContent(row[column.key], column.format) }}
                 </div>

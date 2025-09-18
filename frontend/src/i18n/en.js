@@ -228,6 +228,7 @@ export default {
     cancel_edit: 'Cancel edit',
     yes: 'Yes',
     no: 'No',
+    na: 'N/A',
     createLabel: 'What would you like to create?',
     creation_date: 'Created on',
     modification_date: 'Last updated on',
