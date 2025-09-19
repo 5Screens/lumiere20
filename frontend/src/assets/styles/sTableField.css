@@ -90,7 +90,6 @@
 
 /* Lignes du tableau */
 .s-table-field__row {
-  transition: background-color 0.2s ease;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -209,7 +208,6 @@
   border-radius: 0.25rem;
   color: var(--text-color);
   cursor: pointer;
-  transition: all 0.2s ease;
   font-size: 0.875rem;
 }
 
