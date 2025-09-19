@@ -22,6 +22,9 @@
   --success-color: #4caf50;      /* Green color for success messages and indicators */
   --warning-color: #ff9800;      /* Orange color for warning messages and indicators */
   --error-color: #f44336;        /* Red color for error messages and indicators */
+  --accent-color: #ff5722;       /* Accent color for special highlights */
+  --primary-color-light: rgba(33, 150, 243, 0.1); /* Light version of primary color for backgrounds */
+  --text-primary: #212121;       /* Primary text color (darker than text-color) */
   
   /* System font configuration - Uses the best available font on the user's system */
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
@@ -58,6 +61,9 @@
   --success-color: #81c784;      /* Lighter green for better visibility */
   --warning-color: #ffb74d;      /* Lighter orange for better visibility */
   --error-color: #e57373;        /* Lighter red for better visibility */
+  --accent-color: #ff7043;       /* Accent color for special highlights in dark mode */
+  --primary-color-light: rgba(100, 181, 246, 0.1); /* Light version of primary color for dark backgrounds */
+  --text-primary: #ffffff;       /* Primary text color for dark mode */
 }
 
 

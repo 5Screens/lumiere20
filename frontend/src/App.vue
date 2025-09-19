@@ -27,14 +27,54 @@
     <div class="main-content">
       <nav class="side-menu">
         <ul>
-          <li><a href="#" @click.prevent="toggleServiceHub" data-service-hub-toggle>{{ $t('nav.serviceHub') }}</a></li>
-          <li><a href="#" @click.prevent="toggleSprintCenter" data-sprint-center-toggle>{{ $t('nav.sprintCenter') }}</a></li>
+          <li>
+            <a href="#" 
+               @click.prevent="toggleServiceHub" 
+               @mouseenter="showTooltipMenu('serviceHub', $event)"
+               @mouseleave="hideTooltipMenu"
+               data-service-hub-toggle>
+              {{ $t('nav.serviceHub') }}
+            </a>
+          </li>
+          <li>
+            <a href="#" 
+               @click.prevent="toggleSprintCenter" 
+               @mouseenter="showTooltipMenu('sprintCenter', $event)"
+               @mouseleave="hideTooltipMenu"
+               data-sprint-center-toggle>
+              {{ $t('nav.sprintCenter') }}
+            </a>
+          </li>
           <li><a href="#" @click.prevent="showUnderConstruction('mail')">{{ $t('nav.mail') }}</a></li>
           <li><a href="#" @click.prevent="showUnderConstruction('portalsBuilder')">{{ $t('nav.portalsBuilder') }}</a></li>
-          <li><a href="#" @click.prevent="toggleDataPane" data-data-pane-toggle>{{ $t('nav.data') }}</a></li>
+          <li>
+            <a href="#" 
+               @click.prevent="toggleDataPane" 
+               @mouseenter="showTooltipMenu('dataPane', $event)"
+               @mouseleave="hideTooltipMenu"
+               data-data-pane-toggle>
+              {{ $t('nav.data') }}
+            </a>
+          </li>
           <li><a href="#" @click.prevent="showUnderConstruction('tableaux')">{{ $t('nav.tableaux') }}</a></li>
-          <li><a href="#" @click.prevent="toggleConfiguration" data-configuration-toggle>{{ $t('nav.configuration') }}</a></li>
-          <li><a href="#" @click.prevent="toggleAdmin" data-admin-toggle>{{ $t('nav.administration') }}</a></li>
+          <li>
+            <a href="#" 
+               @click.prevent="toggleConfiguration" 
+               @mouseenter="showTooltipMenu('configuration', $event)"
+               @mouseleave="hideTooltipMenu"
+               data-configuration-toggle>
+              {{ $t('nav.configuration') }}
+            </a>
+          </li>
+          <li>
+            <a href="#" 
+               @click.prevent="toggleAdmin" 
+               @mouseenter="showTooltipMenu('admin', $event)"
+               @mouseleave="hideTooltipMenu"
+               data-admin-toggle>
+              {{ $t('nav.administration') }}
+            </a>
+          </li>
         </ul>
       </nav>
 
@@ -165,6 +205,21 @@
         <div v-else>{{ popoverStore.content }}</div>
       </div>
     </div>
+    
+    <!-- Dynamic Tooltip Menu -->
+    <dynamic-tool-tip-menu
+      v-if="tooltipMenu.isVisible"
+      :is-visible="tooltipMenu.isVisible"
+      :pane-type="tooltipMenu.paneType"
+      :items="tooltipMenu.items"
+      :sections="tooltipMenu.sections"
+      :has-sections="tooltipMenu.hasSections"
+      :position="tooltipMenu.position"
+      :title-icon="tooltipMenu.titleIcon"
+      @item-click="handleTooltipItemClick"
+      @mouse-enter="handleTooltipMouseEnter"
+      @mouse-leave="handleTooltipMouseLeave"
+    />
   </div>
 </template>
 
@@ -177,6 +232,7 @@ import { useUserProfileStore } from '@/stores/userProfileStore'
 import HierarchicalTabs from '@/components/common/hierarchicalTabs.vue'
 import ProfilePane from '@/components/panes/ProfilePane.vue'
 import DynamicPane from '@/components/panes/DynamicPane.vue'
+import DynamicToolTipMenu from '@/components/panes/dynamicToolTipMenu.vue'
 import ObjectEditView from '@/components/coreForms/objectEditView.vue'
 import YesNoModal from '@/components/common/yesNoModal.vue'
 
@@ -186,6 +242,7 @@ export default {
     HierarchicalTabs,
     ProfilePane,
     DynamicPane,
+    DynamicToolTipMenu,
     ObjectEditView,
     YesNoModal
   },
@@ -213,7 +270,18 @@ export default {
       isProfilePaneVisible: false,
       isCreateModalVisible: false,
       isUnderConstructionVisible: false,
-      underConstructionType: ''
+      underConstructionType: '',
+      tooltipMenu: {
+        isVisible: false,
+        paneType: '',
+        items: [],
+        sections: [],
+        hasSections: false,
+        position: { x: 0, y: 0 },
+        titleIcon: '',
+        mouseOverTooltip: false,
+        mouseOverTrigger: false
+      }
     }
   },
   computed: {
@@ -335,6 +403,79 @@ export default {
           this.popoverStore.hidePopover()
         }
       }
+    },
+    showTooltipMenu(paneType, event) {
+      const config = this.paneStore.getPaneConfig(paneType)
+      if (!config) return
+      
+      const rect = event.target.getBoundingClientRect()
+      const sideMenuWidth = 200 // Largeur approximative du side-menu
+      
+      // Définir les icônes pour chaque type de panneau
+      const paneIcons = {
+        serviceHub: 'fas fa-concierge-bell',
+        sprintCenter: 'fas fa-running',
+        dataPane: 'fas fa-database',
+        configuration: 'fas fa-cogs',
+        admin: 'fas fa-user-shield'
+      }
+      
+      this.tooltipMenu = {
+        isVisible: true,
+        paneType: paneType,
+        items: config.items,
+        sections: config.sections,
+        hasSections: config.hasSections,
+        position: {
+          x: sideMenuWidth + 10, // À droite du menu latéral
+          y: rect.top // Aligné avec l'élément survolé
+        },
+        titleIcon: paneIcons[paneType] || 'fas fa-cube',
+        mouseOverTooltip: false,
+        mouseOverTrigger: true
+      }
+    },
+    hideTooltipMenu() {
+      this.tooltipMenu.mouseOverTrigger = false
+      // Délai avant de masquer pour permettre le survol du tooltip
+      setTimeout(() => {
+        if (!this.tooltipMenu.mouseOverTooltip && !this.tooltipMenu.mouseOverTrigger) {
+          this.tooltipMenu.isVisible = false
+        }
+      }, 100)
+    },
+    handleTooltipItemClick(item) {
+      // Même logique que handleOpenTab mais pour les items du tooltip
+      if (item.className === null) {
+        this.tabsStore.setMessage({
+          type: 'info',
+          message: this.$t('common.underConstruction')
+        })
+        return
+      }
+      
+      // Ouvrir l'onglet
+      this.tabsStore.openTab({
+        id: item.tabToOpen,
+        label: item.label,
+        icon: item.icon,
+        className: item.className
+      })
+      
+      // Masquer le tooltip
+      this.tooltipMenu.isVisible = false
+    },
+    handleTooltipMouseEnter() {
+      this.tooltipMenu.mouseOverTooltip = true
+    },
+    handleTooltipMouseLeave() {
+      this.tooltipMenu.mouseOverTooltip = false
+      // Délai avant de masquer
+      setTimeout(() => {
+        if (!this.tooltipMenu.mouseOverTooltip && !this.tooltipMenu.mouseOverTrigger) {
+          this.tooltipMenu.isVisible = false
+        }
+      }, 100)
     }
   },
   mounted() {

@@ -66,6 +66,7 @@ export default {
   },
   serviceHub: {
     title: 'Hub de Services',
+    description: 'Gérez tous vos services IT : incidents, problèmes, changements et base de connaissances en un seul endroit.',
     incidents: 'Incidents',
     tasks: 'Tâches',
     problems: 'Problèmes',
@@ -131,6 +132,7 @@ export default {
   },
   sprintCenter: {
     title: 'Centre Sprint',
+    description: 'Planifiez et suivez vos projets agiles : sprints, user stories, épics et gestion des anomalies.',
     tasks: 'Tâches',
     userStories: 'User Stories',
     sprints: 'Sprints',
