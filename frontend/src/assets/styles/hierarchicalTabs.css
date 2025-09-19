@@ -42,7 +42,6 @@
   padding: 8px 16px;
   cursor: pointer;
   border-right: 1px solid var(--border-color);
-  transition: background-color 0.2s ease;
   height: 100%;
   white-space: nowrap;
   flex-shrink: 0; /* Empêche la compression des onglets */
@@ -96,7 +95,6 @@
   font-size: 16px;
   cursor: pointer;
   opacity: 0.5;
-  transition: opacity 0.2s ease;
   padding: 0;
   width: 20px;
   height: 20px;
@@ -135,16 +133,6 @@
   overscroll-behavior: contain;
 }
 
-/* Animation pour les transitions - rend l'apparition et la disparition des contenus plus fluide */
-.tab-enter-active, .tab-leave-active {
-  transition: opacity 0.3s, transform 0.3s;
-}
-
-/* État initial et final des animations - contenu invisible et légèrement décalé vers le bas */
-.tab-enter, .tab-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
-}
 
 /* Style pour les onglets qui ne sont pas disponibles - grisés et non cliquables */
 .tab.disabled {

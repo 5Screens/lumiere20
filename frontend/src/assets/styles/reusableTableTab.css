@@ -67,8 +67,6 @@ tbody {
 
 /* Ligne individuelle dans le corps du tableau - avec effet de transition au survol */
 tbody tr {
-  transition: transform 0.3s ease-out, background-color 0.2s ease;
-  transform-origin: center;
   position: relative;
   background-color: var(--bg-color);
 }
@@ -171,7 +169,6 @@ tr:hover {
 select.column-filter {
   background-color: var(--input-bg);
   cursor: pointer;
-  transition: border-color 0.2s ease;
 }
 
 /* Effet au survol des listes déroulantes - bordure bleue */
@@ -402,18 +399,16 @@ th[class="sortable"] .sort-icon template:last-child {
   box-shadow: 0 2px 4px var(--shadow-color);
   cursor: pointer;
   z-index: 1000;
-  transition: opacity 0.3s;
 }
 
 /* Effet de disparition de l'icône de copie */
 .copy-icon.fade-out {
   opacity: 0;
-  transition: opacity 0.5s ease-out;
 }
 
-/* Effet au survol de l'icône de copie - agrandissement */
+/* Effet au survol de l'icône de copie */
 .copy-icon:hover {
-  transform: scale(1.1);
+  opacity: 0.8;
 }
 
 /* ----------------------------- */
@@ -446,7 +441,6 @@ td .cell {
   align-items: center;
   width: 100%;
   height: 20px; /* Hauteur fixe au lieu de min-height */
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
   border-radius: 4px;
 }
 td .cell-inner {
@@ -529,11 +523,9 @@ td.cell-selected-td::after {
   background-color: var(--very-light-blue);
   color: #333333;
   border: 1px solid var(--primary-color);
-  transition: all 0.2s ease;
 }
 
 .tag:hover {
-  transform: translateY(-1px);
   box-shadow: 0 2px 3px var(--shadow-color);
 }
 
@@ -575,21 +567,6 @@ td.cell-selected-td::after {
   background: rgba(0, 0, 0, 0.2);
 }
 
-/* Animations pour le tri des lignes - effet de transition lors du tri */
-.list-move {
-  transition: transform 0.5s ease;
-}
-
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
-}
-
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
 
 /* Ajustement de la largeur de la première colonne - plus étroite pour afficher les identifiants */
 th:first-child,
@@ -626,7 +603,6 @@ th:first-child .th-content {
   border-width: 1px; /* explicit to avoid any change on active/hover */
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
   background-color: var(--input-bg);
   color: var(--text-color);
 }
@@ -687,7 +663,6 @@ th:first-child .th-content {
   display: flex;
   padding: 2px 16px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
   background-color: var(--bg-color);
   color: var(--text-color);
 }
