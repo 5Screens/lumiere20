@@ -61,7 +61,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
   color: var(--text-color);
 }
 
@@ -183,11 +182,10 @@
   border-radius: 2px;
   cursor: pointer;
   border: 1px solid var(--border-color);
-  transition: transform 0.1s ease;
 }
 
 .color-option:hover {
-  transform: scale(1.1);
+  opacity: 0.8;
 }
 
 .emoji-picker {
@@ -209,11 +207,10 @@
   font-size: 20px;
   padding: 5px;
   cursor: pointer;
-  transition: transform 0.1s ease;
 }
 
 .emoji-option:hover {
-  transform: scale(1.2);
+  opacity: 0.8;
 }
 
 .link-dialog, .table-dialog {
@@ -334,15 +331,6 @@
   color: var(--text-color);
 }
 
-/* Animation for dropdowns */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.color-picker, .emoji-picker, .link-dialog, .table-dialog, .table-actions {
-  animation: fadeIn 0.2s ease;
-}
 
 /* Actions container for edition mode */
 .s-rich-text-editor__actions {
