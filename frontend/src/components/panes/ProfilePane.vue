@@ -4,17 +4,6 @@
       <button class="close-button" @click="$emit('close')" :title="$t('common.close')">
         <i class="fas fa-times"></i>
       </button>
-      <div class="theme-section">
-        <h3>{{ $t('theme.title') }}</h3>
-        <div class="theme-buttons">
-          <button @click="userProfileStore.setTheme('light')" :class="{ active: userProfileStore.theme === 'light' }" :title="$t('theme.light')">
-            <i class="fas fa-sun"></i>
-          </button>
-          <button @click="userProfileStore.setTheme('dark')" :class="{ active: userProfileStore.theme === 'dark' }" :title="$t('theme.dark')">
-            <i class="fas fa-moon"></i>
-          </button>
-        </div>
-      </div>
       <div class="language-section">
         <h3>{{ $t('language.title') }}</h3>
         <select v-model="userProfileStore.language" @change="$i18n.locale = userProfileStore.language">
@@ -78,7 +67,7 @@ export default {
   top: 60px;
   right: 20px;
   width: 250px;
-  height: 200px;
+  height: 120px;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -124,7 +113,7 @@ export default {
   }
 }
 
-.theme-section, .language-section {
+.language-section {
   margin-bottom: 1.5rem;
 }
 
@@ -134,31 +123,6 @@ h3 {
   color: var(--text-color);
 }
 
-.theme-buttons {
-  display: flex;
-  gap: 1rem;
-}
-
-button {
-  padding: 0.5rem;
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  color: var(--text-color);
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-button:hover {
-  background: var(--hover-color);
-  border-color: var(--primary-color);
-}
-
-button.active {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
 
 select {
   width: 100%;

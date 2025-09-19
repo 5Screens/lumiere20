@@ -15,6 +15,9 @@
         <button class="info-button" @click="toggleProfilePane">
           <i class="fas fa-info-circle"></i>
         </button>
+        <button class="theme-toggle-button" @click="toggleTheme" :title="themeButtonTitle">
+          <i :class="themeButtonIcon"></i>
+        </button>
         <button class="logout-button">
           <i class="fas fa-sign-out-alt"></i>
         </button>
@@ -170,6 +173,7 @@ import { useTabsStore } from '@/stores/tabsStore'
 import { useObjectStore } from '@/stores/objectStore'
 import { usePaneStore } from '@/stores/paneStore'
 import { usePopoverStore } from '@/stores/popoverStore'
+import { useUserProfileStore } from '@/stores/userProfileStore'
 import HierarchicalTabs from '@/components/common/hierarchicalTabs.vue'
 import ProfilePane from '@/components/panes/ProfilePane.vue'
 import DynamicPane from '@/components/panes/DynamicPane.vue'
@@ -190,6 +194,7 @@ export default {
     const objectStore = useObjectStore()
     const paneStore = usePaneStore()
     const popoverStore = usePopoverStore()
+    const userProfileStore = useUserProfileStore()
     
     // Types de panneaux disponibles
     const paneTypes = ['admin', 'configuration', 'data', 'serviceHub', 'sprintCenter']
@@ -199,6 +204,7 @@ export default {
       objectStore,
       paneStore,
       popoverStore,
+      userProfileStore,
       paneTypes
     }
   },
@@ -211,6 +217,15 @@ export default {
     }
   },
   computed: {
+    themeButtonIcon() {
+      // Si le thème actuel est clair, afficher l'icône de lune (pour basculer vers sombre)
+      // Si le thème actuel est sombre, afficher l'icône de soleil (pour basculer vers clair)
+      return this.userProfileStore.theme === 'light' ? 'fas fa-moon' : 'fas fa-sun'
+    },
+    themeButtonTitle() {
+      // Titre du bouton selon le thème actuel
+      return this.userProfileStore.theme === 'light' ? this.$t('theme.dark') : this.$t('theme.light')
+    },
     popoverPositionStyle() {
       if (!this.popoverStore.isVisible) return {}
       
@@ -251,6 +266,11 @@ export default {
     },
     closeProfilePane() {
       this.isProfilePaneVisible = false
+    },
+    toggleTheme() {
+      // Basculer entre les thèmes clair et sombre
+      const newTheme = this.userProfileStore.theme === 'light' ? 'dark' : 'light'
+      this.userProfileStore.setTheme(newTheme)
     },
     toggleServiceHub() {
       console.log('toggleServiceHub appelé dans App.vue');

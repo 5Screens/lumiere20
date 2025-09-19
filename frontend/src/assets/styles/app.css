@@ -76,19 +76,21 @@
   box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
 }
 
-/* Boutons d'information et de déconnexion - transparents avec effet au survol */
-.info-button, .logout-button {
+/* Boutons d'information, de bascule de thème et de déconnexion - transparents avec effet au survol */
+.info-button, .theme-toggle-button, .logout-button {
   background: transparent;
   border: none;
   color: var(--text-color);
   padding: 0.5rem;
   cursor: pointer;
   border-radius: 4px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-/* Effet au survol des boutons d'information et de déconnexion */
-.info-button:hover, .logout-button:hover {
+/* Effet au survol des boutons d'information, de bascule de thème et de déconnexion */
+.info-button:hover, .theme-toggle-button:hover, .logout-button:hover {
   background-color: var(--hover-color);
+  transform: scale(1.05);
 }
 
 /* Zone principale du contenu - occupe tout l'espace disponible */
