@@ -122,7 +122,12 @@
 
     <!-- Table footer -->
     <div class="table-footer">
-      Total éléments trouvés : {{ filteredData.length }}
+      <template v-if="infiniteScrollEnabled">
+        Total éléments trouvés : {{ totalRecords }} ({{ filteredData.length }} chargés)
+      </template>
+      <template v-else>
+        Total éléments trouvés : {{ filteredData.length }}
+      </template>
     </div>
 
     <!-- Infinite Scroll Loading Indicator -->
@@ -871,26 +876,48 @@ export default {
       // Load initial data
       this.loadInitialData();
       
-      // Setup intersection observer for scroll sentinel
-      if (this.$refs.scrollSentinel) {
-        this.intersectionObserver = new IntersectionObserver(
-          (entries) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting && !this.isLoadingMore && this.hasMoreData) {
-                console.log('[ReusableTableTab] Scroll sentinel intersected, loading more data');
-                this.loadMoreData();
-              }
-            });
-          },
-          {
-            root: this.$refs.tableContainer,
-            rootMargin: '100px',
-            threshold: 0.1
-          }
-        );
+      // Setup intersection observer for scroll sentinel with delay to ensure DOM is ready
+      this.$nextTick(() => {
+        console.log('[ReusableTableTab] Setting up intersection observer');
+        console.log('[ReusableTableTab] scrollSentinel ref:', this.$refs.scrollSentinel);
         
-        this.intersectionObserver.observe(this.$refs.scrollSentinel);
-      }
+        if (this.$refs.scrollSentinel) {
+          this.intersectionObserver = new IntersectionObserver(
+            (entries) => {
+              entries.forEach(entry => {
+                console.log('[ReusableTableTab] Intersection entry:', {
+                  isIntersecting: entry.isIntersecting,
+                  isLoadingMore: this.isLoadingMore,
+                  hasMoreData: this.hasMoreData,
+                  currentOffset: this.currentOffset,
+                  totalRecords: this.totalRecords,
+                  tableDataLength: this.tableData.length
+                });
+                
+                if (entry.isIntersecting && !this.isLoadingMore && this.hasMoreData) {
+                  console.log('[ReusableTableTab] ✅ Conditions met, loading more data');
+                  this.loadMoreData();
+                } else if (entry.isIntersecting) {
+                  console.log('[ReusableTableTab] ❌ Intersection detected but conditions not met:', {
+                    isLoadingMore: this.isLoadingMore,
+                    hasMoreData: this.hasMoreData
+                  });
+                }
+              });
+            },
+            {
+              root: this.$refs.tableContainer, // Use table container as root
+              rootMargin: '50px', // Smaller margin - trigger when closer
+              threshold: 0.1 // Require 10% visibility
+            }
+          );
+          
+          this.intersectionObserver.observe(this.$refs.scrollSentinel);
+          console.log('[ReusableTableTab] Intersection observer configured successfully');
+        } else {
+          console.error('[ReusableTableTab] scrollSentinel ref not found!');
+        }
+      });
     },
 
     /**
@@ -911,6 +938,7 @@ export default {
         this.error = error.message || 'Erreur lors du chargement des données';
       } finally {
         this.isLoadingMore = false;
+        console.log('[ReusableTableTab] ✅ Initial data loaded, isLoadingMore set to false');
       }
     },
 
@@ -934,6 +962,7 @@ export default {
         this.error = error.message || 'Erreur lors du chargement de données supplémentaires';
       } finally {
         this.isLoadingMore = false;
+        console.log('[ReusableTableTab] ✅ More data loaded, isLoadingMore set to false');
       }
     },
 
@@ -1014,14 +1043,36 @@ export default {
     },
 
     /**
+     * Reset and reload data for infinite scroll
+     */
+    resetAndReload() {
+      console.log('[ReusableTableTab] Reset and reload');
+      
+      if (this.infiniteScrollEnabled) {
+        // Reset infinite scroll state
+        this.tableData = [];
+        this.currentOffset = 0;
+        this.hasMoreData = true;
+        this.totalRecords = 0;
+        this.error = null;
+        
+        // Reload initial data
+        this.loadInitialData();
+      } else {
+        // Traditional reload
+        this.fetchData();
+      }
+    },
+
+    /**
      * Reset and reload data when filters or sorting change
      */
-    async resetAndReload() {
+    async resetInfiniteScrollData() {
       if (!this.infiniteScrollEnabled) {
         return;
       }
       
-      console.log('[ReusableTableTab] Resetting and reloading data');
+      console.log('[ReusableTableTab] Resetting infinite scroll data');
       
       this.currentOffset = 0;
       this.hasMoreData = true;

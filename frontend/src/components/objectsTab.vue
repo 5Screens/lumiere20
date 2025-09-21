@@ -65,8 +65,16 @@ export default {
     }
   },
   mounted() {
-    console.log('[ObjectsTab] Exécution de mounted()', this.store.activeTabId);
-    // Après un rafraîchissement de la page, même si l'onglet est marqué comme chargé,
+    console.log('[ObjectsTab] Exécution de mounted()', this.data.id_tab);
+    
+    // Si le scroll infini est activé, ne pas charger les données ici
+    // Le composant ReusableTableTab s'en charge automatiquement
+    if (this.shouldUseInfiniteScroll) {
+      console.log('[ObjectsTab] Scroll infini activé, pas de chargement manuel des données');
+      return;
+    }
+    
+    // Après le montage du composant, il se peut que les données ne soient pas encore chargées
     // les données ne sont pas réellement présentes dans le composant ReusableTableTab
     // On vérifie donc si le tableau a des données
     this.$nextTick(() => {
@@ -120,9 +128,9 @@ export default {
       // Liste des types d'objets qui utilisent le scroll infini
       const infiniteScrollTypes = [
         'Person',        // Personnes - peut avoir beaucoup d'enregistrements
-        'Ticket',        // Tickets - généralement beaucoup d'enregistrements
-        'Entity',        // Entités - peut être nombreuses
-        'Location'       // Localisations - peut être nombreuses
+        //'Ticket',        // Tickets - généralement beaucoup d'enregistrements
+        //'Entity',        // Entités - peut être nombreuses
+        //'Location'       // Localisations - peut être nombreuses
       ];
       
       const className = this.data.className;
@@ -224,7 +232,14 @@ export default {
       }
     },
     handleRefresh() {
-      this.fetchData(true)
+      if (this.shouldUseInfiniteScroll) {
+        // En mode scroll infini, réinitialiser le composant ReusableTableTab
+        console.log('[ObjectsTab] Refresh en mode scroll infini');
+        this.$refs.table.resetAndReload();
+      } else {
+        // En mode pagination traditionnelle
+        this.fetchData(true);
+      }
     },
     async fetchData(forceRefresh = false) {
       // Si les données sont déjà chargées et qu'on ne force pas le rafraîchissement, on ne fait rien
