@@ -118,6 +118,8 @@
           </tr>
         </transition-group>
       </table>
+      <!-- Scroll Sentinel for Infinite Scroll (moved inside scrollable container) -->
+      <div v-if="infiniteScrollEnabled" ref="scrollSentinel" class="scroll-sentinel"></div>
     </div>
 
     <!-- Table footer -->
@@ -161,8 +163,6 @@
       </div>
     </div>
 
-    <!-- Scroll Sentinel for Infinite Scroll -->
-    <div v-if="infiniteScrollEnabled" ref="scrollSentinel" class="scroll-sentinel"></div>
   </div>
   <div class="copy-icon" v-if="showCopyIconAt" :style="copyIconStyle" @click="copyToClipboard" :class="{ 'fade-out': isFading }">
     <i class="fas fa-copy"></i>
