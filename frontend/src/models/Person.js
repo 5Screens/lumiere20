@@ -106,9 +106,14 @@ export class Person {
   /**
    * Retourne l'endpoint API pour les personnes
    * @param {string} method - Méthode HTTP (GET, POST, PATCH, DELETE)
+   * @param {Object} options - Options supplémentaires
+   * @param {boolean} options.paginated - Si true, retourne l'endpoint paginé
    * @returns {string} URL de l'endpoint
    */
-  static getApiEndpoint(method = 'GET') {
+  static getApiEndpoint(method = 'GET', options = {}) {
+    if (options.paginated) {
+      return 'persons/paginated';
+    }
     return 'persons';
   }
 

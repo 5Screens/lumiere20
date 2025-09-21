@@ -941,7 +941,31 @@ export default {
      * Load a batch of data from the paginated API
      */
     async loadDataBatch() {
-      const url = this.buildPaginatedUrl();
+      const params = new URLSearchParams();
+      params.append('offset', this.currentOffset.toString());
+      params.append('limit', this.pageSize.toString());
+      
+      // Add sorting
+      if (this.sortColumn) {
+        params.append('sortBy', this.sortColumn);
+        params.append('sortDirection', this.sortDirection);
+      }
+      
+      // Add search
+      const searchTerm = this.getGlobalSearchTerm();
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      
+      // Add filters
+      Object.keys(this.filters).forEach(key => {
+        const value = this.filters[key];
+        if (value && value.trim()) {
+          params.append(`filter_${key}`, value.trim());
+        }
+      });
+      
+      const url = `${this.apiUrl}?${params.toString()}`;
       console.log('[ReusableTableTab] Loading batch from URL:', url);
       
       const response = await apiService.get(url);
@@ -978,42 +1002,6 @@ export default {
       }
     },
 
-    /**
-     * Build URL for paginated API call
-     */
-    buildPaginatedUrl() {
-      // Replace the base URL with paginated endpoint
-      let baseUrl = this.apiUrl;
-      if (baseUrl.includes('/persons')) {
-        baseUrl = baseUrl.replace('/persons', '/persons/paginated');
-      }
-      
-      const params = new URLSearchParams();
-      params.append('offset', this.currentOffset.toString());
-      params.append('limit', this.pageSize.toString());
-      
-      // Add sorting
-      if (this.sortColumn) {
-        params.append('sortBy', this.sortColumn);
-        params.append('sortDirection', this.sortDirection);
-      }
-      
-      // Add search
-      const searchTerm = this.getGlobalSearchTerm();
-      if (searchTerm) {
-        params.append('search', searchTerm);
-      }
-      
-      // Add filters
-      Object.keys(this.filters).forEach(key => {
-        const value = this.filters[key];
-        if (value && value.trim()) {
-          params.append(`filter_${key}`, value.trim());
-        }
-      });
-      
-      return `${baseUrl}?${params.toString()}`;
-    },
 
     /**
      * Get global search term from filters
