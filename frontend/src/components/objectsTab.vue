@@ -23,7 +23,9 @@
       @error="handleError"
       :selectable="true"
       :filterable="true"
-      :paginated="true"
+      :paginated="!shouldUseInfiniteScroll"
+      :infiniteScrollEnabled="shouldUseInfiniteScroll"
+      :pageSize="infiniteScrollPageSize"
     />
   </div>
 </template>
@@ -111,6 +113,40 @@ export default {
       const endpoint = this.getApiEndpoint("GET");
       console.log('[ObjectsTab] apiUrl recalculée:', endpoint);
       return endpoint;
+    },
+    
+    // Détermine si le scroll infini doit être utilisé pour ce type d'objet
+    shouldUseInfiniteScroll() {
+      // Liste des types d'objets qui utilisent le scroll infini
+      const infiniteScrollTypes = [
+        'Person',        // Personnes - peut avoir beaucoup d'enregistrements
+        'Ticket',        // Tickets - généralement beaucoup d'enregistrements
+        'Entity',        // Entités - peut être nombreuses
+        'Location'       // Localisations - peut être nombreuses
+      ];
+      
+      const className = this.data.className;
+      const useInfiniteScroll = infiniteScrollTypes.includes(className);
+      
+      console.log(`[ObjectsTab] shouldUseInfiniteScroll pour ${className}:`, useInfiniteScroll);
+      return useInfiniteScroll;
+    },
+    
+    // Taille de page pour le scroll infini
+    infiniteScrollPageSize() {
+      // Taille de page adaptée selon le type d'objet
+      const pageSizes = {
+        'Person': 50,      // Personnes - taille moyenne
+        'Ticket': 25,      // Tickets - plus petite car plus de données par ligne
+        'Entity': 100,     // Entités - plus grande car moins de données par ligne
+        'Location': 75     // Localisations - taille moyenne-grande
+      };
+      
+      const className = this.data.className;
+      const pageSize = pageSizes[className] || 50; // Défaut: 50
+      
+      console.log(`[ObjectsTab] infiniteScrollPageSize pour ${className}:`, pageSize);
+      return pageSize;
     }
     // Les computed properties formType, createTitle, uniqueIdentifier et nameField
     // ont été supprimées car elles sont remplacées par les getters de class
