@@ -31,7 +31,6 @@
 
 /* Ligne individuelle dans le corps du tableau - change de couleur au survol */
 .audit-table tbody tr {
-  transition: background-color 0.2s ease;
   background-color: var(--bg-color);
 }
 
