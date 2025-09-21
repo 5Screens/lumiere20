@@ -81,6 +81,24 @@ export const usePaneStore = defineStore('pane', {
         ],
         sections: []
       },
+      mail: {
+        type: 'mail',
+        hasSections: false,
+        items: [],
+        sections: []
+      },
+      portalsBuilder: {
+        type: 'portalsBuilder',
+        hasSections: false,
+        items: [],
+        sections: []
+      },
+      tableaux: {
+        type: 'tableaux',
+        hasSections: false,
+        items: [],
+        sections: []
+      },
       dataPane: {
         type: 'dataPane',
         hasSections: true,

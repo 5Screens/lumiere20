@@ -29,7 +29,7 @@
         <ul>
           <li>
             <a href="#" 
-               @click.prevent="toggleServiceHub" 
+               @click.prevent 
                @mouseenter="showTooltipMenu('serviceHub', $event)"
                @mouseleave="hideTooltipMenu"
                data-service-hub-toggle>
@@ -38,28 +38,52 @@
           </li>
           <li>
             <a href="#" 
-               @click.prevent="toggleSprintCenter" 
+               @click.prevent 
                @mouseenter="showTooltipMenu('sprintCenter', $event)"
                @mouseleave="hideTooltipMenu"
                data-sprint-center-toggle>
               {{ $t('sprintCenter.title') }}
             </a>
           </li>
-          <li><a href="#" @click.prevent="showUnderConstruction('mail')">{{ $t('mail.title') }}</a></li>
-          <li><a href="#" @click.prevent="showUnderConstruction('portalsBuilder')">{{ $t('portalsBuilder.title') }}</a></li>
           <li>
             <a href="#" 
-               @click.prevent="toggleDataPane" 
+               @click.prevent
+               @mouseenter="showTooltipMenu('mail', $event)"
+               @mouseleave="hideTooltipMenu"
+               data-mail-toggle>
+              {{ $t('mail.title') }}
+            </a>
+          </li>
+          <li>
+            <a href="#" 
+               @click.prevent
+               @mouseenter="showTooltipMenu('portalsBuilder', $event)"
+               @mouseleave="hideTooltipMenu"
+               data-portals-builder-toggle>
+              {{ $t('portalsBuilder.title') }}
+            </a>
+          </li>
+          <li>
+            <a href="#" 
+               @click.prevent 
                @mouseenter="showTooltipMenu('dataPane', $event)"
                @mouseleave="hideTooltipMenu"
                data-data-pane-toggle>
               {{ $t('dataPane.title') }}
             </a>
           </li>
-          <li><a href="#" @click.prevent="showUnderConstruction('tableaux')">{{ $t('tableaux.title') }}</a></li>
           <li>
             <a href="#" 
-               @click.prevent="toggleConfiguration" 
+               @click.prevent
+               @mouseenter="showTooltipMenu('tableaux', $event)"
+               @mouseleave="hideTooltipMenu"
+               data-tableaux-toggle>
+              {{ $t('tableaux.title') }}
+            </a>
+          </li>
+          <li>
+            <a href="#" 
+               @click.prevent 
                @mouseenter="showTooltipMenu('configuration', $event)"
                @mouseleave="hideTooltipMenu"
                data-configuration-toggle>
@@ -68,7 +92,7 @@
           </li>
           <li>
             <a href="#" 
-               @click.prevent="toggleAdmin" 
+               @click.prevent 
                @mouseenter="showTooltipMenu('admin', $event)"
                @mouseleave="hideTooltipMenu"
                data-admin-toggle>
@@ -89,88 +113,12 @@
       @close="closeProfilePane"
     />
 
-    <!-- Panneaux dynamiques pour remplacer tous les panneaux individuels -->
-    <!-- Service Hub Pane -->
-    <DynamicPane 
-      type="serviceHub"
-      :is-visible="paneStore.isPaneVisible('serviceHub')"
-      :items="paneStore.getPaneConfig('serviceHub').items"
-      :sections="paneStore.getPaneConfig('serviceHub').sections"
-      :has-sections="paneStore.getPaneConfig('serviceHub').hasSections"
-      @close="paneStore.closePane"
-      @mouse-enter="paneStore.handleMouseEnter"
-      @mouse-leave="paneStore.handleMouseLeave"
-      @open-tab="handleOpenTab"
-    />
-    
-    <!-- Sprint Center Pane -->
-    <DynamicPane 
-      type="sprintCenter"
-      :is-visible="paneStore.isPaneVisible('sprintCenter')"
-      :items="paneStore.getPaneConfig('sprintCenter').items"
-      :sections="paneStore.getPaneConfig('sprintCenter').sections"
-      :has-sections="paneStore.getPaneConfig('sprintCenter').hasSections"
-      @close="paneStore.closePane"
-      @mouse-enter="paneStore.handleMouseEnter"
-      @mouse-leave="paneStore.handleMouseLeave"
-      @open-tab="handleOpenTab"
-    />
-    
-    <!-- Data Pane -->
-    <DynamicPane 
-      type="dataPane"
-      :is-visible="paneStore.isPaneVisible('dataPane')"
-      :items="paneStore.getPaneConfig('dataPane').items"
-      :sections="paneStore.getPaneConfig('dataPane').sections"
-      :has-sections="paneStore.getPaneConfig('dataPane').hasSections"
-      @close="paneStore.closePane"
-      @mouse-enter="paneStore.handleMouseEnter"
-      @mouse-leave="paneStore.handleMouseLeave"
-      @open-tab="handleOpenTab"
-    />
-    
-    <!-- Configuration Pane -->
-    <DynamicPane 
-      type="configuration"
-      :is-visible="paneStore.isPaneVisible('configuration')"
-      :items="paneStore.getPaneConfig('configuration').items"
-      :sections="paneStore.getPaneConfig('configuration').sections"
-      :has-sections="paneStore.getPaneConfig('configuration').hasSections"
-      @close="paneStore.closePane"
-      @mouse-enter="paneStore.handleMouseEnter"
-      @mouse-leave="paneStore.handleMouseLeave"
-      @open-tab="handleOpenTab"
-    />
-    
-    <!-- Admin Pane -->
-    <DynamicPane 
-      type="admin"
-      :is-visible="paneStore.isPaneVisible('admin')"
-      :items="paneStore.getPaneConfig('admin').items"
-      :sections="paneStore.getPaneConfig('admin').sections"
-      :has-sections="paneStore.getPaneConfig('admin').hasSections"
-      @close="paneStore.closePane"
-      @mouse-enter="paneStore.handleMouseEnter"
-      @mouse-leave="paneStore.handleMouseLeave"
-      @open-tab="handleOpenTab"
-    />
-    
-    <!-- Pane En cours de construction -->
-    <DynamicPane 
-      type="underConstruction"
-      :is-visible="isUnderConstructionVisible"
-      :items="[]"
-      :sections="[]"
-      :has-sections="false"
-      @close="closeUnderConstruction"
-      @mouse-enter="paneStore.handleMouseEnter"
-      @mouse-leave="paneStore.handleMouseLeave"
-    />
-
     <object-edit-view
       v-if="isCreateModalVisible"
       @close="closeCreateModal"
     />
+
+
 
     <!-- Fenêtre modale pour afficher les messages des stores -->
     <div v-if="objectStore.message || tabsStore.message" class="notification-modal">
@@ -231,7 +179,6 @@ import { usePopoverStore } from '@/stores/popoverStore'
 import { useUserProfileStore } from '@/stores/userProfileStore'
 import HierarchicalTabs from '@/components/common/hierarchicalTabs.vue'
 import ProfilePane from '@/components/panes/ProfilePane.vue'
-import DynamicPane from '@/components/panes/DynamicPane.vue'
 import DynamicToolTipMenu from '@/components/panes/dynamicToolTipMenu.vue'
 import ObjectEditView from '@/components/coreForms/objectEditView.vue'
 import YesNoModal from '@/components/common/yesNoModal.vue'
@@ -241,7 +188,6 @@ export default {
   components: {
     HierarchicalTabs,
     ProfilePane,
-    DynamicPane,
     DynamicToolTipMenu,
     ObjectEditView,
     YesNoModal
@@ -269,8 +215,6 @@ export default {
     return {
       isProfilePaneVisible: false,
       isCreateModalVisible: false,
-      isUnderConstructionVisible: false,
-      underConstructionType: '',
       tooltipMenu: {
         isVisible: false,
         paneType: '',
@@ -340,29 +284,6 @@ export default {
       const newTheme = this.userProfileStore.theme === 'light' ? 'dark' : 'light'
       this.userProfileStore.setTheme(newTheme)
     },
-    toggleServiceHub() {
-      console.log('toggleServiceHub appelé dans App.vue');
-      this.paneStore.togglePane('serviceHub')
-    },
-    toggleSprintCenter() {
-      this.paneStore.togglePane('sprintCenter')
-    },
-    toggleDataPane() {
-      this.paneStore.togglePane('dataPane')
-    },
-    toggleConfiguration() {
-      this.paneStore.togglePane('configuration')
-    },
-    toggleAdmin() {
-      this.paneStore.togglePane('admin')
-    },
-    showUnderConstruction(type) {
-      this.underConstructionType = type;
-      this.isUnderConstructionVisible = true;
-    },
-    closeUnderConstruction() {
-      this.isUnderConstructionVisible = false;
-    },
     handleOpenTab(tabData) {
       // Si la classe est null, afficher un message "En cours de construction"
       if (tabData.className === null) {
@@ -415,7 +336,10 @@ export default {
       const paneIcons = {
         serviceHub: 'fas fa-concierge-bell',
         sprintCenter: 'fas fa-running',
+        mail: 'fas fa-envelope',
+        portalsBuilder: 'fas fa-globe',
         dataPane: 'fas fa-database',
+        tableaux: 'fas fa-chart-bar',
         configuration: 'fas fa-cogs',
         admin: 'fas fa-user-shield'
       }
