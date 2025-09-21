@@ -110,11 +110,11 @@ export default {
   },
   mail :{
     title:'Messagerie',
-    description:'Lisez ici vos mails et laissez vous aider par notre IA',
+    description:'Lisez ici vos mails et laissez vous aider par notre IA >>> EN COURS DE DEVELOPPEMENT !!',
   },
   portalsBuilder :{
     title:'Portails clients',
-    description:'Créez et gérer ici les portails créés pour vos clients',
+    description:'Créez et gérer ici les portails créés pour vos clients >>> EN COURS DE DEVELOPPEMENT !!',
   },
   dataPane: {
     title: 'Données',
@@ -184,7 +184,7 @@ export default {
   },
   tableaux :{
     title:'Tableaux',
-    description:'Gérez ici les tableaux de bord de votre organisation',
+    description:'Gérez ici les tableaux de bord de votre organisation >>> EN COURS DE DEVELOPPEMENT !!',
   },
   configuration: {
     title: 'Configuration',
