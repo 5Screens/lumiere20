@@ -33,7 +33,7 @@
                @mouseenter="showTooltipMenu('serviceHub', $event)"
                @mouseleave="hideTooltipMenu"
                data-service-hub-toggle>
-              {{ $t('nav.serviceHub') }}
+              {{ $t('serviceHub.title') }}
             </a>
           </li>
           <li>
@@ -42,28 +42,28 @@
                @mouseenter="showTooltipMenu('sprintCenter', $event)"
                @mouseleave="hideTooltipMenu"
                data-sprint-center-toggle>
-              {{ $t('nav.sprintCenter') }}
+              {{ $t('sprintCenter.title') }}
             </a>
           </li>
-          <li><a href="#" @click.prevent="showUnderConstruction('mail')">{{ $t('nav.mail') }}</a></li>
-          <li><a href="#" @click.prevent="showUnderConstruction('portalsBuilder')">{{ $t('nav.portalsBuilder') }}</a></li>
+          <li><a href="#" @click.prevent="showUnderConstruction('mail')">{{ $t('mail.title') }}</a></li>
+          <li><a href="#" @click.prevent="showUnderConstruction('portalsBuilder')">{{ $t('portalsBuilder.title') }}</a></li>
           <li>
             <a href="#" 
                @click.prevent="toggleDataPane" 
                @mouseenter="showTooltipMenu('dataPane', $event)"
                @mouseleave="hideTooltipMenu"
                data-data-pane-toggle>
-              {{ $t('nav.data') }}
+              {{ $t('dataPane.title') }}
             </a>
           </li>
-          <li><a href="#" @click.prevent="showUnderConstruction('tableaux')">{{ $t('nav.tableaux') }}</a></li>
+          <li><a href="#" @click.prevent="showUnderConstruction('tableaux')">{{ $t('tableaux.title') }}</a></li>
           <li>
             <a href="#" 
                @click.prevent="toggleConfiguration" 
                @mouseenter="showTooltipMenu('configuration', $event)"
                @mouseleave="hideTooltipMenu"
                data-configuration-toggle>
-              {{ $t('nav.configuration') }}
+              {{ $t('configuration.title') }}
             </a>
           </li>
           <li>
@@ -72,7 +72,7 @@
                @mouseenter="showTooltipMenu('admin', $event)"
                @mouseleave="hideTooltipMenu"
                data-admin-toggle>
-              {{ $t('nav.administration') }}
+              {{ $t('admin.title') }}
             </a>
           </li>
         </ul>
