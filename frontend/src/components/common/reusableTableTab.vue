@@ -125,8 +125,25 @@
       Total éléments trouvés : {{ filteredData.length }}
     </div>
 
-    <!-- Pagination -->
-    <div class="pagination" v-if="paginated">
+    <!-- Infinite Scroll Loading Indicator -->
+    <div v-if="infiniteScrollEnabled" class="infinite-scroll-status">
+      <div v-if="isLoadingMore" class="loading-indicator">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Chargement de plus d'éléments...</span>
+      </div>
+      <div v-else-if="!hasMoreData && tableData.length > 0" class="no-more-data">
+        <i class="fas fa-check-circle"></i>
+        <span>Toutes les données ont été chargées</span>
+      </div>
+      <div v-else-if="error" class="error-indicator">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>{{ error }}</span>
+        <button @click="retryLoad" class="retry-button">Réessayer</button>
+      </div>
+    </div>
+
+    <!-- Traditional Pagination (fallback) -->
+    <div class="pagination" v-if="!infiniteScrollEnabled && paginated">
       <button @click="previousPage" :disabled="currentPage === 1">&lt;</button>
       <span>Page {{ currentPage }} of {{ totalPages }}</span>
       <button @click="nextPage" :disabled="currentPage === totalPages">&gt;</button>
@@ -138,6 +155,9 @@
         </select>
       </div>
     </div>
+
+    <!-- Scroll Sentinel for Infinite Scroll -->
+    <div v-if="infiniteScrollEnabled" ref="scrollSentinel" class="scroll-sentinel"></div>
   </div>
   <div class="copy-icon" v-if="showCopyIconAt" :style="copyIconStyle" @click="copyToClipboard" :class="{ 'fade-out': isFading }">
     <i class="fas fa-copy"></i>
@@ -214,6 +234,14 @@ export default {
     paginated: {
       type: Boolean,
       default: true
+    },
+    infiniteScrollEnabled: {
+      type: Boolean,
+      default: false
+    },
+    pageSize: {
+      type: Number,
+      default: 50
     }
   },
   data() {
@@ -248,11 +276,27 @@ export default {
       selectedCell: { rowUuid: null, colKey: null },
       cellRefs: {},
       truncatedCells: {},
-      rafId: null
+      rafId: null,
+      // Infinite scroll data
+      isLoadingMore: false,
+      hasMoreData: true,
+      totalRecords: 0,
+      currentOffset: 0,
+      error: null,
+      intersectionObserver: null,
+      lastSearchTerm: '',
+      lastSortColumn: '',
+      lastSortDirection: 'asc',
+      debounceTimeout: null
     }
   },
   computed: {
     filteredData() {
+      if (this.infiniteScrollEnabled) {
+        // For infinite scroll, filtering and sorting is done server-side
+        return this.tableData
+      }
+      
       return this.tableData.filter(row => {
         return Object.keys(this.filters).every(key => {
           const column = this.columns.find(col => col.key === key)
@@ -366,6 +410,11 @@ export default {
       )
     },
     paginatedData() {
+      if (this.infiniteScrollEnabled) {
+        // For infinite scroll, return all loaded data
+        return this.filteredData
+      }
+      
       if (!this.paginated) return this.filteredData
       
       const start = (this.currentPage - 1) * this.itemsPerPage
@@ -398,6 +447,11 @@ export default {
       this.initializeColumnWidths()
       this.measureColumnWidths()
       this.recomputeAllTruncation()
+      
+      // Setup infinite scroll if enabled
+      if (this.infiniteScrollEnabled) {
+        this.setupInfiniteScroll()
+      }
     })
     window.addEventListener('resize', this.scheduleTruncationRecompute)
     const tableContainer = this.$refs.tableContainer
@@ -410,6 +464,15 @@ export default {
     const tableContainer = this.$refs.tableContainer || null
     if (tableContainer) {
       tableContainer.removeEventListener('scroll', this.hidePopoverOnScroll)
+    }
+    
+    // Cleanup infinite scroll
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect()
+    }
+    
+    if (this.debounceTimeout) {
+      clearTimeout(this.debounceTimeout)
     }
   },
   methods: {
@@ -525,6 +588,9 @@ export default {
       this.currentPage = 1
     },
     sortBy(column) {
+      const oldSortColumn = this.sortColumn;
+      const oldSortDirection = this.sortDirection;
+      
       if (this.sortColumn === column) {
         if (this.sortDirection === 'asc') {
           this.sortDirection = 'desc'
@@ -535,6 +601,12 @@ export default {
       } else {
         this.sortColumn = column
         this.sortDirection = 'asc'
+      }
+      
+      // Reload data for infinite scroll if sorting changed
+      if (this.infiniteScrollEnabled && 
+          (oldSortColumn !== this.sortColumn || oldSortDirection !== this.sortDirection)) {
+        this.resetAndReload();
       }
     },
     showCopyIcon(event, content) {
@@ -788,6 +860,207 @@ export default {
       
       // Actif si au moins une contrainte est choisie (valeurs ou blanks)
       return !!filter.blanks || (Array.isArray(filter.values) && filter.values.length > 0)
+    },
+
+    /**
+     * Setup infinite scroll functionality
+     */
+    setupInfiniteScroll() {
+      console.log('[ReusableTableTab] Setting up infinite scroll');
+      
+      // Load initial data
+      this.loadInitialData();
+      
+      // Setup intersection observer for scroll sentinel
+      if (this.$refs.scrollSentinel) {
+        this.intersectionObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting && !this.isLoadingMore && this.hasMoreData) {
+                console.log('[ReusableTableTab] Scroll sentinel intersected, loading more data');
+                this.loadMoreData();
+              }
+            });
+          },
+          {
+            root: this.$refs.tableContainer,
+            rootMargin: '100px',
+            threshold: 0.1
+          }
+        );
+        
+        this.intersectionObserver.observe(this.$refs.scrollSentinel);
+      }
+    },
+
+    /**
+     * Load initial data for infinite scroll
+     */
+    async loadInitialData() {
+      console.log('[ReusableTableTab] Loading initial data for infinite scroll');
+      
+      this.isLoadingMore = true;
+      this.error = null;
+      this.currentOffset = 0;
+      this.tableData = [];
+      
+      try {
+        await this.loadDataBatch();
+      } catch (error) {
+        console.error('[ReusableTableTab] Error loading initial data:', error);
+        this.error = error.message || 'Erreur lors du chargement des données';
+      } finally {
+        this.isLoadingMore = false;
+      }
+    },
+
+    /**
+     * Load more data for infinite scroll
+     */
+    async loadMoreData() {
+      if (this.isLoadingMore || !this.hasMoreData) {
+        return;
+      }
+      
+      console.log('[ReusableTableTab] Loading more data, offset:', this.currentOffset);
+      
+      this.isLoadingMore = true;
+      this.error = null;
+      
+      try {
+        await this.loadDataBatch();
+      } catch (error) {
+        console.error('[ReusableTableTab] Error loading more data:', error);
+        this.error = error.message || 'Erreur lors du chargement de données supplémentaires';
+      } finally {
+        this.isLoadingMore = false;
+      }
+    },
+
+    /**
+     * Load a batch of data from the paginated API
+     */
+    async loadDataBatch() {
+      const url = this.buildPaginatedUrl();
+      console.log('[ReusableTableTab] Loading batch from URL:', url);
+      
+      const response = await apiService.get(url);
+      
+      if (response && response.data) {
+        // Add new data to existing data
+        const newItems = response.data.map(item => ({
+          ...item,
+          selected: false
+        }));
+        
+        if (this.currentOffset === 0) {
+          // Initial load
+          this.tableData = newItems;
+        } else {
+          // Append new data
+          this.tableData.push(...newItems);
+        }
+        
+        // Update pagination info
+        this.totalRecords = response.total || 0;
+        this.hasMoreData = response.hasMore || false;
+        this.currentOffset += newItems.length;
+        
+        console.log(`[ReusableTableTab] Loaded ${newItems.length} items, total: ${this.tableData.length}/${this.totalRecords}`);
+        
+        // Measure column widths after first load
+        if (this.currentOffset === newItems.length) {
+          this.$nextTick(() => this.measureColumnWidths());
+        }
+      } else {
+        console.warn('[ReusableTableTab] Invalid response format for paginated data');
+        this.hasMoreData = false;
+      }
+    },
+
+    /**
+     * Build URL for paginated API call
+     */
+    buildPaginatedUrl() {
+      // Replace the base URL with paginated endpoint
+      let baseUrl = this.apiUrl;
+      if (baseUrl.includes('/persons')) {
+        baseUrl = baseUrl.replace('/persons', '/persons/paginated');
+      }
+      
+      const params = new URLSearchParams();
+      params.append('offset', this.currentOffset.toString());
+      params.append('limit', this.pageSize.toString());
+      
+      // Add sorting
+      if (this.sortColumn) {
+        params.append('sortBy', this.sortColumn);
+        params.append('sortDirection', this.sortDirection);
+      }
+      
+      // Add search
+      const searchTerm = this.getGlobalSearchTerm();
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      
+      // Add filters
+      Object.keys(this.filters).forEach(key => {
+        const value = this.filters[key];
+        if (value && value.trim()) {
+          params.append(`filter_${key}`, value.trim());
+        }
+      });
+      
+      return `${baseUrl}?${params.toString()}`;
+    },
+
+    /**
+     * Get global search term from filters
+     */
+    getGlobalSearchTerm() {
+      // You can implement logic to combine multiple filters into a global search
+      // For now, we'll use the first non-empty filter as global search
+      const filterValues = Object.values(this.filters).filter(v => v && v.trim());
+      return filterValues.length > 0 ? filterValues[0].trim() : '';
+    },
+
+    /**
+     * Reset and reload data when filters or sorting change
+     */
+    async resetAndReload() {
+      if (!this.infiniteScrollEnabled) {
+        return;
+      }
+      
+      console.log('[ReusableTableTab] Resetting and reloading data');
+      
+      this.currentOffset = 0;
+      this.hasMoreData = true;
+      this.error = null;
+      
+      await this.loadInitialData();
+    },
+
+    /**
+     * Debounced reload for search/filter changes
+     */
+    debouncedReload() {
+      if (this.debounceTimeout) {
+        clearTimeout(this.debounceTimeout);
+      }
+      
+      this.debounceTimeout = setTimeout(() => {
+        this.resetAndReload();
+      }, 300); // 300ms debounce
+    },
+
+    /**
+     * Retry loading data after an error
+     */
+    async retryLoad() {
+      console.log('[ReusableTableTab] Retrying data load');
+      await this.loadMoreData();
     }
   },
   created() {
@@ -797,6 +1070,37 @@ export default {
     })
     // L'appel à fetchData() a été supprimé ici pour éviter la double initialisation
     // Le chargement des données est maintenant géré uniquement par le composant parent (objectsTab.vue)
+  },
+  
+  watch: {
+    // Watch for filter changes in infinite scroll mode
+    filters: {
+      handler(newFilters, oldFilters) {
+        if (this.infiniteScrollEnabled) {
+          // Check if any filter actually changed
+          const hasChanged = Object.keys(newFilters).some(key => 
+            newFilters[key] !== oldFilters[key]
+          );
+          
+          if (hasChanged) {
+            console.log('[ReusableTableTab] Filters changed, reloading data');
+            this.debouncedReload();
+          }
+        }
+      },
+      deep: true
+    },
+    
+    // Watch for advanced filter changes
+    advancedFilters: {
+      handler() {
+        if (this.infiniteScrollEnabled) {
+          console.log('[ReusableTableTab] Advanced filters changed, reloading data');
+          this.debouncedReload();
+        }
+      },
+      deep: true
+    }
   }
 }
 </script>

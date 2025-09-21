@@ -5,6 +5,20 @@ const getPersonsQuerySchema = Joi.object({
     lang: Joi.string().min(2).max(5).optional()
 });
 
+// Validation schema for paginated query parameters
+const getPersonsPaginatedQuerySchema = Joi.object({
+    lang: Joi.string().min(2).max(5).optional(),
+    offset: Joi.number().integer().min(0).optional(),
+    limit: Joi.number().integer().min(1).max(100).optional(),
+    sortBy: Joi.string().valid(
+        'updated_at', 'created_at', 'first_name', 'last_name', 'person_name',
+        'email', 'job_role', 'active', 'ref_entity_name', 'ref_location_name',
+        'raised_tickets_count', 'assigned_tickets_count', 'watched_tickets_count'
+    ).optional(),
+    sortDirection: Joi.string().valid('asc', 'desc').optional(),
+    search: Joi.string().max(255).optional()
+}).pattern(/^filter_/, Joi.string().max(255)); // Allow filter_* parameters
+
 // Validation schema for person UUID parameter
 const personUuidParamSchema = Joi.object({
     uuid: Joi.string().guid({ version: 'uuidv4' }).required()
@@ -94,6 +108,7 @@ const personEntityUuidParamSchema = Joi.object({
 
 module.exports = {
     getPersonsQuerySchema,
+    getPersonsPaginatedQuerySchema,
     personUuidParamSchema,
     createPersonSchema,
     updatePersonSchema,

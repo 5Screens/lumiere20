@@ -68,6 +68,170 @@ const getAllPersons = async (lang) => {
 };
 
 /**
+ * Get persons with pagination support for infinite scroll
+ * @param {Object} options - Pagination and filtering options
+ * @param {number} [options.offset=0] - Number of records to skip
+ * @param {number} [options.limit=50] - Number of records to return
+ * @param {string} [options.sortBy='updated_at'] - Column to sort by
+ * @param {string} [options.sortDirection='desc'] - Sort direction (asc/desc)
+ * @param {Object} [options.filters={}] - Filters to apply
+ * @param {string} [options.search=''] - Global search term
+ * @param {string} [lang] - Optional language parameter for localization
+ * @returns {Promise<Object>} Object with data, total, hasMore, and pagination info
+ */
+const getPersonsPaginated = async (options = {}, lang) => {
+    try {
+        const {
+            offset = 0,
+            limit = 50,
+            sortBy = 'updated_at',
+            sortDirection = 'desc',
+            filters = {},
+            search = ''
+        } = options;
+
+        logger.info(`[SERVICE] - Getting persons paginated - offset: ${offset}, limit: ${limit}, sortBy: ${sortBy}, sortDirection: ${sortDirection}`);
+
+        // Validate sort direction
+        const validSortDirection = ['asc', 'desc'].includes(sortDirection.toLowerCase()) ? sortDirection.toLowerCase() : 'desc';
+        
+        // Validate sort column (prevent SQL injection)
+        const validSortColumns = [
+            'updated_at', 'created_at', 'first_name', 'last_name', 'person_name', 
+            'email', 'job_role', 'active', 'ref_entity_name', 'ref_location_name',
+            'raised_tickets_count', 'assigned_tickets_count', 'watched_tickets_count'
+        ];
+        const validSortBy = validSortColumns.includes(sortBy) ? sortBy : 'updated_at';
+
+        // Build WHERE clause for filters and search
+        let whereConditions = [];
+        let queryParams = [];
+        let paramIndex = 1;
+
+        // Global search across multiple fields
+        if (search && search.trim()) {
+            whereConditions.push(`(
+                LOWER(p.first_name || ' ' || p.last_name) LIKE LOWER($${paramIndex}) OR
+                LOWER(p.email) LIKE LOWER($${paramIndex}) OR
+                LOWER(p.job_role) LIKE LOWER($${paramIndex}) OR
+                LOWER(e.name) LIKE LOWER($${paramIndex}) OR
+                LOWER(l.name) LIKE LOWER($${paramIndex})
+            )`);
+            queryParams.push(`%${search.trim()}%`);
+            paramIndex++;
+        }
+
+        // Column-specific filters
+        Object.keys(filters).forEach(key => {
+            const value = filters[key];
+            if (value !== null && value !== undefined && value !== '') {
+                if (key === 'active' && typeof value === 'boolean') {
+                    whereConditions.push(`p.${key} = $${paramIndex}`);
+                    queryParams.push(value);
+                    paramIndex++;
+                } else if (typeof value === 'string') {
+                    whereConditions.push(`LOWER(p.${key}::text) LIKE LOWER($${paramIndex})`);
+                    queryParams.push(`%${value}%`);
+                    paramIndex++;
+                }
+            }
+        });
+
+        const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+        // Count total records
+        const countQuery = `
+            SELECT COUNT(*) as total
+            FROM configuration.persons p
+            LEFT JOIN configuration.entities e ON p.ref_entity_uuid = e.uuid
+            LEFT JOIN configuration.locations l ON p.ref_location_uuid = l.uuid
+            ${whereClause}
+        `;
+        
+        const countResult = await db.query(countQuery, queryParams);
+        const total = parseInt(countResult.rows[0].total);
+
+        // Main data query with pagination
+        const dataQuery = `
+            SELECT p.*, 
+                   p.first_name || ' ' || p.last_name AS person_name,
+                   
+                   -- Informations de l'entité de référence
+                   e.name as ref_entity_name,
+                   
+                   -- Informations de la localisation
+                   l.name as ref_location_name,
+                   
+                   -- Informations du manager approbateur
+                   manager.first_name || ' ' || manager.last_name as ref_approving_manager_name,
+                   
+                   -- Nombre de tickets enregistrés (requested_for_uuid)
+                   (SELECT COUNT(*) 
+                    FROM core.tickets t 
+                    WHERE t.requested_for_uuid = p.uuid) AS raised_tickets_count,
+                   
+                   -- Nombre de groupes dont la personne est membre
+                   (SELECT COUNT(*) 
+                    FROM configuration.rel_persons_groups rpg 
+                    WHERE rpg.rel_member = p.uuid) AS member_of_group_count,
+                   
+                   -- Nombre de tickets assignés à la personne
+                   (SELECT COUNT(*) 
+                    FROM core.rel_tickets_groups_persons rtgp 
+                    WHERE rtgp.rel_assigned_to_person = p.uuid 
+                      AND rtgp.type = 'ASSIGNED'
+                      AND rtgp.ended_at IS NULL) AS assigned_tickets_count,
+                   
+                   -- Nombre de tickets observés par la personne
+                   (SELECT COUNT(*) 
+                    FROM core.rel_tickets_groups_persons rtgp 
+                    WHERE rtgp.rel_assigned_to_person = p.uuid 
+                      AND rtgp.type = 'WATCHER'
+                      AND rtgp.ended_at IS NULL) AS watched_tickets_count,
+                   
+                   -- Nombre d'entités pour lesquelles la personne est approbateur budgétaire
+                   (SELECT COUNT(*) 
+                    FROM configuration.entities e 
+                    WHERE e.budget_approver_uuid = p.uuid) AS budget_approver_count
+                   
+            FROM configuration.persons p
+            LEFT JOIN configuration.entities e ON p.ref_entity_uuid = e.uuid
+            LEFT JOIN configuration.locations l ON p.ref_location_uuid = l.uuid
+            LEFT JOIN configuration.persons manager ON p.ref_approving_manager_uuid = manager.uuid
+            ${whereClause}
+            ORDER BY ${validSortBy === 'person_name' ? 'p.first_name || \' \' || p.last_name' : 'p.' + validSortBy} ${validSortDirection.toUpperCase()}
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        `;
+        
+        queryParams.push(limit, offset);
+        const dataResult = await db.query(dataQuery, queryParams);
+        
+        const hasMore = offset + limit < total;
+        const currentPage = Math.floor(offset / limit) + 1;
+        const totalPages = Math.ceil(total / limit);
+
+        logger.info(`[SERVICE] - Retrieved ${dataResult.rows.length} persons (${offset + 1}-${offset + dataResult.rows.length} of ${total})`);
+        
+        return {
+            data: dataResult.rows,
+            total,
+            hasMore,
+            pagination: {
+                offset,
+                limit,
+                currentPage,
+                totalPages,
+                sortBy: validSortBy,
+                sortDirection: validSortDirection
+            }
+        };
+    } catch (error) {
+        logger.error('[SERVICE] - Error getting persons paginated:', error);
+        throw error;
+    }
+};
+
+/**
  * Get a person by UUID with related data
  * @param {string} uuid - UUID of the person
  * @param {string} [lang] - Optional language parameter for localization
@@ -632,6 +796,7 @@ const removeApproverEntity = async (personUuid, entityUuid) => {
 
 module.exports = {
     getAllPersons,
+    getPersonsPaginated,
     getPersonByUuid,
     getPersonGroups,
     updatePerson,

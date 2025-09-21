@@ -23,6 +23,58 @@ const getPersons = async (req, res) => {
 };
 
 /**
+ * Get persons with pagination support for infinite scroll
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getPersonsPaginated = async (req, res) => {
+    try {
+        logger.info('[CONTROLLER] - Getting persons paginated');
+        
+        const {
+            offset = 0,
+            limit = 50,
+            sortBy = 'updated_at',
+            sortDirection = 'desc',
+            search = '',
+            lang
+        } = req.query;
+
+        // Parse filters from query parameters
+        const filters = {};
+        Object.keys(req.query).forEach(key => {
+            if (key.startsWith('filter_') && req.query[key]) {
+                const filterKey = key.replace('filter_', '');
+                filters[filterKey] = req.query[key];
+            }
+        });
+
+        const options = {
+            offset: parseInt(offset) || 0,
+            limit: Math.min(parseInt(limit) || 50, 100), // Max 100 items per request
+            sortBy,
+            sortDirection,
+            filters,
+            search
+        };
+
+        logger.info(`[CONTROLLER] - Pagination options: ${JSON.stringify(options)}`);
+        
+        const result = await service.getPersonsPaginated(options, lang);
+        
+        logger.info(`[CONTROLLER] - Successfully retrieved ${result.data.length} persons (${result.pagination.offset + 1}-${result.pagination.offset + result.data.length} of ${result.total})`);
+        
+        res.json(result);
+    } catch (error) {
+        logger.error('[CONTROLLER] - Error getting persons paginated:', error);
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+};
+
+/**
  * Get a person by UUID
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
@@ -321,6 +373,7 @@ const removeApproverEntity = async (req, res) => {
 
 module.exports = {
     getPersons,
+    getPersonsPaginated,
     getPersonByUuid,
     getPersonGroups,
     updatePerson,
