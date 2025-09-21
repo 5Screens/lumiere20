@@ -110,9 +110,8 @@ export default {
     apiUrl() {
       // Récupérer l'endpoint API à chaque fois que cette propriété est accédée
       // Cela garantit que les changements de langue sont pris en compte
-      const options = this.shouldUseInfiniteScroll ? { paginated: true } : {};
-      const endpoint = this.getApiEndpoint("GET", options);
-      console.log('[ObjectsTab] apiUrl recalculée:', endpoint, 'options:', options);
+      const endpoint = this.getApiEndpoint("GET");
+      console.log('[ObjectsTab] apiUrl recalculée:', endpoint);
       return endpoint;
     },
     
@@ -333,7 +332,7 @@ export default {
     },
     
     // Utiliser les getters de class pour obtenir l'endpoint API
-    getApiEndpoint(method = 'GET', options = {}) {
+    getApiEndpoint(method = 'GET') {
       // Récupérer la classe depuis le nom de classe
       let modelClass = null;
       
@@ -344,8 +343,8 @@ export default {
         this.data.class = modelClass;
       }
           
-      const endpoint = modelClass.getApiEndpoint(method, options);
-      console.log('[ObjectsTab] Endpoint API récupéré:', endpoint, 'avec options:', options);
+      const endpoint = modelClass.getApiEndpoint(method);
+      console.log('[ObjectsTab] Endpoint API récupéré:', endpoint);
       return endpoint;
 
     }

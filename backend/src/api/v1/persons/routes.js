@@ -11,14 +11,8 @@ router.use((req, res, next) => {
     next();
 });
 
-// GET /api/v1/persons
+// GET /api/v1/persons - Now always paginated
 router.get('/', 
-    validate({ query: getPersonsQuerySchema }),
-    controller.getPersons
-);
-
-// GET /api/v1/persons/paginated
-router.get('/paginated', 
     validate({ query: getPersonsPaginatedQuerySchema }),
     controller.getPersonsPaginated
 );

@@ -8,9 +8,9 @@ Le système de scroll infini a été implémenté pour améliorer les performanc
 
 ### Backend (Node.js)
 
-#### 1. Nouvelle API paginée
+#### 1. API unifiée et paginée
 
-**Endpoint :** `GET /api/v1/persons/paginated`
+**Endpoint :** `GET /api/v1/persons` (maintenant toujours paginé)
 
 **Paramètres de requête :**
 - `offset` (number) : Nombre d'enregistrements à ignorer (défaut: 0)
@@ -199,9 +199,9 @@ methods: {
 ```
 
 ### 2. Compatibilité
-- L'ancienne API `/api/v1/persons` reste disponible
-- La pagination traditionnelle fonctionne toujours
-- Migration progressive possible
+- L'API `/api/v1/persons` est maintenant unifiée et toujours paginée
+- Rétrocompatibilité assurée : les paramètres de pagination sont optionnels
+- La pagination traditionnelle et le scroll infini utilisent le même endpoint
 
 ## Exemple complet
 
