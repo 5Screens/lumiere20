@@ -132,23 +132,6 @@
       </template>
     </div>
 
-    <!-- Infinite Scroll Loading Indicator -->
-    <div v-if="infiniteScrollEnabled" class="infinite-scroll-status">
-      <div v-if="isLoadingMore" class="loading-indicator">
-        <i class="fas fa-spinner fa-spin"></i>
-        <span>Chargement de plus d'éléments...</span>
-      </div>
-      <div v-else-if="!hasMoreData && tableData.length > 0" class="no-more-data">
-        <i class="fas fa-check-circle"></i>
-        <span>Toutes les données ont été chargées</span>
-      </div>
-      <div v-else-if="error" class="error-indicator">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span>{{ error }}</span>
-        <button @click="retryLoad" class="retry-button">Réessayer</button>
-      </div>
-    </div>
-
     <!-- Traditional Pagination (fallback) -->
     <div class="pagination" v-if="!infiniteScrollEnabled && paginated">
       <button @click="previousPage" :disabled="currentPage === 1">&lt;</button>
@@ -209,13 +192,15 @@
 // Import du service API centralisé pour gérer les appels HTTP
 import apiService from '@/services/apiService'
 import { usePopoverStore } from '@/stores/popoverStore'
+import { useTabsStore } from '@/stores/tabsStore'
 
 export default {
   name: 'ReusableTableTab',
   emits: ['row-selected', 'error'],
   setup() {
     const popoverStore = usePopoverStore()
-    return { popoverStore }
+    const tabsStore = useTabsStore()
+    return { popoverStore, tabsStore }
   },
   props: {
     apiUrl: {
@@ -536,6 +521,10 @@ export default {
       } catch (error) {
         console.error('[ReusableTableTab] Erreur lors de la récupération des données:', error);
         this.$emit('error', error.message || 'Erreur lors de la récupération des données');
+        // Route error to global notification system
+        if (this.tabsStore && typeof this.tabsStore.setMessage === 'function') {
+          this.tabsStore.setMessage(this.$t('notifications.loadingError'))
+        }
       } finally {
         console.log('[ReusableTableTab] Fin fetchData()');
       }
@@ -974,6 +963,10 @@ export default {
       } catch (error) {
         console.error('[ReusableTableTab] Error loading initial data:', error);
         this.error = error.message || 'Erreur lors du chargement des données';
+        // Notify error globally (do not notify normal states)
+        if (this.tabsStore && typeof this.tabsStore.setMessage === 'function') {
+          this.tabsStore.setMessage(this.$t('notifications.load_initial_error'))
+        }
       } finally {
         this.isLoadingMore = false;
         console.log('[ReusableTableTab] ✅ Initial data loaded, isLoadingMore set to false');
@@ -998,6 +991,10 @@ export default {
       } catch (error) {
         console.error('[ReusableTableTab] Error loading more data:', error);
         this.error = error.message || 'Erreur lors du chargement de données supplémentaires';
+        // Notify error globally (do not notify normal states)
+        if (this.tabsStore && typeof this.tabsStore.setMessage === 'function') {
+          this.tabsStore.setMessage(this.$t('notifications.load_more_error'))
+        }
       } finally {
         this.isLoadingMore = false;
         console.log('[ReusableTableTab] ✅ More data loaded, isLoadingMore set to false');
@@ -1091,6 +1088,10 @@ export default {
       } else {
         console.warn('[ReusableTableTab] Invalid response format for paginated data');
         this.hasMoreData = false;
+        // Notify invalid response globally
+        if (this.tabsStore && typeof this.tabsStore.setMessage === 'function') {
+          this.tabsStore.setMessage(this.$t('notifications.invalid_response'))
+        }
       }
     },
 
