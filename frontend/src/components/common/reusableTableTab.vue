@@ -945,7 +945,7 @@ export default {
             },
             {
               root: this.$refs.tableContainer, // Use table container as root
-              rootMargin: '50px', // Smaller margin - trigger when closer
+              rootMargin: '300px', // Smaller margin - trigger when closer
               threshold: 0.1 // Require 10% visibility
             }
           );
