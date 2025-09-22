@@ -193,6 +193,7 @@
 import apiService from '@/services/apiService'
 import { usePopoverStore } from '@/stores/popoverStore'
 import { useTabsStore } from '@/stores/tabsStore'
+import { DEBOUNCE_DELAY_MS } from '@/config/config'
 
 export default {
   name: 'ReusableTableTab',
@@ -1155,7 +1156,7 @@ export default {
       
       this.debounceTimeout = setTimeout(() => {
         this.resetAndReload();
-      }, 300); // 300ms debounce
+      }, DEBOUNCE_DELAY_MS); // global debounce delay
     },
 
     /**
