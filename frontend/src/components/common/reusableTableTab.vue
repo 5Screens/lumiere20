@@ -987,11 +987,36 @@ export default {
       }
       
       // Add filters
+      // Determine which advanced filters are active (values selected or blanks toggled)
+      const activeAdvancedKeys = Object.keys(this.advancedFilters || {}).filter(k => {
+        const f = this.advancedFilters[k];
+        return f && (f.blanks || (Array.isArray(f.values) && f.values.length > 0));
+      });
+
+      // Append basic column filters, but skip keys that have active advanced filters
       Object.keys(this.filters).forEach(key => {
+        if (activeAdvancedKeys.includes(key)) {
+          return; // advanced filter will handle this key
+        }
         const value = this.filters[key];
-        if (value && value.trim()) {
+        if (Array.isArray(value)) {
+          // For multi-select filters, send as JSON payload for server-side parsing
+          if (value.length > 0) {
+            params.append(`filter_${key}`, JSON.stringify({ blanks: false, values: value }));
+          }
+        } else if (typeof value === 'string' && value.trim()) {
           params.append(`filter_${key}`, value.trim());
         }
+      });
+
+      // Append advanced filters as JSON payloads understood by the backend
+      activeAdvancedKeys.forEach(key => {
+        const f = this.advancedFilters[key] || {};
+        const payload = {
+          blanks: !!f.blanks,
+          values: Array.isArray(f.values) ? f.values : []
+        };
+        params.append(`filter_${key}`, JSON.stringify(payload));
       });
       
       const url = `${this.apiUrl}?${params.toString()}`;
@@ -1037,9 +1062,9 @@ export default {
      */
     getGlobalSearchTerm() {
       // You can implement logic to combine multiple filters into a global search
-      // For now, we'll use the first non-empty filter as global search
-      const filterValues = Object.values(this.filters).filter(v => v && v.trim());
-      return filterValues.length > 0 ? filterValues[0].trim() : '';
+      // For now, we'll use the first non-empty STRING filter as global search
+      const firstString = Object.values(this.filters).find(v => typeof v === 'string' && v.trim());
+      return firstString ? firstString.trim() : '';
     },
 
     /**

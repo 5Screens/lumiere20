@@ -121,19 +121,54 @@ const getPersonsPaginated = async (options = {}, lang) => {
             paramIndex++;
         }
 
-        // Column-specific filters
+        // Column-specific filters (supports simple strings and advanced JSON payloads)
         Object.keys(filters).forEach(key => {
-            const value = filters[key];
-            if (value !== null && value !== undefined && value !== '') {
-                if (key === 'active' && typeof value === 'boolean') {
-                    whereConditions.push(`p.${key} = $${paramIndex}`);
-                    queryParams.push(value);
-                    paramIndex++;
-                } else if (typeof value === 'string') {
-                    whereConditions.push(`LOWER(p.${key}::text) LIKE LOWER($${paramIndex})`);
-                    queryParams.push(`%${value}%`);
-                    paramIndex++;
+            const rawValue = filters[key];
+            if (rawValue === null || rawValue === undefined || rawValue === '') return;
+
+            // Special-case boolean exact match when explicitly boolean (kept for backward compatibility)
+            if (key === 'active' && typeof rawValue === 'boolean') {
+                whereConditions.push(`p.${key} = $${paramIndex}`);
+                queryParams.push(rawValue);
+                paramIndex++;
+                return;
+            }
+
+            // Try to parse advanced filter JSON: { blanks: boolean, values: string[] }
+            let parsed = null;
+            if (typeof rawValue === 'string') {
+                try {
+                    parsed = JSON.parse(rawValue);
+                } catch (_) {
+                    parsed = null;
                 }
+            }
+
+            if (parsed && (parsed.blanks || (Array.isArray(parsed.values) && parsed.values.length > 0))) {
+                const parts = [];
+                // Include explicit values (case-insensitive equality)
+                if (Array.isArray(parsed.values) && parsed.values.length > 0) {
+                    const valuesArray = parsed.values
+                        .filter(v => v !== null && v !== undefined && v !== '')
+                        .map(v => String(v).toLowerCase());
+                    if (valuesArray.length > 0) {
+                        parts.push(`LOWER(p.${key}::text) = ANY($${paramIndex})`);
+                        queryParams.push(valuesArray);
+                        paramIndex++;
+                    }
+                }
+                // Include blanks (NULL or empty string)
+                if (parsed.blanks) {
+                    parts.push(`(p.${key} IS NULL OR p.${key}::text = '')`);
+                }
+                if (parts.length > 0) {
+                    whereConditions.push(`(${parts.join(' OR ')})`);
+                }
+            } else if (typeof rawValue === 'string') {
+                // Fallback: simple LIKE filter
+                whereConditions.push(`LOWER(p.${key}::text) LIKE LOWER($${paramIndex})`);
+                queryParams.push(`%${rawValue}%`);
+                paramIndex++;
             }
         });
 
