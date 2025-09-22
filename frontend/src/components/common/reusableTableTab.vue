@@ -276,6 +276,9 @@ export default {
       advancedFilterBlanks: false,
       selectedAdvancedFilterValues: [],
       advancedFilters: {},
+      // Freeze values list while the advanced filter modal is open
+      currentFilterUniqueValues: [],
+      currentFilterHasBlanks: false,
       scrollListener: null,
       // Cell selection & truncation
       selectedCell: { rowUuid: null, colKey: null },
@@ -389,23 +392,12 @@ export default {
     },
     
     hasBlankValues() {
-      if (!this.currentFilterColumn) return false
-      return this.tableData.some(row => {
-        const value = row[this.currentFilterColumn.key]
-        return value === null || value === undefined || value === ''
-      })
+      return !!this.currentFilterHasBlanks
     },
     
     uniqueValues() {
-      if (!this.currentFilterColumn) return []
-      const values = new Set()
-      this.tableData.forEach(row => {
-        const value = row[this.currentFilterColumn.key]
-        if (value !== null && value !== undefined && value !== '') {
-          values.add(value.toString())
-        }
-      })
-      return Array.from(values).sort()
+      // Use the frozen snapshot captured on openAdvancedFilter
+      return this.currentFilterUniqueValues || []
     },
     
     filteredUniqueValues() {
@@ -796,16 +788,27 @@ export default {
         }
       }, 0)
       
-      // Initialiser les valeurs du filtre (par défaut: aucun critère -> tout affiché)
-      if (!this.advancedFilters[column.key]) {
-        this.advancedFilters[column.key] = {
-          blanks: false,
-          values: []
+      // Snapshot available values once to keep the list stable while the modal is open
+      const key = column.key
+      const valuesSet = new Set()
+      let hasBlanks = false
+      this.tableData.forEach(row => {
+        const v = row[key]
+        if (v === null || v === undefined || v === '') {
+          hasBlanks = true
+        } else {
+          valuesSet.add(String(v))
         }
-      }
-      
-      this.advancedFilterBlanks = !!this.advancedFilters[column.key].blanks
-      this.selectedAdvancedFilterValues = [...(this.advancedFilters[column.key].values || [])]
+      })
+      this.currentFilterUniqueValues = Array.from(valuesSet).sort()
+      this.currentFilterHasBlanks = hasBlanks
+
+      // Initialize local selection from existing advanced filter (do not mutate store here)
+      const existing = this.advancedFilters[key]
+      this.advancedFilterBlanks = existing ? !!existing.blanks : false
+      this.selectedAdvancedFilterValues = existing && Array.isArray(existing.values)
+        ? [...existing.values]
+        : []
       this.advancedFilterSearch = ''
       
       // Afficher la fenêtre après avoir tout initialisé
@@ -853,10 +856,24 @@ export default {
       if (!this.currentFilterColumn) return
       
       const key = this.currentFilterColumn.key
-      this.advancedFilters[key] = {
-        blanks: this.advancedFilterBlanks,
-        values: [...this.selectedAdvancedFilterValues]
+      const blanks = !!this.advancedFilterBlanks
+      const values = Array.isArray(this.selectedAdvancedFilterValues)
+        ? [...this.selectedAdvancedFilterValues]
+        : []
+
+      // If no constraint selected, remove the filter key (funnel inactive, avoids empty payloads)
+      const hasAnyConstraint = blanks || values.length > 0
+      if (!hasAnyConstraint) {
+        if (this.advancedFilters[key]) {
+          // Remove key to clear the filter explicitly
+          const { [key]: _, ...rest } = this.advancedFilters
+          this.advancedFilters = rest
+        }
+        return
       }
+
+      // Persist constraints
+      this.advancedFilters[key] = { blanks, values }
     },
     
     hasActiveAdvancedFilter(columnKey) {
