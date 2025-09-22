@@ -353,7 +353,12 @@ export default {
     updateError: 'Erreur lors de la mise à jour',
     deleteSuccess: 'Suppression réussie',
     deleteError: 'Erreur lors de la suppression',
-    loadingError: 'Erreur lors du chargement'
+    loadingError: 'Erreur lors du chargement',
+    loading: 'Chargement en cours...',
+    load_initial_error: 'Erreur lors du chargement initial',
+    load_more_error: 'Erreur lors du chargement de plus',
+    invalid_response: 'Réponse invalide',
+    no_more_data: 'Plus de données',
   },
   audit: {
     eventType: 'Type d\'événement',
