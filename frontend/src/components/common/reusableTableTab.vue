@@ -279,6 +279,8 @@ export default {
       // Freeze values list while the advanced filter modal is open
       currentFilterUniqueValues: [],
       currentFilterHasBlanks: false,
+      // Persisted cache of available values per column (survives close/open)
+      advancedFilterOptionsCache: {},
       scrollListener: null,
       // Cell selection & truncation
       selectedCell: { rowUuid: null, colKey: null },
@@ -295,7 +297,9 @@ export default {
       lastSearchTerm: '',
       lastSortColumn: '',
       lastSortDirection: 'asc',
-      debounceTimeout: null
+      debounceTimeout: null,
+      // Prevent column width growth on subsequent reloads
+      hasMeasuredColumnWidths: false
     }
   },
   computed: {
@@ -489,6 +493,7 @@ export default {
     },
     // Measure header TH widths and lock them
     measureColumnWidths() {
+      if (this.hasMeasuredColumnWidths) return
       this.$nextTick(() => {
         const tableEl = this.$refs.tableEl
         if (!tableEl) return
@@ -501,6 +506,8 @@ export default {
         const widths = Array.from(ths).map(th => Math.ceil(th.getBoundingClientRect().width))
         if (widths.some(w => w > 0)) {
           this.columnWidths = widths
+          // Lock widths after first measurement to avoid growth on each reload
+          this.hasMeasuredColumnWidths = true
         }
       })
     },
@@ -790,18 +797,27 @@ export default {
       
       // Snapshot available values once to keep the list stable while the modal is open
       const key = column.key
-      const valuesSet = new Set()
-      let hasBlanks = false
-      this.tableData.forEach(row => {
-        const v = row[key]
-        if (v === null || v === undefined || v === '') {
-          hasBlanks = true
-        } else {
-          valuesSet.add(String(v))
-        }
-      })
-      this.currentFilterUniqueValues = Array.from(valuesSet).sort()
-      this.currentFilterHasBlanks = hasBlanks
+      const cached = this.advancedFilterOptionsCache[key]
+      if (cached) {
+        this.currentFilterUniqueValues = [...cached.values]
+        this.currentFilterHasBlanks = !!cached.hasBlanks
+      } else {
+        const valuesSet = new Set()
+        let hasBlanks = false
+        this.tableData.forEach(row => {
+          const v = row[key]
+          if (v === null || v === undefined || v === '') {
+            hasBlanks = true
+          } else {
+            valuesSet.add(String(v))
+          }
+        })
+        const snapshot = Array.from(valuesSet).sort()
+        this.currentFilterUniqueValues = snapshot
+        this.currentFilterHasBlanks = hasBlanks
+        // Persist to cache so future openings (even after server-filtered reloads) keep full list
+        this.advancedFilterOptionsCache[key] = { values: snapshot, hasBlanks }
+      }
 
       // Initialize local selection from existing advanced filter (do not mutate store here)
       const existing = this.advancedFilters[key]
@@ -868,6 +884,11 @@ export default {
           // Remove key to clear the filter explicitly
           const { [key]: _, ...rest } = this.advancedFilters
           this.advancedFilters = rest
+        }
+        // Also clear the cached options for this column to allow a fresh snapshot next time
+        if (this.advancedFilterOptionsCache && this.advancedFilterOptionsCache[key]) {
+          const { [key]: __, ...restCache } = this.advancedFilterOptionsCache
+          this.advancedFilterOptionsCache = restCache
         }
         return
       }
@@ -1063,8 +1084,8 @@ export default {
         
         console.log(`[ReusableTableTab] Loaded ${newItems.length} items, total: ${this.tableData.length}/${this.totalRecords}`);
         
-        // Measure column widths after first load
-        if (this.currentOffset === newItems.length) {
+        // Measure column widths after first load (only once)
+        if (this.currentOffset === newItems.length && !this.hasMeasuredColumnWidths) {
           this.$nextTick(() => this.measureColumnWidths());
         }
       } else {
