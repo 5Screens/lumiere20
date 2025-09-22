@@ -54,7 +54,9 @@ export default {
     assigned_at: 'Assigné le',
     no_data: 'Aucune donnée',
     loading: 'Chargement...',
-    underConstruction: 'Cette fonctionnalité est en cours de construction'
+    underConstruction: 'Cette fonctionnalité est en cours de construction',
+    totalFetchedData: 'Total de lignes trouvées : ',
+    totalLoadedData: 'en prévisualisation',
   },
   tabs: {
     symptoms: 'Symptômes',

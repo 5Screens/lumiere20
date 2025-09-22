@@ -125,10 +125,10 @@
     <!-- Table footer -->
     <div class="table-footer">
       <template v-if="infiniteScrollEnabled">
-        Total éléments trouvés : {{ totalRecords }} ({{ filteredData.length }} chargés)
+        {{ $t('common.totalFetchedData') }} {{ totalRecords }} ({{ filteredData.length }} {{$t('common.totalLoadedData')}})
       </template>
       <template v-else>
-        Total éléments trouvés : {{ filteredData.length }}
+        {{ $t('common.totalFetchedData') }} {{ filteredData.length }}
       </template>
     </div>
 
