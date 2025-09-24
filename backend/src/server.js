@@ -44,6 +44,7 @@ const entitySetupRoutes = require('./api/v1/entity_setup/routes');
 const entitySetupLabelsRoutes = require('./api/v1/entity_setup_labels/routes');
 const incidentSetupRoutes = require('./api/v1/incident_setup/routes');
 const incidentSetupLabelsRoutes = require('./api/v1/incident_setup_labels/routes');
+const tableMetadataRoutes = require('./api/v1/table_metadata/routes');
 
 // Middleware
 app.use(cors());
@@ -94,6 +95,7 @@ app.use('/api/v1/entity_setup', entitySetupRoutes);
 app.use('/api/v1/entity_setup_labels', entitySetupLabelsRoutes);
 app.use('/api/v1/incident_setup', incidentSetupRoutes);
 app.use('/api/v1/incident_setup_labels', incidentSetupLabelsRoutes);
+app.use('/api/v1/table_metadata', tableMetadataRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
