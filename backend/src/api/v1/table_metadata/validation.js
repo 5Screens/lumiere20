@@ -41,9 +41,9 @@ function validateSearchPersons(req, res, next) {
   next();
 }
 
-// Schema for table name parameter
+// Schema for table name parameter (simple table name without schema)
 const tableNameSchema = Joi.string()
-  .pattern(/^[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*$/)
+  .pattern(/^[a-zA-Z_][a-zA-Z0-9_]*$/)
   .required();
 
 // Schema for column name parameter
