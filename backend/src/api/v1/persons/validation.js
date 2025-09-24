@@ -129,6 +129,16 @@ const searchPersonsSchema = Joi.object({
   }).optional()
 });
 
+// Schema for column name parameter
+const columnNameParamSchema = Joi.object({
+  columnName: Joi.string().pattern(/^[a-zA-Z_][a-zA-Z0-9_]*$/).required()
+});
+
+// Schema for search query parameter
+const searchQuerySchema = Joi.object({
+  q: Joi.string().min(1).max(100).optional()
+});
+
 module.exports = {
     getPersonsQuerySchema,
     getPersonsPaginatedQuerySchema,
@@ -139,5 +149,7 @@ module.exports = {
     personGroupUuidParamSchema,
     addApproverEntitiesSchema,
     personEntityUuidParamSchema,
-    searchPersonsSchema
+    searchPersonsSchema,
+    columnNameParamSchema,
+    searchQuerySchema
 };

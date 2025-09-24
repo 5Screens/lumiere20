@@ -17,14 +17,6 @@ router.get(
   controller.getFilterConfig
 );
 
-// Get filter values for a specific column
-router.get(
-  '/filters/:tableName/:columnName',
-  validation.validateTableName,
-  validation.validateColumnName,
-  validation.validateSearchQuery,
-  controller.getFilterValues
-);
 
 
 // Get all table metadata

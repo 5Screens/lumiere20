@@ -392,6 +392,38 @@ const searchPersons = async (req, res) => {
   }
 };
 
+/**
+ * Get filter values for a specific column in persons table
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getPersonsFilterValues = async (req, res) => {
+  try {
+    const { columnName } = req.params;
+    const { q: searchQuery } = req.query;
+    
+    logger.info(`[PERSONS CONTROLLER] Getting filter values for column: ${columnName}`);
+    
+    const filterValues = await service.getPersonsFilterValues(columnName, searchQuery);
+    
+    res.status(200).json(filterValues);
+  } catch (error) {
+    logger.error('[PERSONS CONTROLLER] Error getting filter values:', error);
+    
+    if (error.message.includes('No metadata found')) {
+      return res.status(404).json({
+        error: 'Column not found',
+        message: error.message
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Error getting filter values',
+      message: error.message 
+    });
+  }
+};
+
 module.exports = {
     getPersons,
     getPersonsPaginated,
@@ -403,5 +435,6 @@ module.exports = {
     removePersonGroup,
     addApproverEntities,
     removeApproverEntity,
-    searchPersons
+    searchPersons,
+    getPersonsFilterValues
 };

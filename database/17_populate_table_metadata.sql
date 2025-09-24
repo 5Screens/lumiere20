@@ -153,7 +153,7 @@ INSERT INTO administration.table_metadata (
  'uuid', true, NULL,
  true, true, true,
  'select', '{"multiple": false}'::jsonb,
- true, 'configuration.persons', 'uuid',
+ false, NULL, NULL,
  'sFilteredSearchField', 'Recherchez un manager', false, false,
  'persons', 'full_name', 'uuid', 'Manager approbateur',
  true, 120),

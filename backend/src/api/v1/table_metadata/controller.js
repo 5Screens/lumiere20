@@ -22,35 +22,6 @@ async function getFilterConfig(req, res) {
 }
 
 /**
- * Get filter values for a specific column
- */
-async function getFilterValues(req, res) {
-  try {
-    const { tableName, columnName } = req.params;
-    const { q: searchQuery } = req.query;
-    
-    logger.info(`[TABLE_METADATA CONTROLLER] Getting filter values for ${tableName}.${columnName}`, {
-      searchQuery
-    });
-    
-    const filterValues = await tableMetadataService.getFilterValues(
-      tableName, 
-      columnName, 
-      searchQuery
-    );
-    
-    res.status(200).json(filterValues);
-  } catch (error) {
-    logger.error('[TABLE_METADATA CONTROLLER] Error getting filter values:', error);
-    res.status(500).json({ 
-      error: 'Error getting filter values',
-      message: error.message 
-    });
-  }
-}
-
-
-/**
  * Get all table metadata
  */
 async function getAllTableMetadata(req, res) {
@@ -91,7 +62,6 @@ async function getTableMetadata(req, res) {
 
 module.exports = {
   getFilterConfig,
-  getFilterValues,
   getAllTableMetadata,
   getTableMetadata
 };

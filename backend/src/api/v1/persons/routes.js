@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 const validate = require('../../../middleware/validate');
-const { getPersonsQuerySchema, getPersonsPaginatedQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema, addPersonGroupsSchema, personGroupUuidParamSchema, addApproverEntitiesSchema, personEntityUuidParamSchema, searchPersonsSchema } = require('./validation');
+const { getPersonsQuerySchema, getPersonsPaginatedQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema, addPersonGroupsSchema, personGroupUuidParamSchema, addApproverEntitiesSchema, personEntityUuidParamSchema, searchPersonsSchema, columnNameParamSchema, searchQuerySchema } = require('./validation');
 const logger = require('../../../config/logger');
 
 // Log middleware for this route
@@ -69,6 +69,15 @@ router.delete('/:uuid/approver-entities/:entity_uuid',
 router.post('/search',
     validate({ body: searchPersonsSchema }),
     controller.searchPersons
+);
+
+// GET /api/v1/persons/filters/:columnName - Get filter values for a specific column
+router.get('/filters/:columnName',
+    validate({ 
+        params: columnNameParamSchema,
+        query: searchQuerySchema 
+    }),
+    controller.getPersonsFilterValues
 );
 
 module.exports = router;
