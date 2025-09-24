@@ -371,6 +371,27 @@ const removeApproverEntity = async (req, res) => {
     }
 };
 
+/**
+ * Search persons with filters, sorting and pagination
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const searchPersons = async (req, res) => {
+  try {
+    logger.info('[PERSONS CONTROLLER] Searching persons with body:', req.body);
+    
+    const searchResults = await service.searchPersons(req.body);
+    
+    res.status(200).json(searchResults);
+  } catch (error) {
+    logger.error('[PERSONS CONTROLLER] Error searching persons:', error);
+    res.status(500).json({ 
+      error: 'Error searching persons',
+      message: error.message 
+    });
+  }
+};
+
 module.exports = {
     getPersons,
     getPersonsPaginated,
@@ -381,5 +402,6 @@ module.exports = {
     addPersonGroups,
     removePersonGroup,
     addApproverEntities,
-    removeApproverEntity
+    removeApproverEntity,
+    searchPersons
 };

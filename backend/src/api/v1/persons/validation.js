@@ -106,6 +106,29 @@ const personEntityUuidParamSchema = Joi.object({
     entity_uuid: Joi.string().guid({ version: 'uuidv4' }).required()
 });
 
+// Schema for search parameters
+const searchPersonsSchema = Joi.object({
+  filters: Joi.object().pattern(
+    Joi.string(),
+    Joi.alternatives().try(
+      Joi.array().items(Joi.any()),
+      Joi.object({
+        gte: Joi.any(),
+        lte: Joi.any()
+      }),
+      Joi.any()
+    )
+  ).optional(),
+  sort: Joi.object({
+    sortBy: Joi.string().optional(),
+    sortDirection: Joi.string().valid('asc', 'desc').optional()
+  }).optional(),
+  pagination: Joi.object({
+    offset: Joi.number().integer().min(0).optional(),
+    limit: Joi.number().integer().min(1).max(100).optional()
+  }).optional()
+});
+
 module.exports = {
     getPersonsQuerySchema,
     getPersonsPaginatedQuerySchema,
@@ -115,5 +138,6 @@ module.exports = {
     addPersonGroupsSchema,
     personGroupUuidParamSchema,
     addApproverEntitiesSchema,
-    personEntityUuidParamSchema
+    personEntityUuidParamSchema,
+    searchPersonsSchema
 };

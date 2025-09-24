@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 const validate = require('../../../middleware/validate');
-const { getPersonsQuerySchema, getPersonsPaginatedQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema, addPersonGroupsSchema, personGroupUuidParamSchema, addApproverEntitiesSchema, personEntityUuidParamSchema } = require('./validation');
+const { getPersonsQuerySchema, getPersonsPaginatedQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema, addPersonGroupsSchema, personGroupUuidParamSchema, addApproverEntitiesSchema, personEntityUuidParamSchema, searchPersonsSchema } = require('./validation');
 const logger = require('../../../config/logger');
 
 // Log middleware for this route
@@ -63,6 +63,12 @@ router.post('/:uuid/approver-entities',
 router.delete('/:uuid/approver-entities/:entity_uuid',
     validate({ params: personEntityUuidParamSchema }),
     controller.removeApproverEntity
+);
+
+// POST /api/v1/persons/search - Search persons with filters
+router.post('/search',
+    validate({ body: searchPersonsSchema }),
+    controller.searchPersons
 );
 
 module.exports = router;

@@ -26,12 +26,6 @@ router.get(
   controller.getFilterValues
 );
 
-// Search persons with filters
-router.post(
-  '/persons/search',
-  validation.validateSearchPersons,
-  controller.searchPersons
-);
 
 // Get all table metadata
 router.get(

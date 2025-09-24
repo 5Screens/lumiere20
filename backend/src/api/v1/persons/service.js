@@ -2,6 +2,26 @@ const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 
 /**
+ * Map table name to schema for SQL queries
+ * @param {string} tableName - Simple table name
+ * @returns {string} Table name with schema
+ */
+function getTableWithSchema(tableName) {
+  const schemaMap = {
+    'persons': 'configuration.persons',
+    'entities': 'configuration.entities',
+    'groups': 'configuration.groups',
+    'tickets': 'core.tickets',
+    'symptoms': 'configuration.symptoms',
+    'services': 'data.services',
+    'service_offerings': 'data.service_offerings',
+    'configuration_items': 'data.configuration_items'
+  };
+  
+  return schemaMap[tableName] || `configuration.${tableName}`;
+}
+
+/**
  * Get all persons from the database with additional statistics
  * @param {string} [lang] - Optional language parameter for localization
  * @returns {Promise<Array>} Array of persons with person_name field and statistics
@@ -829,6 +849,157 @@ const removeApproverEntity = async (personUuid, entityUuid) => {
     }
 };
 
+/**
+ * Search persons with filters, sorting and pagination
+ * @param {Object} searchParams - Search parameters including filters, sort, and pagination
+ * @returns {Object} Search results with data and metadata in frontend format
+ */
+const searchPersons = async (searchParams) => {
+  try {
+    logger.info('[PERSONS SERVICE] Searching persons with params:', searchParams);
+    
+    const { filters = {}, sort = {}, pagination = {} } = searchParams;
+    const { offset = 0, limit = 20 } = pagination;
+    const { sortBy = 'created_at', sortDirection = 'desc' } = sort;
+    
+    // Build WHERE clause from filters
+    const whereConditions = [];
+    const queryParams = [];
+    let paramIndex = 1;
+    
+    // Process each filter
+    for (const [column, value] of Object.entries(filters)) {
+      if (!value || (Array.isArray(value) && value.length === 0)) {
+        continue;
+      }
+      
+      // Get column metadata to know how to handle the filter
+      const metadataQuery = `
+        SELECT filter_type, data_type 
+        FROM administration.table_metadata 
+        WHERE table_name = $1 AND column_name = $2
+      `;
+      const metadataResult = await db.query(metadataQuery, ['persons', column]);
+      
+      if (metadataResult.rows.length === 0) {
+        logger.warn(`[PERSONS SERVICE] No metadata for column ${column}, skipping filter`);
+        continue;
+      }
+      
+      const { filter_type, data_type } = metadataResult.rows[0];
+      
+      // Handle different filter types
+      if (Array.isArray(value)) {
+        // Multiple values (OR condition)
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        whereConditions.push(`${column} IN (${placeholders})`);
+        queryParams.push(...value);
+      } else if (typeof value === 'object' && (value.gte || value.lte)) {
+        // Range filter (for dates, numbers)
+        if (value.gte) {
+          whereConditions.push(`${column} >= $${paramIndex++}`);
+          queryParams.push(value.gte);
+        }
+        if (value.lte) {
+          whereConditions.push(`${column} <= $${paramIndex++}`);
+          queryParams.push(value.lte);
+        }
+      } else if (filter_type === 'search') {
+        // Text search
+        whereConditions.push(`LOWER(CAST(${column} AS TEXT)) LIKE LOWER($${paramIndex++})`);
+        queryParams.push(`%${value}%`);
+      } else {
+        // Exact match
+        whereConditions.push(`${column} = $${paramIndex++}`);
+        queryParams.push(value);
+      }
+    }
+    
+    // Build the main query
+    const whereClause = whereConditions.length > 0 
+      ? `WHERE ${whereConditions.join(' AND ')}` 
+      : '';
+    
+    // Count total results
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM configuration.persons p
+      ${whereClause}
+    `;
+    
+    const countResult = await db.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results with all the data that frontend expects
+    const dataQuery = `
+      SELECT 
+        p.uuid,
+        p.first_name,
+        p.last_name,
+        p.first_name || ' ' || p.last_name AS person_name,
+        p.email,
+        p.job_role,
+        p.active,
+        p.critical_user,
+        p.external_user,
+        p.business_phone,
+        p.business_mobile_phone,
+        p.personal_mobile_phone,
+        p.language,
+        p.notification,
+        p.time_zone,
+        p.date_format,
+        p.internal_id,
+        p.floor,
+        p.room,
+        p.locked_out,
+        p.password_needs_reset,
+        p.roles,
+        p.photo,
+        p.created_at,
+        p.updated_at,
+        e.name as ref_entity_name,
+        p.ref_location_uuid as location_uuid,
+        m.first_name || ' ' || m.last_name as ref_approving_manager_name
+      FROM configuration.persons p
+      LEFT JOIN configuration.entities e ON p.ref_entity_uuid = e.uuid
+      LEFT JOIN configuration.persons m ON p.ref_approving_manager_uuid = m.uuid
+      ${whereClause}
+      ORDER BY ${sortBy} ${sortDirection.toUpperCase()}
+      LIMIT $${paramIndex++} OFFSET $${paramIndex++}
+    `;
+    
+    queryParams.push(limit, offset);
+    const dataResult = await db.query(dataQuery, queryParams);
+    
+    // Calculate pagination metadata in frontend format
+    const currentPage = Math.floor(offset / limit) + 1;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = offset + limit < total;
+    
+    logger.info(`[PERSONS SERVICE] Found ${dataResult.rows.length} persons (total: ${total})`);
+    
+    // Return in the format expected by frontend
+    return {
+      data: dataResult.rows,
+      total: total,
+      hasMore: hasMore,
+      pagination: {
+        offset: offset,
+        limit: limit,
+        currentPage: currentPage,
+        totalPages: totalPages,
+        sortBy: sortBy,
+        sortDirection: sortDirection
+      }
+    };
+    
+  } catch (error) {
+    logger.error('[PERSONS SERVICE] Error searching persons:', error);
+    throw error;
+  }
+};
+
 module.exports = {
     getAllPersons,
     getPersonsPaginated,
@@ -839,5 +1010,6 @@ module.exports = {
     addPersonGroups,
     removePersonGroup,
     addApproverEntities,
-    removeApproverEntity
+    removeApproverEntity,
+    searchPersons
 };

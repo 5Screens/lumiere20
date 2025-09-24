@@ -35,6 +35,20 @@ const validate = (schema) => (req, res, next) => {
         }
     }
 
+    // Validation des paramètres d'URL si un schéma est fourni
+    if (schema.params) {
+        const { error: paramsError } = schema.params.validate(req.params, validationOptions);
+        if (paramsError) {
+            const errors = paramsError.details.map((detail) => detail.message);
+            logger.error(`Erreur de validation des paramètres d'URL: ${errors.join(', ')}`);
+            return res.status(400).json({
+                success: false,
+                message: 'Erreur de validation des paramètres d\'URL',
+                errors: errors
+            });
+        }
+    }
+
     next();
 };
 

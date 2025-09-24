@@ -1,45 +1,6 @@
 const Joi = require('joi');
 const logger = require('../../../config/logger');
 
-// Schema for search parameters
-const searchPersonsSchema = Joi.object({
-  filters: Joi.object().pattern(
-    Joi.string(),
-    Joi.alternatives().try(
-      Joi.array().items(Joi.any()),
-      Joi.object({
-        gte: Joi.any(),
-        lte: Joi.any()
-      }),
-      Joi.any()
-    )
-  ).optional(),
-  sort: Joi.object({
-    by: Joi.string().optional(),
-    direction: Joi.string().valid('asc', 'desc').optional()
-  }).optional(),
-  pagination: Joi.object({
-    page: Joi.number().integer().min(1).optional(),
-    limit: Joi.number().integer().min(1).max(100).optional()
-  }).optional()
-});
-
-// Validation middleware for search
-function validateSearchPersons(req, res, next) {
-  logger.info('[TABLE_METADATA VALIDATION] Validating search persons request');
-  
-  const { error } = searchPersonsSchema.validate(req.body);
-  
-  if (error) {
-    logger.error('[TABLE_METADATA VALIDATION] Validation error:', error.details);
-    return res.status(400).json({ 
-      error: 'Validation error',
-      details: error.details.map(d => d.message) 
-    });
-  }
-  
-  next();
-}
 
 // Schema for table name parameter (simple table name without schema)
 const tableNameSchema = Joi.string()
@@ -114,7 +75,6 @@ function validateSearchQuery(req, res, next) {
 }
 
 module.exports = {
-  validateSearchPersons,
   validateTableName,
   validateColumnName,
   validateSearchQuery
