@@ -8,12 +8,10 @@
   padding: 1rem;
   background: var(--input-background);
   border-top: 2px solid var(--border-color);
-  border-radius: 6px;
 }
 
 .s-one-filter:hover {
   border-top-color: var(--primary-color);
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
 }
 
 /* Labels */
