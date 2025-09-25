@@ -1285,7 +1285,9 @@ export default {
     select_type: 'Sélectionner un type',
     select_option: 'Sélectionner une option',
     no_filters_added:'Aucun filtre',
-    add_first_filter:'Ajouter un premier filtre'
+    add_first_filter:'Ajouter un premier filtre',
+    remove_filter:'Supprimer le filtre',
+    
   },
   notifications: {
     loadingError: 'Erreur lors du chargement des données',

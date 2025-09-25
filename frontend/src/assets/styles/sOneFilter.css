@@ -223,9 +223,9 @@
 
 /* Remove button */
 .btn-remove {
-  background: var(--danger-color);
-  color: white;
-  border: none;
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
   padding: 0.5rem;
   border-radius: 4px;
   cursor: pointer;
@@ -237,9 +237,10 @@
 }
 
 .btn-remove:hover {
-  background: var(--danger-color-dark);
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
 .btn-remove i {
