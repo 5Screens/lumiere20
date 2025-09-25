@@ -1,7 +1,7 @@
 <template>
   <div class="reusable-table-tab">
-    <!-- Filter Panel -->
-    <sFilterPanel
+    <!-- Multi Filter Panel -->
+    <sMultiFilter
       v-if="filterable"
       :table-name="tableName"
       @filters-applied="handleFiltersApplied"
@@ -166,12 +166,12 @@ import { usePopoverStore } from '@/stores/popoverStore'
 import { useTabsStore } from '@/stores/tabsStore'
 import { useFilterStore } from '@/stores/filterStore'
 import { DEBOUNCE_DELAY_MS } from '@/config/config'
-import sFilterPanel from './sFilterPanel.vue'
+import sMultiFilter from './sMultiFilter.vue'
 
 export default {
   name: 'ReusableTableTab',
   components: {
-    sFilterPanel
+    sMultiFilter
   },
   emits: ['row-selected', 'error'],
   setup() {

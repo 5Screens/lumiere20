@@ -32,34 +32,28 @@ export const useFilterStore = defineStore('filter', {
       return state.filterConfigs[tableName] || null;
     },
     
-    // Obtenir les filtres actifs pour une table
+    // Obtenir les filtres actifs pour une table (nouveau format tableau)
     getActiveFiltersForTable: (state) => (tableName) => {
-      return state.activeFilters[tableName] || {};
+      return state.activeFilters[tableName] || [];
     },
     
     // Compter le nombre de filtres actifs
     getActiveFilterCount: (state) => (tableName) => {
-      const filters = state.activeFilters[tableName] || {};
-      let count = 0;
-      
-      Object.keys(filters).forEach(key => {
-        const value = filters[key];
-        if (value !== null && value !== undefined && value !== '') {
-          if (Array.isArray(value) && value.length > 0) {
-            count++;
-          } else if (typeof value === 'object' && value !== null) {
-            // Pour les objets date_range, vérifier que gte ou lte ont des valeurs non nulles
-            if ((value.gte && value.gte !== null && value.gte !== '') || 
-                (value.lte && value.lte !== null && value.lte !== '')) {
-              count++;
-            }
-          } else if (!Array.isArray(value) && typeof value !== 'object' && value) {
-            count++;
-          }
+      const filters = state.activeFilters[tableName] || [];
+      return filters.filter(filter => {
+        const value = filter.value;
+        if (value === null || value === undefined || value === '') {
+          return false;
         }
-      });
-      
-      return count;
+        if (Array.isArray(value)) {
+          return value.length > 0;
+        }
+        if (typeof value === 'object' && value !== null) {
+          // Pour les objets date_range, vérifier que gte ou lte ont des valeurs
+          return (value.gte && value.gte !== '') || (value.lte && value.lte !== '');
+        }
+        return true;
+      }).length;
     },
     
     // Obtenir l'état du panneau pour une table
@@ -89,9 +83,9 @@ export const useFilterStore = defineStore('filter', {
           
           this.filterConfigs[tableName] = filtersArray;
           
-          // Initialiser les filtres actifs si pas déjà fait
+          // Initialiser les filtres actifs si pas déjà fait (nouveau format tableau)
           if (!this.activeFilters[tableName]) {
-            this.activeFilters[tableName] = this.initializeFilters(filtersArray);
+            this.activeFilters[tableName] = [];
           }
           
           // Charger depuis localStorage si disponible
@@ -331,6 +325,78 @@ export const useFilterStore = defineStore('filter', {
     setPanelState(tableName, state) {
       this.panelStates[tableName] = state;
       this.saveFiltersToStorage(tableName);
+    },
+    
+    // === NOUVELLES MÉTHODES POUR GESTION INDIVIDUELLE DES FILTRES ===
+    
+    // Créer un filtre vide
+    createEmptyFilter() {
+      return {
+        id: `filter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        column: '',
+        type: '',
+        value: null,
+        operator: 'equals'
+      };
+    },
+    
+    // Ajouter un nouveau filtre
+    addFilter(tableName, filter = null) {
+      if (!this.activeFilters[tableName]) {
+        this.activeFilters[tableName] = [];
+      }
+      
+      const newFilter = filter || this.createEmptyFilter();
+      this.activeFilters[tableName].push(newFilter);
+      this.saveFiltersToStorage(tableName);
+      
+      console.info(`[FILTER_STORE] Added filter for ${tableName}:`, newFilter);
+      return newFilter.id;
+    },
+    
+    // Supprimer un filtre
+    removeFilter(tableName, filterId) {
+      if (!this.activeFilters[tableName]) return;
+      
+      const index = this.activeFilters[tableName].findIndex(f => f.id === filterId);
+      if (index !== -1) {
+        this.activeFilters[tableName].splice(index, 1);
+        this.saveFiltersToStorage(tableName);
+        console.info(`[FILTER_STORE] Removed filter ${filterId} for ${tableName}`);
+      }
+    },
+    
+    // Mettre à jour un filtre
+    updateFilter(tableName, filterId, updates) {
+      if (!this.activeFilters[tableName]) return;
+      
+      const filter = this.activeFilters[tableName].find(f => f.id === filterId);
+      if (filter) {
+        Object.assign(filter, updates);
+        this.saveFiltersToStorage(tableName);
+        console.info(`[FILTER_STORE] Updated filter ${filterId} for ${tableName}:`, updates);
+      }
+    },
+    
+    // Réinitialiser tous les filtres
+    resetFilters(tableName) {
+      this.activeFilters[tableName] = [];
+      this.saveFiltersToStorage(tableName);
+      console.info(`[FILTER_STORE] Reset all filters for ${tableName}`);
+    },
+    
+    // Convertir les filtres au format legacy pour l'API
+    convertFiltersToLegacyFormat(tableName) {
+      const filters = this.activeFilters[tableName] || [];
+      const legacyFormat = {};
+      
+      filters.forEach(filter => {
+        if (filter.column && filter.value !== null && filter.value !== undefined && filter.value !== '') {
+          legacyFormat[filter.column] = filter.value;
+        }
+      });
+      
+      return legacyFormat;
     },
     
     // Nettoyer les données d'une table

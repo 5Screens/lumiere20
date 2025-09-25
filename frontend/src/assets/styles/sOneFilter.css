@@ -1,0 +1,319 @@
+/* sOneFilter.css - Styles pour un filtre individuel */
+
+.s-one-filter {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem;
+  background: var(--input-background);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.s-one-filter:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+/* Labels */
+.s-one-filter__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+/* Column selector */
+.s-one-filter__column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Type selector */
+.s-one-filter__type {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Value field */
+.s-one-filter__value {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Actions */
+.s-one-filter__actions {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 0.25rem;
+}
+
+/* Form controls */
+.s-one-filter__select,
+.s-one-filter__input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background: var(--background-color);
+  color: var(--text-color);
+  transition: all 0.2s ease;
+}
+
+.s-one-filter__select:focus,
+.s-one-filter__input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Search field with suggestions */
+.s-one-filter__search {
+  position: relative;
+}
+
+.s-one-filter__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.s-one-filter__suggestion {
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-color);
+  transition: background 0.2s ease;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.s-one-filter__suggestion:last-child {
+  border-bottom: none;
+}
+
+.s-one-filter__suggestion:hover {
+  background: var(--hover-background);
+}
+
+/* Checkbox field */
+.s-one-filter__checkbox {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--background-color);
+}
+
+.s-one-filter__checkbox-items {
+  padding: 0.5rem;
+}
+
+.s-one-filter__checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.s-one-filter__checkbox-item:hover {
+  background: var(--hover-background);
+}
+
+.s-one-filter__checkbox-item input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* Select field */
+.s-one-filter__select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Multiselect */
+.s-one-filter__multiselect {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.s-one-filter__multiselect-selected {
+  min-height: 38px;
+  padding: 0.375rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--background-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.s-one-filter__multiselect-selected .placeholder {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.s-one-filter__multiselect-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.s-one-filter__multiselect-tag button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.s-one-filter__multiselect-tag button:hover {
+  opacity: 1;
+}
+
+/* Date range field */
+.s-one-filter__date-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.s-one-filter__date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.s-one-filter__date-field label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Remove button */
+.btn-remove {
+  background: var(--danger-color);
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.btn-remove:hover {
+  background: var(--danger-color-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-remove i {
+  font-size: 0.875rem;
+}
+
+/* Scrollbar styles */
+.s-one-filter__checkbox::-webkit-scrollbar,
+.s-one-filter__suggestions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.s-one-filter__checkbox::-webkit-scrollbar-track,
+.s-one-filter__suggestions::-webkit-scrollbar-track {
+  background: var(--background-color);
+  border-radius: 3px;
+}
+
+.s-one-filter__checkbox::-webkit-scrollbar-thumb,
+.s-one-filter__suggestions::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.s-one-filter__checkbox::-webkit-scrollbar-thumb:hover,
+.s-one-filter__suggestions::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .s-one-filter {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .s-one-filter__actions {
+    justify-content: center;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .s-one-filter__date-range {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+  .s-one-filter {
+    background: var(--input-background-dark);
+    border-color: var(--border-color-dark);
+  }
+  
+  .s-one-filter__select,
+  .s-one-filter__input,
+  .s-one-filter__checkbox,
+  .s-one-filter__multiselect-selected,
+  .s-one-filter__suggestions {
+    background: var(--background-color-dark);
+    border-color: var(--border-color-dark);
+    color: var(--text-color-dark);
+  }
+  
+  .s-one-filter__checkbox-item:hover,
+  .s-one-filter__suggestion:hover {
+    background: var(--hover-background-dark);
+  }
+}
