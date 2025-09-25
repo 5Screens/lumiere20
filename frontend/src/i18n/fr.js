@@ -1283,7 +1283,9 @@ export default {
     add_filter:'Ajouter un filtre',
     select_column: 'Sélectionner une colonne',
     select_type: 'Sélectionner un type',
-    select_option: 'Sélectionner une option'
+    select_option: 'Sélectionner une option',
+    no_filters_added:'Aucun filtre',
+    add_first_filter:'Ajouter un premier filtre'
   },
   notifications: {
     loadingError: 'Erreur lors du chargement des données',
