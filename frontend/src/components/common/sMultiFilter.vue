@@ -27,11 +27,10 @@
         <div v-else-if="filterConfig && filterConfig.length > 0" class="s-multi-filter__filters">
           <!-- Message si aucun filtre ajouté -->
           <div v-if="activeFilters.length === 0" class="s-multi-filter__empty">
-            <i class="fas fa-info-circle"></i>
+            
             <span>{{ $t('filters.no_filters_added') }}</span>
-            <button @click="addNewFilter" class="btn-add-first">
+            <button @click="addNewFilter" class="btn-add-first" :title="$t('filters.add_filter')">
               <i class="fas fa-plus"></i>
-              {{ $t('filters.add_first_filter') }}
             </button>
           </div>
 
@@ -50,9 +49,8 @@
 
           <!-- Bouton pour ajouter un filtre -->
           <div v-if="activeFilters.length > 0" class="s-multi-filter__add-filter">
-            <button @click="addNewFilter" class="btn-add-filter">
+            <button @click="addNewFilter" class="btn-add-filter" :title="$t('filters.add_filter')">
               <i class="fas fa-plus"></i>
-              {{ $t('filters.add_filter') }}
             </button>
           </div>
         </div>
