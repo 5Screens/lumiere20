@@ -69,6 +69,44 @@
   color: var(--danger-color);
 }
 
+/* Search suggestions dropdown */
+.s-filter__search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--input-background);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.s-filter__search-suggestion {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-color);
+  transition: background 0.2s ease;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.s-filter__search-suggestion:last-child {
+  border-bottom: none;
+}
+
+.s-filter__search-suggestion:hover {
+  background: var(--hover-background);
+}
+
+.s-filter__search-suggestion:active {
+  background: var(--primary-color);
+  color: white;
+}
+
 /* Checkbox Filter */
 .s-filter__checkbox-list {
   display: flex;

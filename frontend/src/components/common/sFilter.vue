@@ -13,6 +13,8 @@
           :value="modelValue"
           :placeholder="config.placeholder || $t('filters.search_placeholder')"
           @input="handleSearchInput"
+          @focus="showSearchSuggestions = true"
+          @blur="hideSearchSuggestions"
           class="s-filter__search-input"
         />
         <button 
@@ -22,6 +24,21 @@
         >
           <i class="fas fa-times"></i>
         </button>
+        
+        <!-- Search suggestions dropdown -->
+        <div 
+          v-if="showSearchSuggestions && searchSuggestions.length > 0" 
+          class="s-filter__search-suggestions"
+        >
+          <div 
+            v-for="suggestion in searchSuggestions" 
+            :key="suggestion.value"
+            @mousedown="selectSearchSuggestion(suggestion.value)"
+            class="s-filter__search-suggestion"
+          >
+            {{ suggestion.label }}
+          </div>
+        </div>
       </div>
     </div>
 
@@ -185,6 +202,9 @@ export default {
     const selectOptions = ref([]);
     const checkboxOptions = ref([]);
     const searchDebounceTimer = ref(null);
+    const searchSuggestions = ref([]);
+    const showSearchSuggestions = ref(false);
+    const searchSuggestionsTimer = ref(null);
 
     // Computed
     const modelValue = computed({
@@ -274,15 +294,50 @@ export default {
     const handleSearchInput = (event) => {
       const value = event.target.value;
       
-      // Debounce la recherche
-      clearTimeout(searchDebounceTimer.value);
-      searchDebounceTimer.value = setTimeout(() => {
-        modelValue.value = value;
-      }, 300);
+      // Mettre à jour la valeur immédiatement pour l'affichage
+      modelValue.value = value;
+      
+      // Debounce pour les suggestions d'autocomplétion
+      clearTimeout(searchSuggestionsTimer.value);
+      
+      if (value && value.length >= (props.config.minChars || 2)) {
+        searchSuggestionsTimer.value = setTimeout(async () => {
+          try {
+            const suggestions = await filterStore.loadFilterValues(
+              props.tableName,
+              props.config.column,
+              value
+            );
+            searchSuggestions.value = suggestions || [];
+            showSearchSuggestions.value = true;
+          } catch (err) {
+            console.error(`[sFilter] Error loading search suggestions for ${props.config.column}:`, err);
+            searchSuggestions.value = [];
+          }
+        }, props.config.debounce || 300);
+      } else {
+        searchSuggestions.value = [];
+        showSearchSuggestions.value = false;
+      }
     };
 
     const clearSearch = () => {
       modelValue.value = '';
+      searchSuggestions.value = [];
+      showSearchSuggestions.value = false;
+    };
+
+    const selectSearchSuggestion = (value) => {
+      modelValue.value = value;
+      searchSuggestions.value = [];
+      showSearchSuggestions.value = false;
+    };
+
+    const hideSearchSuggestions = () => {
+      // Délai pour permettre le clic sur une suggestion
+      setTimeout(() => {
+        showSearchSuggestions.value = false;
+      }, 200);
     };
 
     const isChecked = (value) => {
@@ -380,11 +435,15 @@ export default {
       checkboxSearch,
       selectOptions,
       checkboxOptions,
+      searchSuggestions,
+      showSearchSuggestions,
       filteredCheckboxOptions,
       availableSelectOptions,
       datePresets,
       handleSearchInput,
       clearSearch,
+      selectSearchSuggestion,
+      hideSearchSuggestions,
       isChecked,
       handleCheckboxChange,
       selectAll,

@@ -148,7 +148,7 @@ export const useFilterStore = defineStore('filter', {
         const url = `${endpoint}/filters/${columnName}`;
         const params = searchQuery ? { q: searchQuery } : {};
         
-        const response = await apiService.get(url, { params });
+        const response = await apiService.get(url, params);
         
         if (!this.filterValues[tableName]) {
           this.filterValues[tableName] = {};
