@@ -2,18 +2,18 @@
 
 .s-one-filter {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr auto;
+  grid-template-columns: auto 1fr 1fr 2fr;
   gap: 1rem;
   align-items: start;
   padding: 1rem;
   background: var(--input-background);
-  border: 1px solid var(--border-color);
+  border-top: 2px solid var(--border-color);
   border-radius: 6px;
   transition: all 0.2s ease;
 }
 
 .s-one-filter:hover {
-  border-color: var(--primary-color);
+  border-top-color: var(--primary-color);
   box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
 }
 

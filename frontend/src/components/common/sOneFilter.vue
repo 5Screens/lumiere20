@@ -1,8 +1,18 @@
 <template>
   <div class="s-one-filter">
+    <!-- Bouton de suppression -->
+    <div class="s-one-filter__actions">
+      <button 
+        @click="removeFilter"
+        class="btn-remove"
+        :title="$t('filters.remove_filter')"
+      >
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+
     <!-- Sélecteur de colonne -->
     <div class="s-one-filter__column">
-      <label class="s-one-filter__label">{{ $t('filters.column') }}</label>
       <select 
         :value="filter.column"
         @change="updateColumn"
@@ -21,7 +31,6 @@
 
     <!-- Sélecteur de type (si colonne sélectionnée) -->
     <div v-if="filter.column && selectedColumnConfig" class="s-one-filter__type">
-      <label class="s-one-filter__label">{{ $t('filters.type') }}</label>
       <select 
         :value="filter.type"
         @change="updateType"
@@ -36,7 +45,6 @@
 
     <!-- Champ de valeur (si type sélectionné) -->
     <div v-if="filter.column && filter.type" class="s-one-filter__value">
-      <label class="s-one-filter__label">{{ $t('filters.value') }}</label>
       
       <!-- Search Filter -->
       <div v-if="filter.type === 'search'" class="s-one-filter__search">
@@ -156,17 +164,6 @@
           />
         </div>
       </div>
-    </div>
-
-    <!-- Bouton de suppression -->
-    <div class="s-one-filter__actions">
-      <button 
-        @click="removeFilter"
-        class="btn-remove"
-        :title="$t('filters.remove_filter')"
-      >
-        <i class="fas fa-trash"></i>
-      </button>
     </div>
   </div>
 </template>
