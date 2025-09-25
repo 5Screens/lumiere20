@@ -1,5 +1,13 @@
 <template>
   <div class="reusable-table-tab">
+    <!-- Filter Panel -->
+    <sFilterPanel
+      v-if="filterable"
+      :table-name="tableName"
+      @filters-applied="handleFiltersApplied"
+      @filters-reset="handleFiltersReset"
+    />
+    
     <!-- Tableau -->
     <div class="table-container" ref="tableContainer">
       <table ref="tableEl">
@@ -27,43 +35,6 @@
                 </div>
                 <div class="resize-handle" @mousedown="startResize($event, index + (selectable ? 1 : 0))"></div>
               </div>
-            </th>
-          </tr>
-          <tr class="filter-row" v-if="filterable">
-            <th v-if="selectable"></th>
-            <th v-for="column in columns" :key="column.key">
-              <template v-if="column.type === 'date'">
-                <input type="date" v-model="filters[column.key]" class="column-filter" />
-              </template>
-              <template v-else-if="column.type === 'select'">
-                <div class="custom-multiselect">
-                  <div class="multiselect-header" @click="toggleDropdown(column.key)">
-                    <span v-if="!filters[column.key] || filters[column.key].length === 0">All</span>
-                    <span v-else>{{ filters[column.key].length }} sélectionné(s)</span>
-                    <span class="dropdown-arrow">▼</span>
-                  </div>
-                  <div class="multiselect-dropdown" v-show="dropdowns[column.key]">
-                    <div class="multiselect-option" v-for="option in column.options" :key="option">
-                      <label>
-                        <input type="checkbox" 
-                               :value="option" 
-                               v-model="filters[column.key]">
-                        {{ option }}
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </template>
-              <template v-else>
-                <div class="filter-container">
-                  <input type="text" v-model="filters[column.key]" class="column-filter" />
-                  <div class="filter-icon" 
-                       @click="openAdvancedFilter(column, $event)"
-                       :class="{ 'active': hasActiveAdvancedFilter(column.key) }">
-                    <i class="fas fa-filter"></i>
-                  </div>
-                </div>
-              </template>
             </th>
           </tr>
         </thead>
@@ -190,18 +161,24 @@
 
 <script>
 // Import du service API centralisé pour gérer les appels HTTP
-import apiService from '@/services/apiService'
+import apiService, { filterAPI } from '@/services/apiService'
 import { usePopoverStore } from '@/stores/popoverStore'
 import { useTabsStore } from '@/stores/tabsStore'
+import { useFilterStore } from '@/stores/filterStore'
 import { DEBOUNCE_DELAY_MS } from '@/config/config'
+import sFilterPanel from './sFilterPanel.vue'
 
 export default {
   name: 'ReusableTableTab',
+  components: {
+    sFilterPanel
+  },
   emits: ['row-selected', 'error'],
   setup() {
     const popoverStore = usePopoverStore()
     const tabsStore = useTabsStore()
-    return { popoverStore, tabsStore }
+    const filterStore = useFilterStore()
+    return { popoverStore, tabsStore, filterStore }
   },
   props: {
     apiUrl: {
@@ -233,6 +210,10 @@ export default {
     pageSize: {
       type: Number,
       default: 50
+    },
+    tableName: {
+      type: String,
+      default: null
     }
   },
   data() {
@@ -424,6 +405,21 @@ export default {
       }
     },
   },
+  watch: {
+    apiUrl: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          // Load data when apiUrl changes or on initial mount
+          if (this.infiniteScrollEnabled) {
+            this.loadInitialData();
+          } else {
+            this.loadData();
+          }
+        }
+      }
+    }
+  },
   updated() {
     // Ensure ellipsis state is kept in sync after any reactive update
     this.scheduleTruncationRecompute()
@@ -463,6 +459,105 @@ export default {
     }
   },
   methods: {
+    /**
+     * Handle filters applied from the filter panel
+     */
+    async handleFiltersApplied(filters) {
+      console.log('[ReusableTableTab] Filters applied:', filters);
+      
+      // Store active filters
+      this.filters = filters || {};
+      
+      // Reset pagination
+      this.currentPage = 1;
+      
+      if (this.infiniteScrollEnabled) {
+        // Reset and reload for infinite scroll
+        await this.resetAndReload();
+      } else {
+        // Reload data with filters
+        await this.loadData();
+      }
+    },
+    
+    /**
+     * Handle filters reset from the filter panel
+     */
+    async handleFiltersReset() {
+      console.log('[ReusableTableTab] Filters reset');
+      
+      // Clear all filters
+      this.filters = {};
+      this.advancedFilters = {};
+      
+      // Reset pagination
+      this.currentPage = 1;
+      
+      if (this.infiniteScrollEnabled) {
+        // Reset and reload for infinite scroll
+        await this.resetAndReload();
+      } else {
+        // Reload data without filters
+        await this.loadData();
+      }
+    },
+    
+    /**
+     * Load data with current filters (replaces fetchData for filtered data)
+     */
+    async loadData() {
+      console.log('[ReusableTableTab] Loading data with filters');
+      
+      try {
+        // Check if we have date range filters
+        const hasDateRange = Object.values(this.filters).some(
+          value => value && typeof value === 'object' && (value.gte || value.lte)
+        );
+        
+        let response;
+        
+        if (hasDateRange || Object.keys(this.filters).length > 0) {
+          // Use filter store for complex filtering
+          const tableName = this.tableName || this.apiUrl;
+          response = await this.filterStore.applyFilters(
+            tableName,
+            this.filters,
+            this.sortColumn ? { by: this.sortColumn, direction: this.sortDirection } : null,
+            { page: this.currentPage, limit: this.pageSize }
+          );
+        } else {
+          // Use simple GET for no filters
+          response = await apiService.get(this.apiUrl);
+        }
+        
+        // Process response
+        if (response) {
+          const data = response.data || response;
+          this.tableData = (Array.isArray(data) ? data : []).map(item => ({
+            ...item,
+            selected: false
+          }));
+          
+          // Update pagination info if available
+          if (response.total !== undefined) {
+            this.totalRecords = response.total;
+          }
+          
+          // Measure column widths after first load
+          if (!this.hasMeasuredColumnWidths) {
+            this.$nextTick(() => this.measureColumnWidths());
+          }
+        }
+      } catch (error) {
+        console.error('[ReusableTableTab] Error loading data:', error);
+        this.$emit('error', error.message || 'Error loading data');
+        
+        if (this.tabsStore && typeof this.tabsStore.setMessage === 'function') {
+          this.tabsStore.setMessage(this.$t('notifications.loadingError'));
+        }
+      }
+    },
+    
     // Return width style for header cells. Index -1 refers to the selectable column when enabled.
     getThWidthStyle(index) {
       const idx = this.selectable ? (index === -1 ? 0 : index + 1) : index

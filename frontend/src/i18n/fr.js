@@ -1275,5 +1275,32 @@ export default {
     uuid:'Identifiant unique',
     uuid_placeholder:'Identifiant unique généré automatiquement',
     
+  },
+  filters: {
+    title: 'Filtres',
+    loading: 'Chargement des filtres...',
+    no_filters_available: 'Aucun filtre disponible',
+    apply: 'Appliquer',
+    reset: 'Réinitialiser',
+    search_placeholder: 'Rechercher...',
+    select_all: 'Tout sélectionner',
+    select_none: 'Tout désélectionner',
+    search_in_list: 'Rechercher dans la liste',
+    select_option: 'Sélectionner une option',
+    select_multiple: 'Sélectionner plusieurs options',
+    add_option: 'Ajouter une option',
+    from: 'De',
+    to: 'À',
+    today: 'Aujourd\'hui',
+    yesterday: 'Hier',
+    last_7_days: '7 derniers jours',
+    last_30_days: '30 derniers jours',
+    this_month: 'Ce mois'
+  },
+  notifications: {
+    loadingError: 'Erreur lors du chargement des données',
+    load_initial_error: 'Erreur lors du chargement initial',
+    load_more_error: 'Erreur lors du chargement de données supplémentaires',
+    invalid_response: 'Réponse invalide du serveur'
   }
 }

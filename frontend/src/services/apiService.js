@@ -286,3 +286,52 @@ export default {
     }
   }
 };
+
+/**
+ * API spécifiques pour le système de filtrage
+ */
+export const filterAPI = {
+  /**
+   * Obtenir la configuration des filtres pour une table
+   * @param {string} tableName - Nom de la table
+   * @returns {Promise<Object>} - Configuration des filtres
+   */
+  async getFilterConfig(tableName) {
+    return apiService.get(`table_metadata/filter_config/${tableName}`);
+  },
+  
+  /**
+   * Obtenir les valeurs possibles pour un filtre
+   * @param {string} tableName - Nom de la table
+   * @param {string} columnName - Nom de la colonne
+   * @param {string} query - Requête de recherche (optionnel)
+   * @returns {Promise<Array>} - Liste des valeurs possibles
+   */
+  async getFilterValues(tableName, columnName, query = null) {
+    // Extraire le nom de la table sans le schéma si présent
+    const endpoint = tableName.includes('.') 
+      ? tableName.split('.')[1]
+      : tableName;
+    
+    const params = query ? { q: query } : {};
+    return apiService.get(`${endpoint}/filters/${columnName}`, params);
+  },
+  
+  /**
+   * Recherche avec filtres complexes
+   * @param {string} endpoint - Point d'accès API
+   * @param {Object} filters - Filtres à appliquer
+   * @param {Object} sort - Options de tri
+   * @param {Object} pagination - Options de pagination
+   * @returns {Promise<Object>} - Résultats de la recherche
+   */
+  async searchWithFilters(endpoint, filters, sort = null, pagination = null) {
+    const payload = {
+      filters: filters || {},
+      sort: sort || { by: 'created_at', direction: 'desc' },
+      pagination: pagination || { page: 1, limit: 50 }
+    };
+    
+    return apiService.post(`${endpoint}/search`, payload);
+  }
+};

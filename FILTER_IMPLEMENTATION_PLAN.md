@@ -172,16 +172,11 @@ export const filterAPI = {
 5. ⏳ Ajouter les méthodes de filtrage dans `apiService.js`
 
 ### Phase 2: Composants de filtrage
-1. ⏳ Créer le composant `FilterPanel.vue`
-2. ⏳ Créer les composants de filtres individuels:
-   - `FilterCheckbox.vue`
-   - `FilterSearch.vue`
-   - `FilterDateRange.vue`
-   - `FilterSelect.vue`
-3. ⏳ Ajouter les styles CSS pour les filtres
+1. ⏳ Créer le composant `sFilterPanel.vue` et `sFilter.vue`
+2. ⏳ Ajouter les styles CSS pour les filtres
 
 ### Phase 3: Intégration
-1. ⏳ Intégrer `FilterPanel` dans `reusableTableTab.vue`
+1. ⏳ Intégrer `sFilterPanel` dans `reusableTableTab.vue`
 2. ⏳ Modifier la logique de chargement des données pour utiliser les filtres
 3. ⏳ Ajouter la persistance des filtres dans localStorage
 4. ⏳ Gérer le state de pagination avec les filtres
