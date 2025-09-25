@@ -6,7 +6,6 @@
   border-radius: 8px;
   margin-bottom: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
 }
 
 .s-multi-filter.collapsed {
@@ -24,7 +23,6 @@
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   color: white;
   border-radius: 7px 7px 0 0;
-  transition: background 0.3s ease;
 }
 
 .s-multi-filter__header:hover {
@@ -74,7 +72,6 @@
   cursor: pointer;
   padding: 0.25rem;
   font-size: 0.875rem;
-  transition: transform 0.3s ease;
 }
 
 .s-multi-filter__toggle:hover {
@@ -136,7 +133,6 @@
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -171,7 +167,6 @@
   border-radius: 4px;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -217,7 +212,6 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -261,7 +255,6 @@
 /* Transitions */
 .slide-enter-active,
 .slide-leave-active {
-  transition: all 0.3s ease;
   transform-origin: top;
 }
 

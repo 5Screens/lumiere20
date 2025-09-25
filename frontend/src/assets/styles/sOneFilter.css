@@ -9,7 +9,6 @@
   background: var(--input-background);
   border-top: 2px solid var(--border-color);
   border-radius: 6px;
-  transition: all 0.2s ease;
 }
 
 .s-one-filter:hover {
@@ -61,7 +60,6 @@
   font-size: 0.875rem;
   background: var(--input-bg);
   color: var(--text-color);
-  transition: all 0.2s ease;
 }
 
 .s-one-filter__select:focus,
@@ -96,7 +94,6 @@
   cursor: pointer;
   font-size: 0.875rem;
   color: var(--text-color);
-  transition: background 0.2s ease;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -127,7 +124,6 @@
   gap: 0.5rem;
   padding: 0.25rem;
   cursor: pointer;
-  transition: background 0.2s ease;
   font-size: 0.875rem;
 }
 
@@ -202,7 +198,6 @@
   display: flex;
   align-items: center;
   opacity: 0.8;
-  transition: opacity 0.2s ease;
 }
 
 .s-one-filter__multiselect-tag button:hover {
@@ -235,7 +230,6 @@
   padding: 0.5rem;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,7 +263,6 @@
 .s-one-filter__suggestions::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 3px;
-  transition: background 0.2s ease;
 }
 
 .s-one-filter__checkbox::-webkit-scrollbar-thumb:hover,
