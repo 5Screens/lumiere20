@@ -47,9 +47,13 @@ export const useFilterStore = defineStore('filter', {
         if (value !== null && value !== undefined && value !== '') {
           if (Array.isArray(value) && value.length > 0) {
             count++;
-          } else if (typeof value === 'object' && (value.gte || value.lte)) {
-            count++;
-          } else if (!Array.isArray(value) && value) {
+          } else if (typeof value === 'object' && value !== null) {
+            // Pour les objets date_range, vérifier que gte ou lte ont des valeurs non nulles
+            if ((value.gte && value.gte !== null && value.gte !== '') || 
+                (value.lte && value.lte !== null && value.lte !== '')) {
+              count++;
+            }
+          } else if (!Array.isArray(value) && typeof value !== 'object' && value) {
             count++;
           }
         }
@@ -75,19 +79,26 @@ export const useFilterStore = defineStore('filter', {
         
         const response = await apiService.get(`table_metadata/filter_config/${tableName}`);
         
-        if (response && response.filters) {
-          this.filterConfigs[tableName] = response.filters;
+        if (response && typeof response === 'object') {
+          // Convertir l'objet de configuration en tableau de filtres
+          const filtersArray = Object.keys(response).map(column => ({
+            column: column,
+            label: column.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            ...response[column]
+          }));
+          
+          this.filterConfigs[tableName] = filtersArray;
           
           // Initialiser les filtres actifs si pas déjà fait
           if (!this.activeFilters[tableName]) {
-            this.activeFilters[tableName] = this.initializeFilters(response.filters);
+            this.activeFilters[tableName] = this.initializeFilters(filtersArray);
           }
           
           // Charger depuis localStorage si disponible
           this.loadFiltersFromStorage(tableName);
           
-          console.info(`[FILTER_STORE] Filter config loaded successfully for ${tableName}`);
-          return response.filters;
+          console.info(`[FILTER_STORE] Filter config loaded successfully for ${tableName}:`, filtersArray);
+          return filtersArray;
         }
       } catch (error) {
         console.error(`[FILTER_STORE] Error loading filter config for ${tableName}:`, error);
