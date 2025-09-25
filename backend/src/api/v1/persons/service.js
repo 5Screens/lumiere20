@@ -1133,10 +1133,8 @@ const getPersonsFilterValues = async (columnName, searchQuery = null) => {
         `;
         const dateRangeResult = await db.query(dateRangeQuery);
         return {
-          [columnName]: {
-            min: dateRangeResult.rows[0].min_date,
-            max: dateRangeResult.rows[0].max_date
-          }
+          min: dateRangeResult.rows[0].min_date,
+          max: dateRangeResult.rows[0].max_date
         };
         
       default:
@@ -1145,7 +1143,7 @@ const getPersonsFilterValues = async (columnName, searchQuery = null) => {
     }
     
     logger.info(`[PERSONS SERVICE] Found ${values.length} values for ${columnName}`);
-    return { [columnName]: values };
+    return values;
     
   } catch (error) {
     logger.error('[PERSONS SERVICE] Error getting filter values:', error);
