@@ -34,7 +34,8 @@ async function getFilterConfig(tableName) {
       SELECT 
         column_name,
         filter_type,
-        filter_options
+        filter_options,
+        data_type
       FROM administration.table_metadata
       WHERE table_name = $1
         AND data_is_filterable = true
@@ -48,10 +49,14 @@ async function getFilterConfig(tableName) {
     const filterConfig = {};
     result.rows.forEach(row => {
       if (row.filter_type === 'none' || !row.filter_type) {
-        filterConfig[row.column_name] = { type: 'none' };
+        filterConfig[row.column_name] = { 
+          type: 'none',
+          data_type: row.data_type
+        };
       } else {
         filterConfig[row.column_name] = {
           type: row.filter_type,
+          data_type: row.data_type,
           ...(row.filter_options || {})
         };
       }
