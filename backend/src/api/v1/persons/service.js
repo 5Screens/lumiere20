@@ -958,11 +958,51 @@ const searchPersons = async (searchParams) => {
         p.photo,
         p.created_at,
         p.updated_at,
+        p.ref_entity_uuid,
+        p.ref_location_uuid,
+        p.ref_approving_manager_uuid,
+        
+        -- Informations de l'entité de référence
         e.name as ref_entity_name,
-        p.ref_location_uuid as location_uuid,
-        m.first_name || ' ' || m.last_name as ref_approving_manager_name
+        
+        -- Informations de la localisation
+        l.name as ref_location_name,
+        
+        -- Informations du manager approbateur
+        m.first_name || ' ' || m.last_name as ref_approving_manager_name,
+        
+        -- Nombre de tickets enregistrés (requested_for_uuid)
+        (SELECT COUNT(*) 
+         FROM core.tickets t 
+         WHERE t.requested_for_uuid = p.uuid) AS raised_tickets_count,
+        
+        -- Nombre de groupes dont la personne est membre
+        (SELECT COUNT(*) 
+         FROM configuration.rel_persons_groups rpg 
+         WHERE rpg.rel_member = p.uuid) AS member_of_group_count,
+        
+        -- Nombre de tickets assignés à la personne
+        (SELECT COUNT(*) 
+         FROM core.rel_tickets_groups_persons rtgp 
+         WHERE rtgp.rel_assigned_to_person = p.uuid 
+           AND rtgp.type = 'ASSIGNED'
+           AND rtgp.ended_at IS NULL) AS assigned_tickets_count,
+        
+        -- Nombre de tickets observés par la personne
+        (SELECT COUNT(*) 
+         FROM core.rel_tickets_groups_persons rtgp 
+         WHERE rtgp.rel_assigned_to_person = p.uuid 
+           AND rtgp.type = 'WATCHER'
+           AND rtgp.ended_at IS NULL) AS watched_tickets_count,
+        
+        -- Nombre d'entités pour lesquelles la personne est approbateur budgétaire
+        (SELECT COUNT(*) 
+         FROM configuration.entities ent 
+         WHERE ent.budget_approver_uuid = p.uuid) AS budget_approver_count
+         
       FROM configuration.persons p
       LEFT JOIN configuration.entities e ON p.ref_entity_uuid = e.uuid
+      LEFT JOIN configuration.locations l ON p.ref_location_uuid = l.uuid
       LEFT JOIN configuration.persons m ON p.ref_approving_manager_uuid = m.uuid
       ${whereClause}
       ORDER BY ${sortBy} ${sortDirection.toUpperCase()}
