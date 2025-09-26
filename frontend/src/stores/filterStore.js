@@ -77,7 +77,7 @@ export const useFilterStore = defineStore('filter', {
           // Convertir l'objet de configuration en tableau de filtres
           const filtersArray = Object.keys(response).map(column => ({
             column: column,
-            label: column.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            label: response[column].label || column.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             ...response[column]
           }));
           

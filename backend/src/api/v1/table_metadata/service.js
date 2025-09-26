@@ -33,6 +33,7 @@ async function getFilterConfig(tableName) {
     const query = `
       SELECT 
         column_name,
+        column_label,
         filter_type,
         filter_options,
         data_type
@@ -51,12 +52,14 @@ async function getFilterConfig(tableName) {
       if (row.filter_type === 'none' || !row.filter_type) {
         filterConfig[row.column_name] = { 
           type: 'none',
-          data_type: row.data_type
+          data_type: row.data_type,
+          label: row.column_label
         };
       } else {
         filterConfig[row.column_name] = {
           type: row.filter_type,
           data_type: row.data_type,
+          label: row.column_label,
           ...(row.filter_options || {})
         };
       }
