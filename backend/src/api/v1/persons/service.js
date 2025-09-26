@@ -892,25 +892,25 @@ const searchPersons = async (searchParams) => {
       if (Array.isArray(value)) {
         // Multiple values (OR condition)
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        whereConditions.push(`${column} IN (${placeholders})`);
+        whereConditions.push(`p.${column} IN (${placeholders})`);
         queryParams.push(...value);
       } else if (typeof value === 'object' && (value.gte || value.lte)) {
         // Range filter (for dates, numbers)
         if (value.gte) {
-          whereConditions.push(`${column} >= $${paramIndex++}`);
+          whereConditions.push(`p.${column} >= $${paramIndex++}`);
           queryParams.push(value.gte);
         }
         if (value.lte) {
-          whereConditions.push(`${column} <= $${paramIndex++}`);
+          whereConditions.push(`p.${column} <= $${paramIndex++}`);
           queryParams.push(value.lte);
         }
       } else if (filter_type === 'search') {
         // Text search
-        whereConditions.push(`LOWER(CAST(${column} AS TEXT)) LIKE LOWER($${paramIndex++})`);
+        whereConditions.push(`LOWER(CAST(p.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`);
         queryParams.push(`%${value}%`);
       } else {
         // Exact match
-        whereConditions.push(`${column} = $${paramIndex++}`);
+        whereConditions.push(`p.${column} = $${paramIndex++}`);
         queryParams.push(value);
       }
     }
