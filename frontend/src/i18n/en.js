@@ -378,13 +378,6 @@ export default {
     name: 'Name',
     description: 'Description'
   },
-  person: {
-    first_name: 'First name',
-    last_name: 'Last name',
-    job_role: 'Job role',
-    email: 'Email',
-    phone: 'Phone'
-  },
   group: {
     name: 'Group name',
     phone: 'Phone'

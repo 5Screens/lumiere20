@@ -424,13 +424,6 @@ export default {
     name: 'Nom',
     description: 'Description'
   },
-  person: {
-    first_name: 'Prénom',
-    last_name: 'Nom',
-    job_role: 'Rôle',
-    email: 'Email',
-    phone: 'Téléphone'
-  },
   group: {
     name: 'Nom du groupe',
     phone: 'Téléphone'

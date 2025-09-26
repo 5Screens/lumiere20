@@ -24,7 +24,7 @@
           :key="column.column"
           :value="column.column"
         >
-          {{ column.label }}
+          {{ $t(column.label) }}
         </option>
       </select>
     </div>
