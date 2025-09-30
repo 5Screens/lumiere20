@@ -867,8 +867,17 @@ const searchPersons = async (searchParams) => {
     const queryParams = [];
     let paramIndex = 1;
     
-    // Process each filter
+    // Extract operator from filters (default to AND)
+    const filterOperator = filters.operator && filters.operator.toUpperCase() === 'OR' ? 'OR' : 'AND';
+    logger.info(`[PERSONS SERVICE] Using ${filterOperator} operator for filters`);
+    
+    // Process each filter (excluding the operator key)
     for (const [column, value] of Object.entries(filters)) {
+      // Skip the operator key
+      if (column === 'operator') {
+        continue;
+      }
+      
       if (!value || (Array.isArray(value) && value.length === 0)) {
         continue;
       }
@@ -890,10 +899,25 @@ const searchPersons = async (searchParams) => {
       
       // Handle different filter types
       if (Array.isArray(value)) {
-        // Multiple values (OR condition)
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        whereConditions.push(`p.${column} IN (${placeholders})`);
-        queryParams.push(...value);
+        // Array of values - handle based on filter type
+        if (filter_type === 'search') {
+          // Text search with multiple values (OR condition)
+          // Example: ["Ma", "Mi"] -> first_name LIKE '%Ma%' OR first_name LIKE '%Mi%'
+          const searchConditions = value.map(() => {
+            const condition = `LOWER(CAST(p.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
+            return condition;
+          });
+          whereConditions.push(`(${searchConditions.join(' OR ')})`);
+          queryParams.push(...value.map(v => `%${v}%`));
+          logger.info(`[PERSONS SERVICE] Added search filter for ${column} with ${value.length} values (OR)`);
+        } else {
+          // Multiple exact values (OR condition with IN)
+          // Example: ["active", "inactive"] -> status IN ('active', 'inactive')
+          const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+          whereConditions.push(`p.${column} IN (${placeholders})`);
+          queryParams.push(...value);
+          logger.info(`[PERSONS SERVICE] Added IN filter for ${column} with ${value.length} values`);
+        }
       } else if (typeof value === 'object' && (value.gte || value.lte)) {
         // Range filter (for dates, numbers)
         if (value.gte) {
@@ -904,20 +928,23 @@ const searchPersons = async (searchParams) => {
           whereConditions.push(`p.${column} <= $${paramIndex++}`);
           queryParams.push(value.lte);
         }
+        logger.info(`[PERSONS SERVICE] Added range filter for ${column}`);
       } else if (filter_type === 'search') {
-        // Text search
+        // Text search with single value
         whereConditions.push(`LOWER(CAST(p.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`);
         queryParams.push(`%${value}%`);
+        logger.info(`[PERSONS SERVICE] Added search filter for ${column} with single value`);
       } else {
         // Exact match
         whereConditions.push(`p.${column} = $${paramIndex++}`);
         queryParams.push(value);
+        logger.info(`[PERSONS SERVICE] Added exact match filter for ${column}`);
       }
     }
     
-    // Build the main query
+    // Build the main query using the specified operator
     const whereClause = whereConditions.length > 0 
-      ? `WHERE ${whereConditions.join(' AND ')}` 
+      ? `WHERE ${whereConditions.join(` ${filterOperator} `)}` 
       : '';
     
     // Count total results
