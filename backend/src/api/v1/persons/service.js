@@ -850,102 +850,293 @@ const removeApproverEntity = async (personUuid, entityUuid) => {
 };
 
 /**
- * Search persons with filters, sorting and pagination
+ * Build a single filter condition based on column type and operator
+ * @param {string} column - Column name
+ * @param {Object} filterDef - Filter definition with operator and value(s)
+ * @param {string} dataType - Column data type (text, number, date, boolean)
+ * @param {Array} queryParams - Array to push parameters into
+ * @param {number} paramIndex - Current parameter index
+ * @returns {Object} { condition: string, newParamIndex: number }
+ */
+const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
+  const { operator, value, value2, empty_string_is_null } = filterDef;
+  let condition = '';
+  
+  // Handle NULL checks
+  if (operator === 'is_null') {
+    if (empty_string_is_null && (dataType === 'text' || dataType === 'string')) {
+      condition = `(p.${column} IS NULL OR p.${column} = '')`;
+    } else {
+      condition = `p.${column} IS NULL`;
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  if (operator === 'is_not_null') {
+    if (empty_string_is_null && (dataType === 'text' || dataType === 'string')) {
+      condition = `(p.${column} IS NOT NULL AND p.${column} != '')`;
+    } else {
+      condition = `p.${column} IS NOT NULL`;
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  // Handle TEXT/STRING type
+  if (dataType === 'text' || dataType === 'string') {
+    if (operator === 'contains') {
+      // Support array of values with OR
+      if (Array.isArray(value)) {
+        const conditions = value.map((val, index) => {
+          const cond = `LOWER(CAST(p.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
+          queryParams.push(`%${val}%`);
+          return cond;
+        });
+        condition = `(${conditions.join(' OR ')})`;
+        logger.info(`[BUILD FILTER] TEXT contains array: column=${column}, values=[${value.join(', ')}], condition=${condition}`);
+      } else {
+        condition = `LOWER(CAST(p.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
+        queryParams.push(`%${value}%`);
+        logger.info(`[BUILD FILTER] TEXT contains single: column=${column}, value=${value}, condition=${condition}`);
+      }
+    } else if (operator === 'equals' || operator === 'is') {
+      // Support array of values with IN
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        condition = `p.${column} IN (${placeholders})`;
+        queryParams.push(...value);
+        logger.info(`[BUILD FILTER] TEXT equals array: column=${column}, values=[${value.join(', ')}], condition=${condition}`);
+      } else {
+        condition = `p.${column} = $${paramIndex++}`;
+        queryParams.push(value);
+        logger.info(`[BUILD FILTER] TEXT equals single: column=${column}, value=${value}, condition=${condition}`);
+      }
+    }
+  }
+  
+  // Handle NUMBER type
+  else if (dataType === 'number' || dataType === 'integer' || dataType === 'numeric') {
+    if (operator === 'equals') {
+      // Support array of numbers with IN
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        condition = `p.${column} IN (${placeholders})`;
+        queryParams.push(...value);
+      } else {
+        condition = `p.${column} = $${paramIndex++}`;
+        queryParams.push(value);
+      }
+    } else if (operator === 'lt') {
+      condition = `p.${column} < $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'lte') {
+      condition = `p.${column} <= $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'gt') {
+      condition = `p.${column} > $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'gte') {
+      condition = `p.${column} >= $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'between') {
+      condition = `p.${column} BETWEEN $${paramIndex++} AND $${paramIndex++}`;
+      queryParams.push(value, value2);
+    }
+  }
+  
+  // Handle DATE type
+  else if (dataType === 'date' || dataType === 'timestamp' || dataType === 'datetime') {
+    if (operator === 'after') {
+      condition = `p.${column} > $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'on_or_after') {
+      condition = `p.${column} >= $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'before') {
+      condition = `p.${column} < $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'on_or_before') {
+      condition = `p.${column} <= $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'between') {
+      condition = `p.${column} BETWEEN $${paramIndex++} AND $${paramIndex++}`;
+      queryParams.push(value, value2);
+    } else if (operator === 'on' || operator === 'equals') {
+      condition = `DATE(p.${column}) = DATE($${paramIndex++})`;
+      queryParams.push(value);
+    }
+  }
+  
+  // Handle BOOLEAN type
+  else if (dataType === 'boolean' || dataType === 'bool') {
+    if (operator === 'is_true') {
+      condition = `p.${column} = true`;
+    } else if (operator === 'is_false') {
+      condition = `p.${column} = false`;
+    } else if (operator === 'any') {
+      condition = '1=1'; // Always true, no filtering
+    }
+  }
+  
+  return { condition, newParamIndex: paramIndex };
+};
+
+/**
+ * Search persons with advanced filters, sorting and pagination
  * @param {Object} searchParams - Search parameters including filters, sort, and pagination
  * @returns {Object} Search results with data and metadata in frontend format
+ * 
+ * Expected format for advanced filters:
+ * {
+ *   "filters": {
+ *     "mode": "include" | "exclude",  // Include or exclude matching rows
+ *     "operator": "AND" | "OR",       // Logical operator between filters
+ *     "conditions": [
+ *       {
+ *         "column": "first_name",
+ *         "operator": "contains",       // TEXT: contains, equals/is
+ *         "value": "Marc"
+ *       },
+ *       {
+ *         "column": "age",
+ *         "operator": "between",        // NUMBER: equals, lt, lte, gt, gte, between
+ *         "value": 25,
+ *         "value2": 50
+ *       },
+ *       {
+ *         "column": "created_at",
+ *         "operator": "after",          // DATE: after, on_or_after, before, on_or_before, between, on
+ *         "value": "2024-01-01"
+ *       },
+ *       {
+ *         "column": "active",
+ *         "operator": "is_true",        // BOOLEAN: is_true, is_false, any
+ *       },
+ *       {
+ *         "column": "email",
+ *         "operator": "is_not_null",    // NULL: is_null, is_not_null
+ *         "empty_string_is_null": true  // Optional: treat empty string as null
+ *       }
+ *     ]
+ *   },
+ *   "sort": { "by": "last_name", "direction": "asc" },
+ *   "pagination": { "page": 1, "limit": 20 }
+ * }
  */
 const searchPersons = async (searchParams) => {
   try {
-    logger.info('[PERSONS SERVICE] Searching persons with params:', searchParams);
+    logger.info('[PERSONS SERVICE] Searching persons with advanced filters:', JSON.stringify(searchParams, null, 2));
     
     const { filters = {}, sort = {}, pagination = {} } = searchParams;
-    const { offset = 0, limit = 20 } = pagination;
-    const { sortBy = 'created_at', sortDirection = 'desc' } = sort;
+    const { page = 1, limit = 20 } = pagination;
+    const offset = (page - 1) * limit;
+    const { by: sortBy = 'created_at', direction: sortDirection = 'desc' } = sort;
     
-    // Build WHERE clause from filters
-    const whereConditions = [];
+    // Build WHERE clause from advanced filters
     const queryParams = [];
     let paramIndex = 1;
+    let whereClause = '';
     
-    // Extract operator from filters (default to AND)
-    const filterOperator = filters.operator && filters.operator.toUpperCase() === 'OR' ? 'OR' : 'AND';
-    logger.info(`[PERSONS SERVICE] Using ${filterOperator} operator for filters`);
-    
-    // Process each filter (excluding the operator key)
-    for (const [column, value] of Object.entries(filters)) {
-      // Skip the operator key
-      if (column === 'operator') {
-        continue;
+    // Validate filter format - only accept new format with conditions array
+    if (Object.keys(filters).length > 0) {
+      // Check if using old format (direct column names in filters)
+      const hasDirectColumnFilters = Object.keys(filters).some(key => 
+        key !== 'mode' && key !== 'operator' && key !== 'conditions'
+      );
+      
+      if (hasDirectColumnFilters) {
+        const error = new Error(
+          'Invalid filter format. Please use the new advanced filter format with filters.conditions array. ' +
+          'Example: { "filters": { "mode": "include", "operator": "AND", "conditions": [{ "column": "first_name", "operator": "contains", "value": "Marc" }] } }'
+        );
+        logger.error('[PERSONS SERVICE] Old filter format detected:', filters);
+        throw error;
       }
       
-      if (!value || (Array.isArray(value) && value.length === 0)) {
-        continue;
+      // Process new format with conditions array
+      if (!filters.conditions || !Array.isArray(filters.conditions)) {
+        const error = new Error(
+          'Invalid filter format. filters.conditions must be an array. ' +
+          'Example: { "filters": { "conditions": [{ "column": "first_name", "operator": "contains", "value": "Marc" }] } }'
+        );
+        logger.error('[PERSONS SERVICE] Missing or invalid filters.conditions');
+        throw error;
       }
       
-      // Get column metadata to know how to handle the filter
-      const metadataQuery = `
-        SELECT filter_type, data_type 
-        FROM administration.table_metadata 
-        WHERE table_name = $1 AND column_name = $2
-      `;
-      const metadataResult = await db.query(metadataQuery, ['persons', column]);
-      
-      if (metadataResult.rows.length === 0) {
-        logger.warn(`[PERSONS SERVICE] No metadata for column ${column}, skipping filter`);
-        continue;
-      }
-      
-      const { filter_type, data_type } = metadataResult.rows[0];
-      
-      // Handle different filter types
-      if (Array.isArray(value)) {
-        // Array of values - handle based on filter type
-        if (filter_type === 'search') {
-          // Text search with multiple values (OR condition)
-          // Example: ["Ma", "Mi"] -> first_name LIKE '%Ma%' OR first_name LIKE '%Mi%'
-          const searchConditions = value.map(() => {
-            const condition = `LOWER(CAST(p.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
-            return condition;
-          });
-          whereConditions.push(`(${searchConditions.join(' OR ')})`);
-          queryParams.push(...value.map(v => `%${v}%`));
-          logger.info(`[PERSONS SERVICE] Added search filter for ${column} with ${value.length} values (OR)`);
+      if (filters.conditions.length > 0) {
+        const mode = filters.mode || 'include'; // include or exclude
+        const operator = (filters.operator || 'AND').toUpperCase(); // AND or OR
+        
+        logger.info(`[PERSONS SERVICE] Processing ${filters.conditions.length} advanced filter(s) with mode=${mode}, operator=${operator}`);
+        
+        const filterConditions = [];
+        
+        // Process each filter condition
+        for (const filterDef of filters.conditions) {
+          const { column } = filterDef;
+          
+          logger.info(`[PERSONS SERVICE] Processing filter condition:`, JSON.stringify(filterDef));
+          
+          if (!column) {
+            logger.warn('[PERSONS SERVICE] Filter condition missing column, skipping');
+            continue;
+          }
+          
+          // Get column metadata to determine data type
+          const metadataQuery = `
+            SELECT data_type 
+            FROM administration.table_metadata 
+            WHERE table_name = $1 AND column_name = $2
+          `;
+          const metadataResult = await db.query(metadataQuery, ['persons', column]);
+          
+          logger.info(`[PERSONS SERVICE] Metadata query result for column ${column}:`, metadataResult.rows);
+          
+          if (metadataResult.rows.length === 0) {
+            logger.warn(`[PERSONS SERVICE] No metadata for column ${column}, skipping filter`);
+            continue;
+          }
+          
+          const { data_type } = metadataResult.rows[0];
+          logger.info(`[PERSONS SERVICE] Column ${column} has data_type: ${data_type}`);
+          
+          // Build the condition for this filter
+          const { condition, newParamIndex } = buildFilterCondition(
+            column,
+            filterDef,
+            data_type,
+            queryParams,
+            paramIndex
+          );
+          
+          logger.info(`[PERSONS SERVICE] buildFilterCondition returned: condition="${condition}", newParamIndex=${newParamIndex}, queryParams length=${queryParams.length}`);
+          
+          if (condition) {
+            filterConditions.push(condition);
+            paramIndex = newParamIndex;
+            logger.info(`[PERSONS SERVICE] Added filter: ${condition}`);
+          } else {
+            logger.warn(`[PERSONS SERVICE] buildFilterCondition returned empty condition for column ${column}`);
+          }
+        }
+        
+        // Combine all filter conditions
+        if (filterConditions.length > 0) {
+          const combinedConditions = filterConditions.join(` ${operator} `);
+          
+          // Apply mode: include (keep matching rows) or exclude (remove matching rows)
+          if (mode === 'exclude') {
+            whereClause = `WHERE NOT (${combinedConditions})`;
+          } else {
+            whereClause = `WHERE ${combinedConditions}`;
+          }
+          
+          logger.info(`[PERSONS SERVICE] Final WHERE clause: ${whereClause}`);
+          logger.info(`[PERSONS SERVICE] Query parameters: ${JSON.stringify(queryParams)}`);
         } else {
-          // Multiple exact values (OR condition with IN)
-          // Example: ["active", "inactive"] -> status IN ('active', 'inactive')
-          const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-          whereConditions.push(`p.${column} IN (${placeholders})`);
-          queryParams.push(...value);
-          logger.info(`[PERSONS SERVICE] Added IN filter for ${column} with ${value.length} values`);
+          logger.warn('[PERSONS SERVICE] No filter conditions generated despite having conditions array');
         }
-      } else if (typeof value === 'object' && (value.gte || value.lte)) {
-        // Range filter (for dates, numbers)
-        if (value.gte) {
-          whereConditions.push(`p.${column} >= $${paramIndex++}`);
-          queryParams.push(value.gte);
-        }
-        if (value.lte) {
-          whereConditions.push(`p.${column} <= $${paramIndex++}`);
-          queryParams.push(value.lte);
-        }
-        logger.info(`[PERSONS SERVICE] Added range filter for ${column}`);
-      } else if (filter_type === 'search') {
-        // Text search with single value
-        whereConditions.push(`LOWER(CAST(p.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`);
-        queryParams.push(`%${value}%`);
-        logger.info(`[PERSONS SERVICE] Added search filter for ${column} with single value`);
-      } else {
-        // Exact match
-        whereConditions.push(`p.${column} = $${paramIndex++}`);
-        queryParams.push(value);
-        logger.info(`[PERSONS SERVICE] Added exact match filter for ${column}`);
       }
     }
-    
-    // Build the main query using the specified operator
-    const whereClause = whereConditions.length > 0 
-      ? `WHERE ${whereConditions.join(` ${filterOperator} `)}` 
-      : '';
     
     // Count total results
     const countQuery = `
@@ -953,6 +1144,9 @@ const searchPersons = async (searchParams) => {
       FROM configuration.persons p
       ${whereClause}
     `;
+    
+    logger.info(`[PERSONS SERVICE] Count query: ${countQuery}`);
+    logger.info(`[PERSONS SERVICE] Count query params: ${JSON.stringify(queryParams)}`);
     
     const countResult = await db.query(countQuery, queryParams);
     const total = parseInt(countResult.rows[0].total);
@@ -1032,7 +1226,7 @@ const searchPersons = async (searchParams) => {
       LEFT JOIN configuration.locations l ON p.ref_location_uuid = l.uuid
       LEFT JOIN configuration.persons m ON p.ref_approving_manager_uuid = m.uuid
       ${whereClause}
-      ORDER BY ${sortBy} ${sortDirection.toUpperCase()}
+      ORDER BY p.${sortBy} ${sortDirection.toUpperCase()}
       LIMIT $${paramIndex++} OFFSET $${paramIndex++}
     `;
     
@@ -1040,7 +1234,7 @@ const searchPersons = async (searchParams) => {
     const dataResult = await db.query(dataQuery, queryParams);
     
     // Calculate pagination metadata in frontend format
-    const currentPage = Math.floor(offset / limit) + 1;
+    const currentPage = page;
     const totalPages = Math.ceil(total / limit);
     const hasMore = offset + limit < total;
     
