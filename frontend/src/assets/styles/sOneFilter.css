@@ -212,6 +212,13 @@
   opacity: 1;
 }
 
+/* DateTime field */
+.s-one-filter__datetime {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
 /* Date range field */
 .s-one-filter__date-range {
   display: grid;
@@ -270,13 +277,13 @@
 
 .s-one-filter__checkbox::-webkit-scrollbar-thumb,
 .s-one-filter__suggestions::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--primary-color);
   border-radius: 3px;
 }
 
 .s-one-filter__checkbox::-webkit-scrollbar-thumb:hover,
 .s-one-filter__suggestions::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color);
+  background: var(--primary-hover);
 }
 
 /* Responsive */

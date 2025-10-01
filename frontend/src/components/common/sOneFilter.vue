@@ -48,11 +48,11 @@
       </select>
     </div>
 
-    <!-- Champ de valeur (si type sélectionné) -->
-    <div v-if="filter.column && filter.type" class="s-one-filter__value">
+    <!-- Champ de valeur (si type sélectionné et pas is_null/is_not_null) -->
+    <div v-if="filter.column && filter.type && shouldShowValueField" class="s-one-filter__value">
       
       <!-- Search Filter -->
-      <div v-if="filter.type === 'search'" class="s-one-filter__search">
+      <div v-if="selectedColumnConfig.type === 'search'" class="s-one-filter__search">
         <input
           type="text"
           :value="filter.value || ''"
@@ -80,7 +80,7 @@
       </div>
 
       <!-- Checkbox Filter -->
-      <div v-else-if="filter.type === 'checkbox'" class="s-one-filter__checkbox">
+      <div v-else-if="selectedColumnConfig.type === 'checkbox'" class="s-one-filter__checkbox">
         <div class="s-one-filter__checkbox-items">
           <label 
             v-for="option in checkboxOptions" 
@@ -99,7 +99,7 @@
       </div>
 
       <!-- Select Filter -->
-      <div v-else-if="filter.type === 'select'" class="s-one-filter__select-wrapper">
+      <div v-else-if="selectedColumnConfig.type === 'select'" class="s-one-filter__select-wrapper">
         <select
           v-if="!selectedColumnConfig.multiple"
           :value="filter.value || ''"
@@ -148,7 +148,41 @@
         </div>
       </div>
 
-      <!-- Date Range Filter -->
+      <!-- DateTime Filter -->
+      <div v-else-if="selectedColumnConfig.type === 'datetime'" class="s-one-filter__datetime">
+        <!-- Si between : deux champs -->
+        <template v-if="filter.type === 'between'">
+          <div class="s-one-filter__date-field">
+            <label>{{ $t('filters.from') }}</label>
+            <input
+              type="datetime-local"
+              :value="(filter.value && filter.value.gte) || ''"
+              @change="handleDateRangeChange('gte', $event)"
+              class="s-one-filter__input"
+            />
+          </div>
+          <div class="s-one-filter__date-field">
+            <label>{{ $t('filters.to') }}</label>
+            <input
+              type="datetime-local"
+              :value="(filter.value && filter.value.lte) || ''"
+              @change="handleDateRangeChange('lte', $event)"
+              class="s-one-filter__input"
+            />
+          </div>
+        </template>
+        <!-- Sinon : un seul champ -->
+        <template v-else>
+          <input
+            type="datetime-local"
+            :value="filter.value || ''"
+            @change="updateValue($event.target.value)"
+            class="s-one-filter__input"
+          />
+        </template>
+      </div>
+
+      <!-- Date Range Filter (legacy) -->
       <div v-else-if="filter.type === 'date_range'" class="s-one-filter__date-range">
         <div class="s-one-filter__date-field">
           <label>{{ $t('filters.from') }}</label>
@@ -225,6 +259,31 @@ export default {
       );
     });
 
+    // Computed pour savoir si on doit afficher le champ de valeur
+    const shouldShowValueField = computed(() => {
+      console.log('[sOneFilter] shouldShowValueField check:', {
+        filter_column: props.filter.column,
+        filter_type: props.filter.type,
+        selectedColumnConfig: selectedColumnConfig.value,
+        filter_type_from_config: selectedColumnConfig.value?.filter_type,
+        type_from_config: selectedColumnConfig.value?.type,
+        all_keys: selectedColumnConfig.value ? Object.keys(selectedColumnConfig.value) : []
+      });
+      
+      // Ne pas afficher si is_null ou is_not_null
+      if (props.filter.type === 'is_null' || props.filter.type === 'is_not_null') {
+        console.log('[sOneFilter] shouldShowValueField = false (is_null/is_not_null)');
+        return false;
+      }
+      // Ne pas afficher si is_true ou is_false (boolean)
+      if (props.filter.type === 'is_true' || props.filter.type === 'is_false') {
+        console.log('[sOneFilter] shouldShowValueField = false (is_true/is_false)');
+        return false;
+      }
+      console.log('[sOneFilter] shouldShowValueField = true');
+      return true;
+    });
+
     // Computed pour les types de filtres disponibles selon le data_type
     const availableFilterTypes = computed(() => {
       if (!selectedColumnConfig.value?.data_type) {
@@ -298,8 +357,8 @@ export default {
       
       emit('update', props.filter.id, {
         column: column,
-        type: columnConfig ? columnConfig.type : '',
-        value: getDefaultValueForType(columnConfig?.type)
+        type: '',
+        value: null
       });
 
       // Charger les options si nécessaire
@@ -482,6 +541,7 @@ export default {
       selectOptions,
       availableSelectOptions,
       availableFilterTypes,
+      shouldShowValueField,
       updateColumn,
       updateType,
       updateValue,
