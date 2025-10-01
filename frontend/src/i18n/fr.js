@@ -1278,7 +1278,6 @@ export default {
     select_column: 'Sélectionner une colonne',
     select_type: 'Sélectionner un type',
     select_option: 'Sélectionner une option',
-    no_filters_added:'Aucun filtre',
     add_first_filter:'Ajouter un premier filtre',
     add_filter:'Ajouter un filtre',
     remove_filter:'Supprimer le filtre',
