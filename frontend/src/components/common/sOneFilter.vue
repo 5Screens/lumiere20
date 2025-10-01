@@ -38,8 +38,12 @@
         class="s-one-filter__select"
       >
         <option value="">{{ $t('filters.select_type') }}</option>
-        <option :value="selectedColumnConfig.type">
-          {{ getTypeLabel(selectedColumnConfig.type) }}
+        <option 
+          v-for="typeOption in availableFilterTypes" 
+          :key="typeOption.value"
+          :value="typeOption.value"
+        >
+          {{ $t(typeOption.label) }}
         </option>
       </select>
     </div>
@@ -221,6 +225,72 @@ export default {
       );
     });
 
+    // Computed pour les types de filtres disponibles selon le data_type
+    const availableFilterTypes = computed(() => {
+      if (!selectedColumnConfig.value?.data_type) {
+        return [];
+      }
+
+      const dataType = selectedColumnConfig.value.data_type.toUpperCase();
+      const types = [];
+
+      // TEXT / STRING
+      if (['TEXT', 'STRING', 'VARCHAR', 'CHAR'].includes(dataType)) {
+        types.push(
+          { value: 'contains', label: 'filters.type_text_contains' },
+          { value: 'is', label: 'filters.type_text_is' },
+          { value: 'is_null', label: 'filters.is_null' },
+          { value: 'is_not_null', label: 'filters.is_not_null' }
+        );
+      }
+      // NUMBER / INTEGER / NUMERIC
+      else if (['NUMBER', 'INTEGER', 'NUMERIC', 'INT', 'BIGINT', 'SMALLINT', 'DECIMAL', 'FLOAT', 'DOUBLE'].includes(dataType)) {
+        types.push(
+          { value: 'equals', label: 'filters.type_number_equals' },
+          { value: 'lt', label: 'filters.type_number_lt' },
+          { value: 'lte', label: 'filters.type_number_lte' },
+          { value: 'gt', label: 'filters.type_number_gt' },
+          { value: 'gte', label: 'filters.type_number_gte' },
+          { value: 'between', label: 'filters.type_number_between' },
+          { value: 'is_null', label: 'filters.is_null' },
+          { value: 'is_not_null', label: 'filters.is_not_null' }
+        );
+      }
+      // DATE / TIMESTAMP / DATETIME
+      else if (['DATE', 'TIMESTAMP', 'DATETIME', 'TIMESTAMPTZ'].includes(dataType)) {
+        types.push(
+          { value: 'on', label: 'filters.type_date_on' },
+          { value: 'after', label: 'filters.type_date_after' },
+          { value: 'on_or_after', label: 'filters.type_date_on_or_after' },
+          { value: 'before', label: 'filters.type_date_before' },
+          { value: 'on_or_before', label: 'filters.type_date_on_or_before' },
+          { value: 'between', label: 'filters.type_date_between' },
+          { value: 'is_null', label: 'filters.is_null' },
+          { value: 'is_not_null', label: 'filters.is_not_null' }
+        );
+      }
+      // BOOLEAN / BOOL
+      else if (['BOOLEAN', 'BOOL'].includes(dataType)) {
+        types.push(
+          { value: 'is_true', label: 'filters.type_boolean_is_true' },
+          { value: 'is_false', label: 'filters.type_boolean_is_false' },
+          { value: 'is_null', label: 'filters.is_null' },
+          { value: 'is_not_null', label: 'filters.is_not_null' }
+        );
+      }
+      // UUID
+      else if (['UUID'].includes(dataType)) {
+        types.push(
+          { value: 'is', label: 'filters.type_uuid_is' },
+          { value: 'is_not', label: 'filters.type_uuid_is_not' },
+          { value: 'is_null', label: 'filters.is_null' },
+          { value: 'is_not_null', label: 'filters.is_not_null' }
+        );
+      }
+
+      return types;
+    });
+
     // Méthodes
     const updateColumn = (event) => {
       const column = event.target.value;
@@ -287,13 +357,8 @@ export default {
     };
 
     const getTypeLabel = (type) => {
-      const labels = {
-        'search': t('filters.type_search'),
-        'checkbox': t('filters.type_checkbox'),
-        'select': t('filters.type_select'),
-        'date_range': t('filters.type_date_range')
-      };
-      return labels[type] || type;
+      // Cette fonction n'est plus utilisée mais conservée pour compatibilité
+      return type;
     };
 
     const loadOptions = async (column) => {
@@ -416,6 +481,7 @@ export default {
       checkboxOptions,
       selectOptions,
       availableSelectOptions,
+      availableFilterTypes,
       updateColumn,
       updateType,
       updateValue,
