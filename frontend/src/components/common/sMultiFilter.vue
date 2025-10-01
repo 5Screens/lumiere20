@@ -37,9 +37,10 @@
           <!-- Liste des filtres actifs -->
           <div v-else class="s-multi-filter__active-filters">
             <sOneFilter
-              v-for="filter in activeFilters"
+              v-for="(filter, index) in activeFilters"
               :key="filter.id"
               :filter="filter"
+              :filter-number="index + 1"
               :table-name="tableName"
               :available-columns="filterConfig"
               @update="updateFilter"

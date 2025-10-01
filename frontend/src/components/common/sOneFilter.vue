@@ -1,7 +1,8 @@
 <template>
   <div class="s-one-filter">
-    <!-- Bouton de suppression -->
+    <!-- Libellé et bouton de suppression -->
     <div class="s-one-filter__actions">
+      <span class="s-one-filter__label">{{ $t('filters.title_2') }} {{ filterNumber }}</span>
       <button 
         @click="removeFilter"
         class="btn-remove"
@@ -178,6 +179,10 @@ export default {
   props: {
     filter: {
       type: Object,
+      required: true
+    },
+    filterNumber: {
+      type: Number,
       required: true
     },
     tableName: {

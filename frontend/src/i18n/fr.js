@@ -1271,6 +1271,7 @@ export default {
   },
   filters: {
     title: 'Filtres',
+    title_2: 'Filtre',
     apply:'Appliquer',
     reset:'Réinitialiser',
     add_filter:'Ajouter un filtre',

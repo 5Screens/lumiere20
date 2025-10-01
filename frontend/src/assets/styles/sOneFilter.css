@@ -44,8 +44,17 @@
 /* Actions */
 .s-one-filter__actions {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  gap: 0.5rem;
   padding-bottom: 0.25rem;
+}
+
+.s-one-filter__actions .s-one-filter__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0;
+  white-space: nowrap;
 }
 
 /* Form controls */
