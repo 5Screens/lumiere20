@@ -431,9 +431,9 @@ export const useFilterStore = defineStore('filter', {
         let operator = filter.type || filter.operator || 'equals';
         let value = filter.value;
         
-        // Pour les opérateurs is_null et is_not_null, la valeur n'est pas nécessaire
-        const nullOperators = ['is_null', 'is_not_null'];
-        if (!nullOperators.includes(operator)) {
+        // Pour les opérateurs is_null, is_not_null, is_true et is_false, la valeur n'est pas nécessaire
+        const noValueOperators = ['is_null', 'is_not_null', 'is_true', 'is_false'];
+        if (!noValueOperators.includes(operator)) {
           // Pour les autres opérateurs, vérifier que la valeur est présente
           if (value === null || value === undefined || value === '') {
             return; // Skip invalid filters
