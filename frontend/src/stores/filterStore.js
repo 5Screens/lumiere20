@@ -403,6 +403,8 @@ export const useFilterStore = defineStore('filter', {
     convertFiltersToSearchFormat(tableName, sort = null, pagination = null) {
       const filters = this.activeFilters[tableName] || [];
       
+      console.info(`[FILTER_STORE] convertFiltersToSearchFormat - activeFilters:`, JSON.stringify(filters, null, 2));
+      
       // Structure de base
       const searchBody = {
         filters: {},
@@ -423,8 +425,11 @@ export const useFilterStore = defineStore('filter', {
           return; // Skip invalid filters
         }
         
+        console.info(`[FILTER_STORE] Processing filter:`, { column: filter.column, operator: filter.operator, value: filter.value, type: filter.type });
+        
         // Déterminer l'opérateur selon le type de filtre
-        let operator = filter.operator || 'equals';
+        // IMPORTANT: utiliser filter.type (le vrai opérateur) et non filter.operator (qui reste à 'equals')
+        let operator = filter.type || filter.operator || 'equals';
         let value = filter.value;
         
         // Mapping des clés de traduction vers les opérateurs API
@@ -465,13 +470,18 @@ export const useFilterStore = defineStore('filter', {
         };
         
         // Traduire l'opérateur si nécessaire
+        const originalOperator = operator;
         if (operatorMapping[operator]) {
           operator = operatorMapping[operator];
+          console.info(`[FILTER_STORE] Operator mapped: ${originalOperator} → ${operator}`);
+        } else {
+          console.warn(`[FILTER_STORE] No mapping found for operator: ${originalOperator}`);
         }
         
         // Pour les tableaux (multi-select), utiliser 'in'
         if (Array.isArray(value) && value.length > 0) {
           operator = 'in';
+          console.info(`[FILTER_STORE] Array detected, operator changed to 'in'`);
         }
         
         // Construire la condition
@@ -486,6 +496,7 @@ export const useFilterStore = defineStore('filter', {
           condition.value2 = filter.value2;
         }
         
+        console.info(`[FILTER_STORE] Final condition:`, condition);
         conditions.push(condition);
       });
       
