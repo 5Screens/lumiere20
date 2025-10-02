@@ -946,19 +946,22 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   // Handle DATE type
   else if (dataType === 'date' || dataType === 'timestamp' || dataType === 'datetime') {
     if (operator === 'after') {
-      condition = `p.${column} > $${paramIndex++}`;
+      // Compare only date part (ignore time), > to exclude the specified date
+      condition = `DATE(p.${column}) > DATE($${paramIndex++})`;
       queryParams.push(value);
     } else if (operator === 'on_or_after') {
-      condition = `p.${column} >= $${paramIndex++}`;
+      condition = `DATE(p.${column}) >= DATE($${paramIndex++})`;
       queryParams.push(value);
     } else if (operator === 'before') {
-      condition = `p.${column} < $${paramIndex++}`;
+      // Compare only date part (ignore time), < to exclude the specified date
+      condition = `DATE(p.${column}) < DATE($${paramIndex++})`;
       queryParams.push(value);
     } else if (operator === 'on_or_before') {
-      condition = `p.${column} <= $${paramIndex++}`;
+      condition = `DATE(p.${column}) <= DATE($${paramIndex++})`;
       queryParams.push(value);
     } else if (operator === 'between') {
-      condition = `p.${column} BETWEEN $${paramIndex++} AND $${paramIndex++}`;
+      // Compare date parts for range
+      condition = `DATE(p.${column}) BETWEEN DATE($${paramIndex++}) AND DATE($${paramIndex++})`;
       queryParams.push(value, value2);
     } else if (operator === 'on' || operator === 'equals') {
       condition = `DATE(p.${column}) = DATE($${paramIndex++})`;
