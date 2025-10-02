@@ -178,11 +178,19 @@ export default {
 
     const handleApply = async () => {
       try {
-        // Convertir au format legacy pour l'API
-        const legacyFilters = filterStore.convertFiltersToLegacyFormat(props.tableName);
-        
-        console.info('[sMultiFilter] Applying filters:', legacyFilters);
-        emit('filters-applied', legacyFilters);
+        // Pour persons, on n'a pas besoin de convertir car le filterStore gère tout
+        // Pour les autres tables, convertir au format legacy
+        if (props.tableName === 'persons') {
+          console.info('[sMultiFilter] Applying filters for persons (handled by filterStore)');
+          // Émettre un objet vide car le filterStore.applyPersonsSearch gère tout
+          emit('filters-applied', {});
+        } else {
+          // Convertir au format legacy pour l'API
+          const legacyFilters = filterStore.convertFiltersToLegacyFormat(props.tableName);
+          
+          console.info('[sMultiFilter] Applying filters:', legacyFilters);
+          emit('filters-applied', legacyFilters);
+        }
       } catch (err) {
         console.error('[sMultiFilter] Error applying filters:', err);
       }

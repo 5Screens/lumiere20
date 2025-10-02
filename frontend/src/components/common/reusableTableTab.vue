@@ -1098,9 +1098,77 @@ export default {
     },
 
     /**
+     * Load a batch of data for persons using POST /persons/search
+     */
+    async loadDataBatchForPersons() {
+      console.log('[ReusableTableTab] Loading persons batch with POST /persons/search');
+      
+      // Calculer la page actuelle basée sur l'offset
+      const currentPage = Math.floor(this.currentOffset / this.pageSize) + 1;
+      
+      // Construire les paramètres de tri
+      const sort = {
+        by: this.sortColumn || 'created_at',
+        direction: this.sortDirection || 'desc'
+      };
+      
+      // Construire les paramètres de pagination
+      const pagination = {
+        page: currentPage,
+        limit: this.pageSize
+      };
+      
+      console.log('[ReusableTableTab] Calling filterStore.applyPersonsSearch with:', { sort, pagination });
+      
+      // Utiliser le filterStore pour appeler POST /persons/search
+      const response = await this.filterStore.applyPersonsSearch(
+        this.tableName,
+        sort,
+        pagination
+      );
+      
+      if (response && response.data) {
+        // Add new data to existing data
+        const newItems = response.data.map(item => ({
+          ...item,
+          selected: false
+        }));
+        
+        if (this.currentOffset === 0) {
+          // Initial load
+          this.tableData = newItems;
+        } else {
+          // Append new data
+          this.tableData.push(...newItems);
+        }
+        
+        // Update pagination info
+        this.totalRecords = response.total || 0;
+        this.hasMoreData = response.hasMore || false;
+        this.currentOffset += newItems.length;
+        
+        console.log(`[ReusableTableTab] Loaded ${newItems.length} persons, total: ${this.tableData.length}/${this.totalRecords}`);
+        
+        // Measure column widths after first load (only once)
+        if (this.currentOffset === newItems.length && !this.hasMeasuredColumnWidths) {
+          this.$nextTick(() => this.measureColumnWidths());
+        }
+      } else {
+        console.warn('[ReusableTableTab] Invalid response format for persons search');
+        this.hasMoreData = false;
+      }
+    },
+
+    /**
      * Load a batch of data from the paginated API
      */
     async loadDataBatch() {
+      // Si c'est la table persons, utiliser l'API POST /persons/search
+      if (this.tableName === 'persons') {
+        return await this.loadDataBatchForPersons();
+      }
+      
+      // Sinon, utiliser l'ancienne méthode GET avec query params
       const params = new URLSearchParams();
       params.append('offset', this.currentOffset.toString());
       params.append('limit', this.pageSize.toString());

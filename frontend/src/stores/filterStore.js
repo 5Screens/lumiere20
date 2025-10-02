@@ -399,6 +399,134 @@ export const useFilterStore = defineStore('filter', {
       return legacyFormat;
     },
     
+    // Convertir les filtres au format searchPersons (POST /persons/search)
+    convertFiltersToSearchFormat(tableName, sort = null, pagination = null) {
+      const filters = this.activeFilters[tableName] || [];
+      
+      // Structure de base
+      const searchBody = {
+        filters: {},
+        sort: sort || { by: 'created_at', direction: 'desc' },
+        pagination: pagination || { page: 1, limit: 50 }
+      };
+      
+      // Si aucun filtre actif, retourner la structure de base
+      if (filters.length === 0) {
+        return searchBody;
+      }
+      
+      // Construire les conditions à partir des filtres actifs
+      const conditions = [];
+      
+      filters.forEach(filter => {
+        if (!filter.column || filter.value === null || filter.value === undefined || filter.value === '') {
+          return; // Skip invalid filters
+        }
+        
+        // Déterminer l'opérateur selon le type de filtre
+        let operator = filter.operator || 'equals';
+        let value = filter.value;
+        
+        // Mapping des clés de traduction vers les opérateurs API
+        // Basé sur buildFilterCondition dans backend/src/api/v1/persons/service.js
+        const operatorMapping = {
+          // TEXT operators
+          'type_text_contains': 'contains',
+          'type_text_is': 'equals',
+          
+          // NUMBER operators
+          'type_number_equals': 'equals',
+          'type_number_lt': 'lt',
+          'type_number_lte': 'lte',
+          'type_number_gt': 'gt',
+          'type_number_gte': 'gte',
+          'type_number_between': 'between',
+          
+          // DATE operators
+          'type_date_on': 'equals',
+          'type_date_after': 'after',
+          'type_date_on_or_after': 'on_or_after',
+          'type_date_before': 'before',
+          'type_date_on_or_before': 'on_or_before',
+          'type_date_between': 'between',
+          
+          // BOOLEAN operators
+          'type_boolean_is_true': 'is_true',
+          'type_boolean_is_false': 'is_false',
+          'type_boolean_any': 'any',
+          
+          // UUID operators
+          'type_uuid_is': 'equals',
+          'type_uuid_is_not': 'not_equals',
+          
+          // NULL operators
+          'is_null': 'is_null',
+          'is_not_null': 'is_not_null'
+        };
+        
+        // Traduire l'opérateur si nécessaire
+        if (operatorMapping[operator]) {
+          operator = operatorMapping[operator];
+        }
+        
+        // Pour les tableaux (multi-select), utiliser 'in'
+        if (Array.isArray(value) && value.length > 0) {
+          operator = 'in';
+        }
+        
+        // Construire la condition
+        const condition = {
+          column: filter.column,
+          operator: operator,
+          value: value
+        };
+        
+        // Ajouter value2 si présent (pour between)
+        if (filter.value2 !== undefined && filter.value2 !== null) {
+          condition.value2 = filter.value2;
+        }
+        
+        conditions.push(condition);
+      });
+      
+      // Si on a des conditions, les ajouter au body
+      if (conditions.length > 0) {
+        searchBody.filters = {
+          mode: 'include',
+          operator: 'AND',
+          conditions: conditions
+        };
+      }
+      
+      console.info(`[FILTER_STORE] Converted ${conditions.length} filters to search format:`, searchBody);
+      return searchBody;
+    },
+    
+    // Appliquer les filtres via POST /persons/search
+    async applyPersonsSearch(tableName, sort = null, pagination = null) {
+      this.loading.search = true;
+      
+      try {
+        console.info(`[FILTER_STORE] Applying persons search for ${tableName}`);
+        
+        // Convertir les filtres au format searchPersons
+        const searchBody = this.convertFiltersToSearchFormat(tableName, sort, pagination);
+        
+        console.info(`[FILTER_STORE] POST /persons/search with body:`, searchBody);
+        
+        // Appeler l'API POST /persons/search
+        const response = await apiService.post('persons/search', searchBody);
+        
+        console.info(`[FILTER_STORE] Search completed, ${response.data?.length || 0} results, total: ${response.total}`);
+        return response;
+      } catch (error) {
+        console.error(`[FILTER_STORE] Error applying persons search:`, error);
+        throw error;
+      } finally {
+        this.loading.search = false;
+      }
+    },
+    
     // Nettoyer les données d'une table
     clearTableData(tableName) {
       delete this.filterConfigs[tableName];
