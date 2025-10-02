@@ -182,26 +182,38 @@
         </template>
       </div>
 
-      <!-- Date Range Filter (legacy) -->
-      <div v-else-if="filter.type === 'date_range'" class="s-one-filter__date-range">
-        <div class="s-one-filter__date-field">
-          <label>{{ $t('filters.from') }}</label>
+      <!-- Date Range Filter -->
+      <div v-else-if="selectedColumnConfig.type === 'date_range'" class="s-one-filter__date-range">
+        <!-- Si between : deux champs -->
+        <template v-if="filter.type === 'between'">
+          <div class="s-one-filter__date-field">
+            <label>{{ $t('filters.from') }}</label>
+            <input
+              type="date"
+              :value="(filter.value && filter.value.gte) || ''"
+              @change="handleDateRangeChange('gte', $event)"
+              class="s-one-filter__input"
+            />
+          </div>
+          <div class="s-one-filter__date-field">
+            <label>{{ $t('filters.to') }}</label>
+            <input
+              type="date"
+              :value="(filter.value && filter.value.lte) || ''"
+              @change="handleDateRangeChange('lte', $event)"
+              class="s-one-filter__input"
+            />
+          </div>
+        </template>
+        <!-- Sinon : un seul champ -->
+        <template v-else>
           <input
             type="date"
-            :value="(filter.value && filter.value.gte) || ''"
-            @change="handleDateRangeChange('gte', $event)"
+            :value="filter.value || ''"
+            @change="updateValue($event.target.value)"
             class="s-one-filter__input"
           />
-        </div>
-        <div class="s-one-filter__date-field">
-          <label>{{ $t('filters.to') }}</label>
-          <input
-            type="date"
-            :value="(filter.value && filter.value.lte) || ''"
-            @change="handleDateRangeChange('lte', $event)"
-            class="s-one-filter__input"
-          />
-        </div>
+        </template>
       </div>
     </div>
   </div>
