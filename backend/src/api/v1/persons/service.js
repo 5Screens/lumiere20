@@ -859,7 +859,7 @@ const removeApproverEntity = async (personUuid, entityUuid) => {
  * @returns {Object} { condition: string, newParamIndex: number }
  */
 const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
-  const { operator, value, value2, empty_string_is_null } = filterDef;
+  const { operator, value, empty_string_is_null } = filterDef;
   let condition = '';
   
   // Handle NULL checks
@@ -938,8 +938,11 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
       condition = `p.${column} >= $${paramIndex++}`;
       queryParams.push(value);
     } else if (operator === 'between') {
+      // Extract start and end values from object format
+      const startValue = value.gte || value.min || value.start;
+      const endValue = value.lte || value.max || value.end;
       condition = `p.${column} BETWEEN $${paramIndex++} AND $${paramIndex++}`;
-      queryParams.push(value, value2);
+      queryParams.push(startValue, endValue);
     }
   }
   
@@ -960,9 +963,11 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
       condition = `DATE(p.${column}) <= DATE($${paramIndex++})`;
       queryParams.push(value);
     } else if (operator === 'between') {
-      // Compare date parts for range
+      // Compare date parts for range - extract from object format
+      const startDate = value.gte || value.start;
+      const endDate = value.lte || value.end;
       condition = `DATE(p.${column}) BETWEEN DATE($${paramIndex++}) AND DATE($${paramIndex++})`;
-      queryParams.push(value, value2);
+      queryParams.push(startDate, endDate);
     } else if (operator === 'on' || operator === 'equals') {
       condition = `DATE(p.${column}) = DATE($${paramIndex++})`;
       queryParams.push(value);
@@ -1002,13 +1007,17 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
  *       {
  *         "column": "age",
  *         "operator": "between",        // NUMBER: equals, lt, lte, gt, gte, between
- *         "value": 25,
- *         "value2": 50
+ *         "value": { "gte": 25, "lte": 50 }  // Object format for between
  *       },
  *       {
  *         "column": "created_at",
  *         "operator": "after",          // DATE: after, on_or_after, before, on_or_before, between, on
  *         "value": "2024-01-01"
+ *       },
+ *       {
+ *         "column": "created_at",
+ *         "operator": "between",
+ *         "value": { "gte": "2024-01-01", "lte": "2024-12-31" }  // Object format for date range
  *       },
  *       {
  *         "column": "active",
