@@ -421,16 +421,26 @@ export const useFilterStore = defineStore('filter', {
       const conditions = [];
       
       filters.forEach(filter => {
-        if (!filter.column || filter.value === null || filter.value === undefined || filter.value === '') {
-          return; // Skip invalid filters
+        // Vérifier que le filtre a une colonne
+        if (!filter.column) {
+          return; // Skip filters without column
         }
-        
-        console.info(`[FILTER_STORE] Processing filter:`, { column: filter.column, operator: filter.operator, value: filter.value, type: filter.type });
         
         // Déterminer l'opérateur selon le type de filtre
         // IMPORTANT: utiliser filter.type (le vrai opérateur) et non filter.operator (qui reste à 'equals')
         let operator = filter.type || filter.operator || 'equals';
         let value = filter.value;
+        
+        // Pour les opérateurs is_null et is_not_null, la valeur n'est pas nécessaire
+        const nullOperators = ['is_null', 'is_not_null'];
+        if (!nullOperators.includes(operator)) {
+          // Pour les autres opérateurs, vérifier que la valeur est présente
+          if (value === null || value === undefined || value === '') {
+            return; // Skip invalid filters
+          }
+        }
+        
+        console.info(`[FILTER_STORE] Processing filter:`, { column: filter.column, operator: filter.operator, value: filter.value, type: filter.type });
         
         // Mapping des valeurs de filtres vers les opérateurs API
         // Basé sur buildFilterCondition dans backend/src/api/v1/persons/service.js
