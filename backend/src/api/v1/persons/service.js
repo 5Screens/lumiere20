@@ -904,11 +904,11 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
         condition = `p.${column} IN (${placeholders})`;
         queryParams.push(...value);
-        logger.info(`[BUILD FILTER] TEXT equals array: column=${column}, values=[${value.join(', ')}], condition=${condition}`);
+        logger.info(`[BUILD FILTER] TEXT ${operator} array: column=${column}, values=[${value.join(', ')}], condition=${condition}`);
       } else {
         condition = `p.${column} = $${paramIndex++}`;
         queryParams.push(value);
-        logger.info(`[BUILD FILTER] TEXT equals single: column=${column}, value=${value}, condition=${condition}`);
+        logger.info(`[BUILD FILTER] TEXT ${operator} single: column=${column}, value=${value}, condition=${condition}`);
       }
     }
   }

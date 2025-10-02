@@ -432,56 +432,56 @@ export const useFilterStore = defineStore('filter', {
         let operator = filter.type || filter.operator || 'equals';
         let value = filter.value;
         
-        // Mapping des clés de traduction vers les opérateurs API
+        // Mapping des valeurs de filtres vers les opérateurs API
         // Basé sur buildFilterCondition dans backend/src/api/v1/persons/service.js
+        // Les valeurs correspondent à celles définies dans sOneFilter.vue (lignes 308-360)
         const operatorMapping = {
-          // TEXT operators
-          'type_text_contains': 'contains',
-          'type_text_is': 'equals',
+          // TEXT operators (sOneFilter ligne 310-315)
+          'contains': 'contains',
+          'is': 'equals',
           
-          // NUMBER operators
-          'type_number_equals': 'equals',
-          'type_number_lt': 'lt',
-          'type_number_lte': 'lte',
-          'type_number_gt': 'gt',
-          'type_number_gte': 'gte',
-          'type_number_between': 'between',
+          // NUMBER operators (sOneFilter ligne 318-326)
+          'equals': 'equals',
+          'lt': 'lt',
+          'lte': 'lte',
+          'gt': 'gt',
+          'gte': 'gte',
+          'between': 'between',
           
-          // DATE operators
-          'type_date_on': 'equals',
-          'type_date_after': 'after',
-          'type_date_on_or_after': 'on_or_after',
-          'type_date_before': 'before',
-          'type_date_on_or_before': 'on_or_before',
-          'type_date_between': 'between',
+          // DATE operators (sOneFilter ligne 329-337)
+          'on': 'equals',
+          'after': 'after',
+          'on_or_after': 'on_or_after',
+          'before': 'before',
+          'on_or_before': 'on_or_before',
           
-          // BOOLEAN operators
-          'type_boolean_is_true': 'is_true',
-          'type_boolean_is_false': 'is_false',
-          'type_boolean_any': 'any',
+          // BOOLEAN operators (sOneFilter ligne 340-345)
+          'is_true': 'is_true',
+          'is_false': 'is_false',
           
-          // UUID operators
-          'type_uuid_is': 'equals',
-          'type_uuid_is_not': 'not_equals',
+          // UUID operators (sOneFilter ligne 348-353)
+          'is_not': 'not_equals',
           
-          // NULL operators
+          // NULL operators (commun à tous les types)
           'is_null': 'is_null',
           'is_not_null': 'is_not_null'
         };
         
-        // Traduire l'opérateur si nécessaire
+        // Appliquer le mapping si nécessaire
         const originalOperator = operator;
         if (operatorMapping[operator]) {
           operator = operatorMapping[operator];
           console.info(`[FILTER_STORE] Operator mapped: ${originalOperator} → ${operator}`);
         } else {
-          console.warn(`[FILTER_STORE] No mapping found for operator: ${originalOperator}`);
+          // Si pas de mapping, utiliser la valeur telle quelle
+          console.info(`[FILTER_STORE] No mapping needed, using operator as-is: ${operator}`);
         }
         
-        // Pour les tableaux (multi-select), utiliser 'in'
+        // Pour les tableaux (multi-select), utiliser 'equals' ou 'is'
+        // Le backend gère les tableaux avec l'opérateur 'equals' ou 'is' (ligne 901-912 de service.js)
         if (Array.isArray(value) && value.length > 0) {
-          operator = 'in';
-          console.info(`[FILTER_STORE] Array detected, operator changed to 'in'`);
+          operator = 'equals';
+          console.info(`[FILTER_STORE] Array detected, operator set to 'equals' (backend handles arrays with IN clause)`);
         }
         
         // Construire la condition
