@@ -168,7 +168,7 @@
   border-radius: 4px;
   background: var(--background-color);
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -189,7 +189,7 @@
 
 .filter-options-label {
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 500;
   white-space: nowrap;
 }

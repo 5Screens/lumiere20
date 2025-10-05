@@ -50,7 +50,7 @@
 }
 
 .s-one-filter__actions .s-one-filter__label {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-color);
   margin-bottom: 0;
@@ -64,7 +64,7 @@
   padding: 0.5rem;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   background: var(--input-bg);
   color: var(--text-color);
   box-sizing: border-box;
@@ -100,7 +100,7 @@
 .s-one-filter__suggestion {
   padding: 0.5rem;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--text-color);
   border-bottom: 1px solid var(--border-color);
 }
@@ -132,7 +132,7 @@
   gap: 0.5rem;
   padding: 0.25rem;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 
 .s-one-filter__checkbox-item:hover {
@@ -171,7 +171,7 @@
 
 .s-one-filter__multiselect-selected .placeholder {
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 
 .s-one-filter__multiselect-tag {
@@ -260,7 +260,7 @@
 }
 
 .btn-remove i {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 
 /* Scrollbar styles */
