@@ -80,24 +80,26 @@
           >
             <i class="fas fa-plus"></i>
           </button>
-          <button 
-            class="btn-reset"
-            @click="handleReset"
-            :disabled="activeFilterCount === 0"
-          >
-            <i class="fas fa-undo"></i>
-            {{ $t('filters.reset') }}
-          </button>
-          <button 
-            class="btn-apply"
-            @click="handleApply"
-          >
-            <i class="fas fa-check"></i>
-            {{ $t('filters.apply') }}
-            <span v-if="activeFilterCount > 0" class="count">
-              ({{ activeFilterCount }})
-            </span>
-          </button>
+          <div class="s-multi-filter__actions-right">
+            <button 
+              class="btn-reset"
+              @click="handleReset"
+              :disabled="activeFilterCount === 0"
+            >
+              <i class="fas fa-undo"></i>
+              {{ $t('filters.reset') }}
+            </button>
+            <button 
+              class="btn-apply"
+              @click="handleApply"
+            >
+              <i class="fas fa-check"></i>
+              {{ $t('filters.apply') }}
+              <span v-if="activeFilterCount > 0" class="count">
+                ({{ activeFilterCount }})
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </transition>

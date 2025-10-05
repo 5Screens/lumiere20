@@ -219,12 +219,17 @@
 /* Actions - Tous les boutons sur la même ligne */
 .s-multi-filter__actions {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--border-color);
   margin-top: 0.5rem;
+}
+
+.s-multi-filter__actions-right {
+  display: flex;
+  align-items: center;
 }
 
 .s-multi-filter__actions button {
@@ -253,8 +258,6 @@
 
 .btn-add-filter:hover {
   background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
 }
 
 /* Bouton Réinitialiser */
@@ -265,8 +268,6 @@
 
 .btn-reset:hover:not(:disabled) {
   background: var(--secondary-color-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-reset:disabled {
@@ -282,8 +283,6 @@
 
 .btn-apply:hover {
   background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
 .btn-apply .count {
