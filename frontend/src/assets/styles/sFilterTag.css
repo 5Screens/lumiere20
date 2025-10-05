@@ -1,0 +1,84 @@
+/* Styles pour le tag de filtre affiché dans l'en-tête de colonne */
+
+.s-filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background-color: var(--bg-secondary);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  max-width: 100%;
+  transition: all 0.2s ease;
+}
+
+/* Libellé de la valeur - en bleu */
+.s-filter-tag__value {
+  font-weight: 500;
+  color: var(--primary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+/* Bouton de suppression */
+.s-filter-tag__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.s-filter-tag__remove:hover {
+  background-color: var(--error-color);
+  color: white !important;
+  transform: scale(1.1);
+}
+
+.s-filter-tag__remove i {
+  font-size: 0.7rem;
+}
+
+/* Version compacte pour mobile */
+@media (max-width: 768px) {
+  .s-filter-tag {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+    gap: 3px;
+  }
+  
+  .s-filter-tag__value {
+    max-width: 80px;
+  }
+  
+  .s-filter-tag__remove {
+    width: 14px;
+    height: 14px;
+  }
+  
+  /* Afficher seulement une icône de filtre sur mobile */
+  .s-filter-tag__column,
+  .s-filter-tag__operator,
+  .s-filter-tag__value {
+    display: none;
+  }
+  
+  .s-filter-tag::before {
+    content: '\f0b0'; /* FontAwesome filter icon */
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    color: var(--primary-color);
+  }
+}

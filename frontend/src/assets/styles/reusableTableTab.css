@@ -153,6 +153,23 @@ tr:hover {
   gap: 8px;
 }
 
+/* Wrapper pour l'en-tête de colonne avec tags de filtres */
+.th-header-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+/* Conteneur pour les tags de filtres dans l'en-tête */
+.th-filter-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-top: 4px;
+}
+
 /* Champ de filtre pour les colonnes - permet de filtrer les données par colonne */
 .column-filter {
   width: 100%;

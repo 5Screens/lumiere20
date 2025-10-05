@@ -1,0 +1,132 @@
+<template>
+  <div class="s-filter-tag">
+    <span class="s-filter-tag__value">{{ valueLabel }}</span>
+    <button 
+      class="s-filter-tag__remove" 
+      @click.stop="handleRemove"
+      :title="$t('filters.remove_filter')"
+    >
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</template>
+
+<script>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+export default {
+  name: 'sFilterTag',
+  props: {
+    filter: {
+      type: Object,
+      required: true
+    },
+    columnConfig: {
+      type: Object,
+      required: true
+    }
+  },
+  emits: ['remove'],
+  setup(props, { emit }) {
+    const { t } = useI18n();
+
+    // Computed pour le libellé de la colonne
+    const columnLabel = computed(() => {
+      return t(props.columnConfig.label);
+    });
+
+    // Computed pour le libellé de l'opérateur
+    const operatorLabel = computed(() => {
+      const operatorMap = {
+        // TEXT
+        'contains': t('filters.type_text_contains'),
+        'is': t('filters.type_text_is'),
+        
+        // NUMBER
+        'equals': t('filters.type_number_equals'),
+        'lt': t('filters.type_number_lt'),
+        'lte': t('filters.type_number_lte'),
+        'gt': t('filters.type_number_gt'),
+        'gte': t('filters.type_number_gte'),
+        'between': t('filters.type_number_between'),
+        
+        // DATE
+        'on': t('filters.type_date_on'),
+        'after': t('filters.type_date_after'),
+        'on_or_after': t('filters.type_date_on_or_after'),
+        'before': t('filters.type_date_before'),
+        'on_or_before': t('filters.type_date_on_or_before'),
+        
+        // BOOLEAN
+        'is_true': t('filters.type_boolean_is_true'),
+        'is_false': t('filters.type_boolean_is_false'),
+        
+        // UUID
+        'is_not': t('filters.type_uuid_is_not'),
+        
+        // NULL
+        'is_null': t('filters.is_null'),
+        'is_not_null': t('filters.is_not_null')
+      };
+
+      return operatorMap[props.filter.type] || props.filter.type;
+    });
+
+    // Computed pour le libellé de la valeur
+    const valueLabel = computed(() => {
+      const value = props.filter.value;
+      
+      // Opérateurs sans valeur
+      if (['is_null', 'is_not_null', 'is_true', 'is_false'].includes(props.filter.type)) {
+        return '';
+      }
+      
+      // Valeur null ou vide
+      if (value === null || value === undefined || value === '') {
+        return '';
+      }
+      
+      // Tableau (multi-select)
+      if (Array.isArray(value)) {
+        if (value.length === 0) return '';
+        if (value.length === 1) return value[0];
+        return `${value.length} ${t('filters.selected_items')}`;
+      }
+      
+      // Objet (date range)
+      if (typeof value === 'object' && value !== null) {
+        if (value.gte && value.lte) {
+          return `${value.gte} - ${value.lte}`;
+        }
+        if (value.gte) {
+          return `>= ${value.gte}`;
+        }
+        if (value.lte) {
+          return `<= ${value.lte}`;
+        }
+        return '';
+      }
+      
+      // Valeur simple
+      return String(value);
+    });
+
+    // Méthode pour supprimer le filtre
+    const handleRemove = () => {
+      emit('remove', props.filter.id);
+    };
+
+    return {
+      columnLabel,
+      operatorLabel,
+      valueLabel,
+      handleRemove
+    };
+  }
+};
+</script>
+
+<style scoped>
+@import '@/assets/styles/sFilterTag.css';
+</style>

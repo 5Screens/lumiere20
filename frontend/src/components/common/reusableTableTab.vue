@@ -24,14 +24,26 @@
             </th>
             <th v-for="(column, index) in columns" :key="column.key" class="resizable" :style="getThWidthStyle(index)">
               <div class="th-content">
-                <div @click="sortBy(column.key)" class="sortable">
-                  {{ column.label }}
-                  <span class="sort-icon">
-                    <template v-if="sortColumn === column.key">
-                      {{ sortDirection === 'asc' ? '▲' : '▼' }}
-                    </template>
-                    <template v-else>▲▼</template>
-                  </span>
+                <div class="th-header-wrapper">
+                  <div @click="sortBy(column.key)" class="sortable">
+                    {{ column.label }}
+                    <span class="sort-icon">
+                      <template v-if="sortColumn === column.key">
+                        {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                      </template>
+                      <template v-else>▲▼</template>
+                    </span>
+                  </div>
+                  <!-- Tags de filtres actifs pour cette colonne -->
+                  <div v-if="getActiveFiltersForColumn(column.key).length > 0" class="th-filter-tags">
+                    <sFilterTag
+                      v-for="filter in getActiveFiltersForColumn(column.key)"
+                      :key="filter.id"
+                      :filter="filter"
+                      :column-config="getColumnConfig(column.key)"
+                      @remove="handleRemoveFilterTag"
+                    />
+                  </div>
                 </div>
                 <div class="resize-handle" @mousedown="startResize($event, index + (selectable ? 1 : 0))"></div>
               </div>
@@ -167,11 +179,13 @@ import { useTabsStore } from '@/stores/tabsStore'
 import { useFilterStore } from '@/stores/filterStore'
 import { DEBOUNCE_DELAY_MS } from '@/config/config'
 import sMultiFilter from './sMultiFilter.vue'
+import sFilterTag from './sFilterTag.vue'
 
 export default {
   name: 'ReusableTableTab',
   components: {
-    sMultiFilter
+    sMultiFilter,
+    sFilterTag
   },
   emits: ['row-selected', 'error'],
   setup() {
@@ -1328,6 +1342,66 @@ export default {
     async retryLoad() {
       console.log('[ReusableTableTab] Retrying data load');
       await this.loadMoreData();
+    },
+
+    /**
+     * Get active filters for a specific column
+     */
+    getActiveFiltersForColumn(columnKey) {
+      const activeFilters = this.filterStore.getActiveFiltersForTable(this.tableName) || [];
+      return activeFilters.filter(filter => filter.column === columnKey && this.isFilterActive(filter));
+    },
+
+    /**
+     * Check if a filter is active (has a value)
+     */
+    isFilterActive(filter) {
+      const value = filter.value;
+      
+      // Opérateurs sans valeur sont toujours actifs
+      if (['is_null', 'is_not_null', 'is_true', 'is_false'].includes(filter.type)) {
+        return true;
+      }
+      
+      // Vérifier si la valeur est présente
+      if (value === null || value === undefined || value === '') {
+        return false;
+      }
+      
+      // Tableau vide
+      if (Array.isArray(value) && value.length === 0) {
+        return false;
+      }
+      
+      // Objet date range vide
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        return (value.gte && value.gte !== '') || (value.lte && value.lte !== '');
+      }
+      
+      return true;
+    },
+
+    /**
+     * Get column configuration from filter config
+     */
+    getColumnConfig(columnKey) {
+      const config = this.filterStore.getConfigForTable(this.tableName) || [];
+      return config.find(col => col.column === columnKey) || { column: columnKey, label: columnKey };
+    },
+
+    /**
+     * Handle filter tag removal
+     */
+    handleRemoveFilterTag(filterId) {
+      console.log('[ReusableTableTab] Removing filter tag:', filterId);
+      this.filterStore.removeFilter(this.tableName, filterId);
+      
+      // Recharger les données
+      if (this.infiniteScrollEnabled) {
+        this.resetAndReload();
+      } else {
+        this.loadData();
+      }
     }
   },
   created() {
