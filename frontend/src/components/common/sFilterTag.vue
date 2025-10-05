@@ -1,5 +1,24 @@
 <template>
-  <div class="s-filter-tag">
+  <!-- Si la valeur est un tableau, afficher un tag par élément -->
+  <template v-if="Array.isArray(filter.value) && filter.value.length > 0">
+    <div 
+      v-for="(item, index) in filter.value" 
+      :key="`${filter.id}-${index}`"
+      class="s-filter-tag"
+    >
+      <span class="s-filter-tag__value">{{ item }}</span>
+      <button 
+        class="s-filter-tag__remove" 
+        @click.stop="handleRemove"
+        :title="$t('filters.remove_filter')"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </template>
+  
+  <!-- Sinon, afficher un seul tag -->
+  <div v-else class="s-filter-tag">
     <span class="s-filter-tag__value">{{ valueLabel }}</span>
     <button 
       class="s-filter-tag__remove" 
