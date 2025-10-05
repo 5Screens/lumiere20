@@ -42,6 +42,7 @@
                       :filter="filter"
                       :column-config="getColumnConfig(column.key)"
                       @remove="handleRemoveFilterTag"
+                      @update-value="handleUpdateFilterValue"
                     />
                   </div>
                 </div>
@@ -1395,6 +1396,21 @@ export default {
     handleRemoveFilterTag(filterId) {
       console.log('[ReusableTableTab] Removing filter tag:', filterId);
       this.filterStore.removeFilter(this.tableName, filterId);
+      
+      // Recharger les données
+      if (this.infiniteScrollEnabled) {
+        this.resetAndReload();
+      } else {
+        this.loadData();
+      }
+    },
+
+    /**
+     * Handle filter value update (when removing one item from array)
+     */
+    handleUpdateFilterValue(filterId, newValue) {
+      console.log('[ReusableTableTab] Updating filter value:', filterId, newValue);
+      this.filterStore.updateFilter(this.tableName, filterId, { value: newValue });
       
       // Recharger les données
       if (this.infiniteScrollEnabled) {

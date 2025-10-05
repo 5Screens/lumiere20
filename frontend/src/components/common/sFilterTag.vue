@@ -9,7 +9,7 @@
       <span class="s-filter-tag__value">{{ item }}</span>
       <button 
         class="s-filter-tag__remove" 
-        @click.stop="handleRemove"
+        @click.stop="handleRemoveArrayItem(index)"
         :title="$t('filters.remove_filter')"
       >
         <i class="fas fa-times"></i>
@@ -46,7 +46,7 @@ export default {
       required: true
     }
   },
-  emits: ['remove'],
+  emits: ['remove', 'update-value'],
   setup(props, { emit }) {
     const { t } = useI18n();
 
@@ -131,16 +131,33 @@ export default {
       return String(value);
     });
 
-    // Méthode pour supprimer le filtre
+    // Méthode pour supprimer le filtre entier
     const handleRemove = () => {
       emit('remove', props.filter.id);
+    };
+
+    // Méthode pour supprimer une valeur spécifique d'un tableau
+    const handleRemoveArrayItem = (index) => {
+      if (!Array.isArray(props.filter.value)) return;
+      
+      // Créer un nouveau tableau sans l'élément à l'index spécifié
+      const newValue = props.filter.value.filter((_, i) => i !== index);
+      
+      // Si le tableau est vide après suppression, supprimer le filtre entier
+      if (newValue.length === 0) {
+        emit('remove', props.filter.id);
+      } else {
+        // Sinon, mettre à jour la valeur du filtre
+        emit('update-value', props.filter.id, newValue);
+      }
     };
 
     return {
       columnLabel,
       operatorLabel,
       valueLabel,
-      handleRemove
+      handleRemove,
+      handleRemoveArrayItem
     };
   }
 };
