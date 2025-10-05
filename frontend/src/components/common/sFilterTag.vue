@@ -96,9 +96,15 @@ export default {
     const valueLabel = computed(() => {
       const value = props.filter.value;
       
-      // Opérateurs sans valeur
+      // Opérateurs sans valeur - afficher le nom de l'opérateur
       if (['is_null', 'is_not_null', 'is_true', 'is_false'].includes(props.filter.type)) {
-        return '';
+        const operatorLabels = {
+          'is_null': t('filters.is_null'),
+          'is_not_null': t('filters.is_not_null'),
+          'is_true': t('filters.type_boolean_is_true'),
+          'is_false': t('filters.type_boolean_is_false')
+        };
+        return operatorLabels[props.filter.type] || props.filter.type;
       }
       
       // Valeur null ou vide
