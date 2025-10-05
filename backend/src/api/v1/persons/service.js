@@ -910,6 +910,18 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         queryParams.push(value);
         logger.info(`[BUILD FILTER] TEXT/UUID ${operator} single: column=${column}, value=${value}, condition=${condition}`);
       }
+    } else if (operator === 'not_equals') {
+      // Support array of values with NOT IN
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        condition = `p.${column} NOT IN (${placeholders})`;
+        queryParams.push(...value);
+        logger.info(`[BUILD FILTER] TEXT/UUID ${operator} array: column=${column}, values=[${value.join(', ')}], condition=${condition}`);
+      } else {
+        condition = `p.${column} != $${paramIndex++}`;
+        queryParams.push(value);
+        logger.info(`[BUILD FILTER] TEXT/UUID ${operator} single: column=${column}, value=${value}, condition=${condition}`);
+      }
     }
   }
   

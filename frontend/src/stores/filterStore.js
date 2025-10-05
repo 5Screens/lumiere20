@@ -487,11 +487,16 @@ export const useFilterStore = defineStore('filter', {
           console.info(`[FILTER_STORE] No mapping needed, using operator as-is: ${operator}`);
         }
         
-        // Pour les tableaux (multi-select), utiliser 'equals' ou 'is'
-        // Le backend gère les tableaux avec l'opérateur 'equals' ou 'is' (ligne 901-912 de service.js)
+        // Pour les tableaux (multi-select), le backend gère automatiquement avec IN ou NOT IN
+        // Ne pas écraser l'opérateur si c'est 'not_equals' (qui doit rester pour NOT IN)
         if (Array.isArray(value) && value.length > 0) {
-          operator = 'equals';
-          console.info(`[FILTER_STORE] Array detected, operator set to 'equals' (backend handles arrays with IN clause)`);
+          if (operator !== 'not_equals') {
+            // Pour les autres opérateurs, utiliser 'equals' par défaut (backend gère avec IN)
+            operator = 'equals';
+            console.info(`[FILTER_STORE] Array detected, operator set to 'equals' (backend handles arrays with IN clause)`);
+          } else {
+            console.info(`[FILTER_STORE] Array detected with not_equals, keeping operator (backend handles arrays with NOT IN clause)`);
+          }
         }
         
         // Construire la condition
