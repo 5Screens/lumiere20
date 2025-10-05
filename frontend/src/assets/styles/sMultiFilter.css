@@ -131,25 +131,27 @@
   background: var(--primary-color);
   color: white;
   border: none;
-  padding: 0.75rem;
+  padding: 0;
   border-radius: 50%;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
 }
 
 .btn-add-first i {
   color: white !important;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-add-first:hover {
   background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
 /* Filter options (mode and operator) */
@@ -246,7 +248,7 @@
 }
 
 .s-multi-filter__actions button i {
-  font-size: 0.65rem;
+  font-size: 0.8rem;
 }
 
 /* Bouton + (ajouter) */
