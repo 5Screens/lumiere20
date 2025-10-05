@@ -1301,7 +1301,8 @@ export default {
     type_uuid_is:'est',
     type_uuid_is_not:'n\'est pas',
     is_null:'est null',
-    is_not_null:'n\'est pas null'  
+    is_not_null:'n\'est pas null' ,
+    search_placeholder:'que rechercher ?'
   },
   notifications: {
     loadingError: 'Erreur lors du chargement des données',

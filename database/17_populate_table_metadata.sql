@@ -122,7 +122,7 @@ INSERT INTO administration.table_metadata (
 ('persons', 'ref_location_uuid', 'persons.location', 'Localisation physique',
  'uuid', true, NULL,
  true, true, true,
- 'select', '{"multiple": false}'::jsonb,
+ 'checkbox', '{"multiple": false}'::jsonb,
  true, 'configuration.locations', 'uuid',
  'sSelectField', 'Sélectionnez une localisation', false, false,
  'locations', 'name', 'uuid', 'Localisation physique',

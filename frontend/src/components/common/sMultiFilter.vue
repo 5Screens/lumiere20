@@ -45,6 +45,7 @@
               :available-columns="filterConfig"
               @update="updateFilter"
               @remove="removeFilter"
+              @apply-filters="handleApply"
             />
           </div>
 

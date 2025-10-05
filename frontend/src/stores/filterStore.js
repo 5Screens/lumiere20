@@ -367,6 +367,7 @@ export const useFilterStore = defineStore('filter', {
     },
     
     // Mettre à jour un filtre
+    // Note: La préservation des valeurs lors du changement de type est gérée dans sOneFilter.vue
     updateFilter(tableName, filterId, updates) {
       if (!this.activeFilters[tableName]) return;
       

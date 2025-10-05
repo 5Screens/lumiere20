@@ -58,6 +58,7 @@
           :value="filter.value || ''"
           :placeholder="$t('filters.search_placeholder')"
           @input="updateValue($event.target.value)"
+          @keydown.enter="handleEnterKey"
           @focus="showSearchSuggestions = true"
           @blur="hideSearchSuggestions"
           class="s-one-filter__input"
@@ -177,6 +178,7 @@
             type="datetime-local"
             :value="filter.value || ''"
             @change="updateValue($event.target.value)"
+            @keydown.enter="handleEnterKey"
             class="s-one-filter__input"
           />
         </template>
@@ -211,6 +213,7 @@
             type="date"
             :value="filter.value || ''"
             @change="updateValue($event.target.value)"
+            @keydown.enter="handleEnterKey"
             class="s-one-filter__input"
           />
         </template>
@@ -244,7 +247,7 @@ export default {
       required: true
     }
   },
-  emits: ['update', 'remove'],
+  emits: ['update', 'remove', 'apply-filters'],
   setup(props, { emit }) {
     const { t } = useI18n();
     const filterStore = useFilterStore();
@@ -381,9 +384,29 @@ export default {
 
     const updateType = (event) => {
       const type = event.target.value;
+      const newType = event.target.value;
+      
+      // Déterminer si on doit préserver la valeur actuelle
+      const noValueOperators = ['is_null', 'is_not_null', 'is_true', 'is_false'];
+      const wasNoValueOperator = noValueOperators.includes(props.filter.type);
+      const isNoValueOperator = noValueOperators.includes(newType);
+      
+      let newValue;
+      
+      if (isNoValueOperator) {
+        // Si le nouveau type ne nécessite pas de valeur, mettre null
+        newValue = null;
+      } else if (wasNoValueOperator) {
+        // Si l'ancien type ne nécessitait pas de valeur, initialiser avec une valeur par défaut
+        newValue = getDefaultValueForType(newType);
+      } else {
+        // Sinon, préserver la valeur actuelle si elle est compatible
+        newValue = props.filter.value;
+      }
+      
       emit('update', props.filter.id, {
-        type: type,
-        value: getDefaultValueForType(type)
+        type: newType,
+        value: newValue
       });
     };
 
@@ -525,6 +548,10 @@ export default {
       }, 200);
     };
 
+    const handleEnterKey = () => {
+      emit('apply-filters');
+    };
+
     // Watchers
     watch(() => props.filter.column, (newColumn) => {
       if (newColumn && selectedColumnConfig.value) {
@@ -567,6 +594,7 @@ export default {
       handleDateRangeChange,
       selectSearchSuggestion,
       hideSearchSuggestions,
+      handleEnterKey,
       t
     };
   }
