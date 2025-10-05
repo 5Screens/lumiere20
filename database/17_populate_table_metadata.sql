@@ -72,7 +72,7 @@ INSERT INTO administration.table_metadata (
 ('persons', 'ref_entity_uuid', 'persons.entity', 'Entité d''appartenance',
  'uuid', true, NULL,
  true, true, true,
- 'select', '{"multiple": false}'::jsonb,
+ 'checkbox', '{"multiple": false}'::jsonb,
  true, 'configuration.entities', 'uuid',
  'sSelectField', 'Sélectionnez une entité', false, false,
  'entities', 'name', 'uuid', 'Entité d''appartenance',

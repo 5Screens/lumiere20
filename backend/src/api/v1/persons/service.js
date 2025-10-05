@@ -881,8 +881,8 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     return { condition, newParamIndex: paramIndex };
   }
   
-  // Handle TEXT/STRING type
-  if (dataType === 'text' || dataType === 'string') {
+  // Handle TEXT/STRING/UUID type
+  if (dataType === 'text' || dataType === 'string' || dataType === 'uuid') {
     if (operator === 'contains') {
       // Support array of values with OR
       if (Array.isArray(value)) {
@@ -904,11 +904,11 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
         condition = `p.${column} IN (${placeholders})`;
         queryParams.push(...value);
-        logger.info(`[BUILD FILTER] TEXT ${operator} array: column=${column}, values=[${value.join(', ')}], condition=${condition}`);
+        logger.info(`[BUILD FILTER] TEXT/UUID ${operator} array: column=${column}, values=[${value.join(', ')}], condition=${condition}`);
       } else {
         condition = `p.${column} = $${paramIndex++}`;
         queryParams.push(value);
-        logger.info(`[BUILD FILTER] TEXT ${operator} single: column=${column}, value=${value}, condition=${condition}`);
+        logger.info(`[BUILD FILTER] TEXT/UUID ${operator} single: column=${column}, value=${value}, condition=${condition}`);
       }
     }
   }
