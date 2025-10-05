@@ -1043,6 +1043,9 @@ const searchPersons = async (searchParams) => {
     const offset = (page - 1) * limit;
     const { by: sortBy = 'created_at', direction: sortDirection = 'desc' } = sort;
     
+    logger.info(`[PERSONS SERVICE] Sort parameters: sortBy="${sortBy}", sortDirection="${sortDirection}"`);
+    logger.info(`[PERSONS SERVICE] Pagination: page=${page}, limit=${limit}, offset=${offset}`);
+    
     // Build WHERE clause from advanced filters
     const queryParams = [];
     let paramIndex = 1;
@@ -1243,6 +1246,11 @@ const searchPersons = async (searchParams) => {
     `;
     
     queryParams.push(limit, offset);
+    
+    logger.info(`[PERSONS SERVICE] ORDER BY clause: ORDER BY p.${sortBy} ${sortDirection.toUpperCase()}`);
+    logger.info(`[PERSONS SERVICE] Data query: ${dataQuery}`);
+    logger.info(`[PERSONS SERVICE] Data query params: ${JSON.stringify(queryParams)}`);
+    
     const dataResult = await db.query(dataQuery, queryParams);
     
     // Calculate pagination metadata in frontend format
