@@ -62,12 +62,6 @@
             />
           </div>
 
-          <!-- Bouton pour ajouter un filtre -->
-          <div v-if="activeFilters.length > 0" class="s-multi-filter__add-filter">
-            <button @click="addNewFilter" class="btn-add-filter" :title="$t('filters.add_filter')">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
         </div>
 
         <!-- Message si pas de configuration -->
@@ -76,8 +70,16 @@
           <span>{{ $t('filters.no_filters_available') }}</span>
         </div>
 
-        <!-- Boutons d'action -->
+        <!-- Boutons d'action (+ / Réinitialiser / Appliquer) -->
         <div v-if="filterConfig && filterConfig.length > 0" class="s-multi-filter__actions">
+          <button 
+            v-if="activeFilters.length > 0"
+            @click="addNewFilter" 
+            class="btn-add-filter" 
+            :title="$t('filters.add_filter')"
+          >
+            <i class="fas fa-plus"></i>
+          </button>
           <button 
             class="btn-reset"
             @click="handleReset"
