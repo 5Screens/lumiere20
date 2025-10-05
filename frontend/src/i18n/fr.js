@@ -1302,7 +1302,12 @@ export default {
     type_uuid_is_not:'n\'est pas',
     is_null:'est null',
     is_not_null:'n\'est pas null' ,
-    search_placeholder:'que rechercher ?'
+    search_placeholder:'que rechercher ?',
+    keep:'Garder',
+    remove:'Supprimer',
+    all_filters:"tous les filtres",
+    any_filters:"n'importe lequel des filtres",
+    all_lines_that_match:"toutes les lignes qui correspondent à"
   },
   notifications: {
     loadingError: 'Erreur lors du chargement des données',

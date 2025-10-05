@@ -935,5 +935,19 @@ export default {
     watched_tickets_list_helper_text: 'List of tickets watched by this person',
     watched_tickets_list_placeholder: 'Watched tickets (read-only)',
     no_watched_tickets: 'No watched tickets'
+  },
+  filters: {
+    title: 'Filters',
+    loading: 'Loading filters...',
+    add_first_filter: 'Add your first filter',
+    add_filter: 'Add a filter',
+    no_filters_available: 'No filters available for this table',
+    reset: 'Reset',
+    apply: 'Apply',
+    keep: 'Keep',
+    remove: 'Remove',
+    all_filters: 'all filters',
+    any_filters: 'any filter',
+    all_lines_that_match: 'all lines that match'
   }
 }

@@ -25,6 +25,19 @@
 
         <!-- Filtres individuels -->
         <div v-else-if="filterConfig && filterConfig.length > 0" class="s-multi-filter__filters">
+          <!-- Options de filtrage (mode et opérateur) -->
+          <div v-if="activeFilters.length > 0" class="s-multi-filter__options">
+            <select v-model="filterMode" class="filter-mode-select">
+              <option value="include">{{ $t('filters.keep') }}</option>
+              <option value="exclude">{{ $t('filters.remove') }}</option>
+            </select>
+            <span class="filter-options-label">{{ $t('filters.all_lines_that_match') }}</span>
+            <select v-model="filterOperator" class="filter-operator-select">
+              <option value="AND">{{ $t('filters.all_filters') }}</option>
+              <option value="OR">{{ $t('filters.any_filters') }}</option>
+            </select>
+          </div>
+
           <!-- Message si aucun filtre ajouté -->
           <div v-if="activeFilters.length === 0" class="s-multi-filter__empty">
             
@@ -119,6 +132,8 @@ export default {
     const isExpanded = ref(false);
     const loading = ref(false);
     const error = ref(null);
+    const filterMode = ref('include'); // 'include' ou 'exclude'
+    const filterOperator = ref('AND'); // 'AND' ou 'OR'
 
     // Computed
     const filterConfig = computed(() => {
@@ -179,11 +194,17 @@ export default {
 
     const handleApply = async () => {
       try {
+        // Stocker le mode et l'opérateur dans le filterStore
+        filterStore.setFilterOptions(props.tableName, {
+          mode: filterMode.value,
+          operator: filterOperator.value
+        });
+        
         // Pour persons, on n'a pas besoin de convertir car le filterStore gère tout
         // Pour les autres tables, convertir au format legacy
         if (props.tableName === 'persons') {
           console.info('[sMultiFilter] Applying filters for persons (handled by filterStore)');
-          // Émettre un objet vide car le filterStore.applyPersonsSearch gère tout
+          // Émettre un objet vide car le filterStore gère tout
           emit('filters-applied', {});
         } else {
           // Convertir au format legacy pour l'API
@@ -211,6 +232,13 @@ export default {
       if (savedState !== undefined) {
         isExpanded.value = savedState;
       }
+      
+      // Restaurer les options de filtrage (mode et operator)
+      const savedOptions = filterStore.getFilterOptions(props.tableName);
+      if (savedOptions) {
+        filterMode.value = savedOptions.mode || 'include';
+        filterOperator.value = savedOptions.operator || 'AND';
+      }
     });
 
     // Watchers
@@ -227,6 +255,8 @@ export default {
       filterConfig,
       activeFilters,
       activeFilterCount,
+      filterMode,
+      filterOperator,
       togglePanel,
       addNewFilter,
       updateFilter,

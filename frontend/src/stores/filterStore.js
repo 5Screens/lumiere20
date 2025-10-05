@@ -9,6 +9,9 @@ export const useFilterStore = defineStore('filter', {
     // Valeurs actuelles des filtres par table
     activeFilters: {},
     
+    // Options de filtrage (mode et operator) par table
+    filterOptions: {},
+    
     // Cache des valeurs possibles pour les filtres
     filterValues: {},
     
@@ -518,9 +521,12 @@ export const useFilterStore = defineStore('filter', {
       
       // Si on a des conditions, les ajouter au body
       if (conditions.length > 0) {
+        // Récupérer les options de filtrage (mode et operator)
+        const options = this.filterOptions[tableName] || { mode: 'include', operator: 'AND' };
+        
         searchBody.filters = {
-          mode: 'include',
-          operator: 'AND',
+          mode: options.mode,
+          operator: options.operator,
           conditions: conditions
         };
       }
@@ -554,16 +560,55 @@ export const useFilterStore = defineStore('filter', {
       }
     },
     
+    // Définir les options de filtrage (mode et operator)
+    setFilterOptions(tableName, options) {
+      this.filterOptions[tableName] = options;
+      
+      // Persister dans localStorage
+      const storageKey = `filter_options_${tableName}`;
+      localStorage.setItem(storageKey, JSON.stringify(options));
+      
+      console.info(`[FILTER_STORE] Filter options set for ${tableName}:`, options);
+    },
+    
+    // Récupérer les options de filtrage
+    getFilterOptions(tableName) {
+      // D'abord vérifier le state
+      if (this.filterOptions[tableName]) {
+        return this.filterOptions[tableName];
+      }
+      
+      // Sinon essayer de restaurer depuis localStorage
+      const storageKey = `filter_options_${tableName}`;
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          const options = JSON.parse(stored);
+          this.filterOptions[tableName] = options;
+          return options;
+        } catch (e) {
+          console.error(`[FILTER_STORE] Error parsing stored filter options:`, e);
+        }
+      }
+      
+      // Valeurs par défaut
+      return { mode: 'include', operator: 'AND' };
+    },
+    
     // Nettoyer les données d'une table
     clearTableData(tableName) {
       delete this.filterConfigs[tableName];
       delete this.activeFilters[tableName];
+      delete this.filterOptions[tableName];
       delete this.filterValues[tableName];
       delete this.panelStates[tableName];
       delete this.errors[tableName];
       
       const storageKey = `filters_${tableName}`;
       localStorage.removeItem(storageKey);
+      
+      const optionsKey = `filter_options_${tableName}`;
+      localStorage.removeItem(optionsKey);
       
       console.info(`[FILTER_STORE] Cleared all data for ${tableName}`);
     }
