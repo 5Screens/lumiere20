@@ -166,7 +166,7 @@ tr:hover {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: 100%;
+  align-items: flex-start;
   margin-top: 4px;
 }
 
