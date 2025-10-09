@@ -15,6 +15,13 @@ Write-Host "Reconstruction de la base $DB_NAME" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Demander le mot de passe une seule fois
+$securePassword = Read-Host "Mot de passe PostgreSQL" -AsSecureString
+$BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
+$env:PGPASSWORD = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+[System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+Write-Host ""
+
 # Étape 1: Création de la base de données
 Write-Host "[1/4] Creation de la base de donnees..." -ForegroundColor Yellow
 psql -U $DB_USER -f "$SCRIPTS_PATH\00_init_database.sql"
@@ -61,21 +68,37 @@ foreach ($script in $structureScripts) {
 Write-Host "Structure creee avec succes" -ForegroundColor Green
 Write-Host ""
 
-# Étape 3: Données de test
-Write-Host "[3/4] Insertion des donnees de test..." -ForegroundColor Yellow
-$dataScripts = @(
+# Étape 3: Données obligatoires (configuration système)
+Write-Host "[3/5] Insertion des donnees obligatoires..." -ForegroundColor Yellow
+$requiredDataScripts = @(
     "04_ticket_status.sql",
-    "07_entity_setup.sql",
     "10_problem_categories.sql",
+    "19_location_status.sql",
+    "data_symptoms.sql",
+    "incident_config.sql",
+    "07_entity_setup.sql",
     "12_change.sql",
     "12_changes_qa.sql",
     "13_knowledge_articles_setup.sql",
     "14_project_setup.sql",
-    "15_defect_setup.sql",
-    "19_location_status.sql",
-    "data_symptoms.sql",
+    "15_defect_setup.sql"
+)
+
+foreach ($script in $requiredDataScripts) {
+    Write-Host "  - Execution de $script" -ForegroundColor Gray
+    psql -U $DB_USER -d $DB_NAME -f "$DATA_PATH\$script"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Erreur lors de l'execution de $script" -ForegroundColor Red
+        exit 1
+    }
+}
+Write-Host "Donnees obligatoires inserees avec succes" -ForegroundColor Green
+Write-Host ""
+
+# Étape 4: Données de test (optionnelles)
+Write-Host "[4/5] Insertion des donnees de test (optionnelles)..." -ForegroundColor Yellow
+$testDataScripts = @(
     "entities.sql",
-    "incident_config.sql",
     "locations.sql",
     "support_groups.sql",
     "persons.sql",
@@ -87,19 +110,20 @@ $dataScripts = @(
     "rel_subscribers_serviceofferings.sql"
 )
 
-foreach ($script in $dataScripts) {
+foreach ($script in $testDataScripts) {
     Write-Host "  - Execution de $script" -ForegroundColor Gray
-    psql -U $DB_USER -d $DB_NAME -f "$DATA_PATH\$script"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Erreur lors de l'execution de $script" -ForegroundColor Red
-        exit 1
+    psql -U $DB_USER -d $DB_NAME -f "$DATA_PATH\$script" 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "    OK" -ForegroundColor Green
+    } else {
+        Write-Host "    ERREUR (non bloquante)" -ForegroundColor Yellow
     }
 }
-Write-Host "Donnees inserees avec succes" -ForegroundColor Green
+Write-Host "Donnees de test inserees (avec erreurs non bloquantes)" -ForegroundColor Yellow
 Write-Host ""
 
-# Étape 4: Vérification
-Write-Host "[4/4] Verification..." -ForegroundColor Yellow
+# Étape 5: Vérification
+Write-Host "[5/5] Verification..." -ForegroundColor Yellow
 $tableCount = psql -U $DB_USER -d $DB_NAME -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema');"
 Write-Host "Nombre de tables creees: $tableCount" -ForegroundColor Green
 Write-Host ""
@@ -110,3 +134,6 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Prochaine etape: Modifier le fichier backend\.env avec:" -ForegroundColor Yellow
 Write-Host "DB_NAME=lumiere_db_v17" -ForegroundColor White
+
+# Nettoyer le mot de passe de l'environnement
+$env:PGPASSWORD = $null

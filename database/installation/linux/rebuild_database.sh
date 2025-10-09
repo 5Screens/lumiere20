@@ -6,7 +6,7 @@ set -e  # Exit on error
 
 # Configuration
 DB_USER="postgres"
-DB_NAME="lumiere-db-v17"
+DB_NAME="lumiere_db_v17"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "========================================"
@@ -52,21 +52,33 @@ done
 echo "✓ Structure creee avec succes"
 echo ""
 
-# Étape 3: Données de test
-echo "[3/4] Insertion des donnees de test..."
-data_scripts=(
+# Étape 3: Données obligatoires (configuration système)
+echo "[3/5] Insertion des donnees obligatoires..."
+required_data_scripts=(
     "data/04_ticket_status.sql"
-    "data/07_entity_setup.sql"
     "data/10_problem_categories.sql"
+    "data/19_location_status.sql"
+    "data/data_symptoms.sql"
+    "data/incident_config.sql"
+    "data/07_entity_setup.sql"
     "data/12_change.sql"
     "data/12_changes_qa.sql"
     "data/13_knowledge_articles_setup.sql"
     "data/14_project_setup.sql"
     "data/15_defect_setup.sql"
-    "data/19_location_status.sql"
-    "data/data_symptoms.sql"
+)
+
+for script in "${required_data_scripts[@]}"; do
+    echo "  - Execution de $script"
+    psql -U $DB_USER -d $DB_NAME -f "$SCRIPT_DIR/$script"
+done
+echo "✓ Donnees obligatoires inserees avec succes"
+echo ""
+
+# Étape 4: Données de test (optionnelles)
+echo "[4/5] Insertion des donnees de test (optionnelles)..."
+test_data_scripts=(
     "data/entities.sql"
-    "data/incident_config.sql"
     "data/locations.sql"
     "data/support_groups.sql"
     "data/persons.sql"
@@ -78,15 +90,19 @@ data_scripts=(
     "data/rel_subscribers_serviceofferings.sql"
 )
 
-for script in "${data_scripts[@]}"; do
+for script in "${test_data_scripts[@]}"; do
     echo "  - Execution de $script"
-    psql -U $DB_USER -d $DB_NAME -f "$SCRIPT_DIR/$script"
+    if psql -U $DB_USER -d $DB_NAME -f "$SCRIPT_DIR/$script" 2>/dev/null; then
+        echo "    OK"
+    else
+        echo "    ERREUR (non bloquante)"
+    fi
 done
-echo "✓ Donnees inserees avec succes"
+echo "✓ Donnees de test inserees (avec erreurs non bloquantes)"
 echo ""
 
-# Étape 4: Vérification
-echo "[4/4] Verification..."
+# Étape 5: Vérification
+echo "[5/5] Verification..."
 table_count=$(psql -U $DB_USER -d $DB_NAME -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema');")
 echo "Nombre de tables creees: $table_count"
 echo ""
@@ -96,4 +112,4 @@ echo "✓ Base de donnees reconstruite avec succes!"
 echo "========================================"
 echo ""
 echo "Prochaine etape: Modifier le fichier backend/.env avec:"
-echo "DB_NAME=lumiere-db-v17"
+echo "DB_NAME=lumiere_db_v17"
