@@ -2,6 +2,9 @@
 -- Description: Création des tables de configuration pour les défauts (defect setup)
 -- Date: 2025-05-05
 
+-- Start transaction
+BEGIN;
+
 -- Extension requise pour les UUID
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
