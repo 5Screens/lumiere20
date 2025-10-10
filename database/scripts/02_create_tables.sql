@@ -68,7 +68,7 @@ CREATE TABLE configuration.entities (
     external_id VARCHAR(100),
     entity_type VARCHAR(50) NOT NULL CHECK (entity_type IN ('COMPANY', 'BRANCH', 'DEPARTMENT', 'SUPPLIER', 'CUSTOMER')), 
     budget_approver_uuid UUID,  -- FK ajoutée plus tard
-    rel_headquarters_location VARCHAR(255),
+    rel_headquarters_location UUID,  -- FK vers locations ajoutée plus tard
     is_active BOOLEAN NOT NULL DEFAULT true,
     parent_uuid UUID,  -- FK ajoutée plus tard (auto-référence)
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -332,7 +332,7 @@ COMMENT ON COLUMN core.rel_parent_child_tickets.ended_at IS 'Date de fin de la r
 -- PHASE 2: Ajout des contraintes FK circulaires
 -- ============================================================================
 
--- Entities: Ajout des FK vers persons et auto-référence
+-- Entities: Ajout des FK vers persons, locations et auto-référence
 ALTER TABLE configuration.entities 
     ADD CONSTRAINT entities_budget_approver_uuid_fkey 
     FOREIGN KEY (budget_approver_uuid) REFERENCES configuration.persons(uuid);
@@ -340,6 +340,10 @@ ALTER TABLE configuration.entities
 ALTER TABLE configuration.entities 
     ADD CONSTRAINT entities_parent_uuid_fkey 
     FOREIGN KEY (parent_uuid) REFERENCES configuration.entities(uuid);
+
+ALTER TABLE configuration.entities 
+    ADD CONSTRAINT entities_headquarters_location_fkey 
+    FOREIGN KEY (rel_headquarters_location) REFERENCES configuration.locations(uuid);
 
 -- Persons: Ajout des FK vers entities, locations et auto-référence
 ALTER TABLE configuration.persons 

@@ -54,7 +54,6 @@ Write-Log "[2/5] Creation de la structure..." "Yellow"
 $structureScripts = @(
     "01_create_extensions.sql",
     "02_create_tables.sql",
-    "03_alter_headquarters_location.sql",
     "03_create_audit_schema.sql",
     "03_create_indexes.sql",
     "04_create_functions.sql",
@@ -118,6 +117,7 @@ Write-Log "[4/5] Insertion des donnees de test (optionnelles)..." "Yellow"
 $testDataScripts = @(
     "entities.sql",
     "locations.sql",
+    "update_entities_locations_relations.sql",
     "support_groups.sql",
     "persons.sql",
     "services.sql",

@@ -81,17 +81,18 @@ INSERT INTO temp_cities (city, region, postal_code) VALUES
 ('La Rochelle', 'Nouvelle-Aquitaine', '17000');
 
 -- Création d'une table temporaire pour stocker les UUIDs des entités
-CREATE TEMP TABLE temp_entity_locations AS
-SELECT uuid, name, entity_type, headquarters_location
-FROM configuration.entities
-WHERE entity_type IN ('COMPANY', 'BRANCH')
-AND headquarters_location IS NOT NULL;
+-- Commenté car rel_headquarters_location n'est plus renseigné dans entities.sql
+-- CREATE TEMP TABLE temp_entity_locations AS
+-- SELECT uuid, name, entity_type, rel_headquarters_location
+-- FROM configuration.entities
+-- WHERE entity_type IN ('COMPANY', 'BRANCH')
+-- AND rel_headquarters_location IS NOT NULL;
 
 -- Insertion des locations
 INSERT INTO configuration.locations (
     name,
     primary_entity_uuid,
-    status,
+    rel_status_uuid,
     site_created_on,
     site_id,
     type,
@@ -112,13 +113,15 @@ INSERT INTO configuration.locations (
 SELECT 
     'Site ' || tc.city as name,
     -- Association avec l'entité correspondante basée sur la ville
-    (
-        SELECT e.uuid 
-        FROM temp_entity_locations e 
-        WHERE e.headquarters_location LIKE tc.city || '%'
-        LIMIT 1
-    ) as primary_entity_uuid,
-    'ACTIVE' as status,
+    -- Commenté car temp_entity_locations n'est plus créée
+    -- (
+    --     SELECT e.uuid 
+    --     FROM temp_entity_locations e 
+    --     WHERE e.rel_headquarters_location LIKE tc.city || '%'
+    --     LIMIT 1
+    -- ) as primary_entity_uuid,
+    NULL as primary_entity_uuid,
+    NULL as rel_status_uuid,
     (CURRENT_TIMESTAMP - ((random() * 365)::integer || ' days')::interval) as site_created_on,
     'SITE-' || tc.postal_code as site_id,
     CASE (random() * 3)::integer
@@ -165,8 +168,18 @@ SELECT
     END as network_telecom_service
 FROM temp_cities tc;
 
+-- Mise à jour des relations: lier les locations aux entités basées sur la ville
+UPDATE configuration.locations loc
+SET primary_entity_uuid = (
+    SELECT e.uuid
+    FROM configuration.entities e
+    WHERE e.entity_type = 'BRANCH'
+    AND e.name LIKE '%' || loc.city || '%'
+    LIMIT 1
+)
+WHERE loc.city IS NOT NULL;
+
 -- Nettoyage
 DROP TABLE temp_cities;
-DROP TABLE temp_entity_locations;
 
 COMMIT;

@@ -5,21 +5,20 @@
 BEGIN;
 
 -- Entreprises principales (COMPANY)
-INSERT INTO configuration.entities (name, entity_id, entity_type, rel_headquarters_location, is_active) VALUES
-('Lumiere Group', 'LUM001', 'COMPANY', 'Paris, France', true),
-('Lumiere Technologies', 'LUM002', 'COMPANY', 'Lyon, France', true),
-('Lumiere Services', 'LUM003', 'COMPANY', 'Marseille, France', true);
+INSERT INTO configuration.entities (name, entity_id, entity_type, is_active) VALUES
+('Lumiere Group', 'LUM001', 'COMPANY', true),
+('Lumiere Technologies', 'LUM002', 'COMPANY', true),
+('Lumiere Services', 'LUM003', 'COMPANY', true);
 
 -- Mise à jour des relations parent pour les entreprises principales
 UPDATE configuration.entities SET parent_uuid = (SELECT uuid FROM configuration.entities WHERE entity_id = 'LUM001') WHERE entity_id IN ('LUM002', 'LUM003');
 
 -- Succursales (BRANCH) pour Lumiere Group
-INSERT INTO configuration.entities (name, entity_id, entity_type, rel_headquarters_location, is_active, parent_uuid)
+INSERT INTO configuration.entities (name, entity_id, entity_type, is_active, parent_uuid)
 SELECT 
     'Lumiere ' || city || ' Branch',
     'BR' || LPAD(CAST(ROW_NUMBER() OVER () AS VARCHAR), 3, '0'),
     'BRANCH',
-    city || ', ' || country,
     true,
     (SELECT uuid FROM configuration.entities WHERE entity_id = 'LUM001')
 FROM (VALUES
@@ -59,12 +58,11 @@ CROSS JOIN (VALUES
 WHERE br.entity_type = 'BRANCH';
 
 -- Fournisseurs (SUPPLIER)
-INSERT INTO configuration.entities (name, entity_id, entity_type, rel_headquarters_location, is_active)
+INSERT INTO configuration.entities (name, entity_id, entity_type, is_active)
 SELECT 
     'Supplier ' || supplier_name,
     'SUP' || LPAD(CAST(ROW_NUMBER() OVER () AS VARCHAR), 3, '0'),
     'SUPPLIER',
-    city || ', ' || country,
     true
 FROM (VALUES
     ('TechPro Solutions', 'Paris', 'France'),
@@ -80,12 +78,11 @@ FROM (VALUES
 ) AS suppliers(supplier_name, city, country);
 
 -- Clients (CUSTOMER)
-INSERT INTO configuration.entities (name, entity_id, entity_type, rel_headquarters_location, is_active)
+INSERT INTO configuration.entities (name, entity_id, entity_type, is_active)
 SELECT 
     customer_name,
     'CUS' || LPAD(CAST(ROW_NUMBER() OVER () AS VARCHAR), 3, '0'),
     'CUSTOMER',
-    city || ', ' || country,
     true
 FROM (
     SELECT 
