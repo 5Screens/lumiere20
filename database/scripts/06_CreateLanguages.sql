@@ -17,24 +17,17 @@ CREATE TABLE translations.languages (
 );
 
 -- Create trigger to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
+-- Note: The function update_updated_at() is created in 04_create_functions.sql
 CREATE TRIGGER update_languages_updated_at
     BEFORE UPDATE ON languages
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+    EXECUTE FUNCTION update_updated_at();
 
 -- Insert EU official languages
 INSERT INTO languages (
     code, locale, name, native_name, date_format, time_format, 
     timezone, currency_code, currency_symbol, text_direction, is_active
-) VALUES 
+{{ ... }}
 -- Existing languages
 ('fr', 'fr-FR', 'French', 'Français', 'DD/MM/YYYY', 'HH:mm:ss', 'Europe/Paris', 'EUR', '€', 'LTR', true),
 ('en', 'en-US', 'English (US)', 'English (US)', 'MM/DD/YYYY', 'hh:mm A', 'America/New_York', 'USD', '$', 'LTR', false),

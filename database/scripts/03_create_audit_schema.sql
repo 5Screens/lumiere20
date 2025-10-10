@@ -231,10 +231,8 @@ CREATE TRIGGER trg_audit_rel_parent_child_tickets
 AFTER INSERT OR UPDATE OR DELETE ON core.rel_parent_child_tickets
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
--- Déclencheur pour la table rel_tickets_groups_persons
-CREATE TRIGGER trg_audit_rel_tickets_groups_persons
-AFTER INSERT OR UPDATE OR DELETE ON core.rel_tickets_groups_persons
-FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+-- Note: Le trigger trg_audit_rel_tickets_groups_persons est créé dans 09_assignation_and_watch_table.sql
+-- car la table core.rel_tickets_groups_persons est créée dans ce fichier
 
 -- Fonction pour définir l'utilisateur courant dans le contexte de la session
 CREATE OR REPLACE FUNCTION configuration.set_current_user_id(user_id UUID)

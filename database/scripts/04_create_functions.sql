@@ -1,4 +1,13 @@
 
+-- Function to automatically update the updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Function pour valider le format email
 CREATE OR REPLACE FUNCTION validate_email(email TEXT)
 RETURNS BOOLEAN AS $$
