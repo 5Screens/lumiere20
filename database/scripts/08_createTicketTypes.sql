@@ -1,3 +1,6 @@
+-- Start transaction
+BEGIN;
+
 -- Insert ticket types
 INSERT INTO configuration.ticket_types (code) VALUES 
 ('TASK'),
@@ -11,8 +14,6 @@ INSERT INTO configuration.ticket_types (code) VALUES
 ('USER_STORY'),
 ('EPIC'),
 ('SPRINT');
-
-COMMIT;
 
 -- Insert translations for each ticket type
 -- French (fr-FR)
@@ -146,3 +147,6 @@ SELECT
 FROM configuration.ticket_types tt
 CROSS JOIN translations.languages l
 WHERE l.locale = 'hr-HR';
+
+-- Commit transaction
+COMMIT;
