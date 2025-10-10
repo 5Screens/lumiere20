@@ -4,6 +4,17 @@
 
 BEGIN;
 
+-- Fonction temporaire pour supprimer les accents
+CREATE OR REPLACE FUNCTION remove_accents(text_input TEXT)
+RETURNS TEXT AS $$
+BEGIN
+    RETURN TRANSLATE(text_input,
+        'àâäéèêëïîôùûüÿçÀÂÄÉÈÊËÏÎÔÙÛÜŸÇ',
+        'aaaeeeeiioouuuycAAAAEEEEIIOUUUYC'
+    );
+END;
+$$ LANGUAGE plpgsql;
+
 -- Création d'une table temporaire pour les prénoms français courants
 CREATE TEMPORARY TABLE temp_first_names (
     name VARCHAR(100),
@@ -77,15 +88,17 @@ SELECT
     p.entity_uuid,
     LOWER(
         REPLACE(
-            CONCAT(
-                LEFT(p.first_name, 1),
-                '.',
-                p.last_name,
-                CASE 
-                    WHEN p.rn = 1 THEN ''
-                    ELSE p.rn::TEXT
-                END,
-                '@lumiere.fr'
+            remove_accents(
+                CONCAT(
+                    LEFT(p.first_name, 1),
+                    '.',
+                    p.last_name,
+                    CASE 
+                        WHEN p.rn = 1 THEN ''
+                        ELSE p.rn::TEXT
+                    END,
+                    '@lumiere.fr'
+                )
             ),
             ' ',
             ''
@@ -111,9 +124,10 @@ SELECT
     CONCAT('+33 6 ', LPAD(CAST(FLOOR(random() * 99999999) as VARCHAR), 8, '0')) as business_mobile_phone
 FROM random_persons p;
 
--- Nettoyage des tables temporaires
+-- Nettoyage des tables temporaires et fonction
 DROP TABLE temp_first_names;
 DROP TABLE temp_last_names;
 DROP TABLE temp_job_roles;
+DROP FUNCTION remove_accents(TEXT);
 
 COMMIT;
