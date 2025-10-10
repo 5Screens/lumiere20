@@ -4,17 +4,6 @@
 
 BEGIN;
 
--- Insertion des statuts de tickets génériques (applicables au type TICKET)
-INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('NEW', 'TICKET'),           -- Nouveau ticket
-    ('ASSIGNED', 'TICKET'),      -- Ticket assigné
-    ('IN_PROGRESS', 'TICKET'),   -- En cours de traitement
-    ('PENDING', 'TICKET'),       -- En attente (ex: attente d'information)
-    ('RESOLVED', 'TICKET'),      -- Résolu
-    ('CLOSED', 'TICKET'),        -- Fermé
-    ('CANCELLED', 'TICKET'),     -- Annulé
-    ('REOPENED', 'TICKET');      -- Réouvert
-
 -- Insertion des statuts spécifiques aux incidents
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
     ('INVESTIGATING', 'INCIDENT'),     -- Investigation en cours
