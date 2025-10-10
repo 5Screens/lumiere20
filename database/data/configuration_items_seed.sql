@@ -33,7 +33,7 @@ BEGIN
 
         -- Insertion dans la table
         INSERT INTO data.configuration_items (
-            nom,
+            name,
             description
         ) VALUES (
             item_name,
