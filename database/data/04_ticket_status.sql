@@ -149,16 +149,8 @@ SELECT uuid, 'fr',
         WHEN 'DONE' THEN 'Terminée'
         WHEN 'CANCELLED' THEN 'Annulée'
         -- Statuts spécifiques aux défauts (defects)
-        WHEN 'NEW' AND rel_ticket_type = 'DEFECT' THEN 'Nouveau'
         WHEN 'TRIAGE' THEN 'Triage'
         WHEN 'ACKNOWLEDGED' THEN 'Reconnu'
-        WHEN 'IN_PROGRESS' AND rel_ticket_type = 'DEFECT' THEN 'En cours'
-        WHEN 'IN_REVIEW' AND rel_ticket_type = 'DEFECT' THEN 'En revue'
-        WHEN 'IN_TEST' AND rel_ticket_type = 'DEFECT' THEN 'En test'
-        WHEN 'RESOLVED' AND rel_ticket_type = 'DEFECT' THEN 'Résolu'
-        WHEN 'CLOSED' AND rel_ticket_type = 'DEFECT' THEN 'Fermé'
-        WHEN 'REOPENED' AND rel_ticket_type = 'DEFECT' THEN 'Réouvert'
-        WHEN 'CANCELLED' AND rel_ticket_type = 'DEFECT' THEN 'Annulé'
     END
 FROM configuration.ticket_status;
 
@@ -227,16 +219,8 @@ SELECT uuid, 'en',
         WHEN 'DONE' THEN 'Done'
         WHEN 'CANCELLED' THEN 'Cancelled'
         -- Statuts spécifiques aux défauts (defects)
-        WHEN 'NEW' AND rel_ticket_type = 'DEFECT' THEN 'New'
         WHEN 'TRIAGE' THEN 'Triage'
         WHEN 'ACKNOWLEDGED' THEN 'Acknowledged'
-        WHEN 'IN_PROGRESS' AND rel_ticket_type = 'DEFECT' THEN 'In Progress'
-        WHEN 'IN_REVIEW' AND rel_ticket_type = 'DEFECT' THEN 'In Review'
-        WHEN 'IN_TEST' AND rel_ticket_type = 'DEFECT' THEN 'In Test'
-        WHEN 'RESOLVED' AND rel_ticket_type = 'DEFECT' THEN 'Resolved'
-        WHEN 'CLOSED' AND rel_ticket_type = 'DEFECT' THEN 'Closed'
-        WHEN 'REOPENED' AND rel_ticket_type = 'DEFECT' THEN 'Reopened'
-        WHEN 'CANCELLED' AND rel_ticket_type = 'DEFECT' THEN 'Cancelled'
     END
 FROM configuration.ticket_status;
 
@@ -305,16 +289,8 @@ SELECT uuid, 'es',
         WHEN 'DONE' THEN 'Terminado'
         WHEN 'CANCELLED' THEN 'Cancelado'
         -- Statuts spécifiques aux défauts (defects)
-        WHEN 'NEW' AND rel_ticket_type = 'DEFECT' THEN 'Nuevo'
         WHEN 'TRIAGE' THEN 'Clasificación'
         WHEN 'ACKNOWLEDGED' THEN 'Reconocido'
-        WHEN 'IN_PROGRESS' AND rel_ticket_type = 'DEFECT' THEN 'En progreso'
-        WHEN 'IN_REVIEW' AND rel_ticket_type = 'DEFECT' THEN 'En revisión'
-        WHEN 'IN_TEST' AND rel_ticket_type = 'DEFECT' THEN 'En prueba'
-        WHEN 'RESOLVED' AND rel_ticket_type = 'DEFECT' THEN 'Resuelto'
-        WHEN 'CLOSED' AND rel_ticket_type = 'DEFECT' THEN 'Cerrado'
-        WHEN 'REOPENED' AND rel_ticket_type = 'DEFECT' THEN 'Reabierto'
-        WHEN 'CANCELLED' AND rel_ticket_type = 'DEFECT' THEN 'Cancelado'
     END
 FROM configuration.ticket_status;
 
@@ -383,16 +359,8 @@ SELECT uuid, 'pt',
         WHEN 'DONE' THEN 'Concluído'
         WHEN 'CANCELLED' THEN 'Cancelado'
         -- Statuts spécifiques aux défauts (defects)
-        WHEN 'NEW' AND rel_ticket_type = 'DEFECT' THEN 'Novo'
         WHEN 'TRIAGE' THEN 'Triagem'
         WHEN 'ACKNOWLEDGED' THEN 'Reconhecido'
-        WHEN 'IN_PROGRESS' AND rel_ticket_type = 'DEFECT' THEN 'Em andamento'
-        WHEN 'IN_REVIEW' AND rel_ticket_type = 'DEFECT' THEN 'Em revisão'
-        WHEN 'IN_TEST' AND rel_ticket_type = 'DEFECT' THEN 'Em teste'
-        WHEN 'RESOLVED' AND rel_ticket_type = 'DEFECT' THEN 'Resolvido'
-        WHEN 'CLOSED' AND rel_ticket_type = 'DEFECT' THEN 'Fechado'
-        WHEN 'REOPENED' AND rel_ticket_type = 'DEFECT' THEN 'Reaberto'
-        WHEN 'CANCELLED' AND rel_ticket_type = 'DEFECT' THEN 'Cancelado'
     END
 FROM configuration.ticket_status;
 
