@@ -5,7 +5,7 @@
 BEGIN;
 
 -- Entreprises principales (COMPANY)
-INSERT INTO configuration.entities (name, entity_id, entity_type, headquarters_location, is_active) VALUES
+INSERT INTO configuration.entities (name, entity_id, entity_type, rel_headquarters_location, is_active) VALUES
 ('Lumiere Group', 'LUM001', 'COMPANY', 'Paris, France', true),
 ('Lumiere Technologies', 'LUM002', 'COMPANY', 'Lyon, France', true),
 ('Lumiere Services', 'LUM003', 'COMPANY', 'Marseille, France', true);
@@ -14,7 +14,7 @@ INSERT INTO configuration.entities (name, entity_id, entity_type, headquarters_l
 UPDATE configuration.entities SET parent_uuid = (SELECT uuid FROM configuration.entities WHERE entity_id = 'LUM001') WHERE entity_id IN ('LUM002', 'LUM003');
 
 -- Succursales (BRANCH) pour Lumiere Group
-INSERT INTO configuration.entities (name, entity_id, entity_type, headquarters_location, is_active, parent_uuid)
+INSERT INTO configuration.entities (name, entity_id, entity_type, rel_headquarters_location, is_active, parent_uuid)
 SELECT 
     'Lumiere ' || city || ' Branch',
     'BR' || LPAD(CAST(ROW_NUMBER() OVER () AS VARCHAR), 3, '0'),
@@ -59,7 +59,7 @@ CROSS JOIN (VALUES
 WHERE br.entity_type = 'BRANCH';
 
 -- Fournisseurs (SUPPLIER)
-INSERT INTO configuration.entities (name, entity_id, entity_type, headquarters_location, is_active)
+INSERT INTO configuration.entities (name, entity_id, entity_type, rel_headquarters_location, is_active)
 SELECT 
     'Supplier ' || supplier_name,
     'SUP' || LPAD(CAST(ROW_NUMBER() OVER () AS VARCHAR), 3, '0'),
@@ -80,7 +80,7 @@ FROM (VALUES
 ) AS suppliers(supplier_name, city, country);
 
 -- Clients (CUSTOMER)
-INSERT INTO configuration.entities (name, entity_id, entity_type, headquarters_location, is_active)
+INSERT INTO configuration.entities (name, entity_id, entity_type, rel_headquarters_location, is_active)
 SELECT 
     customer_name,
     'CUS' || LPAD(CAST(ROW_NUMBER() OVER () AS VARCHAR), 3, '0'),
