@@ -216,9 +216,24 @@ CREATE TRIGGER trg_audit_groups
 AFTER INSERT OR UPDATE OR DELETE ON configuration.groups
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
+-- Déclencheur pour la table rel_persons_groups
+CREATE TRIGGER trg_audit_rel_persons_groups
+AFTER INSERT OR UPDATE OR DELETE ON configuration.rel_persons_groups
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
 -- Déclencheur pour la table tickets
 CREATE TRIGGER trg_audit_tickets
 AFTER INSERT OR UPDATE OR DELETE ON core.tickets
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
+-- Déclencheur pour la table rel_parent_child_tickets
+CREATE TRIGGER trg_audit_rel_parent_child_tickets
+AFTER INSERT OR UPDATE OR DELETE ON core.rel_parent_child_tickets
+FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
+-- Déclencheur pour la table rel_tickets_groups_persons
+CREATE TRIGGER trg_audit_rel_tickets_groups_persons
+AFTER INSERT OR UPDATE OR DELETE ON core.rel_tickets_groups_persons
 FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
 -- Fonction pour définir l'utilisateur courant dans le contexte de la session

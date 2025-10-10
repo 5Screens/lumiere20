@@ -58,7 +58,6 @@ $structureScripts = @(
     "03_create_audit_schema.sql",
     "03_create_indexes.sql",
     "04_create_functions.sql",
-    "04_update_audit_triggers.sql",
     "05_create_triggers.sql",
     "06_CreateLanguages.sql",
     "07_CreateEntitiesTypesTranslation.sql",
