@@ -27,8 +27,7 @@ CREATE TRIGGER update_languages_updated_at
 INSERT INTO languages (
     code, locale, name, native_name, date_format, time_format, 
     timezone, currency_code, currency_symbol, text_direction, is_active
-{{ ... }}
--- Existing languages
+) VALUES 
 ('fr', 'fr-FR', 'French', 'Français', 'DD/MM/YYYY', 'HH:mm:ss', 'Europe/Paris', 'EUR', '€', 'LTR', true),
 ('en', 'en-US', 'English (US)', 'English (US)', 'MM/DD/YYYY', 'hh:mm A', 'America/New_York', 'USD', '$', 'LTR', false),
 ('en', 'en-GB', 'English (UK)', 'English (UK)', 'DD/MM/YYYY', 'HH:mm:ss', 'Europe/London', 'GBP', '£', 'LTR', true),

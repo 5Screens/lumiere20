@@ -69,22 +69,13 @@ CREATE TRIGGER update_symptoms_translation_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 
--- Persons Entities
-CREATE TRIGGER update_persons_entities_updated_at
-    BEFORE UPDATE ON configuration.persons_entities
+-- Rel Persons Entities
+CREATE TRIGGER update_rel_persons_entities_updated_at
+    BEFORE UPDATE ON configuration.rel_persons_entities
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 
--- Fonctions de validation pour les triggers
-CREATE OR REPLACE FUNCTION validate_person_email()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NOT validate_email(NEW.email) THEN
-        RAISE EXCEPTION 'Format d''email invalide';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- Note: validate_person_email() is created in 04_create_functions.sql
 
 -- Trigger pour valider les dates (création/modification)
 CREATE OR REPLACE FUNCTION valiupdated_at_date()
@@ -143,8 +134,8 @@ CREATE TRIGGER validate_symptoms_translation_dates
     FOR EACH ROW
     EXECUTE FUNCTION valiupdated_at_date();
 
-CREATE TRIGGER validate_persons_entities_dates
-    BEFORE UPDATE ON configuration.persons_entities
+CREATE TRIGGER validate_rel_persons_entities_dates
+    BEFORE UPDATE ON configuration.rel_persons_entities
     FOR EACH ROW
     EXECUTE FUNCTION valiupdated_at_date();
 

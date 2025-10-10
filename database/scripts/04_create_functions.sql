@@ -16,6 +16,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to validate person email using validate_email
+CREATE OR REPLACE FUNCTION validate_person_email()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NOT validate_email(NEW.email) THEN
+        RAISE EXCEPTION 'Format d''email invalide';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Création de la fonction validate_dates pour comparer deux dates
 CREATE OR REPLACE FUNCTION validate_dates(date1 TIMESTAMP WITH TIME ZONE, date2 TIMESTAMP WITH TIME ZONE)
 RETURNS BOOLEAN AS $$
