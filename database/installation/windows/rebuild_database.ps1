@@ -3,6 +3,11 @@
 
 $ErrorActionPreference = "Stop"
 
+# Forcer l'encodage UTF-8 pour la console
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$env:PGCLIENTENCODING = "UTF8"
+$env:PGOPTIONS = "--client-min-messages=warning"
+
 # Configuration
 $DB_USER = "postgres"
 $DB_NAME = "lumiere_db_v17"
@@ -10,30 +15,42 @@ $SCRIPT_DIR = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $SCRIPTS_PATH = Join-Path $SCRIPT_DIR "scripts"
 $DATA_PATH = Join-Path $SCRIPT_DIR "data"
 
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Reconstruction de la base $DB_NAME" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
+# Créer un fichier de log avec timestamp
+$logFile = "rebuild_$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
+$logPath = Join-Path $PSScriptRoot $logFile
+
+# Fonction pour logger et afficher
+function Write-Log {
+    param([string]$Message, [string]$Color = "White")
+    Write-Host $Message -ForegroundColor $Color
+    Add-Content -Path $logPath -Value $Message -Encoding UTF8
+}
+
+Write-Log "========================================" "Cyan"
+Write-Log "Reconstruction de la base $DB_NAME" "Cyan"
+Write-Log "========================================" "Cyan"
+Write-Log "Fichier de log: $logFile" "Gray"
+Write-Log ""
 
 # Demander le mot de passe une seule fois
 $securePassword = Read-Host "Mot de passe PostgreSQL" -AsSecureString
 $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
 $env:PGPASSWORD = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
 [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
-Write-Host ""
+Write-Log ""
 
 # Étape 1: Création de la base de données
-Write-Host "[1/4] Creation de la base de donnees..." -ForegroundColor Yellow
-psql -U $DB_USER -f "$SCRIPTS_PATH\00_init_database.sql"
+Write-Log "[1/5] Creation de la base de donnees..." "Yellow"
+psql -U $DB_USER -f "$SCRIPTS_PATH\00_init_database.sql" > $null 2>&1
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Erreur lors de la creation de la base" -ForegroundColor Red
+    Write-Log "ERREUR lors de la creation de la base" "Red"
     exit 1
 }
-Write-Host "Base de donnees creee avec succes" -ForegroundColor Green
-Write-Host ""
+Write-Log "  OK - Base de donnees creee" "Green"
+Write-Log ""
 
 # Étape 2: Structure de base
-Write-Host "[2/4] Creation de la structure..." -ForegroundColor Yellow
+Write-Log "[2/5] Creation de la structure..." "Yellow"
 $structureScripts = @(
     "01_create_extensions.sql",
     "02_create_tables.sql",
@@ -58,18 +75,19 @@ $structureScripts = @(
 )
 
 foreach ($script in $structureScripts) {
-    Write-Host "  - Execution de $script" -ForegroundColor Gray
-    psql -U $DB_USER -d $DB_NAME -f "$SCRIPTS_PATH\$script"
+    Write-Log "  - $script" "Gray"
+    psql -U $DB_USER -d $DB_NAME -f "$SCRIPTS_PATH\$script" > $null 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Erreur lors de l'execution de $script" -ForegroundColor Red
+        Write-Log "    ERREUR" "Red"
         exit 1
     }
+    Write-Log "    OK" "Green"
 }
-Write-Host "Structure creee avec succes" -ForegroundColor Green
-Write-Host ""
+Write-Log "Structure creee avec succes" "Green"
+Write-Log ""
 
 # Étape 3: Données obligatoires (configuration système)
-Write-Host "[3/5] Insertion des donnees obligatoires..." -ForegroundColor Yellow
+Write-Log "[3/5] Insertion des donnees obligatoires..." "Yellow"
 $requiredDataScripts = @(
     "04_ticket_status.sql",
     "10_problem_categories.sql",
@@ -85,18 +103,19 @@ $requiredDataScripts = @(
 )
 
 foreach ($script in $requiredDataScripts) {
-    Write-Host "  - Execution de $script" -ForegroundColor Gray
-    psql -U $DB_USER -d $DB_NAME -f "$DATA_PATH\$script"
+    Write-Log "  - $script" "Gray"
+    psql -U $DB_USER -d $DB_NAME -f "$DATA_PATH\$script" > $null 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Erreur lors de l'execution de $script" -ForegroundColor Red
+        Write-Log "    ERREUR" "Red"
         exit 1
     }
+    Write-Log "    OK" "Green"
 }
-Write-Host "Donnees obligatoires inserees avec succes" -ForegroundColor Green
-Write-Host ""
+Write-Log "Donnees obligatoires inserees avec succes" "Green"
+Write-Log ""
 
 # Étape 4: Données de test (optionnelles)
-Write-Host "[4/5] Insertion des donnees de test (optionnelles)..." -ForegroundColor Yellow
+Write-Log "[4/5] Insertion des donnees de test (optionnelles)..." "Yellow"
 $testDataScripts = @(
     "entities.sql",
     "locations.sql",
@@ -111,29 +130,35 @@ $testDataScripts = @(
 )
 
 foreach ($script in $testDataScripts) {
-    Write-Host "  - Execution de $script" -ForegroundColor Gray
-    psql -U $DB_USER -d $DB_NAME -f "$DATA_PATH\$script" 2>&1 | Out-Null
+    Write-Log "  - $script" "Gray"
+    psql -U $DB_USER -d $DB_NAME -f "$DATA_PATH\$script" > $null 2>&1
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "    OK" -ForegroundColor Green
+        Write-Log "    OK" "Green"
     } else {
-        Write-Host "    ERREUR (non bloquante)" -ForegroundColor Yellow
+        Write-Log "    ERREUR (non bloquante)" "Yellow"
     }
 }
-Write-Host "Donnees de test inserees (avec erreurs non bloquantes)" -ForegroundColor Yellow
-Write-Host ""
+Write-Log "Donnees de test inserees" "Green"
+Write-Log ""
 
 # Étape 5: Vérification
-Write-Host "[5/5] Verification..." -ForegroundColor Yellow
-$tableCount = psql -U $DB_USER -d $DB_NAME -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema');"
-Write-Host "Nombre de tables creees: $tableCount" -ForegroundColor Green
-Write-Host ""
+Write-Log "[5/5] Verification..." "Yellow"
+$tableCount = psql -U $DB_USER -d $DB_NAME -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema');" 2>$null
+if ($tableCount) {
+    Write-Log "Nombre de tables creees: $($tableCount.Trim())" "Green"
+} else {
+    Write-Log "Impossible de compter les tables" "Yellow"
+}
+Write-Log ""
 
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Base de donnees reconstruite avec succes!" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Prochaine etape: Modifier le fichier backend\.env avec:" -ForegroundColor Yellow
-Write-Host "DB_NAME=lumiere_db_v17" -ForegroundColor White
+Write-Log "========================================" "Cyan"
+Write-Log "Base de donnees reconstruite avec succes!" "Green"
+Write-Log "========================================" "Cyan"
+Write-Log ""
+Write-Log "Prochaine etape: Modifier le fichier backend\.env avec:" "Yellow"
+Write-Log "DB_NAME=lumiere_db_v17" "White"
+Write-Log ""
+Write-Log "Log complet disponible: $logFile" "Gray"
 
 # Nettoyer le mot de passe de l'environnement
 $env:PGPASSWORD = $null

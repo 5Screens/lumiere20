@@ -4,10 +4,7 @@
 
 BEGIN;
 
--- Rename and change the type of the existing column
-ALTER TABLE configuration.entities 
-RENAME COLUMN headquarters_location TO rel_headquarters_location;
-
+-- Change the type of the existing column from VARCHAR to UUID
 ALTER TABLE configuration.entities 
 ALTER COLUMN rel_headquarters_location TYPE UUID USING NULL;
 
