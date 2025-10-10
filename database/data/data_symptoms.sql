@@ -27,7 +27,7 @@ INSERT INTO configuration.symptoms (code) VALUES
     ('SCREEN_FLICKERING');
 
 -- Insertion des traductions
-INSERT INTO translations.symptoms_translation (symptom_code, langue, libelle) VALUES
+INSERT INTO translations.symptoms_translation (symptom_code, lang, label) VALUES
     -- NETWORK_SLOW
     ('NETWORK_SLOW', 'fr', 'Lenteur réseau'),
     ('NETWORK_SLOW', 'en', 'Network slowness'),

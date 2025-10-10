@@ -148,11 +148,27 @@ SELECT uuid, 'fr',
         WHEN 'IN_TEST' THEN 'En test'
         WHEN 'DONE' THEN 'Terminée'
         WHEN 'CANCELLED' THEN 'Annulée'
-        -- Statuts spécifiques aux défauts (defects)
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type != 'DEFECT';
+
+-- Traductions françaises pour les défauts (DEFECT)
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'fr', 
+    CASE code
+        WHEN 'NEW' THEN 'Nouveau'
         WHEN 'TRIAGE' THEN 'Triage'
         WHEN 'ACKNOWLEDGED' THEN 'Reconnu'
+        WHEN 'IN_PROGRESS' THEN 'En cours'
+        WHEN 'IN_REVIEW' THEN 'En revue'
+        WHEN 'IN_TEST' THEN 'En test'
+        WHEN 'RESOLVED' THEN 'Résolu'
+        WHEN 'CLOSED' THEN 'Fermé'
+        WHEN 'REOPENED' THEN 'Réouvert'
+        WHEN 'CANCELLED' THEN 'Annulé'
     END
-FROM configuration.ticket_status;
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'DEFECT';
 
 -- Insertion des traductions en anglais
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
@@ -218,11 +234,27 @@ SELECT uuid, 'en',
         WHEN 'IN_TEST' THEN 'In Test'
         WHEN 'DONE' THEN 'Done'
         WHEN 'CANCELLED' THEN 'Cancelled'
-        -- Statuts spécifiques aux défauts (defects)
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type != 'DEFECT';
+
+-- Traductions anglaises pour les défauts (DEFECT)
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'en', 
+    CASE code
+        WHEN 'NEW' THEN 'New'
         WHEN 'TRIAGE' THEN 'Triage'
         WHEN 'ACKNOWLEDGED' THEN 'Acknowledged'
+        WHEN 'IN_PROGRESS' THEN 'In Progress'
+        WHEN 'IN_REVIEW' THEN 'In Review'
+        WHEN 'IN_TEST' THEN 'In Test'
+        WHEN 'RESOLVED' THEN 'Resolved'
+        WHEN 'CLOSED' THEN 'Closed'
+        WHEN 'REOPENED' THEN 'Reopened'
+        WHEN 'CANCELLED' THEN 'Cancelled'
     END
-FROM configuration.ticket_status;
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'DEFECT';
 
 -- Insertion des traductions en espagnol
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
@@ -288,11 +320,27 @@ SELECT uuid, 'es',
         WHEN 'IN_TEST' THEN 'En prueba'
         WHEN 'DONE' THEN 'Terminado'
         WHEN 'CANCELLED' THEN 'Cancelado'
-        -- Statuts spécifiques aux défauts (defects)
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type != 'DEFECT';
+
+-- Traductions espagnoles pour les défauts (DEFECT)
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'es', 
+    CASE code
+        WHEN 'NEW' THEN 'Nuevo'
         WHEN 'TRIAGE' THEN 'Clasificación'
         WHEN 'ACKNOWLEDGED' THEN 'Reconocido'
+        WHEN 'IN_PROGRESS' THEN 'En progreso'
+        WHEN 'IN_REVIEW' THEN 'En revisión'
+        WHEN 'IN_TEST' THEN 'En prueba'
+        WHEN 'RESOLVED' THEN 'Resuelto'
+        WHEN 'CLOSED' THEN 'Cerrado'
+        WHEN 'REOPENED' THEN 'Reabierto'
+        WHEN 'CANCELLED' THEN 'Cancelado'
     END
-FROM configuration.ticket_status;
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'DEFECT';
 
 -- Insertion des traductions en portugais
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
@@ -358,10 +406,26 @@ SELECT uuid, 'pt',
         WHEN 'IN_TEST' THEN 'Em teste'
         WHEN 'DONE' THEN 'Concluído'
         WHEN 'CANCELLED' THEN 'Cancelado'
-        -- Statuts spécifiques aux défauts (defects)
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type != 'DEFECT';
+
+-- Traductions portugaises pour les défauts (DEFECT)
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'pt', 
+    CASE code
+        WHEN 'NEW' THEN 'Novo'
         WHEN 'TRIAGE' THEN 'Triagem'
         WHEN 'ACKNOWLEDGED' THEN 'Reconhecido'
+        WHEN 'IN_PROGRESS' THEN 'Em andamento'
+        WHEN 'IN_REVIEW' THEN 'Em revisão'
+        WHEN 'IN_TEST' THEN 'Em teste'
+        WHEN 'RESOLVED' THEN 'Resolvido'
+        WHEN 'CLOSED' THEN 'Fechado'
+        WHEN 'REOPENED' THEN 'Reaberto'
+        WHEN 'CANCELLED' THEN 'Cancelado'
     END
-FROM configuration.ticket_status;
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'DEFECT';
 
 COMMIT;

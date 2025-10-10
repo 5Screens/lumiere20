@@ -72,7 +72,7 @@ $$;
 
 CREATE TABLE configuration.incident_priorities (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    code VARCHAR(50) NOT NULL UNIQUE,
+    code VARCHAR(50) NOT NULL,
     rel_incident_urgency_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_setup_codes(code),
     rel_incident_impact_code VARCHAR(50) NOT NULL REFERENCES configuration.incident_setup_codes(code),
     priority_level INTEGER NOT NULL,
