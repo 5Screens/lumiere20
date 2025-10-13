@@ -9,13 +9,13 @@ class SymptomsService {
                 SELECT 
                     s.uuid,
                     s.code,
-                    st.libelle,
-                    st.langue,
+                    st.label,
+                    st.lang,
                     s.created_at,
                     s.updated_at
                 FROM translations.symptoms_translation st
                 JOIN configuration.symptoms s ON s.code = st.symptom_code
-                WHERE st.langue = $1
+                WHERE st.lang = $1
                 ORDER BY updated_at DESC
             `;
             
@@ -35,12 +35,12 @@ class SymptomsService {
                 SELECT 
                     st.uuid,
                     st.symptom_code,
-                    st.libelle,
-                    st.langue,
+                    st.label,
+                    st.lang,
                     st.created_at,
                     st.updated_at
                 FROM translations.symptoms_translation st
-                ORDER BY st.langue, st.libelle ASC
+                ORDER BY st.lang, st.label ASC
             `;
             
             const result = await pool.query(query);
@@ -60,12 +60,12 @@ class SymptomsService {
                     s.code,
                     s.uuid as symptom_uuid,
                     st.uuid,
-                    st.langue,
-                    st.libelle
+                    st.lang,
+                    st.label
                 FROM configuration.symptoms s
                 JOIN translations.symptoms_translation st ON s.code = st.symptom_code
                 WHERE s.code = $1
-                ORDER BY st.langue ASC
+                ORDER BY st.lang ASC
             `;
             
             const result = await pool.query(query, [scode]);
@@ -105,13 +105,13 @@ class SymptomsService {
                     SELECT 
                         s.uuid,
                         s.code as symptom_code,
-                        st.libelle,
-                        st.langue,
+                        st.label,
+                        st.lang,
                         st.created_at,
                         st.updated_at
                     FROM configuration.symptoms s
                     JOIN translations.symptoms_translation st ON s.code = st.symptom_code
-                    WHERE s.uuid = $1 AND st.langue = $2
+                    WHERE s.uuid = $1 AND st.lang = $2
                 `;
                 params = [uuid, lang];
             } else {
@@ -125,9 +125,9 @@ class SymptomsService {
                         json_agg(
                             json_build_object(
                                 'label_uuid', st.uuid,
-                                'label_lang_code', st.langue,
-                                'label', st.libelle
-                            ) ORDER BY st.langue ASC
+                                'label_lang_code', st.lang,
+                                'label', st.label
+                            ) ORDER BY st.lang ASC
                         ) as labels
                     FROM configuration.symptoms s
                     JOIN translations.symptoms_translation st ON s.code = st.symptom_code

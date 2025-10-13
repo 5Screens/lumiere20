@@ -57,7 +57,7 @@ const getProjectById = async (uuid, lang = 'en') => {
                     SELECT json_agg(json_build_object(
                         'uuid', s.uuid,
                         'code', symptoms.code,
-                        'libelle', COALESCE(st.libelle, symptoms.code)
+                        'libelle', COALESCE(st.label, symptoms.code)
                     ))
                     FROM (
                         SELECT jsonb_array_elements_text(t.core_extended_attributes->'issue_type_scheme_id') as code
