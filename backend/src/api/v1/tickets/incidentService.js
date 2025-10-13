@@ -38,7 +38,7 @@ const getIncidents = async (lang) => {
         service.name as rel_service_name,
         service_offerings.name as rel_service_offerings_name,
         t.core_extended_attributes->>'symptoms_uuid' as symptoms_uuid,
-        COALESCE(symptoms_t.libelle, t.core_extended_attributes->>'symptoms_uuid') as symptoms_label
+        COALESCE(symptoms_t.label, t.core_extended_attributes->>'symptoms_uuid') as symptoms_label
     `;
     
     // Définition des jointures spécifiques aux incidents
@@ -72,7 +72,7 @@ const getIncidents = async (lang) => {
         LEFT JOIN configuration.symptoms symptoms 
             ON t.core_extended_attributes->>'symptoms_uuid' = symptoms.uuid::text
         LEFT JOIN translations.symptoms_translation symptoms_t 
-            ON symptoms.code = symptoms_t.symptom_code AND symptoms_t.langue = $1
+            ON symptoms.code = symptoms_t.symptom_code AND symptoms_t.lang = $1
     `;
     
     // Utilisation de la fonction getTickets factorisée
@@ -161,7 +161,7 @@ const getIncidentById = async (uuid, lang = 'en') => {
                 COALESCE(cause_codes_t.label, t.core_extended_attributes->>'cause_code') as cause_code_label,
                 COALESCE(contact_types_t.label, t.core_extended_attributes->>'contact_type') as contact_type_label,
                 COALESCE(resolution_codes_t.label, t.core_extended_attributes->>'resolution_code') as resolution_code_label,
-                COALESCE(symptoms_t.libelle, t.core_extended_attributes->>'symptoms_uuid') as symptoms_label,
+                COALESCE(symptoms_t.label, t.core_extended_attributes->>'symptoms_uuid') as symptoms_label,
                 
 
 
@@ -226,7 +226,7 @@ const getIncidentById = async (uuid, lang = 'en') => {
             
             -- Jointures pour les symptômes
             LEFT JOIN configuration.symptoms symptoms ON t.core_extended_attributes->>'symptoms_uuid' = symptoms.uuid::text
-            LEFT JOIN translations.symptoms_translation symptoms_t ON symptoms.code = symptoms_t.symptom_code AND symptoms_t.langue = $2
+            LEFT JOIN translations.symptoms_translation symptoms_t ON symptoms.code = symptoms_t.symptom_code AND symptoms_t.lang = $2
             
             -- Jointure pour récupérer le nom de l'élément de configuration
             LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
