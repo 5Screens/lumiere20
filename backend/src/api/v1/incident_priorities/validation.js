@@ -43,8 +43,8 @@ const validateGetIncidentPriority = async (req, res, next) => {
             const urgencyValue = parseInt(req.query.incident_urgencies);
             const urgencyValueQuery = `
                 SELECT code 
-                FROM configuration.incident_urgencies 
-                WHERE value = $1
+                FROM configuration.incident_setup_codes 
+                WHERE metadata = 'URGENCY' AND value = $1
             `;
             const urgencyValueResult = await db.query(urgencyValueQuery, [urgencyValue]);
 
@@ -57,8 +57,8 @@ const validateGetIncidentPriority = async (req, res, next) => {
             // Otherwise treat it as a code
             const urgencyCodeQuery = `
                 SELECT code 
-                FROM configuration.incident_urgencies 
-                WHERE code = $1
+                FROM configuration.incident_setup_codes 
+                WHERE metadata = 'URGENCY' AND code = $1
             `;
             const urgencyCodeResult = await db.query(urgencyCodeQuery, [req.query.incident_urgencies]);
 
@@ -75,8 +75,8 @@ const validateGetIncidentPriority = async (req, res, next) => {
             const impactValue = parseInt(req.query.incident_impacts);
             const impactValueQuery = `
                 SELECT code 
-                FROM configuration.incident_impacts 
-                WHERE value = $1
+                FROM configuration.incident_setup_codes 
+                WHERE metadata = 'IMPACT' AND value = $1
             `;
             const impactValueResult = await db.query(impactValueQuery, [impactValue]);
 
@@ -89,8 +89,8 @@ const validateGetIncidentPriority = async (req, res, next) => {
             // Otherwise treat it as a code
             const impactCodeQuery = `
                 SELECT code 
-                FROM configuration.incident_impacts 
-                WHERE code = $1
+                FROM configuration.incident_setup_codes 
+                WHERE metadata = 'IMPACT' AND code = $1
             `;
             const impactCodeResult = await db.query(impactCodeQuery, [req.query.incident_impacts]);
 

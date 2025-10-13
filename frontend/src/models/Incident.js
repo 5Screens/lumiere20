@@ -275,7 +275,7 @@ export class Incident {
         placeholder: 'incident.symptoms_placeholder',
         required: isRequired('symptoms_uuid'),
         endpoint: `symptoms?lang=${userProfileStore.language}&toSelect=yes`,
-        displayField: 'libelle',
+        displayField: 'label',
         valueField: 'uuid',
         visible: true,
       },
