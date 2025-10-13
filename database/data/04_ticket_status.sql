@@ -84,6 +84,17 @@ INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
     ('REOPENED', 'DEFECT'),            -- Défaut réouvert
     ('CANCELLED', 'DEFECT');           -- Défaut annulé
 
+-- Insertion des statuts spécifiques aux tâches (tasks)
+INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
+    ('NEW', 'TASK'),                   -- Tâche nouvelle
+    ('ASSIGNED', 'TASK'),              -- Tâche assignée
+    ('IN_PROGRESS', 'TASK'),           -- Tâche en cours
+    ('PENDING', 'TASK'),               -- Tâche en attente
+    ('RESOLVED', 'TASK'),              -- Tâche résolue
+    ('CLOSED', 'TASK'),                -- Tâche fermée
+    ('CANCELLED', 'TASK'),             -- Tâche annulée
+    ('REOPENED', 'TASK');              -- Tâche réouverte
+
 -- Insertion des traductions en français
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'fr', 
