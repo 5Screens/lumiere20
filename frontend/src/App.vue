@@ -331,6 +331,32 @@ export default {
       
       const rect = event.target.getBoundingClientRect()
       const sideMenuWidth = 200 // Largeur approximative du side-menu
+      const maxTooltipHeight = 800 // Hauteur max fixe du tooltip (correspond au CSS)
+      const marginBottom = 30 // Marge en bas de l'écran
+      const marginTop = 80 // Marge en haut
+      const windowHeight = window.innerHeight
+      
+      console.log('=== TOOLTIP POSITIONING DEBUG ===')
+      console.log('Menu:', paneType)
+      console.log('rect.top:', rect.top)
+      console.log('maxTooltipHeight:', maxTooltipHeight)
+      console.log('windowHeight:', windowHeight)
+      
+      // Calculer la position Y optimale
+      // Si le tooltip dépasse en bas, le remonter
+      let yPosition = rect.top
+      if (yPosition + maxTooltipHeight + marginBottom > windowHeight) {
+        yPosition = windowHeight - maxTooltipHeight - marginBottom
+        console.log('AJUSTEMENT: tooltip dépasserait, nouvelle position:', yPosition)
+      }
+      
+      // S'assurer qu'il ne dépasse pas en haut
+      yPosition = Math.max(marginTop, yPosition)
+      
+      console.log('yPosition finale:', yPosition)
+      console.log('Bas du tooltip sera à:', yPosition + maxTooltipHeight)
+      console.log('Espace restant en bas:', windowHeight - (yPosition + maxTooltipHeight))
+      console.log('=================================')
       
       // Définir les icônes pour chaque type de panneau
       const paneIcons = {
@@ -352,7 +378,7 @@ export default {
         hasSections: config.hasSections,
         position: {
           x: sideMenuWidth + 10, // À droite du menu latéral
-          y: rect.top // Aligné avec l'élément survolé
+          y: yPosition // Position ajustée pour ne pas dépasser
         },
         titleIcon: paneIcons[paneType] || 'fas fa-cube',
         mouseOverTooltip: false,

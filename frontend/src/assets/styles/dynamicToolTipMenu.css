@@ -2,7 +2,8 @@
 .dynamic-tooltip-menu {
   position: fixed;
   width: 340px;
-  height: 340px;
+  min-height: 340px;
+  max-height: 800px;
   background: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -241,7 +242,8 @@
 @media (max-width: 768px) {
   .dynamic-tooltip-menu {
     width: 300px;
-    height: 300px;
+    min-height: 300px;
+    max-height: calc(100vh - 20px);
   }
   
   .tooltip-header {
@@ -295,8 +297,8 @@
 /* Styles pour le tooltip secondaire */
 .secondary-tooltip {
   width: 280px;
-  height: auto;
-  max-height: 300px;
+  min-height: 200px;
+  max-height: calc(100vh - 40px);
   z-index: 1001;
 }
 
