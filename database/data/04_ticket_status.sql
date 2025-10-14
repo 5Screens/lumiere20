@@ -1,124 +1,137 @@
 -- Script: 04_ticket_status.sql
 -- Description: Insertion des statuts de tickets et leurs traductions
--- Date: 2025-03-25
+-- Date: 2025-10-14
+-- Structure: Chaque type de ticket a ses propres sections de traduction dédiées
 
 BEGIN;
 
--- Insertion des statuts spécifiques aux incidents
-INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('INVESTIGATING', 'INCIDENT'),     -- Investigation en cours
-    ('DIAGNOSED', 'INCIDENT'),         -- Diagnostic établi
-    ('WORKAROUND', 'INCIDENT'),        -- Solution de contournement appliquée
-    ('ESCALATED', 'INCIDENT');         -- Escaladé à un niveau supérieur
+-- ============================================================================
+-- SECTION 1: INSERTION DES STATUTS
+-- ============================================================================
 
--- Insertion des statuts spécifiques aux problèmes
+-- Statuts pour INCIDENT
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('ROOT_CAUSE_IDENTIFIED', 'PROBLEM'),    -- Cause racine identifiée
-    ('SOLUTION_PROPOSED', 'PROBLEM'),        -- Solution proposée
-    ('SOLUTION_APPROVED', 'PROBLEM'),        -- Solution approuvée
-    ('KNOWN_ERROR', 'PROBLEM');              -- Erreur connue
+    ('INVESTIGATING', 'INCIDENT'),
+    ('DIAGNOSED', 'INCIDENT'),
+    ('WORKAROUND', 'INCIDENT'),
+    ('ESCALATED', 'INCIDENT');
 
--- Insertion des statuts spécifiques aux changements
+-- Statuts pour PROBLEM
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('REQUESTED', 'CHANGE'),           -- Demande de changement soumise
-    ('EVALUATED', 'CHANGE'),           -- Évaluation effectuée
-    ('APPROVED', 'CHANGE'),            -- Approuvé
-    ('REJECTED', 'CHANGE'),            -- Rejeté
-    ('SCHEDULED', 'CHANGE'),           -- Planifié
-    ('IMPLEMENTED', 'CHANGE'),         -- Implémenté
-    ('REVIEWED', 'CHANGE');            -- Revue post-implémentation effectuée
+    ('ROOT_CAUSE_IDENTIFIED', 'PROBLEM'),
+    ('SOLUTION_PROPOSED', 'PROBLEM'),
+    ('SOLUTION_APPROVED', 'PROBLEM'),
+    ('KNOWN_ERROR', 'PROBLEM');
 
--- Insertion des statuts spécifiques aux demandes
+-- Statuts pour CHANGE
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('SUBMITTED', 'REQUEST'),          -- Demande soumise
-    ('APPROVED_REQUEST', 'REQUEST'),   -- Demande approuvée
-    ('REJECTED_REQUEST', 'REQUEST'),   -- Demande rejetée
-    ('FULFILLED', 'REQUEST');          -- Demande satisfaite
+    ('REQUESTED', 'CHANGE'),
+    ('EVALUATED', 'CHANGE'),
+    ('APPROVED', 'CHANGE'),
+    ('REJECTED', 'CHANGE'),
+    ('SCHEDULED', 'CHANGE'),
+    ('IMPLEMENTED', 'CHANGE'),
+    ('REVIEWED', 'CHANGE');
 
--- Insertion des statuts spécifiques aux projets
+-- Statuts pour REQUEST
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('INITIATED', 'PROJECT'),          -- Projet initié
-    ('PLANNING', 'PROJECT'),           -- En phase de planification
-    ('EXECUTING', 'PROJECT'),          -- En phase d'exécution
-    ('MONITORING', 'PROJECT'),         -- En phase de surveillance
-    ('COMPLETED', 'PROJECT');          -- Projet terminé
+    ('SUBMITTED', 'REQUEST'),
+    ('APPROVED_REQUEST', 'REQUEST'),
+    ('REJECTED_REQUEST', 'REQUEST'),
+    ('FULFILLED', 'REQUEST');
 
--- Insertion des statuts spécifiques aux sprints
+-- Statuts pour PROJECT
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('PLANNED', 'SPRINT'),             -- Sprint planifié
-    ('ACTIVE', 'SPRINT'),              -- Sprint actif
-    ('CLOSED', 'SPRINT'),              -- Sprint fermé
-    ('DRAFT', 'SPRINT'),               -- Sprint en brouillon
-    ('CANCELLED', 'SPRINT');           -- Sprint annulé
+    ('INITIATED', 'PROJECT'),
+    ('PLANNING', 'PROJECT'),
+    ('EXECUTING', 'PROJECT'),
+    ('MONITORING', 'PROJECT'),
+    ('COMPLETED', 'PROJECT');
 
--- Insertion des statuts spécifiques aux epics
+-- Statuts pour SPRINT
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('IN_PREPARATION', 'EPIC'),        -- Epic en préparation
-    ('OPEN', 'EPIC'),                  -- Epic ouvert
-    ('IN_PROGRESS', 'EPIC'),           -- Epic en cours
-    ('DONE', 'EPIC'),                  -- Epic terminé
-    ('CANCELLED', 'EPIC'),             -- Epic annulé
-    ('ARCHIVED', 'EPIC');              -- Epic archivé
+    ('PLANNED', 'SPRINT'),
+    ('ACTIVE', 'SPRINT'),
+    ('CLOSED', 'SPRINT'),
+    ('DRAFT', 'SPRINT'),
+    ('CANCELLED', 'SPRINT');
 
--- Insertion des statuts spécifiques aux user stories
+-- Statuts pour EPIC
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('DRAFT', 'USER_STORY'),           -- User story en brouillon
-    ('TO_DO', 'USER_STORY'),           -- User story à faire
-    ('READY', 'USER_STORY'),           -- User story prête
-    ('IN_PROGRESS', 'USER_STORY'),     -- User story en cours
-    ('IN_REVIEW', 'USER_STORY'),       -- User story en revue
-    ('IN_TEST', 'USER_STORY'),         -- User story en test
-    ('DONE', 'USER_STORY'),            -- User story terminée
-    ('CANCELLED', 'USER_STORY');       -- User story annulée
+    ('IN_PREPARATION', 'EPIC'),
+    ('OPEN', 'EPIC'),
+    ('IN_PROGRESS', 'EPIC'),
+    ('DONE', 'EPIC'),
+    ('CANCELLED', 'EPIC'),
+    ('ARCHIVED', 'EPIC');
 
--- Insertion des statuts spécifiques aux défauts (defects)
+-- Statuts pour USER_STORY
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('NEW', 'DEFECT'),                 -- Défaut nouveau
-    ('TRIAGE', 'DEFECT'),              -- Défaut en triage
-    ('ACKNOWLEDGED', 'DEFECT'),        -- Défaut reconnu
-    ('IN_PROGRESS', 'DEFECT'),         -- Défaut en cours de correction
-    ('IN_REVIEW', 'DEFECT'),           -- Défaut en revue
-    ('IN_TEST', 'DEFECT'),             -- Défaut en test
-    ('RESOLVED', 'DEFECT'),            -- Défaut résolu
-    ('CLOSED', 'DEFECT'),              -- Défaut fermé
-    ('REOPENED', 'DEFECT'),            -- Défaut réouvert
-    ('CANCELLED', 'DEFECT');           -- Défaut annulé
+    ('DRAFT', 'USER_STORY'),
+    ('TO_DO', 'USER_STORY'),
+    ('READY', 'USER_STORY'),
+    ('IN_PROGRESS', 'USER_STORY'),
+    ('IN_REVIEW', 'USER_STORY'),
+    ('IN_TEST', 'USER_STORY'),
+    ('DONE', 'USER_STORY'),
+    ('CANCELLED', 'USER_STORY');
 
--- Insertion des statuts spécifiques aux tâches (tasks)
+-- Statuts pour DEFECT
 INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
-    ('NEW', 'TASK'),                   -- Tâche nouvelle
-    ('ASSIGNED', 'TASK'),              -- Tâche assignée
-    ('IN_PROGRESS', 'TASK'),           -- Tâche en cours
-    ('PENDING', 'TASK'),               -- Tâche en attente
-    ('RESOLVED', 'TASK'),              -- Tâche résolue
-    ('CLOSED', 'TASK'),                -- Tâche fermée
-    ('CANCELLED', 'TASK'),             -- Tâche annulée
-    ('REOPENED', 'TASK');              -- Tâche réouverte
+    ('NEW', 'DEFECT'),
+    ('TRIAGE', 'DEFECT'),
+    ('ACKNOWLEDGED', 'DEFECT'),
+    ('IN_PROGRESS', 'DEFECT'),
+    ('IN_REVIEW', 'DEFECT'),
+    ('IN_TEST', 'DEFECT'),
+    ('RESOLVED', 'DEFECT'),
+    ('CLOSED', 'DEFECT'),
+    ('REOPENED', 'DEFECT'),
+    ('CANCELLED', 'DEFECT');
 
--- Insertion des traductions en français
+-- Statuts pour TASK
+INSERT INTO configuration.ticket_status (code, rel_ticket_type) VALUES
+    ('NEW', 'TASK'),
+    ('ASSIGNED', 'TASK'),
+    ('IN_PROGRESS', 'TASK'),
+    ('PENDING', 'TASK'),
+    ('RESOLVED', 'TASK'),
+    ('CLOSED', 'TASK'),
+    ('CANCELLED', 'TASK'),
+    ('REOPENED', 'TASK');
+
+-- ============================================================================
+-- SECTION 2: TRADUCTIONS FRANÇAISES (fr)
+-- ============================================================================
+
+-- Traductions pour INCIDENT
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'fr', 
     CASE code
-        -- Statuts génériques
-        WHEN 'NEW' THEN 'Nouveau'
-        WHEN 'ASSIGNED' THEN 'Assigné'
-        WHEN 'IN_PROGRESS' THEN 'En cours'
-        WHEN 'PENDING' THEN 'En attente'
-        WHEN 'RESOLVED' THEN 'Résolu'
-        WHEN 'CLOSED' THEN 'Fermé'
-        WHEN 'CANCELLED' THEN 'Annulé'
-        WHEN 'REOPENED' THEN 'Réouvert'
-        -- Statuts spécifiques aux incidents
         WHEN 'INVESTIGATING' THEN 'En investigation'
         WHEN 'DIAGNOSED' THEN 'Diagnostiqué'
         WHEN 'WORKAROUND' THEN 'Solution de contournement'
         WHEN 'ESCALATED' THEN 'Escaladé'
-        -- Statuts spécifiques aux problèmes
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'INCIDENT';
+
+-- Traductions pour PROBLEM
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'fr', 
+    CASE code
         WHEN 'ROOT_CAUSE_IDENTIFIED' THEN 'Cause racine identifiée'
         WHEN 'SOLUTION_PROPOSED' THEN 'Solution proposée'
         WHEN 'SOLUTION_APPROVED' THEN 'Solution approuvée'
         WHEN 'KNOWN_ERROR' THEN 'Erreur connue'
-        -- Statuts spécifiques aux changements
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'PROBLEM';
+
+-- Traductions pour CHANGE
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'fr', 
+    CASE code
         WHEN 'REQUESTED' THEN 'Demandé'
         WHEN 'EVALUATED' THEN 'Évalué'
         WHEN 'APPROVED' THEN 'Approuvé'
@@ -126,31 +139,66 @@ SELECT uuid, 'fr',
         WHEN 'SCHEDULED' THEN 'Planifié'
         WHEN 'IMPLEMENTED' THEN 'Implémenté'
         WHEN 'REVIEWED' THEN 'Revu'
-        -- Statuts spécifiques aux demandes
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'CHANGE';
+
+-- Traductions pour REQUEST
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'fr', 
+    CASE code
         WHEN 'SUBMITTED' THEN 'Soumis'
         WHEN 'APPROVED_REQUEST' THEN 'Demande approuvée'
         WHEN 'REJECTED_REQUEST' THEN 'Demande rejetée'
         WHEN 'FULFILLED' THEN 'Satisfait'
-        -- Statuts spécifiques aux projets
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'REQUEST';
+
+-- Traductions pour PROJECT
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'fr', 
+    CASE code
         WHEN 'INITIATED' THEN 'Initié'
         WHEN 'PLANNING' THEN 'En planification'
         WHEN 'EXECUTING' THEN 'En exécution'
         WHEN 'MONITORING' THEN 'En surveillance'
         WHEN 'COMPLETED' THEN 'Terminé'
-        -- Statuts spécifiques aux sprints
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'PROJECT';
+
+-- Traductions pour SPRINT
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'fr', 
+    CASE code
         WHEN 'PLANNED' THEN 'Planifié'
         WHEN 'ACTIVE' THEN 'Actif'
         WHEN 'CLOSED' THEN 'Fermé'
         WHEN 'DRAFT' THEN 'Brouillon'
         WHEN 'CANCELLED' THEN 'Annulé'
-        -- Statuts spécifiques aux epics
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'SPRINT';
+
+-- Traductions pour EPIC
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'fr', 
+    CASE code
         WHEN 'IN_PREPARATION' THEN 'En préparation'
         WHEN 'OPEN' THEN 'Ouvert'
         WHEN 'IN_PROGRESS' THEN 'En cours'
         WHEN 'DONE' THEN 'Terminé'
         WHEN 'CANCELLED' THEN 'Annulé'
         WHEN 'ARCHIVED' THEN 'Archivé'
-        -- Statuts spécifiques aux user stories
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'EPIC';
+
+-- Traductions pour USER_STORY
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'fr', 
+    CASE code
         WHEN 'DRAFT' THEN 'Brouillon'
         WHEN 'TO_DO' THEN 'À faire'
         WHEN 'READY' THEN 'Prête'
@@ -161,9 +209,9 @@ SELECT uuid, 'fr',
         WHEN 'CANCELLED' THEN 'Annulée'
     END
 FROM configuration.ticket_status
-WHERE rel_ticket_type != 'DEFECT';
+WHERE rel_ticket_type = 'USER_STORY';
 
--- Traductions françaises pour les défauts (DEFECT)
+-- Traductions pour DEFECT
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'fr', 
     CASE code
@@ -181,30 +229,54 @@ SELECT uuid, 'fr',
 FROM configuration.ticket_status
 WHERE rel_ticket_type = 'DEFECT';
 
--- Insertion des traductions en anglais
+-- Traductions pour TASK
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'fr', 
+    CASE code
+        WHEN 'NEW' THEN 'Nouvelle'
+        WHEN 'ASSIGNED' THEN 'Assignée'
+        WHEN 'IN_PROGRESS' THEN 'En cours'
+        WHEN 'PENDING' THEN 'En attente'
+        WHEN 'RESOLVED' THEN 'Résolue'
+        WHEN 'CLOSED' THEN 'Fermée'
+        WHEN 'CANCELLED' THEN 'Annulée'
+        WHEN 'REOPENED' THEN 'Réouverte'
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'TASK';
+
+-- ============================================================================
+-- SECTION 3: TRADUCTIONS ANGLAISES (en)
+-- ============================================================================
+
+-- Traductions pour INCIDENT
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'en', 
     CASE code
-        -- Statuts génériques
-        WHEN 'NEW' THEN 'New'
-        WHEN 'ASSIGNED' THEN 'Assigned'
-        WHEN 'IN_PROGRESS' THEN 'In Progress'
-        WHEN 'PENDING' THEN 'Pending'
-        WHEN 'RESOLVED' THEN 'Resolved'
-        WHEN 'CLOSED' THEN 'Closed'
-        WHEN 'CANCELLED' THEN 'Cancelled'
-        WHEN 'REOPENED' THEN 'Reopened'
-        -- Statuts spécifiques aux incidents
         WHEN 'INVESTIGATING' THEN 'Investigating'
         WHEN 'DIAGNOSED' THEN 'Diagnosed'
         WHEN 'WORKAROUND' THEN 'Workaround Applied'
         WHEN 'ESCALATED' THEN 'Escalated'
-        -- Statuts spécifiques aux problèmes
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'INCIDENT';
+
+-- Traductions pour PROBLEM
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'en', 
+    CASE code
         WHEN 'ROOT_CAUSE_IDENTIFIED' THEN 'Root Cause Identified'
         WHEN 'SOLUTION_PROPOSED' THEN 'Solution Proposed'
         WHEN 'SOLUTION_APPROVED' THEN 'Solution Approved'
         WHEN 'KNOWN_ERROR' THEN 'Known Error'
-        -- Statuts spécifiques aux changements
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'PROBLEM';
+
+-- Traductions pour CHANGE
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'en', 
+    CASE code
         WHEN 'REQUESTED' THEN 'Requested'
         WHEN 'EVALUATED' THEN 'Evaluated'
         WHEN 'APPROVED' THEN 'Approved'
@@ -212,31 +284,66 @@ SELECT uuid, 'en',
         WHEN 'SCHEDULED' THEN 'Scheduled'
         WHEN 'IMPLEMENTED' THEN 'Implemented'
         WHEN 'REVIEWED' THEN 'Reviewed'
-        -- Statuts spécifiques aux demandes
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'CHANGE';
+
+-- Traductions pour REQUEST
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'en', 
+    CASE code
         WHEN 'SUBMITTED' THEN 'Submitted'
         WHEN 'APPROVED_REQUEST' THEN 'Request Approved'
         WHEN 'REJECTED_REQUEST' THEN 'Request Rejected'
         WHEN 'FULFILLED' THEN 'Fulfilled'
-        -- Statuts spécifiques aux projets
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'REQUEST';
+
+-- Traductions pour PROJECT
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'en', 
+    CASE code
         WHEN 'INITIATED' THEN 'Initiated'
         WHEN 'PLANNING' THEN 'Planning'
         WHEN 'EXECUTING' THEN 'Executing'
         WHEN 'MONITORING' THEN 'Monitoring'
         WHEN 'COMPLETED' THEN 'Completed'
-        -- Statuts spécifiques aux sprints
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'PROJECT';
+
+-- Traductions pour SPRINT
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'en', 
+    CASE code
         WHEN 'PLANNED' THEN 'Planned'
         WHEN 'ACTIVE' THEN 'Active'
         WHEN 'CLOSED' THEN 'Closed'
         WHEN 'DRAFT' THEN 'Draft'
         WHEN 'CANCELLED' THEN 'Cancelled'
-        -- Statuts spécifiques aux epics
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'SPRINT';
+
+-- Traductions pour EPIC
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'en', 
+    CASE code
         WHEN 'IN_PREPARATION' THEN 'In Preparation'
         WHEN 'OPEN' THEN 'Open'
         WHEN 'IN_PROGRESS' THEN 'In Progress'
         WHEN 'DONE' THEN 'Done'
         WHEN 'CANCELLED' THEN 'Cancelled'
         WHEN 'ARCHIVED' THEN 'Archived'
-        -- Statuts spécifiques aux user stories
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'EPIC';
+
+-- Traductions pour USER_STORY
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'en', 
+    CASE code
         WHEN 'DRAFT' THEN 'Draft'
         WHEN 'TO_DO' THEN 'To Do'
         WHEN 'READY' THEN 'Ready'
@@ -247,9 +354,9 @@ SELECT uuid, 'en',
         WHEN 'CANCELLED' THEN 'Cancelled'
     END
 FROM configuration.ticket_status
-WHERE rel_ticket_type != 'DEFECT';
+WHERE rel_ticket_type = 'USER_STORY';
 
--- Traductions anglaises pour les défauts (DEFECT)
+-- Traductions pour DEFECT
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'en', 
     CASE code
@@ -267,30 +374,54 @@ SELECT uuid, 'en',
 FROM configuration.ticket_status
 WHERE rel_ticket_type = 'DEFECT';
 
--- Insertion des traductions en espagnol
+-- Traductions pour TASK
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'en', 
+    CASE code
+        WHEN 'NEW' THEN 'New'
+        WHEN 'ASSIGNED' THEN 'Assigned'
+        WHEN 'IN_PROGRESS' THEN 'In Progress'
+        WHEN 'PENDING' THEN 'Pending'
+        WHEN 'RESOLVED' THEN 'Resolved'
+        WHEN 'CLOSED' THEN 'Closed'
+        WHEN 'CANCELLED' THEN 'Cancelled'
+        WHEN 'REOPENED' THEN 'Reopened'
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'TASK';
+
+-- ============================================================================
+-- SECTION 4: TRADUCTIONS ESPAGNOLES (es)
+-- ============================================================================
+
+-- Traductions pour INCIDENT
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'es', 
     CASE code
-        -- Statuts génériques
-        WHEN 'NEW' THEN 'Nuevo'
-        WHEN 'ASSIGNED' THEN 'Asignado'
-        WHEN 'IN_PROGRESS' THEN 'En progreso'
-        WHEN 'PENDING' THEN 'Pendiente'
-        WHEN 'RESOLVED' THEN 'Resuelto'
-        WHEN 'CLOSED' THEN 'Cerrado'
-        WHEN 'CANCELLED' THEN 'Cancelado'
-        WHEN 'REOPENED' THEN 'Reabierto'
-        -- Statuts spécifiques aux incidents
         WHEN 'INVESTIGATING' THEN 'Investigando'
         WHEN 'DIAGNOSED' THEN 'Diagnosticado'
         WHEN 'WORKAROUND' THEN 'Solución provisional'
         WHEN 'ESCALATED' THEN 'Escalado'
-        -- Statuts spécifiques aux problèmes
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'INCIDENT';
+
+-- Traductions pour PROBLEM
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'es', 
+    CASE code
         WHEN 'ROOT_CAUSE_IDENTIFIED' THEN 'Causa raíz identificada'
         WHEN 'SOLUTION_PROPOSED' THEN 'Solución propuesta'
         WHEN 'SOLUTION_APPROVED' THEN 'Solución aprobada'
         WHEN 'KNOWN_ERROR' THEN 'Error conocido'
-        -- Statuts spécifiques aux changements
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'PROBLEM';
+
+-- Traductions pour CHANGE
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'es', 
+    CASE code
         WHEN 'REQUESTED' THEN 'Solicitado'
         WHEN 'EVALUATED' THEN 'Evaluado'
         WHEN 'APPROVED' THEN 'Aprobado'
@@ -298,31 +429,66 @@ SELECT uuid, 'es',
         WHEN 'SCHEDULED' THEN 'Programado'
         WHEN 'IMPLEMENTED' THEN 'Implementado'
         WHEN 'REVIEWED' THEN 'Revisado'
-        -- Statuts spécifiques aux demandes
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'CHANGE';
+
+-- Traductions pour REQUEST
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'es', 
+    CASE code
         WHEN 'SUBMITTED' THEN 'Enviado'
         WHEN 'APPROVED_REQUEST' THEN 'Solicitud aprobada'
         WHEN 'REJECTED_REQUEST' THEN 'Solicitud rechazada'
         WHEN 'FULFILLED' THEN 'Completado'
-        -- Statuts spécifiques aux projets
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'REQUEST';
+
+-- Traductions pour PROJECT
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'es', 
+    CASE code
         WHEN 'INITIATED' THEN 'Iniciado'
         WHEN 'PLANNING' THEN 'Planificación'
         WHEN 'EXECUTING' THEN 'Ejecución'
         WHEN 'MONITORING' THEN 'Monitoreo'
         WHEN 'COMPLETED' THEN 'Completado'
-        -- Statuts spécifiques aux sprints
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'PROJECT';
+
+-- Traductions pour SPRINT
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'es', 
+    CASE code
         WHEN 'PLANNED' THEN 'Planificado'
         WHEN 'ACTIVE' THEN 'Activo'
         WHEN 'CLOSED' THEN 'Cerrado'
         WHEN 'DRAFT' THEN 'Borrador'
         WHEN 'CANCELLED' THEN 'Cancelado'
-        -- Statuts spécifiques aux epics
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'SPRINT';
+
+-- Traductions pour EPIC
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'es', 
+    CASE code
         WHEN 'IN_PREPARATION' THEN 'En preparación'
         WHEN 'OPEN' THEN 'Abierto'
         WHEN 'IN_PROGRESS' THEN 'En progreso'
         WHEN 'DONE' THEN 'Completado'
         WHEN 'CANCELLED' THEN 'Cancelado'
         WHEN 'ARCHIVED' THEN 'Archivado'
-        -- Statuts spécifiques aux user stories
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'EPIC';
+
+-- Traductions pour USER_STORY
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'es', 
+    CASE code
         WHEN 'DRAFT' THEN 'Borrador'
         WHEN 'TO_DO' THEN 'Por hacer'
         WHEN 'READY' THEN 'Listo'
@@ -333,9 +499,9 @@ SELECT uuid, 'es',
         WHEN 'CANCELLED' THEN 'Cancelado'
     END
 FROM configuration.ticket_status
-WHERE rel_ticket_type != 'DEFECT';
+WHERE rel_ticket_type = 'USER_STORY';
 
--- Traductions espagnoles pour les défauts (DEFECT)
+-- Traductions pour DEFECT
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'es', 
     CASE code
@@ -353,30 +519,54 @@ SELECT uuid, 'es',
 FROM configuration.ticket_status
 WHERE rel_ticket_type = 'DEFECT';
 
--- Insertion des traductions en portugais
+-- Traductions pour TASK
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'es', 
+    CASE code
+        WHEN 'NEW' THEN 'Nueva'
+        WHEN 'ASSIGNED' THEN 'Asignada'
+        WHEN 'IN_PROGRESS' THEN 'En progreso'
+        WHEN 'PENDING' THEN 'Pendiente'
+        WHEN 'RESOLVED' THEN 'Resuelta'
+        WHEN 'CLOSED' THEN 'Cerrada'
+        WHEN 'CANCELLED' THEN 'Cancelada'
+        WHEN 'REOPENED' THEN 'Reabierta'
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'TASK';
+
+-- ============================================================================
+-- SECTION 5: TRADUCTIONS PORTUGAISES (pt)
+-- ============================================================================
+
+-- Traductions pour INCIDENT
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'pt', 
     CASE code
-        -- Statuts génériques
-        WHEN 'NEW' THEN 'Novo'
-        WHEN 'ASSIGNED' THEN 'Atribuído'
-        WHEN 'IN_PROGRESS' THEN 'Em andamento'
-        WHEN 'PENDING' THEN 'Pendente'
-        WHEN 'RESOLVED' THEN 'Resolvido'
-        WHEN 'CLOSED' THEN 'Fechado'
-        WHEN 'CANCELLED' THEN 'Cancelado'
-        WHEN 'REOPENED' THEN 'Reaberto'
-        -- Statuts spécifiques aux incidents
         WHEN 'INVESTIGATING' THEN 'Investigando'
         WHEN 'DIAGNOSED' THEN 'Diagnosticado'
         WHEN 'WORKAROUND' THEN 'Solução alternativa'
         WHEN 'ESCALATED' THEN 'Escalado'
-        -- Statuts spécifiques aux problèmes
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'INCIDENT';
+
+-- Traductions pour PROBLEM
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'pt', 
+    CASE code
         WHEN 'ROOT_CAUSE_IDENTIFIED' THEN 'Causa raiz identificada'
         WHEN 'SOLUTION_PROPOSED' THEN 'Solução proposta'
         WHEN 'SOLUTION_APPROVED' THEN 'Solução aprovada'
         WHEN 'KNOWN_ERROR' THEN 'Erro conhecido'
-        -- Statuts spécifiques aux changements
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'PROBLEM';
+
+-- Traductions pour CHANGE
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'pt', 
+    CASE code
         WHEN 'REQUESTED' THEN 'Solicitado'
         WHEN 'EVALUATED' THEN 'Avaliado'
         WHEN 'APPROVED' THEN 'Aprovado'
@@ -384,31 +574,66 @@ SELECT uuid, 'pt',
         WHEN 'SCHEDULED' THEN 'Agendado'
         WHEN 'IMPLEMENTED' THEN 'Implementado'
         WHEN 'REVIEWED' THEN 'Revisado'
-        -- Statuts spécifiques aux demandes
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'CHANGE';
+
+-- Traductions pour REQUEST
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'pt', 
+    CASE code
         WHEN 'SUBMITTED' THEN 'Submetido'
         WHEN 'APPROVED_REQUEST' THEN 'Solicitação aprovada'
         WHEN 'REJECTED_REQUEST' THEN 'Solicitação rejeitada'
         WHEN 'FULFILLED' THEN 'Atendido'
-        -- Statuts spécifiques aux projets
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'REQUEST';
+
+-- Traductions pour PROJECT
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'pt', 
+    CASE code
         WHEN 'INITIATED' THEN 'Iniciado'
         WHEN 'PLANNING' THEN 'Planejamento'
         WHEN 'EXECUTING' THEN 'Execução'
         WHEN 'MONITORING' THEN 'Monitoramento'
         WHEN 'COMPLETED' THEN 'Concluído'
-        -- Statuts spécifiques aux sprints
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'PROJECT';
+
+-- Traductions pour SPRINT
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'pt', 
+    CASE code
         WHEN 'PLANNED' THEN 'Planejado'
         WHEN 'ACTIVE' THEN 'Ativo'
         WHEN 'CLOSED' THEN 'Fechado'
         WHEN 'DRAFT' THEN 'Rascunho'
         WHEN 'CANCELLED' THEN 'Cancelado'
-        -- Statuts spécifiques aux epics
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'SPRINT';
+
+-- Traductions pour EPIC
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'pt', 
+    CASE code
         WHEN 'IN_PREPARATION' THEN 'Em preparação'
         WHEN 'OPEN' THEN 'Aberto'
         WHEN 'IN_PROGRESS' THEN 'Em andamento'
         WHEN 'DONE' THEN 'Concluído'
         WHEN 'CANCELLED' THEN 'Cancelado'
         WHEN 'ARCHIVED' THEN 'Arquivado'
-        -- Statuts spécifiques aux user stories
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'EPIC';
+
+-- Traductions pour USER_STORY
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'pt', 
+    CASE code
         WHEN 'DRAFT' THEN 'Rascunho'
         WHEN 'TO_DO' THEN 'A fazer'
         WHEN 'READY' THEN 'Pronto'
@@ -419,9 +644,9 @@ SELECT uuid, 'pt',
         WHEN 'CANCELLED' THEN 'Cancelado'
     END
 FROM configuration.ticket_status
-WHERE rel_ticket_type != 'DEFECT';
+WHERE rel_ticket_type = 'USER_STORY';
 
--- Traductions portugaises pour les défauts (DEFECT)
+-- Traductions pour DEFECT
 INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
 SELECT uuid, 'pt', 
     CASE code
@@ -438,5 +663,21 @@ SELECT uuid, 'pt',
     END
 FROM configuration.ticket_status
 WHERE rel_ticket_type = 'DEFECT';
+
+-- Traductions pour TASK
+INSERT INTO translations.ticket_status_translation (ticket_status_uuid, lang, label)
+SELECT uuid, 'pt', 
+    CASE code
+        WHEN 'NEW' THEN 'Nova'
+        WHEN 'ASSIGNED' THEN 'Atribuída'
+        WHEN 'IN_PROGRESS' THEN 'Em andamento'
+        WHEN 'PENDING' THEN 'Pendente'
+        WHEN 'RESOLVED' THEN 'Resolvida'
+        WHEN 'CLOSED' THEN 'Fechada'
+        WHEN 'CANCELLED' THEN 'Cancelada'
+        WHEN 'REOPENED' THEN 'Reaberta'
+    END
+FROM configuration.ticket_status
+WHERE rel_ticket_type = 'TASK';
 
 COMMIT;
