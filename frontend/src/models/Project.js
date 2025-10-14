@@ -205,7 +205,7 @@ export class Project {
         type: 'sPickList',
         placeholder: 'project.issue_type_scheme_id_placeholder',
         sourceEndPoint: `symptoms?lang=${userProfileStore.language}`,
-        displayedLabel: 'libelle',
+        displayedLabel: 'label',
         targetEndPoint: 'tickets',
         ressourceEndPoint: null,//permet de faire un PATCH
         fieldName: 'issue_type_scheme_id',
