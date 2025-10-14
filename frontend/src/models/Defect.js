@@ -158,7 +158,8 @@ export class Defect {
           { key: 'job_role', label: 'person.job_role', visible: true },
           { key: 'email', label: 'person.email', visible: true }
         ],
-        required: isRequired('requested_for_uuid')
+        required: isRequired('requested_for_uuid'),
+        lazySearch: true
       },
       requested_by_uuid: {
         label: 'defect.reported_by',
@@ -174,7 +175,8 @@ export class Defect {
           { key: 'job_role', label: 'person.job_role', visible: true },
           { key: 'email', label: 'person.email', visible: true }
         ],
-        required: isRequired('requested_by_uuid')
+        required: isRequired('requested_by_uuid'),
+        lazySearch: true
       },
       project_id: {
         label: 'defect.project_id',

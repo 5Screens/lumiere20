@@ -11,10 +11,9 @@ router.use((req, res, next) => {
     next();
 });
 
-// GET /api/v1/persons - Now always paginated
+// GET /api/v1/persons - Lazy search with max 10 results
 router.get('/', 
-    validate({ query: getPersonsPaginatedQuerySchema }),
-    controller.getPersonsPaginated
+    controller.getPersonsLazySearch
 );
 
 // GET /api/v1/persons/:uuid

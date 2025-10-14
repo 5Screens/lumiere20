@@ -22,72 +22,74 @@ function getTableWithSchema(tableName) {
 }
 
 /**
- * Get all persons from the database with additional statistics
- * @param {string} [lang] - Optional language parameter for localization
- * @returns {Promise<Array>} Array of persons with person_name field and statistics
+ * Get persons with lazy search - returns max 10 results filtered by search query
+ * @param {string} [searchQuery] - Optional search term to filter persons
+ * @returns {Promise<Array>} Array of max 10 persons matching the search
  */
-const getAllPersons = async (lang) => {
+const getPersonsLazySearch = async (searchQuery = '') => {
     try {
-        logger.info('[SERVICE] - Getting all persons with statistics');
+        logger.info(`[SERVICE] - Getting persons with lazy search: "${searchQuery}"`);
+        
+        let whereClause = '';
+        const queryParams = [];
+        
+        // If search query is provided, build WHERE clause
+        if (searchQuery && searchQuery.trim()) {
+            const searchTerm = `%${searchQuery.trim()}%`;
+            whereClause = `
+                WHERE (
+                    LOWER(p.first_name) LIKE LOWER($1) OR
+                    LOWER(p.last_name) LIKE LOWER($1) OR
+                    LOWER(p.job_role) LIKE LOWER($1) OR
+                    LOWER(p.internal_id) LIKE LOWER($1) OR
+                    LOWER(p.email) LIKE LOWER($1) OR
+                    LOWER(p.floor) LIKE LOWER($1) OR
+                    LOWER(p.room) LIKE LOWER($1) OR
+                    LOWER(p.business_phone) LIKE LOWER($1) OR
+                    LOWER(p.business_mobile_phone) LIKE LOWER($1) OR
+                    LOWER(p.personal_mobile_phone) LIKE LOWER($1) OR
+                    LOWER(e.name) LIKE LOWER($1) OR
+                    LOWER(l.name) LIKE LOWER($1)
+                )
+            `;
+            queryParams.push(searchTerm);
+        }
+        
         const query = `
-            SELECT p.*, 
-                   p.first_name || ' ' || p.last_name AS person_name,
-                   
-                   -- Informations de l'entité de référence
-                   e.name as ref_entity_name,
-                   
-                   -- Informations de la localisation
-                   l.name as ref_location_name,
-                   
-                   -- Informations du manager approbateur
-                   manager.first_name || ' ' || manager.last_name as ref_approving_manager_name,
-                   
-                   -- Nombre de tickets enregistrés (requested_for_uuid)
-                   (SELECT COUNT(*) 
-                    FROM core.tickets t 
-                    WHERE t.requested_for_uuid = p.uuid) AS raised_tickets_count,
-                   
-                   -- Nombre de groupes dont la personne est membre
-                   (SELECT COUNT(*) 
-                    FROM configuration.rel_persons_groups rpg 
-                    WHERE rpg.rel_member = p.uuid) AS member_of_group_count,
-                   
-                   -- Nombre de tickets assignés à la personne
-                   (SELECT COUNT(*) 
-                    FROM core.rel_tickets_groups_persons rtgp 
-                    WHERE rtgp.rel_assigned_to_person = p.uuid 
-                      AND rtgp.type = 'ASSIGNED'
-                      AND rtgp.ended_at IS NULL) AS assigned_tickets_count,
-                   
-                   -- Nombre de tickets observés par la personne
-                   (SELECT COUNT(*) 
-                    FROM core.rel_tickets_groups_persons rtgp 
-                    WHERE rtgp.rel_assigned_to_person = p.uuid 
-                      AND rtgp.type = 'WATCHER'
-                      AND rtgp.ended_at IS NULL) AS watched_tickets_count,
-                   
-                   -- Nombre d'entités pour lesquelles la personne est approbateur budgétaire
-                   (SELECT COUNT(*) 
-                    FROM configuration.entities e 
-                    WHERE e.budget_approver_uuid = p.uuid) AS budget_approver_count
-                   
+            SELECT 
+                p.uuid,
+                p.first_name,
+                p.last_name,
+                p.first_name || ' ' || p.last_name AS person_name,
+                p.email,
+                p.job_role,
+                p.internal_id,
+                p.floor,
+                p.room,
+                p.business_phone,
+                p.business_mobile_phone,
+                p.personal_mobile_phone,
+                e.name as ref_entity_name,
+                l.name as ref_location_name
             FROM configuration.persons p
             LEFT JOIN configuration.entities e ON p.ref_entity_uuid = e.uuid
             LEFT JOIN configuration.locations l ON p.ref_location_uuid = l.uuid
-            LEFT JOIN configuration.persons manager ON p.ref_approving_manager_uuid = manager.uuid
-            ORDER BY p.updated_at DESC
-            LIMIT 100
+            ${whereClause}
+            ORDER BY p.first_name, p.last_name
+            LIMIT 10
         `;
-        const { rows } = await db.query(query);
-        logger.info(`[SERVICE] - Retrieved ${rows.length} persons with statistics`);
+        
+        const { rows } = await db.query(query, queryParams);
+        logger.info(`[SERVICE] - Retrieved ${rows.length} persons for lazy search`);
         return rows;
     } catch (error) {
-        logger.error('[SERVICE] - Error getting persons with statistics:', error);
+        logger.error('[SERVICE] - Error in lazy search:', error);
         throw error;
     }
 };
 
 /**
+ * DEPRECATED - Use getPersonsLazySearch instead for filtered searches
  * Get persons with pagination support for infinite scroll
  * @param {Object} options - Pagination and filtering options
  * @param {number} [options.offset=0] - Number of records to skip
@@ -98,6 +100,7 @@ const getAllPersons = async (lang) => {
  * @param {string} [options.search=''] - Global search term
  * @param {string} [lang] - Optional language parameter for localization
  * @returns {Promise<Object>} Object with data, total, hasMore, and pagination info
+ * @deprecated
  */
 const getPersonsPaginated = async (options = {}, lang) => {
     try {
@@ -1445,8 +1448,7 @@ const getPersonsFilterValues = async (columnName, searchQuery = null) => {
 };
 
 module.exports = {
-    getAllPersons,
-    getPersonsPaginated,
+    getPersonsLazySearch,
     getPersonByUuid,
     getPersonGroups,
     updatePerson,

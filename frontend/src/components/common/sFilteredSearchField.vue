@@ -220,6 +220,10 @@ const props = defineProps({
   columnsConfig: {
     type: Array,
     default: () => []
+  },
+  lazySearch: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -228,6 +232,12 @@ const emit = defineEmits(['update:modelValue', 'update:success', 'update:error']
 
 // Computed properties
 const filteredItems = computed(() => {
+  // If lazy search is enabled, return items directly (filtering is done server-side)
+  if (props.lazySearch) {
+    return items.value
+  }
+  
+  // Otherwise, filter client-side
   if (!searchQuery.value) return items.value
   
   const query = searchQuery.value.toLowerCase()
@@ -248,8 +258,11 @@ const resolvedEndpoint = computed(() => {
   return props.endpoint
 })
 
+// Debounce timer for lazy search
+let debounceTimer = null
+
 // Methods
-const fetchItems = async () => {
+const fetchItems = async (search = '') => {
   loading.value = true
   error.value = ''
   
@@ -261,7 +274,14 @@ const fetchItems = async () => {
   }
   
   try {
-    const data = await apiService.get(resolvedEndpoint.value)
+    // Build URL with search parameter if lazy search is enabled
+    let url = resolvedEndpoint.value
+    if (props.lazySearch && search) {
+      const separator = url.includes('?') ? '&' : '?'
+      url = `${url}${separator}search=${encodeURIComponent(search)}`
+    }
+    
+    const data = await apiService.get(url)
     items.value = Array.isArray(data) ? data : []
     
     // Si une configuration de colonnes est fournie, l'utiliser
@@ -506,6 +526,22 @@ const isEqual = (obj1, obj2) => {
   return obj1.uuid === obj2.uuid
 }
 
+// Watch for searchQuery changes (with debounce for lazy search)
+watch(searchQuery, (newQuery) => {
+  if (props.lazySearch) {
+    // Clear existing timer
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
+    }
+    
+    // Set new timer for debounced search
+    debounceTimer = setTimeout(() => {
+      console.log(`[sFilteredSearchField] - [${props.fieldName}] Lazy search triggered with query:`, newQuery)
+      fetchItems(newQuery)
+    }, 300)
+  }
+})
+
 // Watch for modelValue changes
 watch(() => props.modelValue, (newValue) => {
   console.log(`[sFilteredSearchField] - [${props.fieldName}] [watch modelValue] New value:`, newValue);
@@ -543,9 +579,15 @@ onMounted(() => {
   console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - ticketData:`, props.ticketData)
   
   // N'appeler fetchItems que si on n'est pas en mode édition
+  // Pour lazy search, on charge les 10 premières personnes par défaut
   if (!props.editMode) {
     console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - Not in edit mode, fetching items`)
-    fetchItems()
+    if (props.lazySearch) {
+      console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - Lazy search enabled, fetching initial items`)
+      fetchItems('')
+    } else {
+      fetchItems()
+    }
   } else {
     console.log(`[sFilteredSearchField] - [${props.fieldName}] onMounted - In edit mode, skipping API call`)
     

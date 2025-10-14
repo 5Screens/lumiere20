@@ -2,19 +2,21 @@ const service = require('./service');
 const logger = require('../../../config/logger');
 
 /**
- * Get all persons
+ * Get persons with lazy search (max 10 results)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const getPersons = async (req, res) => {
+const getPersonsLazySearch = async (req, res) => {
     try {
-        logger.info('Controller - Getting all persons');
-        const { lang } = req.query;
-        const persons = await service.getAllPersons(lang);
-        logger.info('Controller - Successfully retrieved persons');
+        const { search = '' } = req.query;
+        logger.info(`[CONTROLLER] - Getting persons with lazy search: "${search}"`);
+        
+        const persons = await service.getPersonsLazySearch(search);
+        
+        logger.info(`[CONTROLLER] - Successfully retrieved ${persons.length} persons`);
         res.json(persons);
     } catch (error) {
-        logger.error('Controller - Error getting persons:', error);
+        logger.error('[CONTROLLER] - Error in lazy search:', error);
         res.status(500).json({ 
             error: 'Internal server error',
             details: error.message 
@@ -23,9 +25,10 @@ const getPersons = async (req, res) => {
 };
 
 /**
- * Get persons with pagination support for infinite scroll
+ * DEPRECATED - Get persons with pagination support for infinite scroll
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
+ * @deprecated
  */
 const getPersonsPaginated = async (req, res) => {
     try {
@@ -425,8 +428,7 @@ const getPersonsFilterValues = async (req, res) => {
 };
 
 module.exports = {
-    getPersons,
-    getPersonsPaginated,
+    getPersonsLazySearch,
     getPersonByUuid,
     getPersonGroups,
     updatePerson,

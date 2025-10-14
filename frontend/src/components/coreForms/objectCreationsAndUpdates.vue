@@ -94,6 +94,7 @@
             :ticketData="formData"
             @update:modelValue="handleFieldChange(fieldName, $event)"
             :resetable="field.resetable"
+            :lazySearch="field.lazySearch"
           />
           
           <!-- Liste de sélection -->
