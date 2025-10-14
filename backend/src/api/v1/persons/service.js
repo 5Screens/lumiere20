@@ -41,15 +41,7 @@ const getPersonsLazySearch = async (searchQuery = '') => {
                     LOWER(p.first_name) LIKE LOWER($1) OR
                     LOWER(p.last_name) LIKE LOWER($1) OR
                     LOWER(p.job_role) LIKE LOWER($1) OR
-                    LOWER(p.internal_id) LIKE LOWER($1) OR
-                    LOWER(p.email) LIKE LOWER($1) OR
-                    LOWER(p.floor) LIKE LOWER($1) OR
-                    LOWER(p.room) LIKE LOWER($1) OR
-                    LOWER(p.business_phone) LIKE LOWER($1) OR
-                    LOWER(p.business_mobile_phone) LIKE LOWER($1) OR
-                    LOWER(p.personal_mobile_phone) LIKE LOWER($1) OR
-                    LOWER(e.name) LIKE LOWER($1) OR
-                    LOWER(l.name) LIKE LOWER($1)
+                    LOWER(p.email) LIKE LOWER($1)
                 )
             `;
             queryParams.push(searchTerm);
