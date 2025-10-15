@@ -310,7 +310,8 @@ export class Problem {
         ressourceEndPoint: 'watchers',
         target_uuid: null,
         pickedItems: null,
-        required: isRequired('watch_list')
+        required: isRequired('watch_list'),
+        lazySearch: true
       },
       impact: {
         label: 'problem.impact',

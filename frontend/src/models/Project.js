@@ -253,6 +253,7 @@ export class Project {
         target_uuid: null,
         pickedItems: null,
         required: isRequired('access_to_users'),
+        lazySearch: true,
         visible: function(obj) {
           return obj && obj.visibility === 'RESTRICTED';
         }

@@ -659,7 +659,8 @@ export class Change {
         ressourceEndPoint: 'watchers',
         target_uuid: null,
         pickedItems: null,
-        required: isRequired('watch_list')
+        required: isRequired('watch_list'),
+        lazySearch: true
       },
       
       // Clôture et évaluation finale
