@@ -65,7 +65,6 @@
               type="text" 
               v-model="searchQuery" 
               class="s-filtered-search-field__search-input"
-              placeholder="Search..."
               @click.stop
               ref="searchInput"
             />
