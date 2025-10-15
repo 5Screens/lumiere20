@@ -174,7 +174,8 @@ export class Group {
           { key: 'person_name', label: 'person_name', visible: true },
           { key: 'job_role', label: 'person.job_role', visible: true },
           { key: 'active', label: 'person.active', visible: true }
-        ]
+        ],
+        lazySearch: true
       },
       rel_manager: {
         name: 'rel_manager',
@@ -190,7 +191,8 @@ export class Group {
           { key: 'person_name', label: 'person_name', visible: true },
           { key: 'job_role', label: 'person.job_role', visible: true },
           { key: 'active', label: 'person.active', visible: true }
-        ]
+        ],
+        lazySearch: true
       },
       /*rel_schedule: {
         name: 'rel_schedule',

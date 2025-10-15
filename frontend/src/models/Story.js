@@ -134,7 +134,8 @@ export class Story {
           { key: 'first_name', label: 'person.first_name', visible: true },
           { key: 'last_name', label: 'person.last_name', visible: true }
         ],
-        required: isRequired('requested_for_uuid')
+        required: isRequired('requested_for_uuid'),
+        lazySearch: true
       },
       story_points: {
         label: 'story.story_points',

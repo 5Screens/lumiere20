@@ -193,7 +193,8 @@ export class Task {
           { key: 'job_role', label: 'person.job_role', visible: true },
           { key: 'email', label: 'person.email', visible: true }
         ],
-        required: isRequired('requested_by_uuid')
+        required: isRequired('requested_by_uuid'),
+        lazySearch: true
       },
       requested_for_uuid: {
         label: 'task.requested_for',
@@ -210,7 +211,8 @@ export class Task {
           { key: 'job_role', label: 'person.job_role', visible: true },
           { key: 'email', label: 'person.email', visible: true }
         ],
-        required: isRequired('requested_for_uuid')
+        required: isRequired('requested_for_uuid'),
+        lazySearch: true
       },
       assigned_to_group: {
         label: 'task.assigned_team_label',

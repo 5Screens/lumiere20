@@ -237,7 +237,8 @@ export class Incident {
           { key: 'email', label: 'person.email', visible: true }
         ],
         displayFieldAtInitInEditMode: 'requested_by_name',
-        required: isRequired('requested_by_uuid')
+        required: isRequired('requested_by_uuid'),
+        lazySearch: true
       },
       requested_for_uuid: {
         label: 'incident.requested_for',
@@ -253,7 +254,8 @@ export class Incident {
           { key: 'email', label: 'person.email', visible: true }
         ],
         displayFieldAtInitInEditMode: 'requested_for_name',
-        required: isRequired('requested_for_uuid')
+        required: isRequired('requested_for_uuid'),
+        lazySearch: true
       },
       configuration_item_uuid: {
         label: 'incident.configuration_item',

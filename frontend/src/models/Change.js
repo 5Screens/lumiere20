@@ -318,7 +318,8 @@ export class Change {
           { key: 'first_name', label: 'person.first_name', visible: true },
           { key: 'last_name', label: 'person.last_name', visible: true }
         ],
-        required: isRequired('requested_for_uuid')
+        required: isRequired('requested_for_uuid'),
+        lazySearch: true
       },
       title: {
         label: 'change.title',

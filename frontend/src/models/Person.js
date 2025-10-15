@@ -367,7 +367,8 @@ export class Person {
           { key: 'person_name', label: 'person.person_name', visible: true },
           { key: 'job_role', label: 'person.job_role', visible: true },
           { key: 'active', label: 'person.active', visible: true }
-        ]
+        ],
+        lazySearch: true
       },
       business_phone: {
         name: 'business_phone',

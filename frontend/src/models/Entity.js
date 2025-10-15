@@ -226,7 +226,8 @@ export class Entity {
           { key: 'job_role', label: 'person.job_role', visible: true },
           { key: 'email', label: 'person.email', visible: true }
         ],
-        required: isRequired('budget_approver_uuid')
+        required: isRequired('budget_approver_uuid'),
+        lazySearch: true
       }
     };
   }
