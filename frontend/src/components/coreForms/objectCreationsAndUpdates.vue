@@ -114,6 +114,7 @@
             :ressourceEndPoint="field.ressourceEndPoint"
             :fieldName="field.fieldName"
             :visible="typeof field.visible === 'function' ? field.visible(formData) : (field.visible !== undefined ? field.visible : true)"
+            :lazySearch="field.lazySearch"
           />
           
           <!-- Sélecteur de date -->

@@ -19,26 +19,42 @@
             :placeholder="placeholder" 
           />
         </div>
-        <div class="s-pick-list__list-container">
+        <div 
+          class="s-pick-list__list-container"
+          @scroll="handleScroll"
+        >
           <!-- Loading spinner -->
           <div v-if="sourceLoading" class="s-pick-list__loading">
             <div class="s-pick-list__spinner"></div>
           </div>
           
           <!-- Liste des items disponibles -->
-          <ul v-else-if="filteredSourceItems.length > 0" class="s-pick-list__list">
-            <li 
-              v-for="item in filteredSourceItems" 
-              :key="item.uuid"
-              :class="[
-                's-pick-list__item', 
-                { 's-pick-list__item--selected': isSourceItemSelected(item) }
-              ]"
-              @click="toggleSourceItemSelection(item)"
-            >
-              <span class="s-pick-list__item-text">{{ getItemLabel(item) }}</span>
-            </li>
-          </ul>
+          <div v-else-if="filteredSourceItems.length > 0">
+            <ul class="s-pick-list__list">
+              <li 
+                v-for="item in filteredSourceItems" 
+                :key="item.uuid"
+                :class="[
+                  's-pick-list__item', 
+                  { 's-pick-list__item--selected': isSourceItemSelected(item) }
+                ]"
+                @click="toggleSourceItemSelection(item)"
+              >
+                <span class="s-pick-list__item-text">{{ getItemLabel(item) }}</span>
+              </li>
+            </ul>
+            
+            <!-- Loading more indicator -->
+            <div v-if="isLoadingMore" class="s-pick-list__loading-more">
+              <div class="s-pick-list__spinner-small"></div>
+              <span>Loading more...</span>
+            </div>
+            
+            <!-- End of results indicator -->
+            <div v-else-if="!hasMore && lazySearch && filteredSourceItems.length > 0" class="s-pick-list__end-message">
+              <span>All results loaded ({{ totalResults }} total)</span>
+            </div>
+          </div>
           
           <!-- Message si aucun item -->
           <div v-else class="s-pick-list__no-items">
@@ -184,6 +200,11 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: 'Search...'
+  },
+  // Activer la recherche lazy avec pagination
+  lazySearch: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -202,8 +223,20 @@ const targetLoading = ref(false);
 const error = ref('');
 const valueChanged = ref(false);
 
+// Pagination state for lazy search
+const currentPage = ref(1);
+const hasMore = ref(true);
+const isLoadingMore = ref(false);
+const totalResults = ref(0);
+
 // Computed properties
 const filteredSourceItems = computed(() => {
+  // If lazy search is enabled, return items directly (filtering is done server-side)
+  if (props.lazySearch) {
+    return sourceItems.value;
+  }
+  
+  // Otherwise, filter client-side
   if (!sourceSearchQuery.value) return sourceItems.value;
   
   const query = sourceSearchQuery.value.toLowerCase();
@@ -310,23 +343,92 @@ function checkForChanges() {
   }
 }
 
-async function fetchSourceItems() {
-  sourceLoading.value = true;
+async function fetchSourceItems(search = '', page = 1, append = false) {
+  // Use isLoadingMore for pagination, sourceLoading for initial load
+  if (append) {
+    isLoadingMore.value = true;
+  } else {
+    sourceLoading.value = true;
+  }
   error.value = '';
   
   try {
-    const response = await apiService.get(props.sourceEndPoint);
+    // Build URL with search parameter if lazy search is enabled
+    let url = props.sourceEndPoint;
+    if (props.lazySearch) {
+      const separator = url.includes('?') ? '&' : '?';
+      const params = [];
+      if (search) params.push(`search=${encodeURIComponent(search)}`);
+      params.push(`page=${page}`);
+      params.push(`limit=10`);
+      url = `${url}${separator}${params.join('&')}`;
+    }
     
-    // Filtrer les items qui sont déjà dans la liste cible
-    const targetUuids = targetItems.value.map(item => item.uuid);
-    sourceItems.value = response.filter(item => !targetUuids.includes(item.uuid));
+    const response = await apiService.get(url);
+    
+    // Handle paginated response for lazy search
+    if (props.lazySearch && response.data && response.pagination) {
+      const newItems = Array.isArray(response.data) ? response.data : [];
+      
+      // Filtrer les items qui sont déjà dans la liste cible
+      const targetUuids = targetItems.value.map(item => item.uuid);
+      const filteredNewItems = newItems.filter(item => !targetUuids.includes(item.uuid));
+      
+      if (append) {
+        // Append new items to existing ones
+        sourceItems.value = [...sourceItems.value, ...filteredNewItems];
+      } else {
+        // Replace items
+        sourceItems.value = filteredNewItems;
+      }
+      
+      // Update pagination state
+      currentPage.value = response.pagination.page;
+      hasMore.value = response.pagination.hasMore;
+      totalResults.value = response.pagination.total;
+      
+      console.log(`[sPickList] Loaded page ${page}, hasMore: ${hasMore.value}, total: ${totalResults.value}`);
+    } else {
+      // Non-paginated response (legacy behavior)
+      const data = Array.isArray(response) ? response : (response.data || []);
+      
+      // Filtrer les items qui sont déjà dans la liste cible
+      const targetUuids = targetItems.value.map(item => item.uuid);
+      sourceItems.value = data.filter(item => !targetUuids.includes(item.uuid));
+    }
   } catch (err) {
     console.error('Error fetching source items:', err);
     error.value = `Failed to load available items: ${err.message}`;
   } finally {
     sourceLoading.value = false;
+    isLoadingMore.value = false;
   }
 }
+
+const loadMore = async () => {
+  if (!props.lazySearch || !hasMore.value || isLoadingMore.value || sourceLoading.value) {
+    return;
+  }
+  
+  console.log(`[sPickList] Loading more items, page ${currentPage.value + 1}`);
+  await fetchSourceItems(sourceSearchQuery.value, currentPage.value + 1, true);
+}
+
+// Handle scroll event for infinite scroll
+const handleScroll = (event) => {
+  if (!props.lazySearch) return;
+  
+  const { scrollTop, scrollHeight, clientHeight } = event.target;
+  const threshold = 50; // pixels before the bottom
+  
+  // Check if user has scrolled near the bottom
+  if (scrollHeight - scrollTop - clientHeight < threshold) {
+    loadMore();
+  }
+}
+
+// Debounce timer for lazy search
+let debounceTimer = null;
 
 async function loadTargetItems() {
   // Cette fonction est appelée uniquement en mode édition
@@ -494,6 +596,26 @@ function cancelChanges() {
   // Mettre à jour le modèle
   updateModelValue();
 }
+
+// Watch for sourceSearchQuery changes (with debounce for lazy search)
+watch(sourceSearchQuery, (newQuery) => {
+  if (props.lazySearch) {
+    // Clear existing timer
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    
+    // Reset pagination when search query changes
+    currentPage.value = 1;
+    hasMore.value = true;
+    
+    // Set new timer for debounced search
+    debounceTimer = setTimeout(() => {
+      console.log(`[sPickList] Lazy search triggered with query:`, newQuery);
+      fetchSourceItems(newQuery, 1, false);
+    }, 300);
+  }
+});
 
 // Initialisation
 onMounted(async () => {

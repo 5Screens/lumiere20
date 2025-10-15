@@ -328,6 +328,7 @@ export class Incident {
         target_uuid: null,
         pickedItems: null,
         required: isRequired('watch_list'),
+        lazySearch: true
       },
       impact: {
         label: 'incident.impact',
