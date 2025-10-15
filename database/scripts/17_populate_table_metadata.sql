@@ -39,7 +39,7 @@ INSERT INTO administration.table_metadata (
  false, 0),
 
 -- first_name
-('persons', 'first_name', 'persons.first_name', 'Prénom de la personne',
+('persons', 'first_name', 'person.first_name', 'Prénom de la personne',
  'string', false, NULL,
  true, true, true,
  'search', '{"minChars": 2, "debounce": 300}'::jsonb,

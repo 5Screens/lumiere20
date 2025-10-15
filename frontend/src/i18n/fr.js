@@ -1178,7 +1178,7 @@ export default {
     locations_list_helper_text:'Utilisez les flèches pour ajouter ou supprimer des sous-emplacements',
     locations_list_placeholder:'Rechercher un sous-emplacements'
   },
-  persons: {
+  person: {
     person_name: 'Nom de la personne',
     person_name_placeholder: 'Entrez le nom de la personne',
     first_name: 'Prénom',

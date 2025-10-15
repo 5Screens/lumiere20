@@ -56,9 +56,9 @@ export class Person {
     
     // Définition des champs requis avec leurs labels
     this.requiredFields = [
-      { name: 'first_name', label: 'persons.first_name' },
-      { name: 'last_name', label: 'persons.last_name' },
-      { name: 'email', label: 'persons.email' }
+      { name: 'first_name', label: 'person.first_name' },
+      { name: 'last_name', label: 'person.last_name' },
+      { name: 'email', label: 'person.email' }
     ];
   }
 
@@ -71,33 +71,33 @@ export class Person {
     
     return [
       { key: 'uuid', label: t('common.id'), type: 'uuid' },
-      { key: 'person_name', label: t('persons.person_name'), type: 'text' },
-      { key: 'internal_id', label: t('persons.internal_id'), type: 'text' },
-      { key: 'job_role', label: t('persons.job_role'), type: 'text' },
-      { key: 'ref_entity_name', label: t('persons.entity'), type: 'text' },
-      { key: 'email', label: t('persons.email'), type: 'text' },
-      { key: 'business_phone', label: t('persons.business_phone'), type: 'text' },
-      { key: 'business_mobile_phone', label: t('persons.business_mobile_phone'), type: 'text' },
-      { key: 'personal_mobile_phone', label: t('persons.personal_mobile_phone'), type: 'text' },
-      { key: 'ref_location_name', label: t('persons.location'), type: 'text' },
-      { key: 'floor', label: t('persons.floor'), type: 'text' },
-      { key: 'room', label: t('persons.room'), type: 'text' },
-      { key: 'date_format', label: t('persons.date_format'), type: 'text' },
-      { key: 'ref_approving_manager_name', label: t('persons.approving_manager'), type: 'text' },
-      { key: 'photo', label: t('persons.photo'), type: 'text' },
-      { key: 'active', label: t('persons.active'), type: 'boolean' },
-      { key: 'critical_user', label: t('persons.critical_user'), type: 'boolean' },
-      { key: 'external_user', label: t('persons.external_user'), type: 'boolean' },
-      { key: 'locked_out', label: t('persons.locked_out'), type: 'boolean' },
-      { key: 'password_needs_reset', label: t('persons.password_needs_reset'), type: 'boolean' },
-      { key: 'notification', label: t('persons.notification'), type: 'boolean' },
-      { key: 'time_zone', label: t('persons.time_zone'), type: 'text' },
-      { key: 'language', label: t('persons.language'), type: 'text' },
-      { key: 'raised_tickets_count', label: t('persons.raised_tickets_count'), type: 'number' },
-      { key: 'member_of_group_count', label: t('persons.member_of_group_count'), type: 'number' },
-      { key: 'assigned_tickets_count', label: t('persons.assigned_tickets_count'), type: 'number' },
-      { key: 'watched_tickets_count', label: t('persons.watched_tickets_count'), type: 'number' },
-      { key: 'budget_approver_count', label: t('persons.budget_approver_count'), type: 'number' },
+      { key: 'person_name', label: t('person.person_name'), type: 'text' },
+      { key: 'internal_id', label: t('person.internal_id'), type: 'text' },
+      { key: 'job_role', label: t('person.job_role'), type: 'text' },
+      { key: 'ref_entity_name', label: t('person.entity'), type: 'text' },
+      { key: 'email', label: t('person.email'), type: 'text' },
+      { key: 'business_phone', label: t('person.business_phone'), type: 'text' },
+      { key: 'business_mobile_phone', label: t('person.business_mobile_phone'), type: 'text' },
+      { key: 'personal_mobile_phone', label: t('person.personal_mobile_phone'), type: 'text' },
+      { key: 'ref_location_name', label: t('person.location'), type: 'text' },
+      { key: 'floor', label: t('person.floor'), type: 'text' },
+      { key: 'room', label: t('person.room'), type: 'text' },
+      { key: 'date_format', label: t('person.date_format'), type: 'text' },
+      { key: 'ref_approving_manager_name', label: t('person.approving_manager'), type: 'text' },
+      { key: 'photo', label: t('person.photo'), type: 'text' },
+      { key: 'active', label: t('person.active'), type: 'boolean' },
+      { key: 'critical_user', label: t('person.critical_user'), type: 'boolean' },
+      { key: 'external_user', label: t('person.external_user'), type: 'boolean' },
+      { key: 'locked_out', label: t('person.locked_out'), type: 'boolean' },
+      { key: 'password_needs_reset', label: t('person.password_needs_reset'), type: 'boolean' },
+      { key: 'notification', label: t('person.notification'), type: 'boolean' },
+      { key: 'time_zone', label: t('person.time_zone'), type: 'text' },
+      { key: 'language', label: t('person.language'), type: 'text' },
+      { key: 'raised_tickets_count', label: t('person.raised_tickets_count'), type: 'number' },
+      { key: 'member_of_group_count', label: t('person.member_of_group_count'), type: 'number' },
+      { key: 'assigned_tickets_count', label: t('person.assigned_tickets_count'), type: 'number' },
+      { key: 'watched_tickets_count', label: t('person.watched_tickets_count'), type: 'number' },
+      { key: 'budget_approver_count', label: t('person.budget_approver_count'), type: 'number' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
@@ -175,53 +175,53 @@ export class Person {
     
     const fields = {
       uuid: {
-        label: 'persons.uuid',
+        label: 'person.uuid',
         type: 'sTextField',
-        placeholder: 'persons.uuid_placeholder',
+        placeholder: 'person.uuid_placeholder',
         disabled: true
       },
       created_at: {
-        label: 'persons.created_at',
+        label: 'person.created_at',
         type: 'sTextField',
-        placeholder: 'persons.created_at_placeholder',
+        placeholder: 'person.created_at_placeholder',
         disabled: true
       },
       updated_at: {
-        label: 'persons.updated_at',
+        label: 'person.updated_at',
         type: 'sTextField',
-        placeholder: 'persons.updated_at_placeholder',
+        placeholder: 'person.updated_at_placeholder',
         disabled: true
       },
       first_name: {
         name: 'first_name',
-        label: 'persons.first_name',
+        label: 'person.first_name',
         type: 'sTextField',
         required: true,
-        placeholder: 'persons.first_name_placeholder',
+        placeholder: 'person.first_name_placeholder',
         maxlength: 100
       },
       last_name: {
         name: 'last_name',
-        label: 'persons.last_name',
+        label: 'person.last_name',
         type: 'sTextField',
         required: true,
-        placeholder: 'persons.last_name_placeholder',
+        placeholder: 'person.last_name_placeholder',
         maxlength: 100
       },
       job_role: {
         name: 'job_role',
-        label: 'persons.job_role',
+        label: 'person.job_role',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.job_role_placeholder',
+        placeholder: 'person.job_role_placeholder',
         maxlength: 255
       },
       ref_entity_uuid: {
         name: 'ref_entity_uuid',
-        label: 'persons.entity',
+        label: 'person.entity',
         type: 'sFilteredSearchField',
         required: false,
-        placeholder: 'persons.entity_placeholder',
+        placeholder: 'person.entity_placeholder',
         endpoint: 'entities',
         displayField: 'name',
         valueField: 'uuid',
@@ -234,94 +234,94 @@ export class Person {
       },
       email: {
         name: 'email',
-        label: 'persons.email',
+        label: 'person.email',
         type: 'sTextField',
         inputType: 'email',
         required: true,
-        placeholder: 'persons.email_placeholder',
+        placeholder: 'person.email_placeholder',
         maxlength: 255
       },
       password: {
         name: 'password',
-        label: 'persons.password',
+        label: 'person.password',
         type: 'sTextField',
         inputType: 'password',
         required: false,
-        placeholder: 'persons.password_placeholder',
+        placeholder: 'person.password_placeholder',
         maxlength: 255
       },
       password_needs_reset: {
         name: 'password_needs_reset',
-        label: 'persons.password_needs_reset',
+        label: 'person.password_needs_reset',
         type: 'sToggleField',
         required: false,
-        placeholder: 'persons.password_needs_reset_placeholder'
+        placeholder: 'person.password_needs_reset_placeholder'
       },
       locked_out: {
         name: 'locked_out',
-        label: 'persons.locked_out',
+        label: 'person.locked_out',
         type: 'sToggleField',
         required: false,
-        placeholder: 'persons.locked_out_placeholder'
+        placeholder: 'person.locked_out_placeholder'
       },
       active: {
         name: 'active',
-        label: 'persons.active',
+        label: 'person.active',
         type: 'sToggleField',
         required: false,
-        placeholder: 'persons.active_placeholder'
+        placeholder: 'person.active_placeholder'
       },
       critical_user: {
         name: 'critical_user',
-        label: 'persons.critical_user',
+        label: 'person.critical_user',
         type: 'sToggleField',
         required: false,
-        placeholder: 'persons.critical_user_placeholder'
+        placeholder: 'person.critical_user_placeholder'
       },
       external_user: {
         name: 'external_user',
-        label: 'persons.external_user',
+        label: 'person.external_user',
         type: 'sToggleField',
         required: false,
-        placeholder: 'persons.external_user_placeholder'
+        placeholder: 'person.external_user_placeholder'
       },
       date_format: {
         name: 'date_format',
-        label: 'persons.date_format',
+        label: 'person.date_format',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.date_format_placeholder',
+        placeholder: 'person.date_format_placeholder',
         maxlength: 50
       },
       internal_id: {
         name: 'internal_id',
-        label: 'persons.internal_id',
+        label: 'person.internal_id',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.internal_id_placeholder',
+        placeholder: 'person.internal_id_placeholder',
         maxlength: 100
       },
       notification: {
         name: 'notification',
-        label: 'persons.notification',
+        label: 'person.notification',
         type: 'sToggleField',
         required: false,
-        placeholder: 'persons.notification_placeholder'
+        placeholder: 'person.notification_placeholder'
       },
       time_zone: {
         name: 'time_zone',
-        label: 'persons.time_zone',
+        label: 'person.time_zone',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.time_zone_placeholder',
+        placeholder: 'person.time_zone_placeholder',
         maxlength: 100
       },
       ref_location_uuid: {
         name: 'ref_location_uuid',
-        label: 'persons.location',
+        label: 'person.location',
         type: 'sFilteredSearchField',
         required: false,
-        placeholder: 'persons.location_placeholder',
+        placeholder: 'person.location_placeholder',
         endpoint: () => {
           const userProfileStore = useUserProfileStore();
           return `locations?lang=${userProfileStore.language}`;
@@ -339,89 +339,89 @@ export class Person {
       },
       floor: {
         name: 'floor',
-        label: 'persons.floor',
+        label: 'person.floor',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.floor_placeholder',
+        placeholder: 'person.floor_placeholder',
         maxlength: 50
       },
       room: {
         name: 'room',
-        label: 'persons.room',
+        label: 'person.room',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.room_placeholder',
+        placeholder: 'person.room_placeholder',
         maxlength: 50
       },
       ref_approving_manager_uuid: {
         name: 'ref_approving_manager_uuid',
-        label: 'persons.approving_manager',
+        label: 'person.approving_manager',
         type: 'sFilteredSearchField',
         required: false,
-        placeholder: 'persons.approving_manager_placeholder',
+        placeholder: 'person.approving_manager_placeholder',
         endpoint: 'persons',
         displayField: 'person_name',
         valueField: 'uuid',
         displayFieldAtInitInEditMode: 'approving_manager_name',
         columnsConfig: [
-          { key: 'person_name', label: 'persons.person_name', visible: true },
-          { key: 'job_role', label: 'persons.job_role', visible: true },
-          { key: 'active', label: 'persons.active', visible: true }
+          { key: 'person_name', label: 'person.person_name', visible: true },
+          { key: 'job_role', label: 'person.job_role', visible: true },
+          { key: 'active', label: 'person.active', visible: true }
         ]
       },
       business_phone: {
         name: 'business_phone',
-        label: 'persons.business_phone',
+        label: 'person.business_phone',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.business_phone_placeholder',
+        placeholder: 'person.business_phone_placeholder',
         maxlength: 50
       },
       business_mobile_phone: {
         name: 'business_mobile_phone',
-        label: 'persons.business_mobile_phone',
+        label: 'person.business_mobile_phone',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.business_mobile_phone_placeholder',
+        placeholder: 'person.business_mobile_phone_placeholder',
         maxlength: 50
       },
       personal_mobile_phone: {
         name: 'personal_mobile_phone',
-        label: 'persons.personal_mobile_phone',
+        label: 'person.personal_mobile_phone',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.personal_mobile_phone_placeholder',
+        placeholder: 'person.personal_mobile_phone_placeholder',
         maxlength: 50
       },
       language: {
         name: 'language',
-        label: 'persons.language',
+        label: 'person.language',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.language_placeholder',
+        placeholder: 'person.language_placeholder',
         maxlength: 10
       },
       photo: {
         name: 'photo',
-        label: 'persons.photo',
+        label: 'person.photo',
         type: 'sTextField',
         required: false,
-        placeholder: 'persons.photo_placeholder'
+        placeholder: 'person.photo_placeholder'
       },
       /*roles: {
         name: 'roles',
-        label: 'persons.roles',
+        label: 'person.roles',
         type: 'sRichTextEditor',
         required: false,
-        placeholder: 'persons.roles_placeholder',
-        helperText: 'persons.roles_helper_text'
+        placeholder: 'person.roles_placeholder',
+        helperText: 'person.roles_helper_text'
       },*/
       // Listes d'objets liés avec sPickList
       member_of_group_list: {
-        label: 'persons.member_of_group_list',
+        label: 'person.member_of_group_list',
         type: "sPickList",
-        helperText: 'persons.member_of_group_list_helper_text',
-        placeholder: 'persons.member_of_group_list_placeholder',
+        helperText: 'person.member_of_group_list_helper_text',
+        placeholder: 'person.member_of_group_list_placeholder',
         sourceEndPoint: "groups",
         displayedLabel: "group_name",
         targetEndPoint: "persons",
@@ -432,10 +432,10 @@ export class Person {
         required: false,
       },
       budget_approver_list: {
-        label: 'persons.budget_approver_list',
+        label: 'person.budget_approver_list',
         type: "sPickList",
-        helperText: 'persons.budget_approver_list_helper_text',
-        placeholder: 'persons.budget_approver_list_placeholder',
+        helperText: 'person.budget_approver_list_helper_text',
+        placeholder: 'person.budget_approver_list_placeholder',
         sourceEndPoint: "entities",
         displayedLabel: "name",
         targetEndPoint: "persons",
@@ -446,9 +446,9 @@ export class Person {
         required: false,
       },
       raised_tickets_list: {
-        label: 'persons.raised_tickets_list',
+        label: 'person.raised_tickets_list',
         type: "sTableField",
-        helperText: 'persons.raised_tickets_list_helper_text',
+        helperText: 'person.raised_tickets_list_helper_text',
         required: false,
         columns: [
           { key: 'title', label: 'tickets.title', visible: true },
@@ -459,12 +459,12 @@ export class Person {
         ],
         itemsPerPage: 5,
         showPagination: true,
-        noDataText: 'persons.no_raised_tickets'
+        noDataText: 'person.no_raised_tickets'
       },
       assigned_tickets_list: {
-        label: 'persons.assigned_tickets_list',
+        label: 'person.assigned_tickets_list',
         type: "sTableField",
-        helperText: 'persons.assigned_tickets_list_helper_text',
+        helperText: 'person.assigned_tickets_list_helper_text',
         required: false,
         columns: [
           { key: 'title', label: 'tickets.title', visible: true },
@@ -475,12 +475,12 @@ export class Person {
         ],
         itemsPerPage: 5,
         showPagination: true,
-        noDataText: 'persons.no_assigned_tickets'
+        noDataText: 'person.no_assigned_tickets'
       },
       watched_tickets_list: {
-        label: 'persons.watched_tickets_list',
+        label: 'person.watched_tickets_list',
         type: "sTableField",
-        helperText: 'persons.watched_tickets_list_helper_text',
+        helperText: 'person.watched_tickets_list_helper_text',
         required: false,
         columns: [
           { key: 'title', label: 'tickets.title', visible: true },
@@ -491,7 +491,7 @@ export class Person {
         ],
         itemsPerPage: 5,
         showPagination: true,
-        noDataText: 'persons.no_watched_tickets'
+        noDataText: 'person.no_watched_tickets'
       }
     }
 
