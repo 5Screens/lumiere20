@@ -15,5 +15,12 @@ export default createI18n({
   legacy: false,
   // La locale sera définie dans main.js à partir du store
   fallbackLocale: 'en', // langue de secours
-  messages
+  messages,
+  missingWarn: false, // Disable missing key warnings in console
+  fallbackWarn: false, // Disable fallback warnings in console
+  missing: (locale, key) => {
+    // Return the key itself when translation is missing
+    // This makes it easier to spot missing translations visually
+    return key;
+  }
 })
