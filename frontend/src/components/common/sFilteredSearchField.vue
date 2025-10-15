@@ -76,7 +76,11 @@
           </div>
           
           <!-- Table with data -->
-          <div v-else-if="filteredItems.length > 0" class="s-filtered-search-field__table-container">
+          <div 
+            v-else-if="filteredItems.length > 0" 
+            class="s-filtered-search-field__table-container"
+            @scroll="handleScroll"
+          >
             <table class="s-filtered-search-field__table">
               <thead>
                 <tr>
@@ -96,6 +100,17 @@
                 </tr>
               </tbody>
             </table>
+            
+            <!-- Loading more indicator -->
+            <div v-if="isLoadingMore" class="s-filtered-search-field__loading-more">
+              <div class="s-filtered-search-field__spinner-small"></div>
+              <span>Loading more...</span>
+            </div>
+            
+            <!-- End of results indicator -->
+            <div v-else-if="!hasMore && lazySearch && filteredItems.length > 0" class="s-filtered-search-field__end-message">
+              <span>All results loaded ({{ totalResults }} total)</span>
+            </div>
           </div>
           
           <!-- No results message -->
@@ -144,6 +159,12 @@ const visibleColumns = computed(() => {
 })
 const error = ref('')
 const searchInput = ref(null)
+
+// Pagination state for lazy search
+const currentPage = ref(1)
+const hasMore = ref(true)
+const isLoadingMore = ref(false)
+const totalResults = ref(0)
 
 // Computed property to check if field is required and empty
 const showRequiredError = computed(() => {
@@ -261,13 +282,19 @@ const resolvedEndpoint = computed(() => {
 let debounceTimer = null
 
 // Methods
-const fetchItems = async (search = '') => {
-  loading.value = true
+const fetchItems = async (search = '', page = 1, append = false) => {
+  // Use isLoadingMore for pagination, loading for initial load
+  if (append) {
+    isLoadingMore.value = true
+  } else {
+    loading.value = true
+  }
   error.value = ''
   
   // Skip fetching if endpoint is null or undefined
   if (!resolvedEndpoint.value) {
     loading.value = false
+    isLoadingMore.value = false
     items.value = []
     return
   }
@@ -275,13 +302,40 @@ const fetchItems = async (search = '') => {
   try {
     // Build URL with search parameter if lazy search is enabled
     let url = resolvedEndpoint.value
-    if (props.lazySearch && search) {
+    if (props.lazySearch) {
       const separator = url.includes('?') ? '&' : '?'
-      url = `${url}${separator}search=${encodeURIComponent(search)}`
+      const params = []
+      if (search) params.push(`search=${encodeURIComponent(search)}`)
+      params.push(`page=${page}`)
+      params.push(`limit=10`)
+      url = `${url}${separator}${params.join('&')}`
     }
     
-    const data = await apiService.get(url)
-    items.value = Array.isArray(data) ? data : []
+    const response = await apiService.get(url)
+    
+    // Handle paginated response for lazy search
+    if (props.lazySearch && response.data && response.pagination) {
+      const newItems = Array.isArray(response.data) ? response.data : []
+      
+      if (append) {
+        // Append new items to existing ones
+        items.value = [...items.value, ...newItems]
+      } else {
+        // Replace items
+        items.value = newItems
+      }
+      
+      // Update pagination state
+      currentPage.value = response.pagination.page
+      hasMore.value = response.pagination.hasMore
+      totalResults.value = response.pagination.total
+      
+      console.log(`[sFilteredSearchField] - [${props.fieldName}] Loaded page ${page}, hasMore: ${hasMore.value}, total: ${totalResults.value}`)
+    } else {
+      // Non-paginated response (legacy behavior)
+      const data = Array.isArray(response) ? response : (response.data || [])
+      items.value = data
+    }
     
     // Si une configuration de colonnes est fournie, l'utiliser
     if (props.columnsConfig && props.columnsConfig.length > 0) {
@@ -315,10 +369,34 @@ const fetchItems = async (search = '') => {
       findAndSelectInitialItem()
     }
   } catch (err) {
-    console.error("Error fetching items:", err)
-    error.value = `Failed to load items: ${err.message}`
+    console.error('Error fetching items:', err)
+    error.value = 'Failed to load items'
+    items.value = []
   } finally {
     loading.value = false
+    isLoadingMore.value = false
+  }
+}
+
+const loadMore = async () => {
+  if (!props.lazySearch || !hasMore.value || isLoadingMore.value || loading.value) {
+    return
+  }
+  
+  console.log(`[sFilteredSearchField] - [${props.fieldName}] Loading more items, page ${currentPage.value + 1}`)
+  await fetchItems(searchQuery.value, currentPage.value + 1, true)
+}
+
+// Handle scroll event for infinite scroll
+const handleScroll = (event) => {
+  if (!props.lazySearch) return
+  
+  const { scrollTop, scrollHeight, clientHeight } = event.target
+  const threshold = 50 // pixels before the bottom
+  
+  // Check if user has scrolled near the bottom
+  if (scrollHeight - scrollTop - clientHeight < threshold) {
+    loadMore()
   }
 }
 
@@ -533,10 +611,14 @@ watch(searchQuery, (newQuery) => {
       clearTimeout(debounceTimer)
     }
     
+    // Reset pagination when search query changes
+    currentPage.value = 1
+    hasMore.value = true
+    
     // Set new timer for debounced search
     debounceTimer = setTimeout(() => {
       console.log(`[sFilteredSearchField] - [${props.fieldName}] Lazy search triggered with query:`, newQuery)
-      fetchItems(newQuery)
+      fetchItems(newQuery, 1, false)
     }, 300)
   }
 })

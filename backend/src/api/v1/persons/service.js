@@ -22,13 +22,20 @@ function getTableWithSchema(tableName) {
 }
 
 /**
- * Get persons with lazy search - returns max 10 results filtered by search query
+ * Get persons with lazy search - returns paginated results filtered by search query
  * @param {string} [searchQuery] - Optional search term to filter persons
- * @returns {Promise<Array>} Array of max 10 persons matching the search
+ * @param {number} [page=1] - Page number (1-indexed)
+ * @param {number} [limit=10] - Number of results per page
+ * @returns {Promise<Object>} Object with data and pagination metadata
  */
-const getPersonsLazySearch = async (searchQuery = '') => {
+const getPersonsLazySearch = async (searchQuery = '', page = 1, limit = 10) => {
     try {
-        logger.info(`[SERVICE] - Getting persons with lazy search: "${searchQuery}"`);
+        logger.info(`[SERVICE] - Getting persons with lazy search: "${searchQuery}", page: ${page}, limit: ${limit}`);
+        
+        // Validate and sanitize pagination parameters
+        const validPage = Math.max(1, parseInt(page) || 1);
+        const validLimit = Math.min(50, Math.max(1, parseInt(limit) || 10)); // Max 50 per page
+        const offset = (validPage - 1) * validLimit;
         
         let whereClause = '';
         const queryParams = [];
@@ -46,6 +53,15 @@ const getPersonsLazySearch = async (searchQuery = '') => {
             `;
             queryParams.push(searchTerm);
         }
+        
+        // Count total results for pagination
+        const countQuery = `
+            SELECT COUNT(*) as total
+            FROM configuration.persons p
+            ${whereClause}
+        `;
+        const { rows: countRows } = await db.query(countQuery, queryParams);
+        const total = parseInt(countRows[0].total);
         
         const query = `
             SELECT 
@@ -68,12 +84,26 @@ const getPersonsLazySearch = async (searchQuery = '') => {
             LEFT JOIN configuration.locations l ON p.ref_location_uuid = l.uuid
             ${whereClause}
             ORDER BY p.first_name, p.last_name
-            LIMIT 10
+            LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
         `;
         
+        queryParams.push(validLimit, offset);
+        
         const { rows } = await db.query(query, queryParams);
-        logger.info(`[SERVICE] - Retrieved ${rows.length} persons for lazy search`);
-        return rows;
+        
+        const hasMore = offset + rows.length < total;
+        
+        logger.info(`[SERVICE] - Retrieved ${rows.length} persons (page ${validPage}, total: ${total}, hasMore: ${hasMore})`);
+        
+        return {
+            data: rows,
+            pagination: {
+                page: validPage,
+                limit: validLimit,
+                total: total,
+                hasMore: hasMore
+            }
+        };
     } catch (error) {
         logger.error('[SERVICE] - Error in lazy search:', error);
         throw error;

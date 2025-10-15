@@ -2,19 +2,19 @@ const service = require('./service');
 const logger = require('../../../config/logger');
 
 /**
- * Get persons with lazy search (max 10 results)
+ * Get persons with lazy search and pagination
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
 const getPersonsLazySearch = async (req, res) => {
     try {
-        const { search = '' } = req.query;
-        logger.info(`[CONTROLLER] - Getting persons with lazy search: "${search}"`);
+        const { search = '', page = 1, limit = 10 } = req.query;
+        logger.info(`[CONTROLLER] - Getting persons with lazy search: "${search}", page: ${page}, limit: ${limit}`);
         
-        const persons = await service.getPersonsLazySearch(search);
+        const result = await service.getPersonsLazySearch(search, page, limit);
         
-        logger.info(`[CONTROLLER] - Successfully retrieved ${persons.length} persons`);
-        res.json(persons);
+        logger.info(`[CONTROLLER] - Successfully retrieved ${result.data.length} persons (page ${result.pagination.page}, total: ${result.pagination.total})`);
+        res.json(result);
     } catch (error) {
         logger.error('[CONTROLLER] - Error in lazy search:', error);
         res.status(500).json({ 
