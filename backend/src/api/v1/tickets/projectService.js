@@ -63,7 +63,7 @@ const getProjectById = async (uuid, lang = 'en') => {
                         SELECT jsonb_array_elements_text(t.core_extended_attributes->'issue_type_scheme_id') as code
                     ) as symptoms
                     LEFT JOIN configuration.symptoms s ON s.code = symptoms.code
-                    LEFT JOIN translations.symptoms_translation st ON st.symptom_code = symptoms.code AND st.langue = $2
+                    LEFT JOIN translations.symptoms_translation st ON st.symptom_code = symptoms.code AND st.lang = $2
                 ) as issue_type_scheme_id,
                 t.core_extended_attributes->>'visibility' as visibility,
                 
@@ -344,6 +344,12 @@ const updateProject = async (uuid, updateData) => {
  */
 const createProject = async (projectData) => {
     logger.info('[PROJECT SERVICE] Creating new project');
+    logger.info(`[PROJECT SERVICE] writer_uuid received: ${projectData.writer_uuid}`);
+    
+    // Vérifier que writer_uuid est fourni
+    if (!projectData.writer_uuid) {
+        throw new Error('writer_uuid is required for project creation');
+    }
     
     // Définir les champs standards pour un projet
     const standardFields = {

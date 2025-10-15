@@ -6,7 +6,7 @@ import { defineStore } from 'pinia'
 export const useUserProfileStore = defineStore('userProfile', {
   state: () => ({
     // Identifiant unique de l'utilisateur
-    id: 'c6268f38-d6a8-469b-8c76-173140aacb99',
+    id: 'f8f84df5-4323-4eaa-ac06-2f401f9b2545',
     // Nom complet de l'utilisateur
     name: '',
     // Liste des rôles de l'utilisateur (admin, editor, viewer, etc.)
@@ -26,7 +26,7 @@ export const useUserProfileStore = defineStore('userProfile', {
      * @param {Array} data.roles - Rôles de l'utilisateur
      */
     setUser(data) {
-      this.id = 'c6268f38-d6a8-469b-8c76-173140aacb99' // ID fixe pour les tests
+      this.id = 'f8f84df5-4323-4eaa-ac06-2f401f9b2545' // ID fixe pour les tests
       this.name = data.name
       this.roles = data.roles || []
     },
@@ -65,7 +65,7 @@ export const useUserProfileStore = defineStore('userProfile', {
      * Réinitialise toutes les données utilisateur aux valeurs par défaut
      */
     resetUser() {
-      this.id = 'c6268f38-d6a8-469b-8c76-173140aacb99'
+      this.id = 'f8f84df5-4323-4eaa-ac06-2f401f9b2545'
       this.name = ''
       this.roles = []
       this.theme = 'light'
