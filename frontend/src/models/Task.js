@@ -266,7 +266,8 @@ export class Task {
         targetEndPoint: "tickets",
         ressourceEndPoint: 'watchers',
         target_uuid: null,
-        pickedItems: null
+        pickedItems: null,
+        lazySearch: true
       },
       updated_at: {
         label: 'common.modification_date',
