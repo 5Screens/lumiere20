@@ -308,4 +308,171 @@ INSERT INTO administration.table_metadata (
  NULL, NULL, NULL, NULL,
  false, 270);
 
+-- =====================================================
+-- TICKETS TABLE METADATA
+-- =====================================================
+-- Note: This metadata applies to ALL ticket types (TASK, INCIDENT, PROBLEM, CHANGE, etc.)
+-- since they all share the same core.tickets table
+
+-- Clean existing metadata for tickets table
+DELETE FROM administration.table_metadata WHERE table_name = 'tickets';
+
+-- Insert table-level metadata
+INSERT INTO administration.table_metadata (
+    table_name, table_label, table_description, 
+    column_name, data_is_visible, data_is_sortable, data_is_filterable
+) VALUES 
+('tickets', 'Tickets', 'Table des tickets du système (TASK, INCIDENT, PROBLEM, CHANGE, etc.)', NULL, true, false, false);
+
+-- Insert column-level metadata for core.tickets
+INSERT INTO administration.table_metadata (
+    table_name, column_name, column_label, column_description,
+    data_type, data_is_nullable, data_default_value,
+    data_is_visible, data_is_sortable, data_is_filterable,
+    filter_type, filter_options,
+    is_foreign_key, related_table, related_column,
+    form_field_type, form_placeholder, form_required, form_readonly,
+    form_endpoint, form_display_field, form_value_field, form_helper_text,
+    form_visible, form_order
+) VALUES 
+-- uuid
+('tickets', 'uuid', 'ticket.uuid', 'Identifiant unique du ticket',
+ 'uuid', false, 'uuid_generate_v4()',
+ true, false, true,
+ 'search', '{"minChars": 8}'::jsonb,
+ false, NULL, NULL,
+ NULL, NULL, false, true,
+ NULL, NULL, NULL, NULL,
+ false, 0),
+
+-- title
+('tickets', 'title', 'ticket.title', 'Titre du ticket',
+ 'text', false, NULL,
+ true, true, true,
+ 'search', '{"minChars": 2, "debounce": 300}'::jsonb,
+ false, NULL, NULL,
+ 'sTextField', 'Entrez le titre du ticket', true, false,
+ NULL, NULL, NULL, 'Titre descriptif du ticket',
+ true, 10),
+
+-- description
+('tickets', 'description', 'ticket.description', 'Description détaillée',
+ 'text', true, NULL,
+ true, false, true,
+ 'search', '{"minChars": 3, "debounce": 300}'::jsonb,
+ false, NULL, NULL,
+ 'sTextArea', 'Décrivez le ticket en détail', false, false,
+ NULL, NULL, NULL, 'Description complète du ticket',
+ true, 20),
+
+-- ticket_type_code
+('tickets', 'ticket_type_code', 'ticket.type', 'Type de ticket',
+ 'text', false, NULL,
+ true, true, true,
+ 'checkbox', '{"multiple": true}'::jsonb,
+ true, 'configuration.ticket_types', 'code',
+ 'sSelectField', 'Sélectionnez le type', true, false,
+ 'ticket_types', 'label', 'code', 'Type de ticket (TASK, INCIDENT, PROBLEM, etc.)',
+ true, 30),
+
+-- ticket_status_code
+('tickets', 'ticket_status_code', 'ticket.status', 'Statut du ticket',
+ 'text', false, NULL,
+ true, true, true,
+ 'checkbox', '{"multiple": true}'::jsonb,
+ true, 'configuration.ticket_status', 'code',
+ 'sSelectField', 'Sélectionnez le statut', true, false,
+ 'ticket_status', 'label', 'code', 'Statut actuel du ticket',
+ true, 40),
+
+-- requested_by_uuid
+('tickets', 'requested_by_uuid', 'ticket.requested_by', 'Demandé par',
+ 'uuid', true, NULL,
+ true, false, true,
+ 'select', '{"multiple": false}'::jsonb,
+ true, 'configuration.persons', 'uuid',
+ 'sFilteredSearchField', 'Recherchez une personne', false, false,
+ 'persons', 'full_name', 'uuid', 'Personne ayant fait la demande',
+ true, 50),
+
+-- requested_for_uuid
+('tickets', 'requested_for_uuid', 'ticket.requested_for', 'Demandé pour',
+ 'uuid', true, NULL,
+ true, false, true,
+ 'select', '{"multiple": false}'::jsonb,
+ true, 'configuration.persons', 'uuid',
+ 'sFilteredSearchField', 'Recherchez une personne', false, false,
+ 'persons', 'full_name', 'uuid', 'Personne bénéficiaire de la demande',
+ true, 60),
+
+-- writer_uuid
+('tickets', 'writer_uuid', 'ticket.writer', 'Rédacteur',
+ 'uuid', false, NULL,
+ true, false, true,
+ 'select', '{"multiple": false}'::jsonb,
+ true, 'configuration.persons', 'uuid',
+ 'sFilteredSearchField', 'Recherchez un rédacteur', true, false,
+ 'persons', 'full_name', 'uuid', 'Personne ayant créé le ticket',
+ true, 70),
+
+-- configuration_item_uuid
+('tickets', 'configuration_item_uuid', 'ticket.configuration_item', 'Élément de configuration',
+ 'uuid', true, NULL,
+ true, false, true,
+ 'select', '{"multiple": false}'::jsonb,
+ true, 'data.configuration_items', 'uuid',
+ 'sFilteredSearchField', 'Recherchez un CI', false, false,
+ 'configuration_items', 'name', 'uuid', 'CI concerné par le ticket',
+ true, 80),
+
+-- created_at
+('tickets', 'created_at', 'ticket.created_at', 'Date de création',
+ 'date', false, 'CURRENT_TIMESTAMP',
+ true, true, true,
+ 'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
+ false, NULL, NULL,
+ NULL, NULL, false, true,
+ NULL, NULL, NULL, NULL,
+ false, 90),
+
+-- updated_at
+('tickets', 'updated_at', 'ticket.updated_at', 'Date de modification',
+ 'date', false, 'CURRENT_TIMESTAMP',
+ true, true, true,
+ 'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
+ false, NULL, NULL,
+ NULL, NULL, false, true,
+ NULL, NULL, NULL, NULL,
+ false, 100),
+
+-- closed_at
+('tickets', 'closed_at', 'ticket.closed_at', 'Date de clôture',
+ 'date', true, NULL,
+ true, true, true,
+ 'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
+ false, NULL, NULL,
+ NULL, NULL, false, false,
+ NULL, NULL, NULL, NULL,
+ false, 110),
+
+-- core_extended_attributes
+('tickets', 'core_extended_attributes', 'ticket.core_attributes', 'Attributs étendus système',
+ 'json', true, NULL,
+ false, false, false,
+ NULL, NULL,
+ false, NULL, NULL,
+ 'sJsonEditor', '{}', false, false,
+ NULL, NULL, NULL, 'Attributs étendus gérés par le système',
+ false, 120),
+
+-- user_extended_attributes
+('tickets', 'user_extended_attributes', 'ticket.user_attributes', 'Attributs étendus utilisateur',
+ 'json', true, NULL,
+ false, false, false,
+ NULL, NULL,
+ false, NULL, NULL,
+ 'sJsonEditor', '{}', false, false,
+ NULL, NULL, NULL, 'Attributs étendus personnalisables',
+ false, 130);
+
 COMMIT;
