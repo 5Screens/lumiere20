@@ -69,6 +69,27 @@ const getTickets = async (req, res) => {
     }
 };
 
+/**
+ * Search tickets with advanced filters
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const searchTickets = async (req, res) => {
+  try {
+    logger.info('[TICKETS CONTROLLER] Searching tickets with body:', req.body);
+    
+    const searchResults = await taskService.searchTickets(req.body);
+    
+    res.status(200).json(searchResults);
+  } catch (error) {
+    logger.error('[TICKETS CONTROLLER] Error in searchTickets:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message 
+    });
+  }
+};
+
 const createTicket = async (req, res) => {
     try {
         // Récupérer le type de ticket depuis req.body.ticket_type_code
@@ -509,6 +530,7 @@ const removeChildTicket = async (req, res, parentUuid, childUuid) => {
 
 module.exports = {
     getTickets,
+    searchTickets,
     createTicket,
     getTicketTeam,
     getTicketById,

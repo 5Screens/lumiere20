@@ -672,10 +672,35 @@ const validateRemoveWatcher = (req, res, next) => {
     next();
 };
 
+// Schema for search tickets parameters
+const searchTicketsSchema = Joi.object({
+  filters: Joi.object().pattern(
+    Joi.string(),
+    Joi.alternatives().try(
+      Joi.array().items(Joi.any()),
+      Joi.object({
+        gte: Joi.any(),
+        lte: Joi.any()
+      }),
+      Joi.any()
+    )
+  ).optional(),
+  sort: Joi.object({
+    by: Joi.string().optional(),
+    direction: Joi.string().valid('asc', 'desc').optional()
+  }).optional(),
+  pagination: Joi.object({
+    page: Joi.number().integer().min(1).optional(),
+    limit: Joi.number().integer().min(1).max(100).optional()
+  }).optional(),
+  lang: Joi.string().min(2).max(5).optional()
+});
+
 module.exports = {
     validateGetTickets,
     validateCreateTicket,
     validateUpdateTicket,
     validateAddWatchers,
-    validateRemoveWatcher
+    validateRemoveWatcher,
+    searchTicketsSchema
 };

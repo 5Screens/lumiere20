@@ -1,13 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const ticketController = require('./controller');
-const { validateGetTickets, validateCreateTicket, validateUpdateTicket, validateAddWatchers, validateRemoveWatcher } = require('./validation');
+const { validateGetTickets, validateCreateTicket, validateUpdateTicket, validateAddWatchers, validateRemoveWatcher, searchTicketsSchema } = require('./validation');
+const validate = require('../../../middleware/validate');
 const logger = require('../../../config/logger');
 
 router.get('/', validateGetTickets, (req, res, next) => {
     logger.info('[ROUTES] Handling GET /tickets request');
     ticketController.getTickets(req, res);
 });
+
+// POST /api/v1/tickets/search/tasks - Search TASK tickets with filters
+router.post('/search/tasks',
+    validate({ body: searchTicketsSchema }),
+    (req, res, next) => {
+        logger.info('[ROUTES] Handling POST /tickets/search/tasks request');
+        ticketController.searchTickets(req, res);
+    }
+);
 
 router.post('/', validateCreateTicket, (req, res, next) => {
     // Récupérer le type de ticket depuis req.body.ticket_type_code
