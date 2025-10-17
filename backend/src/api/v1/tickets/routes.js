@@ -10,11 +10,12 @@ router.get('/', validateGetTickets, (req, res, next) => {
     ticketController.getTickets(req, res);
 });
 
-// POST /api/v1/tickets/search/tasks - Search TASK tickets with filters
-router.post('/search/tasks',
+// POST /api/v1/tickets/search/:ticket_type - Search tickets with filters by type
+// Supported types: tasks, incidents, problems, changes, knowledge, projects, defects, sprints, epics, user_stories
+router.post('/search/:ticket_type',
     validate({ body: searchTicketsSchema }),
     (req, res, next) => {
-        logger.info('[ROUTES] Handling POST /tickets/search/tasks request');
+        logger.info(`[ROUTES] Handling POST /tickets/search/${req.params.ticket_type} request`);
         ticketController.searchTickets(req, res);
     }
 );

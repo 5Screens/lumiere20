@@ -71,14 +71,69 @@ const getTickets = async (req, res) => {
 
 /**
  * Search tickets with advanced filters
+ * Dispatches to the appropriate service based on ticket_type parameter
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
 const searchTickets = async (req, res) => {
   try {
-    logger.info('[TICKETS CONTROLLER] Searching tickets with body:', req.body);
+    // Get ticket_type from request params (set by route)
+    const ticketType = req.params.ticket_type;
     
-    const searchResults = await taskService.searchTickets(req.body);
+    logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/search/${ticketType} request`);
+    logger.info('[TICKETS CONTROLLER] Search body:', req.body);
+    
+    let searchResults;
+    
+    // Dispatch to appropriate service based on ticket type
+    switch (ticketType) {
+      case 'tasks':
+        logger.info('[TICKETS CONTROLLER] Calling taskService.searchTasks');
+        searchResults = await taskService.searchTasks(req.body);
+        break;
+      case 'incidents':
+        logger.info('[TICKETS CONTROLLER] Calling incidentService.searchIncidents');
+        searchResults = await incidentService.searchIncidents(req.body);
+        break;
+      case 'problems':
+        logger.info('[TICKETS CONTROLLER] Calling problemService.searchProblems');
+        searchResults = await problemService.searchProblems(req.body);
+        break;
+      case 'changes':
+        logger.info('[TICKETS CONTROLLER] Calling changeService.searchChanges');
+        searchResults = await changeService.searchChanges(req.body);
+        break;
+      case 'knowledge':
+        logger.info('[TICKETS CONTROLLER] Calling knowledgeService.searchKnowledgeArticles');
+        searchResults = await knowledgeService.searchKnowledgeArticles(req.body);
+        break;
+      case 'projects':
+        logger.info('[TICKETS CONTROLLER] Calling projectService.searchProjects');
+        searchResults = await projectService.searchProjects(req.body);
+        break;
+      case 'defects':
+        logger.info('[TICKETS CONTROLLER] Calling defectService.searchDefects');
+        searchResults = await defectService.searchDefects(req.body);
+        break;
+      case 'sprints':
+        logger.info('[TICKETS CONTROLLER] Calling sprintService.searchSprints');
+        searchResults = await sprintService.searchSprints(req.body);
+        break;
+      case 'epics':
+        logger.info('[TICKETS CONTROLLER] Calling epicService.searchEpics');
+        searchResults = await epicService.searchEpics(req.body);
+        break;
+      case 'user_stories':
+        logger.info('[TICKETS CONTROLLER] Calling storyService.searchUserStories');
+        searchResults = await storyService.searchUserStories(req.body);
+        break;
+      default:
+        logger.error(`[TICKETS CONTROLLER] Unknown ticket type: ${ticketType}`);
+        return res.status(400).json({ 
+          error: 'Invalid ticket type',
+          message: `Ticket type '${ticketType}' is not supported` 
+        });
+    }
     
     res.status(200).json(searchResults);
   } catch (error) {

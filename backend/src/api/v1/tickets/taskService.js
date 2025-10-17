@@ -220,7 +220,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
 };
 
 /**
- * Search tickets with advanced filters, sorting and pagination
+ * Search TASK tickets with advanced filters, sorting and pagination
  * @param {Object} searchParams - Search parameters including filters, sort, pagination, and lang
  * @returns {Object} Search results with data and metadata
  * 
@@ -231,8 +231,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
  *     "operator": "AND" | "OR",
  *     "conditions": [
  *       { "column": "title", "operator": "contains", "value": "server" },
- *       { "column": "ticket_status_code", "operator": "equals", "value": ["NEW", "IN_PROGRESS"] },
- *       { "column": "ticket_type", "operator": "equals", "value": ["TASK"] }
+ *       { "column": "ticket_status_code", "operator": "equals", "value": ["NEW", "IN_PROGRESS"] }
  *     ]
  *   },
  *   "sort": { "by": "created_at", "direction": "desc" },
@@ -240,7 +239,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
  *   "lang": "fr"
  * }
  */
-const searchTickets = async (searchParams) => {
+const searchTasks = async (searchParams) => {
   try {
     logger.info('[TASK SERVICE] Searching tickets with advanced filters:', JSON.stringify(searchParams, null, 2));
     
@@ -544,7 +543,7 @@ const updateTask = async (uuid, updateData) => {
 
 module.exports = {
     getTaskById,
-    searchTickets,
+    searchTasks,
     createTask,
     updateTask
 };
