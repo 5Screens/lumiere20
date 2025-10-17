@@ -1115,10 +1115,11 @@ export default {
     },
 
     /**
-     * Load a batch of data for persons using POST /persons/search
+     * Load a batch of data for infinite scroll using POST
+     * Supports both persons (via filterStore) and tickets (direct POST)
      */
-    async loadDataBatchForPersons() {
-      console.log('[ReusableTableTab] Loading persons batch with POST /persons/search');
+    async loadDataBatchForInfiniteScroll() {
+      console.log('[ReusableTableTab] Loading batch with POST', this.apiUrl);
       
       // Calculer la page actuelle basée sur l'offset
       const currentPage = Math.floor(this.currentOffset / this.pageSize) + 1;
@@ -1135,85 +1136,35 @@ export default {
         limit: this.pageSize
       };
       
-      console.log('[ReusableTableTab] Calling filterStore.applyPersonsSearch with:', { sort, pagination });
+      let response;
       
-      // Utiliser le filterStore pour appeler POST /persons/search
-      const response = await this.filterStore.applyPersonsSearch(
-        this.tableName,
-        sort,
-        pagination
-      );
-      
-      if (response && response.data) {
-        // Add new data to existing data
-        const newItems = response.data.map(item => ({
-          ...item,
-          selected: false
-        }));
-        
-        if (this.currentOffset === 0) {
-          // Initial load
-          this.tableData = newItems;
-        } else {
-          // Append new data
-          this.tableData.push(...newItems);
-        }
-        
-        // Update pagination info
-        this.totalRecords = response.total || 0;
-        this.hasMoreData = response.hasMore || false;
-        this.currentOffset += newItems.length;
-        
-        console.log(`[ReusableTableTab] Loaded ${newItems.length} persons, total: ${this.tableData.length}/${this.totalRecords}`);
-        
-        // Measure column widths after first load (only once)
-        if (this.currentOffset === newItems.length && !this.hasMeasuredColumnWidths) {
-          this.$nextTick(() => this.measureColumnWidths());
-        }
+      // Différencier l'appel selon le type de table
+      if (this.tableName === 'persons') {
+        // Pour persons, utiliser le filterStore
+        console.log('[ReusableTableTab] Calling filterStore.applyPersonsSearch with:', { sort, pagination });
+        response = await this.filterStore.applyPersonsSearch(
+          this.tableName,
+          sort,
+          pagination
+        );
       } else {
-        console.warn('[ReusableTableTab] Invalid response format for persons search');
-        this.hasMoreData = false;
+        // Pour les autres tables (tickets, etc.), appel direct
+        const requestBody = {
+          filters: {
+            mode: 'include',
+            operator: 'AND',
+            conditions: []
+          },
+          sort: sort,
+          pagination: pagination,
+          lang: this.userProfileStore.language || 'en'
+        };
+        
+        console.log('[ReusableTableTab] Calling POST with body:', requestBody);
+        response = await apiService.post(this.apiUrl, requestBody);
       }
-    },
-
-    /**
-     * Load a batch of data for tickets using POST /tickets/search/:ticket_type
-     */
-    async loadDataBatchForTickets() {
-      console.log('[ReusableTableTab] Loading tickets batch with POST', this.apiUrl);
       
-      // Calculer la page actuelle basée sur l'offset
-      const currentPage = Math.floor(this.currentOffset / this.pageSize) + 1;
-      
-      // Construire les paramètres de tri
-      const sort = {
-        by: this.sortColumn || 'created_at',
-        direction: this.sortDirection || 'desc'
-      };
-      
-      // Construire les paramètres de pagination
-      const pagination = {
-        page: currentPage,
-        limit: this.pageSize
-      };
-      
-      // Construire le body de la requête POST
-      const requestBody = {
-        filters: {
-          mode: 'include',
-          operator: 'AND',
-          conditions: []
-        },
-        sort: sort,
-        pagination: pagination,
-        lang: this.userProfileStore.language || 'en'
-      };
-      
-      console.log('[ReusableTableTab] Calling POST with body:', requestBody);
-      
-      // Appeler l'API POST avec le bon endpoint (déjà dans apiUrl)
-      const response = await apiService.post(this.apiUrl, requestBody);
-      
+      // Traitement commun de la réponse
       if (response && response.data) {
         // Add new data to existing data
         const newItems = response.data.map(item => ({
@@ -1234,14 +1185,14 @@ export default {
         this.hasMoreData = response.hasMore || false;
         this.currentOffset += newItems.length;
         
-        console.log(`[ReusableTableTab] Loaded ${newItems.length} tickets, total: ${this.tableData.length}/${this.totalRecords}`);
+        console.log(`[ReusableTableTab] Loaded ${newItems.length} items, total: ${this.tableData.length}/${this.totalRecords}`);
         
         // Measure column widths after first load (only once)
         if (this.currentOffset === newItems.length && !this.hasMeasuredColumnWidths) {
           this.$nextTick(() => this.measureColumnWidths());
         }
       } else {
-        console.warn('[ReusableTableTab] Invalid response format for tickets search');
+        console.warn('[ReusableTableTab] Invalid response format for infinite scroll');
         this.hasMoreData = false;
       }
     },
@@ -1250,14 +1201,9 @@ export default {
      * Load a batch of data from the paginated API
      */
     async loadDataBatch() {
-      // Si c'est la table persons, utiliser l'API POST /persons/search
-      if (this.tableName === 'persons') {
-        return await this.loadDataBatchForPersons();
-      }
-      
-      // Si c'est la table tickets, utiliser l'API POST avec le bon endpoint
-      if (this.tableName === 'tickets') {
-        return await this.loadDataBatchForTickets();
+      // Si l'infinite scroll est activé, utiliser la méthode POST unifiée
+      if (this.infiniteScrollEnabled) {
+        return await this.loadDataBatchForInfiniteScroll();
       }
       
       // Sinon, utiliser l'ancienne méthode GET avec query params
