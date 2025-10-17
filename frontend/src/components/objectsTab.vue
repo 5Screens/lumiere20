@@ -129,7 +129,10 @@ export default {
       // Liste des types d'objets qui utilisent le scroll infini
       const infiniteScrollTypes = [
         'Person',        // Personnes - peut avoir beaucoup d'enregistrements
-        //'Ticket',        // Tickets - généralement beaucoup d'enregistrements
+        'Task',          // Tâches - utilise POST /tickets/search/tasks
+        //'Incident',      // Incidents - à implémenter
+        //'Problem',       // Problèmes - à implémenter
+        //'Change',        // Changes - à implémenter
         //'Entity',        // Entités - peut être nombreuses
         //'Location'       // Localisations - peut être nombreuses
       ];
@@ -146,7 +149,10 @@ export default {
       // Taille de page adaptée selon le type d'objet
       const pageSizes = {
         'Person': 50,      // Personnes - taille moyenne
-        'Ticket': 25,      // Tickets - plus petite car plus de données par ligne
+        'Task': 100,        // Tâches - plus petite car plus de données par ligne
+        'Incident': 25,    // Incidents - plus petite car plus de données par ligne
+        'Problem': 25,     // Problèmes - plus petite car plus de données par ligne
+        'Change': 25,      // Changes - plus petite car plus de données par ligne
         'Entity': 100,     // Entités - plus grande car moins de données par ligne
         'Location': 75     // Localisations - taille moyenne-grande
       };

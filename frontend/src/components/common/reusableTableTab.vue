@@ -178,6 +178,7 @@ import apiService, { filterAPI } from '@/services/apiService'
 import { usePopoverStore } from '@/stores/popoverStore'
 import { useTabsStore } from '@/stores/tabsStore'
 import { useFilterStore } from '@/stores/filterStore'
+import { useUserProfileStore } from '@/stores/userProfileStore'
 import { DEBOUNCE_DELAY_MS } from '@/config/config'
 import sMultiFilter from './sMultiFilter.vue'
 import sFilterTag from './sFilterTag.vue'
@@ -193,7 +194,8 @@ export default {
     const popoverStore = usePopoverStore()
     const tabsStore = useTabsStore()
     const filterStore = useFilterStore()
-    return { popoverStore, tabsStore, filterStore }
+    const userProfileStore = useUserProfileStore()
+    return { popoverStore, tabsStore, filterStore, userProfileStore }
   },
   props: {
     apiUrl: {
@@ -1175,12 +1177,87 @@ export default {
     },
 
     /**
+     * Load a batch of data for tickets using POST /tickets/search/:ticket_type
+     */
+    async loadDataBatchForTickets() {
+      console.log('[ReusableTableTab] Loading tickets batch with POST', this.apiUrl);
+      
+      // Calculer la page actuelle basée sur l'offset
+      const currentPage = Math.floor(this.currentOffset / this.pageSize) + 1;
+      
+      // Construire les paramètres de tri
+      const sort = {
+        by: this.sortColumn || 'created_at',
+        direction: this.sortDirection || 'desc'
+      };
+      
+      // Construire les paramètres de pagination
+      const pagination = {
+        page: currentPage,
+        limit: this.pageSize
+      };
+      
+      // Construire le body de la requête POST
+      const requestBody = {
+        filters: {
+          mode: 'include',
+          operator: 'AND',
+          conditions: []
+        },
+        sort: sort,
+        pagination: pagination,
+        lang: this.userProfileStore.language || 'en'
+      };
+      
+      console.log('[ReusableTableTab] Calling POST with body:', requestBody);
+      
+      // Appeler l'API POST avec le bon endpoint (déjà dans apiUrl)
+      const response = await apiService.post(this.apiUrl, requestBody);
+      
+      if (response && response.data) {
+        // Add new data to existing data
+        const newItems = response.data.map(item => ({
+          ...item,
+          selected: false
+        }));
+        
+        if (this.currentOffset === 0) {
+          // Initial load
+          this.tableData = newItems;
+        } else {
+          // Append new data
+          this.tableData.push(...newItems);
+        }
+        
+        // Update pagination info
+        this.totalRecords = response.total || 0;
+        this.hasMoreData = response.hasMore || false;
+        this.currentOffset += newItems.length;
+        
+        console.log(`[ReusableTableTab] Loaded ${newItems.length} tickets, total: ${this.tableData.length}/${this.totalRecords}`);
+        
+        // Measure column widths after first load (only once)
+        if (this.currentOffset === newItems.length && !this.hasMeasuredColumnWidths) {
+          this.$nextTick(() => this.measureColumnWidths());
+        }
+      } else {
+        console.warn('[ReusableTableTab] Invalid response format for tickets search');
+        this.hasMoreData = false;
+      }
+    },
+
+    /**
      * Load a batch of data from the paginated API
      */
     async loadDataBatch() {
       // Si c'est la table persons, utiliser l'API POST /persons/search
       if (this.tableName === 'persons') {
         return await this.loadDataBatchForPersons();
+      }
+      
+      // Si c'est la table tickets, utiliser l'API POST avec le bon endpoint
+      if (this.tableName === 'tickets') {
+        return await this.loadDataBatchForTickets();
       }
       
       // Sinon, utiliser l'ancienne méthode GET avec query params
