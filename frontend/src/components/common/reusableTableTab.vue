@@ -1139,13 +1139,15 @@ export default {
       let response;
       
       // Différencier l'appel selon le type d'objet
-      if (this.objectName === 'Person') {
-        // Pour Person, utiliser le filterStore
-        console.log('[ReusableTableTab] Calling filterStore.applyPersonsSearch with:', { sort, pagination });
+      if (this.objectName === 'Person' || this.objectName === 'Task') {
+        // Pour Person et Task, utiliser le filterStore qui gère la conversion des filtres
+        const lang = this.userProfileStore.language || 'en';
+        console.log(`[ReusableTableTab] Calling filterStore.applyPersonsSearch for ${this.objectName} with:`, { sort, pagination, lang });
         response = await this.filterStore.applyPersonsSearch(
           this.objectName,
           sort,
-          pagination
+          pagination,
+          lang
         );
       } else {
         // Pour les autres tables (tickets, etc.), appel direct

@@ -202,10 +202,10 @@ export default {
           operator: filterOperator.value
         });
         
-        // Pour Person, on n'a pas besoin de convertir car le filterStore gère tout
+        // Pour Person et Task, utiliser le filterStore qui gère la conversion en conditions
         // Pour les autres objets, convertir au format legacy
-        if (props.objectName === 'Person') {
-          console.info('[sMultiFilter] Applying filters for Person (handled by filterStore)');
+        if (props.objectName === 'Person' || props.objectName === 'Task') {
+          console.info(`[sMultiFilter] Applying filters for ${props.objectName} (handled by filterStore)`);
           // Émettre un objet vide car le filterStore gère tout
           emit('filters-applied', {});
         } else {

@@ -412,7 +412,7 @@ export const useFilterStore = defineStore('filter', {
     },
     
     // Convertir les filtres au format searchPersons (POST /persons/search)
-    convertFiltersToSearchFormat(tableName, sort = null, pagination = null) {
+    convertFiltersToSearchFormat(tableName, sort = null, pagination = null, lang = null) {
       const filters = this.activeFilters[tableName] || [];
       
       console.info(`[FILTER_STORE] convertFiltersToSearchFormat - activeFilters:`, JSON.stringify(filters, null, 2));
@@ -423,6 +423,11 @@ export const useFilterStore = defineStore('filter', {
         sort: sort || { by: 'created_at', direction: 'desc' },
         pagination: pagination || { page: 1, limit: 50 }
       };
+      
+      // Ajouter lang pour Task (requis par l'API tickets)
+      if (tableName === 'Task' && lang) {
+        searchBody.lang = lang;
+      }
       
       // Si aucun filtre actif, retourner la structure de base
       if (filters.length === 0) {
@@ -543,29 +548,45 @@ export const useFilterStore = defineStore('filter', {
       return searchBody;
     },
     
-    // Appliquer les filtres via POST /persons/search
-    async applyPersonsSearch(tableName, sort = null, pagination = null) {
+    // Appliquer les filtres via POST /persons/search ou POST /tickets/search/tasks
+    async applySearch(tableName, sort = null, pagination = null, lang = null) {
       this.loading.search = true;
       
       try {
-        console.info(`[FILTER_STORE] Applying persons search for ${tableName}`);
+        console.info(`[FILTER_STORE] Applying search for ${tableName}`);
         
-        // Convertir les filtres au format searchPersons
-        const searchBody = this.convertFiltersToSearchFormat(tableName, sort, pagination);
+        // Convertir les filtres au format search
+        const searchBody = this.convertFiltersToSearchFormat(tableName, sort, pagination, lang);
         
-        console.info(`[FILTER_STORE] POST /persons/search with body:`, searchBody);
+        // Déterminer l'endpoint API en fonction du tableName
+        let endpoint;
+        if (tableName === 'Person') {
+          endpoint = 'persons/search';
+        } else if (tableName === 'Task') {
+          endpoint = 'tickets/search/tasks';
+        } else {
+          // Fallback générique
+          endpoint = `${tableName.toLowerCase()}s/search`;
+        }
         
-        // Appeler l'API POST /persons/search
-        const response = await apiService.post('persons/search', searchBody);
+        console.info(`[FILTER_STORE] POST /${endpoint} with body:`, searchBody);
+        
+        // Appeler l'API POST
+        const response = await apiService.post(endpoint, searchBody);
         
         console.info(`[FILTER_STORE] Search completed, ${response.data?.length || 0} results, total: ${response.total}`);
         return response;
       } catch (error) {
-        console.error(`[FILTER_STORE] Error applying persons search:`, error);
+        console.error(`[FILTER_STORE] Error applying search:`, error);
         throw error;
       } finally {
         this.loading.search = false;
       }
+    },
+    
+    // Alias pour compatibilité avec le code existant
+    async applyPersonsSearch(tableName, sort = null, pagination = null, lang = null) {
+      return this.applySearch(tableName, sort, pagination, lang);
     },
     
     // Définir les options de filtrage (mode et operator)
