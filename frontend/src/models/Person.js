@@ -70,7 +70,7 @@ export class Person {
     const { t } = i18n.global;
     
     return [
-      { key: 'uuid', label: t('common.id'), type: 'uuid' },
+      { key: 'uuid', label: t('person.uuid'), type: 'uuid' },
       { key: 'person_name', label: t('person.person_name'), type: 'text' },
       { key: 'internal_id', label: t('person.internal_id'), type: 'text' },
       { key: 'job_role', label: t('person.job_role'), type: 'text' },

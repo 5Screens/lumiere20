@@ -322,7 +322,7 @@ INSERT INTO administration.table_metadata (
     form_visible, form_order
 ) VALUES 
 -- uuid
-('tickets', 'Task', 'uuid', 'ticket.uuid', 'Identifiant unique du ticket',
+('tickets', 'Task', 'uuid', 'common.uuid', 'Identifiant unique du ticket',
  'uuid', false, 'uuid_generate_v4()',
  true, false, true,
  'search', '{"minChars": 8}'::jsonb,
@@ -332,7 +332,7 @@ INSERT INTO administration.table_metadata (
  false, 0),
 
 -- title
-('tickets', 'Task', 'title', 'ticket.title', 'Titre du ticket',
+('tickets', 'Task', 'title', 'task.title', 'Titre du ticket',
  'text', false, NULL,
  true, true, true,
  'search', '{"minChars": 2, "debounce": 300}'::jsonb,
@@ -342,7 +342,7 @@ INSERT INTO administration.table_metadata (
  true, 10),
 
 -- description
-('tickets', 'Task', 'description', 'ticket.description', 'Description détaillée',
+('tickets', 'Task', 'description', 'task.description', 'Description détaillée',
  'text', true, NULL,
  true, false, true,
  'search', '{"minChars": 3, "debounce": 300}'::jsonb,
@@ -352,9 +352,9 @@ INSERT INTO administration.table_metadata (
  true, 20),
 
 -- ticket_type_code
-('tickets', 'Task', 'ticket_type_code', 'ticket.type', 'Type de ticket',
+('tickets', 'Task', 'ticket_type_code', 'task.type', 'Type de ticket',
  'text', false, NULL,
- true, true, true,
+ true, true, false,
  'checkbox', '{"multiple": true}'::jsonb,
  true, 'configuration.ticket_types', 'code',
  'sSelectField', 'Sélectionnez le type', true, false,
@@ -362,7 +362,7 @@ INSERT INTO administration.table_metadata (
  true, 30),
 
 -- ticket_status_code
-('tickets', 'Task', 'ticket_status_code', 'ticket.status', 'Statut du ticket',
+('tickets', 'Task', 'ticket_status_code', 'task.status', 'Statut du ticket',
  'text', false, NULL,
  true, true, true,
  'checkbox', '{"multiple": true}'::jsonb,
@@ -372,7 +372,7 @@ INSERT INTO administration.table_metadata (
  true, 40),
 
 -- requested_by_uuid
-('tickets', 'Task', 'requested_by_uuid', 'ticket.requested_by', 'Demandé par',
+('tickets', 'Task', 'requested_by_uuid', 'task.requested_by', 'Demandé par',
  'uuid', true, NULL,
  true, false, true,
  'select', '{"multiple": false}'::jsonb,
@@ -382,7 +382,7 @@ INSERT INTO administration.table_metadata (
  true, 50),
 
 -- requested_for_uuid
-('tickets', 'Task', 'requested_for_uuid', 'ticket.requested_for', 'Demandé pour',
+('tickets', 'Task', 'requested_for_uuid', 'task.requested_for', 'Demandé pour',
  'uuid', true, NULL,
  true, false, true,
  'select', '{"multiple": false}'::jsonb,
@@ -392,7 +392,7 @@ INSERT INTO administration.table_metadata (
  true, 60),
 
 -- writer_uuid
-('tickets', 'Task', 'writer_uuid', 'ticket.writer', 'Rédacteur',
+('tickets', 'Task', 'writer_uuid', 'common.writer_name', 'Rédacteur',
  'uuid', false, NULL,
  true, false, true,
  'select', '{"multiple": false}'::jsonb,
@@ -404,7 +404,7 @@ INSERT INTO administration.table_metadata (
 -- configuration_item_uuid
 ('tickets', 'Task', 'configuration_item_uuid', 'ticket.configuration_item', 'Élément de configuration',
  'uuid', true, NULL,
- true, false, true,
+ true, false, false,
  'select', '{"multiple": false}'::jsonb,
  true, 'data.configuration_items', 'uuid',
  'sFilteredSearchField', 'Recherchez un CI', false, false,
@@ -412,7 +412,7 @@ INSERT INTO administration.table_metadata (
  true, 80),
 
 -- created_at
-('tickets', 'Task', 'created_at', 'ticket.created_at', 'Date de création',
+('tickets', 'Task', 'created_at', 'common.creation_date', 'Date de création',
  'date', false, 'CURRENT_TIMESTAMP',
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
@@ -422,7 +422,7 @@ INSERT INTO administration.table_metadata (
  false, 90),
 
 -- updated_at
-('tickets', 'Task', 'updated_at', 'ticket.updated_at', 'Date de modification',
+('tickets', 'Task', 'updated_at', 'common.modification_date', 'Date de modification',
  'date', false, 'CURRENT_TIMESTAMP',
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
@@ -434,7 +434,7 @@ INSERT INTO administration.table_metadata (
 -- closed_at
 ('tickets', 'Task', 'closed_at', 'ticket.closed_at', 'Date de clôture',
  'date', true, NULL,
- true, true, true,
+ true, true, false,
  'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
  false, NULL, NULL,
  NULL, NULL, false, false,
