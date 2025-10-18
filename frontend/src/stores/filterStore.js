@@ -143,7 +143,7 @@ export const useFilterStore = defineStore('filter', {
         // Si tableName est un objectName (ex: 'Person', 'Task'), utiliser le mapping
         const modelClass = getClassByName(tableName);
         if (modelClass && typeof modelClass.getApiEndpoint === 'function') {
-          endpoint = modelClass.getApiEndpoint();
+          endpoint = modelClass.getApiEndpoint('FILTER');
           console.info(`[FILTER_STORE] Using API endpoint from model class: ${endpoint}`);
         } else if (tableName.includes('.')) {
           // Fallback: Extraire le nom de la table sans le schéma

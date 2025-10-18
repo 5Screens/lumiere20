@@ -27,10 +27,15 @@ export class Task {
 
   /**
    * Retourne l'endpoint API pour les tâches de type TASK
-   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE, FILTER)
    * @returns {string} Endpoint API
    */
   static getApiEndpoint(method) {
+    // Pour les filtres, retourner l'endpoint spécifique aux tasks
+    if (method === 'FILTER') {
+      return 'tickets/tasks';
+    }
+    
     // Pour l'infinite scroll, retourner l'endpoint de recherche
     // Le composant reusableTableTab utilisera POST /tickets/search/tasks
     if (method === 'GET') {
