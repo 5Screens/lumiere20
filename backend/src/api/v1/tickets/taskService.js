@@ -541,9 +541,171 @@ const updateTask = async (uuid, updateData) => {
     );
 };
 
+/**
+ * Get filter values for a specific column in tickets table (for tasks)
+ * @param {string} columnName - Name of the column
+ * @param {string} searchQuery - Optional search query for dynamic filters
+ * @returns {Object} Filter values
+ */
+const getTasksFilterValues = async (columnName, searchQuery = null) => {
+  try {
+    logger.info(`[TASK SERVICE] Getting filter values for tickets.${columnName}`);
+    
+    // First, get the metadata for this column
+    const metadataQuery = `
+      SELECT 
+        filter_type,
+        filter_options,
+        is_foreign_key,
+        related_table,
+        related_column
+      FROM administration.table_metadata
+      WHERE table_name = $1 AND column_name = $2
+    `;
+    
+    const metadataResult = await db.query(metadataQuery, ['tickets', columnName]);
+    
+    if (metadataResult.rows.length === 0) {
+      throw new Error(`No metadata found for tickets.${columnName}`);
+    }
+    
+    const metadata = metadataResult.rows[0];
+    let values = [];
+    
+    // Helper function to get table with schema
+    const getTableWithSchema = (tableName) => {
+      if (tableName.includes('.')) return tableName;
+      return `core.${tableName}`;
+    };
+    
+    // Handle different filter types
+    switch (metadata.filter_type) {
+      case 'checkbox':
+        // Get distinct values for checkbox filter
+        if (metadata.is_foreign_key && metadata.related_table) {
+          // If it's a foreign key, get values from related table
+          const fkQuery = `
+            SELECT DISTINCT
+              r.uuid as value,
+              r.name as label
+            FROM ${metadata.related_table} r
+            INNER JOIN ${getTableWithSchema('tickets')} t ON t.${columnName} = r.${metadata.related_column || 'uuid'}
+            WHERE r.name IS NOT NULL
+              AND t.ticket_type_code = 'TASK'
+            ORDER BY r.name
+          `;
+          const fkResult = await db.query(fkQuery);
+          values = fkResult.rows;
+        } else {
+          // Get distinct values from the column itself
+          const distinctQuery = `
+            SELECT DISTINCT ${columnName} as value
+            FROM ${getTableWithSchema('tickets')}
+            WHERE ${columnName} IS NOT NULL
+              AND ticket_type_code = 'TASK'
+            ORDER BY ${columnName}
+          `;
+          const distinctResult = await db.query(distinctQuery);
+          values = distinctResult.rows.map(row => ({
+            value: row.value,
+            label: row.value
+          }));
+        }
+        break;
+        
+      case 'search':
+        if (searchQuery) {
+          // Dynamic search based on query
+          if (metadata.is_foreign_key && metadata.related_table) {
+            // Search in related table
+            const searchFkQuery = `
+              SELECT DISTINCT
+                r.uuid as value,
+                r.name as label
+              FROM ${metadata.related_table} r
+              WHERE LOWER(r.name) LIKE LOWER($1)
+              ORDER BY r.name
+              LIMIT 20
+            `;
+            const searchFkResult = await db.query(searchFkQuery, [`%${searchQuery}%`]);
+            values = searchFkResult.rows;
+          } else {
+            // Search in the column itself
+            const searchColumnQuery = `
+              SELECT DISTINCT ${columnName} as value
+              FROM ${getTableWithSchema('tickets')}
+              WHERE LOWER(CAST(${columnName} AS TEXT)) LIKE LOWER($1)
+                AND ${columnName} IS NOT NULL
+                AND ticket_type_code = 'TASK'
+              ORDER BY ${columnName}
+              LIMIT 20
+            `;
+            const searchColumnResult = await db.query(searchColumnQuery, [`%${searchQuery}%`]);
+            values = searchColumnResult.rows.map(row => ({
+              value: row.value,
+              label: row.value
+            }));
+          }
+        }
+        break;
+        
+      case 'select':
+        // Get all possible values for select filter
+        if (metadata.filter_options && metadata.filter_options.options) {
+          // Static options from metadata
+          values = metadata.filter_options.options.map(option => ({
+            value: option,
+            label: option
+          }));
+        } else if (metadata.is_foreign_key && metadata.related_table) {
+          // Dynamic options from related table
+          const selectQuery = `
+            SELECT DISTINCT
+              uuid as value,
+              name as label
+            FROM ${metadata.related_table}
+            WHERE name IS NOT NULL
+            ORDER BY name
+          `;
+          const selectResult = await db.query(selectQuery);
+          values = selectResult.rows;
+        }
+        break;
+        
+      case 'date_range':
+        // Return min and max dates
+        const dateRangeQuery = `
+          SELECT 
+            MIN(${columnName}) as min_date,
+            MAX(${columnName}) as max_date
+          FROM ${getTableWithSchema('tickets')}
+          WHERE ${columnName} IS NOT NULL
+            AND ticket_type_code = 'TASK'
+        `;
+        const dateRangeResult = await db.query(dateRangeQuery);
+        return {
+          min: dateRangeResult.rows[0].min_date,
+          max: dateRangeResult.rows[0].max_date
+        };
+        
+      default:
+        logger.warn(`[TASK SERVICE] Unknown filter type: ${metadata.filter_type}`);
+        break;
+    }
+    
+    logger.info(`[TASK SERVICE] Found ${values.length} values for ${columnName}`);
+    return values;
+    
+  } catch (error) {
+    logger.error('[TASK SERVICE] Error getting filter values:', error);
+    throw error;
+  }
+};
+
 module.exports = {
     getTaskById,
     searchTasks,
     createTask,
-    updateTask
+    updateTask,
+    getTasksFilterValues
 };

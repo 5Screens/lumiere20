@@ -583,6 +583,28 @@ const removeChildTicket = async (req, res, parentUuid, childUuid) => {
     }
 };
 
+/**
+ * Get filter values for tasks
+ */
+const getTasksFilterValues = async (req, res) => {
+    try {
+        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/tasks/filters/${req.params.columnName} request`);
+        const { columnName } = req.params;
+        const { q } = req.query;
+        
+        const values = await taskService.getTasksFilterValues(columnName, q);
+        
+        logger.info(`[TICKETS CONTROLLER] Successfully retrieved ${values.length || 0} filter values for ${columnName}`);
+        res.status(200).json(values);
+    } catch (error) {
+        logger.error('[TICKETS CONTROLLER] Error getting tasks filter values:', error);
+        res.status(500).json({
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     getTickets,
     searchTickets,
@@ -602,5 +624,6 @@ module.exports = {
     removeAccessUser,
     getAccessUsers,
     addChildrenTickets,
-    removeChildTicket
+    removeChildTicket,
+    getTasksFilterValues
 };
