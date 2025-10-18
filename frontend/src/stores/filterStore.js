@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import apiService from '@/services/apiService';
+import { getClassByName } from '@/services/classMapping';
 
 export const useFilterStore = defineStore('filter', {
   state: () => ({
@@ -131,16 +132,23 @@ export const useFilterStore = defineStore('filter', {
     
     // Charger les valeurs possibles pour un filtre
     async loadFilterValues(tableName, columnName, searchQuery = null) {
-      const cacheKey = `${tableName}_${columnName}`;
       this.loading.values = true;
       
       try {
-        console.info(`[FILTER_STORE] Loading filter values for ${tableName}.${columnName}`);
+        console.info(`[FILTER_STORE] Loading filter values for ${columnName} in ${tableName}`);
         
-        // Construire l'endpoint selon le format de la table
-        const endpoint = tableName.includes('.') 
-          ? tableName.split('.')[1] // Extraire le nom de la table sans le schéma
-          : tableName;
+        // Récupérer l'endpoint API via la classe de modèle
+        let endpoint = tableName;
+        
+        // Si tableName est un objectName (ex: 'Person', 'Task'), utiliser le mapping
+        const modelClass = getClassByName(tableName);
+        if (modelClass && typeof modelClass.getApiEndpoint === 'function') {
+          endpoint = modelClass.getApiEndpoint();
+          console.info(`[FILTER_STORE] Using API endpoint from model class: ${endpoint}`);
+        } else if (tableName.includes('.')) {
+          // Fallback: Extraire le nom de la table sans le schéma
+          endpoint = tableName.split('.')[1];
+        }
         
         const url = `${endpoint}/filters/${columnName}`;
         const params = searchQuery ? { q: searchQuery } : {};
