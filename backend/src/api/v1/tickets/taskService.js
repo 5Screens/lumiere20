@@ -583,16 +583,27 @@ const getTasksFilterValues = async (columnName, searchQuery = null) => {
       case 'checkbox':
         // Get distinct values for checkbox filter
         if (metadata.is_foreign_key && metadata.related_table) {
+          // Determine the label column based on the related table
+          let labelColumn = 'name';
+          let valueColumn = 'uuid';
+          
+          // Special cases for tables without 'name' column
+          if (metadata.related_table === 'configuration.ticket_status' || 
+              metadata.related_table === 'configuration.ticket_types') {
+            labelColumn = 'code';
+            valueColumn = 'code';
+          }
+          
           // If it's a foreign key, get values from related table
           const fkQuery = `
             SELECT DISTINCT
-              r.uuid as value,
-              r.name as label
+              r.${valueColumn} as value,
+              r.${labelColumn} as label
             FROM ${metadata.related_table} r
             INNER JOIN ${getTableWithSchema('tickets')} t ON t.${columnName} = r.${metadata.related_column || 'uuid'}
-            WHERE r.name IS NOT NULL
+            WHERE r.${labelColumn} IS NOT NULL
               AND t.ticket_type_code = 'TASK'
-            ORDER BY r.name
+            ORDER BY r.${labelColumn}
           `;
           const fkResult = await db.query(fkQuery);
           values = fkResult.rows;
@@ -617,14 +628,25 @@ const getTasksFilterValues = async (columnName, searchQuery = null) => {
         if (searchQuery) {
           // Dynamic search based on query
           if (metadata.is_foreign_key && metadata.related_table) {
+            // Determine the label column based on the related table
+            let labelColumn = 'name';
+            let valueColumn = 'uuid';
+            
+            // Special cases for tables without 'name' column
+            if (metadata.related_table === 'configuration.ticket_status' || 
+                metadata.related_table === 'configuration.ticket_types') {
+              labelColumn = 'code';
+              valueColumn = 'code';
+            }
+            
             // Search in related table
             const searchFkQuery = `
               SELECT DISTINCT
-                r.uuid as value,
-                r.name as label
+                r.${valueColumn} as value,
+                r.${labelColumn} as label
               FROM ${metadata.related_table} r
-              WHERE LOWER(r.name) LIKE LOWER($1)
-              ORDER BY r.name
+              WHERE LOWER(r.${labelColumn}) LIKE LOWER($1)
+              ORDER BY r.${labelColumn}
               LIMIT 20
             `;
             const searchFkResult = await db.query(searchFkQuery, [`%${searchQuery}%`]);
@@ -658,14 +680,25 @@ const getTasksFilterValues = async (columnName, searchQuery = null) => {
             label: option
           }));
         } else if (metadata.is_foreign_key && metadata.related_table) {
+          // Determine the label column based on the related table
+          let labelColumn = 'name';
+          let valueColumn = 'uuid';
+          
+          // Special cases for tables without 'name' column
+          if (metadata.related_table === 'configuration.ticket_status' || 
+              metadata.related_table === 'configuration.ticket_types') {
+            labelColumn = 'code';
+            valueColumn = 'code';
+          }
+          
           // Dynamic options from related table
           const selectQuery = `
             SELECT DISTINCT
-              uuid as value,
-              name as label
+              ${valueColumn} as value,
+              ${labelColumn} as label
             FROM ${metadata.related_table}
-            WHERE name IS NOT NULL
-            ORDER BY name
+            WHERE ${labelColumn} IS NOT NULL
+            ORDER BY ${labelColumn}
           `;
           const selectResult = await db.query(selectQuery);
           values = selectResult.rows;
