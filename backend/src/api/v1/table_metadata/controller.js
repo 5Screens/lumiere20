@@ -2,14 +2,14 @@ const tableMetadataService = require('./service');
 const logger = require('../../../config/logger');
 
 /**
- * Get filter configuration for a table
+ * Get filter configuration for an object
  */
 async function getFilterConfig(req, res) {
   try {
-    const { tableName } = req.params;
-    logger.info(`[TABLE_METADATA CONTROLLER] Getting filter config for table: ${tableName}`);
+    const { objectName } = req.params;
+    logger.info(`[TABLE_METADATA CONTROLLER] Getting filter config for object: ${objectName}`);
     
-    const filterConfig = await tableMetadataService.getFilterConfig(tableName);
+    const filterConfig = await tableMetadataService.getFilterConfig(objectName);
     
     res.status(200).json(filterConfig);
   } catch (error) {

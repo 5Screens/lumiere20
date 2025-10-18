@@ -52,7 +52,7 @@
               :key="filter.id"
               :filter="filter"
               :filter-number="index + 1"
-              :table-name="tableName"
+              :object-name="objectName"
               :available-columns="filterConfig"
               @update="updateFilter"
               @remove="removeFilter"
@@ -116,7 +116,7 @@ export default {
     sOneFilter
   },
   props: {
-    tableName: {
+    objectName: {
       type: String,
       required: true
     },
@@ -139,7 +139,7 @@ export default {
 
     // Computed
     const filterConfig = computed(() => {
-      const config = filterStore.getConfigForTable(props.tableName);
+      const config = filterStore.getConfigForTable(props.objectName);
       
       // Si des colonnes spécifiques sont demandées, filtrer la config
       if (props.columns && props.columns.length > 0) {
@@ -150,17 +150,17 @@ export default {
     });
 
     const activeFilters = computed(() => {
-      return filterStore.getActiveFiltersForTable(props.tableName) || [];
+      return filterStore.getActiveFiltersForTable(props.objectName) || [];
     });
 
     const activeFilterCount = computed(() => {
-      return filterStore.getActiveFilterCount(props.tableName);
+      return filterStore.getActiveFilterCount(props.objectName);
     });
 
     // Méthodes
     const togglePanel = () => {
       isExpanded.value = !isExpanded.value;
-      filterStore.setPanelState(props.tableName, isExpanded.value);
+      filterStore.setPanelState(props.objectName, isExpanded.value);
     };
 
     const loadFilterConfig = async () => {
@@ -173,7 +173,7 @@ export default {
       error.value = null;
 
       try {
-        await filterStore.loadFilterConfig(props.tableName);
+        await filterStore.loadFilterConfig(props.objectName);
       } catch (err) {
         error.value = err.message;
         console.error('[sMultiFilter] Error loading filter config:', err);
@@ -183,34 +183,34 @@ export default {
     };
 
     const addNewFilter = () => {
-      filterStore.addFilter(props.tableName);
+      filterStore.addFilter(props.objectName);
     };
 
     const updateFilter = (filterId, updates) => {
-      filterStore.updateFilter(props.tableName, filterId, updates);
+      filterStore.updateFilter(props.objectName, filterId, updates);
     };
 
     const removeFilter = (filterId) => {
-      filterStore.removeFilter(props.tableName, filterId);
+      filterStore.removeFilter(props.objectName, filterId);
     };
 
     const handleApply = async () => {
       try {
         // Stocker le mode et l'opérateur dans le filterStore
-        filterStore.setFilterOptions(props.tableName, {
+        filterStore.setFilterOptions(props.objectName, {
           mode: filterMode.value,
           operator: filterOperator.value
         });
         
-        // Pour persons, on n'a pas besoin de convertir car le filterStore gère tout
-        // Pour les autres tables, convertir au format legacy
-        if (props.tableName === 'persons') {
-          console.info('[sMultiFilter] Applying filters for persons (handled by filterStore)');
+        // Pour Person, on n'a pas besoin de convertir car le filterStore gère tout
+        // Pour les autres objets, convertir au format legacy
+        if (props.objectName === 'Person') {
+          console.info('[sMultiFilter] Applying filters for Person (handled by filterStore)');
           // Émettre un objet vide car le filterStore gère tout
           emit('filters-applied', {});
         } else {
           // Convertir au format legacy pour l'API
-          const legacyFilters = filterStore.convertFiltersToLegacyFormat(props.tableName);
+          const legacyFilters = filterStore.convertFiltersToLegacyFormat(props.objectName);
           
           console.info('[sMultiFilter] Applying filters:', legacyFilters);
           emit('filters-applied', legacyFilters);
@@ -221,7 +221,7 @@ export default {
     };
 
     const handleReset = () => {
-      filterStore.resetFilters(props.tableName);
+      filterStore.resetFilters(props.objectName);
       emit('filters-reset');
     };
 
@@ -230,13 +230,13 @@ export default {
       await loadFilterConfig();
       
       // Restaurer l'état du panneau depuis le store
-      const savedState = filterStore.getPanelState(props.tableName);
+      const savedState = filterStore.getPanelState(props.objectName);
       if (savedState !== undefined) {
         isExpanded.value = savedState;
       }
       
       // Restaurer les options de filtrage (mode et operator)
-      const savedOptions = filterStore.getFilterOptions(props.tableName);
+      const savedOptions = filterStore.getFilterOptions(props.objectName);
       if (savedOptions) {
         filterMode.value = savedOptions.mode || 'include';
         filterOperator.value = savedOptions.operator || 'AND';
@@ -244,8 +244,8 @@ export default {
     });
 
     // Watchers
-    watch(() => props.tableName, async (newTable) => {
-      if (newTable) {
+    watch(() => props.objectName, async (newObject) => {
+      if (newObject) {
         await loadFilterConfig();
       }
     });

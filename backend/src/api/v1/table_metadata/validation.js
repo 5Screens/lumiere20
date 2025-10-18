@@ -7,6 +7,11 @@ const tableNameSchema = Joi.string()
   .pattern(/^[a-zA-Z_][a-zA-Z0-9_]*$/)
   .required();
 
+// Schema for object name parameter (e.g., "Person", "Task")
+const objectNameSchema = Joi.string()
+  .pattern(/^[a-zA-Z][a-zA-Z0-9_]*$/)
+  .required();
+
 // Schema for column name parameter
 const columnNameSchema = Joi.string()
   .pattern(/^[a-zA-Z_][a-zA-Z0-9_]*$/)
@@ -24,6 +29,25 @@ function validateTableName(req, res, next) {
     logger.error('[TABLE_METADATA VALIDATION] Invalid table name:', error.details);
     return res.status(400).json({ 
       error: 'Invalid table name',
+      details: error.details.map(d => d.message) 
+    });
+  }
+  
+  next();
+}
+
+// Validation middleware for object name
+function validateObjectName(req, res, next) {
+  const { objectName } = req.params;
+  
+  logger.info(`[TABLE_METADATA VALIDATION] Validating object name: ${objectName}`);
+  
+  const { error } = objectNameSchema.validate(objectName);
+  
+  if (error) {
+    logger.error('[TABLE_METADATA VALIDATION] Invalid object name:', error.details);
+    return res.status(400).json({ 
+      error: 'Invalid object name',
       details: error.details.map(d => d.message) 
     });
   }
@@ -76,6 +100,7 @@ function validateSearchQuery(req, res, next) {
 
 module.exports = {
   validateTableName,
+  validateObjectName,
   validateColumnName,
   validateSearchQuery
 };

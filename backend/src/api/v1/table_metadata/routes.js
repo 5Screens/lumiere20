@@ -10,10 +10,10 @@ router.use((req, res, next) => {
   next();
 });
 
-// Get filter configuration for a table
+// Get filter configuration for an object
 router.get(
-  '/filter_config/:tableName',
-  validation.validateTableName,
+  '/filter_config/:objectName',
+  validation.validateObjectName,
   controller.getFilterConfig
 );
 

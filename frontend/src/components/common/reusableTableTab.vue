@@ -3,7 +3,7 @@
     <!-- Multi Filter Panel -->
     <sMultiFilter
       v-if="filterable"
-      :table-name="tableName"
+      :object-name="objectName"
       @filters-applied="handleFiltersApplied"
       @filters-reset="handleFiltersReset"
     />
@@ -228,7 +228,7 @@ export default {
       type: Number,
       default: 50
     },
-    tableName: {
+    objectName: {
       type: String,
       default: null
     }
@@ -535,9 +535,9 @@ export default {
         
         if (hasDateRange || Object.keys(this.filters).length > 0) {
           // Use filter store for complex filtering
-          const tableName = this.tableName || this.apiUrl;
+          const objectName = this.objectName || this.apiUrl;
           response = await this.filterStore.applyFilters(
-            tableName,
+            objectName,
             this.filters,
             this.sortColumn ? { by: this.sortColumn, direction: this.sortDirection } : null,
             { page: this.currentPage, limit: this.pageSize }
@@ -1138,12 +1138,12 @@ export default {
       
       let response;
       
-      // Différencier l'appel selon le type de table
-      if (this.tableName === 'persons') {
-        // Pour persons, utiliser le filterStore
+      // Différencier l'appel selon le type d'objet
+      if (this.objectName === 'Person') {
+        // Pour Person, utiliser le filterStore
         console.log('[ReusableTableTab] Calling filterStore.applyPersonsSearch with:', { sort, pagination });
         response = await this.filterStore.applyPersonsSearch(
-          this.tableName,
+          this.objectName,
           sort,
           pagination
         );
@@ -1372,7 +1372,7 @@ export default {
      * Get active filters for a specific column
      */
     getActiveFiltersForColumn(columnKey) {
-      const activeFilters = this.filterStore.getActiveFiltersForTable(this.tableName) || [];
+      const activeFilters = this.filterStore.getActiveFiltersForTable(this.objectName) || [];
       return activeFilters.filter(filter => filter.column === columnKey && this.isFilterActive(filter));
     },
 
@@ -1409,7 +1409,7 @@ export default {
      * Get column configuration from filter config
      */
     getColumnConfig(columnKey) {
-      const config = this.filterStore.getConfigForTable(this.tableName) || [];
+      const config = this.filterStore.getConfigForTable(this.objectName) || [];
       return config.find(col => col.column === columnKey) || { column: columnKey, label: columnKey };
     },
 
@@ -1418,7 +1418,7 @@ export default {
      */
     handleRemoveFilterTag(filterId) {
       console.log('[ReusableTableTab] Removing filter tag:', filterId);
-      this.filterStore.removeFilter(this.tableName, filterId);
+      this.filterStore.removeFilter(this.objectName, filterId);
       
       // Recharger les données
       if (this.infiniteScrollEnabled) {
@@ -1433,7 +1433,7 @@ export default {
      */
     handleUpdateFilterValue(filterId, newValue) {
       console.log('[ReusableTableTab] Updating filter value:', filterId, newValue);
-      this.filterStore.updateFilter(this.tableName, filterId, { value: newValue });
+      this.filterStore.updateFilter(this.objectName, filterId, { value: newValue });
       
       // Recharger les données
       if (this.infiniteScrollEnabled) {

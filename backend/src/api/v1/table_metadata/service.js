@@ -22,13 +22,13 @@ function getTableWithSchema(tableName) {
 }
 
 /**
- * Get filter configuration for a specific table
- * @param {string} tableName - Name of the table
+ * Get filter configuration for a specific object
+ * @param {string} objectName - Name of the object (e.g., "Person", "Task")
  * @returns {Object} Filter configuration
  */
-async function getFilterConfig(tableName) {
+async function getFilterConfig(objectName) {
   try {
-    logger.info(`[TABLE_METADATA SERVICE] Getting filter config for table: ${tableName}`);
+    logger.info(`[TABLE_METADATA SERVICE] Getting filter config for object: ${objectName}`);
     
     const query = `
       SELECT 
@@ -38,13 +38,13 @@ async function getFilterConfig(tableName) {
         filter_options,
         data_type
       FROM administration.table_metadata
-      WHERE table_name = $1
+      WHERE object_name = $1
         AND data_is_filterable = true
         AND column_name IS NOT NULL
       ORDER BY form_order, column_name
     `;
     
-    const result = await db.query(query, [tableName]);
+    const result = await db.query(query, [objectName]);
     
     // Transform to expected format
     const filterConfig = {};
@@ -65,7 +65,7 @@ async function getFilterConfig(tableName) {
       }
     });
     
-    logger.info(`[TABLE_METADATA SERVICE] Found ${Object.keys(filterConfig).length} filterable columns`);
+    logger.info(`[TABLE_METADATA SERVICE] Found ${Object.keys(filterConfig).length} filterable columns for ${objectName}`);
     return filterConfig;
     
   } catch (error) {

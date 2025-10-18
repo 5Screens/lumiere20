@@ -238,7 +238,7 @@ export default {
       type: Number,
       required: true
     },
-    tableName: {
+    objectName: {
       type: String,
       required: true
     },
@@ -419,7 +419,7 @@ export default {
         searchSuggestionsTimer.value = setTimeout(async () => {
           try {
             const suggestions = await filterStore.loadFilterValues(
-              props.tableName,
+              props.objectName,
               props.filter.column,
               value
             );
@@ -457,7 +457,7 @@ export default {
 
     const loadOptions = async (column) => {
       try {
-        const values = await filterStore.loadFilterValues(props.tableName, column);
+        const values = await filterStore.loadFilterValues(props.objectName, column);
         
         if (selectedColumnConfig.value?.type === 'checkbox') {
           checkboxOptions.value = values || [];

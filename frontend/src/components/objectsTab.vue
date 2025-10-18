@@ -19,7 +19,7 @@
       ref="table"
       :api-url="apiUrl"
       :columns="columns"
-      :table-name="tableName"
+      :object-name="data.className"
       @row-selected="onRowSelected"
       @error="handleError"
       :selectable="true"
@@ -162,29 +162,6 @@ export default {
       
       console.log(`[ObjectsTab] infiniteScrollPageSize pour ${className}:`, pageSize);
       return pageSize;
-    },
-    
-    // Nom de la table pour le système de filtres
-    tableName() {
-      // Mapper les noms de classe vers les noms de table (sans schéma pour les endpoints)
-      const tableMapping = {
-        'Person': 'persons',
-        'Entity': 'entities',
-        'Symptom': 'symptoms',
-        'Task': 'tickets',
-        'Incident': 'tickets',
-        'Problem': 'tickets',
-        'Change': 'tickets',
-        'Knowledge': 'tickets',
-        'Project': 'tickets',
-        'Sprint': 'tickets',
-        'Epic': 'tickets',
-        'Story': 'tickets',
-        'Defect': 'tickets'
-      };
-      
-      const className = this.data.className;
-      return tableMapping[className] || className.toLowerCase();
     }
     // Les computed properties formType, createTitle, uniqueIdentifier et nameField
     // ont été supprimées car elles sont remplacées par les getters de class

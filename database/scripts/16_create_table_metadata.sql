@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS administration.table_metadata (
     
     -- Table identification
     table_name VARCHAR(50) NOT NULL,
+    object_name VARCHAR(50), -- Object name for end-user (e.g., "Person", "Task")
     table_label VARCHAR(100), -- Display name in UI (e.g., "Users" for "users")
     table_description TEXT, -- Table description
     

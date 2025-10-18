@@ -10,16 +10,9 @@ BEGIN;
 -- Clean existing metadata for persons table
 DELETE FROM administration.table_metadata WHERE table_name = 'persons';
 
--- Insert table-level metadata
-INSERT INTO administration.table_metadata (
-    table_name, table_label, table_description, 
-    column_name, data_is_visible, data_is_sortable, data_is_filterable
-) VALUES 
-('persons', 'Personnes', 'Table des personnes/utilisateurs du système', NULL, true, false, false);
-
 -- Insert column-level metadata for configuration.persons
 INSERT INTO administration.table_metadata (
-    table_name, column_name, column_label, column_description,
+    table_name, object_name, column_name, column_label, column_description,
     data_type, data_is_nullable, data_default_value,
     data_is_visible, data_is_sortable, data_is_filterable,
     filter_type, filter_options,
@@ -29,7 +22,7 @@ INSERT INTO administration.table_metadata (
     form_visible, form_order
 ) VALUES 
 -- uuid
-('persons', 'uuid', 'person.uuid', 'Identifiant unique',
+('persons', 'Person', 'uuid', 'person.uuid', 'Identifiant unique',
  'uuid', false, 'uuid_generate_v4()',
  false, false, false,
  NULL, NULL,
@@ -39,7 +32,7 @@ INSERT INTO administration.table_metadata (
  false, 0),
 
 -- first_name
-('persons', 'first_name', 'person.first_name', 'Prénom de la personne',
+('persons', 'Person', 'first_name', 'person.first_name', 'Prénom de la personne',
  'string', false, NULL,
  true, true, true,
  'search', '{"minChars": 2, "debounce": 300}'::jsonb,
@@ -49,7 +42,7 @@ INSERT INTO administration.table_metadata (
  true, 10),
 
 -- last_name
-('persons', 'last_name', 'person.last_name', 'Nom de famille de la personne',
+('persons', 'Person', 'last_name', 'person.last_name', 'Nom de famille de la personne',
  'string', false, NULL,
  true, true, true,
  'search', '{"minChars": 2, "debounce": 300}'::jsonb,
@@ -59,7 +52,7 @@ INSERT INTO administration.table_metadata (
  true, 20),
 
 -- job_role
-('persons', 'job_role', 'person.job_role', 'Rôle/Fonction dans l''organisation',
+('persons', 'Person', 'job_role', 'person.job_role', 'Rôle/Fonction dans l''organisation',
  'string', true, NULL,
  true, true, true,
  'checkbox', '{"multiple": true}'::jsonb,
@@ -69,7 +62,7 @@ INSERT INTO administration.table_metadata (
  true, 30),
 
 -- ref_entity_uuid
-('persons', 'ref_entity_uuid', 'person.entity', 'Entité d''appartenance',
+('persons', 'Person', 'ref_entity_uuid', 'person.entity', 'Entité d''appartenance',
  'uuid', true, NULL,
  true, true, true,
  'checkbox', '{"multiple": false}'::jsonb,
@@ -79,7 +72,7 @@ INSERT INTO administration.table_metadata (
  true, 40),
 
 -- email
-('persons', 'email', 'person.email', 'Adresse email professionnelle',
+('persons', 'Person', 'email', 'person.email', 'Adresse email professionnelle',
  'string', false, NULL,
  true, true, true,
  'search', '{"minChars": 3, "debounce": 300}'::jsonb,
@@ -89,7 +82,7 @@ INSERT INTO administration.table_metadata (
  true, 50),
 
 -- active
-('persons', 'active', 'person.active', 'Statut actif/inactif',
+('persons', 'Person', 'active', 'person.active', 'Statut actif/inactif',
  'boolean', true, 'true',
  true, true, true,
  'checkbox', '{"trueLabel": "Actif", "falseLabel": "Inactif"}'::jsonb,
@@ -99,7 +92,7 @@ INSERT INTO administration.table_metadata (
  true, 60),
 
 -- critical_user
-('persons', 'critical_user', 'person.critical_user', 'Utilisateur avec privilèges critiques',
+('persons', 'Person', 'critical_user', 'person.critical_user', 'Utilisateur avec privilèges critiques',
  'boolean', true, 'false',
  true, true, true,
  'checkbox', '{"trueLabel": "Critique", "falseLabel": "Standard"}'::jsonb,
@@ -109,7 +102,7 @@ INSERT INTO administration.table_metadata (
  true, 70),
 
 -- external_user
-('persons', 'external_user', 'person.external_user', 'Utilisateur externe à l''organisation',
+('persons', 'Person', 'external_user', 'person.external_user', 'Utilisateur externe à l''organisation',
  'boolean', true, 'false',
  true, true, true,
  'checkbox', '{"trueLabel": "Externe", "falseLabel": "Interne"}'::jsonb,
@@ -119,7 +112,7 @@ INSERT INTO administration.table_metadata (
  true, 80),
 
 -- ref_location_uuid
-('persons', 'ref_location_uuid', 'person.location', 'Localisation physique',
+('persons', 'Person', 'ref_location_uuid', 'person.location', 'Localisation physique',
  'uuid', true, NULL,
  true, true, true,
  'checkbox', '{"multiple": false}'::jsonb,
@@ -129,7 +122,7 @@ INSERT INTO administration.table_metadata (
  true, 90),
 
 -- floor
-('persons', 'floor', 'person.floor', 'Étage du bâtiment',
+('persons', 'Person', 'floor', 'person.floor', 'Étage du bâtiment',
  'string', true, NULL,
  true, true, true,
  'search', '{"minChars": 1, "debounce": 300}'::jsonb,
@@ -139,7 +132,7 @@ INSERT INTO administration.table_metadata (
  true, 100),
 
 -- room
-('persons', 'room', 'person.room', 'Numéro de bureau/salle',
+('persons', 'Person', 'room', 'person.room', 'Numéro de bureau/salle',
  'string', true, NULL,
  true, true, true,
  'search', '{"minChars": 1, "debounce": 300}'::jsonb,
@@ -149,7 +142,7 @@ INSERT INTO administration.table_metadata (
  true, 110),
 
 -- ref_approving_manager_uuid
-('persons', 'ref_approving_manager_uuid', 'person.approving_manager', 'Manager approbateur',
+('persons', 'Person', 'ref_approving_manager_uuid', 'person.approving_manager', 'Manager approbateur',
  'uuid', true, NULL,
  true, true, true,
  'select', '{"multiple": false}'::jsonb,
@@ -159,7 +152,7 @@ INSERT INTO administration.table_metadata (
  true, 120),
 
 -- business_phone
-('persons', 'business_phone', 'person.business_phone', 'Numéro de téléphone fixe',
+('persons', 'Person', 'business_phone', 'person.business_phone', 'Numéro de téléphone fixe',
  'string', true, NULL,
  true, true, true,
  'search', '{"minChars": 3, "debounce": 300}'::jsonb,
@@ -169,7 +162,7 @@ INSERT INTO administration.table_metadata (
  true, 130),
 
 -- business_mobile_phone
-('persons', 'business_mobile_phone', 'person.business_mobile_phone', 'Numéro de mobile professionnel',
+('persons', 'Person', 'business_mobile_phone', 'person.business_mobile_phone', 'Numéro de mobile professionnel',
  'string', true, NULL,
  true, true, true,
  'search', '{"minChars": 3, "debounce": 300}'::jsonb,
@@ -179,7 +172,7 @@ INSERT INTO administration.table_metadata (
  true, 140),
 
 -- personal_mobile_phone
-('persons', 'personal_mobile_phone', 'person.personal_mobile_phone', 'Numéro de mobile personnel',
+('persons', 'Person', 'personal_mobile_phone', 'person.personal_mobile_phone', 'Numéro de mobile personnel',
  'string', true, NULL,
  true, false, false,
  NULL, NULL,
@@ -189,7 +182,7 @@ INSERT INTO administration.table_metadata (
  true, 150),
 
 -- language
-('persons', 'language', 'person.language', 'Langue préférée',
+('persons', 'Person', 'language', 'person.language', 'Langue préférée',
  'string', true, NULL,
  true, true, true,
  'checkbox', '{"multiple": false}'::jsonb,
@@ -199,7 +192,7 @@ INSERT INTO administration.table_metadata (
  true, 160),
 
 -- notification
-('persons', 'notification', 'person.notification', 'Recevoir les notifications',
+('persons', 'Person', 'notification', 'person.notification', 'Recevoir les notifications',
  'boolean', true, 'true',
  true, true, true,
  'checkbox', '{"trueLabel": "Activées", "falseLabel": "Désactivées"}'::jsonb,
@@ -209,7 +202,7 @@ INSERT INTO administration.table_metadata (
  true, 170),
 
 -- time_zone
-('persons', 'time_zone', 'person.time_zone', 'Fuseau horaire de l''utilisateur',
+('persons', 'Person', 'time_zone', 'person.time_zone', 'Fuseau horaire de l''utilisateur',
  'string', true, NULL,
  true, true, true,
  'select', '{"multiple": false}'::jsonb,
@@ -219,7 +212,7 @@ INSERT INTO administration.table_metadata (
  true, 180),
 
 -- date_format
-('persons', 'date_format', 'person.date_format', 'Format d''affichage des dates',
+('persons', 'Person', 'date_format', 'person.date_format', 'Format d''affichage des dates',
  'string', true, NULL,
  true, false, true,
  'select', '{"options": ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"]}'::jsonb,
@@ -229,7 +222,7 @@ INSERT INTO administration.table_metadata (
  true, 190),
 
 -- internal_id
-('persons', 'internal_id', 'person.internal_id', 'Identifiant interne/matricule',
+('persons', 'Person', 'internal_id', 'person.internal_id', 'Identifiant interne/matricule',
  'string', true, NULL,
  true, true, true,
  'search', '{"minChars": 2, "debounce": 300}'::jsonb,
@@ -239,7 +232,7 @@ INSERT INTO administration.table_metadata (
  true, 200),
 
 -- password (hidden in lists, shown in forms)
-('persons', 'password', 'person.password', 'Mot de passe de connexion',
+('persons', 'Person', 'password', 'person.password', 'Mot de passe de connexion',
  'string', true, NULL,
  false, false, false,
  NULL, NULL,
@@ -249,7 +242,7 @@ INSERT INTO administration.table_metadata (
  true, 210),
 
 -- password_needs_reset
-('persons', 'password_needs_reset', 'person.password_needs_reset', 'Le mot de passe doit être changé',
+('persons', 'Person', 'password_needs_reset', 'person.password_needs_reset', 'Le mot de passe doit être changé',
  'boolean', true, 'false',
  true, false, false,
  NULL, NULL,
@@ -259,7 +252,7 @@ INSERT INTO administration.table_metadata (
  true, 220),
 
 -- locked_out
-('persons', 'locked_out', 'person.locked_out', 'Compte verrouillé',
+('persons', 'Person', 'locked_out', 'person.locked_out', 'Compte verrouillé',
  'boolean', true, 'false',
  true, true, true,
  'checkbox', '{"trueLabel": "Verrouillé", "falseLabel": "Déverrouillé"}'::jsonb,
@@ -269,7 +262,7 @@ INSERT INTO administration.table_metadata (
  true, 230),
 
 -- roles (JSONB field)
-('persons', 'roles', 'person.roles', 'Rôles et permissions',
+('persons', 'Person', 'roles', 'person.roles', 'Rôles et permissions',
  'json', true, NULL,
  true, false, false,
  NULL, NULL,
@@ -279,7 +272,7 @@ INSERT INTO administration.table_metadata (
  true, 240),
 
 -- photo
-('persons', 'photo', 'person.photo', 'Photo de profil',
+('persons', 'Person', 'photo', 'person.photo', 'Photo de profil',
  'string', true, NULL,
  true, false, false,
  NULL, NULL,
@@ -289,7 +282,7 @@ INSERT INTO administration.table_metadata (
  true, 250),
 
 -- created_at
-('persons', 'created_at', 'person.created_at', 'Date de création',
+('persons', 'Person', 'created_at', 'person.created_at', 'Date de création',
  'datetime', false, 'CURRENT_TIMESTAMP',
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
@@ -299,7 +292,7 @@ INSERT INTO administration.table_metadata (
  false, 260),
 
 -- updated_at
-('persons', 'updated_at', 'person.updated_at', 'Date de dernière modification',
+('persons', 'Person', 'updated_at', 'person.updated_at', 'Date de dernière modification',
  'datetime', false, 'CURRENT_TIMESTAMP',
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
@@ -317,16 +310,9 @@ INSERT INTO administration.table_metadata (
 -- Clean existing metadata for tickets table
 DELETE FROM administration.table_metadata WHERE table_name = 'tickets';
 
--- Insert table-level metadata
-INSERT INTO administration.table_metadata (
-    table_name, table_label, table_description, 
-    column_name, data_is_visible, data_is_sortable, data_is_filterable
-) VALUES 
-('tickets', 'Tickets', 'Table des tickets du système (TASK, INCIDENT, PROBLEM, CHANGE, etc.)', NULL, true, false, false);
-
 -- Insert column-level metadata for core.tickets
 INSERT INTO administration.table_metadata (
-    table_name, column_name, column_label, column_description,
+    table_name, object_name, column_name, column_label, column_description,
     data_type, data_is_nullable, data_default_value,
     data_is_visible, data_is_sortable, data_is_filterable,
     filter_type, filter_options,
@@ -336,7 +322,7 @@ INSERT INTO administration.table_metadata (
     form_visible, form_order
 ) VALUES 
 -- uuid
-('tickets', 'uuid', 'ticket.uuid', 'Identifiant unique du ticket',
+('tickets', 'Task', 'uuid', 'ticket.uuid', 'Identifiant unique du ticket',
  'uuid', false, 'uuid_generate_v4()',
  true, false, true,
  'search', '{"minChars": 8}'::jsonb,
@@ -346,7 +332,7 @@ INSERT INTO administration.table_metadata (
  false, 0),
 
 -- title
-('tickets', 'title', 'ticket.title', 'Titre du ticket',
+('tickets', 'Task', 'title', 'ticket.title', 'Titre du ticket',
  'text', false, NULL,
  true, true, true,
  'search', '{"minChars": 2, "debounce": 300}'::jsonb,
@@ -356,7 +342,7 @@ INSERT INTO administration.table_metadata (
  true, 10),
 
 -- description
-('tickets', 'description', 'ticket.description', 'Description détaillée',
+('tickets', 'Task', 'description', 'ticket.description', 'Description détaillée',
  'text', true, NULL,
  true, false, true,
  'search', '{"minChars": 3, "debounce": 300}'::jsonb,
@@ -366,7 +352,7 @@ INSERT INTO administration.table_metadata (
  true, 20),
 
 -- ticket_type_code
-('tickets', 'ticket_type_code', 'ticket.type', 'Type de ticket',
+('tickets', 'Task', 'ticket_type_code', 'ticket.type', 'Type de ticket',
  'text', false, NULL,
  true, true, true,
  'checkbox', '{"multiple": true}'::jsonb,
@@ -376,7 +362,7 @@ INSERT INTO administration.table_metadata (
  true, 30),
 
 -- ticket_status_code
-('tickets', 'ticket_status_code', 'ticket.status', 'Statut du ticket',
+('tickets', 'Task', 'ticket_status_code', 'ticket.status', 'Statut du ticket',
  'text', false, NULL,
  true, true, true,
  'checkbox', '{"multiple": true}'::jsonb,
@@ -386,7 +372,7 @@ INSERT INTO administration.table_metadata (
  true, 40),
 
 -- requested_by_uuid
-('tickets', 'requested_by_uuid', 'ticket.requested_by', 'Demandé par',
+('tickets', 'Task', 'requested_by_uuid', 'ticket.requested_by', 'Demandé par',
  'uuid', true, NULL,
  true, false, true,
  'select', '{"multiple": false}'::jsonb,
@@ -396,7 +382,7 @@ INSERT INTO administration.table_metadata (
  true, 50),
 
 -- requested_for_uuid
-('tickets', 'requested_for_uuid', 'ticket.requested_for', 'Demandé pour',
+('tickets', 'Task', 'requested_for_uuid', 'ticket.requested_for', 'Demandé pour',
  'uuid', true, NULL,
  true, false, true,
  'select', '{"multiple": false}'::jsonb,
@@ -406,7 +392,7 @@ INSERT INTO administration.table_metadata (
  true, 60),
 
 -- writer_uuid
-('tickets', 'writer_uuid', 'ticket.writer', 'Rédacteur',
+('tickets', 'Task', 'writer_uuid', 'ticket.writer', 'Rédacteur',
  'uuid', false, NULL,
  true, false, true,
  'select', '{"multiple": false}'::jsonb,
@@ -416,7 +402,7 @@ INSERT INTO administration.table_metadata (
  true, 70),
 
 -- configuration_item_uuid
-('tickets', 'configuration_item_uuid', 'ticket.configuration_item', 'Élément de configuration',
+('tickets', 'Task', 'configuration_item_uuid', 'ticket.configuration_item', 'Élément de configuration',
  'uuid', true, NULL,
  true, false, true,
  'select', '{"multiple": false}'::jsonb,
@@ -426,7 +412,7 @@ INSERT INTO administration.table_metadata (
  true, 80),
 
 -- created_at
-('tickets', 'created_at', 'ticket.created_at', 'Date de création',
+('tickets', 'Task', 'created_at', 'ticket.created_at', 'Date de création',
  'date', false, 'CURRENT_TIMESTAMP',
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
@@ -436,7 +422,7 @@ INSERT INTO administration.table_metadata (
  false, 90),
 
 -- updated_at
-('tickets', 'updated_at', 'ticket.updated_at', 'Date de modification',
+('tickets', 'Task', 'updated_at', 'ticket.updated_at', 'Date de modification',
  'date', false, 'CURRENT_TIMESTAMP',
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
@@ -446,7 +432,7 @@ INSERT INTO administration.table_metadata (
  false, 100),
 
 -- closed_at
-('tickets', 'closed_at', 'ticket.closed_at', 'Date de clôture',
+('tickets', 'Task', 'closed_at', 'ticket.closed_at', 'Date de clôture',
  'date', true, NULL,
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
@@ -456,7 +442,7 @@ INSERT INTO administration.table_metadata (
  false, 110),
 
 -- core_extended_attributes
-('tickets', 'core_extended_attributes', 'ticket.core_attributes', 'Attributs étendus système',
+('tickets', 'Task', 'core_extended_attributes', 'ticket.core_attributes', 'Attributs étendus système',
  'json', true, NULL,
  false, false, false,
  NULL, NULL,
@@ -466,7 +452,7 @@ INSERT INTO administration.table_metadata (
  false, 120),
 
 -- user_extended_attributes
-('tickets', 'user_extended_attributes', 'ticket.user_attributes', 'Attributs étendus utilisateur',
+('tickets', 'Task', 'user_extended_attributes', 'ticket.user_attributes', 'Attributs étendus utilisateur',
  'json', true, NULL,
  false, false, false,
  NULL, NULL,
