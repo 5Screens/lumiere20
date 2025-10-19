@@ -584,11 +584,6 @@ export const useFilterStore = defineStore('filter', {
       }
     },
     
-    // Alias pour compatibilité avec le code existant
-    async applyPersonsSearch(tableName, sort = null, pagination = null, lang = null) {
-      return this.applySearch(tableName, sort, pagination, lang);
-    },
-    
     // Définir les options de filtrage (mode et operator)
     setFilterOptions(tableName, options) {
       this.filterOptions[tableName] = options;

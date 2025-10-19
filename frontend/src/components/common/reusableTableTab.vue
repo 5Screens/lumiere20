@@ -1142,8 +1142,8 @@ export default {
       if (this.objectName === 'Person' || this.objectName === 'Task') {
         // Pour Person et Task, utiliser le filterStore qui gère la conversion des filtres
         const lang = this.userProfileStore.language || 'en';
-        console.log(`[ReusableTableTab] Calling filterStore.applyPersonsSearch for ${this.objectName} with:`, { sort, pagination, lang });
-        response = await this.filterStore.applyPersonsSearch(
+        console.log(`[ReusableTableTab] Calling filterStore.applySearch for ${this.objectName} with:`, { sort, pagination, lang });
+        response = await this.filterStore.applySearch(
           this.objectName,
           sort,
           pagination,
