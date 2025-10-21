@@ -161,7 +161,7 @@ export const useFilterStore = defineStore('filter', {
           
           // Ajouter la recherche si fournie
           if (searchQuery) {
-            params.q = searchQuery;
+            params.search = searchQuery;
           }
         }
         

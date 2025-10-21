@@ -514,7 +514,8 @@ export default {
       // Créer un nouveau timer avec debounce
       checkboxSearchTimer.value = setTimeout(async () => {
         try {
-          console.info(`[sOneFilter] Searching checkboxes with query: "${checkboxSearchQuery.value}"`);
+          console.info(`[sOneFilter] 🔍 Searching checkboxes with query: "${checkboxSearchQuery.value}"`);
+          console.info(`[sOneFilter] Current checkboxOptions length BEFORE: ${checkboxOptions.value.length}`);
           
           // Recharger les valeurs avec le critère de recherche
           const values = await filterStore.loadFilterValues(
@@ -523,10 +524,15 @@ export default {
             checkboxSearchQuery.value || null
           );
           
+          console.info(`[sOneFilter] ✅ Received ${values?.length || 0} values from API`);
+          console.info(`[sOneFilter] First 3 values:`, values?.slice(0, 3));
+          
           checkboxOptions.value = values || [];
-          console.info(`[sOneFilter] Loaded ${checkboxOptions.value.length} filtered options`);
+          
+          console.info(`[sOneFilter] Current checkboxOptions length AFTER: ${checkboxOptions.value.length}`);
+          console.info(`[sOneFilter] checkboxOptions.value is reactive:`, checkboxOptions.value);
         } catch (err) {
-          console.error(`[sOneFilter] Error loading filtered checkbox options:`, err);
+          console.error(`[sOneFilter] ❌ Error loading filtered checkbox options:`, err);
           checkboxOptions.value = [];
         }
       }, DEBOUNCE_DELAY_MS);
