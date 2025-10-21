@@ -368,7 +368,6 @@ export default {
     // Méthodes
     const updateColumn = (event) => {
       const column = event.target.value;
-      const columnConfig = props.availableColumns.find(col => col.column === column);
       
       emit('update', props.filter.id, {
         column: column,
@@ -376,10 +375,8 @@ export default {
         value: null
       });
 
-      // Charger les options si nécessaire
-      if (columnConfig && (columnConfig.type === 'checkbox' || columnConfig.type === 'select')) {
-        loadOptions(column);
-      }
+      // Ne pas charger les options ici car le watch s'en charge déjà
+      // Cela évite un double appel à loadOptions
     };
 
     const updateType = (event) => {
@@ -552,9 +549,13 @@ export default {
       emit('apply-filters');
     };
 
+    // Variable pour éviter le double chargement au montage
+    let isMounted = false;
+
     // Watchers
-    watch(() => props.filter.column, (newColumn) => {
-      if (newColumn && selectedColumnConfig.value) {
+    watch(() => props.filter.column, (newColumn, oldColumn) => {
+      // Ne charger que si la colonne a vraiment changé et que le composant est déjà monté
+      if (isMounted && newColumn && newColumn !== oldColumn && selectedColumnConfig.value) {
         const type = selectedColumnConfig.value.type;
         if (type === 'checkbox' || type === 'select') {
           loadOptions(newColumn);
@@ -570,6 +571,8 @@ export default {
           loadOptions(props.filter.column);
         }
       }
+      // Marquer comme monté après le premier chargement
+      isMounted = true;
     });
 
     return {
