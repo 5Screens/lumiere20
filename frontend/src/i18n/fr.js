@@ -1303,6 +1303,7 @@ export default {
     is_null:'est null',
     is_not_null:'n\'est pas null' ,
     search_placeholder:'que rechercher ?',
+    search_in_list:'Rechercher dans la liste...',
     keep:'Garder',
     remove:'Supprimer',
     all_filters:"tous les filtres",

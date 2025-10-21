@@ -82,6 +82,18 @@
 
       <!-- Checkbox Filter -->
       <div v-else-if="selectedColumnConfig.type === 'checkbox'" class="s-one-filter__checkbox">
+        <!-- Champ de recherche pour les colonnes avec form_lazy_search=true -->
+        <div v-if="selectedColumnConfig.form_lazy_search" class="s-one-filter__checkbox-search">
+          <input
+            type="text"
+            v-model="checkboxSearchQuery"
+            :placeholder="$t('filters.search_in_list')"
+            @input="handleCheckboxSearch"
+            class="s-one-filter__input s-one-filter__input--search"
+          />
+          <i class="fas fa-search s-one-filter__search-icon"></i>
+        </div>
+        
         <div class="s-one-filter__checkbox-items">
           <label 
             v-for="option in checkboxOptions" 
@@ -226,6 +238,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFilterStore } from '@/stores/filterStore';
 import { useI18n } from 'vue-i18n';
+import { DEBOUNCE_DELAY_MS } from '@/config/config';
 
 export default {
   name: 'sOneFilter',
@@ -258,6 +271,8 @@ export default {
     const checkboxOptions = ref([]);
     const selectOptions = ref([]);
     const searchSuggestionsTimer = ref(null);
+    const checkboxSearchQuery = ref('');
+    const checkboxSearchTimer = ref(null);
 
     // Computed
     const selectedColumnConfig = computed(() => {
@@ -489,6 +504,34 @@ export default {
       emit('update', props.filter.id, { value: currentValues });
     };
 
+    // Recherche dans les checkboxes avec debounce
+    const handleCheckboxSearch = () => {
+      // Annuler le timer précédent
+      if (checkboxSearchTimer.value) {
+        clearTimeout(checkboxSearchTimer.value);
+      }
+
+      // Créer un nouveau timer avec debounce
+      checkboxSearchTimer.value = setTimeout(async () => {
+        try {
+          console.info(`[sOneFilter] Searching checkboxes with query: "${checkboxSearchQuery.value}"`);
+          
+          // Recharger les valeurs avec le critère de recherche
+          const values = await filterStore.loadFilterValues(
+            props.objectName,
+            props.filter.column,
+            checkboxSearchQuery.value || null
+          );
+          
+          checkboxOptions.value = values || [];
+          console.info(`[sOneFilter] Loaded ${checkboxOptions.value.length} filtered options`);
+        } catch (err) {
+          console.error(`[sOneFilter] Error loading filtered checkbox options:`, err);
+          checkboxOptions.value = [];
+        }
+      }, DEBOUNCE_DELAY_MS);
+    };
+
     // Méthodes pour select multiple
     const handleMultiselectChange = (event) => {
       const value = event.target.value;
@@ -584,6 +627,7 @@ export default {
       availableSelectOptions,
       availableFilterTypes,
       shouldShowValueField,
+      checkboxSearchQuery,
       updateColumn,
       updateType,
       updateValue,
@@ -591,6 +635,7 @@ export default {
       getTypeLabel,
       isChecked,
       handleCheckboxChange,
+      handleCheckboxSearch,
       handleMultiselectChange,
       removeFromMultiselect,
       getOptionLabel,
