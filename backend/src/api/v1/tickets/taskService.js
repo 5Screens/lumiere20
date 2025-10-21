@@ -545,11 +545,12 @@ const updateTask = async (uuid, updateData) => {
  * Get filter values for a specific column in tickets table (for tasks)
  * @param {string} columnName - Name of the column
  * @param {string} searchQuery - Optional search query for dynamic filters
+ * @param {string} lang - Language code for translations (e.g., 'fr', 'en', 'es')
  * @returns {Object} Filter values
  */
-const getTasksFilterValues = async (columnName, searchQuery = null) => {
+const getTasksFilterValues = async (columnName, searchQuery = null, lang = 'en') => {
   try {
-    logger.info(`[TASK SERVICE] Getting filter values for tickets.${columnName}`);
+    logger.info(`[TASK SERVICE] Getting filter values for tickets.${columnName} (lang: ${lang})`);
     
     // First, get the metadata for this column
     const metadataQuery = `
@@ -558,7 +559,11 @@ const getTasksFilterValues = async (columnName, searchQuery = null) => {
         filter_options,
         is_foreign_key,
         related_table,
-        related_column
+        related_column,
+        is_multilang,
+        related_translation_table,
+        translation_foreign_key,
+        translation_label_column
       FROM administration.table_metadata
       WHERE table_name = $1 AND column_name = $2
     `;
@@ -583,30 +588,63 @@ const getTasksFilterValues = async (columnName, searchQuery = null) => {
       case 'checkbox':
         // Get distinct values for checkbox filter
         if (metadata.is_foreign_key && metadata.related_table) {
-          // Determine the label column based on the related table
-          let labelColumn = 'name';
-          let valueColumn = 'uuid';
-          
-          // Special cases for tables without 'name' column
-          if (metadata.related_table === 'configuration.ticket_status' || 
-              metadata.related_table === 'configuration.ticket_types') {
-            labelColumn = 'code';
-            valueColumn = 'code';
+          // Check if this column is multilingual
+          if (metadata.is_multilang && metadata.related_translation_table) {
+            logger.info(`[TASK SERVICE] Using multilingual query for ${columnName}`);
+            
+            // Determine value column based on related_column
+            const valueColumn = metadata.related_column || 'uuid';
+            const labelColumn = metadata.translation_label_column || 'label';
+            
+            // Build multilingual query
+            // Example for ticket_status_code:
+            // SELECT DISTINCT ts.code as value, tst.label as label
+            // FROM configuration.ticket_status ts
+            // INNER JOIN translations.ticket_status_translation tst ON tst.ticket_status_uuid = ts.uuid
+            // INNER JOIN core.tickets t ON t.ticket_status_code = ts.code
+            // WHERE tst.lang = 'fr' AND t.ticket_type_code = 'TASK'
+            const multilingualQuery = `
+              SELECT DISTINCT
+                r.${valueColumn} as value,
+                tr.${labelColumn} as label
+              FROM ${metadata.related_table} r
+              INNER JOIN ${metadata.related_translation_table} tr ON tr.${metadata.translation_foreign_key} = r.uuid
+              INNER JOIN ${getTableWithSchema('tickets')} t ON t.${columnName} = r.${metadata.related_column || 'uuid'}
+              WHERE tr.lang = $1
+                AND t.ticket_type_code = 'TASK'
+                AND tr.${labelColumn} IS NOT NULL
+              ORDER BY tr.${labelColumn}
+            `;
+            
+            logger.info(`[TASK SERVICE] Multilingual query: ${multilingualQuery}`);
+            const multilingualResult = await db.query(multilingualQuery, [lang]);
+            values = multilingualResult.rows;
+          } else {
+            // Non-multilingual foreign key
+            let labelColumn = 'name';
+            let valueColumn = 'uuid';
+            
+            // Special cases for tables without 'name' column
+            if (metadata.related_table === 'configuration.ticket_status' || 
+                metadata.related_table === 'configuration.ticket_types') {
+              labelColumn = 'code';
+              valueColumn = 'code';
+            }
+            
+            // If it's a foreign key, get values from related table
+            const fkQuery = `
+              SELECT DISTINCT
+                r.${valueColumn} as value,
+                r.${labelColumn} as label
+              FROM ${metadata.related_table} r
+              INNER JOIN ${getTableWithSchema('tickets')} t ON t.${columnName} = r.${metadata.related_column || 'uuid'}
+              WHERE r.${labelColumn} IS NOT NULL
+                AND t.ticket_type_code = 'TASK'
+              ORDER BY r.${labelColumn}
+            `;
+            const fkResult = await db.query(fkQuery);
+            values = fkResult.rows;
           }
-          
-          // If it's a foreign key, get values from related table
-          const fkQuery = `
-            SELECT DISTINCT
-              r.${valueColumn} as value,
-              r.${labelColumn} as label
-            FROM ${metadata.related_table} r
-            INNER JOIN ${getTableWithSchema('tickets')} t ON t.${columnName} = r.${metadata.related_column || 'uuid'}
-            WHERE r.${labelColumn} IS NOT NULL
-              AND t.ticket_type_code = 'TASK'
-            ORDER BY r.${labelColumn}
-          `;
-          const fkResult = await db.query(fkQuery);
-          values = fkResult.rows;
         } else {
           // Get distinct values from the column itself
           const distinctQuery = `
@@ -628,29 +666,54 @@ const getTasksFilterValues = async (columnName, searchQuery = null) => {
         if (searchQuery) {
           // Dynamic search based on query
           if (metadata.is_foreign_key && metadata.related_table) {
-            // Determine the label column based on the related table
-            let labelColumn = 'name';
-            let valueColumn = 'uuid';
-            
-            // Special cases for tables without 'name' column
-            if (metadata.related_table === 'configuration.ticket_status' || 
-                metadata.related_table === 'configuration.ticket_types') {
-              labelColumn = 'code';
-              valueColumn = 'code';
+            // Check if this column is multilingual
+            if (metadata.is_multilang && metadata.related_translation_table) {
+              logger.info(`[TASK SERVICE] Using multilingual search for ${columnName}`);
+              
+              const valueColumn = metadata.related_column || 'uuid';
+              const labelColumn = metadata.translation_label_column || 'label';
+              
+              // Search in translation table
+              const searchMultilingualQuery = `
+                SELECT DISTINCT
+                  r.${valueColumn} as value,
+                  tr.${labelColumn} as label
+                FROM ${metadata.related_table} r
+                INNER JOIN ${metadata.related_translation_table} tr ON tr.${metadata.translation_foreign_key} = r.uuid
+                WHERE tr.lang = $1
+                  AND LOWER(tr.${labelColumn}) LIKE LOWER($2)
+                  AND tr.${labelColumn} IS NOT NULL
+                ORDER BY tr.${labelColumn}
+                LIMIT 20
+              `;
+              
+              const searchMultilingualResult = await db.query(searchMultilingualQuery, [lang, `%${searchQuery}%`]);
+              values = searchMultilingualResult.rows;
+            } else {
+              // Non-multilingual search
+              let labelColumn = 'name';
+              let valueColumn = 'uuid';
+              
+              // Special cases for tables without 'name' column
+              if (metadata.related_table === 'configuration.ticket_status' || 
+                  metadata.related_table === 'configuration.ticket_types') {
+                labelColumn = 'code';
+                valueColumn = 'code';
+              }
+              
+              // Search in related table
+              const searchFkQuery = `
+                SELECT DISTINCT
+                  r.${valueColumn} as value,
+                  r.${labelColumn} as label
+                FROM ${metadata.related_table} r
+                WHERE LOWER(r.${labelColumn}) LIKE LOWER($1)
+                ORDER BY r.${labelColumn}
+                LIMIT 20
+              `;
+              const searchFkResult = await db.query(searchFkQuery, [`%${searchQuery}%`]);
+              values = searchFkResult.rows;
             }
-            
-            // Search in related table
-            const searchFkQuery = `
-              SELECT DISTINCT
-                r.${valueColumn} as value,
-                r.${labelColumn} as label
-              FROM ${metadata.related_table} r
-              WHERE LOWER(r.${labelColumn}) LIKE LOWER($1)
-              ORDER BY r.${labelColumn}
-              LIMIT 20
-            `;
-            const searchFkResult = await db.query(searchFkQuery, [`%${searchQuery}%`]);
-            values = searchFkResult.rows;
           } else {
             // Search in the column itself
             const searchColumnQuery = `

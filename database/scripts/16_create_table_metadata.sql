@@ -1,17 +1,22 @@
 -- =====================================================
 -- Script: 16_create_table_metadata.sql
 -- Description: Create administration schema and table_metadata table for dynamic filtering
+--              Includes multilingual support columns
 -- Author: System
 -- Date: 2024-09-24
+-- Updated: 2025-10-21 - Added multilingual support
 -- =====================================================
 
 BEGIN;
+
+-- Drop table if exists to recreate from scratch
+DROP TABLE IF EXISTS administration.table_metadata CASCADE;
 
 -- Create administration schema if not exists
 CREATE SCHEMA IF NOT EXISTS administration;
 
 -- Create table_metadata table
-CREATE TABLE IF NOT EXISTS administration.table_metadata (
+CREATE TABLE administration.table_metadata (
     -- Primary key
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     
@@ -44,6 +49,12 @@ CREATE TABLE IF NOT EXISTS administration.table_metadata (
     is_foreign_key BOOLEAN DEFAULT FALSE,
     related_table VARCHAR(50), -- Related table (e.g., "departments" for a "department_id" column)
     related_column VARCHAR(50), -- Related column (e.g., "id")
+    
+    -- Multilingual support (added 2025-10-21)
+    is_multilang BOOLEAN DEFAULT FALSE, -- Is this column multilingual?
+    related_translation_table VARCHAR(100), -- Translation table (e.g., "translations.ticket_status_translation")
+    translation_foreign_key VARCHAR(50), -- Foreign key column in translation table (e.g., "ticket_status_uuid")
+    translation_label_column VARCHAR(50) DEFAULT 'label', -- Column containing the translated label
     
     -- Metadata
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

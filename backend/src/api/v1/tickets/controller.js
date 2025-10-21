@@ -590,11 +590,14 @@ const getTasksFilterValues = async (req, res) => {
     try {
         logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/tasks/filters/${req.params.columnName} request`);
         const { columnName } = req.params;
-        const { q } = req.query;
+        const { q, lang } = req.query;
         
-        const values = await taskService.getTasksFilterValues(columnName, q);
+        // Default language to 'en' if not provided
+        const language = lang || 'en';
         
-        logger.info(`[TICKETS CONTROLLER] Successfully retrieved ${values.length || 0} filter values for ${columnName}`);
+        const values = await taskService.getTasksFilterValues(columnName, q, language);
+        
+        logger.info(`[TICKETS CONTROLLER] Successfully retrieved ${values.length || 0} filter values for ${columnName} (lang: ${language})`);
         res.status(200).json(values);
     } catch (error) {
         logger.error('[TICKETS CONTROLLER] Error getting tasks filter values:', error);

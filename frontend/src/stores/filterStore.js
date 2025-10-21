@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import apiService from '@/services/apiService';
 import { getClassByName } from '@/services/classMapping';
+import { useUserProfileStore } from '@/stores/userProfileStore';
 
 export const useFilterStore = defineStore('filter', {
   state: () => ({
@@ -137,6 +138,10 @@ export const useFilterStore = defineStore('filter', {
       try {
         console.info(`[FILTER_STORE] Loading filter values for ${columnName} in ${tableName}`);
         
+        // Récupérer la langue de l'utilisateur
+        const userProfileStore = useUserProfileStore();
+        const lang = userProfileStore.language || 'en';
+        
         // Récupérer l'endpoint API via la classe de modèle
         let endpoint = tableName;
         
@@ -151,8 +156,12 @@ export const useFilterStore = defineStore('filter', {
         }
         
         const url = `${endpoint}/filters/${columnName}`;
-        const params = searchQuery ? { q: searchQuery } : {};
+        const params = { lang };
+        if (searchQuery) {
+          params.q = searchQuery;
+        }
         
+        console.info(`[FILTER_STORE] Loading filter values with params:`, params);
         const response = await apiService.get(url, params);
         
         if (!this.filterValues[tableName]) {
