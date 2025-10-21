@@ -152,13 +152,17 @@ export const useFilterStore = defineStore('filter', {
         // Utiliser l'endpoint générique depuis les métadonnées
         const endpoint = metadata.form_endpoint;
         const params = { 
-          lang,
-          limit: 50  // Limite raisonnable pour les filtres
+          lang
         };
         
-        // Ajouter la recherche si fournie
-        if (searchQuery) {
-          params.q = searchQuery;
+        // Ajouter limit et search uniquement si l'endpoint supporte la pagination (lazy search)
+        if (metadata.form_lazy_search) {
+          params.limit = 50;  // Limite raisonnable pour les filtres avec pagination
+          
+          // Ajouter la recherche si fournie
+          if (searchQuery) {
+            params.q = searchQuery;
+          }
         }
         
         // Cas spécial pour ticket_status : filtrer par type de ticket

@@ -68,6 +68,7 @@ CREATE TABLE administration.table_metadata (
     form_endpoint TEXT, -- API endpoint for dynamic fields (e.g., select)
     form_display_field TEXT, -- Field to display for selects
     form_value_field TEXT, -- Field to use as value for selects
+    form_lazy_search BOOLEAN DEFAULT FALSE, -- If true, endpoint supports pagination (limit, offset, search)
     form_helper_text TEXT, -- Help text
     form_visible BOOLEAN DEFAULT TRUE, -- Visible in form
     form_order INTEGER DEFAULT 0, -- Display order in form

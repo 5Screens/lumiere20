@@ -39,7 +39,8 @@ async function getFilterConfig(objectName) {
         data_type,
         form_endpoint,
         form_display_field,
-        form_value_field
+        form_value_field,
+        form_lazy_search
       FROM administration.table_metadata
       WHERE object_name = $1
         AND data_is_filterable = true
@@ -59,7 +60,8 @@ async function getFilterConfig(objectName) {
           label: row.column_label,
           form_endpoint: row.form_endpoint,
           form_display_field: row.form_display_field,
-          form_value_field: row.form_value_field
+          form_value_field: row.form_value_field,
+          form_lazy_search: row.form_lazy_search
         };
       } else {
         filterConfig[row.column_name] = {
@@ -69,6 +71,7 @@ async function getFilterConfig(objectName) {
           form_endpoint: row.form_endpoint,
           form_display_field: row.form_display_field,
           form_value_field: row.form_value_field,
+          form_lazy_search: row.form_lazy_search,
           ...(row.filter_options || {})
         };
       }
