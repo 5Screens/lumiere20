@@ -597,22 +597,23 @@ const getTasksFilterValues = async (columnName, searchQuery = null, lang = 'en')
             const labelColumn = metadata.translation_label_column || 'label';
             
             // Build multilingual query
-            // Example for ticket_status_code:
-            // SELECT DISTINCT ts.code as value, tst.label as label
-            // FROM configuration.ticket_status ts
-            // INNER JOIN translations.ticket_status_translation tst ON tst.ticket_status_uuid = ts.uuid
-            // INNER JOIN core.tickets t ON t.ticket_status_code = ts.code
-            // WHERE tst.lang = 'fr' AND t.ticket_type_code = 'TASK'
+            // Special handling for ticket_status_code: filter by rel_ticket_type
+            let additionalFilter = '';
+            if (columnName === 'ticket_status_code' && metadata.related_table === 'configuration.ticket_status') {
+              additionalFilter = " AND r.rel_ticket_type = 'TASK'";
+            } else if (columnName === 'ticket_type_code' && metadata.related_table === 'configuration.ticket_types') {
+              // For ticket types, we might want to filter specific types
+              // For now, no additional filter needed
+            }
+            
             const multilingualQuery = `
               SELECT DISTINCT
                 r.${valueColumn} as value,
                 tr.${labelColumn} as label
               FROM ${metadata.related_table} r
               INNER JOIN ${metadata.related_translation_table} tr ON tr.${metadata.translation_foreign_key} = r.uuid
-              INNER JOIN ${getTableWithSchema('tickets')} t ON t.${columnName} = r.${metadata.related_column || 'uuid'}
               WHERE tr.lang = $1
-                AND t.ticket_type_code = 'TASK'
-                AND tr.${labelColumn} IS NOT NULL
+                AND tr.${labelColumn} IS NOT NULL${additionalFilter}
               ORDER BY tr.${labelColumn}
             `;
             
@@ -673,6 +674,12 @@ const getTasksFilterValues = async (columnName, searchQuery = null, lang = 'en')
               const valueColumn = metadata.related_column || 'uuid';
               const labelColumn = metadata.translation_label_column || 'label';
               
+              // Special handling for ticket_status_code: filter by rel_ticket_type
+              let additionalFilter = '';
+              if (columnName === 'ticket_status_code' && metadata.related_table === 'configuration.ticket_status') {
+                additionalFilter = " AND r.rel_ticket_type = 'TASK'";
+              }
+              
               // Search in translation table
               const searchMultilingualQuery = `
                 SELECT DISTINCT
@@ -682,7 +689,7 @@ const getTasksFilterValues = async (columnName, searchQuery = null, lang = 'en')
                 INNER JOIN ${metadata.related_translation_table} tr ON tr.${metadata.translation_foreign_key} = r.uuid
                 WHERE tr.lang = $1
                   AND LOWER(tr.${labelColumn}) LIKE LOWER($2)
-                  AND tr.${labelColumn} IS NOT NULL
+                  AND tr.${labelColumn} IS NOT NULL${additionalFilter}
                 ORDER BY tr.${labelColumn}
                 LIMIT 20
               `;
