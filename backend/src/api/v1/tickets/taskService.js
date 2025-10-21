@@ -642,9 +642,7 @@ const getTasksFilterValues = async (columnName, searchQuery = null, lang = 'en')
                 r.${valueColumn} as value,
                 r.${labelColumn} as label
               FROM ${metadata.related_table} r
-              INNER JOIN ${getTableWithSchema('tickets')} t ON t.${columnName} = r.${metadata.related_column || 'uuid'}
               WHERE r.${labelColumn} IS NOT NULL
-                AND t.ticket_type_code = 'TASK'
               ORDER BY r.${labelColumn}
             `;
             
