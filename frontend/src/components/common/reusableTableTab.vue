@@ -41,6 +41,7 @@
                       :key="filter.id"
                       :filter="filter"
                       :column-config="getColumnConfig(column.key)"
+                      :object-name="objectName"
                       @remove="handleRemoveFilterTag"
                       @update-value="handleUpdateFilterValue"
                     />
@@ -1375,7 +1376,22 @@ export default {
      */
     getActiveFiltersForColumn(columnKey) {
       const activeFilters = this.filterStore.getActiveFiltersForTable(this.objectName) || [];
-      return activeFilters.filter(filter => filter.column === columnKey && this.isFilterActive(filter));
+      
+      // Trouver la configuration de la colonne pour obtenir le filterKey si défini
+      const columnConfig = this.columns.find(col => col.key === columnKey);
+      const filterKey = columnConfig?.filterKey || columnKey;
+      
+      // Filtrer par colonne ET vérifier que le filtre a une valeur
+      // Pour les filtres checkbox, on affiche le tag dès qu'une valeur est sélectionnée
+      return activeFilters.filter(filter => {
+        // Utiliser filterKey pour la comparaison au lieu de columnKey
+        if (filter.column !== filterKey) {
+          return false;
+        }
+        
+        // Vérifier si le filtre a une valeur
+        return this.isFilterActive(filter);
+      });
     },
 
     /**

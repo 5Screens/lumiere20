@@ -14,7 +14,7 @@ export class Task {
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('task.title'), type: 'text', format: 'text' },
       { key: 'description', label: t('task.description'), type: 'text', format: 'html' },
-      { key: 'ticket_status_label', label: t('task.status'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('task.status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
       { key: 'requested_by_name', label: t('task.requested_by'), type: 'text', format: 'text' },
       { key: 'requested_for_name', label: t('task.requested_for'), type: 'text', format: 'text' },
       { key: 'assigned_group_name', label: t('task.assigned_team_label'), type: 'text', format: 'text' },

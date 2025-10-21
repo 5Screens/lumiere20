@@ -6,7 +6,7 @@
       :key="`${filter.id}-${index}`"
       class="s-filter-tag"
     >
-      <span class="s-filter-tag__value">{{ item }}</span>
+      <span class="s-filter-tag__value">{{ getValueLabel(item) }}</span>
       <button 
         class="s-filter-tag__remove" 
         @click.stop="handleRemoveArrayItem(index)"
@@ -31,8 +31,9 @@
 </template>
 
 <script>
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useFilterStore } from '@/stores/filterStore';
 
 export default {
   name: 'sFilterTag',
@@ -44,11 +45,18 @@ export default {
     columnConfig: {
       type: Object,
       required: true
+    },
+    objectName: {
+      type: String,
+      required: false,
+      default: null
     }
   },
   emits: ['remove', 'update-value'],
   setup(props, { emit }) {
     const { t } = useI18n();
+    const filterStore = useFilterStore();
+    const filterOptions = ref([]);
 
     // Computed pour le libellé de la colonne
     const columnLabel = computed(() => {
@@ -92,6 +100,13 @@ export default {
       return operatorMap[props.filter.type] || props.filter.type;
     });
 
+    // Méthode pour obtenir le label traduit d'une valeur
+    const getValueLabel = (value) => {
+      // Chercher dans les options du filtre
+      const option = filterOptions.value.find(opt => opt.value === value);
+      return option ? option.label : value;
+    };
+
     // Computed pour le libellé de la valeur
     const valueLabel = computed(() => {
       const value = props.filter.value;
@@ -115,7 +130,8 @@ export default {
       // Tableau (multi-select)
       if (Array.isArray(value)) {
         if (value.length === 0) return '';
-        if (value.length === 1) return value[0];
+        // Pour un seul élément, afficher le label traduit
+        if (value.length === 1) return getValueLabel(value[0]);
         return `${value.length} ${t('filters.selected_items')}`;
       }
       
@@ -133,8 +149,8 @@ export default {
         return '';
       }
       
-      // Valeur simple
-      return String(value);
+      // Valeur simple - essayer d'obtenir le label traduit
+      return getValueLabel(String(value));
     });
 
     // Méthode pour supprimer le filtre entier
@@ -158,10 +174,30 @@ export default {
       }
     };
 
+    // Charger les options du filtre au montage
+    onMounted(async () => {
+      if (props.objectName && props.filter.column) {
+        try {
+          // Récupérer les valeurs depuis le filterStore (qui les a déjà en cache)
+          const cachedValues = filterStore.filterValues[props.objectName]?.[props.filter.column];
+          if (cachedValues) {
+            filterOptions.value = cachedValues;
+          } else {
+            // Si pas en cache, charger depuis l'API
+            const values = await filterStore.loadFilterValues(props.objectName, props.filter.column);
+            filterOptions.value = values || [];
+          }
+        } catch (error) {
+          console.error('[sFilterTag] Error loading filter options:', error);
+        }
+      }
+    });
+
     return {
       columnLabel,
       operatorLabel,
       valueLabel,
+      getValueLabel,
       handleRemove,
       handleRemoveArrayItem
     };
