@@ -166,7 +166,7 @@ export const useFilterStore = defineStore('filter', {
         }
         
         // Cas spécial pour ticket_status : filtrer par type de ticket
-        if (columnName === 'ticket_status_code' && tableName === 'tickets') {
+        if (endpoint === 'ticket_status' && tableName === 'tickets') {
           // Déterminer le type de ticket (TASK, INCIDENT, etc.)
           // Pour les tasks, on utilise le paramètre rel_ticket_type
           params.rel_ticket_type = 'TASK';
