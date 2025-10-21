@@ -121,3 +121,41 @@ export const isValidClassName = (className) => {
 export const getAvailableClassNames = () => {
   return Object.keys(CLASS_MAP)
 }
+
+/**
+ * Mapping des noms de classes vers les types de tickets pour l'API
+ */
+const TICKET_TYPE_MAP = {
+  'Task': 'TASK',
+  'Incident': 'INCIDENT',
+  'Problem': 'PROBLEM',
+  'Change': 'CHANGE',
+  'Defect': 'DEFECT',
+  'Knowledge_article': 'KNOWLEDGE',
+  'Project': 'PROJECT',
+  'Sprint': 'SPRINT',
+  'Epic': 'EPIC',
+  'Story': 'STORY'
+}
+
+/**
+ * Récupère le type de ticket pour l'API à partir du nom de classe
+ * @param {string} className - Nom de la classe (ex: 'Task', 'Incident')
+ * @returns {string|null} - Le type de ticket en majuscules (ex: 'TASK') ou null si non applicable
+ */
+export const getTicketTypeFromClassName = (className) => {
+  if (!className || typeof className !== 'string') {
+    return null
+  }
+  
+  return TICKET_TYPE_MAP[className] || null
+}
+
+/**
+ * Vérifie si une classe est un type de ticket
+ * @param {string} className - Nom de la classe
+ * @returns {boolean} - true si c'est un type de ticket, false sinon
+ */
+export const isTicketClass = (className) => {
+  return TICKET_TYPE_MAP.hasOwnProperty(className)
+}

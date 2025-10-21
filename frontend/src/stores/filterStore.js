@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import apiService from '@/services/apiService';
-import { getClassByName } from '@/services/classMapping';
+import { getTicketTypeFromClassName } from '@/services/classMapping';
 import { useUserProfileStore } from '@/stores/userProfileStore';
 
 export const useFilterStore = defineStore('filter', {
@@ -166,10 +166,14 @@ export const useFilterStore = defineStore('filter', {
         }
         
         // Cas spécial pour ticket_status : filtrer par type de ticket
-        if (endpoint === 'ticket_status' && tableName === 'tickets') {
-          // Déterminer le type de ticket (TASK, INCIDENT, etc.)
-          // Pour les tasks, on utilise le paramètre rel_ticket_type
-          params.rel_ticket_type = 'TASK';
+        // Le paramètre tableName contient le nom de la classe (Task, Incident, Problem, etc.)
+        if (endpoint === 'ticket_status') {
+          const ticketType = getTicketTypeFromClassName(tableName);
+          
+          if (ticketType) {
+            params.ticket_type = ticketType;
+            console.info(`[FILTER_STORE] Adding ticket type filter: ${ticketType} for class ${tableName}`);
+          }
         }
         
         console.info(`[FILTER_STORE] Loading filter values from generic endpoint: ${endpoint}`, params);
