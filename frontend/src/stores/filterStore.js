@@ -142,41 +142,109 @@ export const useFilterStore = defineStore('filter', {
         const userProfileStore = useUserProfileStore();
         const lang = userProfileStore.language || 'en';
         
-        // Récupérer l'endpoint API via la classe de modèle
-        let endpoint = tableName;
+        // Récupérer les métadonnées de la colonne pour obtenir l'endpoint générique
+        const metadata = await this.getColumnMetadata(tableName, columnName);
         
-        // Si tableName est un objectName (ex: 'Person', 'Task'), utiliser le mapping
-        const modelClass = getClassByName(tableName);
-        if (modelClass && typeof modelClass.getApiEndpoint === 'function') {
-          endpoint = modelClass.getApiEndpoint('FILTER');
-          console.info(`[FILTER_STORE] Using API endpoint from model class: ${endpoint}`);
-        } else if (tableName.includes('.')) {
-          // Fallback: Extraire le nom de la table sans le schéma
-          endpoint = tableName.split('.')[1];
+        if (!metadata || !metadata.form_endpoint) {
+          throw new Error(`No form_endpoint found in metadata for ${tableName}.${columnName}`);
         }
         
-        const url = `${endpoint}/filters/${columnName}`;
-        const params = { lang };
+        // Utiliser l'endpoint générique depuis les métadonnées
+        const endpoint = metadata.form_endpoint;
+        const params = { 
+          lang,
+          limit: 50  // Limite raisonnable pour les filtres
+        };
+        
+        // Ajouter la recherche si fournie
         if (searchQuery) {
           params.q = searchQuery;
         }
         
-        console.info(`[FILTER_STORE] Loading filter values with params:`, params);
-        const response = await apiService.get(url, params);
+        // Cas spécial pour ticket_status : filtrer par type de ticket
+        if (columnName === 'ticket_status_code' && tableName === 'tickets') {
+          // Déterminer le type de ticket (TASK, INCIDENT, etc.)
+          // Pour les tasks, on utilise le paramètre rel_ticket_type
+          params.rel_ticket_type = 'TASK';
+        }
+        
+        console.info(`[FILTER_STORE] Loading filter values from generic endpoint: ${endpoint}`, params);
+        const response = await apiService.get(endpoint, params);
+        
+        console.info(`[FILTER_STORE] Raw response:`, response);
+        console.info(`[FILTER_STORE] Metadata for transformation:`, {
+          form_display_field: metadata.form_display_field,
+          form_value_field: metadata.form_value_field
+        });
+        
+        // Transformer la réponse pour correspondre au format attendu { value, label }
+        let values = [];
+        if (Array.isArray(response)) {
+          const displayField = metadata.form_display_field || 'label';
+          const valueField = metadata.form_value_field || 'uuid';
+          
+          console.info(`[FILTER_STORE] Using fields: displayField=${displayField}, valueField=${valueField}`);
+          console.info(`[FILTER_STORE] First item sample:`, response[0]);
+          
+          values = response.map(item => ({
+            value: item[valueField],
+            label: item[displayField]
+          }));
+        } else if (response && response.data && Array.isArray(response.data)) {
+          const displayField = metadata.form_display_field || 'label';
+          const valueField = metadata.form_value_field || 'uuid';
+          
+          console.info(`[FILTER_STORE] Using fields: displayField=${displayField}, valueField=${valueField}`);
+          console.info(`[FILTER_STORE] First item sample:`, response.data[0]);
+          
+          values = response.data.map(item => ({
+            value: item[valueField],
+            label: item[displayField]
+          }));
+        }
+        
+        console.info(`[FILTER_STORE] Transformed values (first 3):`, values.slice(0, 3));
         
         if (!this.filterValues[tableName]) {
           this.filterValues[tableName] = {};
         }
         
-        this.filterValues[tableName][columnName] = response;
+        this.filterValues[tableName][columnName] = values;
         
-        console.info(`[FILTER_STORE] Filter values loaded for ${columnName}: ${response.length} items`);
-        return response;
+        console.info(`[FILTER_STORE] Filter values loaded for ${columnName}: ${values.length} items`);
+        return values;
       } catch (error) {
         console.error(`[FILTER_STORE] Error loading filter values for ${columnName}:`, error);
         throw error;
       } finally {
         this.loading.values = false;
+      }
+    },
+    
+    // Récupérer les métadonnées d'une colonne
+    async getColumnMetadata(tableName, columnName) {
+      try {
+        // Vérifier si on a déjà la config chargée
+        const config = this.filterConfigs[tableName];
+        if (config) {
+          const filter = config.find(f => f.column === columnName);
+          if (filter) {
+            return filter;
+          }
+        }
+        
+        // Sinon, charger depuis l'API
+        console.info(`[FILTER_STORE] Fetching metadata for ${tableName}.${columnName}`);
+        const response = await apiService.get(`table_metadata/filter_config/${tableName}`);
+        
+        if (response && response[columnName]) {
+          return response[columnName];
+        }
+        
+        return null;
+      } catch (error) {
+        console.error(`[FILTER_STORE] Error fetching metadata for ${tableName}.${columnName}:`, error);
+        return null;
       }
     },
     

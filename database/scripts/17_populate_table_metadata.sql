@@ -164,7 +164,7 @@ INSERT INTO administration.table_metadata (
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sFilteredSearchField', 'Recherchez un manager', false, false,
- 'persons', 'full_name', 'uuid', 'Manager approbateur',
+ 'persons', 'person_name', 'uuid', 'Manager approbateur',
  true, 120),
 
 -- business_phone
@@ -416,7 +416,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.persons', 'uuid',
  false, NULL, NULL, NULL,
  'sFilteredSearchField', 'Recherchez une personne', false, false,
- 'persons', 'full_name', 'uuid', 'Personne ayant fait la demande',
+ 'persons', 'person_name', 'uuid', 'Personne ayant fait la demande',
  true, 50),
 
 -- requested_for_uuid
@@ -427,7 +427,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.persons', 'uuid',
  false, NULL, NULL, NULL,
  'sFilteredSearchField', 'Recherchez une personne', false, false,
- 'persons', 'full_name', 'uuid', 'Personne bénéficiaire de la demande',
+ 'persons', 'person_name', 'uuid', 'Personne bénéficiaire de la demande',
  true, 60),
 
 -- writer_uuid
@@ -438,7 +438,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.persons', 'uuid',
  false, NULL, NULL, NULL,
  'sFilteredSearchField', 'Recherchez un rédacteur', true, false,
- 'persons', 'full_name', 'uuid', 'Personne ayant créé le ticket',
+ 'persons', 'person_name', 'uuid', 'Personne ayant créé le ticket',
  true, 70),
 
 -- configuration_item_uuid

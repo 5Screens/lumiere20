@@ -36,7 +36,10 @@ async function getFilterConfig(objectName) {
         column_label,
         filter_type,
         filter_options,
-        data_type
+        data_type,
+        form_endpoint,
+        form_display_field,
+        form_value_field
       FROM administration.table_metadata
       WHERE object_name = $1
         AND data_is_filterable = true
@@ -53,13 +56,19 @@ async function getFilterConfig(objectName) {
         filterConfig[row.column_name] = { 
           type: 'none',
           data_type: row.data_type,
-          label: row.column_label
+          label: row.column_label,
+          form_endpoint: row.form_endpoint,
+          form_display_field: row.form_display_field,
+          form_value_field: row.form_value_field
         };
       } else {
         filterConfig[row.column_name] = {
           type: row.filter_type,
           data_type: row.data_type,
           label: row.column_label,
+          form_endpoint: row.form_endpoint,
+          form_display_field: row.form_display_field,
+          form_value_field: row.form_value_field,
           ...(row.filter_options || {})
         };
       }

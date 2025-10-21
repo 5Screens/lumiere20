@@ -1,7 +1,8 @@
 # Dette Technique - Système de Filtres
 
 **Date de création** : 21 octobre 2025  
-**Statut** : À planifier  
+**Date de résolution (TASKS)** : 21 octobre 2025  
+**Statut** : ✅ TASKS terminé - Autres types en attente  
 **Priorité** : Moyenne  
 **Impact** : Maintenabilité, Performance
 
@@ -186,9 +187,50 @@ form_value_field: 'uuid'
 
 ---
 
-## 🎯 Décision Actuelle
+## ✅ Résolution pour TASKS (21 octobre 2025)
 
-**NE PAS REFACTORISER IMMÉDIATEMENT**
+### Actions Réalisées
+
+#### Backend
+1. ✅ **Supprimé** `getTasksFilterValues()` dans `taskService.js` (274 lignes)
+2. ✅ **Supprimé** `getTasksFilterValues()` dans `controller.js`
+3. ✅ **Supprimé** Route `GET /tasks/filters/:columnName` dans `routes.js`
+
+#### Frontend
+1. ✅ **Refactorisé** `loadFilterValues()` dans `filterStore.js`
+2. ✅ **Ajouté** `getColumnMetadata()` pour récupérer les métadonnées
+3. ✅ **Utilisation** des endpoints génériques :
+   - `GET /persons?lang=fr&limit=50`
+   - `GET /ticket_status?lang=fr&rel_ticket_type=TASK&limit=50`
+   - `GET /entities?lang=fr&limit=50`
+
+### Résultats
+
+- **Code supprimé** : ~300 lignes de duplication
+- **Architecture** : Simplifiée et cohérente
+- **Performance** : Identique (mêmes requêtes SQL)
+- **Maintenabilité** : Améliorée (un seul endroit pour les endpoints)
+
+### Prochaines Étapes
+
+Répliquer cette refactorisation pour :
+- [ ] INCIDENT
+- [ ] PROBLEM
+- [ ] CHANGE
+- [ ] KNOWLEDGE
+- [ ] PROJECT
+- [ ] DEFECT
+- [ ] SPRINT
+- [ ] EPIC
+- [ ] USER_STORY
+
+---
+
+## 🎯 Décision Actuelle (Mise à jour)
+
+**REFACTORISATION EN COURS**
+
+### TASKS : ✅ TERMINÉ
 
 ### Raisons
 

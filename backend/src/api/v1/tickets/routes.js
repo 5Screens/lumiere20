@@ -20,12 +20,6 @@ router.post('/search/:ticket_type',
     }
 );
 
-// GET /api/v1/tickets/tasks/filters/:columnName - Get filter values for tasks
-router.get('/tasks/filters/:columnName', (req, res, next) => {
-    logger.info(`[ROUTES] Handling GET /tickets/tasks/filters/${req.params.columnName} request`);
-    ticketController.getTasksFilterValues(req, res);
-});
-
 router.post('/', validateCreateTicket, (req, res, next) => {
     // Récupérer le type de ticket depuis req.body.ticket_type_code
     const ticketType = req.body && req.body.ticket_type_code;
