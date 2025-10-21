@@ -630,6 +630,10 @@ const getTasksFilterValues = async (columnName, searchQuery = null, lang = 'en')
                 metadata.related_table === 'configuration.ticket_types') {
               labelColumn = 'code';
               valueColumn = 'code';
+            } else if (metadata.related_table === 'configuration.persons') {
+              // For persons table, concatenate first_name and last_name
+              labelColumn = "first_name || ' ' || last_name";
+              valueColumn = 'uuid';
             }
             
             // If it's a foreign key, get values from related table
@@ -643,6 +647,8 @@ const getTasksFilterValues = async (columnName, searchQuery = null, lang = 'en')
                 AND t.ticket_type_code = 'TASK'
               ORDER BY r.${labelColumn}
             `;
+            
+            logger.info(`[TASK SERVICE] Non-multilingual FK query: ${fkQuery}`);
             const fkResult = await db.query(fkQuery);
             values = fkResult.rows;
           }
@@ -706,6 +712,10 @@ const getTasksFilterValues = async (columnName, searchQuery = null, lang = 'en')
                   metadata.related_table === 'configuration.ticket_types') {
                 labelColumn = 'code';
                 valueColumn = 'code';
+              } else if (metadata.related_table === 'configuration.persons') {
+                // For persons table, concatenate first_name and last_name
+                labelColumn = "first_name || ' ' || last_name";
+                valueColumn = 'uuid';
               }
               
               // Search in related table
@@ -759,6 +769,10 @@ const getTasksFilterValues = async (columnName, searchQuery = null, lang = 'en')
               metadata.related_table === 'configuration.ticket_types') {
             labelColumn = 'code';
             valueColumn = 'code';
+          } else if (metadata.related_table === 'configuration.persons') {
+            // For persons table, concatenate first_name and last_name
+            labelColumn = "first_name || ' ' || last_name";
+            valueColumn = 'uuid';
           }
           
           // Dynamic options from related table
