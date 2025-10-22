@@ -190,8 +190,11 @@ export default {
       filterStore.updateFilter(props.objectName, filterId, updates);
     };
 
-    const removeFilter = (filterId) => {
+    const removeFilter = async (filterId) => {
       filterStore.removeFilter(props.objectName, filterId);
+      
+      // Déclencher le rechargement de la grille après suppression
+      await handleApply();
     };
 
     const handleApply = async () => {
