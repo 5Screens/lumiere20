@@ -115,15 +115,28 @@
 
 /* Checkbox field */
 .s-one-filter__checkbox {
-  max-height: 150px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   background: var(--input-bg);
 }
 
+.s-one-filter__checkbox-search-container {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--input-bg);
+  flex-shrink: 0; /* Ne pas réduire la taille de l'input */
+}
+
 .s-one-filter__checkbox-items {
   padding: 0.5rem;
+}
+
+.s-one-filter__checkbox-items--scrollable {
+  max-height: 125px;
+  overflow-y: auto;
+  flex-shrink: 0; /* Ne pas réduire la taille du conteneur scrollable */
 }
 
 .s-one-filter__checkbox-item {
@@ -141,6 +154,15 @@
 
 .s-one-filter__checkbox-item input[type="checkbox"] {
   cursor: pointer;
+}
+
+.s-one-filter__loading-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
 }
 
 /* Select field */

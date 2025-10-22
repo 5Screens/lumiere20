@@ -82,8 +82,8 @@
 
       <!-- Checkbox Filter -->
       <div v-else-if="selectedColumnConfig.type === 'checkbox'" class="s-one-filter__checkbox">
-        <!-- Champ de recherche pour les colonnes avec form_lazy_search=true -->
-        <div v-if="selectedColumnConfig.form_lazy_search" class="s-one-filter__checkbox-search">
+        <!-- Conteneur pour l'input de recherche (reste fixe) -->
+        <div v-if="selectedColumnConfig.form_lazy_search" class="s-one-filter__checkbox-search-container">
           <input
             type="text"
             v-model="checkboxSearchQuery"
@@ -91,10 +91,15 @@
             @input="handleCheckboxSearch"
             class="s-one-filter__input s-one-filter__input--search"
           />
-          <i class="fas fa-search s-one-filter__search-icon"></i>
         </div>
         
-        <div class="s-one-filter__checkbox-items">
+        <!-- Conteneur scrollable pour la liste des checkboxes -->
+        <div 
+          class="s-one-filter__checkbox-items"
+          :class="{ 's-one-filter__checkbox-items--scrollable': selectedColumnConfig.form_lazy_search }"
+          @scroll="handleCheckboxScroll"
+          ref="checkboxContainer"
+        >
           <label 
             v-for="option in checkboxOptions" 
             :key="option.value"
@@ -108,6 +113,11 @@
             />
             <span>{{ option.label }}</span>
           </label>
+          
+          <!-- Loading more indicator -->
+          <div v-if="isLoadingMore" class="s-one-filter__loading-more">
+            <span>Chargement...</span>
+          </div>
         </div>
       </div>
 
@@ -273,6 +283,11 @@ export default {
     const searchSuggestionsTimer = ref(null);
     const checkboxSearchQuery = ref('');
     const checkboxSearchTimer = ref(null);
+    
+    // Infinite scroll pour les checkboxes
+    const currentPage = ref(1);
+    const hasMore = ref(true);
+    const isLoadingMore = ref(false);
 
     // Computed
     const selectedColumnConfig = computed(() => {
@@ -469,12 +484,24 @@ export default {
 
     const loadOptions = async (column) => {
       try {
-        const values = await filterStore.loadFilterValues(props.objectName, column);
+        // Réinitialiser la pagination pour le chargement initial
+        currentPage.value = 1;
+        hasMore.value = true;
+        
+        const result = await filterStore.loadFilterValues(props.objectName, column, null, 1);
+        const values = result.values || result || [];
+        const pagination = result.pagination;
         
         if (selectedColumnConfig.value?.type === 'checkbox') {
-          checkboxOptions.value = values || [];
+          checkboxOptions.value = values;
+          
+          // Mettre à jour l'état de pagination
+          if (pagination) {
+            currentPage.value = pagination.page;
+            hasMore.value = pagination.hasMore;
+          }
         } else {
-          selectOptions.value = values || [];
+          selectOptions.value = values;
         }
       } catch (err) {
         console.error(`[sOneFilter] Error loading options for ${column}:`, err);
@@ -504,6 +531,101 @@ export default {
       emit('update', props.filter.id, { value: currentValues });
     };
 
+    // Infinite scroll pour les checkboxes
+    const handleCheckboxScroll = (event) => {
+      console.info(`[sOneFilter] 📜 Scroll event detected`);
+      
+      if (!selectedColumnConfig.value?.form_lazy_search) {
+        console.info(`[sOneFilter] ❌ form_lazy_search is false, ignoring scroll`);
+        return;
+      }
+      
+      const { scrollTop, scrollHeight, clientHeight } = event.target;
+      const threshold = 50; // pixels avant le bas
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      
+      console.info(`[sOneFilter] 📊 Scroll metrics:`, {
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+        distanceFromBottom,
+        threshold,
+        hasMore: hasMore.value,
+        isLoadingMore: isLoadingMore.value,
+        currentPage: currentPage.value,
+        checkboxOptionsLength: checkboxOptions.value.length
+      });
+      
+      // Vérifier si l'utilisateur a scrollé près du bas
+      if (distanceFromBottom < threshold) {
+        console.info(`[sOneFilter] ✅ Near bottom! Triggering loadMore...`);
+        loadMoreCheckboxes();
+      } else {
+        console.info(`[sOneFilter] ⏸️ Not near bottom yet (${distanceFromBottom}px remaining)`);
+      }
+    };
+
+    const loadMoreCheckboxes = async () => {
+      console.info(`[sOneFilter] 🔄 loadMoreCheckboxes called`, {
+        form_lazy_search: selectedColumnConfig.value?.form_lazy_search,
+        hasMore: hasMore.value,
+        isLoadingMore: isLoadingMore.value,
+        currentPage: currentPage.value
+      });
+      
+      if (!selectedColumnConfig.value?.form_lazy_search) {
+        console.warn(`[sOneFilter] ⚠️ Skipping: form_lazy_search is false`);
+        return;
+      }
+      
+      if (!hasMore.value) {
+        console.warn(`[sOneFilter] ⚠️ Skipping: no more data (hasMore=false)`);
+        return;
+      }
+      
+      if (isLoadingMore.value) {
+        console.warn(`[sOneFilter] ⚠️ Skipping: already loading`);
+        return;
+      }
+      
+      isLoadingMore.value = true;
+      console.info(`[sOneFilter] 🚀 Starting to load page ${currentPage.value + 1}`);
+      
+      try {
+        const result = await filterStore.loadFilterValues(
+          props.objectName,
+          props.filter.column,
+          checkboxSearchQuery.value || null,
+          currentPage.value + 1
+        );
+        
+        const values = result.values || result || [];
+        const pagination = result.pagination;
+        
+        console.info(`[sOneFilter] ✅ Received ${values?.length || 0} more values`, {
+          pagination,
+          currentOptionsLength: checkboxOptions.value.length
+        });
+        
+        // Ajouter les nouvelles options aux existantes
+        const oldLength = checkboxOptions.value.length;
+        checkboxOptions.value = [...checkboxOptions.value, ...values];
+        console.info(`[sOneFilter] 📊 Options updated: ${oldLength} → ${checkboxOptions.value.length}`);
+        
+        // Mettre à jour l'état de pagination
+        if (pagination) {
+          currentPage.value = pagination.page;
+          hasMore.value = pagination.hasMore;
+          console.info(`[sOneFilter] 📄 Pagination updated: page=${currentPage.value}, hasMore=${hasMore.value}`);
+        }
+      } catch (err) {
+        console.error(`[sOneFilter] ❌ Error loading more checkbox options:`, err);
+      } finally {
+        isLoadingMore.value = false;
+        console.info(`[sOneFilter] ✅ loadMoreCheckboxes completed`);
+      }
+    };
+
     // Recherche dans les checkboxes avec debounce
     const handleCheckboxSearch = () => {
       // Annuler le timer précédent
@@ -511,26 +633,42 @@ export default {
         clearTimeout(checkboxSearchTimer.value);
       }
 
+      // Réinitialiser la pagination
+      currentPage.value = 1;
+      hasMore.value = true;
+
       // Créer un nouveau timer avec debounce
       checkboxSearchTimer.value = setTimeout(async () => {
         try {
           console.info(`[sOneFilter] 🔍 Searching checkboxes with query: "${checkboxSearchQuery.value}"`);
           console.info(`[sOneFilter] Current checkboxOptions length BEFORE: ${checkboxOptions.value.length}`);
           
-          // Recharger les valeurs avec le critère de recherche
-          const values = await filterStore.loadFilterValues(
+          // Recharger les valeurs avec le critère de recherche (page 1)
+          const result = await filterStore.loadFilterValues(
             props.objectName,
             props.filter.column,
-            checkboxSearchQuery.value || null
+            checkboxSearchQuery.value || null,
+            1
           );
           
+          const values = result.values || result || [];
+          const pagination = result.pagination;
+          
           console.info(`[sOneFilter] ✅ Received ${values?.length || 0} values from API`);
+          console.info(`[sOneFilter] Pagination:`, pagination);
           console.info(`[sOneFilter] First 3 values:`, values?.slice(0, 3));
           
-          checkboxOptions.value = values || [];
+          // Remplacer les options (pas append car c'est une nouvelle recherche)
+          checkboxOptions.value = values;
+          
+          // Mettre à jour l'état de pagination
+          if (pagination) {
+            currentPage.value = pagination.page;
+            hasMore.value = pagination.hasMore;
+          }
           
           console.info(`[sOneFilter] Current checkboxOptions length AFTER: ${checkboxOptions.value.length}`);
-          console.info(`[sOneFilter] checkboxOptions.value is reactive:`, checkboxOptions.value);
+          console.info(`[sOneFilter] hasMore: ${hasMore.value}, currentPage: ${currentPage.value}`);
         } catch (err) {
           console.error(`[sOneFilter] ❌ Error loading filtered checkbox options:`, err);
           checkboxOptions.value = [];
@@ -612,6 +750,9 @@ export default {
       }
     });
 
+    // Ref pour le conteneur scrollable
+    const checkboxContainer = ref(null);
+
     // Lifecycle
     onMounted(() => {
       if (props.filter.column && selectedColumnConfig.value) {
@@ -622,6 +763,18 @@ export default {
       }
       // Marquer comme monté après le premier chargement
       isMounted = true;
+      
+      // Debug: Vérifier si le conteneur scrollable existe
+      console.info(`[sOneFilter] 🔧 Component mounted, checking scroll container...`);
+      console.info(`[sOneFilter] selectedColumnConfig:`, selectedColumnConfig.value);
+      console.info(`[sOneFilter] form_lazy_search:`, selectedColumnConfig.value?.form_lazy_search);
+      console.info(`[sOneFilter] checkboxContainer.value:`, checkboxContainer.value);
+      
+      // Ajouter un listener natif pour le scroll si form_lazy_search est activé
+      if (selectedColumnConfig.value?.form_lazy_search && checkboxContainer.value) {
+        console.info(`[sOneFilter] ✅ Adding native scroll listener to container`);
+        checkboxContainer.value.addEventListener('scroll', handleCheckboxScroll);
+      }
     });
 
     return {
@@ -634,6 +787,8 @@ export default {
       availableFilterTypes,
       shouldShowValueField,
       checkboxSearchQuery,
+      isLoadingMore,
+      checkboxContainer,
       updateColumn,
       updateType,
       updateValue,
@@ -642,6 +797,7 @@ export default {
       isChecked,
       handleCheckboxChange,
       handleCheckboxSearch,
+      handleCheckboxScroll,
       handleMultiselectChange,
       removeFromMultiselect,
       getOptionLabel,

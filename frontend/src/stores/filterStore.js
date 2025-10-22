@@ -132,11 +132,11 @@ export const useFilterStore = defineStore('filter', {
     },
     
     // Charger les valeurs possibles pour un filtre
-    async loadFilterValues(tableName, columnName, searchQuery = null) {
+    async loadFilterValues(tableName, columnName, searchQuery = null, page = 1) {
       this.loading.values = true;
       
       try {
-        console.info(`[FILTER_STORE] Loading filter values for ${columnName} in ${tableName}`);
+        console.info(`[FILTER_STORE] Loading filter values for ${columnName} in ${tableName}, page ${page}`);
         
         // Récupérer la langue de l'utilisateur
         const userProfileStore = useUserProfileStore();
@@ -157,7 +157,8 @@ export const useFilterStore = defineStore('filter', {
         
         // Ajouter limit et search uniquement si l'endpoint supporte la pagination (lazy search)
         if (metadata.form_lazy_search) {
-          params.limit = 50;  // Limite raisonnable pour les filtres avec pagination
+          params.limit = 10;  // 10 résultats par page pour l'infinite scroll
+          params.page = page;
           
           // Ajouter la recherche si fournie
           if (searchQuery) {
@@ -220,7 +221,16 @@ export const useFilterStore = defineStore('filter', {
         this.filterValues[tableName][columnName] = values;
         
         console.info(`[FILTER_STORE] Filter values loaded for ${columnName}: ${values.length} items`);
-        return values;
+        
+        // Retourner les valeurs avec les informations de pagination si disponibles
+        if (response && response.pagination) {
+          return {
+            values,
+            pagination: response.pagination
+          };
+        }
+        
+        return { values, pagination: null };
       } catch (error) {
         console.error(`[FILTER_STORE] Error loading filter values for ${columnName}:`, error);
         throw error;
