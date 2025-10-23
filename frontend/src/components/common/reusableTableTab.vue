@@ -92,7 +92,7 @@
                   </span>
                 </div>
                 <div v-else class="cell-inner" :ref="setCellRef(row.uuid, column.key)">
-                  {{ formatCellContent(row[column.key], column.format) }}
+                  {{ truncateIfUUID(formatCellContent(row[column.key], column.format), column.key) }}
                 </div>
                 <span
                   v-if="shouldShowEllipsis(row, column)"
@@ -643,6 +643,17 @@ export default {
         console.log('[ReusableTableTab] Fin fetchData()');
       }
     },
+    /**
+     * Truncate UUID to first 7 characters for display
+     * Only applies when column.key === 'uuid'
+     */
+    truncateIfUUID(content, columnKey) {
+      if (columnKey === 'uuid' && content && typeof content === 'string') {
+        return content.substring(0, 7)
+      }
+      return content
+    },
+    
     formatCellContent(content, format) {
       if (!content) return ''
       if (!format) return content
