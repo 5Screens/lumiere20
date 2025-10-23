@@ -734,3 +734,12 @@ th:first-child .th-content {
   color: var(--text-color);
   opacity: 0.8;
 }
+
+/* Ligne verticale de redimensionnement */
+.resize-line {
+  position: fixed;
+  width: 4px;
+  background-color: var(--primary-color);
+  z-index: 9999;
+  pointer-events: none;
+}

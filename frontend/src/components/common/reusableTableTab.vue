@@ -136,6 +136,9 @@
     <i class="fas fa-copy"></i>
   </div>
 
+  <!-- Ligne verticale de redimensionnement -->
+  <div v-if="resizing" class="resize-line" :style="resizeLineStyle"></div>
+
   <!-- Fenêtre contextuelle de filtrage avancé -->
   <div v-if="showAdvancedFilter" class="advanced-filter-modal" :style="filterPositionStyle" @click.self="closeAdvancedFilter">
     <div class="advanced-filter-content">
@@ -254,6 +257,10 @@ export default {
       currentResizingColumn: null,
       startX: 0,
       startWidth: 0,
+      resizeLineX: 0,
+      resizeLineTop: 0,
+      resizeLineHeight: 0,
+      tempColumnWidths: [],
       showAdvancedFilter: false,
       currentFilterColumn: null,
       filterPosition: { x: 0, y: 0 },
@@ -414,6 +421,13 @@ export default {
       return {
         top: `${this.showCopyIconAt.y}px`,
         left: `${this.showCopyIconAt.x}px`
+      }
+    },
+    resizeLineStyle() {
+      return {
+        left: `${this.resizeLineX}px`,
+        top: `${this.resizeLineTop}px`,
+        height: `${this.resizeLineHeight}px`
       }
     },
     filterPositionStyle() {
@@ -760,6 +774,19 @@ export default {
       this.resizing = true
       this.startX = event.pageX
       this.currentResizingColumn = columnIndex
+      this.startWidth = this.columnWidths[columnIndex] || 100
+      this.resizeLineX = event.pageX
+      
+      // Calculer la position et hauteur de la table pour limiter la ligne
+      const tableContainer = this.$refs.tableContainer
+      if (tableContainer) {
+        const rect = tableContainer.getBoundingClientRect()
+        this.resizeLineTop = rect.top
+        this.resizeLineHeight = rect.height
+      }
+      
+      // Copie des largeurs actuelles pour modification temporaire
+      this.tempColumnWidths = [...this.columnWidths]
       
       document.addEventListener('mousemove', this.handleResize)
       document.addEventListener('mouseup', this.stopResize)
@@ -767,21 +794,34 @@ export default {
     handleResize(event) {
       if (!this.resizing) return
       
+      // Déplacer uniquement la ligne verticale, pas les colonnes
       const dx = event.pageX - this.startX
-      const current = this.columnWidths[this.currentResizingColumn] || 100
-      const newWidth = current + dx
+      const newWidth = this.startWidth + dx
       
       if (newWidth >= 50) {
-        this.columnWidths[this.currentResizingColumn] = newWidth
-        this.startX = event.pageX
-        this.scheduleTruncationRecompute()
+        this.resizeLineX = event.pageX
       }
     },
     stopResize() {
+      if (!this.resizing) return
+      
+      // Appliquer le redimensionnement une seule fois au relâchement
+      const dx = this.resizeLineX - this.startX
+      const newWidth = this.startWidth + dx
+      
+      if (newWidth >= 50) {
+        this.columnWidths[this.currentResizingColumn] = newWidth
+        this.recomputeAllTruncation()
+      }
+      
       this.resizing = false
+      this.resizeLineX = 0
+      this.resizeLineTop = 0
+      this.resizeLineHeight = 0
+      this.tempColumnWidths = []
+      
       document.removeEventListener('mousemove', this.handleResize)
       document.removeEventListener('mouseup', this.stopResize)
-      this.recomputeAllTruncation()
     },
     toggleRowSelection(row) {
       row.selected = !row.selected;
