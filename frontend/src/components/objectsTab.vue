@@ -239,9 +239,10 @@ export default {
       }
     },
     handleRefresh() {
+      console.log('[ObjectsTab] Refresh clicked');
+      
       if (this.shouldUseInfiniteScroll) {
         // En mode scroll infini, réinitialiser le composant ReusableTableTab
-        console.log('[ObjectsTab] Refresh en mode scroll infini');
         this.$refs.table.resetAndReload();
       } else {
         // En mode pagination traditionnelle

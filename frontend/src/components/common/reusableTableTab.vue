@@ -1065,15 +1065,16 @@ export default {
      * Load initial data for infinite scroll
      */
     async loadInitialData() {
-      console.log('[ReusableTableTab] Loading initial data for infinite scroll');
+      console.log('[ReusableTableTab] Loading initial data');
       
       this.isLoadingMore = true;
       this.error = null;
       this.currentOffset = 0;
-      this.tableData = [];
+      // NE PAS vider tableData ici - sera remplacé dans loadDataBatch
       
       try {
         await this.loadDataBatch();
+        console.log('[ReusableTableTab] Initial data loaded:', this.tableData.length, 'items');
       } catch (error) {
         console.error('[ReusableTableTab] Error loading initial data:', error);
         this.error = error.message || 'Erreur lors du chargement des données';
@@ -1083,7 +1084,6 @@ export default {
         }
       } finally {
         this.isLoadingMore = false;
-        console.log('[ReusableTableTab] ✅ Initial data loaded, isLoadingMore set to false');
       }
     },
 
@@ -1120,7 +1120,7 @@ export default {
      * Supports both persons (via filterStore) and tickets (direct POST)
      */
     async loadDataBatchForInfiniteScroll() {
-      console.log('[ReusableTableTab] Loading batch with POST', this.apiUrl);
+      console.log('[ReusableTableTab] Loading batch - offset:', this.currentOffset, 'pageSize:', this.pageSize);
       
       // Calculer la page actuelle basée sur l'offset
       const currentPage = Math.floor(this.currentOffset / this.pageSize) + 1;
@@ -1176,7 +1176,7 @@ export default {
         }));
         
         if (this.currentOffset === 0) {
-          // Initial load
+          // Initial load - REMPLACER les données existantes
           this.tableData = newItems;
         } else {
           // Append new data
@@ -1319,13 +1319,14 @@ export default {
       
       if (this.infiniteScrollEnabled) {
         // Reset infinite scroll state
-        this.tableData = [];
+        // NE PAS vider tableData immédiatement pour éviter la disparition visuelle
+        // Les nouvelles données remplaceront les anciennes dans loadInitialData
         this.currentOffset = 0;
         this.hasMoreData = true;
         this.totalRecords = 0;
         this.error = null;
         
-        // Reload initial data
+        // Reload initial data (qui remplacera tableData)
         this.loadInitialData();
       } else {
         // Traditional reload
