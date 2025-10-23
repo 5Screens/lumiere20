@@ -25,9 +25,9 @@
             <th v-for="(column, index) in columns" :key="column.key" class="resizable" :style="getThWidthStyle(index)">
               <div class="th-content">
                 <div class="th-header-wrapper">
-                  <div @click="sortBy(column.key)" class="sortable">
+                  <div @click="column.key !== 'uuid' ? sortBy(column.key) : null" :class="{ 'sortable': column.key !== 'uuid' }">
                     {{ column.label }}
-                    <span class="sort-icon">
+                    <span v-if="column.key !== 'uuid'" class="sort-icon">
                       <template v-if="sortColumn === column.key">
                         {{ sortDirection === 'asc' ? '▲' : '▼' }}
                       </template>
@@ -833,12 +833,37 @@ export default {
       const container = this.$refs.tableContainer || null
       const containerWidth = container ? container.clientWidth : 800
       const checkboxWidth = this.selectable ? 28 : 0
+      const uuidWidth = 70 // Largeur fixe pour colonne UUID (7 caractères + padding)
+      
+      // Calculer l'espace disponible en excluant checkbox et colonnes UUID
+      let reservedWidth = checkboxWidth
+      let uuidColumnsCount = 0
+      
+      // Compter les colonnes UUID
+      this.columns.forEach(col => {
+        if (col.key === 'uuid') {
+          uuidColumnsCount++
+          reservedWidth += uuidWidth
+        }
+      })
+      
       const dataCols = this.columns.length
-      const available = Math.max(100, containerWidth - checkboxWidth)
-      const equalWidth = Math.max(130, Math.floor(available / (dataCols || 1)))
+      const remainingCols = dataCols - uuidColumnsCount
+      const available = Math.max(100, containerWidth - reservedWidth)
+      const equalWidth = remainingCols > 0 ? Math.max(130, Math.floor(available / remainingCols)) : 130
+      
       const widths = []
       if (this.selectable) widths.push(checkboxWidth)
-      for (let i = 0; i < dataCols; i++) widths.push(equalWidth)
+      
+      // Assigner les largeurs selon le type de colonne
+      for (let i = 0; i < dataCols; i++) {
+        if (this.columns[i].key === 'uuid') {
+          widths.push(uuidWidth)
+        } else {
+          widths.push(equalWidth)
+        }
+      }
+      
       this.columnWidths = widths
     },
     // Cell helpers
