@@ -70,6 +70,12 @@ export const useFilterStore = defineStore('filter', {
   actions: {
     // Charger la configuration des filtres pour une table
     async loadFilterConfig(tableName) {
+      // Vérifier si la config est déjà chargée
+      if (this.filterConfigs[tableName] && this.filterConfigs[tableName].length > 0) {
+        console.info(`[FILTER_STORE] Filter config already loaded for ${tableName}, skipping`);
+        return this.filterConfigs[tableName];
+      }
+      
       this.loading.config = true;
       this.errors[tableName] = null;
       

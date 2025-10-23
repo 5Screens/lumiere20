@@ -465,6 +465,7 @@ export default {
       
       // Setup infinite scroll if enabled
       if (this.infiniteScrollEnabled) {
+        // Utiliser await pour attendre que setupInfiniteScroll soit terminé
         this.setupInfiniteScroll()
       }
     })
@@ -1087,8 +1088,21 @@ export default {
     /**
      * Setup infinite scroll functionality
      */
-    setupInfiniteScroll() {
+    async setupInfiniteScroll() {
       console.log('[ReusableTableTab] Setting up infinite scroll');
+      
+      // Attendre que le filterStore ait chargé la configuration et restauré les filtres
+      // Cela évite de charger les données sans les filtres restaurés depuis localStorage
+      if (this.objectName === 'Person' || this.objectName === 'Task') {
+        console.log('[ReusableTableTab] Waiting for filter config to load...');
+        try {
+          await this.filterStore.loadFilterConfig(this.objectName);
+          console.log('[ReusableTableTab] Filter config loaded, filters restored from localStorage');
+        } catch (error) {
+          console.error('[ReusableTableTab] Error loading filter config:', error);
+          // Continuer même en cas d'erreur
+        }
+      }
       
       // Load initial data
       this.loadInitialData();
