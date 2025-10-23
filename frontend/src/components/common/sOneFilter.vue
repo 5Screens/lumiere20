@@ -82,8 +82,8 @@
 
       <!-- Checkbox Filter -->
       <div v-else-if="selectedColumnConfig.type === 'checkbox'" class="s-one-filter__checkbox">
-        <!-- Conteneur pour l'input de recherche (reste fixe) -->
-        <div v-if="selectedColumnConfig.form_lazy_search" class="s-one-filter__checkbox-search-container">
+        <!-- Conteneur pour l'input de recherche (toujours affiché) -->
+        <div class="s-one-filter__checkbox-search-container">
           <input
             type="text"
             v-model="checkboxSearchQuery"
@@ -100,7 +100,7 @@
           ref="checkboxContainer"
         >
           <label 
-            v-for="option in checkboxOptions" 
+            v-for="option in filteredCheckboxOptions" 
             :key="option.value"
             class="s-one-filter__checkbox-item"
           >
@@ -113,8 +113,8 @@
             <span>{{ option.label }}</span>
           </label>
           
-          <!-- Loading more indicator -->
-          <div v-if="isLoadingMore" class="s-one-filter__loading-more">
+          <!-- Loading more indicator (only for lazy search) -->
+          <div v-if="isLoadingMore && selectedColumnConfig.form_lazy_search" class="s-one-filter__loading-more">
             <span>Chargement...</span>
           </div>
         </div>
@@ -278,6 +278,7 @@ export default {
     const searchSuggestions = ref([]);
     const showSearchSuggestions = ref(false);
     const checkboxOptions = ref([]);
+    const allCheckboxOptions = ref([]); // Store all options for frontend filtering
     const selectOptions = ref([]);
     const searchSuggestionsTimer = ref(null);
     const checkboxSearchQuery = ref('');
@@ -300,6 +301,28 @@ export default {
       
       return selectOptions.value.filter(opt => 
         !props.filter.value.includes(opt.value)
+      );
+    });
+
+    // Computed pour filtrer les checkboxes (frontend ou backend selon form_lazy_search)
+    const filteredCheckboxOptions = computed(() => {
+      // Si form_lazy_search est true, le filtrage est fait côté serveur
+      // donc on retourne directement checkboxOptions
+      if (selectedColumnConfig.value?.form_lazy_search) {
+        return checkboxOptions.value;
+      }
+      
+      // Si form_lazy_search est false, on filtre côté frontend
+      const query = checkboxSearchQuery.value.toLowerCase().trim();
+      
+      if (!query) {
+        // Pas de recherche : retourner toutes les options
+        return checkboxOptions.value;
+      }
+      
+      // Filtrer les options selon la query
+      return checkboxOptions.value.filter(option => 
+        option.label.toLowerCase().includes(query)
       );
     });
 
@@ -673,7 +696,15 @@ export default {
 
     // Recherche dans les checkboxes avec debounce
     const handleCheckboxSearch = () => {
-      // Annuler le timer précédent
+      // Si form_lazy_search est false, le filtrage est fait côté frontend via computed
+      // Pas besoin d'appel API
+      if (!selectedColumnConfig.value?.form_lazy_search) {
+        console.log('[sOneFilter] 🔍 Frontend filtering, no API call needed');
+        return;
+      }
+      
+      // form_lazy_search est true : filtrage côté serveur
+      // Annuler le timer précédent s'il existe
       if (checkboxSearchTimer.value) {
         clearTimeout(checkboxSearchTimer.value);
       }
@@ -685,8 +716,8 @@ export default {
       // Créer un nouveau timer avec debounce
       checkboxSearchTimer.value = setTimeout(async () => {
         try {
-          console.info(`[sOneFilter] 🔍 Searching checkboxes with query: "${checkboxSearchQuery.value}"`);
-          console.info(`[sOneFilter] Current checkboxOptions length BEFORE: ${checkboxOptions.value.length}`);
+          console.log(`[sOneFilter] 🔍 Backend search with query: "${checkboxSearchQuery.value}"`);
+          console.log(`[sOneFilter] Current checkboxOptions length BEFORE: ${checkboxOptions.value.length}`);
           
           // Recharger les valeurs avec le critère de recherche (page 1)
           const result = await filterStore.loadFilterValues(
@@ -699,9 +730,9 @@ export default {
           const values = result.values || result || [];
           const pagination = result.pagination;
           
-          console.info(`[sOneFilter] ✅ Received ${values?.length || 0} values from API`);
-          console.info(`[sOneFilter] Pagination:`, pagination);
-          console.info(`[sOneFilter] First 3 values:`, values?.slice(0, 3));
+          console.log(`[sOneFilter] ✅ Received ${values?.length || 0} values from API`);
+          console.log(`[sOneFilter] Pagination:`, pagination);
+          console.log(`[sOneFilter] First 3 values:`, values?.slice(0, 3));
           
           // Remplacer les options (pas append car c'est une nouvelle recherche)
           checkboxOptions.value = values;
@@ -712,8 +743,8 @@ export default {
             hasMore.value = pagination.hasMore;
           }
           
-          console.info(`[sOneFilter] Current checkboxOptions length AFTER: ${checkboxOptions.value.length}`);
-          console.info(`[sOneFilter] hasMore: ${hasMore.value}, currentPage: ${currentPage.value}`);
+          console.log(`[sOneFilter] Current checkboxOptions length AFTER: ${checkboxOptions.value.length}`);
+          console.log(`[sOneFilter] hasMore: ${hasMore.value}, currentPage: ${currentPage.value}`);
         } catch (err) {
           console.error(`[sOneFilter] ❌ Error loading filtered checkbox options:`, err);
           checkboxOptions.value = [];
@@ -835,6 +866,7 @@ export default {
       searchSuggestions,
       showSearchSuggestions,
       checkboxOptions,
+      filteredCheckboxOptions,
       selectOptions,
       availableSelectOptions,
       availableFilterTypes,
