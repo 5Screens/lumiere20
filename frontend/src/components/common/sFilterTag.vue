@@ -102,6 +102,12 @@ export default {
 
     // Méthode pour obtenir le label traduit d'une valeur
     const getValueLabel = (value) => {
+      // Vérifier que filterOptions.value est bien un tableau
+      if (!Array.isArray(filterOptions.value)) {
+        console.warn('[sFilterTag] filterOptions is not an array:', filterOptions.value);
+        return value;
+      }
+      
       // Chercher dans les options du filtre
       const option = filterOptions.value.find(opt => opt.value === value);
       return option ? option.label : value;
@@ -180,16 +186,21 @@ export default {
         try {
           // Récupérer les valeurs depuis le filterStore (qui les a déjà en cache)
           const cachedValues = filterStore.filterValues[props.objectName]?.[props.filter.column];
-          if (cachedValues) {
+          if (cachedValues && Array.isArray(cachedValues)) {
             filterOptions.value = cachedValues;
           } else {
             // Si pas en cache, charger depuis l'API
-            const values = await filterStore.loadFilterValues(props.objectName, props.filter.column);
-            filterOptions.value = values || [];
+            const result = await filterStore.loadFilterValues(props.objectName, props.filter.column);
+            const values = result?.values || result || [];
+            filterOptions.value = Array.isArray(values) ? values : [];
           }
         } catch (error) {
           console.error('[sFilterTag] Error loading filter options:', error);
+          filterOptions.value = []; // Initialiser avec un tableau vide en cas d'erreur
         }
+      } else {
+        // Si pas d'objectName ou de column, initialiser avec un tableau vide
+        filterOptions.value = [];
       }
     });
 
