@@ -95,8 +95,7 @@
         
         <!-- Conteneur scrollable pour la liste des checkboxes -->
         <div 
-          class="s-one-filter__checkbox-items"
-          :class="{ 's-one-filter__checkbox-items--scrollable': selectedColumnConfig.form_lazy_search }"
+          class="s-one-filter__checkbox-items s-one-filter__checkbox-items--scrollable"
           @scroll="handleCheckboxScroll"
           ref="checkboxContainer"
         >
