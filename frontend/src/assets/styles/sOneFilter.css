@@ -4,8 +4,9 @@
   display: grid;
   grid-template-columns: auto 1fr 1fr 2fr;
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
   padding: 0.5rem;
+  min-height: 70px;
   background: var(--input-background);
   border-top: 2px solid var(--border-color);
 }
@@ -134,7 +135,7 @@
 }
 
 .s-one-filter__checkbox-items--scrollable {
-  max-height: 125px;
+  max-height: 80px;
   overflow-y: auto;
   flex-shrink: 0; /* Ne pas réduire la taille du conteneur scrollable */
 }
