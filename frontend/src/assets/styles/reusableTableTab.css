@@ -572,17 +572,19 @@ td.cell-selected-td::after {
   width: 5px;
   cursor: col-resize;
   user-select: none;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.05);
+  border-right: 1px solid var(--border-color);
 }
 
 /* Effet au survol de la poignée de redimensionnement - légèrement plus foncée */
 .resize-handle:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* Effet lorsque la poignée de redimensionnement est activée - plus foncée */
 .resize-handle:active {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.25);
+  border-right: 2px solid var(--primary-color);
 }
 
 
