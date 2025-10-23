@@ -17,8 +17,8 @@ export class Task {
       { key: 'ticket_status_label', label: t('task.status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
       { key: 'requested_by_name', label: t('task.requested_by'), type: 'text', format: 'text' },
       { key: 'requested_for_name', label: t('task.requested_for'), type: 'text', format: 'text' },
-      { key: 'assigned_group_name', label: t('task.assigned_team_label'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('task.assigned_to_label'), type: 'text', format: 'text' },
+      { key: 'assigned_group_name', label: t('task.assigned_team_label'), type: 'text', format: 'text', filterKey: 'assigned_to_group' },
+      { key: 'assigned_person_name', label: t('task.assigned_to_label'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
