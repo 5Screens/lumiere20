@@ -479,6 +479,30 @@ INSERT INTO administration.table_metadata (
  true, 70,
  NULL, NULL, NULL),
 
+-- assigned_to_group (relation via core.rel_tickets_groups_persons)
+('tickets', 'Task', NULL, NULL, 'assigned_to_group', 'task.assigned_team_label', 'Équipe assignée',
+ 'uuid', true, NULL,
+ true, false, true,
+ 'checkbox', '{"multiple": false}'::jsonb,
+ true, 'configuration.groups', 'uuid',
+ false, NULL, NULL, NULL,
+ 'sFilteredSearchField', 'task.assigned_team_placeholder', false, false,
+ 'groups', 'group_name', 'uuid', false, 'Équipe en charge de la tâche',
+ true, 75,
+ NULL, NULL, NULL),
+
+-- assigned_to_person (relation via core.rel_tickets_groups_persons)
+('tickets', 'Task', NULL, NULL, 'assigned_to_person', 'task.assigned_to_label', 'Personne assignée',
+ 'uuid', true, NULL,
+ true, false, true,
+ 'checkbox', '{"multiple": false}'::jsonb,
+ true, 'configuration.persons', 'uuid',
+ false, NULL, NULL, NULL,
+ 'sFilteredSearchField', 'task.assigned_to_placeholder', false, false,
+ 'persons', 'person_name', 'uuid', true, 'Personne assignée à la tâche',
+ true, 76,
+ NULL, NULL, NULL),
+
 -- configuration_item_uuid
 ('tickets', 'Task', NULL, NULL, 'configuration_item_uuid', 'ticket.configuration_item', 'Élément de configuration',
  'uuid', true, NULL,

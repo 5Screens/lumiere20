@@ -95,6 +95,62 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   const { operator, value, empty_string_is_null } = filterDef;
   let condition = '';
   
+  // Handle RELATIONAL columns (assigned_to_group, assigned_to_person)
+  // These are stored in core.rel_tickets_groups_persons table
+  if (column === 'assigned_to_group') {
+    logger.info(`[TASK SERVICE] Building condition for relational column: assigned_to_group`);
+    if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_group IN (${placeholders})
+        )`;
+      } else {
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_group = $${paramIndex++}
+        )`;
+        queryParams.push(value);
+      }
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  if (column === 'assigned_to_person') {
+    logger.info(`[TASK SERVICE] Building condition for relational column: assigned_to_person`);
+    if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_person IN (${placeholders})
+        )`;
+      } else {
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_person = $${paramIndex++}
+        )`;
+        queryParams.push(value);
+      }
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
   // Handle NULL checks
   if (operator === 'is_null') {
     if (empty_string_is_null && (dataType === 'text' || dataType === 'string')) {
