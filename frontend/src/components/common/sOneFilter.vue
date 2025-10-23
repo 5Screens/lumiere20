@@ -399,23 +399,40 @@ export default {
     const updateColumn = (event) => {
       const column = event.target.value;
       
+      console.log('[sOneFilter] 🔄 updateColumn called:', {
+        filterId: props.filter.id,
+        oldColumn: props.filter.column,
+        newColumn: column,
+        oldType: props.filter.type,
+        oldValue: props.filter.value
+      });
+      
       emit('update', props.filter.id, {
         column: column,
         type: '',
         value: null
       });
+      
+      console.log('[sOneFilter] ✅ updateColumn emitted: { column, type: "", value: null }');
 
       // Ne pas charger les options ici car le watch s'en charge déjà
       // Cela évite un double appel à loadOptions
     };
 
     const updateType = (event) => {
-      const type = event.target.value;
       const newType = event.target.value;
+      
+      console.log('[sOneFilter] 🔄 updateType called:', {
+        filterId: props.filter.id,
+        column: props.filter.column,
+        oldType: props.filter.type,
+        newType: newType,
+        oldValue: props.filter.value,
+        selectedColumnConfig: selectedColumnConfig.value
+      });
       
       // Déterminer si on doit préserver la valeur actuelle
       const noValueOperators = ['is_null', 'is_not_null', 'is_true', 'is_false'];
-      const wasNoValueOperator = noValueOperators.includes(props.filter.type);
       const isNoValueOperator = noValueOperators.includes(newType);
       
       let newValue;
@@ -423,22 +440,33 @@ export default {
       if (isNoValueOperator) {
         // Si le nouveau type ne nécessite pas de valeur, mettre null
         newValue = null;
-      } else if (wasNoValueOperator) {
-        // Si l'ancien type ne nécessitait pas de valeur, initialiser avec une valeur par défaut
-        newValue = getDefaultValueForType(newType);
+        console.log('[sOneFilter] 🚫 No value operator detected, setting value to null');
       } else {
-        // Sinon, préserver la valeur actuelle si elle est compatible
-        newValue = props.filter.value;
+        // Toujours réinitialiser avec une valeur par défaut lors du changement de type
+        newValue = getDefaultValueForType(newType);
+        console.log('[sOneFilter] 🔄 Getting default value for type:', { newType, newValue });
       }
       
       emit('update', props.filter.id, {
         type: newType,
         value: newValue
       });
+      
+      console.log('[sOneFilter] ✅ updateType emitted:', { type: newType, value: newValue });
     };
 
     const updateValue = (value) => {
+      console.log('[sOneFilter] 🔄 updateValue called:', {
+        filterId: props.filter.id,
+        column: props.filter.column,
+        type: props.filter.type,
+        oldValue: props.filter.value,
+        newValue: value
+      });
+      
       emit('update', props.filter.id, { value });
+      
+      console.log('[sOneFilter] ✅ updateValue emitted:', { value });
 
       // Pour les filtres de recherche, charger les suggestions
       if (props.filter.type === 'search' && value && value.length >= 2) {
@@ -465,16 +493,34 @@ export default {
     };
 
     const getDefaultValueForType = (type) => {
-      switch (type) {
+      console.log('[sOneFilter] 🎯 getDefaultValueForType called:', {
+        type,
+        selectedColumnConfig: selectedColumnConfig.value,
+        columnType: selectedColumnConfig.value?.type
+      });
+      
+      let defaultValue;
+      
+      // Utiliser le type de la colonne configurée, pas le type de filtre
+      const columnType = selectedColumnConfig.value?.type;
+      
+      switch (columnType) {
         case 'checkbox':
         case 'select':
-          return selectedColumnConfig.value?.multiple ? [] : null;
+          defaultValue = selectedColumnConfig.value?.multiple ? [] : null;
+          break;
         case 'date_range':
-          return { gte: null, lte: null };
+        case 'datetime':
+          defaultValue = { gte: null, lte: null };
+          break;
         case 'search':
         default:
-          return '';
+          defaultValue = '';
+          break;
       }
+      
+      console.log('[sOneFilter] ✅ getDefaultValueForType returning:', defaultValue);
+      return defaultValue;
     };
 
     const getTypeLabel = (type) => {
@@ -741,6 +787,14 @@ export default {
 
     // Watchers
     watch(() => props.filter.column, (newColumn, oldColumn) => {
+      console.log('[sOneFilter] 👀 Column watcher triggered:', { newColumn, oldColumn, isMounted });
+      
+      // Réinitialiser la recherche des checkboxes lors du changement de colonne
+      if (newColumn !== oldColumn) {
+        console.log('[sOneFilter] 🔄 Resetting checkboxSearchQuery');
+        checkboxSearchQuery.value = '';
+      }
+      
       // Ne charger que si la colonne a vraiment changé et que le composant est déjà monté
       if (isMounted && newColumn && newColumn !== oldColumn && selectedColumnConfig.value) {
         const type = selectedColumnConfig.value.type;
