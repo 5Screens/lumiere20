@@ -65,7 +65,7 @@ INSERT INTO administration.table_metadata (
 ('persons', 'Person', NULL, NULL, 'job_role', 'person.job_role', 'Rôle/Fonction dans l''organisation',
  'string', true, NULL,
  true, true, true,
- 'checkbox', '{"multiple": true}'::jsonb,
+ 'search', '{"multiple": true}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sTextField', 'Fonction occupée', false, false,
