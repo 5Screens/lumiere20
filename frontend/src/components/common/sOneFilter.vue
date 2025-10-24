@@ -247,7 +247,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFilterStore } from '@/stores/filterStore';
 import { useI18n } from 'vue-i18n';
-import { DEBOUNCE_DELAY_MS } from '@/config/config';
+import { DEBOUNCE_DELAY_MS, FILTER_CONFIG } from '@/config/config';
 
 export default {
   name: 'sOneFilter',
@@ -491,7 +491,7 @@ export default {
       console.log('[sOneFilter] ✅ updateValue emitted:', { value });
 
       // Pour les filtres de recherche, charger les suggestions
-      if (props.filter.type === 'search' && value && value.length >= 2) {
+      if (props.filter.type === 'search' && value && value.length >= FILTER_CONFIG.minSearchChars) {
         clearTimeout(searchSuggestionsTimer.value);
         searchSuggestionsTimer.value = setTimeout(async () => {
           try {
@@ -506,7 +506,7 @@ export default {
             console.error(`[sOneFilter] Error loading search suggestions:`, err);
             searchSuggestions.value = [];
           }
-        }, 300);
+        }, FILTER_CONFIG.searchDebounceMs);
       }
     };
 

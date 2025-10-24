@@ -39,6 +39,7 @@ import { getClassByName } from '@/services/classMapping'
 import reusableTableTab from '@/components/common/reusableTableTab.vue'
 import tabControlButtons from '@/components/common/tabControlButtons.vue'
 import apiService from '@/services/apiService'
+import { PAGINATION_CONFIG } from '@/config/config'
 import '../assets/styles/tab.css'
 
 export default {
@@ -126,19 +127,8 @@ export default {
     
     // Détermine si le scroll infini doit être utilisé pour ce type d'objet
     shouldUseInfiniteScroll() {
-      // Liste des types d'objets qui utilisent le scroll infini
-      const infiniteScrollTypes = [
-        'Person',        // Personnes - peut avoir beaucoup d'enregistrements
-        'Task',          // Tâches - utilise POST /tickets/search/tasks
-        //'Incident',      // Incidents - à implémenter
-        //'Problem',       // Problèmes - à implémenter
-        //'Change',        // Changes - à implémenter
-        //'Entity',        // Entités - peut être nombreuses
-        //'Location'       // Localisations - peut être nombreuses
-      ];
-      
       const className = this.data.className;
-      const useInfiniteScroll = infiniteScrollTypes.includes(className);
+      const useInfiniteScroll = PAGINATION_CONFIG.infiniteScrollTypes.includes(className);
       
       console.log(`[ObjectsTab] shouldUseInfiniteScroll pour ${className}:`, useInfiniteScroll);
       return useInfiniteScroll;
@@ -146,19 +136,8 @@ export default {
     
     // Taille de page pour le scroll infini
     infiniteScrollPageSize() {
-      // Taille de page adaptée selon le type d'objet
-      const pageSizes = {
-        'Person': 50,      // Personnes - taille moyenne
-        'Task': 100,        // Tâches - plus petite car plus de données par ligne
-        'Incident': 25,    // Incidents - plus petite car plus de données par ligne
-        'Problem': 25,     // Problèmes - plus petite car plus de données par ligne
-        'Change': 25,      // Changes - plus petite car plus de données par ligne
-        'Entity': 100,     // Entités - plus grande car moins de données par ligne
-        'Location': 75     // Localisations - taille moyenne-grande
-      };
-      
       const className = this.data.className;
-      const pageSize = pageSizes[className] || 50; // Défaut: 50
+      const pageSize = PAGINATION_CONFIG.pageSizes[className] || PAGINATION_CONFIG.defaultPageSize;
       
       console.log(`[ObjectsTab] infiniteScrollPageSize pour ${className}:`, pageSize);
       return pageSize;

@@ -183,7 +183,7 @@ import { usePopoverStore } from '@/stores/popoverStore'
 import { useTabsStore } from '@/stores/tabsStore'
 import { useFilterStore } from '@/stores/filterStore'
 import { useUserProfileStore } from '@/stores/userProfileStore'
-import { DEBOUNCE_DELAY_MS } from '@/config/config'
+import { DEBOUNCE_DELAY_MS, PAGINATION_CONFIG } from '@/config/config'
 import sMultiFilter from './sMultiFilter.vue'
 import sFilterTag from './sFilterTag.vue'
 
@@ -230,7 +230,7 @@ export default {
     },
     pageSize: {
       type: Number,
-      default: 50
+      default: PAGINATION_CONFIG.defaultPageSize
     },
     objectName: {
       type: String,
