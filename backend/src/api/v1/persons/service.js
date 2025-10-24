@@ -1078,7 +1078,47 @@ const searchPersons = async (searchParams) => {
     const { filters = {}, sort = {}, pagination = {} } = searchParams;
     const { page = 1, limit = 20 } = pagination;
     const offset = (page - 1) * limit;
-    const { by: sortBy = 'created_at', direction: sortDirection = 'desc' } = sort;
+    const { by: sortBy = 'updated_at', direction: sortDirection = 'desc' } = sort;
+    
+    // Mapping des colonnes affichées (frontend) vers les expressions SQL triables (backend)
+    const sortColumnMapping = {
+      'person_name': "p.first_name || ' ' || p.last_name",
+      'ref_entity_name': 'e.name',
+      'ref_location_name': 'l.name',
+      'ref_approving_manager_name': "m.first_name || ' ' || m.last_name",
+      'raised_tickets_count': '(SELECT COUNT(*) FROM core.tickets t WHERE t.requested_for_uuid = p.uuid)',
+      'member_of_group_count': '(SELECT COUNT(*) FROM configuration.rel_persons_groups rpg WHERE rpg.rel_member = p.uuid)',
+      'assigned_tickets_count': '(SELECT COUNT(*) FROM core.rel_tickets_groups_persons rtgp WHERE rtgp.rel_assigned_to_person = p.uuid AND rtgp.type = \'ASSIGNED\' AND rtgp.ended_at IS NULL)',
+      'watched_tickets_count': '(SELECT COUNT(*) FROM core.rel_tickets_groups_persons rtgp WHERE rtgp.rel_assigned_to_person = p.uuid AND rtgp.type = \'WATCHER\' AND rtgp.ended_at IS NULL)',
+      'budget_approver_count': '(SELECT COUNT(*) FROM configuration.entities ent WHERE ent.budget_approver_uuid = p.uuid)',
+      // Colonnes de la table persons (pas de mapping nécessaire)
+      'uuid': 'p.uuid',
+      'internal_id': 'p.internal_id',
+      'job_role': 'p.job_role',
+      'email': 'p.email',
+      'business_phone': 'p.business_phone',
+      'business_mobile_phone': 'p.business_mobile_phone',
+      'personal_mobile_phone': 'p.personal_mobile_phone',
+      'floor': 'p.floor',
+      'room': 'p.room',
+      'date_format': 'p.date_format',
+      'photo': 'p.photo',
+      'active': 'p.active',
+      'critical_user': 'p.critical_user',
+      'external_user': 'p.external_user',
+      'locked_out': 'p.locked_out',
+      'password_needs_reset': 'p.password_needs_reset',
+      'notification': 'p.notification',
+      'time_zone': 'p.time_zone',
+      'language': 'p.language',
+      'created_at': 'p.created_at',
+      'updated_at': 'p.updated_at'
+    };
+    
+    // Obtenir l'expression SQL pour le tri
+    const sortExpression = sortColumnMapping[sortBy] || `p.${sortBy}`;
+    
+    logger.info(`[PERSONS SERVICE] Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
     
     logger.info(`[PERSONS SERVICE] Sort parameters: sortBy="${sortBy}", sortDirection="${sortDirection}"`);
     logger.info(`[PERSONS SERVICE] Pagination: page=${page}, limit=${limit}, offset=${offset}`);
@@ -1278,7 +1318,7 @@ const searchPersons = async (searchParams) => {
       LEFT JOIN configuration.locations l ON p.ref_location_uuid = l.uuid
       LEFT JOIN configuration.persons m ON p.ref_approving_manager_uuid = m.uuid
       ${whereClause}
-      ORDER BY p.${sortBy} ${sortDirection.toUpperCase()}
+      ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
       LIMIT $${paramIndex++} OFFSET $${paramIndex++}
     `;
     
