@@ -304,7 +304,28 @@ const searchTasks = async (searchParams) => {
     const offset = (page - 1) * limit;
     const { by: sortBy = 'created_at', direction: sortDirection = 'desc' } = sort;
     
-    logger.info(`[TASK SERVICE] Sort parameters: sortBy="${sortBy}", sortDirection="${sortDirection}"`);
+    // Mapping des colonnes affichées (frontend) vers les expressions SQL triables (backend)
+    const sortColumnMapping = {
+      'writer_name': "p3.first_name || ' ' || p3.last_name",
+      'ticket_status_label': 'COALESCE(tst.label, ts.code)',
+      'requested_by_name': "p1.first_name || ' ' || p1.last_name",
+      'requested_for_name': "p2.first_name || ' ' || p2.last_name",
+      'assigned_group_name': 'g.group_name',
+      'assigned_person_name': "p4.first_name || ' ' || p4.last_name",
+      'ticket_type_label': 'COALESCE(ttt.label, tt.code)',
+      // Colonnes de la table tickets (pas de mapping nécessaire)
+      'uuid': 't.uuid',
+      'title': 't.title',
+      'description': 't.description',
+      'created_at': 't.created_at',
+      'updated_at': 't.updated_at',
+      'closed_at': 't.closed_at'
+    };
+    
+    // Obtenir l'expression SQL pour le tri
+    const sortExpression = sortColumnMapping[sortBy] || `t.${sortBy}`;
+    
+    logger.info(`[TASK SERVICE] Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
     logger.info(`[TASK SERVICE] Pagination: page=${page}, limit=${limit}, offset=${offset}`);
     logger.info(`[TASK SERVICE] Language: ${lang}`);
     
@@ -464,7 +485,7 @@ const searchTasks = async (searchParams) => {
       LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
       LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
       ${whereClause}
-      ORDER BY t.${sortBy} ${sortDirection.toUpperCase()}
+      ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
       LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}
     `;
     
