@@ -81,7 +81,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.entities', 'uuid',
  false, NULL, NULL, NULL,
  'sSelectField', 'Sélectionnez une entité', false, false,
- 'entities', 'name', 'uuid', true, 'Entité d''appartenance',
+ 'entities', 'name', 'uuid', false, 'Entité d''appartenance',
  true, 40,
  NULL, NULL, NULL),
 

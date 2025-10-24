@@ -14,7 +14,7 @@ router.get('/', (req, res, next) => {
     logger.info('[ROUTES] GET /api/v1/entities - Route handler started');
     
     // Check for unrecognized query parameters
-    const allowedParams = ['entity_id', 'is_active'];
+    const allowedParams = ['entity_id', 'is_active', 'lang'];
     const queryParams = Object.keys(req.query);
     
     const invalidParams = queryParams.filter(param => !allowedParams.includes(param));
