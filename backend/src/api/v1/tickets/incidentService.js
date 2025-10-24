@@ -365,6 +365,505 @@ const updateIncident = async (uuid, updateData) => {
 };
 
 /**
+ * Build filter condition for incidents search
+ * @param {string} column - Column name
+ * @param {Object} filterDef - Filter definition with operator and value(s)
+ * @param {string} dataType - Column data type (text, number, date, boolean)
+ * @param {Array} queryParams - Array to push parameters into
+ * @param {number} paramIndex - Current parameter index
+ * @returns {Object} { condition: string, newParamIndex: number }
+ */
+const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
+  const { operator, value, empty_string_is_null } = filterDef;
+  let condition = '';
+  
+  // Handle RELATIONAL columns (assigned_to_group, assigned_to_person)
+  if (column === 'assigned_to_group') {
+    logger.info(`[INCIDENT SERVICE] Building condition for relational column: assigned_to_group`);
+    if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_group IN (${placeholders})
+        )`;
+      } else {
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_group = $${paramIndex++}
+        )`;
+        queryParams.push(value);
+      }
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  if (column === 'assigned_to_person') {
+    logger.info(`[INCIDENT SERVICE] Building condition for relational column: assigned_to_person`);
+    if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_person IN (${placeholders})
+        )`;
+      } else {
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_person = $${paramIndex++}
+        )`;
+        queryParams.push(value);
+      }
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  // Handle JSONB columns (impact, urgency, cause_code, etc.)
+  const jsonbColumns = ['impact', 'urgency', 'cause_code', 'resolution_code', 'contact_type', 'symptoms_uuid', 'rel_service', 'rel_service_offerings'];
+  if (jsonbColumns.includes(column)) {
+    const jsonbPath = `t.core_extended_attributes->>'${column}'`;
+    if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        condition = `${jsonbPath} IN (${placeholders})`;
+        queryParams.push(...value);
+      } else {
+        condition = `${jsonbPath} = $${paramIndex++}`;
+        queryParams.push(value);
+      }
+    } else if (operator === 'contains') {
+      condition = `LOWER(${jsonbPath}) LIKE LOWER($${paramIndex++})`;
+      queryParams.push(`%${value}%`);
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  // Handle NULL checks
+  if (operator === 'is_null') {
+    if (empty_string_is_null && (dataType === 'text' || dataType === 'string')) {
+      condition = `(t.${column} IS NULL OR t.${column} = '')`;
+    } else {
+      condition = `t.${column} IS NULL`;
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  if (operator === 'is_not_null') {
+    if (empty_string_is_null && (dataType === 'text' || dataType === 'string')) {
+      condition = `(t.${column} IS NOT NULL AND t.${column} != '')`;
+    } else {
+      condition = `t.${column} IS NOT NULL`;
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  // Handle TEXT/STRING/UUID type
+  if (dataType === 'text' || dataType === 'string' || dataType === 'uuid') {
+    if (operator === 'contains') {
+      if (Array.isArray(value)) {
+        const conditions = value.map((val, index) => {
+          const cond = `LOWER(CAST(t.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
+          queryParams.push(`%${val}%`);
+          return cond;
+        });
+        condition = `(${conditions.join(' OR ')})`;
+      } else {
+        condition = `LOWER(CAST(t.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
+        queryParams.push(`%${value}%`);
+      }
+    } else if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        condition = `t.${column} IN (${placeholders})`;
+        queryParams.push(...value);
+      } else {
+        condition = `t.${column} = $${paramIndex++}`;
+        queryParams.push(value);
+      }
+    } else if (operator === 'not_equals') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        condition = `t.${column} NOT IN (${placeholders})`;
+        queryParams.push(...value);
+      } else {
+        condition = `t.${column} != $${paramIndex++}`;
+        queryParams.push(value);
+      }
+    }
+  }
+  
+  // Handle NUMBER type
+  else if (dataType === 'number' || dataType === 'integer' || dataType === 'numeric') {
+    if (operator === 'equals') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        condition = `t.${column} IN (${placeholders})`;
+        queryParams.push(...value);
+      } else {
+        condition = `t.${column} = $${paramIndex++}`;
+        queryParams.push(value);
+      }
+    } else if (operator === 'lt') {
+      condition = `t.${column} < $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'lte') {
+      condition = `t.${column} <= $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'gt') {
+      condition = `t.${column} > $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'gte') {
+      condition = `t.${column} >= $${paramIndex++}`;
+      queryParams.push(value);
+    } else if (operator === 'between') {
+      const startValue = value.gte || value.min || value.start;
+      const endValue = value.lte || value.max || value.end;
+      condition = `t.${column} BETWEEN $${paramIndex++} AND $${paramIndex++}`;
+      queryParams.push(startValue, endValue);
+    }
+  }
+  
+  // Handle DATE type
+  else if (dataType === 'date' || dataType === 'timestamp' || dataType === 'datetime') {
+    if (operator === 'after') {
+      condition = `DATE(t.${column}) > DATE($${paramIndex++})`;
+      queryParams.push(value);
+    } else if (operator === 'on_or_after') {
+      condition = `DATE(t.${column}) >= DATE($${paramIndex++})`;
+      queryParams.push(value);
+    } else if (operator === 'before') {
+      condition = `DATE(t.${column}) < DATE($${paramIndex++})`;
+      queryParams.push(value);
+    } else if (operator === 'on_or_before') {
+      condition = `DATE(t.${column}) <= DATE($${paramIndex++})`;
+      queryParams.push(value);
+    } else if (operator === 'between') {
+      const startDate = value.gte || value.start;
+      const endDate = value.lte || value.end;
+      condition = `DATE(t.${column}) BETWEEN DATE($${paramIndex++}) AND DATE($${paramIndex++})`;
+      queryParams.push(startDate, endDate);
+    } else if (operator === 'on' || operator === 'equals') {
+      condition = `DATE(t.${column}) = DATE($${paramIndex++})`;
+      queryParams.push(value);
+    }
+  }
+  
+  // Handle BOOLEAN type
+  else if (dataType === 'boolean' || dataType === 'bool') {
+    if (operator === 'is_true') {
+      condition = `t.${column} = true`;
+    } else if (operator === 'is_false') {
+      condition = `t.${column} = false`;
+    } else if (operator === 'any') {
+      condition = '1=1';
+    }
+  }
+  
+  return { condition, newParamIndex: paramIndex };
+};
+
+/**
+ * Search INCIDENT tickets with advanced filters, sorting and pagination
+ * @param {Object} searchParams - Search parameters including filters, sort, pagination, and lang
+ * @returns {Object} Search results with data and metadata
+ */
+const searchIncidents = async (searchParams) => {
+  try {
+    logger.info('[INCIDENT SERVICE] Searching incidents with advanced filters:', JSON.stringify(searchParams, null, 2));
+    
+    const { filters = {}, sort = {}, pagination = {}, lang = 'en' } = searchParams;
+    const { page = 1, limit = 25 } = pagination;
+    const offset = (page - 1) * limit;
+    const { by: sortBy = 'created_at', direction: sortDirection = 'desc' } = sort;
+    
+    // Mapping des colonnes affichées (frontend) vers les expressions SQL triables (backend)
+    const sortColumnMapping = {
+      'writer_name': "p3.first_name || ' ' || p3.last_name",
+      'ticket_status_label': 'COALESCE(tst.label, ts.code)',
+      'requested_by_name': "p1.first_name || ' ' || p1.last_name",
+      'requested_for_name': "p2.first_name || ' ' || p2.last_name",
+      'assigned_group_name': 'g.group_name',
+      'assigned_person_name': "p4.first_name || ' ' || p4.last_name",
+      'ticket_type_label': 'COALESCE(ttt.label, tt.code)',
+      'configuration_item_name': 'ci.name',
+      'symptoms_label': 'COALESCE(symptoms_t.label, symptoms.code)',
+      'impact_label': 'COALESCE(impacts_t.label, t.core_extended_attributes->>\'impact\')',
+      'urgency_label': 'COALESCE(urgencies_t.label, t.core_extended_attributes->>\'urgency\')',
+      'priority': '(t.core_extended_attributes->>\'priority\')::integer',
+      'cause_code_label': 'COALESCE(cause_codes_t.label, t.core_extended_attributes->>\'cause_code\')',
+      'resolution_code_label': 'COALESCE(resolution_codes_t.label, t.core_extended_attributes->>\'resolution_code\')',
+      'contact_type_label': 'COALESCE(contact_types_t.label, t.core_extended_attributes->>\'contact_type\')',
+      'rel_service_name': 'service.name',
+      'rel_service_offerings_name': 'service_offerings.name',
+      'rel_problem_title': 'problem.title',
+      'rel_change_request_title': 'change_request.title',
+      // Colonnes de la table tickets
+      'uuid': 't.uuid',
+      'title': 't.title',
+      'description': 't.description',
+      'created_at': 't.created_at',
+      'updated_at': 't.updated_at',
+      'closed_at': 't.closed_at'
+    };
+    
+    // Obtenir l'expression SQL pour le tri
+    const sortExpression = sortColumnMapping[sortBy] || `t.${sortBy}`;
+    
+    logger.info(`[INCIDENT SERVICE] Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
+    logger.info(`[INCIDENT SERVICE] Pagination: page=${page}, limit=${limit}, offset=${offset}`);
+    logger.info(`[INCIDENT SERVICE] Language: ${lang}`);
+    
+    // Build WHERE clause from advanced filters
+    const queryParams = [];
+    let paramIndex = 1;
+    let whereClause = '';
+    
+    // Always filter by ticket_type = INCIDENT
+    const baseConditions = [`t.ticket_type_code = 'INCIDENT'`];
+    
+    // Validate filter format
+    if (Object.keys(filters).length > 0) {
+      if (!filters.conditions || !Array.isArray(filters.conditions)) {
+        const error = new Error(
+          'Invalid filter format. filters.conditions must be an array. ' +
+          'Example: { "filters": { "conditions": [{ "column": "title", "operator": "contains", "value": "server" }] } }'
+        );
+        logger.error('[INCIDENT SERVICE] Missing or invalid filters.conditions');
+        throw error;
+      }
+      
+      if (filters.conditions.length > 0) {
+        const mode = filters.mode || 'include';
+        const operator = (filters.operator || 'AND').toUpperCase();
+        
+        logger.info(`[INCIDENT SERVICE] Processing ${filters.conditions.length} advanced filter(s) with mode=${mode}, operator=${operator}`);
+        
+        const filterConditions = [];
+        
+        // Process each filter condition
+        for (const filterDef of filters.conditions) {
+          const { column } = filterDef;
+          
+          logger.info(`[INCIDENT SERVICE] Processing filter condition:`, JSON.stringify(filterDef));
+          
+          if (!column) {
+            logger.warn('[INCIDENT SERVICE] Filter condition missing column, skipping');
+            continue;
+          }
+          
+          // Get column metadata to determine data type
+          const metadataQuery = `
+            SELECT data_type 
+            FROM administration.table_metadata 
+            WHERE table_name = $1 AND column_name = $2
+          `;
+          const metadataResult = await db.query(metadataQuery, ['tickets', column]);
+          
+          logger.info(`[INCIDENT SERVICE] Metadata query result for column ${column}:`, metadataResult.rows);
+          
+          if (metadataResult.rows.length === 0) {
+            logger.warn(`[INCIDENT SERVICE] No metadata for column ${column}, skipping filter`);
+            continue;
+          }
+          
+          const { data_type } = metadataResult.rows[0];
+          logger.info(`[INCIDENT SERVICE] Column ${column} has data_type: ${data_type}`);
+          
+          // Build the condition for this filter
+          const { condition, newParamIndex } = buildFilterCondition(
+            column,
+            filterDef,
+            data_type,
+            queryParams,
+            paramIndex
+          );
+          
+          logger.info(`[INCIDENT SERVICE] buildFilterCondition returned: condition="${condition}", newParamIndex=${newParamIndex}`);
+          
+          if (condition) {
+            filterConditions.push(condition);
+            paramIndex = newParamIndex;
+            logger.info(`[INCIDENT SERVICE] Added filter: ${condition}`);
+          } else {
+            logger.warn(`[INCIDENT SERVICE] buildFilterCondition returned empty condition for column ${column}`);
+          }
+        }
+        
+        // Combine all filter conditions
+        if (filterConditions.length > 0) {
+          const combinedConditions = filterConditions.join(` ${operator} `);
+          
+          // Apply mode: include or exclude
+          if (mode === 'exclude') {
+            baseConditions.push(`NOT (${combinedConditions})`);
+          } else {
+            baseConditions.push(combinedConditions);
+          }
+          
+          logger.info(`[INCIDENT SERVICE] Filter conditions added to base conditions`);
+        }
+      }
+    }
+    
+    whereClause = `WHERE ${baseConditions.join(' AND ')}`;
+    logger.info(`[INCIDENT SERVICE] Final WHERE clause: ${whereClause}`);
+    
+    // Count total results
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM core.tickets t
+      ${whereClause}
+    `;
+    
+    logger.info(`[INCIDENT SERVICE] Count query params: ${JSON.stringify(queryParams)}`);
+    
+    const countResult = await db.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results with all data
+    const dataQuery = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.configuration_item_uuid,
+        ci.name as configuration_item_name,
+        t.requested_by_uuid,
+        t.requested_for_uuid,
+        t.writer_uuid,
+        t.ticket_type_code,
+        t.ticket_status_code,
+        t.created_at,
+        t.updated_at,
+        t.closed_at,
+        t.core_extended_attributes,
+        t.user_extended_attributes,
+        
+        -- Person names
+        p1.first_name || ' ' || p1.last_name as requested_by_name,
+        p2.first_name || ' ' || p2.last_name as requested_for_name,
+        p3.first_name || ' ' || p3.last_name as writer_name,
+        
+        -- Translated labels
+        COALESCE(ttt.label, tt.code) as ticket_type_label,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        
+        -- Assignment info
+        g.uuid as assigned_to_group,
+        g.group_name as assigned_group_name,
+        p4.uuid as assigned_to_person,
+        p4.first_name || ' ' || p4.last_name as assigned_person_name,
+        
+        -- Incident-specific fields from core_extended_attributes
+        t.core_extended_attributes->>'impact' as impact,
+        COALESCE(impacts_t.label, t.core_extended_attributes->>'impact') as impact_label,
+        t.core_extended_attributes->>'urgency' as urgency,
+        COALESCE(urgencies_t.label, t.core_extended_attributes->>'urgency') as urgency_label,
+        (t.core_extended_attributes->>'priority')::integer as priority,
+        t.core_extended_attributes->>'cause_code' as cause_code,
+        COALESCE(cause_codes_t.label, t.core_extended_attributes->>'cause_code') as cause_code_label,
+        t.core_extended_attributes->>'contact_type' as contact_type,
+        COALESCE(contact_types_t.label, t.core_extended_attributes->>'contact_type') as contact_type_label,
+        t.core_extended_attributes->>'resolution_code' as resolution_code,
+        COALESCE(resolution_codes_t.label, t.core_extended_attributes->>'resolution_code') as resolution_code_label,
+        t.core_extended_attributes->>'resolution_notes' as resolution_notes,
+        t.core_extended_attributes->>'symptoms_uuid' as symptoms_uuid,
+        COALESCE(symptoms_t.label, symptoms.code) as symptoms_label,
+        t.core_extended_attributes->>'rel_service' as rel_service,
+        service.name as rel_service_name,
+        t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
+        service_offerings.name as rel_service_offerings_name,
+        problem_rel.rel_child_ticket_uuid as rel_problem_id,
+        problem.title as rel_problem_title,
+        change_rel.rel_child_ticket_uuid as rel_change_request,
+        change_request.title as rel_change_request_title,
+        (t.core_extended_attributes->>'reopen_count')::integer as reopen_count,
+        (t.core_extended_attributes->>'standby_count')::integer as standby_count,
+        (t.core_extended_attributes->>'assignment_count')::integer as assignment_count,
+        (t.core_extended_attributes->>'assignment_to_count')::integer as assignment_to_count
+        
+      FROM core.tickets t
+      LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
+      LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
+      LEFT JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+      LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
+      JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${paramIndex}
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${paramIndex}
+      LEFT JOIN (
+        SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
+        FROM core.rel_tickets_groups_persons
+        WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+      ) rtgp ON t.uuid = rtgp.rel_ticket
+      LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+      LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+      LEFT JOIN translations.incident_setup_labels impacts_t ON impacts_t.rel_incident_setup_code = t.core_extended_attributes->>'impact' AND impacts_t.lang = $${paramIndex}
+      LEFT JOIN translations.incident_setup_labels urgencies_t ON urgencies_t.rel_incident_setup_code = t.core_extended_attributes->>'urgency' AND urgencies_t.lang = $${paramIndex}
+      LEFT JOIN translations.incident_setup_labels cause_codes_t ON cause_codes_t.rel_incident_setup_code = t.core_extended_attributes->>'cause_code' AND cause_codes_t.lang = $${paramIndex}
+      LEFT JOIN translations.contact_types_labels contact_types_t ON contact_types_t.rel_contact_type_code = t.core_extended_attributes->>'contact_type' AND contact_types_t.language = $${paramIndex}
+      LEFT JOIN translations.incident_setup_labels resolution_codes_t ON resolution_codes_t.rel_incident_setup_code = t.core_extended_attributes->>'resolution_code' AND resolution_codes_t.lang = $${paramIndex}
+      LEFT JOIN configuration.symptoms symptoms ON t.core_extended_attributes->>'symptoms_uuid' = symptoms.uuid::text
+      LEFT JOIN translations.symptoms_translation symptoms_t ON symptoms.code = symptoms_t.symptom_code AND symptoms_t.lang = $${paramIndex}
+      LEFT JOIN data.services service ON t.core_extended_attributes->>'rel_service' = service.uuid::text
+      LEFT JOIN data.service_offerings service_offerings ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
+      LEFT JOIN core.rel_parent_child_tickets problem_rel ON t.uuid = problem_rel.rel_parent_ticket_uuid AND problem_rel.dependency_code = 'KNOWN_PROBLEM' AND problem_rel.ended_at IS NULL
+      LEFT JOIN core.tickets problem ON problem_rel.rel_child_ticket_uuid = problem.uuid
+      LEFT JOIN core.rel_parent_child_tickets change_rel ON t.uuid = change_rel.rel_parent_ticket_uuid AND change_rel.dependency_code = 'CHANGE_AT_ORIGIN' AND change_rel.ended_at IS NULL
+      LEFT JOIN core.tickets change_request ON change_rel.rel_child_ticket_uuid = change_request.uuid
+      ${whereClause}
+      ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
+      LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}
+    `;
+    
+    queryParams.push(lang, limit, offset);
+    
+    logger.info(`[INCIDENT SERVICE] Data query params: ${JSON.stringify(queryParams)}`);
+    
+    const dataResult = await db.query(dataQuery, queryParams);
+    
+    // Calculate pagination metadata
+    const currentPage = page;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = offset + limit < total;
+    
+    logger.info(`[INCIDENT SERVICE] Found ${dataResult.rows.length} incidents (total: ${total})`);
+    
+    return {
+      data: dataResult.rows,
+      total: total,
+      hasMore: hasMore,
+      pagination: {
+        offset: offset,
+        limit: limit,
+        currentPage: currentPage,
+        totalPages: totalPages,
+        sortBy: sortBy,
+        sortDirection: sortDirection
+      }
+    };
+    
+  } catch (error) {
+    logger.error('[INCIDENT SERVICE] Error searching incidents:', error);
+    throw error;
+  }
+};
+
+/**
  * Crée un nouvel incident
  * @param {Object} incidentData - Données pour la création de l'incident
  * @returns {Promise<Object>} - Détails de l'incident créé
@@ -469,6 +968,7 @@ const createIncident = async (incidentData) => {
 module.exports = {
     getIncidents,
     getIncidentById,
+    searchIncidents,
     updateIncident,
     createIncident
 };

@@ -15,28 +15,29 @@ export class Incident {
       { key: 'title', label: t('incident.title'), type: 'text', format: 'text' },
       { key: 'description', label: t('incident.description'), type: 'text', format: 'html' },
       { key: 'ticket_type_label', label: t('configuration.ticketTypes'), type: 'text', format: 'text' },
-      { key: 'ticket_status_label', label: t('incident.status'), type: 'text', format: 'text' },
-      { key: 'configuration_item_name', label: t('incident.configuration_item'), type: 'text', format: 'text' },
-      { key: 'symptoms_label', label: t('incident.symptoms'), type: 'text', format: 'text' },
-      { key: 'impact_label', label: t('incident.impact'), type: 'text', format: 'text' },
-      { key: 'urgency_label', label: t('incident.urgency'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('incident.status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
+      { key: 'configuration_item_name', label: t('incident.configuration_item'), type: 'text', format: 'text', filterKey: 'configuration_item_uuid' },
+      { key: 'symptoms_label', label: t('incident.symptoms'), type: 'text', format: 'text', filterKey: 'symptoms_uuid' },
+      { key: 'impact_label', label: t('incident.impact'), type: 'text', format: 'text', filterKey: 'impact' },
+      { key: 'urgency_label', label: t('incident.urgency'), type: 'text', format: 'text', filterKey: 'urgency' },
       { key: 'priority', label: t('incident.priority'), type: 'text', format: 'text' },
-      { key: 'requested_by_name', label: t('incident.requested_by'), type: 'text', format: 'text' },
-      { key: 'contact_type_label', label: t('incident.contact_type'), type: 'text', format: 'text' },
-      { key: 'requested_for_name', label: t('incident.requested_for'), type: 'text', format: 'text' },
-      { key: 'assigned_group_name', label: t('incident.assigned_group'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('incident.assigned_to'), type: 'text', format: 'text' },
-      { key: 'cause_code_label', label: t('incident.cause_code'), type: 'text', format: 'text' },
-      { key: 'rel_service_name', label: t('incident.service'), type: 'text', format: 'text' },
-      { key: 'rel_service_offerings_name', label: t('incident.service_offerings'), type: 'text', format: 'text' },
-      { key: 'resolution_code_label', label: t('incident.resolution_code'), type: 'text', format: 'text' },
+      { key: 'requested_by_name', label: t('incident.requested_by'), type: 'text', format: 'text', filterKey: 'requested_by_uuid' },
+      { key: 'contact_type_label', label: t('incident.contact_type'), type: 'text', format: 'text', filterKey: 'contact_type' },
+      { key: 'requested_for_name', label: t('incident.requested_for'), type: 'text', format: 'text', filterKey: 'requested_for_uuid' },
+      { key: 'assigned_group_name', label: t('incident.assigned_group'), type: 'text', format: 'text', filterKey: 'assigned_to_group' },
+      { key: 'assigned_person_name', label: t('incident.assigned_to'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
+      { key: 'cause_code_label', label: t('incident.cause_code'), type: 'text', format: 'text', filterKey: 'cause_code' },
+      { key: 'rel_service_name', label: t('incident.service'), type: 'text', format: 'text', filterKey: 'rel_service' },
+      { key: 'rel_service_offerings_name', label: t('incident.service_offerings'), type: 'text', format: 'text', filterKey: 'rel_service_offerings' },
+      { key: 'resolution_code_label', label: t('incident.resolution_code'), type: 'text', format: 'text', filterKey: 'resolution_code' },
       { key: 'resolution_notes', label: t('incident.resolution_notes'), type: 'text', format: 'html' },
-      { key: 'rel_change_request_title', label: t('incident.change_request'), type: 'text', format: 'text' },
-      { key: 'rel_problem_title', label: t('incident.problem_id'), type: 'text', format: 'text' },
+      { key: 'rel_change_request_title', label: t('incident.change_request'), type: 'text', format: 'text', filterKey: 'rel_change_request' },
+      { key: 'rel_problem_title', label: t('incident.problem_id'), type: 'text', format: 'text', filterKey: 'rel_problem_id' },
       { key: 'reopen_count', label: t('incident.reopen_count'), type: 'text', format: 'text' },
       { key: 'standby_count', label: t('incident.standby_count'), type: 'text', format: 'text' },
       { key: 'assignment_count', label: t('incident.assignment_count'), type: 'text', format: 'text' },
       { key: 'assignment_to_count', label: t('incident.assignment_to_count'), type: 'text', format: 'text' },
+      { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text', filterKey: 'writer_uuid' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
@@ -44,17 +45,23 @@ export class Incident {
 
   /**
    * Retourne l'endpoint API pour les tickets de type INCIDENT
-   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE, FILTER)
    * @returns {string} Endpoint API
    */
   static getApiEndpoint(method) {
-    const userProfileStore = useUserProfileStore();
-    
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'tickets';
-    } else {
-      return `tickets?ticket_type=INCIDENT&lang=${userProfileStore.language}`;
+    // Pour les filtres, retourner l'endpoint spécifique aux incidents
+    if (method === 'FILTER') {
+      return 'tickets/incidents';
     }
+    
+    // Pour l'infinite scroll, retourner l'endpoint de recherche
+    // Le composant reusableTableTab utilisera POST /tickets/search/incidents
+    if (method === 'GET') {
+      return 'tickets/search/incidents';
+    }
+    
+    // Pour les autres méthodes (PATCH, PUT, DELETE)
+    return 'tickets';
   }
 
   /**

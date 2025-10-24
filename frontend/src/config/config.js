@@ -17,7 +17,7 @@ export const PAGINATION_CONFIG = {
   pageSizes: {
     'Person': 50,
     'Task': 50,
-    'Incident': 25,
+    'Incident': 50,
     'Problem': 25,
     'Change': 25,
     'Entity': 100,
@@ -27,9 +27,9 @@ export const PAGINATION_CONFIG = {
   // Types d'objets utilisant l'infinite scroll
   infiniteScrollTypes: [
     'Person',
-    'Task'
+    'Task',
+    'Incident'
     // Décommenter pour activer :
-    // 'Incident',
     // 'Problem',
     // 'Change',
   ],
