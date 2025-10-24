@@ -33,7 +33,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.incident_setup_codes', 'code',
  true, 'translations.incident_setup_labels', 'rel_incident_setup_code', 'label',
  'sSelectField', 'Sélectionnez l''impact', true, false,
- 'incident_setup', 'label', 'code', false, 'Niveau d''impact sur l''organisation',
+ 'incident_setup?metadata=IMPACT', 'label', 'code', false, 'Niveau d''impact sur l''organisation',
  true, 140,
  NULL, NULL, NULL),
 
@@ -45,7 +45,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.incident_setup_codes', 'code',
  true, 'translations.incident_setup_labels', 'rel_incident_setup_code', 'label',
  'sSelectField', 'Sélectionnez l''urgence', true, false,
- 'incident_setup', 'label', 'code', false, 'Niveau d''urgence de résolution',
+ 'incident_setup?metadata=URGENCY', 'label', 'code', false, 'Niveau d''urgence de résolution',
  true, 141,
  NULL, NULL, NULL),
 
@@ -69,7 +69,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.incident_setup_codes', 'code',
  true, 'translations.incident_setup_labels', 'rel_incident_setup_code', 'label',
  'sSelectField', 'Sélectionnez la cause', false, false,
- 'incident_setup', 'label', 'code', false, 'Cause identifiée de l''incident',
+ 'incident_setup?metadata=CAUSE_CODE', 'label', 'code', false, 'Cause identifiée de l''incident',
  true, 143,
  NULL, NULL, NULL),
 
@@ -81,7 +81,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.incident_setup_codes', 'code',
  true, 'translations.incident_setup_labels', 'rel_incident_setup_code', 'label',
  'sSelectField', 'Sélectionnez la résolution', false, false,
- 'incident_setup', 'label', 'code', false, 'Type de résolution appliquée',
+ 'incident_setup?metadata=RESOLUTION_CODE', 'label', 'code', false, 'Type de résolution appliquée',
  true, 144,
  NULL, NULL, NULL),
 
@@ -117,7 +117,7 @@ INSERT INTO administration.table_metadata (
  true, 'data.services', 'uuid',
  false, NULL, NULL, NULL,
  'sFilteredSearchField', 'Recherchez un service', false, false,
- 'services', 'name', 'uuid', true, 'Service métier impacté',
+ 'services', 'name', 'uuid', false, 'Service métier impacté',
  true, 147,
  NULL, NULL, NULL),
 
@@ -129,7 +129,7 @@ INSERT INTO administration.table_metadata (
  true, 'data.service_offerings', 'uuid',
  false, NULL, NULL, NULL,
  'sFilteredSearchField', 'Recherchez une offre', false, false,
- 'service_offerings', 'name', 'uuid', true, 'Offre de service impactée',
+ 'service_offerings', 'name', 'uuid', false, 'Offre de service impactée',
  true, 148,
  NULL, NULL, NULL),
 
