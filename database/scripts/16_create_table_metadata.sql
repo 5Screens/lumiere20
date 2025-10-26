@@ -78,10 +78,7 @@ CREATE TABLE administration.table_metadata (
     form_columns_config JSONB, -- Column configuration for related tables
     
     -- For conditional fields
-    form_visibility_condition TEXT, -- Condition to display field (e.g., "status=Open")
-    
-    -- Constraints
-    CONSTRAINT unique_table_column UNIQUE (table_name, column_name)
+    form_visibility_condition TEXT -- Condition to display field (e.g., "status=Open")
 );
 
 -- Create indexes for performance
