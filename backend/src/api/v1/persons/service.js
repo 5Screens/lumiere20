@@ -42,16 +42,23 @@ const getPersonsLazySearch = async (searchQuery = '', page = 1, limit = 10) => {
         
         // If search query is provided, build WHERE clause
         if (searchQuery && searchQuery.trim()) {
-            const searchTerm = `%${searchQuery.trim()}%`;
-            whereClause = `
-                WHERE (
-                    LOWER(p.first_name) LIKE LOWER($1) OR
-                    LOWER(p.last_name) LIKE LOWER($1) OR
-                    LOWER(p.job_role) LIKE LOWER($1) OR
-                    LOWER(p.email) LIKE LOWER($1)
-                )
-            `;
-            queryParams.push(searchTerm);
+            // Split search query by spaces to create AND conditions
+            const searchTerms = searchQuery.trim().split(/\s+/).filter(term => term.length > 0);
+            
+            if (searchTerms.length > 0) {
+                const conditions = searchTerms.map((term, index) => {
+                    const paramIndex = index + 1;
+                    queryParams.push(`%${term}%`);
+                    return `(
+                        unaccent(LOWER(p.first_name)) LIKE unaccent(LOWER($${paramIndex})) OR
+                        unaccent(LOWER(p.last_name)) LIKE unaccent(LOWER($${paramIndex})) OR
+                        unaccent(LOWER(p.job_role)) LIKE unaccent(LOWER($${paramIndex})) OR
+                        LOWER(p.email) LIKE LOWER($${paramIndex})
+                    )`;
+                });
+                
+                whereClause = `WHERE ${conditions.join(' AND ')}`;
+            }
         }
         
         // Count total results for pagination
