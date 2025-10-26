@@ -226,6 +226,14 @@ export default {
 
     const handleReset = () => {
       filterStore.resetFilters(props.objectName);
+      
+      // Ajouter automatiquement un filtre vide pour éviter le clic sur "+"
+      filterStore.addFilter(props.objectName);
+      
+      // Garder le panneau ouvert après la réinitialisation pour une meilleure UX
+      isExpanded.value = true;
+      filterStore.setPanelState(props.objectName, true);
+      
       emit('filters-reset');
     };
 
