@@ -108,24 +108,18 @@ const searchConfigurationItems = async ({ search = '', page = 1, limit = 10, sor
         const dataResult = await db.query(dataQuery, queryParams);
         
         // Calculate pagination metadata
-        const currentPage = validPage;
-        const totalPages = Math.ceil(total / validLimit);
         const hasMore = offset + validLimit < total;
         
         logger.info(`[CI SERVICE] Found ${dataResult.rows.length} configuration items (total: ${total})`);
         
-        // Return in the format expected by frontend
+        // Return in the format expected by frontend (same as searchPersons)
         return {
             data: dataResult.rows,
-            total: total,
-            hasMore: hasMore,
             pagination: {
-                offset: offset,
+                page: validPage,
                 limit: validLimit,
-                currentPage: currentPage,
-                totalPages: totalPages,
-                sortBy: sortBy,
-                sortDirection: validSortDirection
+                total: total,
+                hasMore: hasMore
             }
         };
         
