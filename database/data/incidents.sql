@@ -368,6 +368,10 @@ BEGIN
             
             IF v_status_code IN ('COMPLETED', 'CANCELLED', 'CLOSED', 'RESOLVED') THEN
                 v_assignment_ended_at := v_closed_at;
+                -- Ensure ended_at is after created_at (constraint requirement)
+                IF v_assignment_ended_at <= v_assignment_created_at THEN
+                    v_assignment_ended_at := v_assignment_created_at + INTERVAL '1 hour';
+                END IF;
             ELSE
                 v_assignment_ended_at := NULL;
             END IF;
@@ -441,5 +445,3 @@ BEGIN
     RAISE NOTICE 'Successfully created 3000 INCIDENT tickets';
     
 END $$;
-
-COMMIT;

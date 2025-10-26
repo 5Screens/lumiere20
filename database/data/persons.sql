@@ -22,10 +22,28 @@ CREATE TEMPORARY TABLE temp_first_names (
 );
 
 INSERT INTO temp_first_names (name, gender) VALUES
+    -- Prénoms masculins (50)
     ('Jean', 'M'), ('Pierre', 'M'), ('Michel', 'M'), ('Philippe', 'M'), ('Thomas', 'M'),
     ('Nicolas', 'M'), ('François', 'M'), ('Laurent', 'M'), ('Antoine', 'M'), ('Julien', 'M'),
+    ('Alexandre', 'M'), ('Maxime', 'M'), ('Sébastien', 'M'), ('David', 'M'), ('Christophe', 'M'),
+    ('Olivier', 'M'), ('Vincent', 'M'), ('Stéphane', 'M'), ('Éric', 'M'), ('Guillaume', 'M'),
+    ('Matthieu', 'M'), ('Jérôme', 'M'), ('Romain', 'M'), ('Florian', 'M'), ('Benjamin', 'M'),
+    ('Lucas', 'M'), ('Hugo', 'M'), ('Louis', 'M'), ('Arthur', 'M'), ('Raphaël', 'M'),
+    ('Théo', 'M'), ('Nathan', 'M'), ('Léo', 'M'), ('Gabriel', 'M'), ('Paul', 'M'),
+    ('Adrien', 'M'), ('Fabien', 'M'), ('Cédric', 'M'), ('Damien', 'M'), ('Arnaud', 'M'),
+    ('Yann', 'M'), ('Marc', 'M'), ('Alain', 'M'), ('Patrick', 'M'), ('Bernard', 'M'),
+    ('Christian', 'M'), ('Daniel', 'M'), ('Jacques', 'M'), ('André', 'M'), ('Henri', 'M'),
+    -- Prénoms féminins (50)
     ('Marie', 'F'), ('Sophie', 'F'), ('Catherine', 'F'), ('Isabelle', 'F'), ('Anne', 'F'),
-    ('Claire', 'F'), ('Julie', 'F'), ('Caroline', 'F'), ('Céline', 'F'), ('Émilie', 'F');
+    ('Claire', 'F'), ('Julie', 'F'), ('Caroline', 'F'), ('Céline', 'F'), ('Émilie', 'F'),
+    ('Nathalie', 'F'), ('Sandrine', 'F'), ('Valérie', 'F'), ('Stéphanie', 'F'), ('Aurélie', 'F'),
+    ('Camille', 'F'), ('Laura', 'F'), ('Manon', 'F'), ('Emma', 'F'), ('Léa', 'F'),
+    ('Chloé', 'F'), ('Sarah', 'F'), ('Charlotte', 'F'), ('Lucie', 'F'), ('Alice', 'F'),
+    ('Pauline', 'F'), ('Marine', 'F'), ('Anaïs', 'F'), ('Marion', 'F'), ('Justine', 'F'),
+    ('Mathilde', 'F'), ('Élise', 'F'), ('Amélie', 'F'), ('Laurence', 'F'), ('Sylvie', 'F'),
+    ('Martine', 'F'), ('Christine', 'F'), ('Monique', 'F'), ('Françoise', 'F'), ('Nicole', 'F'),
+    ('Brigitte', 'F'), ('Patricia', 'F'), ('Véronique', 'F'), ('Hélène', 'F'), ('Florence', 'F'),
+    ('Agnès', 'F'), ('Dominique', 'F'), ('Danielle', 'F'), ('Jacqueline', 'F'), ('Michèle', 'F');
 
 -- Création d'une table temporaire pour les noms de famille français courants
 CREATE TEMPORARY TABLE temp_last_names (name VARCHAR(100));
@@ -34,7 +52,22 @@ INSERT INTO temp_last_names (name) VALUES
     ('Martin'), ('Bernard'), ('Dubois'), ('Thomas'), ('Robert'),
     ('Richard'), ('Petit'), ('Durand'), ('Leroy'), ('Moreau'),
     ('Simon'), ('Laurent'), ('Lefebvre'), ('Michel'), ('Garcia'),
-    ('David'), ('Bertrand'), ('Roux'), ('Vincent'), ('Fournier');
+    ('David'), ('Bertrand'), ('Roux'), ('Vincent'), ('Fournier'),
+    ('Morel'), ('Girard'), ('André'), ('Mercier'), ('Dupont'),
+    ('Lambert'), ('Bonnet'), ('François'), ('Martinez'), ('Legrand'),
+    ('Garnier'), ('Faure'), ('Rousseau'), ('Blanc'), ('Guerin'),
+    ('Muller'), ('Henry'), ('Roussel'), ('Nicolas'), ('Perrin'),
+    ('Morin'), ('Mathieu'), ('Clement'), ('Gauthier'), ('Dumont'),
+    ('Lopez'), ('Fontaine'), ('Chevalier'), ('Robin'), ('Masson'),
+    ('Sanchez'), ('Gerard'), ('Nguyen'), ('Boyer'), ('Denis'),
+    ('Lemaire'), ('Duval'), ('Joly'), ('Gautier'), ('Roger'),
+    ('Roche'), ('Roy'), ('Noel'), ('Meyer'), ('Lucas'),
+    ('Meunier'), ('Jean'), ('Perez'), ('Marchand'), ('Dufour'),
+    ('Blanchard'), ('Marie'), ('Barbier'), ('Brun'), ('Dumas'),
+    ('Brunet'), ('Schmitt'), ('Leroux'), ('Colin'), ('Fernandez'),
+    ('Pierre'), ('Renard'), ('Arnaud'), ('Rolland'), ('Caron'),
+    ('Aubert'), ('Giraud'), ('Leclerc'), ('Vidal'), ('Bourgeois'),
+    ('Renaud'), ('Lemoine'), ('Picard'), ('Gaillard'), ('Philippe');
 
 -- Création d'une table temporaire pour les rôles professionnels
 CREATE TEMPORARY TABLE temp_job_roles (role VARCHAR(255));

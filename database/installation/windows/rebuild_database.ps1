@@ -41,12 +41,23 @@ Write-Log ""
 
 # Étape 1: Création de la base de données
 Write-Log "[1/5] Creation de la base de donnees..." "Yellow"
+$startTime = Get-Date
 psql -U $DB_USER -f "$SCRIPTS_PATH\00_init_database.sql" > $null 2>&1
+$endTime = Get-Date
+$duration = $endTime - $startTime
+
 if ($LASTEXITCODE -ne 0) {
     Write-Log "ERREUR lors de la creation de la base" "Red"
     exit 1
 }
-Write-Log "  OK - Base de donnees creee" "Green"
+
+if ($duration.TotalSeconds -lt 60) {
+    Write-Log "  OK - Base de donnees creee in $([math]::Round($duration.TotalSeconds, 0)) sec" "Green"
+} else {
+    $minutes = [math]::Floor($duration.TotalMinutes)
+    $seconds = [math]::Round($duration.TotalSeconds - ($minutes * 60), 0)
+    Write-Log "  OK - Base de donnees creee in ${minutes}min ${seconds}sec" "Green"
+}
 Write-Log ""
 
 # Étape 2: Structure de base
@@ -69,17 +80,31 @@ $structureScripts = @(
     "14_create_project_tables.sql",
     "15_create_defect_tables.sql",
     "16_create_table_metadata.sql",
-    "17_populate_table_metadata.sql"
+    "17_populate_table_metadata_incident.sql",
+    "17_populate_table_metadata_person.sql",
+    "17_populate_table_metadata_problem.sql",
+    "17_populate_table_metadata_task.sql"
 )
 
 foreach ($script in $structureScripts) {
     Write-Log "  - $script" "Gray"
+    $startTime = Get-Date
     psql -U $DB_USER -d $DB_NAME -f "$SCRIPTS_PATH\$script" > $null 2>&1
+    $endTime = Get-Date
+    $duration = $endTime - $startTime
+    
     if ($LASTEXITCODE -ne 0) {
         Write-Log "    ERREUR" "Red"
         exit 1
     }
-    Write-Log "    OK" "Green"
+    
+    if ($duration.TotalSeconds -lt 60) {
+        Write-Log "    OK in $([math]::Round($duration.TotalSeconds, 0)) sec" "Green"
+    } else {
+        $minutes = [math]::Floor($duration.TotalMinutes)
+        $seconds = [math]::Round($duration.TotalSeconds - ($minutes * 60), 0)
+        Write-Log "    OK in ${minutes}min ${seconds}sec" "Green"
+    }
 }
 Write-Log "Structure creee avec succes" "Green"
 Write-Log ""
@@ -102,12 +127,23 @@ $requiredDataScripts = @(
 
 foreach ($script in $requiredDataScripts) {
     Write-Log "  - $script" "Gray"
+    $startTime = Get-Date
     psql -U $DB_USER -d $DB_NAME -f "$DATA_PATH\$script" > $null 2>&1
+    $endTime = Get-Date
+    $duration = $endTime - $startTime
+    
     if ($LASTEXITCODE -ne 0) {
         Write-Log "    ERREUR" "Red"
         exit 1
     }
-    Write-Log "    OK" "Green"
+    
+    if ($duration.TotalSeconds -lt 60) {
+        Write-Log "    OK in $([math]::Round($duration.TotalSeconds, 0)) sec" "Green"
+    } else {
+        $minutes = [math]::Floor($duration.TotalMinutes)
+        $seconds = [math]::Round($duration.TotalSeconds - ($minutes * 60), 0)
+        Write-Log "    OK in ${minutes}min ${seconds}sec" "Green"
+    }
 }
 Write-Log "Donnees obligatoires inserees avec succes" "Green"
 Write-Log ""
@@ -125,14 +161,27 @@ $testDataScripts = @(
     "configuration_items_seed.sql",
     "rel_entities_locations.sql",
     "rel_persons_groups.sql",
-    "rel_subscribers_serviceofferings.sql"
+    "rel_subscribers_serviceofferings.sql",
+    "incidents.sql",
+    "problems.sql",
+    "tasks.sql"
 )
 
 foreach ($script in $testDataScripts) {
     Write-Log "  - $script" "Gray"
+    $startTime = Get-Date
     psql -U $DB_USER -d $DB_NAME -f "$DATA_PATH\$script" > $null 2>&1
+    $endTime = Get-Date
+    $duration = $endTime - $startTime
+    
     if ($LASTEXITCODE -eq 0) {
-        Write-Log "    OK" "Green"
+        if ($duration.TotalSeconds -lt 60) {
+            Write-Log "    OK in $([math]::Round($duration.TotalSeconds, 0)) sec" "Green"
+        } else {
+            $minutes = [math]::Floor($duration.TotalMinutes)
+            $seconds = [math]::Round($duration.TotalSeconds - ($minutes * 60), 0)
+            Write-Log "    OK in ${minutes}min ${seconds}sec" "Green"
+        }
     } else {
         Write-Log "    ERREUR (non bloquante)" "Yellow"
     }
