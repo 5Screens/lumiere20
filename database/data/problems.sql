@@ -440,3 +440,5 @@ BEGIN
     RAISE NOTICE 'Successfully created 3000 PROBLEM tickets';
     
 END $$;
+
+COMMIT;
