@@ -99,7 +99,27 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   // These are stored in core.rel_tickets_groups_persons table
   if (column === 'assigned_to_group') {
     logger.info(`[TASK SERVICE] Building condition for relational column: assigned_to_group`);
-    if (operator === 'equals' || operator === 'is') {
+    if (operator === 'is_null') {
+      // Tickets without assigned group (no active assignment with a group)
+      condition = `NOT EXISTS (
+        SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+        WHERE rtgp.rel_ticket = t.uuid
+          AND rtgp.type = 'ASSIGNED'
+          AND rtgp.ended_at IS NULL
+          AND rtgp.rel_assigned_to_group IS NOT NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'is_not_null') {
+      // Tickets with assigned group (has active assignment with a group)
+      condition = `EXISTS (
+        SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+        WHERE rtgp.rel_ticket = t.uuid
+          AND rtgp.type = 'ASSIGNED'
+          AND rtgp.ended_at IS NULL
+          AND rtgp.rel_assigned_to_group IS NOT NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'equals' || operator === 'is') {
       if (Array.isArray(value)) {
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
         queryParams.push(...value);
@@ -126,7 +146,27 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   
   if (column === 'assigned_to_person') {
     logger.info(`[TASK SERVICE] Building condition for relational column: assigned_to_person`);
-    if (operator === 'equals' || operator === 'is') {
+    if (operator === 'is_null') {
+      // Tickets without assigned person (no active assignment with a person)
+      condition = `NOT EXISTS (
+        SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+        WHERE rtgp.rel_ticket = t.uuid
+          AND rtgp.type = 'ASSIGNED'
+          AND rtgp.ended_at IS NULL
+          AND rtgp.rel_assigned_to_person IS NOT NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'is_not_null') {
+      // Tickets with assigned person (has active assignment with a person)
+      condition = `EXISTS (
+        SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+        WHERE rtgp.rel_ticket = t.uuid
+          AND rtgp.type = 'ASSIGNED'
+          AND rtgp.ended_at IS NULL
+          AND rtgp.rel_assigned_to_person IS NOT NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'equals' || operator === 'is') {
       if (Array.isArray(value)) {
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
         queryParams.push(...value);
