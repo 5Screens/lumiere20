@@ -432,22 +432,39 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     return { condition, newParamIndex: paramIndex };
   }
   
-  // Handle JSONB columns (impact, urgency, cause_code, etc.)
-  const jsonbColumns = ['impact', 'urgency', 'cause_code', 'resolution_code', 'contact_type', 'symptoms_uuid', 'rel_service', 'rel_service_offerings'];
+  // Handle JSONB columns (impact, urgency, priority, cause_code, etc.)
+  const jsonbColumns = ['impact', 'urgency', 'priority', 'cause_code', 'resolution_code', 'contact_type', 'symptoms_uuid', 'rel_service', 'rel_service_offerings'];
   if (jsonbColumns.includes(column)) {
     const jsonbPath = `t.core_extended_attributes->>'${column}'`;
+    
+    // Pour priority, il faut caster en integer
+    const finalPath = column === 'priority' ? `(${jsonbPath})::integer` : jsonbPath;
+    
     if (operator === 'equals' || operator === 'is') {
       if (Array.isArray(value)) {
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `${jsonbPath} IN (${placeholders})`;
+        condition = `${finalPath} IN (${placeholders})`;
         queryParams.push(...value);
       } else {
-        condition = `${jsonbPath} = $${paramIndex++}`;
+        condition = `${finalPath} = $${paramIndex++}`;
         queryParams.push(value);
       }
     } else if (operator === 'contains') {
-      condition = `LOWER(${jsonbPath}) LIKE LOWER($${paramIndex++})`;
-      queryParams.push(`%${value}%`);
+      // contains ne s'applique pas à priority (qui est numérique)
+      if (column === 'priority') {
+        logger.warn(`[INCIDENT SERVICE] 'contains' operator not supported for numeric column 'priority', using 'equals' instead`);
+        if (Array.isArray(value)) {
+          const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+          condition = `${finalPath} IN (${placeholders})`;
+          queryParams.push(...value);
+        } else {
+          condition = `${finalPath} = $${paramIndex++}`;
+          queryParams.push(value);
+        }
+      } else {
+        condition = `LOWER(${jsonbPath}) LIKE LOWER($${paramIndex++})`;
+        queryParams.push(`%${value}%`);
+      }
     }
     return { condition, newParamIndex: paramIndex };
   }
