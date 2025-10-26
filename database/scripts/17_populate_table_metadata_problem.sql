@@ -87,7 +87,7 @@ INSERT INTO administration.table_metadata (
 -- requested_by_uuid
 ('tickets', 'Problem', NULL, NULL, 'requested_by_uuid', 'problem.requested_by', 'Demandé par',
  'uuid', true, NULL,
- true, false, true,
+ true, false, false,
  'checkbox', '{"multiple": false}'::jsonb,
  true, 'configuration.persons', 'uuid',
  false, NULL, NULL, NULL,
@@ -99,7 +99,7 @@ INSERT INTO administration.table_metadata (
 -- requested_for_uuid
 ('tickets', 'Problem', NULL, NULL, 'requested_for_uuid', 'problem.requested_for', 'Demandé pour',
  'uuid', true, NULL,
- true, false, true,
+ true, false, false,
  'checkbox', '{"multiple": false}'::jsonb,
  true, 'configuration.persons', 'uuid',
  false, NULL, NULL, NULL,
@@ -147,7 +147,7 @@ INSERT INTO administration.table_metadata (
 -- configuration_item_uuid
 ('tickets', 'Problem', NULL, NULL, 'configuration_item_uuid', 'problem.configuration_item', 'Élément de configuration',
  'uuid', true, NULL,
- true, false, true,
+ true, true, true,
  'checkbox', '{"multiple": false}'::jsonb,
  true, 'data.configuration_items', 'uuid',
  false, NULL, NULL, NULL,
