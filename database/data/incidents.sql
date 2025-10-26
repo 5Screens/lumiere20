@@ -172,13 +172,24 @@ BEGIN
         -- Randomly select contact type
         v_contact_type := v_contact_types[1 + floor(random() * array_length(v_contact_types, 1))::INTEGER];
         
-        -- For closed incidents, select cause and resolution codes
-        IF v_status_code IN ('COMPLETED', 'CANCELLED', 'CLOSED', 'RESOLVED') THEN
+        -- Cause code: 60% of all incidents (investigation in progress or completed)
+        v_random_val := random();
+        IF v_random_val > 0.4 THEN
             v_cause_code := v_cause_codes[1 + floor(random() * array_length(v_cause_codes, 1))::INTEGER];
-            v_resolution_code := v_resolution_codes[1 + floor(random() * array_length(v_resolution_codes, 1))::INTEGER];
         ELSE
             v_cause_code := NULL;
-            v_resolution_code := NULL;
+        END IF;
+        
+        -- Resolution code: all closed incidents + 30% of open incidents (resolution in progress)
+        IF v_status_code IN ('COMPLETED', 'CANCELLED', 'CLOSED', 'RESOLVED') THEN
+            v_resolution_code := v_resolution_codes[1 + floor(random() * array_length(v_resolution_codes, 1))::INTEGER];
+        ELSE
+            v_random_val := random();
+            IF v_random_val > 0.7 THEN
+                v_resolution_code := v_resolution_codes[1 + floor(random() * array_length(v_resolution_codes, 1))::INTEGER];
+            ELSE
+                v_resolution_code := NULL;
+            END IF;
         END IF;
         
         -- Generate incident title and description based on counter
