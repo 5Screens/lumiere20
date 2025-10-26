@@ -495,10 +495,82 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   }
   
   // Handle JSONB columns (impact, urgency, rel_problem_categories_code, etc.)
-  const jsonbColumns = ['impact', 'urgency', 'rel_problem_categories_code', 'rel_service', 'rel_service_offerings', 'symptoms_description', 'workaround', 'root_cause', 'definitive_solution', 'closure_justification'];
+  const jsonbColumns = ['impact', 'urgency', 'rel_problem_categories_code', 'rel_service', 'rel_service_offerings', 'symptoms_description', 'workaround', 'root_cause', 'definitive_solution', 'closure_justification', 'target_resolution_date', 'actual_resolution_date', 'actual_resolution_workload'];
   if (jsonbColumns.includes(column)) {
     const jsonbPath = `t.core_extended_attributes->>'${column}'`;
     
+    // Handle date columns stored in JSONB
+    if (column === 'target_resolution_date' || column === 'actual_resolution_date') {
+      if (operator === 'is_null') {
+        condition = `(t.core_extended_attributes->>'${column}' IS NULL OR t.core_extended_attributes->>'${column}' = '')`;
+        return { condition, newParamIndex: paramIndex };
+      } else if (operator === 'is_not_null') {
+        condition = `(t.core_extended_attributes->>'${column}' IS NOT NULL AND t.core_extended_attributes->>'${column}' != '')`;
+        return { condition, newParamIndex: paramIndex };
+      } else if (operator === 'after') {
+        condition = `DATE((${jsonbPath})::timestamp) > DATE($${paramIndex++})`;
+        queryParams.push(value);
+      } else if (operator === 'on_or_after') {
+        condition = `DATE((${jsonbPath})::timestamp) >= DATE($${paramIndex++})`;
+        queryParams.push(value);
+      } else if (operator === 'before') {
+        condition = `DATE((${jsonbPath})::timestamp) < DATE($${paramIndex++})`;
+        queryParams.push(value);
+      } else if (operator === 'on_or_before') {
+        condition = `DATE((${jsonbPath})::timestamp) <= DATE($${paramIndex++})`;
+        queryParams.push(value);
+      } else if (operator === 'between') {
+        const startDate = value.gte || value.start;
+        const endDate = value.lte || value.end;
+        condition = `DATE((${jsonbPath})::timestamp) BETWEEN DATE($${paramIndex++}) AND DATE($${paramIndex++})`;
+        queryParams.push(startDate, endDate);
+      } else if (operator === 'on' || operator === 'equals') {
+        condition = `DATE((${jsonbPath})::timestamp) = DATE($${paramIndex++})`;
+        queryParams.push(value);
+      }
+      return { condition, newParamIndex: paramIndex };
+    }
+    
+    // Handle numeric columns stored in JSONB
+    if (column === 'actual_resolution_workload') {
+      const jsonbNumericPath = `(${jsonbPath})::numeric`;
+      if (operator === 'is_null') {
+        condition = `(t.core_extended_attributes->>'${column}' IS NULL OR t.core_extended_attributes->>'${column}' = '')`;
+        return { condition, newParamIndex: paramIndex };
+      } else if (operator === 'is_not_null') {
+        condition = `(t.core_extended_attributes->>'${column}' IS NOT NULL AND t.core_extended_attributes->>'${column}' != '')`;
+        return { condition, newParamIndex: paramIndex };
+      } else if (operator === 'equals') {
+        if (Array.isArray(value)) {
+          const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+          condition = `${jsonbNumericPath} IN (${placeholders})`;
+          queryParams.push(...value);
+        } else {
+          condition = `${jsonbNumericPath} = $${paramIndex++}`;
+          queryParams.push(value);
+        }
+      } else if (operator === 'lt') {
+        condition = `${jsonbNumericPath} < $${paramIndex++}`;
+        queryParams.push(value);
+      } else if (operator === 'lte') {
+        condition = `${jsonbNumericPath} <= $${paramIndex++}`;
+        queryParams.push(value);
+      } else if (operator === 'gt') {
+        condition = `${jsonbNumericPath} > $${paramIndex++}`;
+        queryParams.push(value);
+      } else if (operator === 'gte') {
+        condition = `${jsonbNumericPath} >= $${paramIndex++}`;
+        queryParams.push(value);
+      } else if (operator === 'between') {
+        const startValue = value.gte || value.min || value.start;
+        const endValue = value.lte || value.max || value.end;
+        condition = `${jsonbNumericPath} BETWEEN $${paramIndex++} AND $${paramIndex++}`;
+        queryParams.push(startValue, endValue);
+      }
+      return { condition, newParamIndex: paramIndex };
+    }
+    
+    // Handle text columns stored in JSONB
     if (operator === 'is_null') {
       condition = `(t.core_extended_attributes->>'${column}' IS NULL OR t.core_extended_attributes->>'${column}' = '')`;
       return { condition, newParamIndex: paramIndex };
@@ -680,7 +752,16 @@ const searchProblems = async (searchParams) => {
       'description': 't.description',
       'created_at': 't.created_at',
       'updated_at': 't.updated_at',
-      'closed_at': 't.closed_at'
+      'closed_at': 't.closed_at',
+      // Colonnes JSONB dans core_extended_attributes
+      'target_resolution_date': "(t.core_extended_attributes->>'target_resolution_date')::timestamp",
+      'actual_resolution_date': "(t.core_extended_attributes->>'actual_resolution_date')::timestamp",
+      'actual_resolution_workload': "(t.core_extended_attributes->>'actual_resolution_workload')::numeric",
+      'symptoms_description': "t.core_extended_attributes->>'symptoms_description'",
+      'workaround': "t.core_extended_attributes->>'workaround'",
+      'root_cause': "t.core_extended_attributes->>'root_cause'",
+      'definitive_solution': "t.core_extended_attributes->>'definitive_solution'",
+      'closure_justification': "t.core_extended_attributes->>'closure_justification'"
     };
     
     // Obtenir l'expression SQL pour le tri
