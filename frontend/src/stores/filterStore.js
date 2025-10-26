@@ -46,6 +46,19 @@ export const useFilterStore = defineStore('filter', {
     getActiveFilterCount: (state) => (tableName) => {
       const filters = state.activeFilters[tableName] || [];
       return filters.filter(filter => {
+        // Un filtre est actif si :
+        // 1. Il a une colonne ET un type sélectionnés (pour is_null, is_not_null, is_true, is_false)
+        // 2. OU il a une valeur non-nulle
+        
+        // Opérateurs qui ne nécessitent pas de valeur
+        const noValueOperators = ['is_null', 'is_not_null', 'is_true', 'is_false'];
+        
+        // Si le filtre a une colonne et un type qui ne nécessite pas de valeur, il est actif
+        if (filter.column && filter.type && noValueOperators.includes(filter.type)) {
+          return true;
+        }
+        
+        // Sinon, vérifier la valeur
         const value = filter.value;
         if (value === null || value === undefined || value === '') {
           return false;
