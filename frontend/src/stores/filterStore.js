@@ -237,7 +237,19 @@ export const useFilterStore = defineStore('filter', {
           this.filterValues[tableName] = {};
         }
         
-        this.filterValues[tableName][columnName] = values;
+        // Pour les lazy search, on accumule les valeurs au lieu de les remplacer
+        // Cela permet de garder le mapping value→label pour toutes les pages chargées
+        if (metadata.form_lazy_search && page > 1 && this.filterValues[tableName][columnName]) {
+          // Fusionner avec les valeurs existantes (éviter les doublons)
+          const existingValues = this.filterValues[tableName][columnName];
+          const existingValueIds = new Set(existingValues.map(v => v.value));
+          const newValues = values.filter(v => !existingValueIds.has(v.value));
+          this.filterValues[tableName][columnName] = [...existingValues, ...newValues];
+          console.info(`[FILTER_STORE] Accumulated values: ${existingValues.length} + ${newValues.length} = ${this.filterValues[tableName][columnName].length}`);
+        } else {
+          // Pour la page 1 ou les non-lazy search, remplacer
+          this.filterValues[tableName][columnName] = values;
+        }
         
         console.info(`[FILTER_STORE] Filter values loaded for ${columnName}: ${values.length} items`);
         

@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFilterStore } from '@/stores/filterStore';
 
@@ -180,6 +180,22 @@ export default {
       }
     };
 
+    // Fonction pour charger/mettre à jour les options depuis le cache
+    const loadOptionsFromCache = () => {
+      if (props.objectName && props.filter.column) {
+        const cachedValues = filterStore.filterValues[props.objectName]?.[props.filter.column];
+        if (cachedValues && Array.isArray(cachedValues)) {
+          console.info(`[sFilterTag] Loading ${cachedValues.length} options from cache for ${props.filter.column}`);
+          filterOptions.value = cachedValues;
+        } else {
+          console.warn(`[sFilterTag] No cached values found for ${props.objectName}.${props.filter.column}`);
+          filterOptions.value = [];
+        }
+      } else {
+        filterOptions.value = [];
+      }
+    };
+
     // Charger les options du filtre au montage
     onMounted(async () => {
       if (props.objectName && props.filter.column) {
@@ -188,11 +204,13 @@ export default {
           const cachedValues = filterStore.filterValues[props.objectName]?.[props.filter.column];
           if (cachedValues && Array.isArray(cachedValues)) {
             filterOptions.value = cachedValues;
+            console.info(`[sFilterTag] Loaded ${cachedValues.length} options from cache at mount`);
           } else {
             // Si pas en cache, charger depuis l'API
             const result = await filterStore.loadFilterValues(props.objectName, props.filter.column);
             const values = result?.values || result || [];
             filterOptions.value = Array.isArray(values) ? values : [];
+            console.info(`[sFilterTag] Loaded ${filterOptions.value.length} options from API at mount`);
           }
         } catch (error) {
           console.error('[sFilterTag] Error loading filter options:', error);
@@ -202,6 +220,23 @@ export default {
         // Si pas d'objectName ou de column, initialiser avec un tableau vide
         filterOptions.value = [];
       }
+      
+      // Observer les changements du cache pour mettre à jour les options dynamiquement
+      // Cela permet de récupérer les labels des valeurs chargées après le montage (lazy scroll)
+      const checkCacheInterval = setInterval(() => {
+        if (props.objectName && props.filter.column) {
+          const cachedValues = filterStore.filterValues[props.objectName]?.[props.filter.column];
+          if (cachedValues && Array.isArray(cachedValues) && cachedValues.length > filterOptions.value.length) {
+            console.info(`[sFilterTag] Cache updated: ${filterOptions.value.length} → ${cachedValues.length} options`);
+            filterOptions.value = cachedValues;
+          }
+        }
+      }, 500); // Vérifier toutes les 500ms
+      
+      // Nettoyer l'intervalle quand le composant est détruit
+      onUnmounted(() => {
+        clearInterval(checkCacheInterval);
+      });
     });
 
     return {
