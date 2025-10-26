@@ -18,7 +18,7 @@ export const PAGINATION_CONFIG = {
     'Person': 50,
     'Task': 50,
     'Incident': 50,
-    'Problem': 25,
+    'Problem': 50,
     'Change': 25,
     'Entity': 100,
     'Location': 75
@@ -28,9 +28,9 @@ export const PAGINATION_CONFIG = {
   infiniteScrollTypes: [
     'Person',
     'Task',
-    'Incident'
+    'Incident',
+    'Problem'
     // Décommenter pour activer :
-    // 'Problem',
     // 'Change',
   ],
   

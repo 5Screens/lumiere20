@@ -14,15 +14,15 @@ export class Problem {
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('problem.title'), type: 'text', format: 'text' },
       { key: 'description', label: t('problem.description'), type: 'text', format: 'html' },
-      { key: 'rel_service_name', label: t('problem.service'), type: 'text', format: 'text' },
-      { key: 'rel_service_offerings_name', label: t('problem.service_offerings'), type: 'text', format: 'text' },
-      { key: 'configuration_item_name', label: t('problem.configuration_item'), type: 'text', format: 'text' },
-      { key: 'ticket_status_label', label: t('problem.status'), type: 'text', format: 'text' },
-      { key: 'problem_category_label', label: t('problem.category'), type: 'text', format: 'text' },
-      { key: 'impact_label', label: t('problem.impact'), type: 'text', format: 'text' },
-      { key: 'urgency_label', label: t('problem.urgency'), type: 'text', format: 'text' },
-      { key: 'assigned_group_name', label: t('problem.assigned_group'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('problem.assigned_to_person'), type: 'text', format: 'text' },
+      { key: 'rel_service_name', label: t('problem.service'), type: 'text', format: 'text', filterKey: 'rel_service' },
+      { key: 'rel_service_offerings_name', label: t('problem.service_offerings'), type: 'text', format: 'text', filterKey: 'rel_service_offerings' },
+      { key: 'configuration_item_name', label: t('problem.configuration_item'), type: 'text', format: 'text', filterKey: 'configuration_item_uuid' },
+      { key: 'ticket_status_label', label: t('problem.status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
+      { key: 'problem_category_label', label: t('problem.category'), type: 'text', format: 'text', filterKey: 'rel_problem_categories_code' },
+      { key: 'impact_label', label: t('problem.impact'), type: 'text', format: 'text', filterKey: 'impact' },
+      { key: 'urgency_label', label: t('problem.urgency'), type: 'text', format: 'text', filterKey: 'urgency' },
+      { key: 'assigned_group_name', label: t('problem.assigned_group'), type: 'text', format: 'text', filterKey: 'assigned_to_group' },
+      { key: 'assigned_person_name', label: t('problem.assigned_to_person'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
       { key: 'target_resolution_date', label: t('problem.target_resolution_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'actual_resolution_date', label: t('problem.actual_resolution_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'actual_resolution_workload', label: t('problem.actual_resolution_workload'), type: 'text', format: 'text' },
@@ -32,6 +32,7 @@ export class Problem {
       { key: 'definitive_solution', label: t('problem.definitive_solution'), type: 'text', format: 'html' },
       { key: 'closure_justification', label: t('problem.closure_justification'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text', filterKey: 'writer_uuid' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
@@ -39,17 +40,23 @@ export class Problem {
 
   /**
    * Retourne l'endpoint API pour les tickets de type PROBLEM
-   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE, FILTER)
    * @returns {string} Endpoint API
    */
   static getApiEndpoint(method) {
-    const userProfileStore = useUserProfileStore();
-    
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'tickets';
-    } else {
-      return `tickets?ticket_type=PROBLEM&lang=${userProfileStore.language}`;
+    // Pour les filtres, retourner l'endpoint spécifique aux problems
+    if (method === 'FILTER') {
+      return 'tickets/problems';
     }
+    
+    // Pour l'infinite scroll, retourner l'endpoint de recherche
+    // Le composant reusableTableTab utilisera POST /tickets/search/problems
+    if (method === 'GET') {
+      return 'tickets/search/problems';
+    }
+    
+    // Pour les autres méthodes (PATCH, PUT, DELETE)
+    return 'tickets';
   }
 
   /**
