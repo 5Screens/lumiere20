@@ -440,7 +440,15 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     // Pour priority, il faut caster en integer
     const finalPath = column === 'priority' ? `(${jsonbPath})::integer` : jsonbPath;
     
-    if (operator === 'equals' || operator === 'is') {
+    if (operator === 'is_null') {
+      // Pour les champs JSONB, vérifier si la clé n'existe pas OU si la valeur est NULL
+      condition = `(t.core_extended_attributes->>'${column}' IS NULL OR t.core_extended_attributes->>'${column}' = '')`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'is_not_null') {
+      // Pour les champs JSONB, vérifier si la clé existe ET que la valeur n'est pas NULL
+      condition = `(t.core_extended_attributes->>'${column}' IS NOT NULL AND t.core_extended_attributes->>'${column}' != '')`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'equals' || operator === 'is') {
       if (Array.isArray(value)) {
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
         condition = `${finalPath} IN (${placeholders})`;
