@@ -25,6 +25,35 @@ const getIncidentPriority = async (urgencyCode, impactCode) => {
     }
 };
 
+/**
+ * Get all unique priority values
+ * @param {string} lang - Language code for translations
+ * @returns {Promise<Array>} - List of unique priorities
+ */
+const getAllPriorities = async (lang = 'en') => {
+    logger.info(`[SERVICE] Getting all unique priorities with language: ${lang}`);
+    
+    try {
+        const query = `
+            SELECT DISTINCT
+                priority_level as priority,
+                priority_level as value,
+                priority_level::text as label
+            FROM configuration.incident_priorities
+            ORDER BY priority_level ASC;
+        `;
+
+        const result = await db.query(query);
+        
+        logger.info(`[SERVICE] Found ${result.rows.length} unique priorities`);
+        return result.rows || [];
+    } catch (error) {
+        logger.error(`[SERVICE] Error getting all priorities: ${error.message}`);
+        throw error;
+    }
+};
+
 module.exports = {
-    getIncidentPriority
+    getIncidentPriority,
+    getAllPriorities
 };

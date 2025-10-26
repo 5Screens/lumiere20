@@ -15,14 +15,19 @@ const validateGetTickets = async (req, res, next) => {
     
     const schema = Joi.object({
         lang: Joi.string().min(2).max(5),
-        ticket_type: Joi.string()
+        ticket_type: Joi.string(),
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).max(100).default(25)
     });
 
-    const { error } = schema.validate(req.query);
+    const { error, value } = schema.validate(req.query);
     if (error) {
         logger.error('[VALIDATION] Invalid query parameters:', error.details[0].message);
         return res.status(400).json({ error: error.details[0].message });
     }
+
+    // Apply validated and defaulted values back to req.query
+    req.query = value;
 
     if (req.query.ticket_type) {
         const isValidType = await validateTicketType(req.query.ticket_type);

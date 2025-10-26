@@ -14,11 +14,74 @@ const logger = require('../../../config/logger');
 const getTickets = async (req, res) => {
     try {
         logger.info('[TICKETS CONTROLLER] Processing GET /tickets request');
-        const { lang, ticket_type } = req.query;
+        const { lang = 'en', ticket_type, page = 1, limit = 25 } = req.query;
         
+        // If pagination parameters are provided, use search with pagination
+        if (page || limit) {
+            logger.info(`[TICKETS CONTROLLER] Using paginated search: page=${page}, limit=${limit}`);
+            
+            const searchParams = {
+                filters: { conditions: [] },
+                sort: { by: 'created_at', direction: 'desc' },
+                pagination: { page: parseInt(page), limit: parseInt(limit) },
+                lang
+            };
+            
+            let searchResults;
+            
+            // Utiliser le service de recherche approprié selon le type de ticket
+            switch (ticket_type) {
+                case 'INCIDENT':
+                    logger.info('[TICKETS CONTROLLER] Calling incidentService.searchIncidents');
+                    searchResults = await incidentService.searchIncidents(searchParams);
+                    break;
+                case 'PROBLEM':
+                    logger.info('[TICKETS CONTROLLER] Calling problemService.searchProblems');
+                    searchResults = await problemService.searchProblems(searchParams);
+                    break;
+                case 'CHANGE':
+                    logger.info('[TICKETS CONTROLLER] Calling changeService.searchChanges');
+                    searchResults = await changeService.searchChanges(searchParams);
+                    break;
+                case 'TASK':
+                    logger.info('[TICKETS CONTROLLER] Calling taskService.searchTasks');
+                    searchResults = await taskService.searchTasks(searchParams);
+                    break;
+                case 'KNOWLEDGE':
+                    logger.info('[TICKETS CONTROLLER] Calling knowledgeService.searchKnowledgeArticles');
+                    searchResults = await knowledgeService.searchKnowledgeArticles(searchParams);
+                    break;
+                case 'PROJECT':
+                    logger.info('[TICKETS CONTROLLER] Calling projectService.searchProjects');
+                    searchResults = await projectService.searchProjects(searchParams);
+                    break;
+                case 'DEFECT':
+                    logger.info('[TICKETS CONTROLLER] Calling defectService.searchDefects');
+                    searchResults = await defectService.searchDefects(searchParams);
+                    break;
+                case 'SPRINT':
+                    logger.info('[TICKETS CONTROLLER] Calling sprintService.searchSprints');
+                    searchResults = await sprintService.searchSprints(searchParams);
+                    break;
+                case 'EPIC':
+                    logger.info('[TICKETS CONTROLLER] Calling epicService.searchEpics');
+                    searchResults = await epicService.searchEpics(searchParams);
+                    break;
+                case 'USER_STORY':
+                    logger.info('[TICKETS CONTROLLER] Calling storyService.searchUserStories');
+                    searchResults = await storyService.searchUserStories(searchParams);
+                    break;
+                default:
+                    logger.error(`[TICKETS CONTROLLER] Unknown ticket type: ${ticket_type}`);
+                    return res.status(400).json({ error: 'Invalid ticket type for paginated search' });
+            }
+            
+            return res.json(searchResults);
+        }
+        
+        // Otherwise, use legacy getAll methods (no pagination)
         let tickets;
         
-        // Utiliser le service approprié selon le type de ticket
         switch (ticket_type) {
             case 'INCIDENT':
                 logger.info('[TICKETS CONTROLLER] Calling incidentService.getIncidents');

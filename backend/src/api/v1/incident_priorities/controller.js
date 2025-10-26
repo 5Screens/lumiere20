@@ -1,4 +1,4 @@
-const { getIncidentPriority } = require('./service');
+const { getIncidentPriority, getAllPriorities } = require('./service');
 const logger = require('../../../config/logger');
 
 const getIncidentPriorityByUrgencyAndImpact = async (req, res) => {
@@ -22,6 +22,27 @@ const getIncidentPriorityByUrgencyAndImpact = async (req, res) => {
     }
 };
 
+/**
+ * Get all unique priority values
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+const getAllIncidentPriorities = async (req, res) => {
+    logger.info('[CONTROLLER] Processing get all incident priorities request');
+    
+    try {
+        const { lang = 'en' } = req.query;
+        const priorities = await getAllPriorities(lang);
+        
+        logger.info(`[CONTROLLER] Successfully retrieved ${priorities.length} unique priorities`);
+        res.json(priorities);
+    } catch (error) {
+        logger.error(`[CONTROLLER] Error retrieving all priorities: ${error.message}`);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 module.exports = {
-    getIncidentPriorityByUrgencyAndImpact
+    getIncidentPriorityByUrgencyAndImpact,
+    getAllIncidentPriorities
 };

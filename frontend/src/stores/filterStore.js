@@ -525,13 +525,19 @@ export const useFilterStore = defineStore('filter', {
         pagination: pagination || { page: 1, limit: 50 }
       };
       
-      // Ajouter lang pour Task (requis par l'API tickets)
-      if (tableName === 'Task' && lang) {
+      // Ajouter lang pour tous les types de tickets (requis par l'API tickets)
+      const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
+      if (ticketTypes.includes(tableName) && lang) {
         searchBody.lang = lang;
       }
       
-      // Si aucun filtre actif, retourner la structure de base
+      // Si aucun filtre actif, retourner la structure de base avec filters vide
       if (filters.length === 0) {
+        searchBody.filters = {
+          mode: 'include',
+          operator: 'AND',
+          conditions: []
+        };
         return searchBody;
       }
       
@@ -665,6 +671,24 @@ export const useFilterStore = defineStore('filter', {
           endpoint = 'persons/search';
         } else if (tableName === 'Task') {
           endpoint = 'tickets/search/tasks';
+        } else if (tableName === 'Incident') {
+          endpoint = 'tickets/search/incidents';
+        } else if (tableName === 'Problem') {
+          endpoint = 'tickets/search/problems';
+        } else if (tableName === 'Change') {
+          endpoint = 'tickets/search/changes';
+        } else if (tableName === 'Knowledge') {
+          endpoint = 'tickets/search/knowledge';
+        } else if (tableName === 'Project') {
+          endpoint = 'tickets/search/projects';
+        } else if (tableName === 'Defect') {
+          endpoint = 'tickets/search/defects';
+        } else if (tableName === 'Sprint') {
+          endpoint = 'tickets/search/sprints';
+        } else if (tableName === 'Epic') {
+          endpoint = 'tickets/search/epics';
+        } else if (tableName === 'UserStory') {
+          endpoint = 'tickets/search/user_stories';
         } else {
           // Fallback générique
           endpoint = `${tableName.toLowerCase()}s/search`;
