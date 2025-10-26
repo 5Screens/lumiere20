@@ -937,7 +937,7 @@ export default {
     no_watched_tickets: 'No watched tickets'
   },
   filters: {
-    title: 'Filters',
+    title: 'Filter and Query',
     loading: 'Loading filters...',
     add_first_filter: 'Add your first filter',
     add_filter: 'Add a filter',

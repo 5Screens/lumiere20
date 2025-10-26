@@ -1270,7 +1270,7 @@ export default {
     
   },
   filters: {
-    title: 'Filtres',
+    title: 'Filter / Requêter',
     title_2: 'Filtre',
     apply:'Appliquer',
     reset:'Réinitialiser',
