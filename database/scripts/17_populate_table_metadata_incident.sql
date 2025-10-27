@@ -148,7 +148,7 @@ INSERT INTO administration.table_metadata (
 -- configuration_item_uuid
 ('tickets', 'Incident', NULL, NULL, 'configuration_item_uuid', 'incident.configuration_item', 'Élément de configuration',
  'uuid', true, NULL,
- true, false, false,
+ true, false, true,
  'checkbox', '{"multiple": false}'::jsonb,
  true, 'data.configuration_items', 'uuid',
  false, NULL, NULL, NULL,
