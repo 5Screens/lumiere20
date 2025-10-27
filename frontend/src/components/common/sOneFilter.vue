@@ -25,7 +25,7 @@
           :key="column.column"
           :value="column.column"
         >
-          {{ $t(column.label) }}
+          {{ getIconForDataType(column.data_type) }} {{ $t(column.label) }}
         </option>
       </select>
     </div>
@@ -812,6 +812,36 @@ export default {
       emit('apply-filters');
     };
 
+    // Fonction pour obtenir l'icône selon le type de données
+    const getIconForDataType = (dataType) => {
+      if (!dataType) return '';
+      
+      const type = dataType.toUpperCase();
+      
+      // TEXT / STRING
+      if (['TEXT', 'STRING', 'VARCHAR', 'CHAR'].includes(type)) {
+        return '🅰️';
+      }
+      // NUMBER / INTEGER / NUMERIC
+      else if (['NUMBER', 'INTEGER', 'NUMERIC', 'INT', 'BIGINT', 'SMALLINT', 'DECIMAL', 'FLOAT', 'DOUBLE'].includes(type)) {
+        return '🔢';
+      }
+      // DATE / TIMESTAMP / DATETIME
+      else if (['DATE', 'TIMESTAMP', 'DATETIME', 'TIMESTAMPTZ'].includes(type)) {
+        return '📅';
+      }
+      // BOOLEAN / BOOL
+      else if (['BOOLEAN', 'BOOL'].includes(type)) {
+        return '✅';
+      }
+      // UUID
+      else if (['UUID'].includes(type)) {
+        return '🆔';
+      }
+      
+      return '';
+    };
+
     // Variable pour éviter le double chargement au montage
     let isMounted = false;
 
@@ -890,6 +920,7 @@ export default {
       selectSearchSuggestion,
       hideSearchSuggestions,
       handleEnterKey,
+      getIconForDataType,
       t
     };
   }
