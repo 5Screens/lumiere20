@@ -57,12 +57,18 @@
           type="text"
           :value="filter.value || ''"
           :placeholder="$t('filters.search_placeholder')"
-          @input="updateValue($event.target.value)"
+          @input="handleSearchInput($event.target.value)"
           @keydown.enter="handleEnterKey"
           @focus="showSearchSuggestions = true"
           @blur="hideSearchSuggestions"
           class="s-one-filter__input"
+          :class="{ 'input-error': hasNumericError }"
         />
+        
+        <!-- Numeric validation error message -->
+        <div v-if="hasNumericError" class="s-one-filter__error-message">
+          {{ $t('errors.valueMustBeANumber') }}
+        </div>
         
         <!-- Search suggestions dropdown -->
         <div 
@@ -283,6 +289,7 @@ export default {
     const searchSuggestionsTimer = ref(null);
     const checkboxSearchQuery = ref('');
     const checkboxSearchTimer = ref(null);
+    const hasNumericError = ref(false);
     
     // Infinite scroll pour les checkboxes
     const currentPage = ref(1);
@@ -508,6 +515,33 @@ export default {
           }
         }, FILTER_CONFIG.searchDebounceMs);
       }
+    };
+
+    const handleSearchInput = (value) => {
+      // Vérifier si la colonne est de type numérique
+      const isNumericColumn = selectedColumnConfig.value?.data_type && 
+        ['NUMBER', 'INTEGER', 'NUMERIC', 'INT', 'BIGINT', 'SMALLINT', 'DECIMAL', 'FLOAT', 'DOUBLE'].includes(
+          selectedColumnConfig.value.data_type.toUpperCase()
+        );
+      
+      // Si c'est une colonne numérique et que la valeur n'est pas vide
+      if (isNumericColumn && value && value.trim() !== '') {
+        // Vérifier si la valeur est un nombre valide
+        const isValidNumber = !isNaN(value) && !isNaN(parseFloat(value));
+        
+        if (!isValidNumber) {
+          hasNumericError.value = true;
+          console.log('[sOneFilter] ❌ Invalid numeric value:', value);
+          return; // Ne pas mettre à jour la valeur si elle est invalide
+        } else {
+          hasNumericError.value = false;
+        }
+      } else {
+        hasNumericError.value = false;
+      }
+      
+      // Mettre à jour la valeur
+      updateValue(value);
     };
 
     const removeFilter = () => {
@@ -896,17 +930,19 @@ export default {
       searchSuggestions,
       showSearchSuggestions,
       checkboxOptions,
-      filteredCheckboxOptions,
       selectOptions,
-      availableSelectOptions,
       availableFilterTypes,
       shouldShowValueField,
+      availableSelectOptions,
+      filteredCheckboxOptions,
       checkboxSearchQuery,
-      isLoadingMore,
       checkboxContainer,
+      isLoadingMore,
+      hasNumericError,
       updateColumn,
       updateType,
       updateValue,
+      handleSearchInput,
       removeFilter,
       getTypeLabel,
       isChecked,

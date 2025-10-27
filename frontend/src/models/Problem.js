@@ -29,6 +29,7 @@ export class Problem {
       { key: 'symptoms_description', label: t('problem.symptoms_description'), type: 'text', format: 'html' },
       { key: 'workaround', label: t('problem.workaround'), type: 'text', format: 'html' },
       { key: 'root_cause', label: t('problem.root_cause'), type: 'text', format: 'html' },
+      { key: 'actual_resolution_workload', label: t('problem.actual_resolution_workload'), type: 'text', format: 'text' },
       { key: 'definitive_solution', label: t('problem.definitive_solution'), type: 'text', format: 'html' },
       { key: 'closure_justification', label: t('problem.closure_justification'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },

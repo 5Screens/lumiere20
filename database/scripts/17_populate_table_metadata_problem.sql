@@ -352,7 +352,7 @@ INSERT INTO administration.table_metadata (
 ('tickets', 'Problem', NULL, NULL, 'actual_resolution_workload', 'problem.actual_resolution_workload', 'Charge de travail réelle',
  'numeric', true, NULL,
  true, true, true,
- 'checkbox', '{"multiple": false}'::jsonb,
+ 'search', '{"multiple": false}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sTextField', 'Entrez la charge en heures', false, false,

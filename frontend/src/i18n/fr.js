@@ -345,6 +345,7 @@ export default {
     selectOneRow: 'Veuillez sélectionner une valeur',
     requiredField: 'Champ obligatoire',
     noClassFound: 'Aucune classe trouvée',
+    valueMustBeANumber: 'La valeur doit être un nombre',
   },
   notifications: {
     title: 'Notification',

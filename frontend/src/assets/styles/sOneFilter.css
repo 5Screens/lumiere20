@@ -83,6 +83,40 @@
   position: relative;
 }
 
+/* Error state for input */
+.s-one-filter__input.input-error {
+  border-color: var(--error-color);
+  background-color: rgba(244, 67, 54, 0.05);
+}
+
+.s-one-filter__input.input-error:focus {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1);
+}
+
+/* Error message */
+.s-one-filter__error-message {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--error-color);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .s-one-filter__suggestions {
   position: absolute;
   top: 100%;
