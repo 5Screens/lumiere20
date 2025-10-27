@@ -216,7 +216,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.change_setup_codes', 'code',
  true, 'translations.change_setup_label', 'rel_change_setup_code', 'label',
  'sSelectField', 'Sélectionnez le type', false, false,
- 'change_setup', 'label', 'code', false, 'Type de changement',
+ 'change_setup?metadata=type', 'label', 'code', false, 'Type de changement',
  true, 150,
  NULL, NULL, NULL),
 
@@ -228,7 +228,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.change_setup_codes', 'code',
  true, 'translations.change_setup_label', 'rel_change_setup_code', 'label',
  'sSelectField', 'Sélectionnez la justification', false, false,
- 'change_setup', 'label', 'code', false, 'Justification du changement',
+ 'change_setup?metadata=justification', 'label', 'code', false, 'Justification du changement',
  true, 160,
  NULL, NULL, NULL),
 
@@ -240,7 +240,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.change_setup_codes', 'code',
  true, 'translations.change_setup_label', 'rel_change_setup_code', 'label',
  'sSelectField', 'Sélectionnez l''objectif', false, false,
- 'change_setup', 'label', 'code', false, 'Objectif du changement',
+ 'change_setup?metadata=objective', 'label', 'code', false, 'Objectif du changement',
  true, 170,
  NULL, NULL, NULL),
 
@@ -252,7 +252,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.change_setup_codes', 'code',
  true, 'translations.change_setup_label', 'rel_change_setup_code', 'label',
  'sSelectField', 'Sélectionnez le statut', false, false,
- 'change_setup', 'label', 'code', false, 'Statut de validation CAB',
+ 'change_setup?metadata=cab_validation_status', 'label', 'code', false, 'Statut de validation CAB',
  true, 180,
  NULL, NULL, NULL),
 
@@ -264,8 +264,20 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.change_setup_codes', 'code',
  true, 'translations.change_setup_label', 'rel_change_setup_code', 'label',
  'sSelectField', 'Sélectionnez l''évaluation', false, false,
- 'change_setup', 'label', 'code', false, 'Évaluation après mise en œuvre',
+ 'change_setup?metadata=post_implementation_evaluation', 'label', 'code', false, 'Évaluation après mise en œuvre',
  true, 190,
+ NULL, NULL, NULL),
+
+ --validation level
+ ('tickets', 'Change', NULL, NULL, 'validation_level', 'change.validation_level', 'Niveau de validation',
+ 'text', true, NULL,
+ true, true, true,
+ 'checkbox', '{"multiple": true}'::jsonb,
+ true, 'configuration.change_setup_codes', 'code',
+ true, 'translations.change_setup_label', 'rel_change_setup_code', 'label',
+ 'sSelectField', 'Sélectionnez le niveau', false, false,
+ 'change_setup?metadata=validation_level', 'label', 'code', false, 'Niveau de validation',
+ true, 200,
  NULL, NULL, NULL),
 
 -- requested_start_date_at
@@ -378,4 +390,8 @@ FROM administration.table_metadata
 WHERE table_name = 'tickets' AND object_name = 'Change'
 ORDER BY form_order;
 
-RAISE NOTICE 'Table metadata for CHANGE tickets populated successfully!';
+-- Success message
+DO $$
+BEGIN
+    RAISE NOTICE 'Table metadata for CHANGE tickets populated successfully!';
+END $$;

@@ -19,7 +19,7 @@ export const PAGINATION_CONFIG = {
     'Task': 50,
     'Incident': 50,
     'Problem': 50,
-    'Change': 25,
+    'Change': 50,
     'Entity': 100,
     'Location': 75
   },
