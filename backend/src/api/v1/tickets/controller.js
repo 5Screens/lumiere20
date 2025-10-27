@@ -14,24 +14,12 @@ const logger = require('../../../config/logger');
 const getTickets = async (req, res) => {
     try {
         logger.info('[TICKETS CONTROLLER] Processing GET /tickets request');
-        const { lang = 'en', ticket_type, page = 1, limit = 25, search } = req.query;
+        const { lang = 'en', ticket_type, page = 1, limit = 25, search = '' } = req.query;
         
-        // If search parameter is provided, use lazy search
-        if (search !== undefined && search !== null) {
-            logger.info(`[TICKETS CONTROLLER] Using lazy search with query: "${search}"`);
-            
-            let searchResults;
-            
-            switch (ticket_type) {
-                case 'PROBLEM':
-                    logger.info('[TICKETS CONTROLLER] Calling problemService.getProblemsLazySearch');
-                    searchResults = await problemService.getProblemsLazySearch(search, page, limit, lang);
-                    break;
-                default:
-                    logger.error(`[TICKETS CONTROLLER] Lazy search not implemented for ticket type: ${ticket_type}`);
-                    return res.status(400).json({ error: 'Lazy search not implemented for this ticket type' });
-            }
-            
+        // For PROBLEM tickets, always use lazy search (with or without search query)
+        if (ticket_type === 'PROBLEM') {
+            logger.info(`[TICKETS CONTROLLER] Using lazy search for PROBLEM with query: "${search}"`);
+            const searchResults = await problemService.getProblemsLazySearch(search, page, limit, lang);
             return res.json(searchResults);
         }
         
@@ -53,10 +41,6 @@ const getTickets = async (req, res) => {
                 case 'INCIDENT':
                     logger.info('[TICKETS CONTROLLER] Calling incidentService.searchIncidents');
                     searchResults = await incidentService.searchIncidents(searchParams);
-                    break;
-                case 'PROBLEM':
-                    logger.info('[TICKETS CONTROLLER] Calling problemService.searchProblems');
-                    searchResults = await problemService.searchProblems(searchParams);
                     break;
                 case 'CHANGE':
                     logger.info('[TICKETS CONTROLLER] Calling changeService.searchChanges');
@@ -106,11 +90,6 @@ const getTickets = async (req, res) => {
                 logger.info('[TICKETS CONTROLLER] Calling incidentService.getIncidents');
                 tickets = await incidentService.getIncidents(lang);
                 break;
-            case 'PROBLEM':
-                logger.error('[TICKETS CONTROLLER] Legacy GET /tickets?ticket_type=PROBLEM without search parameter is deprecated');
-                return res.status(400).json({ 
-                    error: 'Please use GET /tickets?ticket_type=PROBLEM&search=query&page=1&limit=10 for problems' 
-                });
             case 'CHANGE':
                 logger.info('[TICKETS CONTROLLER] Calling changeService.getChanges');
                 tickets = await changeService.getChanges(lang);
