@@ -14,7 +14,26 @@ const logger = require('../../../config/logger');
 const getTickets = async (req, res) => {
     try {
         logger.info('[TICKETS CONTROLLER] Processing GET /tickets request');
-        const { lang = 'en', ticket_type, page = 1, limit = 25 } = req.query;
+        const { lang = 'en', ticket_type, page = 1, limit = 25, search } = req.query;
+        
+        // If search parameter is provided, use lazy search
+        if (search !== undefined && search !== null) {
+            logger.info(`[TICKETS CONTROLLER] Using lazy search with query: "${search}"`);
+            
+            let searchResults;
+            
+            switch (ticket_type) {
+                case 'PROBLEM':
+                    logger.info('[TICKETS CONTROLLER] Calling problemService.getProblemsLazySearch');
+                    searchResults = await problemService.getProblemsLazySearch(search, page, limit, lang);
+                    break;
+                default:
+                    logger.error(`[TICKETS CONTROLLER] Lazy search not implemented for ticket type: ${ticket_type}`);
+                    return res.status(400).json({ error: 'Lazy search not implemented for this ticket type' });
+            }
+            
+            return res.json(searchResults);
+        }
         
         // If pagination parameters are provided, use search with pagination
         if (page || limit) {
@@ -88,9 +107,10 @@ const getTickets = async (req, res) => {
                 tickets = await incidentService.getIncidents(lang);
                 break;
             case 'PROBLEM':
-                logger.info('[TICKETS CONTROLLER] Calling problemService.getProblems');
-                tickets = await problemService.getProblems(lang);
-                break;
+                logger.error('[TICKETS CONTROLLER] Legacy GET /tickets?ticket_type=PROBLEM without search parameter is deprecated');
+                return res.status(400).json({ 
+                    error: 'Please use GET /tickets?ticket_type=PROBLEM&search=query&page=1&limit=10 for problems' 
+                });
             case 'CHANGE':
                 logger.info('[TICKETS CONTROLLER] Calling changeService.getChanges');
                 tickets = await changeService.getChanges(lang);

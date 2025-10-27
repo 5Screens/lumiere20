@@ -184,67 +184,6 @@ const getProblemById = async (uuid, lang = 'en') => {
 };
 
 /**
- * Récupère tous les problèmes
- * @param {string} lang - Code de langue pour les traductions (fr, en, etc.)
- * @returns {Promise<Array>} - Liste des problèmes
- */
-const getProblems = async (lang = 'en') => {
-    const servicePrefix = '[PROBLEM SERVICE]';
-    
-    // Définition des attributs spécifiques aux problèmes
-    const baseQuery = `
-        -- Extraction des attributs spécifiques aux problèmes depuis le JSONB
-        t.core_extended_attributes->>'rel_problem_categories_code' as problem_category_code,
-        COALESCE(pcl.label, t.core_extended_attributes->>'rel_problem_categories_code') as problem_category_label,
-        t.core_extended_attributes->>'impact' as impact,
-        COALESCE(iil.label, t.core_extended_attributes->>'impact') as impact_label,
-        t.core_extended_attributes->>'urgency' as urgency,
-        COALESCE(iul.label, t.core_extended_attributes->>'urgency') as urgency_label,
-        t.core_extended_attributes->>'symptoms_description' as symptoms_description,
-        t.core_extended_attributes->>'workaround' as workaround,
-        -- Listes JSON traitées comme des colonnes distinctes
-        (t.core_extended_attributes->>'knownerrors_list')::jsonb as known_errors_list,
-        (t.core_extended_attributes->>'changes_list')::jsonb as changes_list,
-        (t.core_extended_attributes->>'incidents_list')::jsonb as incidents_list,
-        
-        t.core_extended_attributes->>'root_cause' as root_cause,
-        t.core_extended_attributes->>'definitive_solution' as definitive_solution,
-        t.core_extended_attributes->>'closure_justification' as closure_justification,
-        (t.core_extended_attributes->>'target_resolution_date')::timestamp as target_resolution_date,
-        (t.core_extended_attributes->>'actual_resolution_date')::timestamp as actual_resolution_date,
-        (t.core_extended_attributes->>'actual_resolution_workload')::numeric as actual_resolution_workload,
-        
-        -- Informations sur les services et offres de service
-        s.name as rel_service_name,
-        so.name as rel_service_offerings_name
-    `;
-    
-    // Définition des jointures spécifiques aux problèmes
-    const additionalJoins = `
-        LEFT JOIN data.services s ON t.core_extended_attributes->>'rel_service' = s.uuid::text
-        LEFT JOIN data.service_offerings so ON t.core_extended_attributes->>'rel_service_offerings' = so.uuid::text
-            
-        -- Jointure pour la traduction des catégories de problèmes
-        LEFT JOIN translations.problem_categories_labels pcl ON 
-            pcl.rel_problem_category_code = t.core_extended_attributes->>'rel_problem_categories_code'
-            AND pcl.lang = $1
-            
-        -- Jointure pour la traduction des impacts
-        LEFT JOIN translations.incident_setup_labels iil ON
-            iil.rel_incident_setup_code = t.core_extended_attributes->>'impact'
-            AND iil.lang = $1
-            
-        -- Jointure pour la traduction des urgences
-        LEFT JOIN translations.incident_setup_labels iul ON
-            iul.rel_incident_setup_code = t.core_extended_attributes->>'urgency'
-            AND iul.lang = $1
-    `;
-    
-    // Utilisation de la fonction getTickets factorisée
-    return ticketService.getTickets(lang, 'PROBLEM', baseQuery, additionalJoins, [], servicePrefix);
-};
-
-/**
  * Crée un nouveau problème
  * @param {Object} problemData - Données pour la création du problème
  * @returns {Promise<Object>} - Détails du problème créé
@@ -718,6 +657,133 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
 };
 
 /**
+ * Get problems with lazy search - returns paginated results filtered by search query
+ * @param {string} [searchQuery] - Optional search term to filter problems
+ * @param {number} [page=1] - Page number (1-indexed)
+ * @param {number} [limit=10] - Number of results per page
+ * @param {string} [lang='en'] - Language code for translations
+ * @returns {Promise<Object>} Object with data and pagination metadata
+ */
+const getProblemsLazySearch = async (searchQuery = '', page = 1, limit = 10, lang = 'en') => {
+    try {
+        logger.info(`[PROBLEM SERVICE] Getting problems with lazy search: "${searchQuery}", page: ${page}, limit: ${limit}, lang: ${lang}`);
+        
+        // Validate and sanitize pagination parameters
+        const validPage = Math.max(1, parseInt(page) || 1);
+        const validLimit = Math.min(50, Math.max(1, parseInt(limit) || 10)); // Max 50 per page
+        const offset = (validPage - 1) * validLimit;
+        
+        // Separate WHERE clauses for COUNT and main query
+        let countWhereClause = `WHERE t.ticket_type_code = 'PROBLEM'`;
+        let mainWhereClause = `WHERE t.ticket_type_code = 'PROBLEM'`;
+        const countParams = []; // Params for COUNT query (no lang needed)
+        const queryParams = [lang]; // Params for main query (starts with lang at $1)
+        let countParamIndex = 1; // For COUNT query
+        let paramIndex = 2; // For main query (starts at $2 after lang)
+        
+        // If search query is provided, add search conditions
+        if (searchQuery && searchQuery.trim()) {
+            // Split search query by spaces to create AND conditions
+            const searchTerms = searchQuery.trim().split(/\s+/).filter(term => term.length > 0);
+            
+            if (searchTerms.length > 0) {
+                const countConditions = [];
+                const mainConditions = [];
+                
+                searchTerms.forEach((term) => {
+                    // For COUNT query
+                    countParams.push(`%${term}%`);
+                    countConditions.push(`(
+                        unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${countParamIndex})) OR
+                        unaccent(LOWER(t.description)) LIKE unaccent(LOWER($${countParamIndex}))
+                    )`);
+                    countParamIndex++;
+                    
+                    // For main query
+                    queryParams.push(`%${term}%`);
+                    mainConditions.push(`(
+                        unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${paramIndex})) OR
+                        unaccent(LOWER(t.description)) LIKE unaccent(LOWER($${paramIndex}))
+                    )`);
+                    paramIndex++;
+                });
+                
+                countWhereClause += ` AND ${countConditions.join(' AND ')}`;
+                mainWhereClause += ` AND ${mainConditions.join(' AND ')}`;
+            }
+        }
+        
+        // Count total results for pagination
+        const countQuery = `
+            SELECT COUNT(*) as total
+            FROM core.tickets t
+            ${countWhereClause}
+        `;
+        const { rows: countRows } = await db.query(countQuery, countParams);
+        const total = parseInt(countRows[0].total);
+        
+        // Main query to fetch problems
+        const query = `
+            SELECT 
+                t.uuid,
+                t.title,
+                t.description,
+                t.ticket_status_code,
+                COALESCE(tst.label, ts.code) as ticket_status_label,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
+                p3.first_name || ' ' || p3.last_name as writer_name,
+                ci.name as configuration_item_name,
+                t.core_extended_attributes->>'rel_problem_categories_code' as problem_category_code,
+                COALESCE(pcl.label, t.core_extended_attributes->>'rel_problem_categories_code') as problem_category_label,
+                t.core_extended_attributes->>'impact' as impact,
+                COALESCE(iil.label, t.core_extended_attributes->>'impact') as impact_label,
+                t.core_extended_attributes->>'urgency' as urgency,
+                COALESCE(iul.label, t.core_extended_attributes->>'urgency') as urgency_label
+            FROM core.tickets t
+            JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+            JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = 'PROBLEM'
+            LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $1
+            LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
+            LEFT JOIN translations.problem_categories_labels pcl ON 
+                pcl.rel_problem_category_code = t.core_extended_attributes->>'rel_problem_categories_code'
+                AND pcl.lang = $1
+            LEFT JOIN translations.incident_setup_labels iil ON
+                iil.rel_incident_setup_code = t.core_extended_attributes->>'impact'
+                AND iil.lang = $1
+            LEFT JOIN translations.incident_setup_labels iul ON
+                iul.rel_incident_setup_code = t.core_extended_attributes->>'urgency'
+                AND iul.lang = $1
+            ${mainWhereClause}
+            ORDER BY t.created_at DESC
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        `;
+        
+        queryParams.push(validLimit, offset);
+        
+        const { rows } = await db.query(query, queryParams);
+        
+        const hasMore = offset + rows.length < total;
+        
+        logger.info(`[PROBLEM SERVICE] Retrieved ${rows.length} problems (page ${validPage}, total: ${total}, hasMore: ${hasMore})`);
+        
+        return {
+            data: rows,
+            pagination: {
+                page: validPage,
+                limit: validLimit,
+                total: total,
+                hasMore: hasMore
+            }
+        };
+    } catch (error) {
+        logger.error('[PROBLEM SERVICE] Error in lazy search:', error);
+        throw error;
+    }
+};
+
+/**
  * Search PROBLEM tickets with advanced filters, sorting and pagination
  * @param {Object} searchParams - Search parameters including filters, sort, pagination, and lang
  * @returns {Object} Search results with data and metadata
@@ -993,7 +1059,7 @@ const searchProblems = async (searchParams) => {
 
 module.exports = {
     getProblemById,
-    getProblems,
+    getProblemsLazySearch,
     createProblem,
     updateProblem,
     searchProblems

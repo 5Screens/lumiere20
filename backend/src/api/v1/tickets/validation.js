@@ -17,7 +17,8 @@ const validateGetTickets = async (req, res, next) => {
         lang: Joi.string().min(2).max(5),
         ticket_type: Joi.string(),
         page: Joi.number().integer().min(1).default(1),
-        limit: Joi.number().integer().min(1).max(100).default(25)
+        limit: Joi.number().integer().min(1).max(100).default(25),
+        search: Joi.string().allow('').optional()
     });
 
     const { error, value } = schema.validate(req.query);
