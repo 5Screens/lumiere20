@@ -377,7 +377,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   const { operator, value, empty_string_is_null } = filterDef;
   let condition = '';
   
-  // Handle RELATIONAL columns (assigned_to_group, assigned_to_person)
+  // Handle RELATIONAL columns (assigned_to_group, assigned_to_person, rel_problem_id, rel_change_request)
   if (column === 'assigned_to_group') {
     logger.info(`[INCIDENT SERVICE] Building condition for relational column: assigned_to_group`);
     if (operator === 'is_null') {
@@ -465,6 +465,98 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
             AND rtgp.type = 'ASSIGNED'
             AND rtgp.ended_at IS NULL
             AND rtgp.rel_assigned_to_person = $${paramIndex++}
+        )`;
+        queryParams.push(value);
+      }
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  // Handle rel_problem_id (relation via core.rel_parent_child_tickets)
+  if (column === 'rel_problem_id') {
+    logger.info(`[INCIDENT SERVICE] Building condition for relational column: rel_problem_id`);
+    if (operator === 'is_null') {
+      // Incidents without linked problem
+      condition = `NOT EXISTS (
+        SELECT 1 FROM core.rel_parent_child_tickets rpct
+        WHERE rpct.rel_parent_ticket_uuid = t.uuid
+          AND rpct.dependency_code = 'KNOWN_PROBLEM'
+          AND rpct.ended_at IS NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'is_not_null') {
+      // Incidents with linked problem
+      condition = `EXISTS (
+        SELECT 1 FROM core.rel_parent_child_tickets rpct
+        WHERE rpct.rel_parent_ticket_uuid = t.uuid
+          AND rpct.dependency_code = 'KNOWN_PROBLEM'
+          AND rpct.ended_at IS NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpct
+          WHERE rpct.rel_parent_ticket_uuid = t.uuid
+            AND rpct.dependency_code = 'KNOWN_PROBLEM'
+            AND rpct.ended_at IS NULL
+            AND rpct.rel_child_ticket_uuid IN (${placeholders})
+        )`;
+      } else {
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpct
+          WHERE rpct.rel_parent_ticket_uuid = t.uuid
+            AND rpct.dependency_code = 'KNOWN_PROBLEM'
+            AND rpct.ended_at IS NULL
+            AND rpct.rel_child_ticket_uuid = $${paramIndex++}
+        )`;
+        queryParams.push(value);
+      }
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  // Handle rel_change_request (relation via core.rel_parent_child_tickets)
+  if (column === 'rel_change_request') {
+    logger.info(`[INCIDENT SERVICE] Building condition for relational column: rel_change_request`);
+    if (operator === 'is_null') {
+      // Incidents without linked change request
+      condition = `NOT EXISTS (
+        SELECT 1 FROM core.rel_parent_child_tickets rpct
+        WHERE rpct.rel_parent_ticket_uuid = t.uuid
+          AND rpct.dependency_code = 'CHANGE_AT_ORIGIN'
+          AND rpct.ended_at IS NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'is_not_null') {
+      // Incidents with linked change request
+      condition = `EXISTS (
+        SELECT 1 FROM core.rel_parent_child_tickets rpct
+        WHERE rpct.rel_parent_ticket_uuid = t.uuid
+          AND rpct.dependency_code = 'CHANGE_AT_ORIGIN'
+          AND rpct.ended_at IS NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpct
+          WHERE rpct.rel_parent_ticket_uuid = t.uuid
+            AND rpct.dependency_code = 'CHANGE_AT_ORIGIN'
+            AND rpct.ended_at IS NULL
+            AND rpct.rel_child_ticket_uuid IN (${placeholders})
+        )`;
+      } else {
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpct
+          WHERE rpct.rel_parent_ticket_uuid = t.uuid
+            AND rpct.dependency_code = 'CHANGE_AT_ORIGIN'
+            AND rpct.ended_at IS NULL
+            AND rpct.rel_child_ticket_uuid = $${paramIndex++}
         )`;
         queryParams.push(value);
       }
