@@ -140,16 +140,16 @@ export class Change {
       { key: 'uuid', label: 'common.id', visible: false },
       { key: 'title', label: 'change.title', visible: true },
       { key: 'ticket_type_label', label: 'configuration.ticketTypes', visible: true },
-      { key: 'change_type_label', label: 'change.type', visible: true },
-      { key: 'ticket_status_label', label: 'change.status', visible: true },
-      { key: 'rel_service_name', label: 'change.service', visible: true },
-      { key: 'rel_service_offerings_name', label: 'change.service_offerings', visible: true },
+      { key: 'change_type_label', label: 'change.type', visible: true, filterKey: 'rel_change_type_code' },
+      { key: 'ticket_status_label', label: 'change.status', visible: true, filterKey: 'ticket_status_code' },
+      { key: 'rel_service_name', label: 'change.service', visible: true, filterKey: 'rel_services' },
+      { key: 'rel_service_offerings_name', label: 'change.service_offerings', visible: true, filterKey: 'rel_service_offerings' },
       { key: 'description', label: 'change.description', visible: true, type: 'text', format: 'html' },
-      { key: 'configuration_item_name', label: 'change.configuration_item', visible: true },
-      { key: 'writer_name', label: 'change.writer', visible: true },
-      { key: 'requested_for_name', label: 'change.requested_for', visible: true },
-      { key: 'assigned_group_name', label: 'change.assigned_group', visible: true },
-      { key: 'assigned_person_name', label: 'change.assigned_to_person', visible: true },
+      { key: 'configuration_item_name', label: 'change.configuration_item', visible: true, filterKey: 'configuration_item_uuid' },
+      { key: 'writer_name', label: 'change.writer', visible: true, filterKey: 'writer_uuid' },
+      { key: 'requested_for_name', label: 'change.requested_for', visible: true, filterKey: 'requested_for_uuid' },
+      { key: 'assigned_group_name', label: 'change.assigned_group', visible: true, filterKey: 'assigned_to_group' },
+      { key: 'assigned_person_name', label: 'change.assigned_to_person', visible: true, filterKey: 'assigned_to_person' },
       { key: 'created_at', label: 'common.creation_date', visible: true },
       { key: 'updated_at', label: 'common.modification_date', visible: true },
       { key: 'requested_start_date_at', label: 'change.requested_start_date', visible: true },
@@ -160,28 +160,31 @@ export class Change {
       { key: 'actual_start_date_at', label: 'change.actual_start_date', visible: true },
       { key: 'actual_end_date_at', label: 'change.actual_end_date', visible: true },
       { key: 'closed_at', label: 'change.closed_at', visible: true },
-      { key: 'change_justifications_label', label: 'change.justification', visible: true },
-      { key: 'change_objective_label', label: 'change.objective', visible: true },
+      { key: 'change_justifications_label', label: 'change.justification', visible: true, filterKey: 'rel_change_justifications_code' },
+      { key: 'change_objective_label', label: 'change.objective', visible: true, filterKey: 'rel_change_objective' },
       { key: 'test_plan', label: 'change.test_plan', visible: true, type: 'text', format: 'html' },
       { key: 'implementation_plan', label: 'change.implementation_plan', visible: true, type: 'text', format: 'html' },
       { key: 'rollbcak_plan', label: 'change.rollback_plan', visible: true, type: 'text', format: 'html' },
       { key: 'post_implementation_plan', label: 'change.post_implementation_plan', visible: true, type: 'text', format: 'html' },
       { key: 'cab_comments', label: 'change.cab_comments', visible: true, type: 'text', format: 'html' },
-      { key: 'cab_validation_status_label', label: 'change.cab_validation_status', visible: true },
+      { key: 'cab_validation_status_label', label: 'change.cab_validation_status', visible: true, filterKey: 'rel_cab_validation_status' },
       { key: 'required_validations_labels', label: 'change.required_validations', visible: true, type: 'text', format: 'tags' },
       { key: 'elapsed_time', label: 'change.elapsed_time', visible: true },
       { key: 'success_criteria', label: 'change.success_criteria', visible: true, type: 'text', format: 'html' },
-      { key: 'post_change_evaluation_label', label: 'change.post_change_evaluation', visible: true },
+      { key: 'post_change_evaluation_label', label: 'change.post_change_evaluation', visible: true, filterKey: 'post_change_evaluation' },
       { key: 'post_change_comment', label: 'change.post_change_comment', visible: true, type: 'text', format: 'html' }
     ];
   }
 
   static getApiEndpoint(method = 'GET') {
-    const userProfileStore = useUserProfileStore();
-    if (method === 'PATCH') {
-      return 'tickets';
+    // Pour l'infinite scroll, retourner l'endpoint de recherche
+    // Le composant reusableTableTab utilisera POST /tickets/search/changes
+    if (method === 'GET') {
+      return 'tickets/search/changes';
     }
-    return `tickets?ticket_type=CHANGE&lang=${userProfileStore.language}`;
+    
+    // Pour les autres méthodes (PATCH, PUT, DELETE)
+    return 'tickets';
   }
 
   /**

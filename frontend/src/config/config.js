@@ -29,9 +29,8 @@ export const PAGINATION_CONFIG = {
     'Person',
     'Task',
     'Incident',
-    'Problem'
-    // Décommenter pour activer :
-    // 'Change',
+    'Problem',
+    'Change'
   ],
   
   // Seuil de déclenchement du chargement (px avant la fin)

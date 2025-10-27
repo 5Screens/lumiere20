@@ -1251,7 +1251,7 @@ export default {
     
   },
   filters: {
-    title: 'Filter / Requêter',
+    title: 'Filtrer / Requêter',
     title_2: 'Filtre',
     apply:'Appliquer',
     reset:'Réinitialiser',
@@ -1289,7 +1289,8 @@ export default {
     remove:'Supprimer',
     all_filters:"tous les filtres",
     any_filters:"n'importe lequel des filtres",
-    all_lines_that_match:"toutes les lignes qui correspondent à"
+    all_lines_that_match:"toutes les lignes qui correspondent à",
+    no_filters_available:"Aucun filtre disponible pour cet objet"
   },
   notifications: {
     loadingError: 'Erreur lors du chargement des données',

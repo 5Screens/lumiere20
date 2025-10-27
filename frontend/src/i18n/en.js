@@ -941,7 +941,7 @@ export default {
     loading: 'Loading filters...',
     add_first_filter: 'Add your first filter',
     add_filter: 'Add a filter',
-    no_filters_available: 'No filters available for this table',
+    no_filters_available: 'No filters available for this object',
     reset: 'Reset',
     apply: 'Apply',
     keep: 'Keep',

@@ -1,0 +1,233 @@
+    logger.info(`[CHANGE SERVICE] Language: ${lang}`);
+    
+    // Build WHERE clause from advanced filters
+    const queryParams = [];
+    let paramIndex = 1;
+    let whereClause = '';
+    
+    // Always filter by ticket_type = CHANGE
+    const baseConditions = [`t.ticket_type_code = 'CHANGE'`];
+    
+    // Validate filter format
+    if (Object.keys(filters).length > 0) {
+      if (!filters.conditions || !Array.isArray(filters.conditions)) {
+        const error = new Error(
+          'Invalid filter format. filters.conditions must be an array. ' +
+          'Example: { "filters": { "conditions": [{ "column": "title", "operator": "contains", "value": "server" }] } }'
+        );
+        logger.error('[CHANGE SERVICE] Missing or invalid filters.conditions');
+        throw error;
+      }
+      
+      if (filters.conditions.length > 0) {
+        const mode = filters.mode || 'include';
+        const operator = (filters.operator || 'AND').toUpperCase();
+        
+        logger.info(`[CHANGE SERVICE] Processing ${filters.conditions.length} advanced filter(s) with mode=${mode}, operator=${operator}`);
+        
+        const filterConditions = [];
+        
+        // Process each filter condition
+        for (const filterDef of filters.conditions) {
+          const { column } = filterDef;
+          
+          logger.info(`[CHANGE SERVICE] Processing filter condition:`, JSON.stringify(filterDef));
+          
+          if (!column) {
+            logger.warn('[CHANGE SERVICE] Filter condition missing column, skipping');
+            continue;
+          }
+          
+          // Get column metadata to determine data type
+          const metadataQuery = `
+            SELECT data_type 
+            FROM administration.table_metadata 
+            WHERE table_name = $1 AND column_name = $2
+          `;
+          const metadataResult = await db.query(metadataQuery, ['tickets', column]);
+          
+          logger.info(`[CHANGE SERVICE] Metadata query result for column ${column}:`, metadataResult.rows);
+          
+          if (metadataResult.rows.length === 0) {
+            logger.warn(`[CHANGE SERVICE] No metadata for column ${column}, skipping filter`);
+            continue;
+          }
+          
+          const { data_type } = metadataResult.rows[0];
+          logger.info(`[CHANGE SERVICE] Column ${column} has data_type: ${data_type}`);
+          
+          // Build the condition for this filter
+          const { condition, newParamIndex } = buildFilterCondition(
+            column,
+            filterDef,
+            data_type,
+            queryParams,
+            paramIndex
+          );
+          
+          logger.info(`[CHANGE SERVICE] buildFilterCondition returned: condition="${condition}", newParamIndex=${newParamIndex}`);
+          
+          if (condition) {
+            filterConditions.push(condition);
+            paramIndex = newParamIndex;
+            logger.info(`[CHANGE SERVICE] Added filter: ${condition}`);
+          } else {
+            logger.warn(`[CHANGE SERVICE] buildFilterCondition returned empty condition for column ${column}`);
+          }
+        }
+        
+        // Combine all filter conditions
+        if (filterConditions.length > 0) {
+          const combinedConditions = filterConditions.join(` ${operator} `);
+          
+          // Apply mode: include or exclude
+          if (mode === 'exclude') {
+            baseConditions.push(`NOT (${combinedConditions})`);
+          } else {
+            baseConditions.push(combinedConditions);
+          }
+          
+          logger.info(`[CHANGE SERVICE] Filter conditions added to base conditions`);
+        }
+      }
+    }
+    
+    whereClause = `WHERE ${baseConditions.join(' AND ')}`;
+    logger.info(`[CHANGE SERVICE] Final WHERE clause: ${whereClause}`);
+    
+    // Count total results
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM core.tickets t
+      ${whereClause}
+    `;
+    
+    logger.info(`[CHANGE SERVICE] Count query params: ${JSON.stringify(queryParams)}`);
+    
+    const countResult = await db.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results with all data
+    const dataQuery = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.configuration_item_uuid,
+        ci.name as configuration_item_name,
+        t.requested_for_uuid,
+        t.writer_uuid,
+        t.ticket_type_code,
+        t.ticket_status_code,
+        t.created_at,
+        t.updated_at,
+        t.closed_at,
+        t.core_extended_attributes,
+        t.user_extended_attributes,
+        
+        -- Person names
+        p2.first_name || ' ' || p2.last_name as requested_for_name,
+        p3.first_name || ' ' || p3.last_name as writer_name,
+        
+        -- Translated labels
+        COALESCE(ttt.label, tt.code) as ticket_type_label,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        
+        -- Assignment info
+        g.uuid as assigned_to_group,
+        g.group_name as assigned_group_name,
+        p4.uuid as assigned_to_person,
+        p4.first_name || ' ' || p4.last_name as assigned_person_name,
+        
+        -- Change-specific fields from core_extended_attributes
+        t.core_extended_attributes->>'rel_services' as rel_services,
+        service.name as rel_service_name,
+        t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
+        service_offerings.name as rel_service_offerings_name,
+        t.core_extended_attributes->>'rel_change_type_code' as rel_change_type_code,
+        COALESCE(change_type_t.label, t.core_extended_attributes->>'rel_change_type_code') as change_type_label,
+        t.core_extended_attributes->>'rel_change_justifications_code' as rel_change_justifications_code,
+        COALESCE(change_justification_t.label, t.core_extended_attributes->>'rel_change_justifications_code') as change_justifications_label,
+        t.core_extended_attributes->>'rel_change_objective' as rel_change_objective,
+        COALESCE(change_objective_t.label, t.core_extended_attributes->>'rel_change_objective') as change_objective_label,
+        t.core_extended_attributes->>'rel_cab_validation_status' as rel_cab_validation_status,
+        COALESCE(cab_validation_t.label, t.core_extended_attributes->>'rel_cab_validation_status') as cab_validation_status_label,
+        t.core_extended_attributes->>'post_change_evaluation' as post_change_evaluation,
+        COALESCE(post_change_eval_t.label, t.core_extended_attributes->>'post_change_evaluation') as post_change_evaluation_label,
+        t.core_extended_attributes->>'requested_start_date_at' as requested_start_date_at,
+        t.core_extended_attributes->>'requested_end_date_at' as requested_end_date_at,
+        t.core_extended_attributes->>'planned_start_date_at' as planned_start_date_at,
+        t.core_extended_attributes->>'planned_end_date_at' as planned_end_date_at,
+        t.core_extended_attributes->>'validated_at' as validated_at,
+        t.core_extended_attributes->>'actual_start_date_at' as actual_start_date_at,
+        t.core_extended_attributes->>'actual_end_date_at' as actual_end_date_at,
+        t.core_extended_attributes->>'elapsed_time' as elapsed_time
+        
+      FROM core.tickets t
+      LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
+      LEFT JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+      LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
+      JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${paramIndex}
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${paramIndex}
+      LEFT JOIN (
+        SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
+        FROM core.rel_tickets_groups_persons
+        WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+      ) rtgp ON t.uuid = rtgp.rel_ticket
+      LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+      LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+      LEFT JOIN translations.change_setup_label change_type_t ON change_type_t.rel_change_setup_code = t.core_extended_attributes->>'rel_change_type_code' AND change_type_t.lang = $${paramIndex}
+      LEFT JOIN translations.change_setup_label change_justification_t ON change_justification_t.rel_change_setup_code = t.core_extended_attributes->>'rel_change_justifications_code' AND change_justification_t.lang = $${paramIndex}
+      LEFT JOIN translations.change_setup_label change_objective_t ON change_objective_t.rel_change_setup_code = t.core_extended_attributes->>'rel_change_objective' AND change_objective_t.lang = $${paramIndex}
+      LEFT JOIN translations.change_setup_label cab_validation_t ON cab_validation_t.rel_change_setup_code = t.core_extended_attributes->>'rel_cab_validation_status' AND cab_validation_t.lang = $${paramIndex}
+      LEFT JOIN translations.change_setup_label post_change_eval_t ON post_change_eval_t.rel_change_setup_code = t.core_extended_attributes->>'post_change_evaluation' AND post_change_eval_t.lang = $${paramIndex}
+      LEFT JOIN data.services service ON t.core_extended_attributes->>'rel_services' = service.uuid::text
+      LEFT JOIN data.service_offerings service_offerings ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
+      ${whereClause}
+      ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
+      LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}
+    `;
+    
+    queryParams.push(lang, limit, offset);
+    
+    logger.info(`[CHANGE SERVICE] Data query params: ${JSON.stringify(queryParams)}`);
+    
+    const dataResult = await db.query(dataQuery, queryParams);
+    
+    // Calculate pagination metadata
+    const currentPage = page;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = offset + limit < total;
+    
+    logger.info(`[CHANGE SERVICE] Found ${dataResult.rows.length} changes (total: ${total})`);
+    
+    return {
+      data: dataResult.rows,
+      total: total,
+      hasMore: hasMore,
+      pagination: {
+        offset: offset,
+        limit: limit,
+        currentPage: currentPage,
+        totalPages: totalPages,
+        sortBy: sortBy,
+        sortDirection: sortDirection
+      }
+    };
+    
+  } catch (error) {
+    logger.error('[CHANGE SERVICE] Error searching changes:', error);
+    throw error;
+  }
+};
+
+module.exports = {
+    getChanges,
+    getChangeById,
+    createChange,
+    updateChange,
+    getChangesLazySearch,
+    searchChanges
+};
