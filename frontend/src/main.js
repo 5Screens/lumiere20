@@ -9,7 +9,13 @@ import { useUserProfileStore } from './stores/userProfileStore'
 // Router configuration
 const router = createRouter({
   history: createWebHistory(),
-  routes: [] // Routes will be added later
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: App
+    }
+  ]
 })
 
 // Create Pinia instance
