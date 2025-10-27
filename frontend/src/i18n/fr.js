@@ -417,7 +417,8 @@ export default {
     assigned_team_label: 'Equipe assignée',
     assigned_team_placeholder: 'Sélectionnez une équipe',
     assigned_to_label: 'Assigné à',
-    assigned_to_placeholder: 'Sélectionnez une personne'
+    assigned_to_placeholder: 'Sélectionnez une personne',
+    closed_at: 'Date de clôture'
   },
   configuration_item: {
     created_at: 'Date de Création',
@@ -876,27 +877,6 @@ export default {
     sprint_count: 'Nombre de sprints ouverts'
   },
   
-  task: {
-    // Informations générales
-    title: 'Titre',
-    title_placeholder: 'Entrez le titre de la tâche',
-    description: 'Description',
-    description_placeholder: 'Entrez la description de la tâche',
-    status: 'Statut',
-    status_placeholder: 'Sélectionnez un statut',
-    requested_by: 'Demandeur',
-    requested_by_placeholder: 'Sélectionnez un demandeur',
-    requested_for: 'Demandé pour',
-    requested_for_placeholder: 'Sélectionnez un destinataire',
-    assigned_team_label: 'Équipe assignée',
-    assigned_team_placeholder: 'Sélectionnez une équipe',
-    assigned_to_label: 'Assigné à',
-    assigned_to_placeholder: 'Sélectionnez une personne',
-    watcher: 'Observateurs',
-    watcher_placeholder: 'Sélectionnez des observateurs',
-    watcher_helper_text: 'Les observateurs recevront des notifications sur les mises à jour de cette tâche'
-  },
-
   defect: {
     // Informations générales
     title: 'Titre',

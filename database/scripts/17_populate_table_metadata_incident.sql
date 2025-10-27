@@ -122,7 +122,7 @@ INSERT INTO administration.table_metadata (
  NULL, NULL, NULL),
 
 -- assigned_to_group (relation via core.rel_tickets_groups_persons)
-('tickets', 'Incident', NULL, NULL, 'assigned_to_group', 'incident.assigned_team_label', 'Équipe assignée',
+('tickets', 'Incident', NULL, NULL, 'assigned_to_group', 'incident.assigned_group', 'Équipe assignée',
  'uuid', true, NULL,
  true, false, true,
  'checkbox', '{"multiple": false}'::jsonb,
@@ -134,7 +134,7 @@ INSERT INTO administration.table_metadata (
  NULL, NULL, NULL),
 
 -- assigned_to_person (relation via core.rel_tickets_groups_persons)
-('tickets', 'Incident', NULL, NULL, 'assigned_to_person', 'incident.assigned_to_label', 'Personne assignée',
+('tickets', 'Incident', NULL, NULL, 'assigned_to_person', 'incident.assigned_to', 'Personne assignée',
  'uuid', true, NULL,
  true, false, true,
  'checkbox', '{"multiple": false}'::jsonb,
