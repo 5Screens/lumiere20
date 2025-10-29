@@ -833,8 +833,6 @@ const searchChanges = async (searchParams) => {
         t.created_at,
         t.updated_at,
         t.closed_at,
-        t.core_extended_attributes,
-        t.user_extended_attributes,
         
         -- Person names
         p2.first_name || ' ' || p2.last_name as requested_for_name,
@@ -865,6 +863,8 @@ const searchChanges = async (searchParams) => {
         COALESCE(cab_validation_t.label, t.core_extended_attributes->>'rel_cab_validation_status') as cab_validation_status_label,
         t.core_extended_attributes->>'post_change_evaluation' as post_change_evaluation,
         COALESCE(post_change_eval_t.label, t.core_extended_attributes->>'post_change_evaluation') as post_change_evaluation_label,
+        
+        -- Date fields from core_extended_attributes
         t.core_extended_attributes->>'requested_start_date_at' as requested_start_date_at,
         t.core_extended_attributes->>'requested_end_date_at' as requested_end_date_at,
         t.core_extended_attributes->>'planned_start_date_at' as planned_start_date_at,
@@ -872,7 +872,26 @@ const searchChanges = async (searchParams) => {
         t.core_extended_attributes->>'validated_at' as validated_at,
         t.core_extended_attributes->>'actual_start_date_at' as actual_start_date_at,
         t.core_extended_attributes->>'actual_end_date_at' as actual_end_date_at,
-        t.core_extended_attributes->>'elapsed_time' as elapsed_time
+        
+        -- Other fields from core_extended_attributes
+        t.core_extended_attributes->>'elapsed_time' as elapsed_time,
+        t.core_extended_attributes->>'r_q1' as r_q1,
+        t.core_extended_attributes->>'r_q2' as r_q2,
+        t.core_extended_attributes->>'r_q3' as r_q3,
+        t.core_extended_attributes->>'r_q4' as r_q4,
+        t.core_extended_attributes->>'r_q5' as r_q5,
+        t.core_extended_attributes->>'i_q1' as i_q1,
+        t.core_extended_attributes->>'i_q2' as i_q2,
+        t.core_extended_attributes->>'i_q3' as i_q3,
+        t.core_extended_attributes->>'i_q4' as i_q4,
+        t.core_extended_attributes->>'test_plan' as test_plan,
+        t.core_extended_attributes->>'implementation_plan' as implementation_plan,
+        t.core_extended_attributes->>'rollbcak_plan' as rollbcak_plan,
+        t.core_extended_attributes->>'post_implementation_plan' as post_implementation_plan,
+        t.core_extended_attributes->>'cab_comments' as cab_comments,
+        t.core_extended_attributes->>'success_criteria' as success_criteria,
+        t.core_extended_attributes->>'post_change_comment' as post_change_comment,
+        t.core_extended_attributes->'required_validations' as required_validations
         
       FROM core.tickets t
       LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
