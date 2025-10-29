@@ -19,20 +19,20 @@ export class Knowledge_article {
       { key: 'prerequisites', label: t('knowledge_article.prerequisites'), type: 'text', format: 'html' },
       { key: 'limitations', label: t('knowledge_article.limitations'), type: 'text', format: 'html' },
       { key: 'security_notes', label: t('knowledge_article.security_notes'), type: 'text', format: 'html' },
-      { key: 'ticket_status_label', label: t('knowledge_article.publication_status'), type: 'text', format: 'text' },
-      { key: 'rel_category_label', label: t('knowledge_article.category'), type: 'text', format: 'text' },
-      { key: 'rel_involved_process_label', label: t('knowledge_article.involved_process'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('knowledge_article.publication_status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
+      { key: 'rel_category_label', label: t('knowledge_article.category'), type: 'text', format: 'text', filterKey: 'rel_category' },
+      { key: 'rel_involved_process_label', label: t('knowledge_article.involved_process'), type: 'text', format: 'text', filterKey: 'rel_involved_process' },
       { key: 'rel_target_audience_label', label: t('knowledge_article.target_audience'), type: 'text', format: 'tags' },
       { key: 'business_scope_label', label: t('knowledge_article.business_scope'), type: 'text', format: 'tags' },
-      { key: 'rel_service_name', label: t('knowledge_article.service'), type: 'text', format: 'text' },
-      { key: 'rel_service_offerings_name', label: t('knowledge_article.service_offerings'), type: 'text', format: 'text' },
-      { key: 'configuration_item_name', label: t('knowledge_article.configuration_item'), type: 'text', format: 'text' },
-      { key: 'rel_lang_name', label: t('knowledge_article.lang'), type: 'text', format: 'text' },
-      { key: 'rel_confidentiality_level_label', label: t('knowledge_article.confidentiality_level'), type: 'text', format: 'text' },
+      { key: 'rel_service_name', label: t('knowledge_article.service'), type: 'text', format: 'text', filterKey: 'rel_service' },
+      { key: 'rel_service_offerings_name', label: t('knowledge_article.service_offerings'), type: 'text', format: 'text', filterKey: 'rel_service_offerings' },
+      { key: 'configuration_item_name', label: t('knowledge_article.configuration_item'), type: 'text', format: 'text', filterKey: 'configuration_item_uuid' },
+      { key: 'rel_lang_name', label: t('knowledge_article.lang'), type: 'text', format: 'text', filterKey: 'rel_lang' },
+      { key: 'rel_confidentiality_level_label', label: t('knowledge_article.confidentiality_level'), type: 'text', format: 'text', filterKey: 'rel_confidentiality_level' },
       { key: 'version', label: t('knowledge_article.version'), type: 'text', format: 'text' },
-      { key: 'writer_name', label: t('knowledge_article.writer'), type: 'text', format: 'text' },
-      { key: 'assigned_group_name', label: t('knowledge_article.assigned_group'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('knowledge_article.assigned_to_person'), type: 'text', format: 'text' },
+      { key: 'writer_name', label: t('knowledge_article.writer'), type: 'text', format: 'text', filterKey: 'writer_uuid' },
+      { key: 'assigned_group_name', label: t('knowledge_article.assigned_group'), type: 'text', format: 'text', filterKey: 'assigned_to_group' },
+      { key: 'assigned_person_name', label: t('knowledge_article.assigned_to_person'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
       { key: 'license_type', label: t('knowledge_article.license_type'), type: 'text', format: 'text' },
       { key: 'attachments_count', label: t('knowledge_article.attachments_count'), type: 'text', format: 'text' },
       { key: 'tieds_tickets_count', label: t('knowledge_article.tieds_tickets_count'), type: 'text', format: 'text' },
@@ -45,17 +45,23 @@ export class Knowledge_article {
 
   /**
    * Retourne l'endpoint API pour les tickets de type KNOWLEDGE
-   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE)
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE, FILTER)
    * @returns {string} Endpoint API
    */
   static getApiEndpoint(method) {
-    const userProfileStore = useUserProfileStore();
-    
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'tickets';
-    } else {
-      return `tickets?ticket_type=KNOWLEDGE&lang=${userProfileStore.language}`;
+    // Pour les filtres, retourner l'endpoint spécifique aux knowledge articles
+    if (method === 'FILTER') {
+      return 'tickets/knowledge';
     }
+    
+    // Pour l'infinite scroll, retourner l'endpoint de recherche
+    // Le composant reusableTableTab utilisera POST /tickets/search/knowledge
+    if (method === 'GET') {
+      return 'tickets/search/knowledge';
+    }
+    
+    // Pour les autres méthodes (PATCH, PUT, DELETE)
+    return 'tickets';
   }
 
   /**

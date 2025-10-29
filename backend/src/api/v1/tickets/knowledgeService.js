@@ -1,6 +1,32 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 const ticketService = require('./service');
+const { buildFilterCondition: buildGenericFilterCondition } = require('./ticketFilterBuilder');
+
+/**
+ * Build filter condition for knowledge articles search (wrapper with KNOWLEDGE-specific JSONB columns)
+ * @param {string} column - Column name
+ * @param {Object} filterDef - Filter definition with operator and value(s)
+ * @param {string} dataType - Column data type (text, number, date, boolean)
+ * @param {Array} queryParams - Array to push parameters into
+ * @param {number} paramIndex - Current parameter index
+ * @returns {Object} { condition: string, newParamIndex: number }
+ */
+const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
+  return buildGenericFilterCondition(column, filterDef, dataType, queryParams, paramIndex, {
+    jsonbDateColumns: [
+      'last_review_at', 'next_review_at'
+    ],
+    jsonbTextColumns: [
+      'rel_category', 'rel_service', 'rel_service_offerings', 'rel_lang',
+      'rel_confidentiality_level', 'rel_involved_process', 'summary',
+      'prerequisites', 'limitations', 'security_notes', 'version',
+      'license_type', 'rel_target_audience', 'business_scope'
+    ],
+    jsonbNumericColumns: [],
+    servicePrefix: '[KNOWLEDGE SERVICE]'
+  });
+};
 
 /**
  * Récupère un article de connaissance par son UUID
@@ -416,9 +442,371 @@ const updateKnowledge = async (uuid, updateData) => {
     );
 };
 
+/**
+ * Lazy search for knowledge articles (for dropdown filters)
+ * @param {string} searchQuery - Search term
+ * @param {string} lang - Language code
+ * @returns {Promise<Array>} - List of knowledge articles matching the search
+ */
+const getKnowledgeArticlesLazySearch = async (searchQuery, lang = 'en') => {
+  logger.info(`[KNOWLEDGE SERVICE] Lazy search for knowledge articles with query: "${searchQuery}", lang: ${lang}`);
+  
+  try {
+    const queryParams = [];
+    let whereClause = '';
+    
+    if (searchQuery && searchQuery.trim().length > 0) {
+      // Split search query by spaces for AND logic
+      const searchTerms = searchQuery.trim().split(/\s+/).filter(term => term.length > 0);
+      
+      const conditions = searchTerms.map((term, index) => {
+        const paramIndex = index + 1;
+        queryParams.push(`%${term}%`);
+        return `(
+          unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${paramIndex})) OR
+          unaccent(LOWER(t.description)) LIKE unaccent(LOWER($${paramIndex}))
+        )`;
+      });
+      
+      whereClause = `WHERE t.ticket_type_code = 'KNOWLEDGE' AND ${conditions.join(' AND ')}`;
+    } else {
+      whereClause = `WHERE t.ticket_type_code = 'KNOWLEDGE'`;
+    }
+    
+    const query = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.ticket_status_code,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        t.created_at
+      FROM core.tickets t
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${queryParams.length + 1}
+      ${whereClause}
+      ORDER BY t.created_at DESC
+      LIMIT 20
+    `;
+    
+    queryParams.push(lang);
+    
+    const result = await db.query(query, queryParams);
+    
+    logger.info(`[KNOWLEDGE SERVICE] Lazy search found ${result.rows.length} knowledge articles`);
+    
+    return result.rows;
+  } catch (error) {
+    logger.error('[KNOWLEDGE SERVICE] Error in lazy search:', error);
+    throw error;
+  }
+};
+
+/**
+ * Advanced search for knowledge articles with filters, sorting, and pagination
+ * @param {Object} filters - Advanced filter conditions
+ * @param {Object} sort - Sort configuration { by: string, direction: string }
+ * @param {Object} pagination - Pagination { page: number, limit: number }
+ * @param {string} lang - Language code for translations
+ * @returns {Promise<Object>} - { data: Array, total: number, hasMore: boolean, pagination: Object }
+ */
+const searchKnowledgeArticles = async (filters = {}, sort = {}, pagination = {}, lang = 'en') => {
+  try {
+    const servicePrefix = '[KNOWLEDGE SERVICE]';
+    
+    // Extract pagination parameters
+    const page = pagination.page || 1;
+    const limit = pagination.limit || 50;
+    const offset = (page - 1) * limit;
+    
+    // Extract sort parameters
+    const sortBy = sort.by || 'created_at';
+    const sortDirection = sort.direction || 'desc';
+    
+    // Sort column mapping for calculated/joined columns
+    const sortColumnMapping = {
+      'uuid': 't.uuid',
+      'title': 't.title',
+      'description': 't.description',
+      'ticket_type_code': 't.ticket_type_code',
+      'ticket_status_code': 't.ticket_status_code',
+      'ticket_status_label': 'COALESCE(tst.label, ts.code)',
+      'requested_for_uuid': 't.requested_for_uuid',
+      'requested_for_name': "p2.first_name || ' ' || p2.last_name",
+      'writer_uuid': 't.writer_uuid',
+      'writer_name': "p3.first_name || ' ' || p3.last_name",
+      'configuration_item_uuid': 't.configuration_item_uuid',
+      'configuration_item_name': 'ci.name',
+      'assigned_to_group': 'g.uuid',
+      'assigned_group_name': 'g.group_name',
+      'assigned_to_person': 'p4.uuid',
+      'assigned_person_name': "p4.first_name || ' ' || p4.last_name",
+      'created_at': 't.created_at',
+      'updated_at': 't.updated_at',
+      'closed_at': 't.closed_at',
+      // JSONB fields
+      'rel_category': "t.core_extended_attributes->>'rel_category'",
+      'rel_category_label': "COALESCE(category_t.label, t.core_extended_attributes->>'rel_category')",
+      'rel_service': "t.core_extended_attributes->>'rel_service'",
+      'rel_service_name': 'service.name',
+      'rel_service_offerings': "t.core_extended_attributes->>'rel_service_offerings'",
+      'rel_service_offerings_name': 'service_offerings.name',
+      'rel_lang': "t.core_extended_attributes->>'rel_lang'",
+      'rel_lang_name': 'lang.native_name',
+      'rel_confidentiality_level': "t.core_extended_attributes->>'rel_confidentiality_level'",
+      'rel_confidentiality_level_label': "COALESCE(confidentiality_t.label, t.core_extended_attributes->>'rel_confidentiality_level')",
+      'rel_involved_process': "t.core_extended_attributes->>'rel_involved_process'",
+      'rel_involved_process_label': "COALESCE(process_t.label, t.core_extended_attributes->>'rel_involved_process')",
+      'version': "t.core_extended_attributes->>'version'",
+      'last_review_at': "t.core_extended_attributes->>'last_review_at'",
+      'next_review_at': "t.core_extended_attributes->>'next_review_at'",
+      'license_type': "t.core_extended_attributes->>'license_type'",
+      'attachments_count': '(SELECT COUNT(*) FROM core.attachments a WHERE a.object_uuid = t.uuid)',
+      'tieds_tickets_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'TIED_TICKETS\')'
+    };
+    
+    // Get the SQL expression for sorting
+    const sortExpression = sortColumnMapping[sortBy] || `t.${sortBy}`;
+    
+    logger.info(`${servicePrefix} Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
+    logger.info(`${servicePrefix} Pagination: page=${page}, limit=${limit}, offset=${offset}`);
+    logger.info(`${servicePrefix} Language: ${lang}`);
+    
+    // Build WHERE clause from advanced filters
+    const queryParams = [];
+    let paramIndex = 1;
+    let whereClause = '';
+    
+    // Always filter by ticket_type = KNOWLEDGE
+    const baseConditions = [`t.ticket_type_code = 'KNOWLEDGE'`];
+    
+    // Validate filter format
+    if (filters && filters.conditions && Array.isArray(filters.conditions) && filters.conditions.length > 0) {
+        const mode = filters.mode || 'include';
+        const operator = (filters.operator || 'AND').toUpperCase();
+        
+        logger.info(`${servicePrefix} Processing ${filters.conditions.length} advanced filter(s) with mode=${mode}, operator=${operator}`);
+        
+        const filterConditions = [];
+        
+        // Process each filter condition
+        for (const filterDef of filters.conditions) {
+          const { column } = filterDef;
+          
+          logger.info(`${servicePrefix} Processing filter condition:`, JSON.stringify(filterDef));
+          
+          if (!column) {
+            logger.warn(`${servicePrefix} Filter condition missing column, skipping`);
+            continue;
+          }
+          
+          // Get column metadata to determine data type
+          const metadataQuery = `
+            SELECT data_type 
+            FROM administration.table_metadata 
+            WHERE table_name = $1 AND column_name = $2
+          `;
+          const metadataResult = await db.query(metadataQuery, ['tickets', column]);
+          
+          logger.info(`${servicePrefix} Metadata query result for column ${column}:`, metadataResult.rows);
+          
+          if (metadataResult.rows.length === 0) {
+            logger.warn(`${servicePrefix} No metadata for column ${column}, skipping filter`);
+            continue;
+          }
+          
+          const { data_type } = metadataResult.rows[0];
+          logger.info(`${servicePrefix} Column ${column} has data_type: ${data_type}`);
+          
+          // Build the condition for this filter
+          const { condition, newParamIndex } = buildFilterCondition(
+            column,
+            filterDef,
+            data_type,
+            queryParams,
+            paramIndex
+          );
+          
+          logger.info(`${servicePrefix} buildFilterCondition returned: condition="${condition}", newParamIndex=${newParamIndex}`);
+          
+          if (condition) {
+            filterConditions.push(condition);
+            paramIndex = newParamIndex;
+            logger.info(`${servicePrefix} Added filter: ${condition}`);
+          } else {
+            logger.warn(`${servicePrefix} buildFilterCondition returned empty condition for column ${column}`);
+          }
+        }
+        
+        // Combine all filter conditions
+        if (filterConditions.length > 0) {
+          const combinedConditions = filterConditions.join(` ${operator} `);
+          
+          // Apply mode: include or exclude
+          if (mode === 'exclude') {
+            baseConditions.push(`NOT (${combinedConditions})`);
+          } else {
+            if (operator === 'OR' || filterConditions.length > 1) {
+              baseConditions.push(`(${combinedConditions})`);
+            } else {
+              baseConditions.push(combinedConditions);
+            }
+          }
+          
+          logger.info(`${servicePrefix} Filter conditions added to base conditions`);
+        }
+    }
+    
+    whereClause = `WHERE ${baseConditions.join(' AND ')}`;
+    logger.info(`${servicePrefix} Final WHERE clause: ${whereClause}`);
+    
+    // Count total results
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM core.tickets t
+      ${whereClause}
+    `;
+    
+    logger.info(`${servicePrefix} Count query params: ${JSON.stringify(queryParams)}`);
+    
+    const countResult = await db.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results with all data
+    const dataQuery = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.configuration_item_uuid,
+        ci.name as configuration_item_name,
+        t.requested_for_uuid,
+        t.writer_uuid,
+        t.ticket_type_code,
+        t.ticket_status_code,
+        t.created_at,
+        t.updated_at,
+        t.closed_at,
+        
+        -- Person names
+        p2.first_name || ' ' || p2.last_name as requested_for_name,
+        p3.first_name || ' ' || p3.last_name as writer_name,
+        
+        -- Translated labels
+        COALESCE(ttt.label, tt.code) as ticket_type_label,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        
+        -- Assignment info
+        g.uuid as assigned_to_group,
+        g.group_name as assigned_group_name,
+        p4.uuid as assigned_to_person,
+        p4.first_name || ' ' || p4.last_name as assigned_person_name,
+        
+        -- Knowledge-specific fields from core_extended_attributes
+        t.core_extended_attributes->>'rel_category' as rel_category,
+        COALESCE(category_t.label, t.core_extended_attributes->>'rel_category') as rel_category_label,
+        t.core_extended_attributes->'keywords' as keywords,
+        t.core_extended_attributes->>'rel_service' as rel_service,
+        service.name as rel_service_name,
+        t.core_extended_attributes->>'rel_service_offerings' as rel_service_offerings,
+        service_offerings.name as rel_service_offerings_name,
+        t.core_extended_attributes->>'rel_lang' as rel_lang,
+        lang.native_name as rel_lang_name,
+        t.core_extended_attributes->>'rel_confidentiality_level' as rel_confidentiality_level,
+        COALESCE(confidentiality_t.label, t.core_extended_attributes->>'rel_confidentiality_level') as rel_confidentiality_level_label,
+        t.core_extended_attributes->>'rel_involved_process' as rel_involved_process,
+        COALESCE(process_t.label, t.core_extended_attributes->>'rel_involved_process') as rel_involved_process_label,
+        t.core_extended_attributes->>'summary' as summary,
+        t.core_extended_attributes->>'prerequisites' as prerequisites,
+        t.core_extended_attributes->>'limitations' as limitations,
+        t.core_extended_attributes->>'security_notes' as security_notes,
+        t.core_extended_attributes->>'version' as version,
+        t.core_extended_attributes->>'last_review_at' as last_review_at,
+        t.core_extended_attributes->>'next_review_at' as next_review_at,
+        t.core_extended_attributes->>'license_type' as license_type,
+        t.core_extended_attributes->'rel_target_audience' as rel_target_audience,
+        (
+          SELECT jsonb_agg(ksl.label)
+          FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code
+          JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code
+          WHERE ksl.lang = $${paramIndex}
+        ) as rel_target_audience_label,
+        t.core_extended_attributes->'business_scope' as business_scope,
+        (
+          SELECT jsonb_agg(ksl.label)
+          FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code
+          JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code
+          WHERE ksl.lang = $${paramIndex}
+        ) as business_scope_label,
+        
+        -- Counts
+        (SELECT COUNT(*) FROM core.attachments a WHERE a.object_uuid = t.uuid) as attachments_count,
+        (SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = 'TIED_TICKETS') as tieds_tickets_count
+        
+      FROM core.tickets t
+      LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
+      LEFT JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+      LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
+      JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${paramIndex}
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${paramIndex}
+      LEFT JOIN (
+        SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
+        FROM core.rel_tickets_groups_persons
+        WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+      ) rtgp ON t.uuid = rtgp.rel_ticket
+      LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+      LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+      LEFT JOIN translations.knowledge_setup_label category_t ON category_t.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND category_t.lang = $${paramIndex}
+      LEFT JOIN translations.knowledge_setup_label confidentiality_t ON confidentiality_t.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND confidentiality_t.lang = $${paramIndex}
+      LEFT JOIN translations.ticket_types_translation process_t ON process_t.ticket_type_uuid = (SELECT uuid FROM configuration.ticket_types WHERE code = t.core_extended_attributes->>'rel_involved_process') AND process_t.lang = $${paramIndex}
+      LEFT JOIN data.services service ON t.core_extended_attributes->>'rel_service' = service.uuid::text
+      LEFT JOIN data.service_offerings service_offerings ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
+      LEFT JOIN translations.languages lang ON lang.code = t.core_extended_attributes->>'rel_lang'
+      ${whereClause}
+      ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
+      LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}
+    `;
+    
+    queryParams.push(lang, limit, offset);
+    
+    logger.info(`${servicePrefix} Data query params: ${JSON.stringify(queryParams)}`);
+    
+    const dataResult = await db.query(dataQuery, queryParams);
+    
+    // Calculate pagination metadata
+    const currentPage = page;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = offset + limit < total;
+    
+    logger.info(`${servicePrefix} Found ${dataResult.rows.length} knowledge articles (total: ${total})`);
+    
+    return {
+      data: dataResult.rows,
+      total: total,
+      hasMore: hasMore,
+      pagination: {
+        offset: offset,
+        limit: limit,
+        currentPage: currentPage,
+        totalPages: totalPages,
+        sortBy: sortBy,
+        sortDirection: sortDirection
+      }
+    };
+    
+  } catch (error) {
+    logger.error('[KNOWLEDGE SERVICE] Error searching knowledge articles:', error);
+    throw error;
+  }
+};
+
 module.exports = {
     getKnowledgeById,
     getKnowledgeArticles,
     createKnowledge,
-    updateKnowledge
+    updateKnowledge,
+    getKnowledgeArticlesLazySearch,
+    searchKnowledgeArticles
 };
