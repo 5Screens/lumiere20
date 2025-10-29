@@ -111,11 +111,23 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     'r_q1', 'r_q2', 'r_q3', 'r_q4', 'r_q5',
     'i_q1', 'i_q2', 'i_q3', 'i_q4',
     'rel_change_justifications_code', 'rel_change_objective',
-    'rel_cab_validation_status', 'post_change_evaluation'
+    'rel_cab_validation_status', 'post_change_evaluation',
+    'requested_start_date_at', 'requested_end_date_at',
+    'planned_start_date_at', 'planned_end_date_at',
+    'validated_at', 'actual_start_date_at', 'actual_end_date_at',
+    'elapsed_time'
   ];
   
   if (jsonbColumns.includes(column)) {
     const jsonbPath = `t.core_extended_attributes->>'${column}'`;
+    
+    // Detect if this is a date column
+    const dateColumns = [
+      'requested_start_date_at', 'requested_end_date_at',
+      'planned_start_date_at', 'planned_end_date_at',
+      'validated_at', 'actual_start_date_at', 'actual_end_date_at'
+    ];
+    const isDateColumn = dateColumns.includes(column);
     
     if (operator === 'is_null') {
       condition = `(t.core_extended_attributes->>'${column}' IS NULL OR t.core_extended_attributes->>'${column}' = '')`;
@@ -123,7 +135,36 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     } else if (operator === 'is_not_null') {
       condition = `(t.core_extended_attributes->>'${column}' IS NOT NULL AND t.core_extended_attributes->>'${column}' != '')`;
       return { condition, newParamIndex: paramIndex };
-    } else if (operator === 'equals' || operator === 'is') {
+    }
+    
+    // Handle date operators for date columns
+    if (isDateColumn && dataType === 'timestamp') {
+      if (operator === 'after') {
+        condition = `DATE((${jsonbPath})::timestamp) > DATE($${paramIndex++})`;
+        queryParams.push(value);
+      } else if (operator === 'on_or_after') {
+        condition = `DATE((${jsonbPath})::timestamp) >= DATE($${paramIndex++})`;
+        queryParams.push(value);
+      } else if (operator === 'before') {
+        condition = `DATE((${jsonbPath})::timestamp) < DATE($${paramIndex++})`;
+        queryParams.push(value);
+      } else if (operator === 'on_or_before') {
+        condition = `DATE((${jsonbPath})::timestamp) <= DATE($${paramIndex++})`;
+        queryParams.push(value);
+      } else if (operator === 'between') {
+        const startDate = value.gte || value.start;
+        const endDate = value.lte || value.end;
+        condition = `DATE((${jsonbPath})::timestamp) BETWEEN DATE($${paramIndex++}) AND DATE($${paramIndex++})`;
+        queryParams.push(startDate, endDate);
+      } else if (operator === 'on' || operator === 'equals') {
+        condition = `DATE((${jsonbPath})::timestamp) = DATE($${paramIndex++})`;
+        queryParams.push(value);
+      }
+      return { condition, newParamIndex: paramIndex };
+    }
+    
+    // Handle other operators for non-date JSONB columns
+    if (operator === 'equals' || operator === 'is') {
       if (Array.isArray(value)) {
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
         condition = `${jsonbPath} IN (${placeholders})`;
