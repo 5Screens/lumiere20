@@ -756,10 +756,16 @@ const searchChanges = async (searchParams) => {
           const combinedConditions = filterConditions.join(` ${operator} `);
           
           // Apply mode: include or exclude
+          // IMPORTANT: Always wrap in parentheses to avoid SQL operator precedence issues
           if (mode === 'exclude') {
             baseConditions.push(`NOT (${combinedConditions})`);
           } else {
-            baseConditions.push(combinedConditions);
+            // Wrap in parentheses if using OR operator or multiple conditions
+            if (operator === 'OR' || filterConditions.length > 1) {
+              baseConditions.push(`(${combinedConditions})`);
+            } else {
+              baseConditions.push(combinedConditions);
+            }
           }
           
           logger.info(`[CHANGE SERVICE] Filter conditions added to base conditions`);
