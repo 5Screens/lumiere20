@@ -269,7 +269,7 @@ INSERT INTO administration.table_metadata (
  NULL, NULL, NULL),
 
  --validation level
- ('tickets', 'Change', NULL, NULL, 'validation_level', 'change.validation_level', 'Niveau de validation',
+ ('tickets', 'Change', NULL, NULL, 'validation_level', 'change.required_validations', 'Niveau de validation',
  'text', true, NULL,
  true, true, true,
  'checkbox', '{"multiple": true}'::jsonb,

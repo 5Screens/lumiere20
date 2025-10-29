@@ -1089,64 +1089,40 @@ export default {
      * Setup infinite scroll functionality
      */
     async setupInfiniteScroll() {
-      console.log('[ReusableTableTab] Setting up infinite scroll');
-      
       // Attendre que le filterStore ait chargé la configuration et restauré les filtres
       // Cela évite de charger les données sans les filtres restaurés depuis localStorage
-      if (this.objectName === 'Person' || this.objectName === 'Task') {
-        console.log('[ReusableTableTab] Waiting for filter config to load...');
+      const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
+      if (this.objectName === 'Person' || ticketTypes.includes(this.objectName)) {
         try {
           await this.filterStore.loadFilterConfig(this.objectName);
-          console.log('[ReusableTableTab] Filter config loaded, filters restored from localStorage');
         } catch (error) {
           console.error('[ReusableTableTab] Error loading filter config:', error);
           // Continuer même en cas d'erreur
         }
       }
       
-      // Load initial data
+      // Load initial data APRÈS la restauration des filtres
       this.loadInitialData();
       
       // Setup intersection observer for scroll sentinel with delay to ensure DOM is ready
       this.$nextTick(() => {
-        console.log('[ReusableTableTab] Setting up intersection observer');
-        console.log('[ReusableTableTab] scrollSentinel ref:', this.$refs.scrollSentinel);
-        
         if (this.$refs.scrollSentinel) {
           this.intersectionObserver = new IntersectionObserver(
             (entries) => {
               entries.forEach(entry => {
-                console.log('[ReusableTableTab] Intersection entry:', {
-                  isIntersecting: entry.isIntersecting,
-                  isLoadingMore: this.isLoadingMore,
-                  hasMoreData: this.hasMoreData,
-                  currentOffset: this.currentOffset,
-                  totalRecords: this.totalRecords,
-                  tableDataLength: this.tableData.length
-                });
-                
                 if (entry.isIntersecting && !this.isLoadingMore && this.hasMoreData) {
-                  console.log('[ReusableTableTab] ✅ Conditions met, loading more data');
                   this.loadMoreData();
-                } else if (entry.isIntersecting) {
-                  console.log('[ReusableTableTab] ❌ Intersection detected but conditions not met:', {
-                    isLoadingMore: this.isLoadingMore,
-                    hasMoreData: this.hasMoreData
-                  });
                 }
               });
             },
             {
-              root: this.$refs.tableContainer, // Use table container as root
-              rootMargin: '300px', // Smaller margin - trigger when closer
-              threshold: 0.1 // Require 10% visibility
+              root: this.$refs.tableContainer,
+              rootMargin: '300px',
+              threshold: 0.1
             }
           );
           
           this.intersectionObserver.observe(this.$refs.scrollSentinel);
-          console.log('[ReusableTableTab] Intersection observer configured successfully');
-        } else {
-          console.error('[ReusableTableTab] scrollSentinel ref not found!');
         }
       });
     },
@@ -1155,8 +1131,6 @@ export default {
      * Load initial data for infinite scroll
      */
     async loadInitialData() {
-      console.log('[ReusableTableTab] Loading initial data');
-      
       this.isLoadingMore = true;
       this.error = null;
       this.currentOffset = 0;
@@ -1164,7 +1138,6 @@ export default {
       
       try {
         await this.loadDataBatch();
-        console.log('[ReusableTableTab] Initial data loaded:', this.tableData.length, 'items');
       } catch (error) {
         console.error('[ReusableTableTab] Error loading initial data:', error);
         this.error = error.message || 'Erreur lors du chargement des données';
@@ -1210,8 +1183,6 @@ export default {
      * Supports both persons (via filterStore) and tickets (direct POST)
      */
     async loadDataBatchForInfiniteScroll() {
-      console.log('[ReusableTableTab] Loading batch - offset:', this.currentOffset, 'pageSize:', this.pageSize);
-      
       // Calculer la page actuelle basée sur l'offset
       const currentPage = Math.floor(this.currentOffset / this.pageSize) + 1;
       
@@ -1234,7 +1205,6 @@ export default {
       if (this.objectName === 'Person' || ticketTypes.includes(this.objectName)) {
         // Pour Person et tous les types de tickets, utiliser le filterStore qui gère la conversion des filtres
         const lang = this.userProfileStore.language || 'en';
-        console.log(`[ReusableTableTab] Calling filterStore.applySearch for ${this.objectName} with:`, { sort, pagination, lang });
         response = await this.filterStore.applySearch(
           this.objectName,
           sort,
@@ -1254,7 +1224,6 @@ export default {
           lang: this.userProfileStore.language || 'en'
         };
         
-        console.log('[ReusableTableTab] Calling POST with body:', requestBody);
         response = await apiService.post(this.apiUrl, requestBody);
       }
       
@@ -1278,8 +1247,6 @@ export default {
         this.totalRecords = response.total || 0;
         this.hasMoreData = response.hasMore || false;
         this.currentOffset += newItems.length;
-        
-        console.log(`[ReusableTableTab] Loaded ${newItems.length} items, total: ${this.tableData.length}/${this.totalRecords}`);
         
         // Measure column widths after first load (only once)
         if (this.currentOffset === newItems.length && !this.hasMeasuredColumnWidths) {
