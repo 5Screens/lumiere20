@@ -184,7 +184,7 @@ BEGIN
             'cab_comments', '<p>CAB comments for change #' || i || '</p>',
             'success_criteria', '<p>Success criteria for change #' || i || '</p>',
             'post_change_comment', '<p>Post-change comments for change #' || i || '</p>',
-            'required_validations', '["VALIDATION_LEVEL_1", "VALIDATION_LEVEL_2"]'::JSONB,
+            'required_validations', '["TECHNICAL_VALIDATION", "CAB_VALIDATION"]'::JSONB,
             'r_q1', 'RISK_LOW',
             'r_q2', 'RISK_MEDIUM',
             'r_q3', 'RISK_LOW',

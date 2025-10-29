@@ -271,7 +271,7 @@ INSERT INTO administration.table_metadata (
  --required_validations
  ('tickets', 'Change', NULL, NULL, 'required_validations', 'change.required_validations', 'Niveau de validation',
  'text', true, NULL,
- true, true, true,
+ true, true, false,
  'checkbox', '{"multiple": true}'::jsonb,
  true, 'configuration.change_setup_codes', 'code',
  true, 'translations.change_setup_label', 'rel_change_setup_code', 'label',
