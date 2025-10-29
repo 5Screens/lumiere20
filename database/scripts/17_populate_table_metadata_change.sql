@@ -61,7 +61,7 @@ INSERT INTO administration.table_metadata (
  NULL, NULL, NULL),
 
 -- ticket_type_code
-('tickets', 'Change', NULL, NULL, 'ticket_type_code', 'change.type', 'Type de ticket',
+('tickets', 'Change', NULL, NULL, 'ticket_type_code', 'configuration.ticketTypes', 'Type de ticket',
  'text', false, NULL,
  true, true, false,
  'checkbox', '{"multiple": true}'::jsonb,
