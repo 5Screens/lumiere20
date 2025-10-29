@@ -472,6 +472,7 @@ export class Incident {
         type: 'sFilteredSearchField',
         placeholder: 'incident.problem_id_placeholder',
         endpoint: 'tickets?ticket_type=PROBLEM',
+        lazySearch: true,
         displayField: 'title',
         valueField: 'uuid',
         columnsConfig: [
@@ -489,6 +490,7 @@ export class Incident {
         type: 'sFilteredSearchField',
         placeholder: 'incident.change_request_placeholder',
         endpoint: 'tickets?ticket_type=CHANGE',
+        lazySearch: true,
         displayField: 'title',
         valueField: 'uuid',
         columnsConfig: [
