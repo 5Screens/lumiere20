@@ -1,6 +1,7 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 const ticketService = require('./service');
+const { buildFilterCondition: buildGenericFilterCondition } = require('./ticketFilterBuilder');
 
 /**
  * Récupère les incidents avec les attributs étendus spécifiques aux incidents
@@ -365,19 +366,19 @@ const updateIncident = async (uuid, updateData) => {
 };
 
 /**
- * Build filter condition for incidents search
+ * Build filter condition for incidents search (wrapper with INCIDENT-specific relations)
  * @param {string} column - Column name
  * @param {Object} filterDef - Filter definition with operator and value(s)
  * @param {string} dataType - Column data type (text, number, date, boolean)
  * @param {Array} queryParams - Array to push parameters into
  * @param {number} paramIndex - Current parameter index
- * @returns {Object} { condition: string, newParamIndex: number }
+ * @returns {Object} { condition: string, newParamIndex: paramIndex }
  */
 const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
-  const { operator, value, empty_string_is_null } = filterDef;
+  const { operator, value } = filterDef;
   let condition = '';
   
-  // Handle RELATIONAL columns (assigned_to_group, assigned_to_person, rel_problem_id, rel_change_request)
+  // Handle INCIDENT-specific RELATIONAL columns (rel_problem_id, rel_change_request)
   if (column === 'assigned_to_group') {
     logger.info(`[INCIDENT SERVICE] Building condition for relational column: assigned_to_group`);
     if (operator === 'is_null') {
@@ -472,11 +473,10 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     return { condition, newParamIndex: paramIndex };
   }
   
-  // Handle rel_problem_id (relation via core.rel_parent_child_tickets)
+  // Handle rel_problem_id (INCIDENT-specific relation via core.rel_parent_child_tickets)
   if (column === 'rel_problem_id') {
     logger.info(`[INCIDENT SERVICE] Building condition for relational column: rel_problem_id`);
     if (operator === 'is_null') {
-      // Incidents without linked problem
       condition = `NOT EXISTS (
         SELECT 1 FROM core.rel_parent_child_tickets rpct
         WHERE rpct.rel_parent_ticket_uuid = t.uuid
@@ -485,7 +485,6 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
       )`;
       return { condition, newParamIndex: paramIndex };
     } else if (operator === 'is_not_null') {
-      // Incidents with linked problem
       condition = `EXISTS (
         SELECT 1 FROM core.rel_parent_child_tickets rpct
         WHERE rpct.rel_parent_ticket_uuid = t.uuid
@@ -518,11 +517,10 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     return { condition, newParamIndex: paramIndex };
   }
   
-  // Handle rel_change_request (relation via core.rel_parent_child_tickets)
+  // Handle rel_change_request (INCIDENT-specific relation via core.rel_parent_child_tickets)
   if (column === 'rel_change_request') {
     logger.info(`[INCIDENT SERVICE] Building condition for relational column: rel_change_request`);
     if (operator === 'is_null') {
-      // Incidents without linked change request
       condition = `NOT EXISTS (
         SELECT 1 FROM core.rel_parent_child_tickets rpct
         WHERE rpct.rel_parent_ticket_uuid = t.uuid
@@ -531,7 +529,6 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
       )`;
       return { condition, newParamIndex: paramIndex };
     } else if (operator === 'is_not_null') {
-      // Incidents with linked change request
       condition = `EXISTS (
         SELECT 1 FROM core.rel_parent_child_tickets rpct
         WHERE rpct.rel_parent_ticket_uuid = t.uuid
@@ -564,173 +561,16 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     return { condition, newParamIndex: paramIndex };
   }
   
-  // Handle JSONB columns (impact, urgency, priority, cause_code, etc.)
-  const jsonbColumns = ['impact', 'urgency', 'priority', 'cause_code', 'resolution_code', 'contact_type', 'symptoms_uuid', 'rel_service', 'rel_service_offerings'];
-  if (jsonbColumns.includes(column)) {
-    const jsonbPath = `t.core_extended_attributes->>'${column}'`;
-    
-    // Pour priority, il faut caster en integer
-    const finalPath = column === 'priority' ? `(${jsonbPath})::integer` : jsonbPath;
-    
-    if (operator === 'is_null') {
-      // Pour les champs JSONB, vérifier si la clé n'existe pas OU si la valeur est NULL
-      condition = `(t.core_extended_attributes->>'${column}' IS NULL OR t.core_extended_attributes->>'${column}' = '')`;
-      return { condition, newParamIndex: paramIndex };
-    } else if (operator === 'is_not_null') {
-      // Pour les champs JSONB, vérifier si la clé existe ET que la valeur n'est pas NULL
-      condition = `(t.core_extended_attributes->>'${column}' IS NOT NULL AND t.core_extended_attributes->>'${column}' != '')`;
-      return { condition, newParamIndex: paramIndex };
-    } else if (operator === 'equals' || operator === 'is') {
-      if (Array.isArray(value)) {
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `${finalPath} IN (${placeholders})`;
-        queryParams.push(...value);
-      } else {
-        condition = `${finalPath} = $${paramIndex++}`;
-        queryParams.push(value);
-      }
-    } else if (operator === 'contains') {
-      // contains ne s'applique pas à priority (qui est numérique)
-      if (column === 'priority') {
-        logger.warn(`[INCIDENT SERVICE] 'contains' operator not supported for numeric column 'priority', using 'equals' instead`);
-        if (Array.isArray(value)) {
-          const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-          condition = `${finalPath} IN (${placeholders})`;
-          queryParams.push(...value);
-        } else {
-          condition = `${finalPath} = $${paramIndex++}`;
-          queryParams.push(value);
-        }
-      } else {
-        condition = `LOWER(${jsonbPath}) LIKE LOWER($${paramIndex++})`;
-        queryParams.push(`%${value}%`);
-      }
-    }
-    return { condition, newParamIndex: paramIndex };
-  }
-  
-  // Handle NULL checks
-  if (operator === 'is_null') {
-    if (empty_string_is_null && (dataType === 'text' || dataType === 'string')) {
-      condition = `(t.${column} IS NULL OR t.${column} = '')`;
-    } else {
-      condition = `t.${column} IS NULL`;
-    }
-    return { condition, newParamIndex: paramIndex };
-  }
-  
-  if (operator === 'is_not_null') {
-    if (empty_string_is_null && (dataType === 'text' || dataType === 'string')) {
-      condition = `(t.${column} IS NOT NULL AND t.${column} != '')`;
-    } else {
-      condition = `t.${column} IS NOT NULL`;
-    }
-    return { condition, newParamIndex: paramIndex };
-  }
-  
-  // Handle TEXT/STRING/UUID type
-  if (dataType === 'text' || dataType === 'string' || dataType === 'uuid') {
-    if (operator === 'contains') {
-      if (Array.isArray(value)) {
-        const conditions = value.map((val, index) => {
-          const cond = `LOWER(CAST(t.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
-          queryParams.push(`%${val}%`);
-          return cond;
-        });
-        condition = `(${conditions.join(' OR ')})`;
-      } else {
-        condition = `LOWER(CAST(t.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
-        queryParams.push(`%${value}%`);
-      }
-    } else if (operator === 'equals' || operator === 'is') {
-      if (Array.isArray(value)) {
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `t.${column} IN (${placeholders})`;
-        queryParams.push(...value);
-      } else {
-        condition = `t.${column} = $${paramIndex++}`;
-        queryParams.push(value);
-      }
-    } else if (operator === 'not_equals') {
-      if (Array.isArray(value)) {
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `t.${column} NOT IN (${placeholders})`;
-        queryParams.push(...value);
-      } else {
-        condition = `t.${column} != $${paramIndex++}`;
-        queryParams.push(value);
-      }
-    }
-  }
-  
-  // Handle NUMBER type
-  else if (dataType === 'number' || dataType === 'integer' || dataType === 'numeric') {
-    if (operator === 'equals') {
-      if (Array.isArray(value)) {
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `t.${column} IN (${placeholders})`;
-        queryParams.push(...value);
-      } else {
-        condition = `t.${column} = $${paramIndex++}`;
-        queryParams.push(value);
-      }
-    } else if (operator === 'lt') {
-      condition = `t.${column} < $${paramIndex++}`;
-      queryParams.push(value);
-    } else if (operator === 'lte') {
-      condition = `t.${column} <= $${paramIndex++}`;
-      queryParams.push(value);
-    } else if (operator === 'gt') {
-      condition = `t.${column} > $${paramIndex++}`;
-      queryParams.push(value);
-    } else if (operator === 'gte') {
-      condition = `t.${column} >= $${paramIndex++}`;
-      queryParams.push(value);
-    } else if (operator === 'between') {
-      const startValue = value.gte || value.min || value.start;
-      const endValue = value.lte || value.max || value.end;
-      condition = `t.${column} BETWEEN $${paramIndex++} AND $${paramIndex++}`;
-      queryParams.push(startValue, endValue);
-    }
-  }
-  
-  // Handle DATE type
-  else if (dataType === 'date' || dataType === 'timestamp' || dataType === 'datetime') {
-    if (operator === 'after') {
-      condition = `DATE(t.${column}) > DATE($${paramIndex++})`;
-      queryParams.push(value);
-    } else if (operator === 'on_or_after') {
-      condition = `DATE(t.${column}) >= DATE($${paramIndex++})`;
-      queryParams.push(value);
-    } else if (operator === 'before') {
-      condition = `DATE(t.${column}) < DATE($${paramIndex++})`;
-      queryParams.push(value);
-    } else if (operator === 'on_or_before') {
-      condition = `DATE(t.${column}) <= DATE($${paramIndex++})`;
-      queryParams.push(value);
-    } else if (operator === 'between') {
-      const startDate = value.gte || value.start;
-      const endDate = value.lte || value.end;
-      condition = `DATE(t.${column}) BETWEEN DATE($${paramIndex++}) AND DATE($${paramIndex++})`;
-      queryParams.push(startDate, endDate);
-    } else if (operator === 'on' || operator === 'equals') {
-      condition = `DATE(t.${column}) = DATE($${paramIndex++})`;
-      queryParams.push(value);
-    }
-  }
-  
-  // Handle BOOLEAN type
-  else if (dataType === 'boolean' || dataType === 'bool') {
-    if (operator === 'is_true') {
-      condition = `t.${column} = true`;
-    } else if (operator === 'is_false') {
-      condition = `t.${column} = false`;
-    } else if (operator === 'any') {
-      condition = '1=1';
-    }
-  }
-  
-  return { condition, newParamIndex: paramIndex };
+  // Delegate all other columns to the generic filter builder
+  return buildGenericFilterCondition(column, filterDef, dataType, queryParams, paramIndex, {
+    jsonbDateColumns: [],
+    jsonbNumericColumns: ['priority'],
+    jsonbTextColumns: [
+      'impact', 'urgency', 'cause_code', 'resolution_code', 
+      'contact_type', 'symptoms_uuid', 'rel_service', 'rel_service_offerings'
+    ],
+    servicePrefix: '[INCIDENT SERVICE]'
+  });
 };
 
 /**
@@ -865,10 +705,16 @@ const searchIncidents = async (searchParams) => {
           const combinedConditions = filterConditions.join(` ${operator} `);
           
           // Apply mode: include or exclude
+          // IMPORTANT: Always wrap in parentheses to avoid SQL operator precedence issues
           if (mode === 'exclude') {
             baseConditions.push(`NOT (${combinedConditions})`);
           } else {
-            baseConditions.push(combinedConditions);
+            // Wrap in parentheses if using OR operator or multiple conditions
+            if (operator === 'OR' || filterConditions.length > 1) {
+              baseConditions.push(`(${combinedConditions})`);
+            } else {
+              baseConditions.push(combinedConditions);
+            }
           }
           
           logger.info(`[INCIDENT SERVICE] Filter conditions added to base conditions`);

@@ -1,5 +1,6 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
+const { buildFilterCondition: buildGenericFilterCondition } = require('./ticketFilterBuilder');
 
 /**
  * Récupère une tâche par son UUID
@@ -83,7 +84,7 @@ const getTaskById = async (uuid, lang = 'en') => {
 };
 
 /**
- * Build filter condition for tickets search
+ * Build filter condition for tasks search (wrapper with no JSONB columns for TASK)
  * @param {string} column - Column name
  * @param {Object} filterDef - Filter definition with operator and value(s)
  * @param {string} dataType - Column data type (text, number, date, boolean)
@@ -92,227 +93,12 @@ const getTaskById = async (uuid, lang = 'en') => {
  * @returns {Object} { condition: string, newParamIndex: number }
  */
 const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
-  const { operator, value, empty_string_is_null } = filterDef;
-  let condition = '';
-  
-  // Handle RELATIONAL columns (assigned_to_group, assigned_to_person)
-  // These are stored in core.rel_tickets_groups_persons table
-  if (column === 'assigned_to_group') {
-    logger.info(`[TASK SERVICE] Building condition for relational column: assigned_to_group`);
-    if (operator === 'is_null') {
-      // Tickets without assigned group (no active assignment with a group)
-      condition = `NOT EXISTS (
-        SELECT 1 FROM core.rel_tickets_groups_persons rtgp
-        WHERE rtgp.rel_ticket = t.uuid
-          AND rtgp.type = 'ASSIGNED'
-          AND rtgp.ended_at IS NULL
-          AND rtgp.rel_assigned_to_group IS NOT NULL
-      )`;
-      return { condition, newParamIndex: paramIndex };
-    } else if (operator === 'is_not_null') {
-      // Tickets with assigned group (has active assignment with a group)
-      condition = `EXISTS (
-        SELECT 1 FROM core.rel_tickets_groups_persons rtgp
-        WHERE rtgp.rel_ticket = t.uuid
-          AND rtgp.type = 'ASSIGNED'
-          AND rtgp.ended_at IS NULL
-          AND rtgp.rel_assigned_to_group IS NOT NULL
-      )`;
-      return { condition, newParamIndex: paramIndex };
-    } else if (operator === 'equals' || operator === 'is') {
-      if (Array.isArray(value)) {
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        queryParams.push(...value);
-        condition = `EXISTS (
-          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
-          WHERE rtgp.rel_ticket = t.uuid
-            AND rtgp.type = 'ASSIGNED'
-            AND rtgp.ended_at IS NULL
-            AND rtgp.rel_assigned_to_group IN (${placeholders})
-        )`;
-      } else {
-        condition = `EXISTS (
-          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
-          WHERE rtgp.rel_ticket = t.uuid
-            AND rtgp.type = 'ASSIGNED'
-            AND rtgp.ended_at IS NULL
-            AND rtgp.rel_assigned_to_group = $${paramIndex++}
-        )`;
-        queryParams.push(value);
-      }
-    }
-    return { condition, newParamIndex: paramIndex };
-  }
-  
-  if (column === 'assigned_to_person') {
-    logger.info(`[TASK SERVICE] Building condition for relational column: assigned_to_person`);
-    if (operator === 'is_null') {
-      // Tickets without assigned person (no active assignment with a person)
-      condition = `NOT EXISTS (
-        SELECT 1 FROM core.rel_tickets_groups_persons rtgp
-        WHERE rtgp.rel_ticket = t.uuid
-          AND rtgp.type = 'ASSIGNED'
-          AND rtgp.ended_at IS NULL
-          AND rtgp.rel_assigned_to_person IS NOT NULL
-      )`;
-      return { condition, newParamIndex: paramIndex };
-    } else if (operator === 'is_not_null') {
-      // Tickets with assigned person (has active assignment with a person)
-      condition = `EXISTS (
-        SELECT 1 FROM core.rel_tickets_groups_persons rtgp
-        WHERE rtgp.rel_ticket = t.uuid
-          AND rtgp.type = 'ASSIGNED'
-          AND rtgp.ended_at IS NULL
-          AND rtgp.rel_assigned_to_person IS NOT NULL
-      )`;
-      return { condition, newParamIndex: paramIndex };
-    } else if (operator === 'equals' || operator === 'is') {
-      if (Array.isArray(value)) {
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        queryParams.push(...value);
-        condition = `EXISTS (
-          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
-          WHERE rtgp.rel_ticket = t.uuid
-            AND rtgp.type = 'ASSIGNED'
-            AND rtgp.ended_at IS NULL
-            AND rtgp.rel_assigned_to_person IN (${placeholders})
-        )`;
-      } else {
-        condition = `EXISTS (
-          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
-          WHERE rtgp.rel_ticket = t.uuid
-            AND rtgp.type = 'ASSIGNED'
-            AND rtgp.ended_at IS NULL
-            AND rtgp.rel_assigned_to_person = $${paramIndex++}
-        )`;
-        queryParams.push(value);
-      }
-    }
-    return { condition, newParamIndex: paramIndex };
-  }
-  
-  // Handle NULL checks
-  if (operator === 'is_null') {
-    if (empty_string_is_null && (dataType === 'text' || dataType === 'string')) {
-      condition = `(t.${column} IS NULL OR t.${column} = '')`;
-    } else {
-      condition = `t.${column} IS NULL`;
-    }
-    return { condition, newParamIndex: paramIndex };
-  }
-  
-  if (operator === 'is_not_null') {
-    if (empty_string_is_null && (dataType === 'text' || dataType === 'string')) {
-      condition = `(t.${column} IS NOT NULL AND t.${column} != '')`;
-    } else {
-      condition = `t.${column} IS NOT NULL`;
-    }
-    return { condition, newParamIndex: paramIndex };
-  }
-  
-  // Handle TEXT/STRING/UUID type
-  if (dataType === 'text' || dataType === 'string' || dataType === 'uuid') {
-    if (operator === 'contains') {
-      if (Array.isArray(value)) {
-        const conditions = value.map((val, index) => {
-          const cond = `LOWER(CAST(t.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
-          queryParams.push(`%${val}%`);
-          return cond;
-        });
-        condition = `(${conditions.join(' OR ')})`;
-      } else {
-        condition = `LOWER(CAST(t.${column} AS TEXT)) LIKE LOWER($${paramIndex++})`;
-        queryParams.push(`%${value}%`);
-      }
-    } else if (operator === 'equals' || operator === 'is') {
-      if (Array.isArray(value)) {
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `t.${column} IN (${placeholders})`;
-        queryParams.push(...value);
-      } else {
-        condition = `t.${column} = $${paramIndex++}`;
-        queryParams.push(value);
-      }
-    } else if (operator === 'not_equals') {
-      if (Array.isArray(value)) {
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `t.${column} NOT IN (${placeholders})`;
-        queryParams.push(...value);
-      } else {
-        condition = `t.${column} != $${paramIndex++}`;
-        queryParams.push(value);
-      }
-    }
-  }
-  
-  // Handle NUMBER type
-  else if (dataType === 'number' || dataType === 'integer' || dataType === 'numeric') {
-    if (operator === 'equals') {
-      if (Array.isArray(value)) {
-        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `t.${column} IN (${placeholders})`;
-        queryParams.push(...value);
-      } else {
-        condition = `t.${column} = $${paramIndex++}`;
-        queryParams.push(value);
-      }
-    } else if (operator === 'lt') {
-      condition = `t.${column} < $${paramIndex++}`;
-      queryParams.push(value);
-    } else if (operator === 'lte') {
-      condition = `t.${column} <= $${paramIndex++}`;
-      queryParams.push(value);
-    } else if (operator === 'gt') {
-      condition = `t.${column} > $${paramIndex++}`;
-      queryParams.push(value);
-    } else if (operator === 'gte') {
-      condition = `t.${column} >= $${paramIndex++}`;
-      queryParams.push(value);
-    } else if (operator === 'between') {
-      const startValue = value.gte || value.min || value.start;
-      const endValue = value.lte || value.max || value.end;
-      condition = `t.${column} BETWEEN $${paramIndex++} AND $${paramIndex++}`;
-      queryParams.push(startValue, endValue);
-    }
-  }
-  
-  // Handle DATE type
-  else if (dataType === 'date' || dataType === 'timestamp' || dataType === 'datetime') {
-    if (operator === 'after') {
-      condition = `DATE(t.${column}) > DATE($${paramIndex++})`;
-      queryParams.push(value);
-    } else if (operator === 'on_or_after') {
-      condition = `DATE(t.${column}) >= DATE($${paramIndex++})`;
-      queryParams.push(value);
-    } else if (operator === 'before') {
-      condition = `DATE(t.${column}) < DATE($${paramIndex++})`;
-      queryParams.push(value);
-    } else if (operator === 'on_or_before') {
-      condition = `DATE(t.${column}) <= DATE($${paramIndex++})`;
-      queryParams.push(value);
-    } else if (operator === 'between') {
-      const startDate = value.gte || value.start;
-      const endDate = value.lte || value.end;
-      condition = `DATE(t.${column}) BETWEEN DATE($${paramIndex++}) AND DATE($${paramIndex++})`;
-      queryParams.push(startDate, endDate);
-    } else if (operator === 'on' || operator === 'equals') {
-      condition = `DATE(t.${column}) = DATE($${paramIndex++})`;
-      queryParams.push(value);
-    }
-  }
-  
-  // Handle BOOLEAN type
-  else if (dataType === 'boolean' || dataType === 'bool') {
-    if (operator === 'is_true') {
-      condition = `t.${column} = true`;
-    } else if (operator === 'is_false') {
-      condition = `t.${column} = false`;
-    } else if (operator === 'any') {
-      condition = '1=1';
-    }
-  }
-  
-  return { condition, newParamIndex: paramIndex };
+  return buildGenericFilterCondition(column, filterDef, dataType, queryParams, paramIndex, {
+    jsonbDateColumns: [],
+    jsonbNumericColumns: [],
+    jsonbTextColumns: [],
+    servicePrefix: '[TASK SERVICE]'
+  });
 };
 
 /**
@@ -450,10 +236,16 @@ const searchTasks = async (searchParams) => {
           const combinedConditions = filterConditions.join(` ${operator} `);
           
           // Apply mode: include or exclude
+          // IMPORTANT: Always wrap in parentheses to avoid SQL operator precedence issues
           if (mode === 'exclude') {
             baseConditions.push(`NOT (${combinedConditions})`);
           } else {
-            baseConditions.push(combinedConditions);
+            // Wrap in parentheses if using OR operator or multiple conditions
+            if (operator === 'OR' || filterConditions.length > 1) {
+              baseConditions.push(`(${combinedConditions})`);
+            } else {
+              baseConditions.push(combinedConditions);
+            }
           }
           
           logger.info(`[TASK SERVICE] Filter conditions added to base conditions`);
