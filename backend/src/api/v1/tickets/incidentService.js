@@ -753,8 +753,6 @@ const searchIncidents = async (searchParams) => {
         t.created_at,
         t.updated_at,
         t.closed_at,
-        t.core_extended_attributes,
-        t.user_extended_attributes,
         
         -- Person names
         p1.first_name || ' ' || p1.last_name as requested_by_name,
