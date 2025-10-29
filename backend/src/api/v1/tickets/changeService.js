@@ -659,13 +659,13 @@ const searchChanges = async (searchParams) => {
       'created_at': 't.created_at',
       'updated_at': 't.updated_at',
       'closed_at': 't.closed_at',
-      'requested_start_date_at': "t.core_extended_attributes->>'requested_start_date_at'",
-      'requested_end_date_at': "t.core_extended_attributes->>'requested_end_date_at'",
-      'planned_start_date_at': "t.core_extended_attributes->>'planned_start_date_at'",
-      'planned_end_date_at': "t.core_extended_attributes->>'planned_end_date_at'",
-      'validated_at': "t.core_extended_attributes->>'validated_at'",
-      'actual_start_date_at': "t.core_extended_attributes->>'actual_start_date_at'",
-      'actual_end_date_at': "t.core_extended_attributes->>'actual_end_date_at'"
+      'requested_start_date_at': "(t.core_extended_attributes->>'requested_start_date_at')::timestamp",
+      'requested_end_date_at': "(t.core_extended_attributes->>'requested_end_date_at')::timestamp",
+      'planned_start_date_at': "(t.core_extended_attributes->>'planned_start_date_at')::timestamp",
+      'planned_end_date_at': "(t.core_extended_attributes->>'planned_end_date_at')::timestamp",
+      'validated_at': "(t.core_extended_attributes->>'validated_at')::timestamp",
+      'actual_start_date_at': "(t.core_extended_attributes->>'actual_start_date_at')::timestamp",
+      'actual_end_date_at': "(t.core_extended_attributes->>'actual_end_date_at')::timestamp"
     };
     
     // Obtenir l'expression SQL pour le tri
