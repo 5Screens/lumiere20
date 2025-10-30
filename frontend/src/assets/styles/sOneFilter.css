@@ -294,6 +294,25 @@
   color: var(--text-secondary);
 }
 
+/* Numeric range field (between) */
+.s-one-filter__search[data-between="true"] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.s-one-filter__range-field {
+  flex: 1;
+}
+
+.s-one-filter__range-separator {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  padding: 0 0.25rem;
+}
+
 /* Remove button */
 .btn-remove {
   background: var(--secondary-color);

@@ -53,38 +53,71 @@
       
       <!-- Search Filter -->
       <div v-if="selectedColumnConfig.type === 'search'" class="s-one-filter__search">
-        <input
-          ref="searchInput"
-          type="text"
-          :value="filter.value || ''"
-          :placeholder="$t('filters.search_placeholder')"
-          @input="handleSearchInput($event.target.value)"
-          @keydown.enter="handleEnterKey"
-          @focus="showSearchSuggestions = true"
-          @blur="hideSearchSuggestions"
-          class="s-one-filter__input"
-          :class="{ 'input-error': hasNumericError }"
-        />
-        
-        <!-- Numeric validation error message -->
-        <div v-if="hasNumericError" class="s-one-filter__error-message">
-          {{ $t('errors.valueMustBeANumber') }}
-        </div>
-        
-        <!-- Search suggestions dropdown -->
-        <div 
-          v-if="showSearchSuggestions && searchSuggestions.length > 0" 
-          class="s-one-filter__suggestions"
-        >
-          <div 
-            v-for="suggestion in searchSuggestions" 
-            :key="suggestion.value"
-            @mousedown="selectSearchSuggestion(suggestion.value)"
-            class="s-one-filter__suggestion"
-          >
-            {{ suggestion.label }}
+        <!-- Si between : deux champs -->
+        <template v-if="filter.type === 'between'">
+          <div class="s-one-filter__range-field">
+            <input
+              type="text"
+              :value="(filter.value && filter.value.gte) || ''"
+              :placeholder="$t('filters.min_value')"
+              @input="handleNumericRangeChange('gte', $event)"
+              class="s-one-filter__input"
+              :class="{ 'input-error': hasNumericError }"
+            />
           </div>
-        </div>
+          <span class="s-one-filter__range-separator">{{ $t('common.and') }}</span>
+          <div class="s-one-filter__range-field">
+            <input
+              type="text"
+              :value="(filter.value && filter.value.lte) || ''"
+              :placeholder="$t('filters.max_value')"
+              @input="handleNumericRangeChange('lte', $event)"
+              class="s-one-filter__input"
+              :class="{ 'input-error': hasNumericError }"
+            />
+          </div>
+          
+          <!-- Numeric validation error message -->
+          <div v-if="hasNumericError" class="s-one-filter__error-message">
+            {{ $t('errors.valueMustBeANumber') }}
+          </div>
+        </template>
+        
+        <!-- Sinon : un seul champ -->
+        <template v-else>
+          <input
+            ref="searchInput"
+            type="text"
+            :value="filter.value || ''"
+            :placeholder="$t('filters.search_placeholder')"
+            @input="handleSearchInput($event.target.value)"
+            @keydown.enter="handleEnterKey"
+            @focus="showSearchSuggestions = true"
+            @blur="hideSearchSuggestions"
+            class="s-one-filter__input"
+            :class="{ 'input-error': hasNumericError }"
+          />
+          
+          <!-- Numeric validation error message -->
+          <div v-if="hasNumericError" class="s-one-filter__error-message">
+            {{ $t('errors.valueMustBeANumber') }}
+          </div>
+          
+          <!-- Search suggestions dropdown -->
+          <div 
+            v-if="showSearchSuggestions && searchSuggestions.length > 0" 
+            class="s-one-filter__suggestions"
+          >
+            <div 
+              v-for="suggestion in searchSuggestions" 
+              :key="suggestion.value"
+              @mousedown="selectSearchSuggestion(suggestion.value)"
+              class="s-one-filter__suggestion"
+            >
+              {{ suggestion.label }}
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Checkbox Filter -->
@@ -896,6 +929,22 @@ export default {
       });
     };
 
+    // Méthodes pour numeric range (between)
+    const handleNumericRangeChange = (field, event) => {
+      const value = event.target.value;
+      const currentRange = props.filter.value || {};
+      
+      if (value) {
+        currentRange[field] = value;
+      } else {
+        delete currentRange[field];
+      }
+      
+      emit('update', props.filter.id, { 
+        value: Object.keys(currentRange).length > 0 ? currentRange : null 
+      });
+    };
+
     // Méthodes pour search suggestions
     const selectSearchSuggestion = (value) => {
       emit('update', props.filter.id, { value });
@@ -1058,6 +1107,7 @@ export default {
       removeFromMultiselect,
       getOptionLabel,
       handleDateRangeChange,
+      handleNumericRangeChange,
       selectSearchSuggestion,
       hideSearchSuggestions,
       handleEnterKey,
