@@ -54,6 +54,7 @@
       <!-- Search Filter -->
       <div v-if="selectedColumnConfig.type === 'search'" class="s-one-filter__search">
         <input
+          ref="searchInput"
           type="text"
           :value="filter.value || ''"
           :placeholder="$t('filters.search_placeholder')"
@@ -91,6 +92,7 @@
         <!-- Conteneur pour l'input de recherche (toujours affiché) -->
         <div class="s-one-filter__checkbox-search-container">
           <input
+            ref="checkboxSearchInput"
             type="text"
             v-model="checkboxSearchQuery"
             :placeholder="$t('filters.search_in_list')"
@@ -291,6 +293,10 @@ export default {
     const checkboxSearchTimer = ref(null);
     const hasNumericError = ref(false);
     
+    // Ref pour les champs de saisie
+    const searchInput = ref(null);
+    const checkboxSearchInput = ref(null);
+    
     // Infinite scroll pour les checkboxes
     const currentPage = ref(1);
     const hasMore = ref(true);
@@ -468,7 +474,8 @@ export default {
       
       console.log('[sOneFilter] 🎯 Default operator selected:', {
         dataType: columnConfig?.data_type,
-        defaultType
+        defaultType,
+        columnType: columnConfig?.type
       });
       
       emit('update', props.filter.id, {
@@ -478,6 +485,31 @@ export default {
       });
       
       console.log('[sOneFilter] ✅ updateColumn emitted:', { column, type: defaultType, value: null });
+
+      // Focus automatique du champ de recherche après la mise à jour
+      // Attendre que le DOM soit mis à jour
+      setTimeout(() => {
+        const noValueOperators = ['is_null', 'is_not_null', 'is_true', 'is_false'];
+        const shouldFocus = defaultType && !noValueOperators.includes(defaultType);
+        
+        console.log('[sOneFilter] 🔍 Attempting auto-focus after column change:', {
+          shouldFocus,
+          defaultType,
+          columnType: columnConfig?.type,
+          searchInputExists: !!searchInput.value,
+          checkboxSearchInputExists: !!checkboxSearchInput.value
+        });
+        
+        if (shouldFocus) {
+          if (columnConfig?.type === 'search' && searchInput.value) {
+            console.log('[sOneFilter] 🎯 Auto-focusing search input after column change');
+            searchInput.value.focus();
+          } else if (columnConfig?.type === 'checkbox' && checkboxSearchInput.value) {
+            console.log('[sOneFilter] 🎯 Auto-focusing checkbox search input after column change');
+            checkboxSearchInput.value.focus();
+          }
+        }
+      }, 150);
 
       // Ne pas charger les options ici car le watch s'en charge déjà
       // Cela évite un double appel à loadOptions
@@ -933,6 +965,42 @@ export default {
       }
     });
 
+    // Watcher pour focus automatiquement le champ de valeur quand le type est défini
+    watch(() => props.filter.type, (newType, oldType) => {
+      console.log('[sOneFilter] 👀 Type watcher triggered:', {
+        newType,
+        oldType,
+        shouldShowValueField: shouldShowValueField.value,
+        columnType: selectedColumnConfig.value?.type,
+        searchInputExists: !!searchInput.value
+      });
+      
+      if (newType && newType !== oldType && shouldShowValueField.value) {
+        // Attendre le prochain tick pour que le DOM soit mis à jour
+        setTimeout(() => {
+          if (selectedColumnConfig.value?.type === 'search' && searchInput.value) {
+            console.log('[sOneFilter] 🎯 Auto-focusing search input');
+            searchInput.value.focus();
+          } else if (selectedColumnConfig.value?.type === 'checkbox' && checkboxSearchInput.value) {
+            console.log('[sOneFilter] 🎯 Auto-focusing checkbox search input');
+            checkboxSearchInput.value.focus();
+          } else {
+            console.log('[sOneFilter] ⚠️ Cannot focus:', {
+              columnType: selectedColumnConfig.value?.type,
+              searchInputExists: !!searchInput.value,
+              checkboxSearchInputExists: !!checkboxSearchInput.value
+            });
+          }
+        }, 100);
+      } else {
+        console.log('[sOneFilter] ⏸️ Focus skipped:', {
+          hasNewType: !!newType,
+          typeChanged: newType !== oldType,
+          shouldShow: shouldShowValueField.value
+        });
+      }
+    });
+
     // Ref pour le conteneur scrollable
     const checkboxContainer = ref(null);
 
@@ -972,6 +1040,8 @@ export default {
       filteredCheckboxOptions,
       checkboxSearchQuery,
       checkboxContainer,
+      searchInput,
+      checkboxSearchInput,
       isLoadingMore,
       hasNumericError,
       updateColumn,
