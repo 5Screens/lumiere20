@@ -279,8 +279,8 @@ INSERT INTO administration.table_metadata (
 -- prerequisites (JSONB field)
 ('tickets', 'Knowledge_article', NULL, NULL, 'prerequisites', 'knowledge_article.prerequisites', 'Prérequis',
  'text', true, NULL,
- true, false, false,
- NULL, NULL,
+ true, false, true,
+ 'search', '{"minChars": 3}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sRichTextEditor', 'Prérequis nécessaires', false, false,

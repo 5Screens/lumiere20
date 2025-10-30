@@ -21,7 +21,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
       'rel_category', 'rel_service', 'rel_service_offerings', 'rel_lang',
       'rel_confidentiality_level', 'rel_involved_process', 'summary',
       'prerequisites', 'limitations', 'security_notes', 'version',
-      'license_type', 'rel_target_audience', 'business_scope'
+      'license_type', 'rel_target_audience', 'business_scope', 'keywords'
     ],
     jsonbNumericColumns: [],
     servicePrefix: '[KNOWLEDGE SERVICE]'
