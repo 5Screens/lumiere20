@@ -232,7 +232,7 @@ INSERT INTO administration.table_metadata (
 ('tickets', 'Knowledge_article', NULL, NULL, 'rel_lang', 'knowledge_article.lang', 'Langue de l''article',
  'text', true, NULL,
  true, true, true,
- 'checkbox', '{"multiple": false}'::jsonb,
+ 'checkbox', '{"multiple": true}'::jsonb,
  true, 'translations.languages', 'locale',
  false, NULL, NULL, NULL,
  'sSelectField', 'Sélectionnez la langue', true, false,

@@ -436,13 +436,48 @@ export default {
         oldValue: props.filter.value
       });
       
+      // Déterminer l'opérateur par défaut selon le type de données
+      const columnConfig = props.availableColumns.find(col => col.column === column);
+      let defaultType = '';
+      
+      if (columnConfig?.data_type) {
+        const dataType = columnConfig.data_type.toUpperCase();
+        
+        // TEXT / STRING
+        if (['TEXT', 'STRING', 'VARCHAR', 'CHAR'].includes(dataType)) {
+          // Si le type de filtre est checkbox, utiliser 'is', sinon 'contains'
+          defaultType = columnConfig.type === 'checkbox' ? 'is' : 'contains';
+        }
+        // NUMBER / INTEGER / NUMERIC
+        else if (['NUMBER', 'INTEGER', 'NUMERIC', 'INT', 'BIGINT', 'SMALLINT', 'DECIMAL', 'FLOAT', 'DOUBLE'].includes(dataType)) {
+          defaultType = 'equals';
+        }
+        // DATE / TIMESTAMP / DATETIME
+        else if (['DATE', 'TIMESTAMP', 'DATETIME', 'TIMESTAMPTZ'].includes(dataType)) {
+          defaultType = 'on_or_after';
+        }
+        // BOOLEAN / BOOL
+        else if (['BOOLEAN', 'BOOL'].includes(dataType)) {
+          defaultType = 'is_true';
+        }
+        // UUID
+        else if (['UUID'].includes(dataType)) {
+          defaultType = 'is';
+        }
+      }
+      
+      console.log('[sOneFilter] 🎯 Default operator selected:', {
+        dataType: columnConfig?.data_type,
+        defaultType
+      });
+      
       emit('update', props.filter.id, {
         column: column,
-        type: '',
+        type: defaultType,
         value: null
       });
       
-      console.log('[sOneFilter] ✅ updateColumn emitted: { column, type: "", value: null }');
+      console.log('[sOneFilter] ✅ updateColumn emitted:', { column, type: defaultType, value: null });
 
       // Ne pas charger les options ici car le watch s'en charge déjà
       // Cela évite un double appel à loadOptions
