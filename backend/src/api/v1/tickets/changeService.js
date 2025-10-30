@@ -695,7 +695,8 @@ const searchChanges = async (searchParams) => {
       'planned_end_date_at': "(t.core_extended_attributes->>'planned_end_date_at')::timestamp",
       'validated_at': "(t.core_extended_attributes->>'validated_at')::timestamp",
       'actual_start_date_at': "(t.core_extended_attributes->>'actual_start_date_at')::timestamp",
-      'actual_end_date_at': "(t.core_extended_attributes->>'actual_end_date_at')::timestamp"
+      'actual_end_date_at': "(t.core_extended_attributes->>'actual_end_date_at')::timestamp",
+      'elapsed_time': "(t.core_extended_attributes->>'elapsed_time')::numeric"
     };
     
     // Obtenir l'expression SQL pour le tri
