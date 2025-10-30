@@ -295,14 +295,22 @@
 }
 
 /* Numeric range field (between) */
-.s-one-filter__search[data-between="true"] {
+.s-one-filter__search {
   display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* When between is active, display in a single row */
+.s-one-filter__search:has(.s-one-filter__range-field) {
+  flex-direction: row;
   align-items: center;
   gap: 0.5rem;
 }
 
 .s-one-filter__range-field {
   flex: 1;
+  min-width: 0; /* Allow flex items to shrink below content size */
 }
 
 .s-one-filter__range-separator {
@@ -310,7 +318,8 @@
   font-weight: 500;
   color: var(--text-secondary);
   white-space: nowrap;
-  padding: 0 0.25rem;
+  padding: 0 0.5rem;
+  flex-shrink: 0; /* Prevent separator from shrinking */
 }
 
 /* Remove button */
