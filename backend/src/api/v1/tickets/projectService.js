@@ -1,6 +1,7 @@
 const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 const ticketService = require('./service');
+const { buildFilterCondition: buildGenericFilterCondition } = require('./ticketFilterBuilder');
 
 /**
  * Récupère un projet par son UUID
@@ -477,9 +478,377 @@ const createProject = async (projectData) => {
     return createdProject;
 };
 
+/**
+ * Build filter condition for projects search (wrapper with PROJECT-specific JSONB columns)
+ * @param {string} column - Column name
+ * @param {Object} filterDef - Filter definition with operator and value(s)
+ * @param {string} dataType - Column data type (text, number, date, boolean)
+ * @param {Array} queryParams - Array to push parameters into
+ * @param {number} paramIndex - Current parameter index
+ * @returns {Object} { condition: string, newParamIndex: number }
+ */
+const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
+  return buildGenericFilterCondition(column, filterDef, dataType, queryParams, paramIndex, {
+    jsonbDateColumns: [
+      'start_date', 'end_date'
+    ],
+    jsonbTextColumns: [
+      'key', 'visibility', 'project_type'
+    ],
+    jsonbArrayColumns: [
+      'issue_type_scheme_id'
+    ],
+    jsonbNumericColumns: [],
+    servicePrefix: '[PROJECT SERVICE]'
+  });
+};
+
+/**
+ * Lazy search for projects (for dropdown filters)
+ * @param {string} searchQuery - Search term
+ * @param {string} lang - Language code
+ * @returns {Promise<Array>} - List of projects matching the search
+ */
+const getProjectsLazySearch = async (searchQuery, lang = 'en') => {
+  logger.info(`[PROJECT SERVICE] Lazy search for projects with query: "${searchQuery}", lang: ${lang}`);
+  
+  try {
+    const queryParams = [];
+    let whereClause = '';
+    
+    if (searchQuery && searchQuery.trim().length > 0) {
+      // Split search query by spaces for AND logic
+      const searchTerms = searchQuery.trim().split(/\s+/).filter(term => term.length > 0);
+      
+      const conditions = searchTerms.map((term, index) => {
+        const paramIndex = index + 1;
+        queryParams.push(`%${term}%`);
+        return `(
+          unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${paramIndex})) OR
+          unaccent(LOWER(t.description)) LIKE unaccent(LOWER($${paramIndex})) OR
+          unaccent(LOWER(t.core_extended_attributes->>'key')) LIKE unaccent(LOWER($${paramIndex}))
+        )`;
+      });
+      
+      whereClause = `WHERE t.ticket_type_code = 'PROJECT' AND ${conditions.join(' AND ')}`;
+    } else {
+      whereClause = `WHERE t.ticket_type_code = 'PROJECT'`;
+    }
+    
+    const query = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.core_extended_attributes->>'key' as key,
+        t.ticket_status_code,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        t.created_at
+      FROM core.tickets t
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${queryParams.length + 1}
+      ${whereClause}
+      ORDER BY t.created_at DESC
+      LIMIT 20
+    `;
+    
+    queryParams.push(lang);
+    
+    const result = await db.query(query, queryParams);
+    
+    logger.info(`[PROJECT SERVICE] Lazy search found ${result.rows.length} projects`);
+    
+    return result.rows;
+  } catch (error) {
+    logger.error('[PROJECT SERVICE] Error in lazy search:', error);
+    throw error;
+  }
+};
+
+/**
+ * Advanced search for projects with filters, sorting, and pagination
+ * @param {Object} searchParams - Search parameters including filters, sort, pagination, and lang
+ * @returns {Promise<Object>} - { data: Array, total: number, hasMore: boolean, pagination: Object }
+ */
+const searchProjects = async (searchParams) => {
+  try {
+    const servicePrefix = '[PROJECT SERVICE]';
+    
+    const { filters = {}, sort = {}, pagination = {}, lang = 'en' } = searchParams;
+    
+    // Extract pagination parameters
+    const page = pagination.page || 1;
+    const limit = pagination.limit || 50;
+    const offset = (page - 1) * limit;
+    
+    // Extract sort parameters
+    const sortBy = sort.by || 'created_at';
+    const sortDirection = sort.direction || 'desc';
+    
+    // Build WHERE clause from advanced filters
+    const queryParams = [];
+    let paramIndex = 1;
+    let whereClause = '';
+    
+    // Always filter by ticket_type = PROJECT
+    const baseConditions = [`t.ticket_type_code = 'PROJECT'`];
+    
+    // Validate filter format
+    if (filters && filters.conditions && Array.isArray(filters.conditions) && filters.conditions.length > 0) {
+        const mode = filters.mode || 'include';
+        const operator = (filters.operator || 'AND').toUpperCase();
+        
+        logger.info(`${servicePrefix} Processing ${filters.conditions.length} advanced filter(s) with mode=${mode}, operator=${operator}`);
+        
+        const filterConditions = [];
+        
+        // Process each filter condition
+        for (const filterDef of filters.conditions) {
+          const { column } = filterDef;
+          
+          logger.info(`${servicePrefix} Processing filter condition:`, JSON.stringify(filterDef));
+          
+          if (!column) {
+            logger.warn(`${servicePrefix} Filter condition missing column, skipping`);
+            continue;
+          }
+          
+          // Get column metadata to determine data type
+          const metadataQuery = `
+            SELECT data_type 
+            FROM administration.table_metadata 
+            WHERE table_name = $1 AND column_name = $2
+          `;
+          const metadataResult = await db.query(metadataQuery, ['tickets', column]);
+          
+          logger.info(`${servicePrefix} Metadata query result for column ${column}:`, metadataResult.rows);
+          
+          if (metadataResult.rows.length === 0) {
+            logger.warn(`${servicePrefix} No metadata for column ${column}, skipping filter`);
+            continue;
+          }
+          
+          const { data_type } = metadataResult.rows[0];
+          logger.info(`${servicePrefix} Column ${column} has data_type: ${data_type}`);
+          
+          // Build the condition for this filter
+          const { condition, newParamIndex } = buildFilterCondition(
+            column,
+            filterDef,
+            data_type,
+            queryParams,
+            paramIndex
+          );
+          
+          logger.info(`${servicePrefix} buildFilterCondition returned: condition="${condition}", newParamIndex=${newParamIndex}`);
+          
+          if (condition) {
+            filterConditions.push(condition);
+            paramIndex = newParamIndex;
+            logger.info(`${servicePrefix} Added filter: ${condition}`);
+          } else {
+            logger.warn(`${servicePrefix} buildFilterCondition returned empty condition for column ${column}`);
+          }
+        }
+        
+        // Combine all filter conditions
+        if (filterConditions.length > 0) {
+          const combinedConditions = filterConditions.join(` ${operator} `);
+          
+          // Apply mode: include or exclude
+          if (mode === 'exclude') {
+            baseConditions.push(`NOT (${combinedConditions})`);
+          } else {
+            if (operator === 'OR' || filterConditions.length > 1) {
+              baseConditions.push(`(${combinedConditions})`);
+            } else {
+              baseConditions.push(combinedConditions);
+            }
+          }
+          
+          logger.info(`${servicePrefix} Filter conditions added to base conditions`);
+        }
+    }
+    
+    whereClause = `WHERE ${baseConditions.join(' AND ')}`;
+    logger.info(`${servicePrefix} Final WHERE clause: ${whereClause}`);
+    
+    // Calculate the parameter index for lang (after all filter params)
+    const langParamIndex = paramIndex;
+    
+    // Sort column mapping for calculated/joined columns
+    const sortColumnMapping = {
+      'uuid': 't.uuid',
+      'title': 't.title',
+      'description': 't.description',
+      'ticket_type_code': 't.ticket_type_code',
+      'ticket_status_code': 't.ticket_status_code',
+      'ticket_status_label': 'COALESCE(tst.label, ts.code)',
+      'writer_uuid': 't.writer_uuid',
+      'writer_name': "p3.first_name || ' ' || p3.last_name",
+      'assigned_to_group': 'g.uuid',
+      'assigned_group_name': 'g.group_name',
+      'assigned_to_person': 'p4.uuid',
+      'assigned_person_name': "p4.first_name || ' ' || p4.last_name",
+      'created_at': 't.created_at',
+      'updated_at': 't.updated_at',
+      'closed_at': 't.closed_at',
+      // JSONB fields
+      'key': "t.core_extended_attributes->>'key'",
+      'start_date': "t.core_extended_attributes->>'start_date'",
+      'end_date': "t.core_extended_attributes->>'end_date'",
+      'visibility': "t.core_extended_attributes->>'visibility'",
+      'visibility_label': "COALESCE(visibility_t.label, t.core_extended_attributes->>'visibility')",
+      'project_type': "t.core_extended_attributes->>'project_type'",
+      'project_type_label': "COALESCE(project_type_t.label, t.core_extended_attributes->>'project_type')",
+      'defect_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'DEFECT\' AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW()))',
+      'us_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'STORY\' AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW()))',
+      'epic_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'EPIC\' AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW()))',
+      'sprint_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'SPRINT\' AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW()))'
+    };
+    
+    // Get the SQL expression for sorting
+    const sortExpression = sortColumnMapping[sortBy] || `t.${sortBy}`;
+    
+    logger.info(`${servicePrefix} Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
+    logger.info(`${servicePrefix} Pagination: page=${page}, limit=${limit}, offset=${offset}`);
+    logger.info(`${servicePrefix} Language: ${lang}`);
+    
+    // Count total results
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM core.tickets t
+      ${whereClause}
+    `;
+    
+    logger.info(`${servicePrefix} Count query params: ${JSON.stringify(queryParams)}`);
+    
+    const countResult = await db.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results with all data
+    const dataQuery = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.writer_uuid,
+        t.ticket_type_code,
+        t.ticket_status_code,
+        t.created_at,
+        t.updated_at,
+        t.closed_at,
+        
+        -- Person names
+        p3.first_name || ' ' || p3.last_name as writer_name,
+        
+        -- Translated labels
+        COALESCE(ttt.label, tt.code) as ticket_type_label,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        
+        -- Assignment info
+        g.uuid as assigned_to_group,
+        g.group_name as assigned_group_name,
+        p4.uuid as assigned_to_person,
+        p4.first_name || ' ' || p4.last_name as assigned_person_name,
+        
+        -- Project-specific fields from core_extended_attributes
+        t.core_extended_attributes->>'key' as key,
+        t.core_extended_attributes->>'start_date' as start_date,
+        t.core_extended_attributes->>'end_date' as end_date,
+        t.core_extended_attributes->>'visibility' as visibility,
+        COALESCE(visibility_t.label, t.core_extended_attributes->>'visibility') as visibility_label,
+        t.core_extended_attributes->>'project_type' as project_type,
+        COALESCE(project_type_t.label, t.core_extended_attributes->>'project_type') as project_type_label,
+        
+        -- Counts
+        (
+          SELECT COUNT(*)
+          FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+          AND rpc.dependency_code = 'DEFECT'
+          AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
+        ) as defect_count,
+        (
+          SELECT COUNT(*)
+          FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+          AND rpc.dependency_code = 'STORY'
+          AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
+        ) as us_count,
+        (
+          SELECT COUNT(*)
+          FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+          AND rpc.dependency_code = 'EPIC'
+          AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
+        ) as epic_count,
+        (
+          SELECT COUNT(*)
+          FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+          AND rpc.dependency_code = 'SPRINT'
+          AND (rpc.ended_at IS NULL OR rpc.ended_at > NOW())
+        ) as sprint_count
+        
+      FROM core.tickets t
+      LEFT JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+      JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${langParamIndex}
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${langParamIndex}
+      LEFT JOIN (
+        SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
+        FROM core.rel_tickets_groups_persons
+        WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+      ) rtgp ON t.uuid = rtgp.rel_ticket
+      LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+      LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+      LEFT JOIN translations.project_setup_label visibility_t ON visibility_t.rel_project_setup_code = t.core_extended_attributes->>'visibility' AND visibility_t.lang = $${langParamIndex}
+      LEFT JOIN translations.project_setup_label project_type_t ON project_type_t.rel_project_setup_code = t.core_extended_attributes->>'project_type' AND project_type_t.lang = $${langParamIndex}
+      ${whereClause}
+      ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
+      LIMIT $${langParamIndex + 1} OFFSET $${langParamIndex + 2}
+    `;
+    
+    queryParams.push(lang, limit, offset);
+    
+    logger.info(`${servicePrefix} Data query params: ${JSON.stringify(queryParams)}`);
+    
+    const dataResult = await db.query(dataQuery, queryParams);
+    
+    // Calculate pagination metadata
+    const currentPage = page;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = offset + limit < total;
+    
+    logger.info(`${servicePrefix} Found ${dataResult.rows.length} projects (total: ${total})`);
+    
+    return {
+      data: dataResult.rows,
+      total: total,
+      hasMore: hasMore,
+      pagination: {
+        offset: offset,
+        limit: limit,
+        currentPage: currentPage,
+        totalPages: totalPages,
+        sortBy: sortBy,
+        sortDirection: sortDirection
+      }
+    };
+    
+  } catch (error) {
+    logger.error('[PROJECT SERVICE] Error searching projects:', error);
+    throw error;
+  }
+};
+
 module.exports = {
     getProjectById,
     getProjects,
     createProject,
-    updateProject
+    updateProject,
+    getProjectsLazySearch,
+    searchProjects
 };

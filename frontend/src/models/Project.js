@@ -35,13 +35,14 @@ export class Project {
    * @returns {string} Endpoint API
    */
   static getApiEndpoint(method) {
-    const userProfileStore = useUserProfileStore();
-    
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'tickets';
-    } else {
-      return `tickets?ticket_type=PROJECT&lang=${userProfileStore.language}`;
+    // Pour l'infinite scroll, retourner l'endpoint de recherche
+    // Le composant reusableTableTab utilisera POST /tickets/search/projects
+    if (method === 'GET') {
+      return 'tickets/search/projects';
     }
+    
+    // Pour les autres méthodes (PATCH, PUT, DELETE)
+    return 'tickets';
   }
 
   /**
@@ -378,7 +379,7 @@ export class Project {
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('project.name'), type: 'text', format: 'text' },
       { key: 'key', label: t('project.key'), type: 'text', format: 'text' },
-      { key: 'ticket_status_label', label: t('project.status'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('project.status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
       { key: 'description', label: t('project.description'), type: 'text', format: 'html' },
       { key: 'start_date', label: t('project.start_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'end_date', label: t('project.end_date'), type: 'date', format: 'YYYY-MM-DD' },
@@ -386,10 +387,10 @@ export class Project {
       { key: 'us_count', label: t('project.us_count'), type: 'text', format: 'text' },
       { key: 'epic_count', label: t('project.epic_count'), type: 'text', format: 'text' },
       { key: 'sprint_count', label: t('project.sprint_count'), type: 'text', format: 'text' },
-      { key: 'visibility_label', label: t('project.visibility'), type: 'text', format: 'text' },
-      { key: 'project_type_label', label: t('project.project_type'), type: 'text', format: 'text' },
-      { key: 'assigned_group_name', label: t('project.team_id'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('project.lead_user_id'), type: 'text', format: 'text' },
+      { key: 'visibility_label', label: t('project.visibility'), type: 'text', format: 'text', filterKey: 'visibility' },
+      { key: 'project_type_label', label: t('project.project_type'), type: 'text', format: 'text', filterKey: 'project_type' },
+      { key: 'assigned_group_name', label: t('project.team_id'), type: 'text', format: 'text', filterKey: 'assigned_to_group' },
+      { key: 'assigned_person_name', label: t('project.lead_user_id'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
