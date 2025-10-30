@@ -233,10 +233,10 @@ INSERT INTO administration.table_metadata (
  'text', true, NULL,
  true, true, true,
  'checkbox', '{"multiple": true}'::jsonb,
- true, 'translations.languages', 'code',
+ true, 'translations.languages', 'locale',
  false, NULL, NULL, NULL,
  'sSelectField', 'Sélectionnez la langue', true, false,
- 'languages?is_active=yes', 'native_name', 'code', false, 'Langue de rédaction',
+ 'languages?is_active=yes', 'native_name', 'locale', false, 'Langue de rédaction',
  true, 170,
  NULL, NULL, NULL),
 

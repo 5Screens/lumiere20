@@ -188,7 +188,7 @@ const getKnowledgeById = async (uuid, lang = 'en') => {
             -- Jointures pour les services et langues
             LEFT JOIN data.services service ON service.uuid = (t.core_extended_attributes->>'rel_service')::uuid
             LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid = (t.core_extended_attributes->>'rel_service_offerings')::uuid
-            LEFT JOIN translations.languages lang ON lang.code = t.core_extended_attributes->>'rel_lang'
+            LEFT JOIN translations.languages lang ON lang.locale = t.core_extended_attributes->>'rel_lang'
             
             WHERE t.uuid = $1 AND t.ticket_type_code = 'KNOWLEDGE'
         `;
@@ -305,7 +305,7 @@ const getKnowledgeArticles = async (lang) => {
         -- Jointures pour les services
         LEFT JOIN data.services service ON service.uuid::text = t.core_extended_attributes->>'rel_service'
         LEFT JOIN data.service_offerings service_offerings ON service_offerings.uuid::text = t.core_extended_attributes->>'rel_service_offerings'
-        LEFT JOIN translations.languages lang ON lang.code = t.core_extended_attributes->>'rel_lang'
+        LEFT JOIN translations.languages lang ON lang.locale = t.core_extended_attributes->>'rel_lang'
     `;
     
     // Utilisation de la fonction getTickets factorisée
@@ -763,7 +763,7 @@ const searchKnowledgeArticles = async (filters = {}, sort = {}, pagination = {},
       LEFT JOIN translations.ticket_types_translation process_t ON process_t.ticket_type_uuid = (SELECT uuid FROM configuration.ticket_types WHERE code = t.core_extended_attributes->>'rel_involved_process') AND process_t.lang = $${paramIndex}
       LEFT JOIN data.services service ON t.core_extended_attributes->>'rel_service' = service.uuid::text
       LEFT JOIN data.service_offerings service_offerings ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
-      LEFT JOIN translations.languages lang ON lang.code = t.core_extended_attributes->>'rel_lang'
+      LEFT JOIN translations.languages lang ON lang.locale = t.core_extended_attributes->>'rel_lang'
       ${whereClause}
       ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
       LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}

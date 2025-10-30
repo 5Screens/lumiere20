@@ -376,6 +376,8 @@ export class Knowledge_article {
         placeholder: 'knowledge_article.lang_placeholder',
         required: isRequired('rel_lang'),
         endpoint: 'languages?is_active=yes',
+        displayField: 'label',
+        valueField: 'locale',
         fieldName: 'rel_lang',
         mode: 'creation'
       },

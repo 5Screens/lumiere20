@@ -62,8 +62,8 @@ BEGIN
     FROM configuration.knowledge_setup_codes
     WHERE metadata = 'CONFIDENTIALITY_LEVEL';
     
-    -- Get all active languages
-    SELECT ARRAY_AGG(code) INTO v_languages
+    -- Get all active languages (using locale instead of code)
+    SELECT ARRAY_AGG(locale) INTO v_languages
     FROM translations.languages
     WHERE is_active = 'yes';
     

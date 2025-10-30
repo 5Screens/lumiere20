@@ -6,10 +6,10 @@ class LanguageService {
         logger.info('[SERVICE] getActiveLanguages - Starting database query');
         try {
             const query = `
-                SELECT DISTINCT code, code as value, native_name as label
+                SELECT DISTINCT locale, locale as value, native_name as label, code
                 FROM translations.languages
                 WHERE is_active = true
-                ORDER BY code ASC`;
+                ORDER BY locale ASC`;
             
             const result = await pool.query(query);
             logger.info(`[SERVICE] getActiveLanguages - Query executed successfully, found ${result.rows.length} records`);
