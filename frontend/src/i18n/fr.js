@@ -52,6 +52,7 @@ export default {
     uuid: 'Identifiant',
     created_at: 'Créé le',
     updated_at: 'Mis à jour le',
+    closed_at: 'Fermé le',
     assigned_at: 'Assigné le',
     no_data: 'Aucune donnée',
     loading: 'Chargement...',

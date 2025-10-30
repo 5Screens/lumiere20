@@ -145,7 +145,7 @@ INSERT INTO administration.table_metadata (
  NULL, NULL, NULL),
 
 -- closed_at
-('tickets', 'Project', NULL, NULL, 'closed_at', 'project.closed_at', 'Date de fermeture du projet',
+('tickets', 'Project', NULL, NULL, 'closed_at', 'common.closed_at', 'Date de fermeture du projet',
  'datetime', true, NULL,
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD HH:mm:ss"}'::jsonb,
@@ -242,8 +242,8 @@ INSERT INTO administration.table_metadata (
 
 -- issue_type_scheme_id (JSONB field)
 ('tickets', 'Project', NULL, NULL, 'issue_type_scheme_id', 'project.issue_type_scheme_id', 'Schéma des types de tickets',
- 'json', true, NULL,
- true, false, true,
+ 'text', true, NULL,
+ true, false, false,
  'checkbox', '{"multiple": true}'::jsonb,
  true, 'configuration.symptoms', 'code',
  true, 'translations.symptoms_translation', 'symptom_code', 'label',

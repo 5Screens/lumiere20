@@ -391,8 +391,10 @@ export class Project {
       { key: 'project_type_label', label: t('project.project_type'), type: 'text', format: 'text', filterKey: 'project_type' },
       { key: 'assigned_group_name', label: t('project.team_id'), type: 'text', format: 'text', filterKey: 'assigned_to_group' },
       { key: 'assigned_person_name', label: t('project.lead_user_id'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
+      { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text', filterKey: 'writer_uuid' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'closed_at', label: t('common.closed_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 
