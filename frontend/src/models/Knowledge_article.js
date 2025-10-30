@@ -428,7 +428,9 @@ export class Knowledge_article {
         fieldName: 'TIED_TICKETS',
         target_uuid: null,
         pickedItems: null,
-        required: isRequired('tickets_list')
+        required: isRequired('tickets_list'),
+        lazySearch: true
+
       },
       business_scope: {
         type: 'sTagsList',
