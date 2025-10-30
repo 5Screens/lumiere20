@@ -305,7 +305,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         condition = `t.${column} = $${paramIndex++}`;
         queryParams.push(value);
       }
-    } else if (operator === 'not_equals') {
+    } else if (operator === 'is_not') {
       if (Array.isArray(value)) {
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
         condition = `t.${column} NOT IN (${placeholders})`;
