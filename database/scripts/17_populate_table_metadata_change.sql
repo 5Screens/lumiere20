@@ -368,7 +368,7 @@ INSERT INTO administration.table_metadata (
 ('tickets', 'Change', NULL, NULL, 'elapsed_time', 'change.elapsed_time', 'Temps écoulé',
  'integer', true, NULL,
  true, true, true,
- 'number', '{"min": 0}'::jsonb,
+ 'search', '{"multiple": false}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sTextField', 'Entrez le temps en minutes', false, false,
