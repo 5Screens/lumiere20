@@ -4,7 +4,7 @@
     <div 
       v-for="(item, index) in filter.value" 
       :key="`${filter.id}-${index}`"
-      class="s-filter-tag"
+      :class="['s-filter-tag', { 's-filter-tag--exclude': isExcludeMode }]"
     >
       <span class="s-filter-tag__value">{{ getValueLabel(item) }}</span>
       <button 
@@ -18,7 +18,7 @@
   </template>
   
   <!-- Sinon, afficher un seul tag -->
-  <div v-else class="s-filter-tag">
+  <div v-else :class="['s-filter-tag', { 's-filter-tag--exclude': isExcludeMode }]">
     <span class="s-filter-tag__value">{{ valueLabel }}</span>
     <button 
       class="s-filter-tag__remove" 
@@ -57,6 +57,13 @@ export default {
     const { t } = useI18n();
     const filterStore = useFilterStore();
     const filterOptions = ref([]);
+
+    // Computed pour détecter si on est en mode exclude
+    const isExcludeMode = computed(() => {
+      if (!props.objectName) return false;
+      const options = filterStore.getFilterOptions(props.objectName);
+      return options.mode === 'exclude';
+    });
 
     // Computed pour le libellé de la colonne
     const columnLabel = computed(() => {
@@ -245,7 +252,8 @@ export default {
       valueLabel,
       getValueLabel,
       handleRemove,
-      handleRemoveArrayItem
+      handleRemoveArrayItem,
+      isExcludeMode
     };
   }
 };

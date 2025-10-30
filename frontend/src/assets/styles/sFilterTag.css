@@ -23,6 +23,12 @@
   max-width: 150px;
 }
 
+/* Mode exclude - texte barré pour indiquer qu'on veut exclure ces valeurs */
+.s-filter-tag--exclude .s-filter-tag__value {
+  text-decoration: line-through;
+  color: var(--error-color);
+}
+
 /* Bouton de suppression */
 .s-filter-tag__remove {
   display: flex;
