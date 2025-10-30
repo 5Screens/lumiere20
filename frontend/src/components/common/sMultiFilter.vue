@@ -207,7 +207,7 @@ export default {
         
         // Pour Person et tous les types de tickets, utiliser le filterStore qui gère la conversion en conditions
         // Pour les autres objets, convertir au format legacy
-        const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
+        const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Knowledge_article', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
         if (props.objectName === 'Person' || ticketTypes.includes(props.objectName)) {
           console.info(`[sMultiFilter] Applying filters for ${props.objectName} (handled by filterStore)`);
           // Émettre un objet vide car le filterStore gère tout

@@ -551,7 +551,7 @@ export const useFilterStore = defineStore('filter', {
       };
       
       // Ajouter lang pour tous les types de tickets (requis par l'API tickets)
-      const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
+      const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Knowledge_article', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
       if (ticketTypes.includes(tableName) && lang) {
         searchBody.lang = lang;
       }
@@ -702,7 +702,7 @@ export const useFilterStore = defineStore('filter', {
           endpoint = 'tickets/search/problems';
         } else if (tableName === 'Change') {
           endpoint = 'tickets/search/changes';
-        } else if (tableName === 'Knowledge') {
+        } else if (tableName === 'Knowledge' || tableName === 'Knowledge_article') {
           endpoint = 'tickets/search/knowledge';
         } else if (tableName === 'Project') {
           endpoint = 'tickets/search/projects';

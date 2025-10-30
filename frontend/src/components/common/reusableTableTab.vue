@@ -1091,7 +1091,7 @@ export default {
     async setupInfiniteScroll() {
       // Attendre que le filterStore ait chargé la configuration et restauré les filtres
       // Cela évite de charger les données sans les filtres restaurés depuis localStorage
-      const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
+      const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Knowledge_article', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
       if (this.objectName === 'Person' || ticketTypes.includes(this.objectName)) {
         try {
           await this.filterStore.loadFilterConfig(this.objectName);
@@ -1201,7 +1201,7 @@ export default {
       let response;
       
       // Différencier l'appel selon le type d'objet
-      const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
+      const ticketTypes = ['Task', 'Incident', 'Problem', 'Change', 'Knowledge', 'Knowledge_article', 'Project', 'Defect', 'Sprint', 'Epic', 'UserStory'];
       if (this.objectName === 'Person' || ticketTypes.includes(this.objectName)) {
         // Pour Person et tous les types de tickets, utiliser le filterStore qui gère la conversion des filtres
         const lang = this.userProfileStore.language || 'en';

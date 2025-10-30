@@ -572,9 +572,8 @@ const searchKnowledgeArticles = async (searchParams) => {
     logger.info(`${servicePrefix} Language: ${lang}`);
     
     // Build WHERE clause from advanced filters
-    // Add lang as first parameter for translations
-    const queryParams = [lang];
-    let paramIndex = 2; // Start at 2 because lang is at position 1
+    const queryParams = [];
+    let paramIndex = 1;
     let whereClause = '';
     
     // Always filter by ticket_type = KNOWLEDGE
@@ -660,17 +659,16 @@ const searchKnowledgeArticles = async (searchParams) => {
     whereClause = `WHERE ${baseConditions.join(' AND ')}`;
     logger.info(`${servicePrefix} Final WHERE clause: ${whereClause}`);
     
-    // Count total results (no lang parameter needed, only filter params)
-    const countQueryParams = queryParams.slice(1); // Remove lang from params for count query
+    // Count total results
     const countQuery = `
       SELECT COUNT(*) as total
       FROM core.tickets t
       ${whereClause}
     `;
     
-    logger.info(`${servicePrefix} Count query params: ${JSON.stringify(countQueryParams)}`);
+    logger.info(`${servicePrefix} Count query params: ${JSON.stringify(queryParams)}`);
     
-    const countResult = await db.query(countQuery, countQueryParams);
+    const countResult = await db.query(countQuery, queryParams);
     const total = parseInt(countResult.rows[0].total);
     
     // Get paginated results with all data
@@ -730,14 +728,14 @@ const searchKnowledgeArticles = async (searchParams) => {
           SELECT jsonb_agg(ksl.label)
           FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code
           JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code
-          WHERE ksl.lang = $1
+          WHERE ksl.lang = $${paramIndex}
         ) as rel_target_audience_label,
         t.core_extended_attributes->'business_scope' as business_scope,
         (
           SELECT jsonb_agg(ksl.label)
           FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code
           JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code
-          WHERE ksl.lang = $1
+          WHERE ksl.lang = $${paramIndex}
         ) as business_scope_label,
         
         -- Counts
@@ -750,8 +748,8 @@ const searchKnowledgeArticles = async (searchParams) => {
       LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
       JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
       JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
-      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $1
-      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $1
+      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${paramIndex}
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${paramIndex}
       LEFT JOIN (
         SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
         FROM core.rel_tickets_groups_persons
@@ -759,18 +757,18 @@ const searchKnowledgeArticles = async (searchParams) => {
       ) rtgp ON t.uuid = rtgp.rel_ticket
       LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
       LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
-      LEFT JOIN translations.knowledge_setup_label category_t ON category_t.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND category_t.lang = $1
-      LEFT JOIN translations.knowledge_setup_label confidentiality_t ON confidentiality_t.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND confidentiality_t.lang = $1
-      LEFT JOIN translations.ticket_types_translation process_t ON process_t.ticket_type_uuid = (SELECT uuid FROM configuration.ticket_types WHERE code = t.core_extended_attributes->>'rel_involved_process') AND process_t.lang = $1
+      LEFT JOIN translations.knowledge_setup_label category_t ON category_t.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND category_t.lang = $${paramIndex}
+      LEFT JOIN translations.knowledge_setup_label confidentiality_t ON confidentiality_t.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND confidentiality_t.lang = $${paramIndex}
+      LEFT JOIN translations.ticket_types_translation process_t ON process_t.ticket_type_uuid = (SELECT uuid FROM configuration.ticket_types WHERE code = t.core_extended_attributes->>'rel_involved_process') AND process_t.lang = $${paramIndex}
       LEFT JOIN data.services service ON t.core_extended_attributes->>'rel_service' = service.uuid::text
       LEFT JOIN data.service_offerings service_offerings ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
       LEFT JOIN translations.languages lang ON lang.locale = t.core_extended_attributes->>'rel_lang'
       ${whereClause}
       ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}
     `;
     
-    queryParams.push(limit, offset);
+    queryParams.push(lang, limit, offset);
     
     logger.info(`${servicePrefix} Data query params: ${JSON.stringify(queryParams)}`);
     
