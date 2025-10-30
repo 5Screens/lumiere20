@@ -564,6 +564,10 @@ const searchKnowledgeArticles = async (searchParams) => {
       'last_review_at': "t.core_extended_attributes->>'last_review_at'",
       'next_review_at': "t.core_extended_attributes->>'next_review_at'",
       'license_type': "t.core_extended_attributes->>'license_type'",
+      'rel_target_audience': "t.core_extended_attributes->'rel_target_audience'",
+      'rel_target_audience_label': "(SELECT jsonb_agg(ksl.label) FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code WHERE ksl.lang = $1)",
+      'business_scope': "t.core_extended_attributes->'business_scope'",
+      'business_scope_label': "(SELECT jsonb_agg(ksl.label) FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code WHERE ksl.lang = $1)",
       'attachments_count': '(SELECT COUNT(*) FROM core.attachments a WHERE a.object_uuid = t.uuid)',
       'tieds_tickets_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'TIED_TICKETS\')'
     };

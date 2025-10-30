@@ -291,8 +291,8 @@ INSERT INTO administration.table_metadata (
 -- limitations (JSONB field)
 ('tickets', 'Knowledge_article', NULL, NULL, 'limitations', 'knowledge_article.limitations', 'Limitations',
  'text', true, NULL,
- true, false, false,
- NULL, NULL,
+ true, false, true,
+ 'search', '{"minChars": 3}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sRichTextEditor', 'Limitations connues', false, false,
@@ -303,8 +303,8 @@ INSERT INTO administration.table_metadata (
 -- security_notes (JSONB field)
 ('tickets', 'Knowledge_article', NULL, NULL, 'security_notes', 'knowledge_article.security_notes', 'Notes de sécurité',
  'text', true, NULL,
- true, false, false,
- NULL, NULL,
+ true, false, true,
+ 'search', '{"minChars": 3}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sRichTextEditor', 'Notes de sécurité', false, false,
@@ -358,6 +358,18 @@ INSERT INTO administration.table_metadata (
  'sTextField', 'Type de licence', false, false,
  NULL, NULL, NULL, NULL, 'Type de licence applicable',
  true, 270,
+ NULL, NULL, NULL),
+
+-- rel_target_audience (JSONB field)
+('tickets', 'Knowledge_article', NULL, NULL, 'rel_target_audience', 'knowledge_article.target_audience', 'Public cible',
+ 'text', true, NULL,
+ true, true, true,
+ 'checkbox', '{"multiple": true}'::jsonb,
+ true, 'configuration.knowledge_setup_codes', 'code',
+ true, 'translations.knowledge_setup_label', 'rel_change_setup_code', 'label',
+ 'sSelectField', 'Sélectionnez le public cible', false, false,
+ 'knowledge_setup?metadata=TARGET_AUDIENCE', 'label', 'code', false, 'Public cible de l''article',
+ true, 280,
  NULL, NULL, NULL);
 
 COMMIT;
