@@ -201,26 +201,41 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     
     // Handle ARRAY columns stored in JSONB (e.g., rel_target_audience, business_scope)
     if (jsonbArrayColumns.includes(column)) {
-      if (operator === 'equals' || operator === 'is') {
+      if (operator === 'is') {
+        // 'is' operator: exact match - array must contain ONLY the specified value(s)
         if (Array.isArray(value)) {
-          // For arrays, check if JSONB array contains ANY of the values
+          // Multiple values: array must be exactly one of [A], [B], or [C]
+          const conditions = value.map((val) => {
+            queryParams.push(JSON.stringify([val]));
+            return `${jsonbArrayPath} = $${paramIndex++}::jsonb`;
+          });
+          condition = `(${conditions.join(' OR ')})`;
+        } else {
+          // Single value: array must be exactly [value]
+          queryParams.push(JSON.stringify([value]));
+          condition = `${jsonbArrayPath} = $${paramIndex++}::jsonb`;
+        }
+      } else if (operator === 'equals' || operator === 'contains') {
+        // 'equals' or 'contains' operator: array must contain at least one of the values
+        if (Array.isArray(value)) {
+          // Multiple values: array contains A OR B OR C
           const conditions = value.map((val) => {
             queryParams.push(JSON.stringify([val]));
             return `${jsonbArrayPath} @> $${paramIndex++}::jsonb`;
           });
           condition = `(${conditions.join(' OR ')})`;
+        } else if (typeof value === 'string') {
+          // Text search in array elements
+          condition = `EXISTS (
+            SELECT 1 FROM jsonb_array_elements_text(${jsonbArrayPath}) AS elem
+            WHERE LOWER(elem) LIKE LOWER($${paramIndex++})
+          )`;
+          queryParams.push(`%${value}%`);
         } else {
-          // Single value: check if JSONB array contains this value
+          // Single value: array contains value
           queryParams.push(JSON.stringify([value]));
           condition = `${jsonbArrayPath} @> $${paramIndex++}::jsonb`;
         }
-      } else if (operator === 'contains') {
-        // For text search in array elements
-        condition = `EXISTS (
-          SELECT 1 FROM jsonb_array_elements_text(${jsonbArrayPath}) AS elem
-          WHERE LOWER(elem) LIKE LOWER($${paramIndex++})
-        )`;
-        queryParams.push(`%${value}%`);
       }
       return { condition, newParamIndex: paramIndex };
     }

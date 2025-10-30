@@ -589,62 +589,21 @@ export const useFilterStore = defineStore('filter', {
           }
         }
         
-        console.info(`[FILTER_STORE] Processing filter:`, { column: filter.column, operator: filter.operator, value: filter.value, type: filter.type });
-        
-        // Mapping des valeurs de filtres vers les opérateurs API
-        // Basé sur buildFilterCondition dans backend/src/api/v1/persons/service.js
-        // Les valeurs correspondent à celles définies dans sOneFilter.vue (lignes 308-360)
-        const operatorMapping = {
-          // TEXT operators (sOneFilter ligne 310-315)
-          'contains': 'contains',
-          'is': 'equals',
-          
-          // NUMBER operators (sOneFilter ligne 318-326)
-          'equals': 'equals',
-          'lt': 'lt',
-          'lte': 'lte',
-          'gt': 'gt',
-          'gte': 'gte',
-          'between': 'between',
-          
-          // DATE operators (sOneFilter ligne 329-337)
-          'on': 'equals',
-          'after': 'after',
-          'on_or_after': 'on_or_after',
-          'before': 'before',
-          'on_or_before': 'on_or_before',
-          
-          // BOOLEAN operators (sOneFilter ligne 340-345)
-          'is_true': 'is_true',
-          'is_false': 'is_false',
-          
-          // UUID operators (sOneFilter ligne 348-353)
-          'is_not': 'not_equals',
-          
-          // NULL operators (commun à tous les types)
-          'is_null': 'is_null',
-          'is_not_null': 'is_not_null'
-        };
-        
-        // Appliquer le mapping si nécessaire
-        const originalOperator = operator;
-        if (operatorMapping[operator]) {
-          operator = operatorMapping[operator];
-          console.info(`[FILTER_STORE] Operator mapped: ${originalOperator} → ${operator}`);
-        } else {
-          // Si pas de mapping, utiliser la valeur telle quelle
-          console.info(`[FILTER_STORE] No mapping needed, using operator as-is: ${operator}`);
-        }
+        console.info(`[FILTER_STORE] Processing filter:`, { 
+          column: filter.column, 
+          operator: operator, 
+          value: filter.value 
+        });
         
         // Pour les tableaux (multi-select), le backend gère automatiquement avec IN ou NOT IN
-        // Ne pas écraser l'opérateur si c'est 'not_equals' (qui doit rester pour NOT IN)
+        // Ne pas écraser l'opérateur si c'est 'not_equals', 'is' ou 'is_not' (qui doivent rester tels quels)
         if (Array.isArray(value) && value.length > 0) {
-          if (operator !== 'not_equals') {
+          if (operator !== 'not_equals' && operator !== 'is' && operator !== 'is_not') {
             // Pour les autres opérateurs, utiliser 'equals' par défaut (backend gère avec IN)
             operator = 'equals';
             console.info(`[FILTER_STORE] Array detected, operator set to 'equals' (backend handles arrays with IN clause)`);
           } else {
-            console.info(`[FILTER_STORE] Array detected with not_equals, keeping operator (backend handles arrays with NOT IN clause)`);
+            console.info(`[FILTER_STORE] Array detected with operator '${operator}', keeping it as-is`);
           }
         }
         
