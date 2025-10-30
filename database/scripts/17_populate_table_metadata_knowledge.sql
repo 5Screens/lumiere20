@@ -370,6 +370,18 @@ INSERT INTO administration.table_metadata (
  'sSelectField', 'Sélectionnez le public cible', false, false,
  'knowledge_setup?metadata=TARGET_AUDIENCE', 'label', 'code', false, 'Public cible de l''article',
  true, 280,
+ NULL, NULL, NULL),
+
+-- business_scope (JSONB field)
+('tickets', 'Knowledge_article', NULL, NULL, 'business_scope', 'knowledge_article.business_scope', 'Périmètre métier',
+ 'text', true, NULL,
+ true, true, true,
+ 'checkbox', '{"multiple": true}'::jsonb,
+ true, 'configuration.knowledge_setup_codes', 'code',
+ true, 'translations.knowledge_setup_label', 'rel_change_setup_code', 'label',
+ 'sSelectField', 'Sélectionnez le périmètre', false, false,
+ 'knowledge_setup?metadata=BUSINESS_SCOPE', 'label', 'code', false, 'Périmètre métier de l''article',
+ true, 290,
  NULL, NULL, NULL);
 
 COMMIT;
