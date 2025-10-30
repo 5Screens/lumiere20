@@ -1522,6 +1522,128 @@ const applyCreation = async (ticketData, ticketType, standardFields, assignmentF
     }
 };
 
+/**
+ * Get tickets with lazy search - returns paginated results filtered by search query
+ * @param {string} [searchQuery] - Optional search term to filter tickets
+ * @param {number} [page=1] - Page number (1-indexed)
+ * @param {number} [limit=10] - Number of results per page
+ * @param {string} [lang='en'] - Language code for translations
+ * @returns {Promise<Object>} Object with data and pagination metadata
+ */
+const getTicketsLazySearch = async (searchQuery = '', page = 1, limit = 10, lang = 'en') => {
+    try {
+        logger.info(`[SERVICE] Getting tickets with lazy search: "${searchQuery}", page: ${page}, limit: ${limit}, lang: ${lang}`);
+        
+        // Validate and sanitize pagination parameters
+        const validPage = Math.max(1, parseInt(page) || 1);
+        const validLimit = Math.min(15, Math.max(1, parseInt(limit) || 10)); // Max 15 per page
+        const offset = (validPage - 1) * validLimit;
+        
+        // Separate WHERE clauses for COUNT and main query
+        let countWhereClause = `WHERE 1=1`;
+        let mainWhereClause = `WHERE 1=1`;
+        const countParams = []; // Params for COUNT query (no lang needed)
+        const queryParams = [lang]; // Params for main query (starts with lang at $1)
+        let countParamIndex = 1; // For COUNT query
+        let paramIndex = 2; // For main query (starts at $2 after lang)
+        
+        // If search query is provided, add search conditions
+        if (searchQuery && searchQuery.trim()) {
+            // Split search query by spaces to create AND conditions
+            const searchTerms = searchQuery.trim().split(/\s+/).filter(term => term.length > 0);
+            
+            if (searchTerms.length > 0) {
+                const countConditions = [];
+                const mainConditions = [];
+                
+                searchTerms.forEach((term) => {
+                    // For COUNT query
+                    countParams.push(`%${term}%`);
+                    countConditions.push(`(
+                        unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${countParamIndex})) OR
+                        unaccent(LOWER(p3.first_name || ' ' || p3.last_name)) LIKE unaccent(LOWER($${countParamIndex})) OR
+                        unaccent(LOWER(ci.name)) LIKE unaccent(LOWER($${countParamIndex}))
+                    )`);
+                    countParamIndex++;
+                    
+                    // For main query
+                    queryParams.push(`%${term}%`);
+                    mainConditions.push(`(
+                        unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${paramIndex})) OR
+                        unaccent(LOWER(p3.first_name || ' ' || p3.last_name)) LIKE unaccent(LOWER($${paramIndex})) OR
+                        unaccent(LOWER(ci.name)) LIKE unaccent(LOWER($${paramIndex}))
+                    )`);
+                    paramIndex++;
+                });
+                
+                countWhereClause += ` AND ${countConditions.join(' AND ')}`;
+                mainWhereClause += ` AND ${mainConditions.join(' AND ')}`;
+            }
+        }
+        
+        // Count total results for pagination
+        const countQuery = `
+            SELECT COUNT(*) as total
+            FROM core.tickets t
+            JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+            LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
+            ${countWhereClause}
+        `;
+        const { rows: countRows } = await db.query(countQuery, countParams);
+        const total = parseInt(countRows[0].total);
+        
+        // Main query to fetch tickets
+        const query = `
+            SELECT 
+                t.uuid,
+                t.title,
+                t.ticket_type_code,
+                COALESCE(ttt.label, tt.code) as ticket_type_label,
+                t.ticket_status_code,
+                COALESCE(tst.label, ts.code) as ticket_status_label,
+                p3.first_name || ' ' || p3.last_name as writer_name,
+                ci.name as configuration_item_name,
+                t.created_at,
+                t.updated_at,
+                t.closed_at
+            FROM core.tickets t
+            JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+            JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+            JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+            LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $1
+            LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $1
+            LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
+            ${mainWhereClause}
+            ORDER BY t.created_at DESC
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        `;
+        
+        queryParams.push(validLimit, offset);
+        
+        const { rows } = await db.query(query, queryParams);
+        
+        // Calculate pagination metadata
+        const totalPages = Math.ceil(total / validLimit);
+        const hasMore = validPage < totalPages;
+        
+        logger.info(`[SERVICE] Found ${rows.length} tickets (total: ${total}, page: ${validPage}/${totalPages})`);
+        
+        return {
+            data: rows,
+            pagination: {
+                page: validPage,
+                limit: validLimit,
+                total,
+                totalPages,
+                hasMore
+            }
+        };
+    } catch (error) {
+        logger.error('[SERVICE] Error in getTicketsLazySearch:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     getTickets,
     createTicket,
@@ -1542,5 +1664,6 @@ module.exports = {
     addChildrenTickets,
     removeChildTicket,
     applyUpdate,
-    applyCreation
+    applyCreation,
+    getTicketsLazySearch
 };

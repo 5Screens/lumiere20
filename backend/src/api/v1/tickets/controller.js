@@ -16,6 +16,13 @@ const getTickets = async (req, res) => {
         logger.info('[TICKETS CONTROLLER] Processing GET /tickets request');
         const { lang = 'en', ticket_type, page = 1, limit = 25, search = '' } = req.query;
         
+        // If no ticket_type is specified and search/pagination params are provided, use generic lazy search
+        if (!ticket_type && (search || page || limit)) {
+            logger.info(`[TICKETS CONTROLLER] Using generic lazy search for all tickets with query: "${search}"`);
+            const searchResults = await ticketService.getTicketsLazySearch(search, page, limit, lang);
+            return res.json(searchResults);
+        }
+        
         // For PROBLEM and CHANGE tickets, always use lazy search (with or without search query)
         if (ticket_type === 'PROBLEM' || ticket_type === 'CHANGE') {
             logger.info(`[TICKETS CONTROLLER] Using lazy search for ${ticket_type} with query: "${search}"`);

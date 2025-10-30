@@ -6,7 +6,7 @@ import { defineStore } from 'pinia'
 export const useUserProfileStore = defineStore('userProfile', {
   state: () => ({
     // Identifiant unique de l'utilisateur
-    id: 'f8f84df5-4323-4eaa-ac06-2f401f9b2545',
+    id: 'c8593e57-f632-4c49-a80f-a325db12d839',
     // Nom complet de l'utilisateur
     name: '',
     // Liste des rôles de l'utilisateur (admin, editor, viewer, etc.)
