@@ -11,6 +11,7 @@ const logger = require('../../../config/logger');
  * @param {Array} options.jsonbDateColumns - List of date columns stored in JSONB
  * @param {Array} options.jsonbNumericColumns - List of numeric columns stored in JSONB
  * @param {Array} options.jsonbTextColumns - List of text columns stored in JSONB
+ * @param {Array} options.jsonbArrayColumns - List of array columns stored in JSONB
  * @param {string} options.servicePrefix - Prefix for logging (e.g., '[CHANGE SERVICE]')
  * @returns {Object} { condition: string, newParamIndex: number }
  */
@@ -19,6 +20,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     jsonbDateColumns = [],
     jsonbNumericColumns = [],
     jsonbTextColumns = [],
+    jsonbArrayColumns = [],
     servicePrefix = '[TICKET SERVICE]'
   } = options;
   
@@ -123,10 +125,11 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   // JSONB COLUMNS (type-specific fields stored in core_extended_attributes)
   // ============================================================================
   
-  const allJsonbColumns = [...jsonbDateColumns, ...jsonbNumericColumns, ...jsonbTextColumns];
+  const allJsonbColumns = [...jsonbDateColumns, ...jsonbNumericColumns, ...jsonbTextColumns, ...jsonbArrayColumns];
   
   if (allJsonbColumns.includes(column)) {
     const jsonbPath = `t.core_extended_attributes->>'${column}'`;
+    const jsonbArrayPath = `t.core_extended_attributes->'${column}'`;
     
     // Handle NULL checks for JSONB columns
     if (operator === 'is_null') {
@@ -192,6 +195,32 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         const endValue = value.lte || value.max || value.end;
         condition = `${jsonbNumericPath} BETWEEN $${paramIndex++} AND $${paramIndex++}`;
         queryParams.push(startValue, endValue);
+      }
+      return { condition, newParamIndex: paramIndex };
+    }
+    
+    // Handle ARRAY columns stored in JSONB (e.g., rel_target_audience, business_scope)
+    if (jsonbArrayColumns.includes(column)) {
+      if (operator === 'equals' || operator === 'is') {
+        if (Array.isArray(value)) {
+          // For arrays, check if JSONB array contains ANY of the values
+          const conditions = value.map((val) => {
+            queryParams.push(JSON.stringify([val]));
+            return `${jsonbArrayPath} @> $${paramIndex++}::jsonb`;
+          });
+          condition = `(${conditions.join(' OR ')})`;
+        } else {
+          // Single value: check if JSONB array contains this value
+          queryParams.push(JSON.stringify([value]));
+          condition = `${jsonbArrayPath} @> $${paramIndex++}::jsonb`;
+        }
+      } else if (operator === 'contains') {
+        // For text search in array elements
+        condition = `EXISTS (
+          SELECT 1 FROM jsonb_array_elements_text(${jsonbArrayPath}) AS elem
+          WHERE LOWER(elem) LIKE LOWER($${paramIndex++})
+        )`;
+        queryParams.push(`%${value}%`);
       }
       return { condition, newParamIndex: paramIndex };
     }

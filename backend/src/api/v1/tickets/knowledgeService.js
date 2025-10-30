@@ -21,7 +21,10 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
       'rel_category', 'rel_service', 'rel_service_offerings', 'rel_lang',
       'rel_confidentiality_level', 'rel_involved_process', 'summary',
       'prerequisites', 'limitations', 'security_notes', 'version',
-      'license_type', 'rel_target_audience', 'business_scope', 'keywords'
+      'license_type'
+    ],
+    jsonbArrayColumns: [
+      'rel_target_audience', 'business_scope', 'keywords'
     ],
     jsonbNumericColumns: [],
     servicePrefix: '[KNOWLEDGE SERVICE]'
@@ -522,63 +525,6 @@ const searchKnowledgeArticles = async (searchParams) => {
     const sortBy = sort.by || 'created_at';
     const sortDirection = sort.direction || 'desc';
     
-    // Sort column mapping for calculated/joined columns
-    const sortColumnMapping = {
-      'uuid': 't.uuid',
-      'title': 't.title',
-      'description': 't.description',
-      'ticket_type_code': 't.ticket_type_code',
-      'ticket_status_code': 't.ticket_status_code',
-      'ticket_status_label': 'COALESCE(tst.label, ts.code)',
-      'requested_for_uuid': 't.requested_for_uuid',
-      'requested_for_name': "p2.first_name || ' ' || p2.last_name",
-      'writer_uuid': 't.writer_uuid',
-      'writer_name': "p3.first_name || ' ' || p3.last_name",
-      'configuration_item_uuid': 't.configuration_item_uuid',
-      'configuration_item_name': 'ci.name',
-      'assigned_to_group': 'g.uuid',
-      'assigned_group_name': 'g.group_name',
-      'assigned_to_person': 'p4.uuid',
-      'assigned_person_name': "p4.first_name || ' ' || p4.last_name",
-      'created_at': 't.created_at',
-      'updated_at': 't.updated_at',
-      'closed_at': 't.closed_at',
-      // JSONB fields
-      'rel_category': "t.core_extended_attributes->>'rel_category'",
-      'rel_category_label': "COALESCE(category_t.label, t.core_extended_attributes->>'rel_category')",
-      'rel_service': "t.core_extended_attributes->>'rel_service'",
-      'rel_service_name': 'service.name',
-      'rel_service_offerings': "t.core_extended_attributes->>'rel_service_offerings'",
-      'rel_service_offerings_name': 'service_offerings.name',
-      'rel_lang': "t.core_extended_attributes->>'rel_lang'",
-      'rel_lang_name': 'lang.native_name',
-      'rel_confidentiality_level': "t.core_extended_attributes->>'rel_confidentiality_level'",
-      'rel_confidentiality_level_label': "COALESCE(confidentiality_t.label, t.core_extended_attributes->>'rel_confidentiality_level')",
-      'rel_involved_process': "t.core_extended_attributes->>'rel_involved_process'",
-      'rel_involved_process_label': "COALESCE(process_t.label, t.core_extended_attributes->>'rel_involved_process')",
-      'summary': "t.core_extended_attributes->>'summary'",
-      'prerequisites': "t.core_extended_attributes->>'prerequisites'",
-      'limitations': "t.core_extended_attributes->>'limitations'",
-      'security_notes': "t.core_extended_attributes->>'security_notes'",
-      'version': "t.core_extended_attributes->>'version'",
-      'last_review_at': "t.core_extended_attributes->>'last_review_at'",
-      'next_review_at': "t.core_extended_attributes->>'next_review_at'",
-      'license_type': "t.core_extended_attributes->>'license_type'",
-      'rel_target_audience': "t.core_extended_attributes->'rel_target_audience'",
-      'rel_target_audience_label': "(SELECT jsonb_agg(ksl.label) FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code WHERE ksl.lang = $1)",
-      'business_scope': "t.core_extended_attributes->'business_scope'",
-      'business_scope_label': "(SELECT jsonb_agg(ksl.label) FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code WHERE ksl.lang = $1)",
-      'attachments_count': '(SELECT COUNT(*) FROM core.attachments a WHERE a.object_uuid = t.uuid)',
-      'tieds_tickets_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'TIED_TICKETS\')'
-    };
-    
-    // Get the SQL expression for sorting
-    const sortExpression = sortColumnMapping[sortBy] || `t.${sortBy}`;
-    
-    logger.info(`${servicePrefix} Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
-    logger.info(`${servicePrefix} Pagination: page=${page}, limit=${limit}, offset=${offset}`);
-    logger.info(`${servicePrefix} Language: ${lang}`);
-    
     // Build WHERE clause from advanced filters
     const queryParams = [];
     let paramIndex = 1;
@@ -667,6 +613,66 @@ const searchKnowledgeArticles = async (searchParams) => {
     whereClause = `WHERE ${baseConditions.join(' AND ')}`;
     logger.info(`${servicePrefix} Final WHERE clause: ${whereClause}`);
     
+    // Calculate the parameter index for lang (after all filter params)
+    const langParamIndex = paramIndex;
+    
+    // Sort column mapping for calculated/joined columns (built after langParamIndex is known)
+    const sortColumnMapping = {
+      'uuid': 't.uuid',
+      'title': 't.title',
+      'description': 't.description',
+      'ticket_type_code': 't.ticket_type_code',
+      'ticket_status_code': 't.ticket_status_code',
+      'ticket_status_label': 'COALESCE(tst.label, ts.code)',
+      'requested_for_uuid': 't.requested_for_uuid',
+      'requested_for_name': "p2.first_name || ' ' || p2.last_name",
+      'writer_uuid': 't.writer_uuid',
+      'writer_name': "p3.first_name || ' ' || p3.last_name",
+      'configuration_item_uuid': 't.configuration_item_uuid',
+      'configuration_item_name': 'ci.name',
+      'assigned_to_group': 'g.uuid',
+      'assigned_group_name': 'g.group_name',
+      'assigned_to_person': 'p4.uuid',
+      'assigned_person_name': "p4.first_name || ' ' || p4.last_name",
+      'created_at': 't.created_at',
+      'updated_at': 't.updated_at',
+      'closed_at': 't.closed_at',
+      // JSONB fields
+      'rel_category': "t.core_extended_attributes->>'rel_category'",
+      'rel_category_label': "COALESCE(category_t.label, t.core_extended_attributes->>'rel_category')",
+      'rel_service': "t.core_extended_attributes->>'rel_service'",
+      'rel_service_name': 'service.name',
+      'rel_service_offerings': "t.core_extended_attributes->>'rel_service_offerings'",
+      'rel_service_offerings_name': 'service_offerings.name',
+      'rel_lang': "t.core_extended_attributes->>'rel_lang'",
+      'rel_lang_name': 'lang.native_name',
+      'rel_confidentiality_level': "t.core_extended_attributes->>'rel_confidentiality_level'",
+      'rel_confidentiality_level_label': "COALESCE(confidentiality_t.label, t.core_extended_attributes->>'rel_confidentiality_level')",
+      'rel_involved_process': "t.core_extended_attributes->>'rel_involved_process'",
+      'rel_involved_process_label': "COALESCE(process_t.label, t.core_extended_attributes->>'rel_involved_process')",
+      'summary': "t.core_extended_attributes->>'summary'",
+      'prerequisites': "t.core_extended_attributes->>'prerequisites'",
+      'limitations': "t.core_extended_attributes->>'limitations'",
+      'security_notes': "t.core_extended_attributes->>'security_notes'",
+      'version': "t.core_extended_attributes->>'version'",
+      'last_review_at': "t.core_extended_attributes->>'last_review_at'",
+      'next_review_at': "t.core_extended_attributes->>'next_review_at'",
+      'license_type': "t.core_extended_attributes->>'license_type'",
+      'rel_target_audience': "t.core_extended_attributes->'rel_target_audience'",
+      'rel_target_audience_label': `(SELECT jsonb_agg(ksl.label) FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code WHERE ksl.lang = $${langParamIndex})`,
+      'business_scope': "t.core_extended_attributes->'business_scope'",
+      'business_scope_label': `(SELECT jsonb_agg(ksl.label) FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code WHERE ksl.lang = $${langParamIndex})`,
+      'attachments_count': '(SELECT COUNT(*) FROM core.attachments a WHERE a.object_uuid = t.uuid)',
+      'tieds_tickets_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'TIED_TICKETS\')'
+    };
+    
+    // Get the SQL expression for sorting
+    const sortExpression = sortColumnMapping[sortBy] || `t.${sortBy}`;
+    
+    logger.info(`${servicePrefix} Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
+    logger.info(`${servicePrefix} Pagination: page=${page}, limit=${limit}, offset=${offset}`);
+    logger.info(`${servicePrefix} Language: ${lang}`);
+    
     // Count total results
     const countQuery = `
       SELECT COUNT(*) as total
@@ -736,14 +742,14 @@ const searchKnowledgeArticles = async (searchParams) => {
           SELECT jsonb_agg(ksl.label)
           FROM jsonb_array_elements_text(t.core_extended_attributes->'rel_target_audience') as audience_code
           JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = audience_code
-          WHERE ksl.lang = $${paramIndex}
+          WHERE ksl.lang = $${langParamIndex}
         ) as rel_target_audience_label,
         t.core_extended_attributes->'business_scope' as business_scope,
         (
           SELECT jsonb_agg(ksl.label)
           FROM jsonb_array_elements_text(t.core_extended_attributes->'business_scope') as scope_code
           JOIN translations.knowledge_setup_label ksl ON ksl.rel_change_setup_code = scope_code
-          WHERE ksl.lang = $${paramIndex}
+          WHERE ksl.lang = $${langParamIndex}
         ) as business_scope_label,
         
         -- Counts
@@ -756,8 +762,8 @@ const searchKnowledgeArticles = async (searchParams) => {
       LEFT JOIN data.configuration_items ci ON t.configuration_item_uuid = ci.uuid
       JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
       JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
-      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${paramIndex}
-      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${paramIndex}
+      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${langParamIndex}
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${langParamIndex}
       LEFT JOIN (
         SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
         FROM core.rel_tickets_groups_persons
@@ -765,15 +771,15 @@ const searchKnowledgeArticles = async (searchParams) => {
       ) rtgp ON t.uuid = rtgp.rel_ticket
       LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
       LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
-      LEFT JOIN translations.knowledge_setup_label category_t ON category_t.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND category_t.lang = $${paramIndex}
-      LEFT JOIN translations.knowledge_setup_label confidentiality_t ON confidentiality_t.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND confidentiality_t.lang = $${paramIndex}
-      LEFT JOIN translations.ticket_types_translation process_t ON process_t.ticket_type_uuid = (SELECT uuid FROM configuration.ticket_types WHERE code = t.core_extended_attributes->>'rel_involved_process') AND process_t.lang = $${paramIndex}
+      LEFT JOIN translations.knowledge_setup_label category_t ON category_t.rel_change_setup_code = t.core_extended_attributes->>'rel_category' AND category_t.lang = $${langParamIndex}
+      LEFT JOIN translations.knowledge_setup_label confidentiality_t ON confidentiality_t.rel_change_setup_code = t.core_extended_attributes->>'rel_confidentiality_level' AND confidentiality_t.lang = $${langParamIndex}
+      LEFT JOIN translations.ticket_types_translation process_t ON process_t.ticket_type_uuid = (SELECT uuid FROM configuration.ticket_types WHERE code = t.core_extended_attributes->>'rel_involved_process') AND process_t.lang = $${langParamIndex}
       LEFT JOIN data.services service ON t.core_extended_attributes->>'rel_service' = service.uuid::text
       LEFT JOIN data.service_offerings service_offerings ON t.core_extended_attributes->>'rel_service_offerings' = service_offerings.uuid::text
       LEFT JOIN translations.languages lang ON lang.locale = t.core_extended_attributes->>'rel_lang'
       ${whereClause}
       ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
-      LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}
+      LIMIT $${langParamIndex + 1} OFFSET $${langParamIndex + 2}
     `;
     
     queryParams.push(lang, limit, offset);
