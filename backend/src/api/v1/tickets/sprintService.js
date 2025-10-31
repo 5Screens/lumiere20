@@ -495,7 +495,6 @@ const getSprintsLazySearch = async (searchQuery = '', page = 1, limit = 10, lang
                 page: validPage,
                 limit: validLimit,
                 total: total,
-                totalPages: totalPages,
                 hasMore: hasMore
             }
         };

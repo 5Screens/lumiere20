@@ -395,9 +395,111 @@ const createDefect = async (defectData) => {
     return createdDefect;
 };
 
+/**
+ * Lazy search for defects with pagination
+ * @param {string} [searchQuery=''] - Search term
+ * @param {number} [page=1] - Page number
+ * @param {number} [limit=25] - Items per page
+ * @param {string} [lang='en'] - Language code for translations
+ * @returns {Promise<Object>} Object with data and pagination metadata
+ */
+const getDefectsLazySearch = async (searchQuery = '', page = 1, limit = 25, lang = 'en') => {
+    try {
+        logger.info(`[DEFECT SERVICE] Getting defects with lazy search: "${searchQuery}", page: ${page}, limit: ${limit}, lang: ${lang}`);
+        
+        // Validate and sanitize pagination parameters
+        const validPage = Math.max(1, parseInt(page) || 1);
+        const validLimit = Math.min(50, Math.max(1, parseInt(limit) || 25)); // Max 50 per page
+        const offset = (validPage - 1) * validLimit;
+        
+        let queryParams = [lang];
+        let whereConditions = ["t.ticket_type_code = 'DEFECT'"];
+        
+        // Add search conditions if search query is provided
+        if (searchQuery && searchQuery.trim()) {
+            const searchTerms = searchQuery.trim().split(/\s+/).filter(term => term.length > 0);
+            
+            const searchConditions = searchTerms.map((term, index) => {
+                const paramIndex = queryParams.length + 1;
+                queryParams.push(`%${term}%`);
+                return `(
+                    unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${paramIndex})) OR
+                    unaccent(LOWER(t.description)) LIKE unaccent(LOWER($${paramIndex}))
+                )`;
+            });
+            
+            whereConditions.push(`(${searchConditions.join(' AND ')})`);
+        }
+        
+        // Count total results for pagination
+        const countQuery = `
+            SELECT COUNT(*) as total
+            FROM core.tickets t
+            WHERE ${whereConditions.join(' AND ')}
+        `;
+        
+        const countResult = await db.query(countQuery, queryParams);
+        const total = parseInt(countResult.rows[0].total);
+        
+        // Get paginated data
+        const query = `
+            SELECT 
+                t.uuid,
+                t.title,
+                SUBSTRING(t.description, 1, 120) as description,
+                t.ticket_type_code,
+                t.ticket_status_code,
+                COALESCE(tst.label, ts.code) as ticket_status_label,
+                t.created_at,
+                t.updated_at,
+                t.closed_at,
+                p3.first_name || ' ' || p3.last_name as writer_name,
+                t.core_extended_attributes->>'severity' as severity,
+                COALESCE(
+                    (SELECT dsl.label FROM translations.defect_setup_labels dsl 
+                    WHERE dsl.rel_defect_setup_code = t.core_extended_attributes->>'severity' AND dsl.lang = $1),
+                    t.core_extended_attributes->>'severity'
+                ) as severity_label
+            FROM core.tickets t
+            JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+            JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code
+            LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $1
+            WHERE ${whereConditions.join(' AND ')}
+            ORDER BY t.created_at DESC
+            LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
+        `;
+        
+        queryParams.push(validLimit, offset);
+        
+        const { rows } = await db.query(query, queryParams);
+        
+        // Calculate pagination metadata
+        const totalPages = Math.ceil(total / validLimit);
+        const hasMore = validPage < totalPages;
+        
+        logger.info(`[DEFECT SERVICE] Found ${rows.length} defects (total: ${total}, page: ${validPage}/${totalPages})`);
+        
+        return {
+            data: rows,
+            total: total,
+            hasMore: hasMore,
+            pagination: {
+                page: validPage,
+                limit: validLimit,
+                total: total,
+                hasMore: hasMore
+            }
+        };
+    } catch (error) {
+        logger.error('[DEFECT SERVICE] Error in lazy search:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     getDefects,
     getDefectById,
     createDefect,
-    updateDefect
+    updateDefect,
+    getDefectsLazySearch
 };

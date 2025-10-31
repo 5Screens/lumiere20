@@ -23,8 +23,8 @@ const getTickets = async (req, res) => {
             return res.json(searchResults);
         }
         
-        // For PROBLEM, CHANGE, PROJECT and EPIC tickets, always use lazy search (with or without search query)
-        if (ticket_type === 'PROBLEM' || ticket_type === 'CHANGE' || ticket_type === 'PROJECT' || ticket_type === 'EPIC') {
+        // For PROBLEM, CHANGE, PROJECT, EPIC, SPRINT, USER_STORY and DEFECT tickets, always use lazy search (with or without search query)
+        if (ticket_type === 'PROBLEM' || ticket_type === 'CHANGE' || ticket_type === 'PROJECT' || ticket_type === 'EPIC' || ticket_type === 'SPRINT' || ticket_type === 'USER_STORY' || ticket_type === 'DEFECT') {
             logger.info(`[TICKETS CONTROLLER] Using lazy search for ${ticket_type} with query: "${search}"`);
             
             let searchResults;
@@ -34,6 +34,12 @@ const getTickets = async (req, res) => {
                 searchResults = await changeService.getChangesLazySearch(search, page, limit, lang);
             } else if (ticket_type === 'EPIC') {
                 searchResults = await epicService.getEpicsLazySearch(search, page, limit, lang);
+            } else if (ticket_type === 'SPRINT') {
+                searchResults = await sprintService.getSprintsLazySearch(search, page, limit, lang);
+            } else if (ticket_type === 'USER_STORY') {
+                searchResults = await storyService.getUserStoriesLazySearch(search, page, limit, lang);
+            } else if (ticket_type === 'DEFECT') {
+                searchResults = await defectService.getDefectsLazySearch(search, page, limit, lang);
             } else {
                 searchResults = await projectService.getProjectsLazySearch(search, page, limit, lang);
             }

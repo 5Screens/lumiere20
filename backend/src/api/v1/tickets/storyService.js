@@ -1103,7 +1103,7 @@ const getUserStoriesLazySearch = async (searchQuery = '', page = 1, limit = 25, 
     
     // Calculate pagination metadata
     const totalPages = Math.ceil(total / validLimit);
-    const hasMore = offset + validLimit < total;
+    const hasMore = validPage < totalPages;
     
     logger.info(`[STORY SERVICE] Lazy search found ${dataResult.rows.length} user stories (total: ${total})`);
     
@@ -1114,8 +1114,8 @@ const getUserStoriesLazySearch = async (searchQuery = '', page = 1, limit = 25, 
       pagination: {
         page: validPage,
         limit: validLimit,
-        offset: offset,
-        totalPages: totalPages
+        total: total,
+        hasMore: hasMore
       }
     };
     
