@@ -679,7 +679,7 @@ const searchEpics = async (searchParams) => {
       // JSONB fields
       'start_date': "t.core_extended_attributes->>'start_date'",
       'end_date': "t.core_extended_attributes->>'end_date'",
-      'progress_percent': "t.core_extended_attributes->>'progress_percent'",
+      'progress_percent': "(t.core_extended_attributes->>'progress_percent')::INTEGER",
       'color': "t.core_extended_attributes->>'color'",
       'tags': "t.core_extended_attributes->'tags'",
       'project_id': "(SELECT parent.uuid FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'EPIC' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL LIMIT 1)",

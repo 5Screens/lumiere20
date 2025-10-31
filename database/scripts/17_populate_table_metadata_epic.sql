@@ -196,7 +196,7 @@ INSERT INTO administration.table_metadata (
 ('tickets', 'Epic', NULL, NULL, 'progress_percent', 'epic.progress_percent', 'Pourcentage d''avancement',
  'integer', true, NULL,
  true, true, true,
- 'between', '{"min": 0, "max": 100}'::jsonb,
+ 'search', '{"min": 0, "max": 100}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sTextField', 'Entrez le pourcentage (0-100)', false, false,
