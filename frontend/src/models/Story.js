@@ -261,6 +261,7 @@ export class Story {
       { key: 'title', label: t('story.title'), type: 'text', format: 'text' },
       { key: 'description', label: t('story.description'), type: 'text', format: 'html' },
       { key: 'ticket_status_label', label: t('story.status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
+      { key: 'writer_name', label: t('story.writer'), type: 'text', format: 'text', filterKey: 'writer_uuid' },
       { key: 'project_title', label: t('story.project_id'), type: 'text', format: 'text', filterKey: 'project_id' },
       { key: 'epic_title', label: t('story.epic_id'), type: 'text', format: 'text', filterKey: 'epic_id' },
       { key: 'sprint_title', label: t('story.sprint_id'), type: 'text', format: 'text', filterKey: 'sprint_id' },
@@ -271,7 +272,8 @@ export class Story {
       { key: 'requested_for_name', label: t('story.reporter'), type: 'text', format: 'text', filterKey: 'requested_for_uuid' },
       { key: 'assigned_person_name', label: t('story.assigned_to_person'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'closed_at', label: t('common.closed_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

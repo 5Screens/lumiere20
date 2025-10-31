@@ -187,8 +187,8 @@ INSERT INTO administration.table_metadata (
  'checkbox', '{"multiple": false}'::jsonb,
  true, 'core.tickets', 'uuid',
  false, NULL, NULL, NULL,
- 'sFilteredSearchField', 'Sélectionnez le projet', true, false,
- 'tickets?ticket_type=PROJECT', 'title', 'uuid', false, 'Projet auquel appartient la story',
+ 'sFilteredSearchField', 'Recherchez un projet', false, false,
+ 'tickets?ticket_type=PROJECT', 'title', 'uuid', true, 'Projet auquel appartient la story',
  true, 130,
  NULL, NULL, NULL),
 
