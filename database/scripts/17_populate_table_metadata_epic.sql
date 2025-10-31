@@ -207,7 +207,7 @@ INSERT INTO administration.table_metadata (
 -- color (JSONB field)
 ('tickets', 'Epic', NULL, NULL, 'color', 'epic.color', 'Couleur de l''epic',
  'text', true, NULL,
- true, true, true,
+ true, true, false,
  'search', '{"minChars": 3}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
@@ -220,7 +220,7 @@ INSERT INTO administration.table_metadata (
 ('tickets', 'Epic', NULL, NULL, 'tags', 'epic.tags', 'Tags de l''epic',
  'text', true, NULL,
  true, false, true,
- 'checkbox', '{"multiple": true}'::jsonb,
+ 'search', '{"minChars": 2}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sTagsList', 'Ajoutez des tags', false, false,
