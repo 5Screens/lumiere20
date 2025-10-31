@@ -23,15 +23,17 @@ const getTickets = async (req, res) => {
             return res.json(searchResults);
         }
         
-        // For PROBLEM and CHANGE tickets, always use lazy search (with or without search query)
-        if (ticket_type === 'PROBLEM' || ticket_type === 'CHANGE') {
+        // For PROBLEM, CHANGE and PROJECT tickets, always use lazy search (with or without search query)
+        if (ticket_type === 'PROBLEM' || ticket_type === 'CHANGE' || ticket_type === 'PROJECT') {
             logger.info(`[TICKETS CONTROLLER] Using lazy search for ${ticket_type} with query: "${search}"`);
             
             let searchResults;
             if (ticket_type === 'PROBLEM') {
                 searchResults = await problemService.getProblemsLazySearch(search, page, limit, lang);
-            } else {
+            } else if (ticket_type === 'CHANGE') {
                 searchResults = await changeService.getChangesLazySearch(search, page, limit, lang);
+            } else {
+                searchResults = await projectService.getProjectsLazySearch(search, page, limit, lang);
             }
             
             return res.json(searchResults);
