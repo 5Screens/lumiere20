@@ -1,5 +1,6 @@
 import i18n from '@/i18n'
 import { useUserProfileStore } from '../stores/userProfileStore'
+import apiService from '../services/apiService'
 
 export class Sprint {
   constructor(data = {}) {
@@ -233,15 +234,15 @@ export class Sprint {
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('sprint.name'), type: 'text', format: 'text' },
       { key: 'description', label: t('sprint.goal'), type: 'text', format: 'html' },
-      { key: 'ticket_status_label', label: t('sprint.state'), type: 'text', format: 'text' },
-      { key: 'project_title', label: t('sprint.project_id'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('sprint.state'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
+      { key: 'project_title', label: t('sprint.project_id'), type: 'text', format: 'text', filterKey: 'project_id' },
       { key: 'start_date', label: t('sprint.start_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'end_date', label: t('sprint.end_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'stories_count', label: t('sprint.stories_count'), type: 'number', format: 'text' },
       { key: 'tasks_count', label: t('sprint.tasks_count'), type: 'number', format: 'text' },
       { key: 'actual_velocity', label: t('sprint.actual_velocity'), type: 'number', format: 'text' },
       { key: 'estimated_velocity', label: t('sprint.estimated_velocity'), type: 'number', format: 'text' },
-      { key: 'requested_by_name', label: t('sprint.reported_by'), type: 'text', format: 'text' },
+      { key: 'requested_by_name', label: t('sprint.reported_by'), type: 'text', format: 'text', filterKey: 'requested_by_uuid' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' }
@@ -250,16 +251,23 @@ export class Sprint {
 
   /**
    * Retourne l'endpoint API pour les tickets de type sprint
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE, FILTER)
    * @returns {string} URL de l'endpoint API
    */
   static getApiEndpoint(method) {
-    const userProfileStore = useUserProfileStore();
-    
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'tickets';
-    } else {
-      return `tickets?ticket_type=SPRINT&lang=${userProfileStore.language}`;
+    // Pour les filtres, retourner l'endpoint spécifique aux sprints
+    if (method === 'FILTER') {
+      return 'tickets/sprints';
     }
+    
+    // Pour l'infinite scroll, retourner l'endpoint de recherche
+    // Le composant reusableTableTab utilisera POST /tickets/search/sprints
+    if (method === 'GET') {
+      return 'tickets/search/sprints';
+    }
+    
+    // Pour les autres méthodes (PATCH, PUT, DELETE)
+    return 'tickets';
   }
 
   /**
@@ -291,14 +299,23 @@ export class Sprint {
   }
 
   /**
-   * Récupère un sprint par son ID
-   * @param {string} id - ID du sprint à récupérer
-   * @returns {Promise<Sprint>} Instance du sprint récupéré
+   * Récupère un sprint par son UUID
+   * @param {string} uuid - L'UUID du sprint à récupérer
+   * @returns {Promise<Sprint>} Une promesse résolue avec l'instance du sprint
    */
-  static async getById(id) {
-    const userProfileStore = useUserProfileStore();
-    const endpoint = `tickets/${id}?lang=${userProfileStore.language}`;
-    const data = await import('@/services/apiService').then(module => module.default.get(endpoint));
-    return new Sprint(data);
+  static async getById(uuid) {
+    try {
+      const userProfileStore = useUserProfileStore();
+      const response = await apiService.get(`tickets/${uuid}?lang=${userProfileStore.language}`);
+      
+      if (response) {
+        return new Sprint(response);
+      }
+      
+      throw new Error('Sprint not found');
+    } catch (error) {
+      console.error('Error fetching sprint:', error);
+      throw error;
+    }
   }
 }

@@ -121,8 +121,8 @@ const getTickets = async (req, res) => {
                 tickets = await defectService.getDefects(lang);
                 break;
             case 'SPRINT':
-                logger.info('[TICKETS CONTROLLER] Calling sprintService.getSprints');
-                tickets = await sprintService.getSprints(lang);
+                logger.info('[TICKETS CONTROLLER] SPRINT type no longer uses legacy getSprints - use search endpoint');
+                return res.status(400).json({ error: 'Use POST /tickets/search/sprints for sprint queries' });
                 break;
             case 'EPIC':
                 logger.info('[TICKETS CONTROLLER] Calling epicService.getEpics');

@@ -22,6 +22,7 @@ export const PAGINATION_CONFIG = {
     'Change': 50,
     'Knowledge_article': 50,
     'Project': 50,
+    'Sprint': 50,
     'Entity': 100,
     'Location': 75
   },
@@ -34,7 +35,8 @@ export const PAGINATION_CONFIG = {
     'Problem',
     'Change',
     'Knowledge_article',
-    'Project'
+    'Project',
+    'Sprint'
   ],
   
   // Seuil de déclenchement du chargement (px avant la fin)
