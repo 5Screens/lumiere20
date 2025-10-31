@@ -13,6 +13,88 @@ const { buildFilterCondition: buildGenericFilterCondition } = require('./ticketF
  * @returns {Object} { condition: string, newParamIndex: number }
  */
 const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
+  const { operator, value } = filterDef;
+  
+  // Handle project_id as a special relational column
+  if (column === 'project_id') {
+    logger.info(`[SPRINT SERVICE] Building condition for relational column: project_id`);
+    
+    if (operator === 'is_null') {
+      const condition = `NOT EXISTS (
+        SELECT 1 FROM core.rel_parent_child_tickets rpc
+        WHERE rpc.rel_child_ticket_uuid = t.uuid
+          AND rpc.dependency_code = 'SPRINT'
+          AND rpc.ended_at IS NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'is_not_null') {
+      const condition = `EXISTS (
+        SELECT 1 FROM core.rel_parent_child_tickets rpc
+        WHERE rpc.rel_child_ticket_uuid = t.uuid
+          AND rpc.dependency_code = 'SPRINT'
+          AND rpc.ended_at IS NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        const condition = `EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_child_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'SPRINT'
+            AND rpc.ended_at IS NULL
+            AND rpc.rel_parent_ticket_uuid IN (${placeholders})
+        )`;
+        return { condition, newParamIndex: paramIndex };
+      } else {
+        queryParams.push(value);
+        const condition = `EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_child_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'SPRINT'
+            AND rpc.ended_at IS NULL
+            AND rpc.rel_parent_ticket_uuid = $${paramIndex++}
+        )`;
+        return { condition, newParamIndex: paramIndex };
+      }
+    } else if (operator === 'not_equals' || operator === 'is_not') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        const condition = `(NOT EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_child_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'SPRINT'
+            AND rpc.ended_at IS NULL
+            AND rpc.rel_parent_ticket_uuid IN (${placeholders})
+        ) OR NOT EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_child_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'SPRINT'
+            AND rpc.ended_at IS NULL
+        ))`;
+        return { condition, newParamIndex: paramIndex };
+      } else {
+        queryParams.push(value);
+        const condition = `(NOT EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_child_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'SPRINT'
+            AND rpc.ended_at IS NULL
+            AND rpc.rel_parent_ticket_uuid = $${paramIndex++}
+        ) OR NOT EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_child_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'SPRINT'
+            AND rpc.ended_at IS NULL
+        ))`;
+        return { condition, newParamIndex: paramIndex };
+      }
+    }
+  }
+  
+  // Use generic filter builder for other columns
   return buildGenericFilterCondition(column, filterDef, dataType, queryParams, paramIndex, {
     jsonbDateColumns: [
       'start_date', 'end_date'
