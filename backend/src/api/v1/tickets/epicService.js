@@ -2,6 +2,7 @@ const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 const ticketService = require('./service');
 const { addChildrenTickets, removeChildTicket } = require('./service');
+const { buildFilterCondition: buildGenericFilterCondition } = require('./ticketFilterBuilder');
 
 /**
  * Récupère un epic par son UUID
@@ -372,9 +373,411 @@ const createEpic = async (epicData) => {
     return createdEpic;
 };
 
+/**
+ * Build filter condition for epics search (wrapper with EPIC-specific JSONB columns)
+ * @param {string} column - Column name
+ * @param {Object} filterDef - Filter definition with operator and value(s)
+ * @param {string} dataType - Column data type (text, number, date, boolean)
+ * @param {Array} queryParams - Array to push parameters into
+ * @param {number} paramIndex - Current parameter index
+ * @returns {Object} { condition: string, newParamIndex: number }
+ */
+const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
+  return buildGenericFilterCondition(column, filterDef, dataType, queryParams, paramIndex, {
+    jsonbDateColumns: [
+      'start_date', 'end_date'
+    ],
+    jsonbTextColumns: [
+      'color', 'project_id'
+    ],
+    jsonbArrayColumns: [
+      'tags'
+    ],
+    jsonbNumericColumns: [
+      'progress_percent'
+    ],
+    servicePrefix: '[EPIC SERVICE]'
+  });
+};
+
+/**
+ * Lazy search for epics with pagination
+ * @param {string} searchQuery - Search term
+ * @param {number} [page=1] - Page number (1-indexed)
+ * @param {number} [limit=25] - Number of results per page
+ * @param {string} [lang='en'] - Language code for translations
+ * @returns {Promise<Object>} Object with data and pagination metadata
+ */
+const getEpicsLazySearch = async (searchQuery = '', page = 1, limit = 25, lang = 'en') => {
+  try {
+    logger.info(`[EPIC SERVICE] Getting epics with lazy search: "${searchQuery}", page: ${page}, limit: ${limit}, lang: ${lang}`);
+    
+    // Validate and sanitize pagination parameters
+    const validPage = Math.max(1, parseInt(page) || 1);
+    const validLimit = Math.min(50, Math.max(1, parseInt(limit) || 25)); // Max 50 per page
+    const offset = (validPage - 1) * validLimit;
+    
+    // Separate WHERE clauses for COUNT and main query
+    let countWhereClause = `WHERE t.ticket_type_code = 'EPIC'`;
+    let mainWhereClause = `WHERE t.ticket_type_code = 'EPIC'`;
+    const countParams = []; // Params for COUNT query (no lang needed)
+    const queryParams = [lang]; // Params for main query (starts with lang at $1)
+    let countParamIndex = 1; // For COUNT query
+    let paramIndex = 2; // For main query (starts at $2 after lang)
+    
+    // If search query is provided, add search conditions
+    if (searchQuery && searchQuery.trim()) {
+      // Split search query by spaces to create AND conditions
+      const searchTerms = searchQuery.trim().split(/\s+/).filter(term => term.length > 0);
+      
+      if (searchTerms.length > 0) {
+        const countConditions = [];
+        const mainConditions = [];
+        
+        searchTerms.forEach((term) => {
+          // For COUNT query
+          countParams.push(`%${term}%`);
+          countConditions.push(`(
+            unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${countParamIndex})) OR
+            unaccent(LOWER(t.description)) LIKE unaccent(LOWER($${countParamIndex}))
+          )`);
+          countParamIndex++;
+          
+          // For main query
+          queryParams.push(`%${term}%`);
+          mainConditions.push(`(
+            unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${paramIndex})) OR
+            unaccent(LOWER(t.description)) LIKE unaccent(LOWER($${paramIndex}))
+          )`);
+          paramIndex++;
+        });
+        
+        countWhereClause += ` AND ${countConditions.join(' AND ')}`;
+        mainWhereClause += ` AND ${mainConditions.join(' AND ')}`;
+      }
+    }
+    
+    // Count total results for pagination
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM core.tickets t
+      ${countWhereClause}
+    `;
+    const { rows: countRows } = await db.query(countQuery, countParams);
+    const total = parseInt(countRows[0].total);
+    
+    // Main query to fetch epics
+    const query = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.ticket_status_code,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        t.core_extended_attributes->>'start_date' as start_date,
+        t.core_extended_attributes->>'end_date' as end_date,
+        t.core_extended_attributes->>'progress_percent' as progress_percent,
+        t.created_at
+      FROM core.tickets t
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = 'EPIC'
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $1
+      ${mainWhereClause}
+      ORDER BY t.created_at DESC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+    
+    queryParams.push(validLimit, offset);
+    
+    const { rows } = await db.query(query, queryParams);
+    
+    const hasMore = offset + rows.length < total;
+    
+    logger.info(`[EPIC SERVICE] Retrieved ${rows.length} epics (page ${validPage}, total: ${total}, hasMore: ${hasMore})`);
+    
+    return {
+      data: rows,
+      pagination: {
+        page: validPage,
+        limit: validLimit,
+        total: total,
+        hasMore: hasMore
+      }
+    };
+  } catch (error) {
+    logger.error('[EPIC SERVICE] Error in lazy search:', error);
+    throw error;
+  }
+};
+
+/**
+ * Advanced search for epics with filters, sorting, and pagination
+ * @param {Object} searchParams - Search parameters including filters, sort, pagination, and lang
+ * @returns {Promise<Object>} - { data: Array, total: number, hasMore: boolean, pagination: Object }
+ */
+const searchEpics = async (searchParams) => {
+  try {
+    const servicePrefix = '[EPIC SERVICE]';
+    
+    const { filters = {}, sort = {}, pagination = {}, lang = 'en' } = searchParams;
+    
+    // Extract pagination parameters
+    const page = pagination.page || 1;
+    const limit = pagination.limit || 50;
+    const offset = (page - 1) * limit;
+    
+    // Extract sort parameters
+    const sortBy = sort.by || 'created_at';
+    const sortDirection = sort.direction || 'desc';
+    
+    // Build WHERE clause from advanced filters
+    const queryParams = [];
+    let paramIndex = 1;
+    let whereClause = '';
+    
+    // Always filter by ticket_type = EPIC
+    const baseConditions = [`t.ticket_type_code = 'EPIC'`];
+    
+    // Validate filter format
+    if (filters && filters.conditions && Array.isArray(filters.conditions) && filters.conditions.length > 0) {
+        const mode = filters.mode || 'include';
+        const operator = (filters.operator || 'AND').toUpperCase();
+        
+        logger.info(`${servicePrefix} Processing ${filters.conditions.length} advanced filter(s) with mode=${mode}, operator=${operator}`);
+        
+        const filterConditions = [];
+        
+        // Process each filter condition
+        for (const filterDef of filters.conditions) {
+          const { column } = filterDef;
+          
+          logger.info(`${servicePrefix} Processing filter condition:`, JSON.stringify(filterDef));
+          
+          if (!column) {
+            logger.warn(`${servicePrefix} Filter condition missing column, skipping`);
+            continue;
+          }
+          
+          // Get column metadata to determine data type
+          const metadataQuery = `
+            SELECT data_type 
+            FROM administration.table_metadata 
+            WHERE table_name = $1 AND column_name = $2
+          `;
+          const metadataResult = await db.query(metadataQuery, ['tickets', column]);
+          
+          logger.info(`${servicePrefix} Metadata query result for column ${column}:`, metadataResult.rows);
+          
+          if (metadataResult.rows.length === 0) {
+            logger.warn(`${servicePrefix} No metadata for column ${column}, skipping filter`);
+            continue;
+          }
+          
+          const { data_type } = metadataResult.rows[0];
+          logger.info(`${servicePrefix} Column ${column} has data_type: ${data_type}`);
+          
+          // Build the condition for this filter
+          const { condition, newParamIndex } = buildFilterCondition(
+            column,
+            filterDef,
+            data_type,
+            queryParams,
+            paramIndex
+          );
+          
+          logger.info(`${servicePrefix} buildFilterCondition returned: condition="${condition}", newParamIndex=${newParamIndex}`);
+          
+          if (condition) {
+            filterConditions.push(condition);
+            paramIndex = newParamIndex;
+            logger.info(`${servicePrefix} Added filter: ${condition}`);
+          } else {
+            logger.warn(`${servicePrefix} buildFilterCondition returned empty condition for column ${column}`);
+          }
+        }
+        
+        // Combine all filter conditions
+        if (filterConditions.length > 0) {
+          const combinedConditions = filterConditions.join(` ${operator} `);
+          
+          // Apply mode: include or exclude
+          if (mode === 'exclude') {
+            baseConditions.push(`NOT (${combinedConditions})`);
+          } else {
+            if (operator === 'OR' || filterConditions.length > 1) {
+              baseConditions.push(`(${combinedConditions})`);
+            } else {
+              baseConditions.push(combinedConditions);
+            }
+          }
+          
+          logger.info(`${servicePrefix} Filter conditions added to base conditions`);
+        }
+    }
+    
+    whereClause = `WHERE ${baseConditions.join(' AND ')}`;
+    logger.info(`${servicePrefix} Final WHERE clause: ${whereClause}`);
+    
+    // Calculate the parameter index for lang (after all filter params)
+    const langParamIndex = paramIndex;
+    
+    // Sort column mapping for calculated/joined columns
+    const sortColumnMapping = {
+      'uuid': 't.uuid',
+      'title': 't.title',
+      'description': 't.description',
+      'ticket_type_code': 't.ticket_type_code',
+      'ticket_status_code': 't.ticket_status_code',
+      'ticket_status_label': 'COALESCE(tst.label, ts.code)',
+      'writer_uuid': 't.writer_uuid',
+      'writer_name': "p3.first_name || ' ' || p3.last_name",
+      'created_at': 't.created_at',
+      'updated_at': 't.updated_at',
+      'closed_at': 't.closed_at',
+      // JSONB fields
+      'start_date': "t.core_extended_attributes->>'start_date'",
+      'end_date': "t.core_extended_attributes->>'end_date'",
+      'progress_percent': "t.core_extended_attributes->>'progress_percent'",
+      'color': "t.core_extended_attributes->>'color'",
+      'tags': "t.core_extended_attributes->'tags'",
+      'project_id': "(SELECT parent.uuid FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'EPIC' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL LIMIT 1)",
+      'project_title': "(SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'EPIC' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL LIMIT 1)",
+      'stories_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'STORY\' AND rpc.ended_at IS NULL)',
+      'tasks_count': '(SELECT COUNT(*) FROM core.rel_parent_child_tickets rpc WHERE rpc.rel_parent_ticket_uuid = t.uuid AND rpc.dependency_code = \'TASK\' AND rpc.ended_at IS NULL)',
+      'attachments_count': '(SELECT COUNT(*) FROM core.attachments a WHERE a.object_uuid = t.uuid)'
+    };
+    
+    // Get the SQL expression for sorting
+    const sortExpression = sortColumnMapping[sortBy] || `t.${sortBy}`;
+    
+    logger.info(`${servicePrefix} Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
+    logger.info(`${servicePrefix} Pagination: page=${page}, limit=${limit}, offset=${offset}`);
+    logger.info(`${servicePrefix} Language: ${lang}`);
+    
+    // Count total results
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM core.tickets t
+      ${whereClause}
+    `;
+    
+    logger.info(`${servicePrefix} Count query params: ${JSON.stringify(queryParams)}`);
+    
+    const countResult = await db.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results with all data
+    const dataQuery = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.writer_uuid,
+        t.ticket_type_code,
+        t.ticket_status_code,
+        t.created_at,
+        t.updated_at,
+        t.closed_at,
+        
+        -- Person names
+        p3.first_name || ' ' || p3.last_name as writer_name,
+        
+        -- Translated labels
+        COALESCE(ttt.label, tt.code) as ticket_type_label,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        
+        -- JSONB fields extracted
+        t.core_extended_attributes->>'start_date' as start_date,
+        t.core_extended_attributes->>'end_date' as end_date,
+        t.core_extended_attributes->>'progress_percent' as progress_percent,
+        t.core_extended_attributes->>'color' as color,
+        t.core_extended_attributes->'tags' as tags,
+        
+        -- Project parent info
+        (
+          SELECT parent.uuid
+          FROM core.rel_parent_child_tickets rpc
+          JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+          WHERE rpc.rel_child_ticket_uuid = t.uuid 
+            AND rpc.dependency_code = 'EPIC' 
+            AND parent.ticket_type_code = 'PROJECT'
+            AND rpc.ended_at IS NULL
+          LIMIT 1
+        ) as project_id,
+        (
+          SELECT parent.title
+          FROM core.rel_parent_child_tickets rpc
+          JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+          WHERE rpc.rel_child_ticket_uuid = t.uuid 
+            AND rpc.dependency_code = 'EPIC' 
+            AND parent.ticket_type_code = 'PROJECT'
+            AND rpc.ended_at IS NULL
+          LIMIT 1
+        ) as project_title,
+        
+        -- Counts
+        (
+          SELECT COUNT(*)
+          FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+            AND rpc.dependency_code = 'STORY' 
+            AND rpc.ended_at IS NULL
+        ) as stories_count,
+        (
+          SELECT COUNT(*)
+          FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid 
+            AND rpc.dependency_code = 'TASK' 
+            AND rpc.ended_at IS NULL
+        ) as tasks_count,
+        (
+          SELECT COUNT(*)
+          FROM core.attachments a
+          WHERE a.object_uuid = t.uuid
+        ) as attachments_count
+        
+      FROM core.tickets t
+      JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+      JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${langParamIndex}
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${langParamIndex}
+      ${whereClause}
+      ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
+      LIMIT $${langParamIndex + 1} OFFSET $${langParamIndex + 2}
+    `;
+    
+    // Add lang, limit and offset to params
+    queryParams.push(lang, limit, offset);
+    
+    logger.info(`${servicePrefix} Data query params: ${JSON.stringify(queryParams)}`);
+    
+    const dataResult = await db.query(dataQuery, queryParams);
+    
+    const hasMore = offset + dataResult.rows.length < total;
+    
+    logger.info(`${servicePrefix} Retrieved ${dataResult.rows.length} epics (total: ${total}, hasMore: ${hasMore})`);
+    
+    return {
+      data: dataResult.rows,
+      total: total,
+      hasMore: hasMore,
+      pagination: {
+        page: page,
+        limit: limit,
+        total: total
+      }
+    };
+  } catch (error) {
+    logger.error('[EPIC SERVICE] Error in searchEpics:', error);
+    throw error;
+  }
+};
+
 module.exports = {
     getEpicById,
     getEpics,
     createEpic,
-    updateEpic
+    updateEpic,
+    searchEpics,
+    getEpicsLazySearch
 };

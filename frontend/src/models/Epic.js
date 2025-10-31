@@ -190,8 +190,8 @@ export class Epic {
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('epic.name'), type: 'text', format: 'text' },
       { key: 'description', label: t('epic.description'), type: 'text', format: 'html' },
-      { key: 'ticket_status_label', label: t('epic.status'), type: 'text', format: 'text' },
-      { key: 'project_title', label: t('epic.project_id'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('epic.status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
+      { key: 'project_title', label: t('epic.project_id'), type: 'text', format: 'text', filterKey: 'project_id' },
       { key: 'start_date', label: t('epic.start_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'end_date', label: t('epic.end_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'progress_percent', label: t('epic.progress_percent'), type: 'text', format: 'text' },
@@ -200,6 +200,7 @@ export class Epic {
       { key: 'attachments_count', label: t('epic.attachments_count'), type: 'number', format: 'text' },
       { key: 'color', label: t('epic.color'), type: 'text', format: 'text' },
       { key: 'tags', label: t('epic.tags'), type: 'text', format: 'tags' },
+      { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' }
@@ -208,16 +209,23 @@ export class Epic {
 
   /**
    * Retourne l'endpoint API pour les tickets de type EPIC
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE, FILTER)
    * @returns {string} Endpoint API
    */
   static getApiEndpoint(method) {
-    const userProfileStore = useUserProfileStore();
-    
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'tickets';
-    } else {
-      return `tickets?ticket_type=EPIC&lang=${userProfileStore.language}`;
+    // Pour les filtres, retourner l'endpoint spécifique aux epics
+    if (method === 'FILTER') {
+      return 'tickets/epics';
     }
+    
+    // Pour l'infinite scroll, retourner l'endpoint de recherche
+    // Le composant reusableTableTab utilisera POST /tickets/search/epics
+    if (method === 'GET') {
+      return 'tickets/search/epics';
+    }
+    
+    // Pour les autres méthodes (PATCH, PUT, DELETE)
+    return 'tickets';
   }
 
   /**
@@ -253,15 +261,25 @@ export class Epic {
   }
 
   /**
-   * Récupère un epic par son ID
-   * @param {string} id - ID de l'epic à récupérer
-   * @returns {Promise<Epic>} Instance de l'epic récupéré
+   * Récupère un epic par son UUID
+   * @param {string} uuid - L'UUID du ticket à récupérer
+   * @returns {Promise<Epic>} Une promesse résolue avec l'instance de l'epic
    */
-  static async getById(id) {
-    const userProfileStore = useUserProfileStore();
-    const endpoint = `tickets/${id}?lang=${userProfileStore.language}`;
-    const data = await import('@/services/apiService').then(module => module.default.get(endpoint));
-    return new Epic(data);
+  static async getById(uuid) {
+    try {
+      const userProfileStore = useUserProfileStore();
+      const apiService = await import('@/services/apiService').then(module => module.default);
+      const response = await apiService.get(`tickets/${uuid}?lang=${userProfileStore.language}`);
+      
+      if (response) {
+        return new Epic(response);
+      }
+      
+      throw new Error('Epic not found');
+    } catch (error) {
+      console.error('Error fetching epic:', error);
+      throw error;
+    }
   }
 
   toAPI(method) {
