@@ -749,7 +749,7 @@ export default {
     team: 'Équipe',
     team_placeholder: 'Sélectionnez l\'équipe en charge de la story',
     team_placeholder_if_empty_project: 'Veuillez d\'abord sélectionner un projet',
-    assigned_to_person: 'Assigné à',
+    assigned_to_person: 'Assignée à',
     assigned_to_person_placeholder: 'Sélectionnez la personne chargée de réaliser techniquement la story',
     assigned_to_person_placeholder_if_empty_team: 'Veuillez d\'abord sélectionner une équipe',
     epic_id: 'Épopée',

@@ -260,16 +260,16 @@ export class Story {
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('story.title'), type: 'text', format: 'text' },
       { key: 'description', label: t('story.description'), type: 'text', format: 'html' },
-      { key: 'ticket_status_label', label: t('story.status'), type: 'text', format: 'text' },
-      { key: 'project_title', label: t('story.project_id'), type: 'text', format: 'text' },
-      { key: 'epic_title', label: t('story.epic_id'), type: 'text', format: 'text' },
-      { key: 'sprint_title', label: t('story.sprint_id'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('story.status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
+      { key: 'project_title', label: t('story.project_id'), type: 'text', format: 'text', filterKey: 'project_id' },
+      { key: 'epic_title', label: t('story.epic_id'), type: 'text', format: 'text', filterKey: 'epic_id' },
+      { key: 'sprint_title', label: t('story.sprint_id'), type: 'text', format: 'text', filterKey: 'sprint_id' },
       { key: 'story_points', label: t('story.story_points'), type: 'text', format: 'text' },
       { key: 'tags', label: t('story.tags'), type: 'text', format: 'tags' },
       { key: 'acceptance_criteria', label: t('story.acceptance_criteria'), type: 'text', format: 'html' },
       { key: 'priority', label: t('story.priority'), type: 'text', format: 'text' },
-      { key: 'requested_for_name', label: t('story.reporter'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('story.assigned_to_person'), type: 'text', format: 'text' },
+      { key: 'requested_for_name', label: t('story.reporter'), type: 'text', format: 'text', filterKey: 'requested_for_uuid' },
+      { key: 'assigned_person_name', label: t('story.assigned_to_person'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
     ];
@@ -289,16 +289,23 @@ export class Story {
 
   /**
    * Retourne l'endpoint API pour récupérer les tickets de type story
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE, FILTER)
    * @returns {string} URL de l'endpoint API
    */
   static getApiEndpoint(method) {
-    const userProfileStore = useUserProfileStore();
-    
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'tickets';
-    } else {
-      return `tickets?ticket_type=USER_STORY&lang=${userProfileStore.language}`;
+    // Pour les filtres, retourner l'endpoint spécifique aux user stories
+    if (method === 'FILTER') {
+      return 'tickets/user_stories';
     }
+    
+    // Pour l'infinite scroll, retourner l'endpoint de recherche
+    // Le composant reusableTableTab utilisera POST /tickets/search/user_stories
+    if (method === 'GET') {
+      return 'tickets/search/user_stories';
+    }
+    
+    // Pour les autres méthodes (PATCH, PUT, DELETE)
+    return 'tickets';
   }
 
   /**

@@ -686,11 +686,452 @@ const createStory = async (storyData) => {
     return createdStory;
 };
 
+/**
+ * Build filter condition for user stories search (wrapper with USER_STORY-specific JSONB columns)
+ * @param {string} column - Column name
+ * @param {Object} filterDef - Filter definition with operator and value(s)
+ * @param {string} dataType - Column data type (text, number, date, boolean)
+ * @param {Array} queryParams - Array to push parameters into
+ * @param {number} paramIndex - Current parameter index
+ * @returns {Object} { condition: string, newParamIndex: number }
+ */
+const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
+  const { buildFilterCondition: buildGenericFilterCondition } = require('./ticketFilterBuilder');
+  
+  return buildGenericFilterCondition(column, filterDef, dataType, queryParams, paramIndex, {
+    jsonbDateColumns: [],
+    jsonbTextColumns: [
+      'priority'
+    ],
+    jsonbArrayColumns: [
+      'tags'
+    ],
+    jsonbNumericColumns: [
+      'story_points'
+    ],
+    servicePrefix: '[STORY SERVICE]'
+  });
+};
+
+/**
+ * Search user stories with advanced filters, sorting, and pagination
+ * @param {Object} searchParams - Search parameters
+ * @returns {Promise<Object>} Object with data, total, hasMore, and pagination metadata
+ */
+const searchUserStories = async (searchParams) => {
+  try {
+    const servicePrefix = '[STORY SERVICE]';
+    
+    const { filters = {}, sort = {}, pagination = {}, lang = 'en' } = searchParams;
+    
+    // Extract pagination parameters
+    const page = pagination.page || 1;
+    const limit = pagination.limit || 50;
+    const offset = (page - 1) * limit;
+    
+    // Extract sort parameters
+    const sortBy = sort.by || 'created_at';
+    const sortDirection = sort.direction || 'desc';
+    
+    // Build WHERE clause from advanced filters
+    const queryParams = [];
+    let paramIndex = 1;
+    let whereClause = '';
+    
+    // Always filter by ticket_type = USER_STORY
+    const baseConditions = [`t.ticket_type_code = 'USER_STORY'`];
+    
+    // Validate filter format
+    if (filters && filters.conditions && Array.isArray(filters.conditions) && filters.conditions.length > 0) {
+        const mode = filters.mode || 'include';
+        const operator = (filters.operator || 'AND').toUpperCase();
+        
+        logger.info(`${servicePrefix} Processing ${filters.conditions.length} advanced filter(s) with mode=${mode}, operator=${operator}`);
+        
+        const filterConditions = [];
+        
+        // Process each filter condition
+        for (const filterDef of filters.conditions) {
+          const { column } = filterDef;
+          
+          logger.info(`${servicePrefix} Processing filter condition:`, JSON.stringify(filterDef));
+          
+          if (!column) {
+            logger.warn(`${servicePrefix} Filter condition missing column, skipping`);
+            continue;
+          }
+          
+          // Get column metadata to determine data type
+          const metadataQuery = `
+            SELECT data_type 
+            FROM administration.table_metadata 
+            WHERE table_name = $1 AND column_name = $2
+          `;
+          const metadataResult = await db.query(metadataQuery, ['tickets', column]);
+          
+          logger.info(`${servicePrefix} Metadata query result for column ${column}:`, metadataResult.rows);
+          
+          if (metadataResult.rows.length === 0) {
+            logger.warn(`${servicePrefix} No metadata for column ${column}, skipping filter`);
+            continue;
+          }
+          
+          const { data_type } = metadataResult.rows[0];
+          logger.info(`${servicePrefix} Column ${column} has data_type: ${data_type}`);
+          
+          // Build the condition for this filter
+          const { condition, newParamIndex } = buildFilterCondition(
+            column,
+            filterDef,
+            data_type,
+            queryParams,
+            paramIndex
+          );
+          
+          logger.info(`${servicePrefix} buildFilterCondition returned: condition="${condition}", newParamIndex=${newParamIndex}`);
+          
+          if (condition) {
+            filterConditions.push(condition);
+            paramIndex = newParamIndex;
+            logger.info(`${servicePrefix} Added filter: ${condition}`);
+          } else {
+            logger.warn(`${servicePrefix} buildFilterCondition returned empty condition for column ${column}`);
+          }
+        }
+        
+        // Combine all filter conditions
+        if (filterConditions.length > 0) {
+          const combinedConditions = filterConditions.join(` ${operator} `);
+          
+          // Apply mode: include or exclude
+          if (mode === 'exclude') {
+            baseConditions.push(`NOT (${combinedConditions})`);
+          } else {
+            if (operator === 'OR' || filterConditions.length > 1) {
+              baseConditions.push(`(${combinedConditions})`);
+            } else {
+              baseConditions.push(combinedConditions);
+            }
+          }
+          
+          logger.info(`${servicePrefix} Filter conditions added to base conditions`);
+        }
+    }
+    
+    whereClause = `WHERE ${baseConditions.join(' AND ')}`;
+    logger.info(`${servicePrefix} Final WHERE clause: ${whereClause}`);
+    
+    // Calculate the parameter index for lang (after all filter params)
+    const langParamIndex = paramIndex;
+    
+    // Sort column mapping for calculated/joined columns
+    const sortColumnMapping = {
+      'uuid': 't.uuid',
+      'title': 't.title',
+      'description': 't.description',
+      'ticket_type_code': 't.ticket_type_code',
+      'ticket_status_code': 't.ticket_status_code',
+      'ticket_status_label': 'COALESCE(tst.label, ts.code)',
+      'writer_uuid': 't.writer_uuid',
+      'writer_name': "p3.first_name || ' ' || p3.last_name",
+      'requested_for_uuid': 't.requested_for_uuid',
+      'requested_for_name': "p2.first_name || ' ' || p2.last_name",
+      'assigned_to_person': 'p4.uuid',
+      'assigned_person_name': "p4.first_name || ' ' || p4.last_name",
+      'created_at': 't.created_at',
+      'updated_at': 't.updated_at',
+      'closed_at': 't.closed_at',
+      // JSONB fields
+      'priority': "t.core_extended_attributes->>'priority'",
+      'story_points': "(t.core_extended_attributes->>'story_points')::INTEGER",
+      'acceptance_criteria': "t.core_extended_attributes->>'acceptance_criteria'",
+      'tags': "t.core_extended_attributes->'tags'",
+      // Calculated fields (subqueries)
+      'project_id': `COALESCE(
+        (SELECT project.uuid FROM core.rel_parent_child_tickets rpc1 JOIN core.tickets epic ON rpc1.rel_parent_ticket_uuid = epic.uuid JOIN core.rel_parent_child_tickets rpc2 ON epic.uuid = rpc2.rel_child_ticket_uuid JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid WHERE rpc1.rel_child_ticket_uuid = t.uuid AND rpc1.dependency_code = 'STORY' AND rpc1.ended_at IS NULL AND rpc2.dependency_code = 'EPIC' AND rpc2.ended_at IS NULL LIMIT 1),
+        (SELECT parent.uuid FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL LIMIT 1)
+      )`,
+      'project_title': `COALESCE(
+        (SELECT project.title FROM core.rel_parent_child_tickets rpc1 JOIN core.tickets epic ON rpc1.rel_parent_ticket_uuid = epic.uuid JOIN core.rel_parent_child_tickets rpc2 ON epic.uuid = rpc2.rel_child_ticket_uuid JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid WHERE rpc1.rel_child_ticket_uuid = t.uuid AND rpc1.dependency_code = 'STORY' AND rpc1.ended_at IS NULL AND rpc2.dependency_code = 'EPIC' AND rpc2.ended_at IS NULL LIMIT 1),
+        (SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL LIMIT 1)
+      )`,
+      'epic_id': '(SELECT parent.uuid FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = \'STORY\' AND parent.ticket_type_code = \'EPIC\' AND rpc.ended_at IS NULL LIMIT 1)',
+      'epic_title': '(SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = \'STORY\' AND parent.ticket_type_code = \'EPIC\' AND rpc.ended_at IS NULL LIMIT 1)',
+      'sprint_id': '(SELECT parent.uuid FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = \'STORY\' AND parent.ticket_type_code = \'SPRINT\' AND rpc.ended_at IS NULL LIMIT 1)',
+      'sprint_title': '(SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = \'STORY\' AND parent.ticket_type_code = \'SPRINT\' AND rpc.ended_at IS NULL LIMIT 1)'
+    };
+    
+    // Get the SQL expression for sorting
+    const sortExpression = sortColumnMapping[sortBy] || `t.${sortBy}`;
+    
+    logger.info(`${servicePrefix} Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
+    logger.info(`${servicePrefix} Pagination: page=${page}, limit=${limit}, offset=${offset}`);
+    logger.info(`${servicePrefix} Language: ${lang}`);
+    
+    // Count total results
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM core.tickets t
+      ${whereClause}
+    `;
+    
+    logger.info(`${servicePrefix} Count query params: ${JSON.stringify(queryParams)}`);
+    
+    const countResult = await db.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results with all data
+    const dataQuery = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.writer_uuid,
+        t.requested_for_uuid,
+        t.ticket_type_code,
+        t.ticket_status_code,
+        t.created_at,
+        t.updated_at,
+        t.closed_at,
+        
+        -- Person names
+        p2.first_name || ' ' || p2.last_name as requested_for_name,
+        p3.first_name || ' ' || p3.last_name as writer_name,
+        
+        -- Translated labels
+        COALESCE(ttt.label, tt.code) as ticket_type_label,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        
+        -- Assignment info
+        p4.uuid as assigned_to_person,
+        p4.first_name || ' ' || p4.last_name as assigned_person_name,
+        
+        -- User story-specific fields from core_extended_attributes
+        t.core_extended_attributes->'tags' as tags,
+        t.core_extended_attributes->>'priority' as priority,
+        t.core_extended_attributes->>'story_points' as story_points,
+        t.core_extended_attributes->>'acceptance_criteria' as acceptance_criteria,
+        
+        -- Project parent (two cases)
+        COALESCE(
+          (SELECT project.uuid FROM core.rel_parent_child_tickets rpc1 JOIN core.tickets epic ON rpc1.rel_parent_ticket_uuid = epic.uuid JOIN core.rel_parent_child_tickets rpc2 ON epic.uuid = rpc2.rel_child_ticket_uuid JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid WHERE rpc1.rel_child_ticket_uuid = t.uuid AND rpc1.dependency_code = 'STORY' AND rpc1.ended_at IS NULL AND rpc2.dependency_code = 'EPIC' AND rpc2.ended_at IS NULL LIMIT 1),
+          (SELECT parent.uuid FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL LIMIT 1)
+        ) as project_id,
+        COALESCE(
+          (SELECT project.title FROM core.rel_parent_child_tickets rpc1 JOIN core.tickets epic ON rpc1.rel_parent_ticket_uuid = epic.uuid JOIN core.rel_parent_child_tickets rpc2 ON epic.uuid = rpc2.rel_child_ticket_uuid JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid WHERE rpc1.rel_child_ticket_uuid = t.uuid AND rpc1.dependency_code = 'STORY' AND rpc1.ended_at IS NULL AND rpc2.dependency_code = 'EPIC' AND rpc2.ended_at IS NULL LIMIT 1),
+          (SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL LIMIT 1)
+        ) as project_title,
+        
+        -- Epic parent
+        (SELECT parent.uuid FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'EPIC' AND rpc.ended_at IS NULL LIMIT 1) as epic_id,
+        (SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'EPIC' AND rpc.ended_at IS NULL LIMIT 1) as epic_title,
+        
+        -- Sprint parent
+        (SELECT parent.uuid FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'SPRINT' AND rpc.ended_at IS NULL LIMIT 1) as sprint_id,
+        (SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'SPRINT' AND rpc.ended_at IS NULL LIMIT 1) as sprint_title
+        
+      FROM core.tickets t
+      LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
+      LEFT JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+      JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${langParamIndex}
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${langParamIndex}
+      LEFT JOIN (
+        SELECT rel_ticket, rel_assigned_to_person
+        FROM core.rel_tickets_groups_persons
+        WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+      ) rtgp ON t.uuid = rtgp.rel_ticket
+      LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+      ${whereClause}
+      ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
+      LIMIT $${langParamIndex + 1} OFFSET $${langParamIndex + 2}
+    `;
+    
+    queryParams.push(lang, limit, offset);
+    
+    logger.info(`${servicePrefix} Data query params: ${JSON.stringify(queryParams)}`);
+    
+    const dataResult = await db.query(dataQuery, queryParams);
+    
+    // Calculate pagination metadata
+    const currentPage = page;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = offset + limit < total;
+    
+    logger.info(`${servicePrefix} Found ${dataResult.rows.length} user stories (total: ${total})`);
+    
+    return {
+      data: dataResult.rows,
+      total: total,
+      hasMore: hasMore,
+      pagination: {
+        offset: offset,
+        limit: limit,
+        currentPage: currentPage,
+        totalPages: totalPages,
+        sortBy: sortBy,
+        sortDirection: sortDirection
+      }
+    };
+    
+  } catch (error) {
+    logger.error('[STORY SERVICE] Error searching user stories:', error);
+    throw error;
+  }
+};
+
+/**
+ * Lazy search for user stories with pagination
+ * @param {string} searchQuery - Search term
+ * @param {number} [page=1] - Page number (1-indexed)
+ * @param {number} [limit=25] - Number of results per page
+ * @param {string} [lang='en'] - Language code for translations
+ * @returns {Promise<Object>} Object with data and pagination metadata
+ */
+const getUserStoriesLazySearch = async (searchQuery = '', page = 1, limit = 25, lang = 'en') => {
+  try {
+    logger.info(`[STORY SERVICE] Getting user stories with lazy search: "${searchQuery}", page: ${page}, limit: ${limit}, lang: ${lang}`);
+    
+    // Validate and sanitize pagination parameters
+    const validPage = Math.max(1, parseInt(page) || 1);
+    const validLimit = Math.min(50, Math.max(1, parseInt(limit) || 25)); // Max 50 per page
+    const offset = (validPage - 1) * validLimit;
+    
+    // Separate WHERE clauses for COUNT and main query
+    let countWhereClause = `WHERE t.ticket_type_code = 'USER_STORY'`;
+    let mainWhereClause = `WHERE t.ticket_type_code = 'USER_STORY'`;
+    const countParams = []; // Params for COUNT query (no lang needed)
+    const queryParams = [lang]; // Params for main query (starts with lang at $1)
+    let countParamIndex = 1; // For COUNT query
+    let paramIndex = 2; // For main query (starts at $2 after lang)
+    
+    // Add search filter if provided
+    if (searchQuery && searchQuery.trim().length > 0) {
+      // Split search terms by spaces for multi-term search
+      const searchTerms = searchQuery.trim().split(/\s+/).filter(term => term.length > 0);
+      
+      const countSearchConditions = [];
+      const mainSearchConditions = [];
+      
+      searchTerms.forEach(term => {
+        // For COUNT query
+        countParams.push(`%${term}%`);
+        countSearchConditions.push(`(
+          unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${countParamIndex})) OR
+          unaccent(LOWER(t.description)) LIKE unaccent(LOWER($${countParamIndex}))
+        )`);
+        countParamIndex++;
+        
+        // For main query
+        queryParams.push(`%${term}%`);
+        mainSearchConditions.push(`(
+          unaccent(LOWER(t.title)) LIKE unaccent(LOWER($${paramIndex})) OR
+          unaccent(LOWER(t.description)) LIKE unaccent(LOWER($${paramIndex}))
+        )`);
+        paramIndex++;
+      });
+      
+      if (countSearchConditions.length > 0) {
+        countWhereClause += ` AND ${countSearchConditions.join(' AND ')}`;
+        mainWhereClause += ` AND ${mainSearchConditions.join(' AND ')}`;
+      }
+    }
+    
+    // Count total matching results
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM core.tickets t
+      ${countWhereClause}
+    `;
+    
+    const countResult = await db.query(countQuery, countParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results
+    const dataQuery = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.ticket_status_code,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        t.created_at,
+        t.updated_at,
+        
+        -- Person names
+        p2.first_name || ' ' || p2.last_name as requested_for_name,
+        p3.first_name || ' ' || p3.last_name as writer_name,
+        
+        -- Assignment
+        p4.uuid as assigned_to_person,
+        p4.first_name || ' ' || p4.last_name as assigned_person_name,
+        
+        -- User story fields
+        t.core_extended_attributes->'tags' as tags,
+        t.core_extended_attributes->>'priority' as priority,
+        t.core_extended_attributes->>'story_points' as story_points,
+        
+        -- Parent titles
+        COALESCE(
+          (SELECT project.title FROM core.rel_parent_child_tickets rpc1 JOIN core.tickets epic ON rpc1.rel_parent_ticket_uuid = epic.uuid JOIN core.rel_parent_child_tickets rpc2 ON epic.uuid = rpc2.rel_child_ticket_uuid JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid WHERE rpc1.rel_child_ticket_uuid = t.uuid AND rpc1.dependency_code = 'STORY' AND rpc1.ended_at IS NULL AND rpc2.dependency_code = 'EPIC' AND rpc2.ended_at IS NULL LIMIT 1),
+          (SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'PROJECT' AND rpc.ended_at IS NULL LIMIT 1)
+        ) as project_title,
+        (SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'EPIC' AND rpc.ended_at IS NULL LIMIT 1) as epic_title,
+        (SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'STORY' AND parent.ticket_type_code = 'SPRINT' AND rpc.ended_at IS NULL LIMIT 1) as sprint_title
+        
+      FROM core.tickets t
+      LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
+      LEFT JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+      JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $1
+      LEFT JOIN (
+        SELECT rel_ticket, rel_assigned_to_person
+        FROM core.rel_tickets_groups_persons
+        WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+      ) rtgp ON t.uuid = rtgp.rel_ticket
+      LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+      ${mainWhereClause}
+      ORDER BY t.created_at DESC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+    
+    queryParams.push(validLimit, offset);
+    
+    const dataResult = await db.query(dataQuery, queryParams);
+    
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / validLimit);
+    const hasMore = offset + validLimit < total;
+    
+    logger.info(`[STORY SERVICE] Lazy search found ${dataResult.rows.length} user stories (total: ${total})`);
+    
+    return {
+      data: dataResult.rows,
+      total: total,
+      hasMore: hasMore,
+      pagination: {
+        page: validPage,
+        limit: validLimit,
+        offset: offset,
+        totalPages: totalPages
+      }
+    };
+    
+  } catch (error) {
+    logger.error('[STORY SERVICE] Error in lazy search:', error);
+    throw error;
+  }
+};
+
 module.exports = {
     getStoryById,
     getUserStories,
     updateStory,
     updateParentEpic,
     updateParentSprint,
-    createStory
+    createStory,
+    searchUserStories,
+    getUserStoriesLazySearch
 };
