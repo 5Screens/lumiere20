@@ -199,8 +199,8 @@ INSERT INTO administration.table_metadata (
  'checkbox', '{"multiple": false}'::jsonb,
  true, 'core.tickets', 'uuid',
  false, NULL, NULL, NULL,
- 'sSelectField', 'Sélectionnez l''epic', false, false,
- 'tickets/{project_id}/epics', 'title', 'uuid', false, 'Epic auquel appartient la story',
+ 'sFilteredSearchField', 'Recherchez un epic', false, false,
+ 'tickets?ticket_type=EPIC', 'title', 'uuid', true, 'Epic auquel appartient la story',
  true, 140,
  NULL, NULL, NULL),
 
@@ -211,8 +211,8 @@ INSERT INTO administration.table_metadata (
  'checkbox', '{"multiple": false}'::jsonb,
  true, 'core.tickets', 'uuid',
  false, NULL, NULL, NULL,
- 'sSelectField', 'Sélectionnez le sprint', false, false,
- 'tickets/{project_id}/sprints', 'title', 'uuid', false, 'Sprint dans lequel la story est planifiée',
+ 'sFilteredSearchField', 'Recherchez un sprint', false, false,
+ 'tickets?ticket_type=SPRINT', 'title', 'uuid', true, 'Sprint dans lequel la story est planifiée',
  true, 150,
  NULL, NULL, NULL),
 
