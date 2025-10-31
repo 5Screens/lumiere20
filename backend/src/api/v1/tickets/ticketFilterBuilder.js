@@ -72,6 +72,39 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         )`;
         queryParams.push(value);
       }
+    } else if (operator === 'not_equals' || operator === 'is_not') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `(NOT EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_group IN (${placeholders})
+        ) OR NOT EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_group IS NOT NULL
+        ))`;
+      } else {
+        condition = `(NOT EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_group = $${paramIndex++}
+        ) OR NOT EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_group IS NOT NULL
+        ))`;
+        queryParams.push(value);
+      }
     }
     return { condition, newParamIndex: paramIndex };
   }
@@ -115,6 +148,39 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
             AND rtgp.ended_at IS NULL
             AND rtgp.rel_assigned_to_person = $${paramIndex++}
         )`;
+        queryParams.push(value);
+      }
+    } else if (operator === 'not_equals' || operator === 'is_not') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `(NOT EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_person IN (${placeholders})
+        ) OR NOT EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_person IS NOT NULL
+        ))`;
+      } else {
+        condition = `(NOT EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_person = $${paramIndex++}
+        ) OR NOT EXISTS (
+          SELECT 1 FROM core.rel_tickets_groups_persons rtgp
+          WHERE rtgp.rel_ticket = t.uuid
+            AND rtgp.type = 'ASSIGNED'
+            AND rtgp.ended_at IS NULL
+            AND rtgp.rel_assigned_to_person IS NOT NULL
+        ))`;
         queryParams.push(value);
       }
     }
@@ -305,13 +371,14 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         condition = `t.${column} = $${paramIndex++}`;
         queryParams.push(value);
       }
-    } else if (operator === 'is_not') {
+    } else if (operator === 'is_not' || operator === 'not_equals') {
+      // Support array of values with NOT IN, including NULL values
       if (Array.isArray(value)) {
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `t.${column} NOT IN (${placeholders})`;
+        condition = `(t.${column} NOT IN (${placeholders}) OR t.${column} IS NULL)`;
         queryParams.push(...value);
       } else {
-        condition = `t.${column} != $${paramIndex++}`;
+        condition = `(t.${column} != $${paramIndex++} OR t.${column} IS NULL)`;
         queryParams.push(value);
       }
     }
