@@ -207,7 +207,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     }
     
     // Handle DATE columns stored in JSONB
-    if (jsonbDateColumns.includes(column) && (dataType === 'timestamp' || dataType === 'datetime')) {
+    if (jsonbDateColumns.includes(column) && (dataType === 'date' || dataType === 'timestamp' || dataType === 'datetime')) {
       if (operator === 'after') {
         condition = `DATE((${jsonbPath})::timestamp) > DATE($${paramIndex++})`;
         queryParams.push(value);
