@@ -833,6 +833,94 @@ const searchUserStories = async (searchParams) => {
             continue;
           }
           
+          // Special handling for epic_id (stored in rel_parent_child_tickets, not JSONB)
+          if (column === 'epic_id') {
+            logger.info(`${servicePrefix} Special handling for epic_id filter`);
+            const { operator: filterOperator, value } = filterDef;
+            
+            if (filterOperator === 'is' && Array.isArray(value) && value.length > 0) {
+              const epicUuids = value;
+              const placeholders = epicUuids.map((_, idx) => `$${paramIndex + idx}`).join(', ');
+              
+              const condition = `t.uuid IN (
+                SELECT rpc.rel_child_ticket_uuid 
+                FROM core.rel_parent_child_tickets rpc 
+                WHERE rpc.rel_parent_ticket_uuid IN (${placeholders})
+                  AND rpc.dependency_code = 'STORY'
+                  AND rpc.ended_at IS NULL
+              )`;
+              
+              epicUuids.forEach(uuid => queryParams.push(uuid));
+              paramIndex += epicUuids.length;
+              
+              filterConditions.push(condition);
+              logger.info(`${servicePrefix} Added epic_id filter: ${condition}`);
+            } else if (filterOperator === 'is_not' && Array.isArray(value) && value.length > 0) {
+              const epicUuids = value;
+              const placeholders = epicUuids.map((_, idx) => `$${paramIndex + idx}`).join(', ');
+              
+              const condition = `t.uuid NOT IN (
+                SELECT rpc.rel_child_ticket_uuid 
+                FROM core.rel_parent_child_tickets rpc 
+                WHERE rpc.rel_parent_ticket_uuid IN (${placeholders})
+                  AND rpc.dependency_code = 'STORY'
+                  AND rpc.ended_at IS NULL
+              )`;
+              
+              epicUuids.forEach(uuid => queryParams.push(uuid));
+              paramIndex += epicUuids.length;
+              
+              filterConditions.push(condition);
+              logger.info(`${servicePrefix} Added epic_id NOT filter: ${condition}`);
+            }
+            
+            continue;
+          }
+          
+          // Special handling for sprint_id (stored in rel_parent_child_tickets, not JSONB)
+          if (column === 'sprint_id') {
+            logger.info(`${servicePrefix} Special handling for sprint_id filter`);
+            const { operator: filterOperator, value } = filterDef;
+            
+            if (filterOperator === 'is' && Array.isArray(value) && value.length > 0) {
+              const sprintUuids = value;
+              const placeholders = sprintUuids.map((_, idx) => `$${paramIndex + idx}`).join(', ');
+              
+              const condition = `t.uuid IN (
+                SELECT rpc.rel_child_ticket_uuid 
+                FROM core.rel_parent_child_tickets rpc 
+                WHERE rpc.rel_parent_ticket_uuid IN (${placeholders})
+                  AND rpc.dependency_code = 'STORY'
+                  AND rpc.ended_at IS NULL
+              )`;
+              
+              sprintUuids.forEach(uuid => queryParams.push(uuid));
+              paramIndex += sprintUuids.length;
+              
+              filterConditions.push(condition);
+              logger.info(`${servicePrefix} Added sprint_id filter: ${condition}`);
+            } else if (filterOperator === 'is_not' && Array.isArray(value) && value.length > 0) {
+              const sprintUuids = value;
+              const placeholders = sprintUuids.map((_, idx) => `$${paramIndex + idx}`).join(', ');
+              
+              const condition = `t.uuid NOT IN (
+                SELECT rpc.rel_child_ticket_uuid 
+                FROM core.rel_parent_child_tickets rpc 
+                WHERE rpc.rel_parent_ticket_uuid IN (${placeholders})
+                  AND rpc.dependency_code = 'STORY'
+                  AND rpc.ended_at IS NULL
+              )`;
+              
+              sprintUuids.forEach(uuid => queryParams.push(uuid));
+              paramIndex += sprintUuids.length;
+              
+              filterConditions.push(condition);
+              logger.info(`${servicePrefix} Added sprint_id NOT filter: ${condition}`);
+            }
+            
+            continue;
+          }
+          
           // Get column metadata to determine data type
           const metadataQuery = `
             SELECT data_type 
