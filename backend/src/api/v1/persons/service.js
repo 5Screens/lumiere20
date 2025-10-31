@@ -943,14 +943,14 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         logger.info(`[BUILD FILTER] TEXT/UUID ${operator} single: column=${column}, value=${value}, condition=${condition}`);
       }
     } else if (operator === 'not_equals') {
-      // Support array of values with NOT IN
+      // Support array of values with NOT IN, including NULL values
       if (Array.isArray(value)) {
         const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
-        condition = `p.${column} NOT IN (${placeholders})`;
+        condition = `(p.${column} NOT IN (${placeholders}) OR p.${column} IS NULL)`;
         queryParams.push(...value);
         logger.info(`[BUILD FILTER] TEXT/UUID ${operator} array: column=${column}, values=[${value.join(', ')}], condition=${condition}`);
       } else {
-        condition = `p.${column} != $${paramIndex++}`;
+        condition = `(p.${column} != $${paramIndex++} OR p.${column} IS NULL)`;
         queryParams.push(value);
         logger.info(`[BUILD FILTER] TEXT/UUID ${operator} single: column=${column}, value=${value}, condition=${condition}`);
       }

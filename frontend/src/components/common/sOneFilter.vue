@@ -454,7 +454,7 @@ export default {
       else if (['UUID'].includes(dataType)) {
         types.push(
           { value: 'is', label: 'filters.type_uuid_is' },
-          { value: 'is_not', label: 'filters.type_uuid_is_not' },
+          { value: 'not_equals', label: 'filters.type_uuid_is_not' },
           { value: 'is_null', label: 'filters.is_null' },
           { value: 'is_not_null', label: 'filters.is_not_null' }
         );

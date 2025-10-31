@@ -97,7 +97,7 @@ export default {
         'is_false': t('filters.type_boolean_is_false'),
         
         // UUID
-        'is_not': t('filters.type_uuid_is_not'),
+        'not_equals': t('filters.type_uuid_is_not'),
         
         // NULL
         'is_null': t('filters.is_null'),

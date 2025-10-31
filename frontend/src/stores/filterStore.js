@@ -596,9 +596,9 @@ export const useFilterStore = defineStore('filter', {
         });
         
         // Pour les tableaux (multi-select), le backend gère automatiquement avec IN ou NOT IN
-        // Ne pas écraser l'opérateur si c'est 'is' ou 'is_not' (qui doivent rester tels quels)
+        // Ne pas écraser l'opérateur si c'est 'is', 'not_equals', 'equals' ou 'contains'
         if (Array.isArray(value) && value.length > 0) {
-          if (operator !== 'is' && operator !== 'is_not') {
+          if (operator !== 'is' && operator !== 'not_equals' && operator !== 'equals' && operator !== 'contains') {
             // Pour les autres opérateurs, utiliser 'equals' par défaut (backend gère avec IN)
             operator = 'equals';
             console.info(`[FILTER_STORE] Array detected, operator set to 'equals' (backend handles arrays with IN clause)`);
