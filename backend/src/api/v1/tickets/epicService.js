@@ -388,7 +388,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
       'start_date', 'end_date'
     ],
     jsonbTextColumns: [
-      'color', 'project_id'
+      'color'
     ],
     jsonbArrayColumns: [
       'tags'
@@ -548,12 +548,55 @@ const searchEpics = async (searchParams) => {
         
         // Process each filter condition
         for (const filterDef of filters.conditions) {
-          const { column } = filterDef;
+          const { column, operator: filterOperator, value } = filterDef;
           
           logger.info(`${servicePrefix} Processing filter condition:`, JSON.stringify(filterDef));
           
           if (!column) {
             logger.warn(`${servicePrefix} Filter condition missing column, skipping`);
+            continue;
+          }
+          
+          // Special handling for project_id (stored in rel_parent_child_tickets, not JSONB)
+          if (column === 'project_id') {
+            logger.info(`${servicePrefix} Special handling for project_id filter`);
+            
+            if (filterOperator === 'is' && Array.isArray(value) && value.length > 0) {
+              const projectUuids = value;
+              const placeholders = projectUuids.map((_, idx) => `$${paramIndex + idx}`).join(', ');
+              
+              const condition = `t.uuid IN (
+                SELECT rpc.rel_child_ticket_uuid 
+                FROM core.rel_parent_child_tickets rpc 
+                WHERE rpc.rel_parent_ticket_uuid IN (${placeholders})
+                  AND rpc.dependency_code = 'EPIC'
+                  AND rpc.ended_at IS NULL
+              )`;
+              
+              projectUuids.forEach(uuid => queryParams.push(uuid));
+              paramIndex += projectUuids.length;
+              
+              filterConditions.push(condition);
+              logger.info(`${servicePrefix} Added project_id filter: ${condition}`);
+            } else if (filterOperator === 'is_not' && Array.isArray(value) && value.length > 0) {
+              const projectUuids = value;
+              const placeholders = projectUuids.map((_, idx) => `$${paramIndex + idx}`).join(', ');
+              
+              const condition = `t.uuid NOT IN (
+                SELECT rpc.rel_child_ticket_uuid 
+                FROM core.rel_parent_child_tickets rpc 
+                WHERE rpc.rel_parent_ticket_uuid IN (${placeholders})
+                  AND rpc.dependency_code = 'EPIC'
+                  AND rpc.ended_at IS NULL
+              )`;
+              
+              projectUuids.forEach(uuid => queryParams.push(uuid));
+              paramIndex += projectUuids.length;
+              
+              filterConditions.push(condition);
+              logger.info(`${servicePrefix} Added project_id NOT filter: ${condition}`);
+            }
+            
             continue;
           }
           
