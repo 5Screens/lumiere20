@@ -701,7 +701,8 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   return buildGenericFilterCondition(column, filterDef, dataType, queryParams, paramIndex, {
     jsonbDateColumns: [],
     jsonbTextColumns: [
-      'priority'
+      'priority',
+      'acceptance_criteria'
     ],
     jsonbArrayColumns: [
       'tags'
