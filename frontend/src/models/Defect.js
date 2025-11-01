@@ -340,6 +340,7 @@ export class Defect {
       { key: 'attachments_count', label: t('defect.attachments_count'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text', filterKey: 'writer_uuid' }
     ];
   }
