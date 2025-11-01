@@ -80,7 +80,7 @@ INSERT INTO administration.table_metadata (
  true, 'configuration.ticket_status', 'code',
  true, 'translations.ticket_status_translation', 'ticket_status_uuid', 'label',
  'sSelectField', 'Sélectionnez le statut', true, false,
- 'ticket_status', 'label', 'code', false, 'Statut actuel de la user story',
+ 'ticket_status?ticket_type=USER_STORY', 'label', 'code', false, 'Statut actuel de la user story',
  true, 40,
  NULL, NULL, NULL),
 
@@ -256,7 +256,7 @@ INSERT INTO administration.table_metadata (
 ('tickets', 'Story', NULL, NULL, 'tags', 'story.tags', 'Tags',
  'text', true, NULL,
  true, false, true,
- 'checkbox', '{"multiple": true}'::jsonb,
+ 'search', '{"multiple": true}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sTagsList', 'Ajoutez des tags', false, false,
