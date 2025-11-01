@@ -28,7 +28,7 @@ INSERT INTO administration.table_metadata (
 -- uuid
 ('persons', 'Person', NULL, NULL, 'uuid', 'person.uuid', 'Identifiant unique',
  'uuid', false, 'uuid_generate_v4()',
- false, false, false,
+ false, false, true,
  NULL, NULL,
  false, NULL, NULL,
  false, NULL, NULL, NULL,

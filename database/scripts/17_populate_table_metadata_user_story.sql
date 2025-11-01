@@ -27,7 +27,7 @@ INSERT INTO administration.table_metadata (
 -- uuid
 ('tickets', 'Story', NULL, NULL, 'uuid', 'common.uuid', 'Identifiant unique de la user story',
  'uuid', false, 'uuid_generate_v4()',
- true, false, false,
+ true, false, true,
  'search', '{"minChars": 8}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
@@ -232,7 +232,7 @@ INSERT INTO administration.table_metadata (
 ('tickets', 'Story', NULL, NULL, 'priority', 'story.priority', 'Priorité',
  'text', true, NULL,
  true, true, true,
- 'checkbox', '{"multiple": true}'::jsonb,
+ 'search', '{"multiple": true}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sTextField', 'Entrez la priorité', false, false,

@@ -27,7 +27,7 @@ INSERT INTO administration.table_metadata (
 -- uuid
 ('tickets', 'Change', NULL, NULL, 'uuid', 'common.uuid', 'Identifiant unique du changement',
  'uuid', false, 'uuid_generate_v4()',
- true, false, false,
+ true, false, true,
  'search', '{"minChars": 8}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
