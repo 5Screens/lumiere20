@@ -87,6 +87,7 @@ $structureScripts = @(
     "17_populate_table_metadata_change.sql",
     "17_populate_table_metadata_knowledge.sql",
     "17_populate_table_metadata_project.sql",
+    "17_populate_table_metadata_defect.sql",
     "17_populate_table_metadata_sprint.sql",
     "17_populate_table_metadata_epic.sql",
     "17_populate_table_metadata_user_story.sql"
@@ -174,6 +175,7 @@ $testDataScripts = @(
     "changes.sql",
     "knowledge_articles.sql",
     "projects.sql",
+    "defects.sql",
     "sprints.sql",
     "epics.sql",
     "user_stories.sql"

@@ -3,71 +3,6 @@ const logger = require('../../../config/logger');
 const ticketService = require('./service');
 
 /**
- * Récupère les defects avec les attributs étendus spécifiques aux defects
- * @param {string} lang - Code de langue pour les traductions
- * @returns {Promise<Array>} - Liste des defects avec leurs attributs
- */
-const getDefects = async (lang) => {
-    const servicePrefix = '[DEFECT SERVICE]';
-    
-    // Définition des attributs spécifiques aux defects
-    const baseQuery = `
-        -- Extraction des attributs spécifiques aux defects depuis le JSONB
-        t.core_extended_attributes->'tags' as tags,
-        t.core_extended_attributes->>'severity' as severity,
-        COALESCE(
-            (SELECT dsl.label FROM translations.defect_setup_labels dsl 
-            WHERE dsl.rel_defect_setup_code = t.core_extended_attributes->>'severity' AND dsl.lang = $1),
-            t.core_extended_attributes->>'severity'
-        ) as severity_label,
-        t.core_extended_attributes->>'workaround' as workaround,
-        t.core_extended_attributes->>'environment' as environment,
-        COALESCE(
-            (SELECT dsl.label FROM translations.defect_setup_labels dsl 
-            WHERE dsl.rel_defect_setup_code = t.core_extended_attributes->>'environment' AND dsl.lang = $1),
-            t.core_extended_attributes->>'environment'
-        ) as environment_label,
-        t.core_extended_attributes->>'impact_area' as impact_area,
-        COALESCE(
-            (SELECT dsl.label FROM translations.defect_setup_labels dsl 
-            WHERE dsl.rel_defect_setup_code = t.core_extended_attributes->>'impact_area' AND dsl.lang = $1),
-            t.core_extended_attributes->>'impact_area'
-        ) as impact_area_label,
-        t.core_extended_attributes->>'expected_behavior' as expected_behavior,
-        t.core_extended_attributes->>'steps_to_reproduce' as steps_to_reproduce,
-        
-        -- Nombre de pièces jointes
-        (
-            SELECT COUNT(*)
-            FROM core.attachments a
-            WHERE a.object_uuid = t.uuid
-        ) as attachments_count,
-        
-        -- Nombre de tickets liés
-        (
-            SELECT COUNT(*)
-            FROM core.rel_parent_child_tickets rpc
-            WHERE rpc.rel_parent_ticket_uuid = t.uuid
-        ) as tieds_tickets_count,
-        
-        -- Récupération du titre du projet parent
-        (
-            SELECT parent.title
-            FROM core.rel_parent_child_tickets rpc
-            JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
-            WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = 'DEFECT' AND rpc.ended_at IS NULL
-            LIMIT 1
-        ) as project_title
-    `;
-    
-    // Définition des jointures spécifiques aux defects
-    const additionalJoins = ``;
-    
-    // Utilisation de la fonction getTickets factorisée
-    return ticketService.getTickets(lang, 'DEFECT', baseQuery, additionalJoins, [], servicePrefix);
-};
-
-/**
  * Récupère un défaut par son UUID
  * @param {string} uuid - UUID du défaut
  * @param {string} lang - Code de langue pour les traductions (fr, en, etc.)
@@ -496,10 +431,304 @@ const getDefectsLazySearch = async (searchQuery = '', page = 1, limit = 25, lang
     }
 };
 
+/**
+ * Advanced search for defects with filters, sorting, and pagination
+ * @param {Object} searchParams - Search parameters including filters, sort, pagination, and lang
+ * @returns {Promise<Object>} - { data: Array, total: number, hasMore: boolean, pagination: Object }
+ */
+const searchDefects = async (searchParams) => {
+  try {
+    const servicePrefix = '[DEFECT SERVICE]';
+    const { buildFilterCondition } = require('./ticketFilterBuilder');
+    
+    const { filters = {}, sort = {}, pagination = {}, lang = 'en' } = searchParams;
+    
+    // Extract pagination parameters
+    const page = pagination.page || 1;
+    const limit = pagination.limit || 50;
+    const offset = (page - 1) * limit;
+    
+    // Extract sort parameters
+    const sortBy = sort.by || 'created_at';
+    const sortDirection = sort.direction || 'desc';
+    
+    logger.info(`${servicePrefix} searchDefects called with: page=${page}, limit=${limit}, sortBy=${sortBy}, sortDirection=${sortDirection}, lang=${lang}`);
+    
+    // Build WHERE clause from advanced filters
+    const queryParams = [];
+    let paramIndex = 1;
+    let whereClause = '';
+    
+    // Always filter by ticket_type = DEFECT
+    const baseConditions = [`t.ticket_type_code = 'DEFECT'`];
+    
+    // Validate filter format
+    if (filters && filters.conditions && Array.isArray(filters.conditions) && filters.conditions.length > 0) {
+        const mode = filters.mode || 'include';
+        const operator = (filters.operator || 'AND').toUpperCase();
+        
+        logger.info(`${servicePrefix} Processing ${filters.conditions.length} advanced filter(s) with mode=${mode}, operator=${operator}`);
+        
+        const filterConditions = [];
+        
+        // Define JSONB columns specific to defects
+        const jsonbTextColumns = ['severity', 'environment', 'impact_area', 'workaround', 'expected_behavior', 'steps_to_reproduce'];
+        const jsonbArrayColumns = ['tags'];
+        
+        // Process each filter condition
+        for (const filterDef of filters.conditions) {
+          const { column } = filterDef;
+          
+          logger.info(`${servicePrefix} Processing filter condition:`, JSON.stringify(filterDef));
+          
+          if (!column) {
+            logger.warn(`${servicePrefix} Filter condition missing column, skipping`);
+            continue;
+          }
+          
+          // Get column metadata to determine data type
+          const metadataQuery = `
+            SELECT data_type 
+            FROM administration.table_metadata 
+            WHERE table_name = $1 AND column_name = $2
+          `;
+          const metadataResult = await db.query(metadataQuery, ['tickets', column]);
+          
+          logger.info(`${servicePrefix} Metadata query result for column ${column}:`, metadataResult.rows);
+          
+          if (metadataResult.rows.length === 0) {
+            logger.warn(`${servicePrefix} No metadata for column ${column}, skipping filter`);
+            continue;
+          }
+          
+          const { data_type } = metadataResult.rows[0];
+          logger.info(`${servicePrefix} Column ${column} has data_type: ${data_type}`);
+          
+          // Build the condition for this filter using ticketFilterBuilder
+          const { condition, newParamIndex } = buildFilterCondition(
+            column,
+            filterDef,
+            data_type,
+            queryParams,
+            paramIndex,
+            {
+              jsonbTextColumns,
+              jsonbArrayColumns,
+              servicePrefix
+            }
+          );
+          
+          logger.info(`${servicePrefix} buildFilterCondition returned: condition="${condition}", newParamIndex=${newParamIndex}`);
+          
+          if (condition) {
+            filterConditions.push(condition);
+            paramIndex = newParamIndex;
+            logger.info(`${servicePrefix} Added filter: ${condition}`);
+          } else {
+            logger.warn(`${servicePrefix} buildFilterCondition returned empty condition for column ${column}`);
+          }
+        }
+        
+        // Combine all filter conditions
+        if (filterConditions.length > 0) {
+          const combinedConditions = filterConditions.join(` ${operator} `);
+          
+          // Apply mode: include or exclude
+          if (mode === 'exclude') {
+            baseConditions.push(`NOT (${combinedConditions})`);
+          } else {
+            if (operator === 'OR' || filterConditions.length > 1) {
+              baseConditions.push(`(${combinedConditions})`);
+            } else {
+              baseConditions.push(combinedConditions);
+            }
+          }
+          
+          logger.info(`${servicePrefix} Filter conditions added to base conditions`);
+        }
+    }
+    
+    whereClause = `WHERE ${baseConditions.join(' AND ')}`;
+    logger.info(`${servicePrefix} Final WHERE clause: ${whereClause}`);
+    
+    // Calculate the parameter index for lang (after all filter params)
+    const langParamIndex = paramIndex;
+    
+    // Sort column mapping for calculated/joined columns
+    const sortColumnMapping = {
+      'uuid': 't.uuid',
+      'title': 't.title',
+      'description': 't.description',
+      'ticket_type_code': 't.ticket_type_code',
+      'ticket_status_code': 't.ticket_status_code',
+      'ticket_status_label': 'COALESCE(tst.label, ts.code)',
+      'writer_uuid': 't.writer_uuid',
+      'writer_name': "p3.first_name || ' ' || p3.last_name",
+      'requested_by_uuid': 't.requested_by_uuid',
+      'requested_by_name': "p1.first_name || ' ' || p1.last_name",
+      'requested_for_uuid': 't.requested_for_uuid',
+      'requested_for_name': "p2.first_name || ' ' || p2.last_name",
+      'assigned_to_group': 'g.uuid',
+      'assigned_group_name': 'g.group_name',
+      'assigned_to_person': 'p4.uuid',
+      'assigned_person_name': "p4.first_name || ' ' || p4.last_name",
+      'created_at': 't.created_at',
+      'updated_at': 't.updated_at',
+      'closed_at': 't.closed_at',
+      // JSONB fields
+      'severity': "t.core_extended_attributes->>'severity'",
+      'severity_label': "COALESCE(severity_t.label, t.core_extended_attributes->>'severity')",
+      'environment': "t.core_extended_attributes->>'environment'",
+      'environment_label': "COALESCE(environment_t.label, t.core_extended_attributes->>'environment')",
+      'impact_area': "t.core_extended_attributes->>'impact_area'",
+      'impact_area_label': "COALESCE(impact_area_t.label, t.core_extended_attributes->>'impact_area')",
+      'workaround': "t.core_extended_attributes->>'workaround'",
+      'expected_behavior': "t.core_extended_attributes->>'expected_behavior'",
+      'steps_to_reproduce': "t.core_extended_attributes->>'steps_to_reproduce'",
+      'tags': "t.core_extended_attributes->'tags'",
+      'project_title': '(SELECT parent.title FROM core.rel_parent_child_tickets rpc JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid WHERE rpc.rel_child_ticket_uuid = t.uuid AND rpc.dependency_code = \'DEFECT\' AND rpc.ended_at IS NULL LIMIT 1)',
+      'attachments_count': '(SELECT COUNT(*) FROM core.attachments a WHERE a.object_uuid = t.uuid)'
+    };
+    
+    // Get the SQL expression for sorting
+    const sortExpression = sortColumnMapping[sortBy] || `t.${sortBy}`;
+    
+    logger.info(`${servicePrefix} Sort parameters: sortBy="${sortBy}" → SQL expression: "${sortExpression}", sortDirection="${sortDirection}"`);
+    logger.info(`${servicePrefix} Pagination: page=${page}, limit=${limit}, offset=${offset}`);
+    logger.info(`${servicePrefix} Language: ${lang}`);
+    
+    // Count total results
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM core.tickets t
+      ${whereClause}
+    `;
+    
+    logger.info(`${servicePrefix} Count query params: ${JSON.stringify(queryParams)}`);
+    
+    const countResult = await db.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Get paginated results with all data
+    const dataQuery = `
+      SELECT 
+        t.uuid,
+        t.title,
+        t.description,
+        t.requested_by_uuid,
+        t.requested_for_uuid,
+        t.writer_uuid,
+        t.ticket_type_code,
+        t.ticket_status_code,
+        t.created_at,
+        t.updated_at,
+        t.closed_at,
+        
+        -- Person names
+        p1.first_name || ' ' || p1.last_name as requested_by_name,
+        p2.first_name || ' ' || p2.last_name as requested_for_name,
+        p3.first_name || ' ' || p3.last_name as writer_name,
+        
+        -- Translated labels
+        COALESCE(ttt.label, tt.code) as ticket_type_label,
+        COALESCE(tst.label, ts.code) as ticket_status_label,
+        
+        -- Assignment info
+        g.uuid as assigned_to_group,
+        g.group_name as assigned_group_name,
+        p4.uuid as assigned_to_person,
+        p4.first_name || ' ' || p4.last_name as assigned_person_name,
+        
+        -- Defect-specific fields from core_extended_attributes
+        t.core_extended_attributes->'tags' as tags,
+        t.core_extended_attributes->>'severity' as severity,
+        COALESCE(severity_t.label, t.core_extended_attributes->>'severity') as severity_label,
+        t.core_extended_attributes->>'environment' as environment,
+        COALESCE(environment_t.label, t.core_extended_attributes->>'environment') as environment_label,
+        t.core_extended_attributes->>'impact_area' as impact_area,
+        COALESCE(impact_area_t.label, t.core_extended_attributes->>'impact_area') as impact_area_label,
+        t.core_extended_attributes->>'workaround' as workaround,
+        t.core_extended_attributes->>'expected_behavior' as expected_behavior,
+        t.core_extended_attributes->>'steps_to_reproduce' as steps_to_reproduce,
+        
+        -- Project info
+        (
+          SELECT parent.title
+          FROM core.rel_parent_child_tickets rpc
+          JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
+          WHERE rpc.rel_child_ticket_uuid = t.uuid 
+          AND rpc.dependency_code = 'DEFECT'
+          AND rpc.ended_at IS NULL
+          LIMIT 1
+        ) as project_title,
+        
+        -- Attachments count
+        (
+          SELECT COUNT(*)
+          FROM core.attachments a
+          WHERE a.object_uuid = t.uuid
+        ) as attachments_count
+        
+      FROM core.tickets t
+      LEFT JOIN configuration.persons p1 ON t.requested_by_uuid = p1.uuid
+      LEFT JOIN configuration.persons p2 ON t.requested_for_uuid = p2.uuid
+      LEFT JOIN configuration.persons p3 ON t.writer_uuid = p3.uuid
+      JOIN configuration.ticket_types tt ON t.ticket_type_code = tt.code
+      JOIN configuration.ticket_status ts ON t.ticket_status_code = ts.code AND ts.rel_ticket_type = tt.code
+      LEFT JOIN translations.ticket_types_translation ttt ON tt.uuid = ttt.ticket_type_uuid AND ttt.lang = $${langParamIndex}
+      LEFT JOIN translations.ticket_status_translation tst ON ts.uuid = tst.ticket_status_uuid AND tst.lang = $${langParamIndex}
+      LEFT JOIN (
+        SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
+        FROM core.rel_tickets_groups_persons
+        WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+      ) rtgp ON t.uuid = rtgp.rel_ticket
+      LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
+      LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
+      LEFT JOIN translations.defect_setup_labels severity_t ON severity_t.rel_defect_setup_code = t.core_extended_attributes->>'severity' AND severity_t.lang = $${langParamIndex}
+      LEFT JOIN translations.defect_setup_labels environment_t ON environment_t.rel_defect_setup_code = t.core_extended_attributes->>'environment' AND environment_t.lang = $${langParamIndex}
+      LEFT JOIN translations.defect_setup_labels impact_area_t ON impact_area_t.rel_defect_setup_code = t.core_extended_attributes->>'impact_area' AND impact_area_t.lang = $${langParamIndex}
+      ${whereClause}
+      ORDER BY ${sortExpression} ${sortDirection.toUpperCase()}
+      LIMIT $${langParamIndex + 1} OFFSET $${langParamIndex + 2}
+    `;
+    
+    queryParams.push(lang, limit, offset);
+    
+    logger.info(`${servicePrefix} Data query params: ${JSON.stringify(queryParams)}`);
+    
+    const dataResult = await db.query(dataQuery, queryParams);
+    
+    // Calculate pagination metadata
+    const currentPage = page;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = offset + limit < total;
+    
+    logger.info(`${servicePrefix} Found ${dataResult.rows.length} defects (total: ${total})`);
+    
+    return {
+      data: dataResult.rows,
+      total: total,
+      hasMore: hasMore,
+      pagination: {
+        offset: offset,
+        limit: limit,
+        currentPage: currentPage,
+        totalPages: totalPages,
+        sortBy: sortBy,
+        sortDirection: sortDirection
+      }
+    };
+    
+  } catch (error) {
+    logger.error('[DEFECT SERVICE] Error searching defects:', error);
+    throw error;
+  }
+};
+
 module.exports = {
-    getDefects,
     getDefectById,
     createDefect,
     updateDefect,
-    getDefectsLazySearch
+    getDefectsLazySearch,
+    searchDefects
 };

@@ -324,37 +324,45 @@ export class Defect {
       { key: 'uuid', label: t('common.id'), type: 'uuid', format: 'text' },
       { key: 'title', label: t('defect.title'), type: 'text', format: 'text' },
       { key: 'description', label: t('defect.description'), type: 'text', format: 'html' },
-      { key: 'ticket_status_label', label: t('defect.status'), type: 'text', format: 'text' },
-      { key: 'severity_label', label: t('defect.severity'), type: 'text', format: 'text' },
-      { key: 'impact_area_label', label: t('defect.impact_area'), type: 'text', format: 'text' },
-      { key: 'environment_label', label: t('defect.environment'), type: 'text', format: 'text' },
-      { key: 'requested_by_name', label: t('defect.reported_by'), type: 'text', format: 'text' },
-      { key: 'requested_for_name', label: t('defect.detected_by'), type: 'text', format: 'text' },
-      { key: 'project_title', label: t('defect.project_id'), type: 'text', format: 'text' },
-      { key: 'assigned_person_name', label: t('defect.assigned_to_person'), type: 'text', format: 'text' },
-      { key: 'assigned_group_name', label: t('defect.team_id'), type: 'text', format: 'text' },
+      { key: 'ticket_status_label', label: t('defect.status'), type: 'text', format: 'text', filterKey: 'ticket_status_code' },
+      { key: 'severity_label', label: t('defect.severity'), type: 'text', format: 'text', filterKey: 'severity' },
+      { key: 'impact_area_label', label: t('defect.impact_area'), type: 'text', format: 'text', filterKey: 'impact_area' },
+      { key: 'environment_label', label: t('defect.environment'), type: 'text', format: 'text', filterKey: 'environment' },
+      { key: 'requested_by_name', label: t('defect.reported_by'), type: 'text', format: 'text', filterKey: 'requested_by_uuid' },
+      { key: 'requested_for_name', label: t('defect.detected_by'), type: 'text', format: 'text', filterKey: 'requested_for_uuid' },
+      { key: 'project_title', label: t('defect.project_id'), type: 'text', format: 'text', filterKey: 'project_id' },
+      { key: 'assigned_person_name', label: t('defect.assigned_to_person'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
+      { key: 'assigned_group_name', label: t('defect.team_id'), type: 'text', format: 'text', filterKey: 'assigned_to_group' },
       { key: 'steps_to_reproduce', label: t('defect.steps_to_reproduce'), type: 'text', format: 'html' },
       { key: 'expected_behavior', label: t('defect.expected_behavior'), type: 'text', format: 'html' },
       { key: 'workaround', label: t('defect.workaround'), type: 'text', format: 'html' },
       { key: 'tags', label: t('defect.tags'), type: 'text', format: 'tags' },
       { key: 'attachments_count', label: t('defect.attachments_count'), type: 'text', format: 'text' },
       { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text', filterKey: 'writer_uuid' }
     ];
   }
 
   /**
    * Retourne l'endpoint API pour les défauts
+   * @param {string} method - Méthode HTTP (GET, POST, PUT, PATCH, DELETE, FILTER)
    * @returns {string} URL de l'endpoint API
    */
   static getApiEndpoint(method) {
-    const userProfileStore = useUserProfileStore();
-    
-    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
-      return 'tickets';
-    } else {
-      return `tickets?ticket_type=DEFECT&lang=${userProfileStore.language}`;
+    // Pour les filtres, retourner l'endpoint spécifique aux defects
+    if (method === 'FILTER') {
+      return 'tickets/defects';
     }
+    
+    // Pour l'infinite scroll, retourner l'endpoint de recherche
+    // Le composant reusableTableTab utilisera POST /tickets/search/defects
+    if (method === 'GET') {
+      return 'tickets/search/defects';
+    }
+    
+    // Pour les autres méthodes (PATCH, PUT, DELETE)
+    return 'tickets';
   }
 
   /**
