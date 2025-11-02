@@ -120,22 +120,26 @@ export default {
   },
   configuration: {
     title: 'Configuration',
-    companies: 'Companies',
-    locations: 'Locations',
-    sites: 'Sites',
-    entities: 'Entities',
-    departments: 'Departments',
-    persons: 'People',
-    supportGroups: 'Support Groups',
-    roles: 'Roles & permissions',
-    ticketStatus: 'Ticket statuses',
-    symptoms: 'Symptoms',
-    ticketTypes: 'Ticket types',
-    workflows: 'Workflows',
-    import: 'Import',
-    export: 'Export',
-    refresh: 'Refresh',
-    groups: 'Groups',
+    serviceManagement: {
+      title: 'Service Management',
+      changeSetup: 'Change Management',
+      changeQuestions: 'Change Questions',
+      changeOptions: 'Impact & Risk Analysis Q/A',
+      problemCategories: 'Problem Management',
+      incidentSetup: 'Incident Management',
+      symptoms: 'Symptoms Management',
+      knowledgeSetup: 'Knowledge Articles Management'
+    },
+    agileBacklog: {
+      title: 'Agile Backlog',
+      defectSetup: 'Defect Management',
+      projectSetup: 'Project Settings Management'
+    },
+    foundations: {
+      title: 'Foundations',
+      entitySetup: 'Entity Management',
+      contactTypes: 'Contact Types'
+    }
   },
   admin: {
     title: 'Administration',

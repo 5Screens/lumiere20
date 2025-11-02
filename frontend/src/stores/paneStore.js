@@ -51,31 +51,39 @@ export const usePaneStore = defineStore('pane', {
       },
       configuration: {
         type: 'configuration',
-        hasSections: false,
-        items: [
-          { tabToOpen: 'entitySetup', icon: 'fas fa-cogs', label: 'configuration.entitySetup', className: 'EntitySetup' },
-          { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms', className: 'Symptom' },
-          { tabToOpen: 'contact_types', icon: 'fas fa-phone', label: 'configuration.contactTypes', className: 'ContactType' },
-          { tabToOpen: 'defect_setup', icon: 'fas fa-cogs', label: 'configuration.defectSetup', className: 'DefectSetup' },
-          { tabToOpen: 'knowledge_setup', icon: 'fas fa-book-open', label: 'configuration.knowledgeSetup', className: 'KnowledgeSetup' },
-          { tabToOpen: 'projectSetup', icon: 'fas fa-project-diagram', label: 'configuration.projectSetup', className: 'ProjectSetup' },
-          { tabToOpen: 'changeOptions', icon: 'fas fa-exchange-alt', label: 'configuration.changeOptions', className: 'ChangeOptions' },
-          { tabToOpen: 'changeQuestions', icon: 'fas fa-question-circle', label: 'configuration.changeQuestions', className: 'ChangeQuestions' },
-          { tabToOpen: 'changeSetup', icon: 'fas fa-cog', label: 'configuration.changeSetup', className: 'ChangeSetup' },
-          { tabToOpen: 'problemCategories', icon: 'fas fa-tags', label: 'configuration.problemCategories', className: 'ProblemCategories' },
-          { tabToOpen: 'incidentSetup', icon: 'fas fa-exclamation-triangle', label: 'configuration.incidentSetup', className: 'IncidentSetup' }
-          /*{ tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
-          { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },
-          { tabToOpen: 'sites', icon: 'fas fa-sitemap', label: 'configuration.sites' },
-          { tabToOpen: 'departments', icon: 'fas fa-users', label: 'configuration.departments' },
-          { tabToOpen: 'persons', icon: 'fas fa-user', label: 'configuration.persons' },
-          { tabToOpen: 'support-groups', icon: 'fas fa-user-friends', label: 'configuration.supportGroups' },
-          { tabToOpen: 'roles', icon: 'fas fa-user-shield', label: 'configuration.roles' },
-          { tabToOpen: 'task-status', icon: 'fas fa-tasks', label: 'configuration.taskStatus' },
-          { tabToOpen: 'task-types', icon: 'fas fa-ticket-alt', label: 'configuration.taskTypes' },
-          { tabToOpen: 'workflows', icon: 'fas fa-project-diagram', label: 'configuration.workflows' }*/
-        ],
-        sections: []
+        hasSections: true,
+        items: [],
+        sections: [
+          {
+            id: 'serviceManagement',
+            label: 'configuration.serviceManagement.title',
+            items: [
+              { tabToOpen: 'changeSetup', icon: 'fas fa-cog', label: 'configuration.serviceManagement.changeSetup', className: 'ChangeSetup' },
+              { tabToOpen: 'changeQuestions', icon: 'fas fa-question-circle', label: 'configuration.serviceManagement.changeQuestions', className: 'ChangeQuestions' },
+              { tabToOpen: 'changeOptions', icon: 'fas fa-exchange-alt', label: 'configuration.serviceManagement.changeOptions', className: 'ChangeOptions' },
+              { tabToOpen: 'problemCategories', icon: 'fas fa-tags', label: 'configuration.serviceManagement.problemCategories', className: 'ProblemCategories' },
+              { tabToOpen: 'incidentSetup', icon: 'fas fa-exclamation-triangle', label: 'configuration.serviceManagement.incidentSetup', className: 'IncidentSetup' },
+              { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.serviceManagement.symptoms', className: 'Symptom' },
+              { tabToOpen: 'knowledge_setup', icon: 'fas fa-book-open', label: 'configuration.serviceManagement.knowledgeSetup', className: 'KnowledgeSetup' }
+            ]
+          },
+          {
+            id: 'agileBacklog',
+            label: 'configuration.agileBacklog.title',
+            items: [
+              { tabToOpen: 'defect_setup', icon: 'fas fa-bug', label: 'configuration.agileBacklog.defectSetup', className: 'DefectSetup' },
+              { tabToOpen: 'projectSetup', icon: 'fas fa-project-diagram', label: 'configuration.agileBacklog.projectSetup', className: 'ProjectSetup' }
+            ]
+          },
+          {
+            id: 'foundations',
+            label: 'configuration.foundations.title',
+            items: [
+              { tabToOpen: 'entitySetup', icon: 'fas fa-cogs', label: 'configuration.foundations.entitySetup', className: 'EntitySetup' },
+              { tabToOpen: 'contact_types', icon: 'fas fa-phone', label: 'configuration.foundations.contactTypes', className: 'ContactType' }
+            ]
+          }
+        ]
       },
       mail: {
         type: 'mail',

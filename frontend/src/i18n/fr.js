@@ -197,27 +197,26 @@ export default {
   configuration: {
     title: 'Configuration',
     description:'Gérez ici les paramètres de votre organisation',
-    companies: 'Sociétés',
-    sites: 'Sites',
-    departments: 'Départements',
-    roles: 'Rôles et permissions',
-    ticketStatus: 'Statuts des tickets',
-    symptoms: 'Gestion des symptômes',
-    ticketTypes: 'Types de tickets',
-    workflows: 'Workflows',
-    import: 'Importer',
-    export: 'Exporter',
-    refresh: 'Rafraîchir',
-    contactTypes: 'Gestion des type de contacts',
-    defectSetup: 'Gestion des anomalies',
-    knowledgeSetup: 'Gestion des articles de connaissance',
-    projectSetup: 'Gestion des paramètres de projet',
-    changeOptions: 'Q/R d\'analyse d\'impact et de risque',
-    changeQuestions: 'Questions de changement',
-    changeSetup: 'Gestion des changements',
-    problemCategories: 'Gestion des problèmes', 
-    entitySetup: 'Gestion des entités',
-    incidentSetup: 'Gestion des incidents',
+    serviceManagement: {
+      title: 'Gestion des services',
+      changeSetup: 'Gestion des changements',
+      changeQuestions: 'Questions de changement',
+      changeOptions: 'Q/R d\'analyse d\'impact et de risque',
+      problemCategories: 'Gestion des problèmes',
+      incidentSetup: 'Gestion des incidents',
+      symptoms: 'Gestion des symptômes',
+      knowledgeSetup: 'Gestion des articles de connaissance'
+    },
+    agileBacklog: {
+      title: 'Backlog agile',
+      defectSetup: 'Gestion des anomalies',
+      projectSetup: 'Gestion des paramètres de projet'
+    },
+    foundations: {
+      title: 'Fondations',
+      entitySetup: 'Gestion des entités',
+      contactTypes: 'Types de contact'
+    }
   },
   admin: {
     title: 'Administration',
