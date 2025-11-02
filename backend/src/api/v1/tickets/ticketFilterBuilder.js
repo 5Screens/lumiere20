@@ -190,6 +190,84 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   }
   
   // ============================================================================
+  // EMBEDDED TICKETS (related_tickets for Changes)
+  // ============================================================================
+  
+  if (column === 'related_tickets') {
+    logger.info(`${servicePrefix} Building condition for relational column: related_tickets (EMBEDDED_TICKETS)`);
+    if (operator === 'is_null') {
+      condition = `NOT EXISTS (
+        SELECT 1 FROM core.rel_parent_child_tickets rpc
+        WHERE rpc.rel_parent_ticket_uuid = t.uuid
+          AND rpc.dependency_code = 'EMBEDDED_TICKETS'
+          AND rpc.ended_at IS NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'is_not_null') {
+      condition = `EXISTS (
+        SELECT 1 FROM core.rel_parent_child_tickets rpc
+        WHERE rpc.rel_parent_ticket_uuid = t.uuid
+          AND rpc.dependency_code = 'EMBEDDED_TICKETS'
+          AND rpc.ended_at IS NULL
+      )`;
+      return { condition, newParamIndex: paramIndex };
+    } else if (operator === 'equals' || operator === 'is') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'EMBEDDED_TICKETS'
+            AND rpc.ended_at IS NULL
+            AND rpc.rel_child_ticket_uuid IN (${placeholders})
+        )`;
+      } else {
+        condition = `EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'EMBEDDED_TICKETS'
+            AND rpc.ended_at IS NULL
+            AND rpc.rel_child_ticket_uuid = $${paramIndex++}
+        )`;
+        queryParams.push(value);
+      }
+    } else if (operator === 'not_equals' || operator === 'is_not') {
+      if (Array.isArray(value)) {
+        const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+        queryParams.push(...value);
+        condition = `(NOT EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'EMBEDDED_TICKETS'
+            AND rpc.ended_at IS NULL
+            AND rpc.rel_child_ticket_uuid IN (${placeholders})
+        ) OR NOT EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'EMBEDDED_TICKETS'
+            AND rpc.ended_at IS NULL
+        ))`;
+      } else {
+        condition = `(NOT EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'EMBEDDED_TICKETS'
+            AND rpc.ended_at IS NULL
+            AND rpc.rel_child_ticket_uuid = $${paramIndex++}
+        ) OR NOT EXISTS (
+          SELECT 1 FROM core.rel_parent_child_tickets rpc
+          WHERE rpc.rel_parent_ticket_uuid = t.uuid
+            AND rpc.dependency_code = 'EMBEDDED_TICKETS'
+            AND rpc.ended_at IS NULL
+        ))`;
+        queryParams.push(value);
+      }
+    }
+    return { condition, newParamIndex: paramIndex };
+  }
+  
+  // ============================================================================
   // PARENT-CHILD RELATIONSHIP COLUMNS (project_id, epic_id, sprint_id for user stories)
   // ============================================================================
   

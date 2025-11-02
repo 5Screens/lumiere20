@@ -374,6 +374,18 @@ INSERT INTO administration.table_metadata (
  'sTextField', 'Entrez le temps en minutes', false, false,
  NULL, NULL, NULL, NULL, 'Temps écoulé en minutes',
  true, 270,
+ NULL, NULL, NULL),
+
+-- related_tickets (relation via core.rel_parent_child_tickets)
+('tickets', 'Change', NULL, NULL, 'related_tickets', 'change.related_tickets', 'Tickets liés',
+ 'uuid', true, NULL,
+ true, false, true,
+ 'checkbox', '{"multiple": false}'::jsonb,
+ true, 'core.tickets', 'uuid',
+ false, NULL, NULL, NULL,
+ 'sPickList', 'Recherchez des tickets', false, false,
+ 'tickets', 'title', 'uuid', true, 'Tickets liés à ce changement',
+ true, 280,
  NULL, NULL, NULL);
 
 COMMIT;
