@@ -276,11 +276,11 @@ INSERT INTO administration.table_metadata (
  true, 145,
  NULL, NULL, NULL),
 
--- tags (JSONB field - array)
+-- tags (JSONB field)
 ('tickets', 'Defect', NULL, NULL, 'tags', 'defect.tags', 'Tags associés',
  'text', true, NULL,
  true, false, true,
- 'checkbox', '{"multiple": true}'::jsonb,
+ 'search', '{"minChars": 2}'::jsonb,
  false, NULL, NULL,
  false, NULL, NULL, NULL,
  'sTagsList', 'Ajoutez des tags', false, false,
