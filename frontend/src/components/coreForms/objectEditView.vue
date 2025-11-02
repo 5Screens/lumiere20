@@ -281,6 +281,7 @@ watch(selectedType, (newType) => {
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
+  color: var(--text-color);
 }
 
 .type-select {
