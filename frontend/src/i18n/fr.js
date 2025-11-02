@@ -530,10 +530,10 @@ export default {
     
     knownerrors_list: 'Erreurs connues associées',
     knownerrors_list_placeholder: 'Sélectionnez les erreurs connues',
-    changes_list: 'Changements liés',
-    changes_list_placeholder: 'Sélectionnez les changements liés',
-    incidents_list: 'Incidents liés',
-    incidents_list_placeholder: 'Sélectionnez les incidents liés',
+    changes_list: 'Changements corrigeant le problème',
+    changes_list_placeholder: 'Sélectionnez les changements corrigeant le problème',
+    incidents_list: 'Incidents à l\'origine du problème',
+    incidents_list_placeholder: 'Sélectionnez les incidents à l\'origine du problème',
     
     root_cause: 'Cause racine',
     root_cause_placeholder: 'Décrivez la cause racine',

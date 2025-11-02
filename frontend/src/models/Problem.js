@@ -130,7 +130,7 @@ export class Problem {
     ];
     
     // Identification des causes
-    this.knownerrors_list = data.knownerrors_list || [];
+    // this.knownerrors_list = data.knownerrors_list || []; // Feature en suspend
     this.changes_list = data.changes_list || [];
     this.incidents_list = data.incidents_list || [];
     this.root_cause = data.root_cause || '';
@@ -414,19 +414,20 @@ export class Problem {
         required: isRequired('actual_resolution_date'),
         patchendpoint: 'tickets'
       },
-      knownerrors_list: {
-        label: 'problem.knownerrors_list',
-        type: 'sPickList',
-        placeholder: 'problem.knownerrors_list_placeholder',
-        sourceEndPoint: 'tickets?ticket_type=PROBLEM',
-        displayedLabel: 'title',
-        targetEndPoint: 'tickets',
-        ressourceEndPoint: 'children',
-        fieldName: 'KNOWNERROR',
-        target_uuid: null,
-        pickedItems: null,
-        required: isRequired('knownerrors_list')
-      },
+      // Feature en suspend
+      // knownerrors_list: {
+      //   label: 'problem.knownerrors_list',
+      //   type: 'sPickList',
+      //   placeholder: 'problem.knownerrors_list_placeholder',
+      //   sourceEndPoint: 'tickets?ticket_type=PROBLEM',
+      //   displayedLabel: 'title',
+      //   targetEndPoint: 'tickets',
+      //   ressourceEndPoint: 'children',
+      //   fieldName: 'KNOWNERROR',
+      //   target_uuid: null,
+      //   pickedItems: null,
+      //   required: isRequired('knownerrors_list')
+      // },
       changes_list: {
         label: 'problem.changes_list',
         type: 'sPickList',
@@ -516,7 +517,7 @@ export class Problem {
     delete apiData.requiredFields;
     
     // Traiter les listes pour extraire uniquement les UUIDs si ce sont des objets complets
-    const listFields = ['watch_list', 'knownerrors_list', 'changes_list', 'incidents_list'];
+    const listFields = ['watch_list', /* 'knownerrors_list', */ 'changes_list', 'incidents_list']; // knownerrors_list en suspend
     
     listFields.forEach(field => {
       if (apiData[field] && Array.isArray(apiData[field]) && apiData[field].length > 0) {
