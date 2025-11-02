@@ -94,7 +94,9 @@ export const usePaneStore = defineStore('pane', {
       portalsBuilder: {
         type: 'portalsBuilder',
         hasSections: false,
-        items: [],
+        items: [
+          { tabToOpen: 'portals', icon: 'fas fa-portal', label: 'portalsBuilder.portals', className: null, component: 'AdminPortals' }
+        ],
         sections: []
       },
       tableaux: {

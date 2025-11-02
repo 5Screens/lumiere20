@@ -73,6 +73,11 @@ export default {
     releases: 'Releases',
     knowledge: 'Knowledge'
   },
+  portalsBuilder: {
+    title: 'Client Portals',
+    description: 'Create and manage portals for your clients',
+    portals: 'Portals'
+  },
   objectCreationsAndUpdates: {
     taskCreation: 'Create a task',
     taskUpdate: 'Edit task',
@@ -145,6 +150,7 @@ export default {
     title: 'Administration',
     rolesAndPermissions: 'Roles & permissions',
     ticketTypes: 'Task types',
+    portals: 'Portals',
     mailServers: 'Mail servers',
     emailNotifications: 'Email notifications',
     smsNotifications: 'SMS notifications',
@@ -157,6 +163,25 @@ export default {
     connectors: 'Connectors',
     performance: 'Platform performance',
     backup: 'Backup & restore'
+  },
+  portals: {
+    page_title: 'Portal Management',
+    page_subtitle: 'Manage user portals and their activation',
+    search_placeholder: 'Search portal (name, code)...',
+    filter_all: 'All portals',
+    filter_active: 'Active only',
+    filter_inactive: 'Inactive only',
+    refresh: 'Refresh',
+    status_active: 'Active',
+    status_inactive: 'Inactive',
+    empty_title: 'No portals',
+    empty_message: 'No portals found. Create one to get started.',
+    total_count: '{count} portal(s) total',
+    active_count: '{count} active',
+    inactive_count: '{count} inactive',
+    activation_success: 'Portal "{name}" has been activated successfully',
+    deactivation_success: 'Portal "{name}" has been deactivated successfully',
+    toggle_error: 'Error updating portal "{name}": {error}'
   },
   symptoms: {
     createTitle: 'Create a symptom',

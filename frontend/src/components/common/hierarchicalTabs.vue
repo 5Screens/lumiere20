@@ -43,7 +43,14 @@
           v-show="store.isParentTabActive(tab.id_tab)"
           class="tab-content-wrapper"
         >
+          <!-- Composant spécial pour les onglets admin -->
+          <component 
+            v-if="tab.component"
+            :is="tab.component"
+          />
+          <!-- Composant par défaut pour les grilles -->
           <ObjectsTab 
+            v-else
             :data="tab"
             :tabId="tab.id_tab"
           />
@@ -75,12 +82,14 @@ import { useTabsStore } from '@/stores/tabsStore'
 import { getClassByName } from '@/services/classMapping'
 import ObjectsTab from '@/components/objectsTab.vue'
 import ObjectCreationsAndUpdates from '@/components/coreForms/objectCreationsAndUpdates.vue'
+import AdminPortals from '@/components/admin/AdminPortals.vue'
 
 export default {
   name: 'HierarchicalTabs',
   components: {
     ObjectsTab,
-    ObjectCreationsAndUpdates
+    ObjectCreationsAndUpdates,
+    AdminPortals
   },
   setup() {
     console.log('[HierarchicalTabs] Exécution de setup()')

@@ -116,6 +116,7 @@ export default {
   portalsBuilder :{
     title:'Portails clients',
     description:'Créez et gérer ici les portails créés pour vos clients >>> EN COURS DE DEVELOPPEMENT !!',
+    portals: 'Portails'
   },
   dataPane: {
     title: 'Données',
@@ -222,6 +223,7 @@ export default {
     title: 'Administration',
     rolesAndPermissions: 'Rôles et permissions',
     ticketTypes: 'Types de tâches',
+    portals: 'Portails',
     mailServers: 'Serveurs de messagerie',
     emailNotifications: 'Notifications email',
     smsNotifications: 'Notifications SMS',
@@ -234,6 +236,25 @@ export default {
     connectors: 'Connecteurs',
     performance: 'Performances de la plateforme',
     backup: 'Sauvegarde et restauration'
+  },
+  portals: {
+    page_title: 'Gestion des portails',
+    page_subtitle: 'Gérez les portails utilisateurs et leur activation',
+    search_placeholder: 'Rechercher un portail (nom, code)...',
+    filter_all: 'Tous les portails',
+    filter_active: 'Actifs uniquement',
+    filter_inactive: 'Inactifs uniquement',
+    refresh: 'Rafraîchir',
+    status_active: 'Actif',
+    status_inactive: 'Inactif',
+    empty_title: 'Aucun portail',
+    empty_message: 'Aucun portail n\'a été trouvé. Créez-en un pour commencer.',
+    total_count: '{count} portail(s) au total',
+    active_count: '{count} actif(s)',
+    inactive_count: '{count} inactif(s)',
+    activation_success: 'Le portail "{name}" a été activé avec succès',
+    deactivation_success: 'Le portail "{name}" a été désactivé avec succès',
+    toggle_error: 'Erreur lors de la modification du portail "{name}": {error}'
   },
   objectCreationsAndUpdates: {
     taskCreation: 'Créer une tâche',

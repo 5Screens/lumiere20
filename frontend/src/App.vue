@@ -285,6 +285,14 @@ export default {
       this.userProfileStore.setTheme(newTheme)
     },
     handleOpenTab(tabData) {
+      // Si un composant spécifique est défini, l'utiliser directement
+      if (tabData.component) {
+        this.tabsStore.openTab({
+          ...tabData
+        })
+        return
+      }
+      
       // Si la classe est null, afficher un message "En cours de construction"
       if (tabData.className === null) {
         this.tabsStore.setMessage({
@@ -395,6 +403,18 @@ export default {
       }, 100)
     },
     handleTooltipItemClick(item) {
+      // Si un composant spécifique est défini, l'utiliser directement
+      if (item.component) {
+        this.tabsStore.openTab({
+          id: item.tabToOpen,
+          label: item.label,
+          icon: item.icon,
+          component: item.component
+        })
+        this.tooltipMenu.isVisible = false
+        return
+      }
+      
       // Même logique que handleOpenTab mais pour les items du tooltip
       if (item.className === null) {
         this.tabsStore.setMessage({
