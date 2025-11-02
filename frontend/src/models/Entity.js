@@ -44,8 +44,8 @@ export class Entity {
       { key: 'headquarters_location_name', label: t('entities.location'), type: 'text', format: 'text' },
       { key: 'is_active', label: t('entities.is_active'), type: 'select', options: ['Yes', 'No'], format: 'text' },
       { key: 'budget_approver_name', label: t('entities.budget_approver_name'), type: 'text', format: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

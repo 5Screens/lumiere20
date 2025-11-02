@@ -43,8 +43,8 @@ export class ChangeQuestions {
       { key: 'metadata', label: t('changeQuestions.metadata'), type: 'text' },
       { key: 'label', label: t('changeQuestions.label'), type: 'text' },
       { key: 'lang', label: t('language.title'), type: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' },
 
     ];
   }

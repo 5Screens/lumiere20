@@ -62,17 +62,17 @@ export class Sprint {
         disabled: true
       },
       created_at: {
-        label: 'common.creation_date',
+        label: 'common.created_at',
         type: 'sTextField',
         disabled: true
       },
       updated_at: {
-        label: 'common.modification_date',
+        label: 'common.updated_at',
         type: 'sTextField',
         disabled: true
       },
       closed_at: {
-        label: 'common.closure_date',
+        label: 'common.closed_at',
         type: 'sTextField',
         disabled: true
       },
@@ -243,9 +243,9 @@ export class Sprint {
       { key: 'actual_velocity', label: t('sprint.actual_velocity'), type: 'number', format: 'text' },
       { key: 'estimated_velocity', label: t('sprint.estimated_velocity'), type: 'number', format: 'text' },
       { key: 'requested_by_name', label: t('sprint.reported_by'), type: 'text', format: 'text', filterKey: 'requested_by_uuid' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'closed_at', label: t('common.closed_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

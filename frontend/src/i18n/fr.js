@@ -45,9 +45,6 @@ export default {
     na: 'N/A',
     and: 'et',
     createLabel: 'Que souhaitez-vous créer ?',
-    creation_date: 'Créé le',
-    modification_date: 'Dernière mise à jour le', 
-    closure_date: 'Fermé le',
     writer_name: 'Créé par',
     uuid: 'Identifiant',
     created_at: 'Créé le',
@@ -896,6 +893,7 @@ export default {
     impact_area_placeholder: 'Sélectionnez la zone d\'impact',
     environment: 'Environnement',
     environment_placeholder: 'Sélectionnez l\'environnement',
+    closed_at: 'Fermé le',
     
     // Personnes
     detected_by: 'Détecté par',

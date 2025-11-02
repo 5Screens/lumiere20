@@ -271,8 +271,8 @@ export class Story {
       { key: 'priority', label: t('story.priority'), type: 'text', format: 'text' },
       { key: 'requested_for_name', label: t('story.reporter'), type: 'text', format: 'text', filterKey: 'requested_for_uuid' },
       { key: 'assigned_person_name', label: t('story.assigned_to_person'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'closed_at', label: t('common.closed_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }

@@ -38,8 +38,8 @@ export class Incident {
       { key: 'assignment_count', label: t('incident.assignment_count'), type: 'text', format: 'text' },
       { key: 'assignment_to_count', label: t('incident.assignment_to_count'), type: 'text', format: 'text' },
       { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text', filterKey: 'writer_uuid' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 
@@ -185,7 +185,7 @@ export class Incident {
         disabled: true
       },
       updated_at: {
-        label: 'common.modification_date',
+        label: 'common.updated_at',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -215,7 +215,7 @@ export class Incident {
         required: isRequired('description')
       },
       created_at: {
-        label: 'common.creation_date',
+        label: 'common.created_at',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -505,7 +505,7 @@ export class Incident {
         resetable: true
       },
       closed_at: {
-        label: 'common.closure_date',
+        label: 'common.closed_at',
         type: 'sTextField',
         placeholder: null,
         required: false,

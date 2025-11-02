@@ -43,8 +43,8 @@ export class Group {
       { key: 'persons_count', label: t('groups.persons_count'), type: 'number' },
       { key: 'email', label: t('groups.email'), type: 'text' },
       { key: 'phone', label: t('groups.phone'), type: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

@@ -151,8 +151,8 @@ export class Change {
       { key: 'requested_for_name', label: t('change.requested_for'), visible: true, filterKey: 'requested_for_uuid' },
       { key: 'assigned_group_name', label: t('change.assigned_group'), visible: true, filterKey: 'assigned_to_group' },
       { key: 'assigned_person_name', label: t('change.assigned_to_person'), visible: true, filterKey: 'assigned_to_person' },
-      { key: 'created_at', label: t('common.creation_date'), visible: true , type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), visible: true , type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.created_at'), visible: true , type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), visible: true , type: 'date', format: 'YYYY-MM-DD' },
       { key: 'requested_start_date_at', label: t('change.requested_start_date'), visible: true , type: 'date', format: 'YYYY-MM-DD' },
       { key: 'planned_start_date_at', label: t('change.planned_start_date'), visible: true , type: 'date', format: 'YYYY-MM-DD' },
       { key: 'requested_end_date_at', label: t('change.requested_end_date'), visible: true , type: 'date', format: 'YYYY-MM-DD' },
@@ -268,7 +268,7 @@ export class Change {
         disabled: true
       },
       updated_at: {
-        label: 'common.modification_date',
+        label: 'common.updated_at',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -276,7 +276,7 @@ export class Change {
         disabled: true
       },
       created_at: {
-        label: 'common.creation_date',
+        label: 'common.created_at',
         type: 'sTextField',
         placeholder: null,
         required: false,

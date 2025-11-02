@@ -98,8 +98,8 @@ export class Person {
       { key: 'assigned_tickets_count', label: t('person.assigned_tickets_count'), type: 'number' },
       { key: 'watched_tickets_count', label: t('person.watched_tickets_count'), type: 'number' },
       { key: 'budget_approver_count', label: t('person.budget_approver_count'), type: 'number' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

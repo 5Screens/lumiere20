@@ -27,8 +27,8 @@ export class Symptom {
     
     return [
       { key: 'uuid', label:  t('common.id'), type: 'uuid' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'code', label: t('symptoms.code'), type: 'text' },
       { key: 'libelle', label: t('symptoms.name'), type: 'text' },
       { key: 'langue', label: t('language.title'), type: 'text' }

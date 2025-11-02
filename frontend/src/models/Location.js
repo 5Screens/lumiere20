@@ -77,8 +77,8 @@ export class Location {
       { key: 'field_service_group_name', label: t('locations.field_service_group'), type: 'text' },
       { key: 'occupants_count', label: t('locations.occupants_count'), type: 'number' },
       { key: 'locations_count', label: t('locations.locations_count'), type: 'number' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

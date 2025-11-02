@@ -44,8 +44,8 @@ export class IncidentSetup {
       { key: 'label', label: t('incidentSetup.label'), type: 'text' },
       { key: 'lang', label: t('language.title'), type: 'text' },
       { key: 'value', label: t('incidentSetup.value'), type: 'number' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

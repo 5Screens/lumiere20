@@ -39,8 +39,8 @@ export class ProblemCategories {
       { key: 'code', label: t('problemCategories.code'), type: 'text' },
       { key: 'label', label: t('problemCategories.label'), type: 'text' },
       { key: 'lang', label: t('problemCategories.lang'), type: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 

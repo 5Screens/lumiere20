@@ -36,8 +36,8 @@ export class Knowledge_article {
       { key: 'license_type', label: t('knowledge_article.license_type'), type: 'text', format: 'text' },
       { key: 'attachments_count', label: t('knowledge_article.attachments_count'), type: 'text', format: 'text' },
       { key: 'tieds_tickets_count', label: t('knowledge_article.tieds_tickets_count'), type: 'text', format: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'last_review_at', label: t('knowledge_article.last_review_at'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'next_review_at', label: t('knowledge_article.next_review_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
@@ -199,13 +199,13 @@ export class Knowledge_article {
         required: false
       },
       created_at: {
-        label: 'common.creation_date',
+        label: 'common.created_at',
         type: 'sTextField',
         disabled: true,
         required: false
       },
       updated_at: {
-        label: 'common.modification_date',
+        label: 'common.updated_at',
         type: 'sTextField',
         disabled: true,
         required: false

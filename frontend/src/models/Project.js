@@ -24,8 +24,8 @@ export class Project {
       { key: 'us_count', label: t('project.us_count'), type: 'text', format: 'text' },
       { key: 'defect_count', label: t('project.defect_count'), type: 'text', format: 'text' },
       { key: 'sprint_count', label: t('project.sprint_count'), type: 'text', format: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 
@@ -314,17 +314,17 @@ export class Project {
         disabled: true
       },
       closed_at: {
-        label: 'common.closure_date',
+        label: 'common.closed_at',
         type: 'sTextField',
         disabled: true
       },
       created_at: {
-        label: 'common.creation_date',
+        label: 'common.created_at',
         type: 'sTextField',
         disabled: true,
       },
       updated_at: {
-        label: 'common.modification_date',
+        label: 'common.updated_at',
         type: 'sTextField',
         disabled: true,
       },
@@ -392,8 +392,8 @@ export class Project {
       { key: 'assigned_group_name', label: t('project.team_id'), type: 'text', format: 'text', filterKey: 'assigned_to_group' },
       { key: 'assigned_person_name', label: t('project.lead_user_id'), type: 'text', format: 'text', filterKey: 'assigned_to_person' },
       { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text', filterKey: 'writer_uuid' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'closed_at', label: t('common.closed_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }

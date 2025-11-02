@@ -42,8 +42,8 @@ export class ChangeSetup {
       { key: 'code', label: t('changeSetup.code'), type: 'text' },
       { key: 'label', label: t('changeSetup.label'), type: 'text' },
       { key: 'lang', label: t('language.title'), type: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' },
 
     ];
   }
@@ -133,7 +133,7 @@ export class ChangeSetup {
         disabled: true
       },
       created_at: {
-        label: 'common.creation_date',
+        label: 'common.created_at',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -141,7 +141,7 @@ export class ChangeSetup {
         disabled: true
       },
       updated_at: {
-        label: 'common.modification_date',
+        label: 'common.updated_at',
         type: 'sTextField',
         placeholder: null,
         required: false,

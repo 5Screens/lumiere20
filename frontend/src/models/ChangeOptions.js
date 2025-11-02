@@ -47,8 +47,8 @@ export class ChangeOptions {
       { key: 'label', label: t('changeOptions.label'), type: 'text' },
       { key: 'weight', label: t('changeOptions.weight'), type: 'number' },
       { key: 'lang', label: t('language.title'), type: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' },
 
     ];
   }

@@ -32,10 +32,10 @@ export class Problem {
       { key: 'actual_resolution_workload', label: t('problem.actual_resolution_workload'), type: 'text', format: 'text' },
       { key: 'definitive_solution', label: t('problem.definitive_solution'), type: 'text', format: 'html' },
       { key: 'closure_justification', label: t('problem.closure_justification'), type: 'text', format: 'text' },
-      { key: 'created_at', label: t('common.creation_date'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'created_at', label: t('common.created_at'), type: 'date', format: 'YYYY-MM-DD' },
       { key: 'writer_name', label: t('common.writer_name'), type: 'text', format: 'text', filterKey: 'writer_uuid' },
-      { key: 'updated_at', label: t('common.modification_date'), type: 'date', format: 'YYYY-MM-DD' },
-      { key: 'closed_at', label: t('common.closure_date'), type: 'date', format: 'YYYY-MM-DD' }
+      { key: 'updated_at', label: t('common.updated_at'), type: 'date', format: 'YYYY-MM-DD' },
+      { key: 'closed_at', label: t('common.closed_at'), type: 'date', format: 'YYYY-MM-DD' }
     ];
   }
 
@@ -195,7 +195,7 @@ export class Problem {
         disabled: true
       },
       created_at: {
-        label: 'common.creation_date',
+        label: 'common.created_at',
         type: 'sTextField',
         placeholder: null,
         required: false,
@@ -203,7 +203,7 @@ export class Problem {
         disabled: true
       },
       updated_at: {
-        label: 'common.modification_date',
+        label: 'common.updated_at',
         type: 'sTextField',
         placeholder: null,
         required: false,
