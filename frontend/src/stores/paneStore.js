@@ -53,7 +53,6 @@ export const usePaneStore = defineStore('pane', {
         type: 'configuration',
         hasSections: false,
         items: [
-          { tabToOpen: 'entities', icon: 'fas fa-cube', label: 'configuration.entities', className: 'Entity' },
           { tabToOpen: 'entitySetup', icon: 'fas fa-cogs', label: 'configuration.entitySetup', className: 'EntitySetup' },
           { tabToOpen: 'symptoms', icon: 'fas fa-stethoscope', label: 'configuration.symptoms', className: 'Symptom' },
           { tabToOpen: 'contact_types', icon: 'fas fa-phone', label: 'configuration.contactTypes', className: 'ContactType' },
@@ -64,10 +63,7 @@ export const usePaneStore = defineStore('pane', {
           { tabToOpen: 'changeQuestions', icon: 'fas fa-question-circle', label: 'configuration.changeQuestions', className: 'ChangeQuestions' },
           { tabToOpen: 'changeSetup', icon: 'fas fa-cog', label: 'configuration.changeSetup', className: 'ChangeSetup' },
           { tabToOpen: 'problemCategories', icon: 'fas fa-tags', label: 'configuration.problemCategories', className: 'ProblemCategories' },
-          { tabToOpen: 'incidentSetup', icon: 'fas fa-exclamation-triangle', label: 'configuration.incidentSetup', className: 'IncidentSetup' },
-          { tabToOpen: 'groups', icon: 'fas fa-users', label: 'configuration.groups', className: 'Group' },
-          { tabToOpen: 'persons', icon: 'fas fa-user', label: 'configuration.persons', className: 'Person' },
-          { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations', className: 'Location' }
+          { tabToOpen: 'incidentSetup', icon: 'fas fa-exclamation-triangle', label: 'configuration.incidentSetup', className: 'IncidentSetup' }
           /*{ tabToOpen: 'companies', icon: 'fas fa-building', label: 'configuration.companies' },
           { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'configuration.locations' },
           { tabToOpen: 'sites', icon: 'fas fa-sitemap', label: 'configuration.sites' },
@@ -104,6 +100,16 @@ export const usePaneStore = defineStore('pane', {
         hasSections: true,
         items: [],
         sections: [
+          {
+            id: 'foundations',
+            label: 'dataPane.foundations.title',
+            items: [
+              { tabToOpen: 'entities', icon: 'fas fa-cube', label: 'dataPane.foundations.entities', className: 'Entity' },
+              { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'dataPane.foundations.locations', className: 'Location' },
+              { tabToOpen: 'persons', icon: 'fas fa-user', label: 'dataPane.foundations.persons', className: 'Person' },
+              { tabToOpen: 'groups', icon: 'fas fa-users', label: 'dataPane.foundations.groups', className: 'Group' }
+            ]
+          },
           {
             id: 'applications',
             label: 'dataPane.applications.title',

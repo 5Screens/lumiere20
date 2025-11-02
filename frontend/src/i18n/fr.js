@@ -120,6 +120,13 @@ export default {
   dataPane: {
     title: 'Données',
     description: 'Gérez ici les données de votre organisation',
+    foundations: {
+      title: 'Fondations',
+      entities: 'Entités',
+      locations: 'Localisations',
+      persons: 'Personnes',
+      groups: 'Groupes'
+    },
     applications: {
       title: 'Applications',
       deployed: 'Application Déployée',
@@ -191,12 +198,8 @@ export default {
     title: 'Configuration',
     description:'Gérez ici les paramètres de votre organisation',
     companies: 'Sociétés',
-    locations: 'Localisations',
     sites: 'Sites',
-    entities: 'Entités',
     departments: 'Départements',
-    persons: 'Personnes',
-    supportGroups: 'Groupes de support',
     roles: 'Rôles et permissions',
     ticketStatus: 'Statuts des tickets',
     symptoms: 'Gestion des symptômes',
@@ -212,10 +215,9 @@ export default {
     changeOptions: 'Q/R d\'analyse d\'impact et de risque',
     changeQuestions: 'Questions de changement',
     changeSetup: 'Gestion des changements',
-    problemCategories: 'Catégories de problème', 
-    entitySetup: 'Gestion des paramètres d\'entite',
-    incidentSetup: 'Gestion des paramètres d\'incident',
-    groups: 'Gestion des groupes',
+    problemCategories: 'Gestion des problèmes', 
+    entitySetup: 'Gestion des entités',
+    incidentSetup: 'Gestion des incidents',
   },
   admin: {
     title: 'Administration',

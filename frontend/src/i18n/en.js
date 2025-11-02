@@ -253,6 +253,13 @@ export default {
   },
   dataPane: {
     title: 'Data',
+    foundations: {
+      title: 'Foundations',
+      entities: 'Entities',
+      locations: 'Locations',
+      persons: 'Persons',
+      groups: 'Groups'
+    },
     applications: {
       title: 'Applications',
       deployed: 'Deployed application',
