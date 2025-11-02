@@ -38,15 +38,8 @@
             </select>
           </div>
 
-          <!-- Message si aucun filtre ajouté -->
-          <div v-if="activeFilters.length === 0" class="s-multi-filter__empty">
-            <button @click="addNewFilter" class="btn-add-first" :title="$t('filters.add_first_filter')">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-
           <!-- Liste des filtres actifs -->
-          <div v-else class="s-multi-filter__active-filters">
+          <div v-if="activeFilters.length > 0" class="s-multi-filter__active-filters">
             <sOneFilter
               v-for="(filter, index) in activeFilters"
               :key="filter.id"
@@ -161,6 +154,11 @@ export default {
     const togglePanel = () => {
       isExpanded.value = !isExpanded.value;
       filterStore.setPanelState(props.objectName, isExpanded.value);
+      
+      // Si on ouvre le panneau et qu'il n'y a aucun filtre actif, en ajouter un automatiquement
+      if (isExpanded.value && activeFilters.value.length === 0) {
+        addNewFilter();
+      }
     };
 
     const loadFilterConfig = async () => {
