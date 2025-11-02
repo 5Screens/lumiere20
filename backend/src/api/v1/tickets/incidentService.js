@@ -186,7 +186,7 @@ const getIncidentById = async (uuid, lang = 'en') => {
             LEFT JOIN (
                 SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
                 FROM core.rel_tickets_groups_persons
-                WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+                WHERE type = 'ASSIGNED' AND ended_at IS NULL
             ) rtgp ON t.uuid = rtgp.rel_ticket
             LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
             LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
@@ -809,7 +809,7 @@ const searchIncidents = async (searchParams) => {
       LEFT JOIN (
         SELECT rel_ticket, rel_assigned_to_group, rel_assigned_to_person
         FROM core.rel_tickets_groups_persons
-        WHERE type = 'ASSIGNED' AND (ended_at IS NULL OR ended_at > NOW())
+        WHERE type = 'ASSIGNED' AND ended_at IS NULL
       ) rtgp ON t.uuid = rtgp.rel_ticket
       LEFT JOIN configuration.groups g ON rtgp.rel_assigned_to_group = g.uuid
       LEFT JOIN configuration.persons p4 ON rtgp.rel_assigned_to_person = p4.uuid
