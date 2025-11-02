@@ -550,19 +550,34 @@ export default {
 
     const updateType = (event) => {
       const newType = event.target.value;
+      const oldType = props.filter.type;
+      const oldValue = props.filter.value;
       
       console.log('[sOneFilter] 🔄 updateType called:', {
         filterId: props.filter.id,
         column: props.filter.column,
-        oldType: props.filter.type,
+        oldType: oldType,
         newType: newType,
-        oldValue: props.filter.value,
+        oldValue: oldValue,
         selectedColumnConfig: selectedColumnConfig.value
       });
       
-      // Déterminer si on doit préserver la valeur actuelle
+      // Opérateurs qui ne nécessitent pas de valeur
       const noValueOperators = ['is_null', 'is_not_null', 'is_true', 'is_false'];
       const isNoValueOperator = noValueOperators.includes(newType);
+      const wasNoValueOperator = noValueOperators.includes(oldType);
+      
+      // Opérateurs compatibles pour les champs texte (peuvent partager la même valeur)
+      const textOperators = ['is', 'contains', 'equals'];
+      const bothAreTextOperators = textOperators.includes(oldType) && textOperators.includes(newType);
+      
+      // Opérateurs compatibles pour les champs numériques simples
+      const simpleNumericOperators = ['equals', 'lt', 'lte', 'gt', 'gte'];
+      const bothAreSimpleNumeric = simpleNumericOperators.includes(oldType) && simpleNumericOperators.includes(newType);
+      
+      // Opérateurs compatibles pour les champs de date simples
+      const simpleDateOperators = ['on', 'after', 'on_or_after', 'before', 'on_or_before'];
+      const bothAreSimpleDate = simpleDateOperators.includes(oldType) && simpleDateOperators.includes(newType);
       
       let newValue;
       
@@ -570,10 +585,18 @@ export default {
         // Si le nouveau type ne nécessite pas de valeur, mettre null
         newValue = null;
         console.log('[sOneFilter] 🚫 No value operator detected, setting value to null');
-      } else {
-        // Toujours réinitialiser avec une valeur par défaut lors du changement de type
+      } else if (wasNoValueOperator) {
+        // Si on vient d'un opérateur sans valeur, initialiser avec une valeur par défaut
         newValue = getDefaultValueForType(newType);
-        console.log('[sOneFilter] 🔄 Getting default value for type:', { newType, newValue });
+        console.log('[sOneFilter] 🔄 Coming from no-value operator, initializing with default:', { newType, newValue });
+      } else if (bothAreTextOperators || bothAreSimpleNumeric || bothAreSimpleDate) {
+        // Préserver la valeur existante pour les opérateurs compatibles
+        newValue = oldValue;
+        console.log('[sOneFilter] ✅ Preserving existing value (compatible operators):', { oldType, newType, value: newValue });
+      } else {
+        // Pour les autres cas (changement de type incompatible), réinitialiser
+        newValue = getDefaultValueForType(newType);
+        console.log('[sOneFilter] 🔄 Incompatible operators, resetting to default:', { oldType, newType, newValue });
       }
       
       emit('update', props.filter.id, {
