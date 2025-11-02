@@ -12,6 +12,7 @@ const logger = require('../../../config/logger');
  * @param {Array} options.jsonbNumericColumns - List of numeric columns stored in JSONB
  * @param {Array} options.jsonbTextColumns - List of text columns stored in JSONB
  * @param {Array} options.jsonbArrayColumns - List of array columns stored in JSONB
+ * @param {string} options.dependencyCode - Dependency code for parent-child relationships (e.g., 'DEFECT', 'STORY', 'SPRINT')
  * @param {string} options.servicePrefix - Prefix for logging (e.g., '[CHANGE SERVICE]')
  * @returns {Object} { condition: string, newParamIndex: number }
  */
@@ -21,6 +22,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
     jsonbNumericColumns = [],
     jsonbTextColumns = [],
     jsonbArrayColumns = [],
+    dependencyCode = 'STORY',
     servicePrefix = '[TICKET SERVICE]'
   } = options;
   
@@ -192,13 +194,13 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
   // ============================================================================
   
   if (column === 'project_id') {
-    logger.info(`${servicePrefix} Building condition for parent-child column: project_id`);
+    logger.info(`${servicePrefix} Building condition for parent-child column: project_id with dependency_code=${dependencyCode}`);
     if (operator === 'is_null') {
       condition = `(NOT EXISTS (
         SELECT 1 FROM core.rel_parent_child_tickets rpc
         JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
         WHERE rpc.rel_child_ticket_uuid = t.uuid
-          AND rpc.dependency_code = 'STORY'
+          AND rpc.dependency_code = '${dependencyCode}'
           AND parent.ticket_type_code = 'PROJECT'
           AND rpc.ended_at IS NULL
       ) AND NOT EXISTS (
@@ -207,7 +209,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         JOIN core.rel_parent_child_tickets rpc2 ON epic.uuid = rpc2.rel_child_ticket_uuid
         JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid
         WHERE rpc1.rel_child_ticket_uuid = t.uuid
-          AND rpc1.dependency_code = 'STORY'
+          AND rpc1.dependency_code = '${dependencyCode}'
           AND rpc1.ended_at IS NULL
           AND rpc2.dependency_code = 'EPIC'
           AND rpc2.ended_at IS NULL
@@ -218,7 +220,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         SELECT 1 FROM core.rel_parent_child_tickets rpc
         JOIN core.tickets parent ON rpc.rel_parent_ticket_uuid = parent.uuid
         WHERE rpc.rel_child_ticket_uuid = t.uuid
-          AND rpc.dependency_code = 'STORY'
+          AND rpc.dependency_code = '${dependencyCode}'
           AND parent.ticket_type_code = 'PROJECT'
           AND rpc.ended_at IS NULL
       ) OR EXISTS (
@@ -227,7 +229,7 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
         JOIN core.rel_parent_child_tickets rpc2 ON epic.uuid = rpc2.rel_child_ticket_uuid
         JOIN core.tickets project ON rpc2.rel_parent_ticket_uuid = project.uuid
         WHERE rpc1.rel_child_ticket_uuid = t.uuid
-          AND rpc1.dependency_code = 'STORY'
+          AND rpc1.dependency_code = '${dependencyCode}'
           AND rpc1.ended_at IS NULL
           AND rpc2.dependency_code = 'EPIC'
           AND rpc2.ended_at IS NULL
@@ -241,37 +243,27 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
           SELECT 1 FROM core.rel_parent_child_tickets rpc
           WHERE rpc.rel_child_ticket_uuid = t.uuid
             AND rpc.rel_parent_ticket_uuid IN (${placeholders})
-            AND rpc.dependency_code = 'STORY'
+            AND rpc.dependency_code = '${dependencyCode}'
             AND rpc.ended_at IS NULL
         ) OR EXISTS (
           SELECT 1 FROM core.rel_parent_child_tickets rpc1
           JOIN core.rel_parent_child_tickets rpc2 ON rpc1.rel_parent_ticket_uuid = rpc2.rel_child_ticket_uuid
           WHERE rpc1.rel_child_ticket_uuid = t.uuid
             AND rpc2.rel_parent_ticket_uuid IN (${placeholders})
-            AND rpc1.dependency_code = 'STORY'
-            AND rpc2.dependency_code = 'EPIC'
+            AND rpc1.dependency_code = '${dependencyCode}'
             AND rpc1.ended_at IS NULL
+            AND rpc2.dependency_code = 'EPIC'
             AND rpc2.ended_at IS NULL
         ))`;
       } else {
-        const placeholder = `$${paramIndex++}`;
-        queryParams.push(value);
-        condition = `(EXISTS (
+        condition = `EXISTS (
           SELECT 1 FROM core.rel_parent_child_tickets rpc
           WHERE rpc.rel_child_ticket_uuid = t.uuid
-            AND rpc.rel_parent_ticket_uuid = ${placeholder}
-            AND rpc.dependency_code = 'STORY'
+            AND rpc.rel_parent_ticket_uuid = $${paramIndex++}
+            AND rpc.dependency_code = '${dependencyCode}'
             AND rpc.ended_at IS NULL
-        ) OR EXISTS (
-          SELECT 1 FROM core.rel_parent_child_tickets rpc1
-          JOIN core.rel_parent_child_tickets rpc2 ON rpc1.rel_parent_ticket_uuid = rpc2.rel_child_ticket_uuid
-          WHERE rpc1.rel_child_ticket_uuid = t.uuid
-            AND rpc2.rel_parent_ticket_uuid = ${placeholder}
-            AND rpc1.dependency_code = 'STORY'
-            AND rpc2.dependency_code = 'EPIC'
-            AND rpc1.ended_at IS NULL
-            AND rpc2.ended_at IS NULL
-        ))`;
+        )`;
+        queryParams.push(value);
       }
     } else if (operator === 'not_equals' || operator === 'is_not') {
       if (Array.isArray(value)) {
@@ -281,37 +273,27 @@ const buildFilterCondition = (column, filterDef, dataType, queryParams, paramInd
           SELECT 1 FROM core.rel_parent_child_tickets rpc
           WHERE rpc.rel_child_ticket_uuid = t.uuid
             AND rpc.rel_parent_ticket_uuid IN (${placeholders})
-            AND rpc.dependency_code = 'STORY'
+            AND rpc.dependency_code = '${dependencyCode}'
             AND rpc.ended_at IS NULL
         ) AND NOT EXISTS (
           SELECT 1 FROM core.rel_parent_child_tickets rpc1
           JOIN core.rel_parent_child_tickets rpc2 ON rpc1.rel_parent_ticket_uuid = rpc2.rel_child_ticket_uuid
           WHERE rpc1.rel_child_ticket_uuid = t.uuid
             AND rpc2.rel_parent_ticket_uuid IN (${placeholders})
-            AND rpc1.dependency_code = 'STORY'
-            AND rpc2.dependency_code = 'EPIC'
+            AND rpc1.dependency_code = '${dependencyCode}'
             AND rpc1.ended_at IS NULL
+            AND rpc2.dependency_code = 'EPIC'
             AND rpc2.ended_at IS NULL
         ))`;
       } else {
-        const placeholder = `$${paramIndex++}`;
-        queryParams.push(value);
-        condition = `(NOT EXISTS (
+        condition = `NOT EXISTS (
           SELECT 1 FROM core.rel_parent_child_tickets rpc
           WHERE rpc.rel_child_ticket_uuid = t.uuid
-            AND rpc.rel_parent_ticket_uuid = ${placeholder}
-            AND rpc.dependency_code = 'STORY'
+            AND rpc.rel_parent_ticket_uuid = $${paramIndex++}
+            AND rpc.dependency_code = '${dependencyCode}'
             AND rpc.ended_at IS NULL
-        ) AND NOT EXISTS (
-          SELECT 1 FROM core.rel_parent_child_tickets rpc1
-          JOIN core.rel_parent_child_tickets rpc2 ON rpc1.rel_parent_ticket_uuid = rpc2.rel_child_ticket_uuid
-          WHERE rpc1.rel_child_ticket_uuid = t.uuid
-            AND rpc2.rel_parent_ticket_uuid = ${placeholder}
-            AND rpc1.dependency_code = 'STORY'
-            AND rpc2.dependency_code = 'EPIC'
-            AND rpc1.ended_at IS NULL
-            AND rpc2.ended_at IS NULL
-        ))`;
+        )`;
+        queryParams.push(value);
       }
     }
     return { condition, newParamIndex: paramIndex };

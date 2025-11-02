@@ -514,6 +514,7 @@ const searchDefects = async (searchParams) => {
             {
               jsonbTextColumns,
               jsonbArrayColumns,
+              dependencyCode: 'DEFECT',
               servicePrefix
             }
           );
