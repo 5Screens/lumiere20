@@ -32,8 +32,6 @@ ON CONFLICT (code) DO UPDATE SET
     is_active = EXCLUDED.is_active,
     updated_at = now();
 
-RAISE NOTICE '[18_portals_seed_data.sql] Portal "demo-portal" inserted/updated';
-
 -- Portal 2: Support Portal (Active)
 -- Purpose: Portal for end-user ticket creation
 INSERT INTO configuration.portals (code, name, base_url, thumbnail_url, is_active)
@@ -50,8 +48,6 @@ ON CONFLICT (code) DO UPDATE SET
     is_active = EXCLUDED.is_active,
     updated_at = now();
 
-RAISE NOTICE '[18_portals_seed_data.sql] Portal "support-portal" inserted/updated';
-
 -- Portal 3: Admin Portal (Inactive)
 -- Purpose: Administrative portal (disabled for testing)
 INSERT INTO configuration.portals (code, name, base_url, thumbnail_url, is_active)
@@ -67,8 +63,6 @@ ON CONFLICT (code) DO UPDATE SET
     base_url = EXCLUDED.base_url,
     is_active = EXCLUDED.is_active,
     updated_at = now();
-
-RAISE NOTICE '[18_portals_seed_data.sql] Portal "admin-portal" inserted/updated';
 
 -- ============================================================================
 -- SECTION 2: INSERT PORTAL ACTIONS
@@ -109,8 +103,6 @@ FROM configuration.portals p
 WHERE p.code = 'demo-portal'
 ON CONFLICT DO NOTHING;
 
-RAISE NOTICE '[18_portals_seed_data.sql] Action CREATE_TASK added to demo-portal';
-
 -- Action: Create Incident
 INSERT INTO configuration.portal_actions (
     rel_portal_uuid,
@@ -141,8 +133,6 @@ SELECT
 FROM configuration.portals p
 WHERE p.code = 'demo-portal'
 ON CONFLICT DO NOTHING;
-
-RAISE NOTICE '[18_portals_seed_data.sql] Action CREATE_INCIDENT added to demo-portal';
 
 -- ----------------------------------------------------------------------------
 -- Actions for support-portal
@@ -179,8 +169,6 @@ FROM configuration.portals p
 WHERE p.code = 'support-portal'
 ON CONFLICT DO NOTHING;
 
-RAISE NOTICE '[18_portals_seed_data.sql] Action CREATE_SUPPORT_REQUEST added to support-portal';
-
 -- Action: Report Problem
 INSERT INTO configuration.portal_actions (
     rel_portal_uuid,
@@ -211,8 +199,6 @@ SELECT
 FROM configuration.portals p
 WHERE p.code = 'support-portal'
 ON CONFLICT DO NOTHING;
-
-RAISE NOTICE '[18_portals_seed_data.sql] Action REPORT_PROBLEM added to support-portal';
 
 -- ----------------------------------------------------------------------------
 -- Actions for admin-portal (inactive portal)
@@ -248,8 +234,6 @@ SELECT
 FROM configuration.portals p
 WHERE p.code = 'admin-portal'
 ON CONFLICT DO NOTHING;
-
-RAISE NOTICE '[18_portals_seed_data.sql] Action ADMIN_TASK added to admin-portal';
 
 -- ============================================================================
 -- SECTION 3: VERIFICATION
