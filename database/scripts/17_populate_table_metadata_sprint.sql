@@ -109,7 +109,7 @@ INSERT INTO administration.table_metadata (
  NULL, NULL, NULL),
 
 -- created_at
-('tickets', 'Sprint', NULL, NULL, 'created_at', 'common.creation_date', 'Date de création',
+('tickets', 'Sprint', NULL, NULL, 'created_at', 'common.created_at', 'Date de création',
  'timestamp', false, 'CURRENT_TIMESTAMP',
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD"}'::jsonb,
@@ -121,7 +121,7 @@ INSERT INTO administration.table_metadata (
  NULL, NULL, NULL),
 
 -- updated_at
-('tickets', 'Sprint', NULL, NULL, 'updated_at', 'common.modification_date', 'Date de modification',
+('tickets', 'Sprint', NULL, NULL, 'updated_at', 'common.updated_at', 'Date de modification',
  'timestamp', false, 'CURRENT_TIMESTAMP',
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD"}'::jsonb,
@@ -133,7 +133,7 @@ INSERT INTO administration.table_metadata (
  NULL, NULL, NULL),
 
 -- closed_at
-('tickets', 'Sprint', NULL, NULL, 'closed_at', 'common.closure_date', 'Date de clôture',
+('tickets', 'Sprint', NULL, NULL, 'closed_at', 'common.closed_at', 'Date de clôture',
  'timestamp', true, NULL,
  true, true, true,
  'date_range', '{"format": "YYYY-MM-DD"}'::jsonb,
