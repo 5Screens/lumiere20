@@ -296,7 +296,7 @@ INSERT INTO administration.table_metadata (
  true, 'core.tickets', 'uuid',
  false, NULL, NULL, NULL,
  'sFilteredSearchField', 'Recherchez un projet', true, false,
- 'tickets?ticket_type=PROJECT', 'title', 'uuid', false, 'Projet auquel appartient le défaut',
+ 'tickets?ticket_type=PROJECT', 'title', 'uuid', true, 'Projet auquel appartient le défaut',
  true, 147,
  NULL, NULL, NULL);
 

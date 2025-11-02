@@ -2,7 +2,7 @@ const db = require('../../../config/database');
 const logger = require('../../../config/logger');
 const ticketService = require('./service');
 const { addChildrenTickets, removeChildTicket } = require('./service');
-const { buildFilterCondition: buildGenericFilterCondition } = require('./ticketFilterBuilder');
+const { buildFilterCondition } = require('./ticketFilterBuilder');
 
 /**
  * Récupère un epic par son UUID
@@ -374,33 +374,6 @@ const createEpic = async (epicData) => {
 };
 
 /**
- * Build filter condition for epics search (wrapper with EPIC-specific JSONB columns)
- * @param {string} column - Column name
- * @param {Object} filterDef - Filter definition with operator and value(s)
- * @param {string} dataType - Column data type (text, number, date, boolean)
- * @param {Array} queryParams - Array to push parameters into
- * @param {number} paramIndex - Current parameter index
- * @returns {Object} { condition: string, newParamIndex: number }
- */
-const buildFilterCondition = (column, filterDef, dataType, queryParams, paramIndex) => {
-  return buildGenericFilterCondition(column, filterDef, dataType, queryParams, paramIndex, {
-    jsonbDateColumns: [
-      'start_date', 'end_date'
-    ],
-    jsonbTextColumns: [
-      'color'
-    ],
-    jsonbArrayColumns: [
-      'tags'
-    ],
-    jsonbNumericColumns: [
-      'progress_percent'
-    ],
-    servicePrefix: '[EPIC SERVICE]'
-  });
-};
-
-/**
  * Lazy search for epics with pagination
  * @param {string} searchQuery - Search term
  * @param {number} [page=1] - Page number (1-indexed)
@@ -546,57 +519,20 @@ const searchEpics = async (searchParams) => {
         
         const filterConditions = [];
         
+        // Define JSONB columns specific to epics
+        const jsonbDateColumns = ['start_date', 'end_date'];
+        const jsonbTextColumns = ['color'];
+        const jsonbArrayColumns = ['tags'];
+        const jsonbNumericColumns = ['progress_percent'];
+        
         // Process each filter condition
         for (const filterDef of filters.conditions) {
-          const { column, operator: filterOperator, value } = filterDef;
+          const { column } = filterDef;
           
           logger.info(`${servicePrefix} Processing filter condition:`, JSON.stringify(filterDef));
           
           if (!column) {
             logger.warn(`${servicePrefix} Filter condition missing column, skipping`);
-            continue;
-          }
-          
-          // Special handling for project_id (stored in rel_parent_child_tickets, not JSONB)
-          if (column === 'project_id') {
-            logger.info(`${servicePrefix} Special handling for project_id filter`);
-            
-            if (filterOperator === 'is' && Array.isArray(value) && value.length > 0) {
-              const projectUuids = value;
-              const placeholders = projectUuids.map((_, idx) => `$${paramIndex + idx}`).join(', ');
-              
-              const condition = `t.uuid IN (
-                SELECT rpc.rel_child_ticket_uuid 
-                FROM core.rel_parent_child_tickets rpc 
-                WHERE rpc.rel_parent_ticket_uuid IN (${placeholders})
-                  AND rpc.dependency_code = 'EPIC'
-                  AND rpc.ended_at IS NULL
-              )`;
-              
-              projectUuids.forEach(uuid => queryParams.push(uuid));
-              paramIndex += projectUuids.length;
-              
-              filterConditions.push(condition);
-              logger.info(`${servicePrefix} Added project_id filter: ${condition}`);
-            } else if (filterOperator === 'is_not' && Array.isArray(value) && value.length > 0) {
-              const projectUuids = value;
-              const placeholders = projectUuids.map((_, idx) => `$${paramIndex + idx}`).join(', ');
-              
-              const condition = `t.uuid NOT IN (
-                SELECT rpc.rel_child_ticket_uuid 
-                FROM core.rel_parent_child_tickets rpc 
-                WHERE rpc.rel_parent_ticket_uuid IN (${placeholders})
-                  AND rpc.dependency_code = 'EPIC'
-                  AND rpc.ended_at IS NULL
-              )`;
-              
-              projectUuids.forEach(uuid => queryParams.push(uuid));
-              paramIndex += projectUuids.length;
-              
-              filterConditions.push(condition);
-              logger.info(`${servicePrefix} Added project_id NOT filter: ${condition}`);
-            }
-            
             continue;
           }
           
@@ -618,13 +554,21 @@ const searchEpics = async (searchParams) => {
           const { data_type } = metadataResult.rows[0];
           logger.info(`${servicePrefix} Column ${column} has data_type: ${data_type}`);
           
-          // Build the condition for this filter
+          // Build the condition for this filter using ticketFilterBuilder
           const { condition, newParamIndex } = buildFilterCondition(
             column,
             filterDef,
             data_type,
             queryParams,
-            paramIndex
+            paramIndex,
+            {
+              jsonbDateColumns,
+              jsonbTextColumns,
+              jsonbArrayColumns,
+              jsonbNumericColumns,
+              dependencyCode: 'EPIC',
+              servicePrefix
+            }
           );
           
           logger.info(`${servicePrefix} buildFilterCondition returned: condition="${condition}", newParamIndex=${newParamIndex}`);
