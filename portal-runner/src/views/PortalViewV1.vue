@@ -24,6 +24,20 @@
           </div>
         </div>
         <div class="header-right">
+          <button class="icon-button language-button" :title="`Langue: ${currentLanguage.name}`" @click="toggleLanguageMenu">
+            <span class="flag-icon">{{ currentLanguage.flag }}</span>
+          </button>
+          <div v-if="showLanguageMenu" class="language-menu">
+            <button 
+              v-for="lang in availableLanguages" 
+              :key="lang.code"
+              @click="changeLanguage(lang.code)"
+              :class="['language-option', { active: currentLanguage.code === lang.code }]"
+            >
+              <span class="flag-icon">{{ lang.flag }}</span>
+              <span>{{ lang.name }}</span>
+            </button>
+          </div>
           <button class="icon-button" title="SSO">
             <i class="fas fa-key"></i>
           </button>
@@ -109,6 +123,15 @@ const portal = ref(null)
 const loading = ref(true)
 const error = ref('')
 const toast = ref({ show: false, type: 'success', message: '' })
+const showLanguageMenu = ref(false)
+const currentLanguage = ref({ code: 'fr', name: 'Français', flag: '🇫🇷' })
+
+const availableLanguages = [
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' }
+]
 
 const themeStyles = computed(() => {
   if (!portal.value) return {}
@@ -140,6 +163,24 @@ const handleActionSuccess = (data) => {
 const handleActionError = (err) => {
   console.error('Action error:', err)
   showToast('error', 'Erreur lors de l\'exécution de l\'action')
+}
+
+const toggleLanguageMenu = () => {
+  showLanguageMenu.value = !showLanguageMenu.value
+}
+
+const changeLanguage = async (languageCode) => {
+  const selectedLang = availableLanguages.find(lang => lang.code === languageCode)
+  if (selectedLang) {
+    currentLanguage.value = selectedLang
+    showLanguageMenu.value = false
+    
+    // TODO: Call backend API to reload portal data in selected language
+    console.log(`Language changed to: ${languageCode}`)
+    // await getFullPortal(route.params.portalCode, languageCode)
+    
+    showToast('success', `Langue changée: ${selectedLang.name}`)
+  }
 }
 
 onMounted(async () => {
@@ -252,6 +293,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 12px;
+  position: relative;
 }
 
 .icon-button {
@@ -268,6 +310,68 @@ onMounted(async () => {
 
 .icon-button:hover {
   background: #f0f0f0;
+}
+
+.language-button {
+  position: relative;
+}
+
+.flag-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.language-menu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 180px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 14px;
+  color: var(--secondary-color, #111);
+}
+
+.language-option:hover {
+  background: #f5f5f5;
+}
+
+.language-option.active {
+  background: var(--primary-color, #FF6B00);
+  color: #fff;
+}
+
+.language-option.active:hover {
+  background: #e55f00;
 }
 
 .user-name {
