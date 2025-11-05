@@ -1,18 +1,18 @@
 <template>
-  <div class="chat-panel">
-    <div class="chat-header">
-      <i class="fas fa-comments"></i>
-      <span>Assistant Lumière</span>
+  <div class="agentic-panel">
+    <div class="agentic-header">
+      <i class="fas fa-robot"></i>
+      <span>Agent Lumière</span>
     </div>
     
-    <div class="chat-messages" ref="messagesContainer">
+    <div class="agentic-messages" ref="messagesContainer">
       <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
         <div class="message-content">{{ message.text }}</div>
         <div class="message-time">{{ message.time }}</div>
       </div>
     </div>
     
-    <div class="chat-input-wrapper">
+    <div class="agentic-input-wrapper">
       <textarea
         v-model="inputText"
         @keydown.enter.exact.prevent="sendMessage"
@@ -108,7 +108,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.chat-panel {
+.agentic-panel {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -116,7 +116,7 @@ onMounted(() => {
   border-left: 1px solid #e0e0e0;
 }
 
-.chat-header {
+.agentic-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -128,7 +128,7 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.chat-messages {
+.agentic-messages {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
@@ -194,7 +194,7 @@ onMounted(() => {
   text-align: right;
 }
 
-.chat-input-wrapper {
+.agentic-input-wrapper {
   display: flex;
   gap: 8px;
   padding: 12px;
@@ -248,23 +248,23 @@ textarea:focus {
 }
 
 /* Scrollbar styling */
-.chat-messages::-webkit-scrollbar,
+.agentic-messages::-webkit-scrollbar,
 textarea::-webkit-scrollbar {
   width: 6px;
 }
 
-.chat-messages::-webkit-scrollbar-track,
+.agentic-messages::-webkit-scrollbar-track,
 textarea::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
 
-.chat-messages::-webkit-scrollbar-thumb,
+.agentic-messages::-webkit-scrollbar-thumb,
 textarea::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 3px;
 }
 
-.chat-messages::-webkit-scrollbar-thumb:hover,
+.agentic-messages::-webkit-scrollbar-thumb:hover,
 textarea::-webkit-scrollbar-thumb:hover {
   background: #999;
 }

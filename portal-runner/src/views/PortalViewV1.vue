@@ -75,9 +75,9 @@
           </section>
         </div>
         
-        <!-- Right: Chat Panel (25%) -->
+        <!-- Right: Agentic Panel (25%) -->
         <div v-if="portal.show_chat" class="content-right">
-          <ChatPanel :default-message="portal.chat_default_message" />
+          <AgenticPanel :default-message="portal.chat_default_message" />
         </div>
       </div>
       
@@ -102,7 +102,7 @@ import { getFullPortal } from '@/services/portals'
 import AlertBanner from '@/components/AlertBanner.vue'
 import QuickActionCard from '@/components/QuickActionCard.vue'
 import DashboardWidget from '@/components/DashboardWidget.vue'
-import ChatPanel from '@/components/ChatPanel.vue'
+import AgenticPanel from '@/components/AgenticPanel.vue'
 
 const route = useRoute()
 const portal = ref(null)

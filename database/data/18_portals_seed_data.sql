@@ -69,7 +69,7 @@ ON CONFLICT (code) DO UPDATE SET
 
 -- Portal 2: Support Portal (Active)
 -- Purpose: Portal for end-user ticket creation
-INSERT INTO configuration.portals (code, name, base_url, thumbnail_url, is_active)
+INSERT INTO core.portals (code, name, base_url, thumbnail_url, is_active)
 VALUES (
     'support-portal',
     'Portail Support Utilisateurs',
@@ -85,7 +85,7 @@ ON CONFLICT (code) DO UPDATE SET
 
 -- Portal 3: Admin Portal (Inactive)
 -- Purpose: Administrative portal (disabled for testing)
-INSERT INTO configuration.portals (code, name, base_url, thumbnail_url, is_active)
+INSERT INTO core.portals (code, name, base_url, thumbnail_url, is_active)
 VALUES (
     'admin-portal',
     'Portail Administration',

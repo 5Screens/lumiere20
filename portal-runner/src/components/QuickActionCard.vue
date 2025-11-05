@@ -77,11 +77,11 @@ const handleClick = async () => {
 .quick-action-card:hover:not(:disabled) {
   border-color: var(--primary-color, #FF6B00);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  /*transform: translateY(-2px);*/
 }
 
 .quick-action-card:active:not(:disabled) {
-  transform: translateY(0);
+  /*transform: translateY(0);*/
 }
 
 .quick-action-card:disabled {
