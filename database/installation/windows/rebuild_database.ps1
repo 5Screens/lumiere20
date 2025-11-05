@@ -90,7 +90,8 @@ $structureScripts = @(
     "17_populate_table_metadata_defect.sql",
     "17_populate_table_metadata_sprint.sql",
     "17_populate_table_metadata_epic.sql",
-    "17_populate_table_metadata_user_story.sql"
+    "17_populate_table_metadata_user_story.sql",
+    "18_create_portals.sql"
 )
 
 foreach ($script in $structureScripts) {
@@ -178,7 +179,8 @@ $testDataScripts = @(
     "defects.sql",
     "sprints.sql",
     "epics.sql",
-    "user_stories.sql"
+    "user_stories.sql",
+    "18_portals_seed_data.sql"
 )
 
 foreach ($script in $testDataScripts) {
