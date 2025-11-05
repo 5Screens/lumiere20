@@ -6,8 +6,8 @@
 -- Version: 1.0
 -- ============================================================================
 -- This script creates:
--- - configuration.portals: External portal definitions
--- - configuration.portal_actions: Actions/endpoints for each portal
+-- - core.portals: External portal definitions
+-- - core.portal_actions: Actions/endpoints for each portal
 -- - Indexes for performance (search, filtering)
 -- - Audit triggers for full change tracking
 -- - Auto-update triggers for updated_at timestamps
@@ -40,29 +40,38 @@ END $$;
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- Table: configuration.portals
+-- Table: core.portals
 -- Description: Stores external portal definitions (SSO, integrations, etc.)
 -- ----------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS configuration.portals (
+CREATE TABLE IF NOT EXISTS core.portals(
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(50) UNIQUE NOT NULL,
     name VARCHAR(150) NOT NULL,
     base_url TEXT NOT NULL,
     thumbnail_url TEXT NULL,
     is_active BOOLEAN NOT NULL DEFAULT false,
+    title VARCHAR(150),
+    subtitle VARCHAR(255),
+    welcome_template VARCHAR(255) DEFAULT 'Bienvenue {firstName} !',
+    logo_url TEXT,
+    theme_primary_color VARCHAR(7) DEFAULT '#FF6B00',
+    theme_secondary_color VARCHAR(7) DEFAULT '#111111',
+    show_chat BOOLEAN DEFAULT true,
+    show_alerts BOOLEAN DEFAULT true,
+    chat_default_message TEXT DEFAULT 'En cours d''implémentation',
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
 DO $$ BEGIN
-    RAISE NOTICE '[18_create_portals.sql] Table configuration.portals created or already exists';
+    RAISE NOTICE '[18_create_portals.sql] Table core.portals created or already exists';
 END $$;
 
 -- ----------------------------------------------------------------------------
--- Table: configuration.portal_actions
+-- Table: core.portal_actions
 -- Description: Stores actions/endpoints for each portal (API calls, SSO URLs)
 -- ----------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS configuration.portal_actions (
+CREATE TABLE IF NOT EXISTS core.portal_actions (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     rel_portal_uuid UUID NOT NULL,
     action_code VARCHAR(50) NOT NULL,
@@ -70,18 +79,25 @@ CREATE TABLE IF NOT EXISTS configuration.portal_actions (
     endpoint TEXT NOT NULL,
     payload_json JSONB NULL,
     headers_json JSONB NULL,
+    display_title VARCHAR(150),
+    description TEXT,
+    icon_type VARCHAR(20) DEFAULT 'fontawesome',
+    icon_value VARCHAR(255),
+    is_quick_action BOOLEAN DEFAULT false,
+    display_order INTEGER DEFAULT 0,
+    is_visible BOOLEAN DEFAULT true,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
     
     -- Foreign key constraint
     CONSTRAINT fk_portal_actions_portal
         FOREIGN KEY (rel_portal_uuid)
-        REFERENCES configuration.portals(uuid)
+        REFERENCES core.portals(uuid)
         ON DELETE CASCADE
 );
 
 DO $$ BEGIN
-    RAISE NOTICE '[18_create_portals.sql] Table configuration.portal_actions created or already exists';
+    RAISE NOTICE '[18_create_portals.sql] Table core.portal_actions created or already exists';
 END $$;
 
 -- ============================================================================
@@ -89,39 +105,44 @@ END $$;
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- Indexes for configuration.portals
+-- Indexes for core.portals
 -- ----------------------------------------------------------------------------
 
 -- Performance index: filter by active status and sort by creation date
 CREATE INDEX IF NOT EXISTS idx_portals_active_created
-    ON configuration.portals(is_active, created_at DESC);
+    ON core.portals(is_active, created_at DESC);
 
 -- Search index: case-insensitive search on code
 CREATE INDEX IF NOT EXISTS idx_portals_code_search
-    ON configuration.portals(LOWER(code));
+    ON core.portals(LOWER(code));
 
 -- Search index: case-insensitive search on name
 CREATE INDEX IF NOT EXISTS idx_portals_name_search
-    ON configuration.portals(LOWER(name));
+    ON core.portals(LOWER(name));
 
 DO $$ BEGIN
-    RAISE NOTICE '[18_create_portals.sql] Indexes created on configuration.portals';
+    RAISE NOTICE '[18_create_portals.sql] Indexes created on core.portals';
 END $$;
 
 -- ----------------------------------------------------------------------------
--- Indexes for configuration.portal_actions
+-- Indexes for core.portal_actions
 -- ----------------------------------------------------------------------------
 
 -- Performance index: lookup actions by portal and action code
 CREATE INDEX IF NOT EXISTS idx_portal_actions_portal_action
-    ON configuration.portal_actions(rel_portal_uuid, action_code);
+    ON core.portal_actions(rel_portal_uuid, action_code);
 
 -- Performance index: filter by portal UUID (for FK joins)
 CREATE INDEX IF NOT EXISTS idx_portal_actions_portal_uuid
-    ON configuration.portal_actions(rel_portal_uuid);
+    ON core.portal_actions(rel_portal_uuid);
+
+-- Performance index: lookup quick actions
+CREATE INDEX IF NOT EXISTS idx_portal_actions_quick_actions
+    ON core.portal_actions(rel_portal_uuid, is_quick_action, display_order)
+    WHERE is_quick_action = true AND is_visible = true;
 
 DO $$ BEGIN
-    RAISE NOTICE '[18_create_portals.sql] Indexes created on configuration.portal_actions';
+    RAISE NOTICE '[18_create_portals.sql] Indexes created on core.portal_actions';
 END $$;
 
 -- ============================================================================
@@ -129,12 +150,12 @@ END $$;
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- Trigger: Auto-update updated_at on configuration.portals
+-- Trigger: Auto-update updated_at on core.portals
 -- ----------------------------------------------------------------------------
-DROP TRIGGER IF EXISTS trg_portals_updated_at_set ON configuration.portals;
+DROP TRIGGER IF EXISTS trg_portals_updated_at_set ON core.portals;
 
 CREATE TRIGGER trg_portals_updated_at_set
-    BEFORE UPDATE ON configuration.portals
+    BEFORE UPDATE ON core.portals
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 
@@ -143,12 +164,12 @@ DO $$ BEGIN
 END $$;
 
 -- ----------------------------------------------------------------------------
--- Trigger: Auto-update updated_at on configuration.portal_actions
+-- Trigger: Auto-update updated_at on core.portal_actions
 -- ----------------------------------------------------------------------------
-DROP TRIGGER IF EXISTS trg_portal_actions_updated_at_set ON configuration.portal_actions;
+DROP TRIGGER IF EXISTS trg_portal_actions_updated_at_set ON core.portal_actions;
 
 CREATE TRIGGER trg_portal_actions_updated_at_set
-    BEFORE UPDATE ON configuration.portal_actions
+    BEFORE UPDATE ON core.portal_actions
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 
@@ -161,12 +182,12 @@ END $$;
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- Trigger: Audit log for configuration.portals
+-- Trigger: Audit log for core.portals
 -- ----------------------------------------------------------------------------
-DROP TRIGGER IF EXISTS trg_portals_audit_log ON configuration.portals;
+DROP TRIGGER IF EXISTS trg_portals_audit_log ON core.portals;
 
 CREATE TRIGGER trg_portals_audit_log
-    AFTER INSERT OR UPDATE OR DELETE ON configuration.portals
+    AFTER INSERT OR UPDATE OR DELETE ON core.portals
     FOR EACH ROW
     EXECUTE FUNCTION audit.log_changes();
 
@@ -175,12 +196,12 @@ DO $$ BEGIN
 END $$;
 
 -- ----------------------------------------------------------------------------
--- Trigger: Audit log for configuration.portal_actions
+-- Trigger: Audit log for core.portal_actions
 -- ----------------------------------------------------------------------------
-DROP TRIGGER IF EXISTS trg_portal_actions_audit_log ON configuration.portal_actions;
+DROP TRIGGER IF EXISTS trg_portal_actions_audit_log ON core.portal_actions;
 
 CREATE TRIGGER trg_portal_actions_audit_log
-    AFTER INSERT OR UPDATE OR DELETE ON configuration.portal_actions
+    AFTER INSERT OR UPDATE OR DELETE ON core.portal_actions
     FOR EACH ROW
     EXECUTE FUNCTION audit.log_changes();
 
@@ -193,80 +214,249 @@ END $$;
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- Comments for configuration.portals
+-- Comments for core.portals
 -- ----------------------------------------------------------------------------
-COMMENT ON TABLE configuration.portals IS 
+COMMENT ON TABLE core.portals IS 
     'External portal definitions for SSO, integrations, and external systems';
 
-COMMENT ON COLUMN configuration.portals.uuid IS 
+COMMENT ON COLUMN core.portals.uuid IS 
     'Primary key (UUID v4)';
 
-COMMENT ON COLUMN configuration.portals.code IS 
+COMMENT ON COLUMN core.portals.code IS 
     'Unique stable identifier for the portal (e.g., "jira", "confluence", "sso-portal")';
 
-COMMENT ON COLUMN configuration.portals.name IS 
+COMMENT ON COLUMN core.portals.name IS 
     'Display name of the portal';
 
-COMMENT ON COLUMN configuration.portals.base_url IS 
+COMMENT ON COLUMN core.portals.base_url IS 
     'Base URL of the portal (e.g., "https://jira.company.com")';
 
-COMMENT ON COLUMN configuration.portals.thumbnail_url IS 
+COMMENT ON COLUMN core.portals.thumbnail_url IS 
     'Optional URL to a thumbnail/icon for the portal';
 
-COMMENT ON COLUMN configuration.portals.is_active IS 
+COMMENT ON COLUMN core.portals.is_active IS 
     'Whether the portal is currently active and available to users';
 
-COMMENT ON COLUMN configuration.portals.created_at IS 
+COMMENT ON COLUMN core.portals.created_at IS 
     'Timestamp when the portal was created';
 
-COMMENT ON COLUMN configuration.portals.updated_at IS 
+COMMENT ON COLUMN core.portals.updated_at IS 
     'Timestamp when the portal was last updated (auto-updated by trigger)';
 
+COMMENT ON COLUMN core.portals.title IS 
+    'Main title displayed in header (e.g., "Lumière Self-service")';
+
+COMMENT ON COLUMN core.portals.subtitle IS 
+    'Subtitle displayed below title (e.g., "Portail des employés")';
+
+COMMENT ON COLUMN core.portals.welcome_template IS 
+    'Welcome message template with placeholders (e.g., "Bienvenue {firstName} !")';
+
+COMMENT ON COLUMN core.portals.logo_url IS 
+    'URL to portal logo image';
+
+COMMENT ON COLUMN core.portals.theme_primary_color IS 
+    'Primary theme color in hex format (e.g., #FF6B00)';
+
+COMMENT ON COLUMN core.portals.theme_secondary_color IS 
+    'Secondary theme color in hex format';
+
+COMMENT ON COLUMN core.portals.show_chat IS 
+    'Whether to display the chat interface';
+
+COMMENT ON COLUMN core.portals.show_alerts IS 
+    'Whether to display alert banners';
+
+COMMENT ON COLUMN core.portals.chat_default_message IS 
+    'Default message when chat is not implemented';
+
 -- ----------------------------------------------------------------------------
--- Comments for configuration.portal_actions
+-- Comments for core.portal_actions
 -- ----------------------------------------------------------------------------
-COMMENT ON TABLE configuration.portal_actions IS 
+COMMENT ON TABLE core.portal_actions IS 
     'Actions and API endpoints for each portal (e.g., SSO login, create ticket, search)';
 
-COMMENT ON COLUMN configuration.portal_actions.uuid IS 
+COMMENT ON COLUMN core.portal_actions.uuid IS 
     'Primary key (UUID v4)';
 
-COMMENT ON COLUMN configuration.portal_actions.rel_portal_uuid IS 
-    'Foreign key to configuration.portals(uuid) - the portal this action belongs to';
+COMMENT ON COLUMN core.portal_actions.rel_portal_uuid IS 
+    'Foreign key to core.portals(uuid) - the portal this action belongs to';
 
-COMMENT ON COLUMN configuration.portal_actions.action_code IS 
+COMMENT ON COLUMN core.portal_actions.action_code IS 
     'Unique code for the action within the portal (e.g., "login", "create_ticket", "search")';
 
-COMMENT ON COLUMN configuration.portal_actions.http_method IS 
+COMMENT ON COLUMN core.portal_actions.http_method IS 
     'HTTP method for the action (GET, POST, PATCH, PUT, DELETE)';
 
-COMMENT ON COLUMN configuration.portal_actions.endpoint IS 
+COMMENT ON COLUMN core.portal_actions.endpoint IS 
     'API endpoint path (relative to portal base_url or absolute URL)';
 
-COMMENT ON COLUMN configuration.portal_actions.payload_json IS 
+COMMENT ON COLUMN core.portal_actions.payload_json IS 
     'Optional JSON payload template for the action';
 
-COMMENT ON COLUMN configuration.portal_actions.headers_json IS 
+COMMENT ON COLUMN core.portal_actions.headers_json IS 
     'Optional JSON headers template for the action (e.g., authentication, content-type)';
 
-COMMENT ON COLUMN configuration.portal_actions.created_at IS 
+COMMENT ON COLUMN core.portal_actions.created_at IS 
     'Timestamp when the action was created';
 
-COMMENT ON COLUMN configuration.portal_actions.updated_at IS 
+COMMENT ON COLUMN core.portal_actions.updated_at IS 
     'Timestamp when the action was last updated (auto-updated by trigger)';
+
+COMMENT ON COLUMN core.portal_actions.display_title IS 
+    'Title displayed on the action card';
+
+COMMENT ON COLUMN core.portal_actions.description IS 
+    'Description text displayed on the action card';
+
+COMMENT ON COLUMN core.portal_actions.icon_type IS 
+    'Type of icon: fontawesome or image';
+
+COMMENT ON COLUMN core.portal_actions.icon_value IS 
+    'Icon value: FA class (e.g., fa-laptop) or image URL';
+
+COMMENT ON COLUMN core.portal_actions.is_quick_action IS 
+    'Whether this action appears in quick actions section';
+
+COMMENT ON COLUMN core.portal_actions.display_order IS 
+    'Display order (lower numbers first)';
+
+COMMENT ON COLUMN core.portal_actions.is_visible IS 
+    'Whether this action is currently visible';
 
 DO $$ BEGIN
     RAISE NOTICE '[18_create_portals.sql] Comments added to tables and columns';
 END $$;
 
 -- ============================================================================
--- SECTION 7: SEED DATA (OPTIONAL - COMMENTED OUT)
+-- SECTION 7: CREATE ADDITIONAL TABLES
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- Table: core.portal_alerts
+-- Description: Alert banners displayed on portals (info, warning, error)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS core.portal_alerts (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    rel_portal_uuid UUID NOT NULL,
+    message TEXT NOT NULL,
+    alert_type VARCHAR(20) NOT NULL CHECK (alert_type IN ('info', 'warning', 'error')),
+    start_date TIMESTAMP NOT NULL DEFAULT now(),
+    end_date TIMESTAMP,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    
+    -- Foreign key constraint
+    CONSTRAINT fk_portal_alerts_portal
+        FOREIGN KEY (rel_portal_uuid)
+        REFERENCES core.portals(uuid)
+        ON DELETE CASCADE
+);
+
+COMMENT ON TABLE core.portal_alerts IS 'Alert banners displayed on portals (info, warning, error)';
+COMMENT ON COLUMN core.portal_alerts.rel_portal_uuid IS 'Portal this alert belongs to';
+COMMENT ON COLUMN core.portal_alerts.message IS 'Alert message text';
+COMMENT ON COLUMN core.portal_alerts.alert_type IS 'Type of alert: info, warning, or error';
+COMMENT ON COLUMN core.portal_alerts.start_date IS 'When the alert becomes active';
+COMMENT ON COLUMN core.portal_alerts.end_date IS 'When the alert expires (NULL = no expiration)';
+COMMENT ON COLUMN core.portal_alerts.is_active IS 'Whether the alert is currently active';
+COMMENT ON COLUMN core.portal_alerts.display_order IS 'Display order (lower numbers first)';
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_portal_alerts_portal_active
+    ON core.portal_alerts(rel_portal_uuid, is_active, start_date, end_date)
+    WHERE is_active = true;
+
+-- Create triggers
+DROP TRIGGER IF EXISTS trg_portal_alerts_updated_at_set ON core.portal_alerts;
+CREATE TRIGGER trg_portal_alerts_updated_at_set
+    BEFORE UPDATE ON core.portal_alerts
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
+DROP TRIGGER IF EXISTS trg_portal_alerts_audit_log ON core.portal_alerts;
+CREATE TRIGGER trg_portal_alerts_audit_log
+    AFTER INSERT OR UPDATE OR DELETE ON core.portal_alerts
+    FOR EACH ROW
+    EXECUTE FUNCTION audit.log_changes();
+
+DO $$ BEGIN
+    RAISE NOTICE '[18_create_portals.sql] Created core.portal_alerts table';
+END $$;
+
+-- ----------------------------------------------------------------------------
+-- Table: core.portal_widgets
+-- Description: Dynamic widgets displayed on portal dashboard
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS core.portal_widgets (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    rel_portal_uuid UUID NOT NULL,
+    widget_code VARCHAR(50) NOT NULL,
+    display_title VARCHAR(150) NOT NULL,
+    widget_type VARCHAR(50) NOT NULL CHECK (widget_type IN ('counter', 'list', 'chart', 'custom')),
+    api_endpoint TEXT,
+    api_method VARCHAR(10) DEFAULT 'GET',
+    api_params JSONB,
+    refresh_interval INTEGER DEFAULT 300,
+    is_visible BOOLEAN NOT NULL DEFAULT true,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    
+    -- Foreign key constraint
+    CONSTRAINT fk_portal_widgets_portal
+        FOREIGN KEY (rel_portal_uuid)
+        REFERENCES core.portals(uuid)
+        ON DELETE CASCADE,
+    
+    -- Unique constraint
+    CONSTRAINT uq_portal_widgets_code
+        UNIQUE (rel_portal_uuid, widget_code)
+);
+
+COMMENT ON TABLE core.portal_widgets IS 'Dynamic widgets displayed on portal dashboard (e.g., "Validations en attente")';
+COMMENT ON COLUMN core.portal_widgets.widget_code IS 'Unique code for the widget within the portal';
+COMMENT ON COLUMN core.portal_widgets.display_title IS 'Title displayed on the widget card';
+COMMENT ON COLUMN core.portal_widgets.widget_type IS 'Type of widget: counter, list, chart, or custom';
+COMMENT ON COLUMN core.portal_widgets.api_endpoint IS 'API endpoint to fetch widget data (e.g., /tickets/pending)';
+COMMENT ON COLUMN core.portal_widgets.api_method IS 'HTTP method for API call';
+COMMENT ON COLUMN core.portal_widgets.api_params IS 'JSON parameters for API call';
+COMMENT ON COLUMN core.portal_widgets.refresh_interval IS 'Auto-refresh interval in seconds (0 = no auto-refresh)';
+COMMENT ON COLUMN core.portal_widgets.is_visible IS 'Whether the widget is currently visible';
+COMMENT ON COLUMN core.portal_widgets.display_order IS 'Display order (lower numbers first)';
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_portal_widgets_portal_visible
+    ON core.portal_widgets(rel_portal_uuid, is_visible, display_order)
+    WHERE is_visible = true;
+
+-- Create triggers
+DROP TRIGGER IF EXISTS trg_portal_widgets_updated_at_set ON core.portal_widgets;
+CREATE TRIGGER trg_portal_widgets_updated_at_set
+    BEFORE UPDATE ON core.portal_widgets
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
+DROP TRIGGER IF EXISTS trg_portal_widgets_audit_log ON core.portal_widgets;
+CREATE TRIGGER trg_portal_widgets_audit_log
+    AFTER INSERT OR UPDATE OR DELETE ON core.portal_widgets
+    FOR EACH ROW
+    EXECUTE FUNCTION audit.log_changes();
+
+DO $$ BEGIN
+    RAISE NOTICE '[18_create_portals.sql] Created core.portal_widgets table';
+END $$;
+
+-- ============================================================================
+-- SECTION 8: SEED DATA (OPTIONAL - COMMENTED OUT)
 -- ============================================================================
 -- Uncomment to insert a test portal for development/testing purposes
 
 /*
 -- Test portal: Hello Portal (inactive by default)
-INSERT INTO configuration.portals (code, name, base_url, thumbnail_url, is_active)
+INSERT INTO core.portals (code, name, base_url, thumbnail_url, is_active)
 VALUES (
     'hello-portal',
     'Hello Portal',
@@ -277,7 +467,7 @@ VALUES (
 ON CONFLICT (code) DO NOTHING;
 
 -- Test action: Login
-INSERT INTO configuration.portal_actions (
+INSERT INTO core.portal_actions (
     rel_portal_uuid,
     action_code,
     http_method,
@@ -290,12 +480,12 @@ SELECT
     'POST',
     '/api/v1/auth/login',
     '{"Content-Type": "application/json", "Accept": "application/json"}'::jsonb
-FROM configuration.portals p
+FROM core.portals p
 WHERE p.code = 'hello-portal'
 ON CONFLICT DO NOTHING;
 
 -- Test action: Get User Info
-INSERT INTO configuration.portal_actions (
+INSERT INTO core.portal_actions (
     rel_portal_uuid,
     action_code,
     http_method,
@@ -308,7 +498,7 @@ SELECT
     'GET',
     '/api/v1/user/me',
     '{"Accept": "application/json"}'::jsonb
-FROM configuration.portals p
+FROM core.portals p
 WHERE p.code = 'hello-portal'
 ON CONFLICT DO NOTHING;
 
@@ -316,7 +506,7 @@ RAISE NOTICE '[18_create_portals.sql] Test seed data inserted (hello-portal)';
 */
 
 -- ============================================================================
--- SECTION 8: FINAL VERIFICATION
+-- SECTION 9: FINAL VERIFICATION
 -- ============================================================================
 
 -- Verify tables exist
@@ -324,23 +514,43 @@ DO $$
 DECLARE
     v_portals_exists BOOLEAN;
     v_portal_actions_exists BOOLEAN;
+    v_portal_alerts_exists BOOLEAN;
+    v_portal_widgets_exists BOOLEAN;
 BEGIN
     SELECT EXISTS (
         SELECT 1 FROM information_schema.tables 
-        WHERE table_schema = 'configuration' AND table_name = 'portals'
+        WHERE table_schema = 'core' AND table_name = 'portals'
     ) INTO v_portals_exists;
     
     SELECT EXISTS (
         SELECT 1 FROM information_schema.tables 
-        WHERE table_schema = 'configuration' AND table_name = 'portal_actions'
+        WHERE table_schema = 'core' AND table_name = 'portal_actions'
     ) INTO v_portal_actions_exists;
     
+    SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'core' AND table_name = 'portal_alerts'
+    ) INTO v_portal_alerts_exists;
+    
+    SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'core' AND table_name = 'portal_widgets'
+    ) INTO v_portal_widgets_exists;
+    
     IF NOT v_portals_exists THEN
-        RAISE EXCEPTION 'Table configuration.portals was not created';
+        RAISE EXCEPTION 'Table core.portals was not created';
     END IF;
     
     IF NOT v_portal_actions_exists THEN
-        RAISE EXCEPTION 'Table configuration.portal_actions was not created';
+        RAISE EXCEPTION 'Table core.portal_actions was not created';
+    END IF;
+    
+    IF NOT v_portal_alerts_exists THEN
+        RAISE EXCEPTION 'Table core.portal_alerts was not created';
+    END IF;
+    
+    IF NOT v_portal_widgets_exists THEN
+        RAISE EXCEPTION 'Table core.portal_widgets was not created';
     END IF;
     
     RAISE NOTICE '[18_create_portals.sql] Final verification: All tables created successfully';
@@ -349,10 +559,10 @@ END $$;
 DO $$ BEGIN
     RAISE NOTICE '============================================================================';
     RAISE NOTICE '[18_create_portals.sql] Script completed successfully';
-    RAISE NOTICE 'Tables created: configuration.portals, configuration.portal_actions';
-    RAISE NOTICE 'Indexes created: 5 indexes for performance and search';
-    RAISE NOTICE 'Triggers created: 4 triggers (2 for updated_at, 2 for audit logging)';
-    RAISE NOTICE 'Ready for use. Run \d configuration.portals and \d configuration.portal_actions to verify.';
+    RAISE NOTICE 'Tables created: portals, portal_actions, portal_alerts, portal_widgets';
+    RAISE NOTICE 'Indexes created: 8 indexes for performance and search';
+    RAISE NOTICE 'Triggers created: 8 triggers (4 for updated_at, 4 for audit logging)';
+    RAISE NOTICE 'Ready for self-service portal v1';
     RAISE NOTICE '============================================================================';
 END $$;
 

@@ -38,7 +38,7 @@ class PortalsService {
                     is_active,
                     created_at,
                     updated_at
-                FROM configuration.portals
+                FROM core.portals
                 ${whereClause}
                 ORDER BY created_at DESC
             `;
@@ -62,7 +62,7 @@ class PortalsService {
         try {
             // Check if code already exists
             const checkQuery = `
-                SELECT 1 FROM configuration.portals WHERE code = $1
+                SELECT 1 FROM core.portals WHERE code = $1
             `;
             const checkResult = await pool.query(checkQuery, [portalData.code]);
 
@@ -75,7 +75,7 @@ class PortalsService {
 
             // Insert new portal
             const insertQuery = `
-                INSERT INTO configuration.portals (
+                INSERT INTO core.portals (
                     code,
                     name,
                     base_url,
@@ -120,7 +120,7 @@ class PortalsService {
         logger.info(`[SERVICE] portals:activate - Updating portal ${uuid} to is_active=${is_active}`);
         try {
             const updateQuery = `
-                UPDATE configuration.portals
+                UPDATE core.portals
                 SET 
                     is_active = $1,
                     updated_at = CURRENT_TIMESTAMP
@@ -163,7 +163,7 @@ class PortalsService {
         try {
             // Check if portal exists
             const checkQuery = `
-                SELECT 1 FROM configuration.portals WHERE uuid = $1
+                SELECT 1 FROM core.portals WHERE uuid = $1
             `;
             const checkResult = await pool.query(checkQuery, [portalUuid]);
 
@@ -186,7 +186,7 @@ class PortalsService {
                     headers_json,
                     created_at,
                     updated_at
-                FROM configuration.portal_actions
+                FROM core.portal_actions
                 WHERE rel_portal_uuid = $1
                 ORDER BY action_code ASC
             `;
@@ -196,6 +196,125 @@ class PortalsService {
             return result.rows;
         } catch (error) {
             logger.error(`[SERVICE] portal_actions:list - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Get full portal configuration (v1) with actions, alerts, and widgets
+     * @param {string} code - Portal code
+     * @returns {Promise<Object>} Complete portal configuration
+     */
+    async getFull(code) {
+        logger.info(`[SERVICE] portals:getFull - Fetching full config for portal: ${code}`);
+        try {
+            // Get portal with all v1 fields
+            const portalQuery = `
+                SELECT 
+                    uuid,
+                    code,
+                    name,
+                    base_url,
+                    thumbnail_url,
+                    is_active,
+                    title,
+                    subtitle,
+                    welcome_template,
+                    logo_url,
+                    theme_primary_color,
+                    theme_secondary_color,
+                    show_chat,
+                    show_alerts,
+                    chat_default_message,
+                    created_at,
+                    updated_at
+                FROM core.portals
+                WHERE code = $1 AND is_active = true
+            `;
+            
+            const portalResult = await pool.query(portalQuery, [code]);
+            
+            if (portalResult.rows.length === 0) {
+                logger.error(`[SERVICE] portals:getFull - Portal not found or inactive: ${code}`);
+                const error = new Error('Portal not found or inactive');
+                error.code = 'NOT_FOUND';
+                throw error;
+            }
+            
+            const portal = portalResult.rows[0];
+            
+            // Get quick actions (ordered by display_order)
+            const actionsQuery = `
+                SELECT 
+                    uuid,
+                    action_code,
+                    http_method,
+                    endpoint,
+                    payload_json,
+                    headers_json,
+                    display_title,
+                    description,
+                    icon_type,
+                    icon_value,
+                    display_order
+                FROM core.portal_actions
+                WHERE rel_portal_uuid = $1 
+                  AND is_quick_action = true 
+                  AND is_visible = true
+                ORDER BY display_order ASC
+            `;
+            
+            const actionsResult = await pool.query(actionsQuery, [portal.uuid]);
+            
+            // Get active alerts (within date range)
+            const alertsQuery = `
+                SELECT 
+                    uuid,
+                    message,
+                    alert_type,
+                    start_date,
+                    end_date,
+                    display_order
+                FROM core.portal_alerts
+                WHERE rel_portal_uuid = $1 
+                  AND is_active = true
+                  AND start_date <= CURRENT_TIMESTAMP
+                  AND (end_date IS NULL OR end_date >= CURRENT_TIMESTAMP)
+                ORDER BY display_order ASC
+            `;
+            
+            const alertsResult = await pool.query(alertsQuery, [portal.uuid]);
+            
+            // Get visible widgets (ordered by display_order)
+            const widgetsQuery = `
+                SELECT 
+                    uuid,
+                    widget_code,
+                    display_title,
+                    widget_type,
+                    api_endpoint,
+                    api_method,
+                    api_params,
+                    refresh_interval,
+                    display_order
+                FROM core.portal_widgets
+                WHERE rel_portal_uuid = $1 
+                  AND is_visible = true
+                ORDER BY display_order ASC
+            `;
+            
+            const widgetsResult = await pool.query(widgetsQuery, [portal.uuid]);
+            
+            logger.info(`[SERVICE] portals:getFull - Portal loaded: ${actionsResult.rows.length} actions, ${alertsResult.rows.length} alerts, ${widgetsResult.rows.length} widgets`);
+            
+            return {
+                ...portal,
+                quick_actions: actionsResult.rows,
+                alerts: alertsResult.rows,
+                widgets: widgetsResult.rows
+            };
+        } catch (error) {
+            logger.error(`[SERVICE] portals:getFull - Error: ${error.message}`);
             throw error;
         }
     }
@@ -224,7 +343,7 @@ class PortalsService {
                         is_active,
                         created_at,
                         updated_at
-                    FROM configuration.portals
+                    FROM core.portals
                     WHERE code = $1 AND is_active = true
                 `;
                 queryParams = [code];
@@ -241,7 +360,7 @@ class PortalsService {
                         is_active,
                         created_at,
                         updated_at
-                    FROM configuration.portals
+                    FROM core.portals
                     WHERE base_url ILIKE $1 AND is_active = true
                 `;
                 queryParams = [`%${host}%`];
@@ -270,7 +389,7 @@ class PortalsService {
                     headers_json,
                     created_at,
                     updated_at
-                FROM configuration.portal_actions
+                FROM core.portal_actions
                 WHERE rel_portal_uuid = $1
                 ORDER BY action_code ASC
             `;

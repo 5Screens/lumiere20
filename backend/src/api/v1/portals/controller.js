@@ -156,6 +156,34 @@ class PortalsController {
     }
 
     /**
+     * Get full portal configuration (v1) with actions, alerts, and widgets
+     * GET /api/v1/portals/:code/full
+     */
+    async getFull(req, res, next) {
+        logger.info('[CONTROLLER] portals:getFull - Starting request');
+        try {
+            const { code } = req.params;
+
+            logger.info(`[CONTROLLER] portals:getFull - Fetching full config for portal: ${code}`);
+            const portal = await portalsService.getFull(code);
+
+            logger.info(`[CONTROLLER] portals:getFull - Portal loaded successfully: ${portal.uuid}`);
+            return res.status(200).json(portal);
+        } catch (error) {
+            if (error.code === 'NOT_FOUND') {
+                logger.error(`[CONTROLLER] portals:getFull - Not found: ${error.message}`);
+                return res.status(404).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+
+            logger.error(`[CONTROLLER] portals:getFull - Error: ${error.message}`);
+            return next(error);
+        }
+    }
+
+    /**
      * Resolve a portal by code or host
      * GET /api/v1/portals/resolve?code=hello-portal
      * GET /api/v1/portals/resolve?host=client-a.local
