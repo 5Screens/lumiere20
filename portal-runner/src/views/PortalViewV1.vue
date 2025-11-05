@@ -161,10 +161,12 @@ onMounted(async () => {
 
 <style scoped>
 .portal-v1 {
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: #f5f5f5;
+  overflow: hidden;
 }
 
 /* Loading & Error States */
@@ -278,10 +280,9 @@ onMounted(async () => {
 .main-content {
   flex: 1;
   display: flex;
-  max-width: 1400px;
   width: 100%;
-  margin: 0 auto;
   gap: 0;
+  overflow: hidden;
 }
 
 .content-left {
@@ -328,7 +329,7 @@ onMounted(async () => {
 /* Grids */
 .quick-actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
