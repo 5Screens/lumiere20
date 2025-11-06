@@ -363,20 +363,13 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   margin-top: 4px;
+  width: 100%;
 }
 
 .message-time {
   font-size: 11px;
   color: #999;
   padding: 0 4px;
-}
-
-.message.user .message-meta {
-  justify-content: flex-end;
-}
-
-.message.bot .message-meta {
-  justify-content: flex-start;
 }
 
 .copy-button {
@@ -392,6 +385,7 @@ onMounted(() => {
   position: relative;
   padding: 0;
   transition: color 0.2s ease;
+  margin-left: auto;
 }
 
 .copy-button i {
