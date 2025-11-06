@@ -25,7 +25,18 @@
         >
           {{ message.text }}
         </div>
-        <div class="message-time">{{ message.time }}</div>
+        <div class="message-meta">
+          <div class="message-time">{{ message.time }}</div>
+          <button
+            type="button"
+            class="copy-button"
+            :data-tooltip="message.copied ? 'Copied!' : 'Copy response'"
+            aria-label="Copy response"
+            @click.stop="copyMessage(index)"
+          >
+            <i :class="message.copied ? 'fas fa-check' : 'fas fa-copy'"></i>
+          </button>
+        </div>
       </div>
     </div>
     
@@ -147,6 +158,45 @@ const handleMessageBlur = (index) => {
   collapseMessage(index)
 }
 
+const copyTimers = new WeakMap()
+
+const copyMessage = async (index) => {
+  const message = messages.value[index]
+  if (!message) return
+
+  try {
+    const text = message.text
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+    } else {
+      const textareaElement = document.createElement('textarea')
+      textareaElement.value = text
+      textareaElement.setAttribute('readonly', '')
+      textareaElement.style.position = 'absolute'
+      textareaElement.style.left = '-9999px'
+      document.body.appendChild(textareaElement)
+      textareaElement.select()
+      document.execCommand('copy')
+      document.body.removeChild(textareaElement)
+    }
+
+    message.copied = true
+
+    if (copyTimers.has(message)) {
+      clearTimeout(copyTimers.get(message))
+    }
+
+    const timeoutId = setTimeout(() => {
+      message.copied = false
+      copyTimers.delete(message)
+    }, 3000)
+
+    copyTimers.set(message, timeoutId)
+  } catch (error) {
+    console.error('[AgenticPanel] Unable to copy message', error)
+  }
+}
+
 const sendMessage = () => {
   if (!inputText.value.trim()) return
   
@@ -156,7 +206,8 @@ const sendMessage = () => {
     text: inputText.value.trim(),
     time: formatTime(),
     expanded: false,
-    isOverflowing: false
+    isOverflowing: false,
+    copied: false
   })
   
   inputText.value = ''
@@ -175,7 +226,8 @@ const sendMessage = () => {
       text: props.defaultMessage,
       time: formatTime(),
       expanded: false,
-      isOverflowing: false
+      isOverflowing: false,
+      copied: false
     })
     scrollToBottom()
 
@@ -193,7 +245,8 @@ onMounted(() => {
     text: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?',
     time: formatTime(),
     expanded: false,
-    isOverflowing: false
+    isOverflowing: false,
+    copied: false
   })
 
   nextTick(() => {
@@ -305,15 +358,77 @@ onMounted(() => {
   outline-offset: 2px;
 }
 
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 .message-time {
   font-size: 11px;
   color: #999;
-  margin-top: 4px;
   padding: 0 4px;
 }
 
-.message.user .message-time {
-  text-align: right;
+.message.user .message-meta {
+  justify-content: flex-end;
+}
+
+.message.bot .message-meta {
+  justify-content: flex-start;
+}
+
+.copy-button {
+  border: none;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  position: relative;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.copy-button i {
+  font-size: 12px;
+}
+
+.copy-button:hover,
+.copy-button:focus-visible {
+  color: var(--primary-color, #FF6B00);
+}
+
+.copy-button:focus-visible {
+  outline: 2px solid var(--primary-color, #FF6B00);
+  outline-offset: 2px;
+}
+
+.copy-button::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+
+.copy-button:hover::after,
+.copy-button:focus-visible::after {
+  opacity: 1;
 }
 
 .agentic-input-wrapper {
