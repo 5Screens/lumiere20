@@ -21,6 +21,7 @@
           @click="toggleMessage(index)"
           @keydown.enter.prevent="toggleMessage(index)"
           @keydown.space.prevent="toggleMessage(index)"
+          @blur="handleMessageBlur(index)"
         >
           {{ message.text }}
         </div>
@@ -133,6 +134,17 @@ const toggleMessage = (index) => {
   if (target.expanded) {
     scrollToBottom()
   }
+}
+
+const collapseMessage = (index) => {
+  const target = messages.value[index]
+  if (!target || !target.isOverflowing) return
+
+  target.expanded = false
+}
+
+const handleMessageBlur = (index) => {
+  collapseMessage(index)
 }
 
 const sendMessage = () => {
