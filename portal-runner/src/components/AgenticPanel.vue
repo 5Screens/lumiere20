@@ -39,6 +39,17 @@
           </button>
         </div>
       </div>
+      
+      <!-- Loading indicator -->
+      <div v-if="isLoading" class="message bot">
+        <div class="message-content loading">
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
     </div>
     
     <div class="agentic-input-wrapper">
@@ -65,6 +76,7 @@
 
 <script setup>
 import { ref, nextTick, onMounted } from 'vue'
+import { sendMessage as sendMessageToAgent } from '../services/agent'
 
 const props = defineProps({
   defaultMessage: {
@@ -81,6 +93,7 @@ const messagesContainer = ref(null)
 const textarea = ref(null)
 const textareaHeight = ref('auto')
 const messageRefs = ref([])
+const isLoading = ref(false)
 
 const formatTime = () => {
   const now = new Date()
@@ -198,13 +211,15 @@ const copyMessage = async (index) => {
   }
 }
 
-const sendMessage = () => {
-  if (!inputText.value.trim()) return
+const sendMessage = async () => {
+  if (!inputText.value.trim() || isLoading.value) return
+  
+  const userMessage = inputText.value.trim()
   
   // Add user message
   messages.value.push({
     type: 'user',
-    text: inputText.value.trim(),
+    text: userMessage,
     time: formatTime(),
     expanded: false,
     isOverflowing: false,
@@ -220,11 +235,24 @@ const sendMessage = () => {
     updateOverflowState(newIndex)
   })
   
-  // Simulate bot response
-  setTimeout(() => {
+  // Build conversation history for context
+  const conversationHistory = messages.value
+    .slice(0, -1) // Exclude the message we just added
+    .map(msg => ({
+      role: msg.type === 'user' ? 'user' : 'assistant',
+      content: msg.text
+    }))
+  
+  // Call AI agent
+  isLoading.value = true
+  
+  try {
+    const response = await sendMessageToAgent(userMessage, conversationHistory)
+    
+    // Add bot response
     messages.value.push({
       type: 'bot',
-      text: props.defaultMessage,
+      text: response.data.message,
       time: formatTime(),
       expanded: false,
       isOverflowing: false,
@@ -236,7 +264,27 @@ const sendMessage = () => {
     nextTick(() => {
       updateOverflowState(botIndex)
     })
-  }, 500)
+  } catch (error) {
+    console.error('[AgenticPanel] Error sending message:', error)
+    
+    // Add error message
+    messages.value.push({
+      type: 'bot',
+      text: 'Désolé, une erreur s\'est produite. Veuillez réessayer.',
+      time: formatTime(),
+      expanded: false,
+      isOverflowing: false,
+      copied: false
+    })
+    scrollToBottom()
+
+    const botIndex = messages.value.length - 1
+    nextTick(() => {
+      updateOverflowState(botIndex)
+    })
+  } finally {
+    isLoading.value = false
+  }
 }
 
 onMounted(() => {
@@ -529,5 +577,46 @@ textarea::-webkit-scrollbar-thumb {
 .agentic-messages::-webkit-scrollbar-thumb:hover,
 textarea::-webkit-scrollbar-thumb:hover {
   background: #999;
+}
+
+/* Loading indicator */
+.message-content.loading {
+  padding: 14px 18px;
+  background: #f0f0f0;
+  border-radius: 12px;
+  border-bottom-left-radius: 4px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #999;
+  animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
 }
 </style>

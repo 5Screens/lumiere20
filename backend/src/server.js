@@ -46,6 +46,7 @@ const incidentSetupRoutes = require('./api/v1/incident_setup/routes');
 const incidentSetupLabelsRoutes = require('./api/v1/incident_setup_labels/routes');
 const tableMetadataRoutes = require('./api/v1/table_metadata/routes');
 const portalsRoutes = require('./api/v1/portals/routes');
+const agentRoutes = require('./api/v1/agent/routes');
 
 // Middleware
 app.use(cors());
@@ -98,6 +99,7 @@ app.use('/api/v1/incident_setup', incidentSetupRoutes);
 app.use('/api/v1/incident_setup_labels', incidentSetupLabelsRoutes);
 app.use('/api/v1/table_metadata', tableMetadataRoutes);
 app.use('/api/v1/portals', portalsRoutes);
+app.use('/api/v1/agent', agentRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
