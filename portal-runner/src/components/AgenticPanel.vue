@@ -1,8 +1,8 @@
 <template>
   <div class="agentic-panel">
     <div class="agentic-header">
-      <i class="fas fa-robot"></i>
-      <span>Agent Lumière</span>
+      <i class="fas fa-brain"></i>
+      <span>Agentic Lumière</span>
     </div>
     
     <div class="agentic-messages" ref="messagesContainer">
