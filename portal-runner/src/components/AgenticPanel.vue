@@ -63,18 +63,24 @@ const scrollToBottom = () => {
   })
 }
 
-const adjustTextareaHeight = () => {
+const adjustTextareaHeight = async () => {
   const el = textarea.value
   if (!el) return
   
   // Reset height to auto to get the correct scrollHeight
   el.style.height = 'auto'
+  el.style.overflowY = 'hidden'
   
   // Calculate new height (max 25% of viewport height)
   const maxHeight = window.innerHeight * 0.25
   const newHeight = Math.min(el.scrollHeight, maxHeight)
+  const newHeightPx = `${newHeight}px`
   
-  textareaHeight.value = `${newHeight}px`
+  textareaHeight.value = newHeightPx
+  el.style.height = newHeightPx
+  el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden'
+  
+  await nextTick()
 }
 
 const sendMessage = () => {
@@ -174,6 +180,7 @@ onMounted(() => {
   font-size: 14px;
   line-height: 1.4;
   word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .message.user .message-content {
@@ -216,7 +223,7 @@ onMounted(() => {
 
 textarea {
   width: 100%;
-  padding: 0;
+  padding: 8px;
   border: 1px solid var(--border-color, #ddd);
   border-radius: 0.375rem;
   font-size: 0.875rem;
@@ -225,11 +232,14 @@ textarea {
   outline: none;
   transition: border-color 0.2s;
   min-height: 40px;
-  max-height: 25vh;
-  overflow-y: auto;
+  max-height: none;
+  overflow-y: hidden;
   background-color: var(--input-bg, #fff);
   color: var(--text-color, #333);
   box-sizing: border-box;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 textarea:focus {
