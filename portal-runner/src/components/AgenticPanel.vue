@@ -6,8 +6,24 @@
     </div>
     
     <div class="agentic-messages" ref="messagesContainer">
-      <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
-        <div class="message-content">{{ message.text }}</div>
+      <div
+        v-for="(message, index) in messages"
+        :key="index"
+        :class="['message', message.type]"
+      >
+        <div
+          class="message-content"
+          :class="{ collapsed: !message.expanded }"
+          role="button"
+          tabindex="0"
+          :aria-expanded="message.expanded"
+          :ref="(el) => setMessageRef(el, index)"
+          @click="toggleMessage(index)"
+          @keydown.enter.prevent="toggleMessage(index)"
+          @keydown.space.prevent="toggleMessage(index)"
+        >
+          {{ message.text }}
+        </div>
         <div class="message-time">{{ message.time }}</div>
       </div>
     </div>
@@ -44,11 +60,14 @@ const props = defineProps({
   }
 })
 
+const COLLAPSED_MAX_HEIGHT = 160
+
 const messages = ref([])
 const inputText = ref('')
 const messagesContainer = ref(null)
 const textarea = ref(null)
 const textareaHeight = ref('auto')
+const messageRefs = ref([])
 
 const formatTime = () => {
   const now = new Date()
@@ -61,6 +80,15 @@ const scrollToBottom = () => {
       messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
     }
   })
+}
+
+const setMessageRef = (el, index) => {
+  if (el) {
+    messageRefs.value[index] = el
+    updateOverflowState(index)
+  } else {
+    messageRefs.value.splice(index, 1)
+  }
 }
 
 const adjustTextareaHeight = async () => {
@@ -83,6 +111,30 @@ const adjustTextareaHeight = async () => {
   await nextTick()
 }
 
+const updateOverflowState = (index) => {
+  const el = messageRefs.value[index]
+  const message = messages.value[index]
+
+  if (!el || !message) return
+
+  const isOverflowing = el.scrollHeight > COLLAPSED_MAX_HEIGHT + 1
+
+  if (message.isOverflowing !== isOverflowing) {
+    message.isOverflowing = isOverflowing
+  }
+}
+
+const toggleMessage = (index) => {
+  const target = messages.value[index]
+  if (!target || !target.isOverflowing) return
+
+  target.expanded = !target.expanded
+
+  if (target.expanded) {
+    scrollToBottom()
+  }
+}
+
 const sendMessage = () => {
   if (!inputText.value.trim()) return
   
@@ -90,21 +142,35 @@ const sendMessage = () => {
   messages.value.push({
     type: 'user',
     text: inputText.value.trim(),
-    time: formatTime()
+    time: formatTime(),
+    expanded: false,
+    isOverflowing: false
   })
   
   inputText.value = ''
   textareaHeight.value = 'auto'
   scrollToBottom()
+
+  const newIndex = messages.value.length - 1
+  nextTick(() => {
+    updateOverflowState(newIndex)
+  })
   
   // Simulate bot response
   setTimeout(() => {
     messages.value.push({
       type: 'bot',
       text: props.defaultMessage,
-      time: formatTime()
+      time: formatTime(),
+      expanded: false,
+      isOverflowing: false
     })
     scrollToBottom()
+
+    const botIndex = messages.value.length - 1
+    nextTick(() => {
+      updateOverflowState(botIndex)
+    })
   }, 500)
 }
 
@@ -113,7 +179,13 @@ onMounted(() => {
   messages.value.push({
     type: 'bot',
     text: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?',
-    time: formatTime()
+    time: formatTime(),
+    expanded: false,
+    isOverflowing: false
+  })
+
+  nextTick(() => {
+    updateOverflowState(messages.value.length - 1)
   })
 })
 </script>
@@ -181,6 +253,11 @@ onMounted(() => {
   line-height: 1.4;
   word-wrap: break-word;
   white-space: pre-wrap;
+  max-height: none;
+  overflow: visible;
+  position: relative;
+  cursor: default;
+  transition: max-height 0.2s ease, padding-bottom 0.2s ease;
 }
 
 .message.user .message-content {
@@ -193,6 +270,27 @@ onMounted(() => {
   background: #f0f0f0;
   color: #333;
   border-bottom-left-radius: 4px;
+}
+
+.message-content.collapsed {
+  max-height: 160px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.message-content.collapsed::after {
+  content: '…';
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  font-weight: 700;
+  color: inherit;
+  background: transparent;
+}
+
+.message-content:focus-visible {
+  outline: 2px solid var(--primary-color, #FF6B00);
+  outline-offset: 2px;
 }
 
 .message-time {
