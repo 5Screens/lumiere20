@@ -13,18 +13,23 @@
     </div>
     
     <div class="agentic-input-wrapper">
-      <textarea
-        v-model="inputText"
-        @keydown.enter.exact.prevent="sendMessage"
-        @input="adjustTextareaHeight"
-        ref="textarea"
-        placeholder="Tapez votre message..."
-        rows="1"
-        :style="{ height: textareaHeight }"
-      ></textarea>
-      <button @click="sendMessage" :disabled="!inputText.trim()" class="send-button">
-        <i class="fas fa-paper-plane"></i>
-      </button>
+      <div class="input-container">
+        <textarea
+          v-model="inputText"
+          @keydown.enter.exact.prevent="sendMessage"
+          @input="adjustTextareaHeight"
+          ref="textarea"
+          placeholder="Tapez votre message..."
+          rows="1"
+          :style="{ height: textareaHeight }"
+        ></textarea>
+      </div>
+      <div class="controls-container">
+        <div class="scrollbar-placeholder"></div>
+        <button @click="sendMessage" :disabled="!inputText.trim()" class="send-button">
+          <i class="fas fa-arrow-up"></i>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -196,19 +201,25 @@ onMounted(() => {
 
 .agentic-input-wrapper {
   display: flex;
-  gap: 8px;
+  gap: 0;
   padding: 12px;
   border-top: 1px solid #e0e0e0;
   background: #fff;
   flex-shrink: 0;
 }
 
-textarea {
+.input-container {
   flex: 1;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  font-size: 14px;
+  display: flex;
+  margin-right: 2px;
+}
+
+textarea {
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
   font-family: inherit;
   resize: none;
   outline: none;
@@ -216,30 +227,51 @@ textarea {
   min-height: 40px;
   max-height: 25vh;
   overflow-y: auto;
+  background-color: var(--input-bg, #fff);
+  color: var(--text-color, #333);
+  box-sizing: border-box;
 }
 
 textarea:focus {
   border-color: var(--primary-color, #FF6B00);
+  box-shadow: 0 0 0 2px var(--primary-color-alpha, rgba(255, 107, 0, 0.1));
+}
+
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: 20px;
+  min-height: 40px;
+}
+
+.scrollbar-placeholder {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  margin-bottom: 8px;
 }
 
 .send-button {
-  width: 40px;
-  height: 40px;
+  width: 18px;
+  height: 18px;
   border: none;
   background: var(--primary-color, #FF6B00);
   color: #fff;
-  border-radius: 50%;
+  border-radius: 0.25rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
   flex-shrink: 0;
+  font-size: 0.75rem;
 }
 
 .send-button:hover:not(:disabled) {
-  background: #e55f00;
-  transform: scale(1.05);
+  background: var(--primary-hover, #e55f00);
+  
 }
 
 .send-button:disabled {
