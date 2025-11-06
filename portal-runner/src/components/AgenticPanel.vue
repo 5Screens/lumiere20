@@ -28,6 +28,7 @@
         <div class="message-meta">
           <div class="message-time">{{ message.time }}</div>
           <button
+            v-if="message.type === 'bot'"
             type="button"
             class="copy-button"
             :data-tooltip="message.copied ? 'Copied!' : 'Copy response'"
