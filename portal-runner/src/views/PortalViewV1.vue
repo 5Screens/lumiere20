@@ -1,19 +1,7 @@
 <template>
   <div class="portal-v1" :style="themeStyles">
-    <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
-      <div class="spinner"></div>
-      <p>Chargement du portail…</p>
-    </div>
-    
-    <!-- Error State -->
-    <div v-else-if="error" class="error-container">
-      <h2>❌ Erreur</h2>
-      <p>{{ error }}</p>
-    </div>
-    
     <!-- Portal Content -->
-    <div v-else class="portal-container">
+    <div class="portal-container">
       <!-- Header -->
       <header class="portal-header">
         <div class="header-left">
@@ -110,18 +98,25 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { getFullPortal } from '@/services/portals'
+import { ref, computed } from 'vue'
 import AlertBanner from '@/components/AlertBanner.vue'
 import QuickActionCard from '@/components/QuickActionCard.vue'
 import DashboardWidget from '@/components/DashboardWidget.vue'
 import AgenticPanel from '@/components/AgenticPanel.vue'
 
-const route = useRoute()
-const portal = ref(null)
-const loading = ref(true)
-const error = ref('')
+// Props received from PortalWrapper
+const props = defineProps({
+  portalData: {
+    type: Object,
+    required: true
+  },
+  portalCode: {
+    type: String,
+    required: true
+  }
+})
+
+const portal = computed(() => props.portalData)
 const toast = ref({ show: false, type: 'success', message: '' })
 const showLanguageMenu = ref(false)
 const currentLanguage = ref({ code: 'fr', name: 'Français', flag: '🇫🇷' })
@@ -177,27 +172,10 @@ const changeLanguage = async (languageCode) => {
     
     // TODO: Call backend API to reload portal data in selected language
     console.log(`Language changed to: ${languageCode}`)
-    // await getFullPortal(route.params.portalCode, languageCode)
     
     showToast('success', `Langue changée: ${selectedLang.name}`)
   }
 }
-
-onMounted(async () => {
-  try {
-    const portalCode = route.params.portalCode
-    portal.value = await getFullPortal(portalCode)
-    
-    if (!portal.value.is_active) {
-      error.value = 'Portail désactivé'
-    }
-  } catch (e) {
-    console.error('Error loading portal:', e)
-    error.value = e?.response?.data?.message || 'Portail introuvable'
-  } finally {
-    loading.value = false
-  }
-})
 </script>
 
 <style scoped>

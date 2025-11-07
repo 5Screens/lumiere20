@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DemoView from '@/views/DemoView.vue'
-import PortalView from '@/views/PortalView.vue'
-import PortalViewV1 from '@/views/PortalViewV1.vue'
+import PortalWrapper from '@/views/PortalWrapper.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -11,19 +9,9 @@ const router = createRouter({
       redirect: '/demo-portal'
     },
     {
-      path: '/demo',
-      name: 'Demo',
-      component: DemoView
-    },
-    {
-      path: '/portal-poc/:portalCode',
-      name: 'PortalPOC',
-      component: PortalView
-    },
-    {
       path: '/:portalCode',
       name: 'Portal',
-      component: PortalViewV1
+      component: PortalWrapper
     }
   ]
 })

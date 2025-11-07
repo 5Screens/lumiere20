@@ -217,6 +217,7 @@ class PortalsService {
                     base_url,
                     thumbnail_url,
                     is_active,
+                    view_component,
                     title,
                     subtitle,
                     welcome_template,

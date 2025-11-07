@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS core.portals(
     base_url TEXT NOT NULL,
     thumbnail_url TEXT NULL,
     is_active BOOLEAN NOT NULL DEFAULT false,
+    view_component VARCHAR(50) NOT NULL DEFAULT 'PortalViewV1',
     title VARCHAR(150),
     subtitle VARCHAR(255),
     welcome_template VARCHAR(255) DEFAULT 'Bienvenue {firstName} !',
@@ -236,6 +237,9 @@ COMMENT ON COLUMN core.portals.thumbnail_url IS
 
 COMMENT ON COLUMN core.portals.is_active IS 
     'Whether the portal is currently active and available to users';
+
+COMMENT ON COLUMN core.portals.view_component IS 
+    'Vue component to use for rendering this portal (e.g., PortalViewV1, DemoView, CustomPortalView)';
 
 COMMENT ON COLUMN core.portals.created_at IS 
     'Timestamp when the portal was created';

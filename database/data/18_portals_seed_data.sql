@@ -18,14 +18,15 @@ BEGIN;
 -- SECTION 1: INSERT TEST PORTALS
 -- ============================================================================
 
--- Portal 1: Demo Portal (Active) - Self-Service v1
--- Purpose: Employee self-service portal with full v1 configuration
+-- Portal 1: Demo Portal (Active) - Simple demo component
+-- Purpose: Simple demo portal using DemoView component
 INSERT INTO core.portals (
     code, 
     name, 
     base_url, 
     thumbnail_url, 
     is_active,
+    view_component,
     title,
     subtitle,
     welcome_template,
@@ -42,6 +43,7 @@ VALUES (
     'http://localhost:7240',
     NULL,
     true,
+    'DemoView',
     'Lumière Self-service',
     'Portail des employés',
     'Bienvenue {firstName} !',
@@ -56,6 +58,7 @@ ON CONFLICT (code) DO UPDATE SET
     name = EXCLUDED.name,
     base_url = EXCLUDED.base_url,
     is_active = EXCLUDED.is_active,
+    view_component = EXCLUDED.view_component,
     title = EXCLUDED.title,
     subtitle = EXCLUDED.subtitle,
     welcome_template = EXCLUDED.welcome_template,
@@ -67,36 +70,74 @@ ON CONFLICT (code) DO UPDATE SET
     chat_default_message = EXCLUDED.chat_default_message,
     updated_at = now();
 
--- Portal 2: Support Portal (Active)
--- Purpose: Portal for end-user ticket creation
-INSERT INTO core.portals (code, name, base_url, thumbnail_url, is_active)
+-- Portal 2: Support Portal (Active) - Full featured portal
+-- Purpose: Portal for end-user ticket creation using PortalViewV1
+INSERT INTO core.portals (code, name, base_url, thumbnail_url, is_active, view_component)
 VALUES (
     'support-portal',
     'Portail Support Utilisateurs',
     'http://localhost:7240',
     NULL,
-    true
+    true,
+    'PortalViewV1'
 )
 ON CONFLICT (code) DO UPDATE SET
     name = EXCLUDED.name,
     base_url = EXCLUDED.base_url,
     is_active = EXCLUDED.is_active,
+    view_component = EXCLUDED.view_component,
     updated_at = now();
 
--- Portal 3: Admin Portal (Inactive)
--- Purpose: Administrative portal (disabled for testing)
-INSERT INTO core.portals (code, name, base_url, thumbnail_url, is_active)
+-- Portal 3: Admin Portal (Active) - Full featured admin portal
+-- Purpose: Administrative portal with full V1 configuration
+INSERT INTO core.portals (
+    code, 
+    name, 
+    base_url, 
+    thumbnail_url, 
+    is_active,
+    view_component,
+    title,
+    subtitle,
+    welcome_template,
+    logo_url,
+    theme_primary_color,
+    theme_secondary_color,
+    show_chat,
+    show_alerts,
+    chat_default_message
+)
 VALUES (
     'admin-portal',
     'Portail Administration',
     'http://localhost:7240',
     NULL,
-    false
+    true,
+    'PortalViewV1',
+    'Administration Lumière',
+    'Gestion et supervision',
+    'Bienvenue {firstName} !',
+    NULL,
+    '#1976D2',
+    '#111111',
+    true,
+    true,
+    'Support administrateur disponible'
 )
 ON CONFLICT (code) DO UPDATE SET
     name = EXCLUDED.name,
     base_url = EXCLUDED.base_url,
     is_active = EXCLUDED.is_active,
+    view_component = EXCLUDED.view_component,
+    title = EXCLUDED.title,
+    subtitle = EXCLUDED.subtitle,
+    welcome_template = EXCLUDED.welcome_template,
+    logo_url = EXCLUDED.logo_url,
+    theme_primary_color = EXCLUDED.theme_primary_color,
+    theme_secondary_color = EXCLUDED.theme_secondary_color,
+    show_chat = EXCLUDED.show_chat,
+    show_alerts = EXCLUDED.show_alerts,
+    chat_default_message = EXCLUDED.chat_default_message,
     updated_at = now();
 
 -- ============================================================================
@@ -364,7 +405,14 @@ INSERT INTO core.portal_actions (
     http_method,
     endpoint,
     payload_json,
-    headers_json
+    headers_json,
+    display_title,
+    description,
+    icon_type,
+    icon_value,
+    is_quick_action,
+    display_order,
+    is_visible
 )
 SELECT
     p.uuid,
@@ -375,7 +423,7 @@ SELECT
         'ticket_type_code', 'TASK',
         'ticket_status_code', 'NEW',
         'title', 'Tâche administrative',
-        'description', 'Tâche créée depuis le portail admin (désactivé)',
+        'description', 'Tâche créée depuis le portail admin',
         'writer_uuid', 'efd1c5ce-8ab0-446a-95cd-c8262217dff0',
         'requested_by_uuid', 'feabfba9-884b-4fe2-88ea-b53ca52cc10d',
         'requested_for_uuid', '1e65c43e-da9e-4592-a3a9-bef1cf2d52e2'
@@ -383,7 +431,59 @@ SELECT
     jsonb_build_object(
         'Content-Type', 'application/json',
         'Accept', 'application/json'
-    )
+    ),
+    'Créer une tâche administrative',
+    'Créez une nouvelle tâche pour l''équipe d''administration',
+    'fontawesome',
+    'fa-tasks',
+    true,
+    1,
+    true
+FROM core.portals p
+WHERE p.code = 'admin-portal'
+ON CONFLICT DO NOTHING;
+
+-- Action: Admin Report
+INSERT INTO core.portal_actions (
+    rel_portal_uuid,
+    action_code,
+    http_method,
+    endpoint,
+    payload_json,
+    headers_json,
+    display_title,
+    description,
+    icon_type,
+    icon_value,
+    is_quick_action,
+    display_order,
+    is_visible
+)
+SELECT
+    p.uuid,
+    'ADMIN_REPORT',
+    'POST',
+    '/api/v1/tickets',
+    jsonb_build_object(
+        'ticket_type_code', 'INCIDENT',
+        'ticket_status_code', 'NEW',
+        'title', 'Rapport d''incident',
+        'description', 'Rapport d''incident créé depuis le portail admin',
+        'writer_uuid', 'efd1c5ce-8ab0-446a-95cd-c8262217dff0',
+        'requested_by_uuid', 'feabfba9-884b-4fe2-88ea-b53ca52cc10d',
+        'requested_for_uuid', '1e65c43e-da9e-4592-a3a9-bef1cf2d52e2'
+    ),
+    jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Accept', 'application/json'
+    ),
+    'Signaler un incident',
+    'Créez un rapport d''incident pour suivi et résolution',
+    'fontawesome',
+    'fa-exclamation-triangle',
+    true,
+    2,
+    true
 FROM core.portals p
 WHERE p.code = 'admin-portal'
 ON CONFLICT DO NOTHING;
