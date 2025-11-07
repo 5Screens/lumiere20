@@ -1,4 +1,4 @@
-const axios = require('axios');
+const https = require('https');
 const logger = require('../../../config/logger');
 
 /**
@@ -10,71 +10,112 @@ const logger = require('../../../config/logger');
 const sendMessageToAgent = async (userMessage, conversationHistory = []) => {
   logger.info('[AGENT SERVICE] Sending message to AI agent');
   
-  try {
-    // Build messages array
-    const messages = [
-      ...conversationHistory,
-      {
-        content: userMessage,
-        role: 'user'
+  return new Promise((resolve, reject) => {
+    try {
+      // Build messages array
+      const messages = [
+        ...conversationHistory,
+        {
+          content: userMessage,
+          role: 'user'
+        }
+      ];
+
+      // Prepare API call
+      const apiUrl = process.env.INFOMANIAK_AI_API_URL;
+      const apiToken = process.env.INFOMANIAK_AI_TOKEN;
+      const model = process.env.INFOMANIAK_AI_MODEL || 'mixtral';
+
+      if (!apiUrl || !apiToken) {
+        throw new Error('AI configuration missing: INFOMANIAK_AI_API_URL or INFOMANIAK_AI_TOKEN not set');
       }
-    ];
 
-    // Prepare API call
-    const apiUrl = process.env.INFOMANIAK_AI_API_URL;
-    const apiToken = process.env.INFOMANIAK_AI_TOKEN;
-    const model = process.env.INFOMANIAK_AI_MODEL || 'mixtral';
+      logger.info(`[AGENT SERVICE] Calling ${apiUrl} with model ${model}`);
 
-    if (!apiUrl || !apiToken) {
-      throw new Error('AI configuration missing: INFOMANIAK_AI_API_URL or INFOMANIAK_AI_TOKEN not set');
-    }
-
-    logger.info(`[AGENT SERVICE] Calling ${apiUrl} with model ${model}`);
-
-    // Call Infomaniak AI API
-    const response = await axios.post(
-      apiUrl,
-      {
+      // Parse URL
+      const url = new URL(apiUrl);
+      
+      // Prepare request body
+      const postData = JSON.stringify({
         messages,
         model
-      },
-      {
+      });
+
+      // Configure request
+      const options = {
+        hostname: url.hostname,
+        port: 443,
+        path: url.pathname,
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiToken}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(postData)
         },
         timeout: 30000 // 30 seconds timeout
-      }
-    );
+      };
 
-    logger.info('[AGENT SERVICE] Received response from AI agent');
+      // Make request
+      const req = https.request(options, (res) => {
+        let data = '';
 
-    // Extract assistant's message
-    const assistantMessage = response.data.choices[0]?.message?.content;
-    
-    if (!assistantMessage) {
-      throw new Error('No response from AI agent');
-    }
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
 
-    return {
-      message: assistantMessage,
-      model: response.data.model,
-      usage: response.data.usage,
-      id: response.data.id
-    };
+        res.on('end', () => {
+          try {
+            if (res.statusCode !== 200) {
+              logger.error('[AGENT SERVICE] API error response:', {
+                status: res.statusCode,
+                data: data
+              });
+              return reject(new Error(`API returned status ${res.statusCode}: ${data}`));
+            }
 
-  } catch (error) {
-    logger.error('[AGENT SERVICE] Error calling AI agent:', error.message);
-    
-    if (error.response) {
-      logger.error('[AGENT SERVICE] API error response:', {
-        status: error.response.status,
-        data: error.response.data
+            const response = JSON.parse(data);
+            logger.info('[AGENT SERVICE] Received response from AI agent');
+
+            // Extract assistant's message
+            const assistantMessage = response.choices[0]?.message?.content;
+            
+            if (!assistantMessage) {
+              return reject(new Error('No response from AI agent'));
+            }
+
+            resolve({
+              message: assistantMessage,
+              model: response.model,
+              usage: response.usage,
+              id: response.id
+            });
+          } catch (parseError) {
+            logger.error('[AGENT SERVICE] Error parsing response:', parseError.message);
+            reject(parseError);
+          }
+        });
       });
+
+      req.on('error', (error) => {
+        logger.error('[AGENT SERVICE] Request error:', error.message);
+        reject(error);
+      });
+
+      req.on('timeout', () => {
+        req.destroy();
+        logger.error('[AGENT SERVICE] Request timeout');
+        reject(new Error('Request timeout'));
+      });
+
+      // Send request
+      req.write(postData);
+      req.end();
+
+    } catch (error) {
+      logger.error('[AGENT SERVICE] Error calling AI agent:', error.message);
+      reject(error);
     }
-    
-    throw error;
-  }
+  });
 };
 
 module.exports = {
