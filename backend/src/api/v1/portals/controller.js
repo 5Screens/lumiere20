@@ -157,7 +157,7 @@ class PortalsController {
 
     /**
      * Get full portal configuration (v1) with actions, alerts, and widgets
-     * GET /api/v1/portals/:code/full
+     * GET /api/v1/portals/:code
      */
     async getFull(req, res, next) {
         logger.info('[CONTROLLER] portals:getFull - Starting request');

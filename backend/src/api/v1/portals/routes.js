@@ -6,11 +6,11 @@ const portalsValidation = require('./validation');
 const logger = require('../../../config/logger');
 
 // Route to get full portal configuration (v1) with actions, alerts, and widgets
-// GET /api/v1/portals/:code/full
+// GET /api/v1/portals/:code
 router.get(
-    '/:code/full',
+    '/:code',
     (req, res, next) => {
-        logger.info(`[ROUTES] GET /api/v1/portals/:code/full - Route handler started with code=${req.params.code}`);
+        logger.info(`[ROUTES] GET /api/v1/portals/:code - Route handler started with code=${req.params.code}`);
         next();
     },
     portalsController.getFull

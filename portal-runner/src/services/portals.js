@@ -6,7 +6,7 @@ import api from './api'
  * @returns {Promise<Object>} Complete portal configuration
  */
 export const getFullPortal = async (code) => {
-  const { data } = await api.get(`/api/v1/portals/${code}/full`)
+  const { data } = await api.get(`/api/v1/portals/${code}`)
   return data
 }
 
