@@ -11,10 +11,7 @@ const err = ref('')
 
 onMounted(async () => {
   try {
-    portal.value = await resolvePortal({
-      code: route.params.portalCode,
-      host: window.location.host
-    })
+    portal.value = await resolvePortal(route.params.portalCode)
     
     if (!portal.value?.is_active) {
       err.value = 'Portail désactivé'
