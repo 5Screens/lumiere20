@@ -18,8 +18,8 @@ BEGIN;
 -- SECTION 1: INSERT TEST PORTALS
 -- ============================================================================
 
--- Portal 1: Demo Portal (Active) - Simple demo component
--- Purpose: Simple demo portal using DemoView component
+-- Portal 1: Demo Portal (Active) - Full featured portal
+-- Purpose: Demo portal using PortalViewV1 component with quick actions
 INSERT INTO core.portals (
     code, 
     name, 
@@ -43,7 +43,7 @@ VALUES (
     'http://localhost:7240',
     NULL,
     true,
-    'DemoView',
+    'PortalViewV1',
     'Lumière Self-service',
     'Portail des employés',
     'Bienvenue {firstName} !',

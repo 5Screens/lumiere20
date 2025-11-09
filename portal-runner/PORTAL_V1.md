@@ -23,9 +23,11 @@ L'application sera disponible sur `http://localhost:7240`
 
 ## 🌐 URLs disponibles
 
-- **Portal v1** : `http://localhost:7240/demo-portal`
-- **Portal POC** : `http://localhost:7240/portal-poc/demo-portal`
-- **Demo** : `http://localhost:7240/demo`
+Tous les portails sont chargés dynamiquement depuis la base de données via `/:portalCode` :
+
+- **Demo Portal** : `http://localhost:7240/demo-portal`
+- **Support Portal** : `http://localhost:7240/support-portal`
+- **Admin Portal** : `http://localhost:7240/admin-portal`
 
 ## 🏗️ Architecture
 

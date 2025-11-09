@@ -40,14 +40,17 @@ VITE_API_BASE_URL=http://localhost:3000
 
 ## 🎯 Routes disponibles
 
-### `/demo`
-Page de démonstration avec un bouton qui appelle `POST /api/v1/tickets` avec un payload hardcodé.
-
 ### `/:portalCode`
-Page dynamique qui :
+Page dynamique qui charge un portail depuis la base de données :
 1. Appelle `GET /api/v1/portals/resolve?code=:portalCode`
-2. Affiche les informations du portail
-3. Rend un bouton basé sur la première action configurée
+2. Affiche les informations du portail (titre, sous-titre, alertes, widgets)
+3. Rend les actions configurées (quick actions)
+4. Utilise le composant Vue spécifié dans `view_component` (DemoView, PortalViewV1, etc.)
+
+**Exemples de portails disponibles :**
+- `/demo-portal` - Portail de démonstration avec création de tickets
+- `/support-portal` - Portail support utilisateurs
+- `/admin-portal` - Portail administration
 
 ## 🏗️ Architecture
 
@@ -66,8 +69,9 @@ portal-runner/
 │   │   ├── portals.js         # API portals
 │   │   └── tickets.js         # API tickets
 │   ├── views/
-│   │   ├── DemoView.vue       # Page /demo
-│   │   └── PortalView.vue     # Page /:portalCode
+│   │   ├── PortalWrapper.vue  # Wrapper dynamique qui charge le bon composant
+│   │   ├── PortalViewV1.vue   # Composant portail complet (v1)
+│   │   └── PortalView.vue     # Composant portail simple
 │   ├── App.vue                # Composant racine
 │   └── main.js                # Point d'entrée
 ├── .env                       # Variables d'environnement
