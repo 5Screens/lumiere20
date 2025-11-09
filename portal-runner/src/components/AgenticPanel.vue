@@ -13,7 +13,7 @@
       >
         <div
           class="message-content"
-          :class="{ collapsed: !message.expanded }"
+          :class="{ collapsed: message.isOverflowing && !message.expanded }"
           role="button"
           tabindex="0"
           :aria-expanded="message.expanded"
@@ -59,7 +59,7 @@
           @keydown.enter.exact.prevent="sendMessage"
           @input="adjustTextareaHeight"
           ref="textarea"
-          placeholder="Tapez votre message..."
+          placeholder="Demandez ce que vous voulez..."
           rows="1"
           :style="{ height: textareaHeight }"
         ></textarea>
@@ -111,7 +111,10 @@ const scrollToBottom = () => {
 const setMessageRef = (el, index) => {
   if (el) {
     messageRefs.value[index] = el
-    updateOverflowState(index)
+    // Defer overflow check to ensure DOM is fully rendered
+    nextTick(() => {
+      updateOverflowState(index)
+    })
   } else {
     messageRefs.value.splice(index, 1)
   }
@@ -143,6 +146,9 @@ const updateOverflowState = (index) => {
 
   if (!el || !message) return
 
+  // Force a reflow to ensure accurate measurements
+  el.offsetHeight
+  
   const isOverflowing = el.scrollHeight > COLLAPSED_MAX_HEIGHT + 1
 
   if (message.isOverflowing !== isOverflowing) {
@@ -288,19 +294,7 @@ const sendMessage = async () => {
 }
 
 onMounted(() => {
-  // Welcome message
-  messages.value.push({
-    type: 'bot',
-    text: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?',
-    time: formatTime(),
-    expanded: false,
-    isOverflowing: false,
-    copied: false
-  })
-
-  nextTick(() => {
-    updateOverflowState(messages.value.length - 1)
-  })
+  // No welcome message - panel starts empty
 })
 </script>
 
