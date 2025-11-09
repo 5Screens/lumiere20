@@ -21,7 +21,7 @@
           @click="toggleMessage(index)"
           @keydown.enter.prevent="toggleMessage(index)"
           @keydown.space.prevent="toggleMessage(index)"
-          @blur="handleMessageBlur(index)"
+          @blur="handleMessageBlur(index, $event)"
         >
           {{ message.text }}
         </div>
@@ -157,6 +157,12 @@ const updateOverflowState = (index) => {
 }
 
 const toggleMessage = (index) => {
+  // Check if user is selecting text
+  const selection = window.getSelection()
+  if (selection && !selection.isCollapsed) {
+    return
+  }
+  
   const target = messages.value[index]
   if (!target || !target.isOverflowing) return
 
@@ -174,8 +180,25 @@ const collapseMessage = (index) => {
   target.expanded = false
 }
 
-const handleMessageBlur = (index) => {
-  collapseMessage(index)
+const handleMessageBlur = (index, event) => {
+  const el = messageRefs.value[index]
+  if (!el) return
+
+  // Delay the collapse check to allow selection to complete
+  setTimeout(() => {
+    const selection = window.getSelection ? window.getSelection() : null
+
+    if (selection && !selection.isCollapsed) {
+      const anchorInside = selection.anchorNode && el.contains(selection.anchorNode)
+      const focusInside = selection.focusNode && el.contains(selection.focusNode)
+
+      if (anchorInside || focusInside) {
+        return
+      }
+    }
+
+    collapseMessage(index)
+  }, 100)
 }
 
 const copyTimers = new WeakMap()
