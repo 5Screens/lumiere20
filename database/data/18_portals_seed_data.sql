@@ -633,7 +633,148 @@ WHERE p.code = 'demo-portal'
 ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
 
 DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal widgets';
+    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal widgets for demo-portal';
+END $$;
+
+-- ----------------------------------------------------------------------------
+-- Widgets for admin-portal
+-- ----------------------------------------------------------------------------
+
+-- Widget: Tickets en cours (admin-portal)
+INSERT INTO core.portal_widgets (
+    rel_portal_uuid,
+    widget_code,
+    display_title,
+    widget_type,
+    api_endpoint,
+    api_method,
+    api_params,
+    refresh_interval,
+    is_visible,
+    display_order
+)
+SELECT
+    p.uuid,
+    'ACTIVE_TICKETS',
+    'Tickets en cours',
+    'counter',
+    '/api/v1/tickets/search/tasks',
+    'POST',
+    jsonb_build_object(
+        'filters', jsonb_build_object(
+            'mode', 'include',
+            'operator', 'AND',
+            'conditions', jsonb_build_array(
+                jsonb_build_object(
+                    'column', 'ticket_status_code',
+                    'operator', 'in',
+                    'value', jsonb_build_array('NEW', 'IN_PROGRESS', 'PENDING_VALIDATION')
+                )
+            )
+        ),
+        'pagination', jsonb_build_object('page', 1, 'limit', 1)
+    ),
+    300,
+    true,
+    1
+FROM core.portals p
+WHERE p.code = 'admin-portal'
+ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
+
+-- Widget: Incidents critiques (admin-portal)
+INSERT INTO core.portal_widgets (
+    rel_portal_uuid,
+    widget_code,
+    display_title,
+    widget_type,
+    api_endpoint,
+    api_method,
+    api_params,
+    refresh_interval,
+    is_visible,
+    display_order
+)
+SELECT
+    p.uuid,
+    'CRITICAL_INCIDENTS',
+    'Incidents critiques',
+    'counter',
+    '/api/v1/tickets/search/tasks',
+    'POST',
+    jsonb_build_object(
+        'filters', jsonb_build_object(
+            'mode', 'include',
+            'operator', 'AND',
+            'conditions', jsonb_build_array(
+                jsonb_build_object(
+                    'column', 'ticket_type_code',
+                    'operator', 'equals',
+                    'value', jsonb_build_array('INCIDENT')
+                ),
+                jsonb_build_object(
+                    'column', 'ticket_status_code',
+                    'operator', 'in',
+                    'value', jsonb_build_array('NEW', 'IN_PROGRESS')
+                )
+            )
+        ),
+        'pagination', jsonb_build_object('page', 1, 'limit', 1)
+    ),
+    180,
+    true,
+    2
+FROM core.portals p
+WHERE p.code = 'admin-portal'
+ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
+
+-- Widget: Tâches assignées (admin-portal)
+INSERT INTO core.portal_widgets (
+    rel_portal_uuid,
+    widget_code,
+    display_title,
+    widget_type,
+    api_endpoint,
+    api_method,
+    api_params,
+    refresh_interval,
+    is_visible,
+    display_order
+)
+SELECT
+    p.uuid,
+    'ASSIGNED_TASKS',
+    'Tâches assignées',
+    'counter',
+    '/api/v1/tickets/search/tasks',
+    'POST',
+    jsonb_build_object(
+        'filters', jsonb_build_object(
+            'mode', 'include',
+            'operator', 'AND',
+            'conditions', jsonb_build_array(
+                jsonb_build_object(
+                    'column', 'ticket_type_code',
+                    'operator', 'equals',
+                    'value', jsonb_build_array('TASK')
+                ),
+                jsonb_build_object(
+                    'column', 'ticket_status_code',
+                    'operator', 'in',
+                    'value', jsonb_build_array('NEW', 'IN_PROGRESS')
+                )
+            )
+        ),
+        'pagination', jsonb_build_object('page', 1, 'limit', 1)
+    ),
+    300,
+    true,
+    3
+FROM core.portals p
+WHERE p.code = 'admin-portal'
+ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
+
+DO $$ BEGIN
+    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal widgets for admin-portal';
 END $$;
 
 -- ============================================================================

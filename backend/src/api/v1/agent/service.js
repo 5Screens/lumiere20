@@ -66,10 +66,10 @@ const sendMessageToAgent = async (userMessage, conversationHistory = []) => {
         res.on('end', () => {
           try {
             if (res.statusCode !== 200) {
-              logger.error('[AGENT SERVICE] API error response:', {
-                status: res.statusCode,
-                data: data
-              });
+              logger.error('[AGENT SERVICE] API error response:');
+              logger.error(`[AGENT SERVICE] Status: ${res.statusCode}`);
+              logger.error(`[AGENT SERVICE] Response body: ${data}`);
+              logger.error(`[AGENT SERVICE] Headers: ${JSON.stringify(res.headers)}`);
               return reject(new Error(`API returned status ${res.statusCode}: ${data}`));
             }
 
@@ -90,20 +90,27 @@ const sendMessageToAgent = async (userMessage, conversationHistory = []) => {
               id: response.id
             });
           } catch (parseError) {
-            logger.error('[AGENT SERVICE] Error parsing response:', parseError.message);
+            logger.error('[AGENT SERVICE] Error parsing response:');
+            logger.error(`[AGENT SERVICE] Parse error: ${parseError.message}`);
+            logger.error(`[AGENT SERVICE] Stack: ${parseError.stack}`);
+            logger.error(`[AGENT SERVICE] Raw data: ${data}`);
             reject(parseError);
           }
         });
       });
 
       req.on('error', (error) => {
-        logger.error('[AGENT SERVICE] Request error:', error.message);
+        logger.error('[AGENT SERVICE] Request error:');
+        logger.error(`[AGENT SERVICE] Error message: ${error.message}`);
+        logger.error(`[AGENT SERVICE] Error code: ${error.code}`);
+        logger.error(`[AGENT SERVICE] Stack: ${error.stack}`);
         reject(error);
       });
 
       req.on('timeout', () => {
         req.destroy();
         logger.error('[AGENT SERVICE] Request timeout');
+        logger.error(`[AGENT SERVICE] Timeout after 30 seconds calling ${apiUrl}`);
         reject(new Error('Request timeout'));
       });
 
@@ -112,7 +119,9 @@ const sendMessageToAgent = async (userMessage, conversationHistory = []) => {
       req.end();
 
     } catch (error) {
-      logger.error('[AGENT SERVICE] Error calling AI agent:', error.message);
+      logger.error('[AGENT SERVICE] Error calling AI agent:');
+      logger.error(`[AGENT SERVICE] Error message: ${error.message}`);
+      logger.error(`[AGENT SERVICE] Error stack: ${error.stack}`);
       reject(error);
     }
   });

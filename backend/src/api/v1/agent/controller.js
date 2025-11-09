@@ -33,7 +33,13 @@ const chat = async (req, res) => {
     });
 
   } catch (error) {
-    logger.error('[AGENT CONTROLLER] Error in chat:', error.message);
+    logger.error('[AGENT CONTROLLER] Error in chat:');
+    logger.error(`[AGENT CONTROLLER] Error message: ${error.message}`);
+    logger.error(`[AGENT CONTROLLER] Error stack: ${error.stack}`);
+    if (error.response) {
+      logger.error(`[AGENT CONTROLLER] Response status: ${error.response.status}`);
+      logger.error(`[AGENT CONTROLLER] Response data: ${JSON.stringify(error.response.data)}`);
+    }
 
     // Handle specific errors
     if (error.message.includes('AI configuration missing')) {
