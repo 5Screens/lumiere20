@@ -339,7 +339,14 @@ INSERT INTO core.portal_actions (
     http_method,
     endpoint,
     payload_json,
-    headers_json
+    headers_json,
+    display_title,
+    description,
+    icon_type,
+    icon_value,
+    is_quick_action,
+    display_order,
+    is_visible
 )
 SELECT
     p.uuid,
@@ -358,7 +365,14 @@ SELECT
     jsonb_build_object(
         'Content-Type', 'application/json',
         'Accept', 'application/json'
-    )
+    ),
+    'Demande de support',
+    'Créer une demande de support utilisateur',
+    'fontawesome',
+    'fa-life-ring',
+    true,
+    1,
+    true
 FROM core.portals p
 WHERE p.code = 'poc'
 ON CONFLICT DO NOTHING;
@@ -370,7 +384,14 @@ INSERT INTO core.portal_actions (
     http_method,
     endpoint,
     payload_json,
-    headers_json
+    headers_json,
+    display_title,
+    description,
+    icon_type,
+    icon_value,
+    is_quick_action,
+    display_order,
+    is_visible
 )
 SELECT
     p.uuid,
@@ -389,7 +410,14 @@ SELECT
     jsonb_build_object(
         'Content-Type', 'application/json',
         'Accept', 'application/json'
-    )
+    ),
+    'Signaler un problème',
+    'Signaler un problème technique ou fonctionnel',
+    'fontawesome',
+    'fa-bug',
+    true,
+    2,
+    true
 FROM core.portals p
 WHERE p.code = 'poc'
 ON CONFLICT DO NOTHING;
