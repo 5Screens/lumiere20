@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { resolvePortal } from '@/services/portals'
+import { getFullPortal } from '@/services/portals'
 import ButtonStandard from '@/components/ButtonStandard.vue'
 
 const route = useRoute()
@@ -11,13 +11,13 @@ const err = ref('')
 
 onMounted(async () => {
   try {
-    portal.value = await resolvePortal(route.params.portalCode)
+    portal.value = await getFullPortal(route.params.portalCode)
     
     if (!portal.value?.is_active) {
       err.value = 'Portail désactivé'
     }
   } catch (e) {
-    console.error('Error resolving portal:', e)
+    console.error('Error loading portal:', e)
     err.value = e?.response?.data?.message || 'Portail introuvable'
   } finally {
     loading.value = false
@@ -42,17 +42,17 @@ onMounted(async () => {
       <div class="portal-info">
         <p><strong>Code:</strong> {{ portal.code }}</p>
         <p><strong>URL de base:</strong> {{ portal.base_url }}</p>
-        <p v-if="portal.actions && portal.actions.length > 0">
-          <strong>Actions disponibles:</strong> {{ portal.actions.length }}
+        <p v-if="portal.quick_actions && portal.quick_actions.length > 0">
+          <strong>Actions disponibles:</strong> {{ portal.quick_actions.length }}
         </p>
       </div>
       
-      <div v-if="portal.actions && portal.actions.length > 0" class="actions-section">
+      <div v-if="portal.quick_actions && portal.quick_actions.length > 0" class="actions-section">
         <h2>Action de test</h2>
         <p class="action-description">
-          Cette action exécute : <code>{{ portal.actions[0].http_method }} {{ portal.actions[0].endpoint }}</code>
+          Cette action exécute : <code>{{ portal.quick_actions[0].http_method }} {{ portal.quick_actions[0].endpoint }}</code>
         </p>
-        <ButtonStandard :action="portal.actions[0]" />
+        <ButtonStandard :action="portal.quick_actions[0]" />
       </div>
       
       <div v-else class="no-actions">

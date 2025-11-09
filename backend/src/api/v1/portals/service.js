@@ -320,69 +320,6 @@ class PortalsService {
         }
     }
 
-    /**
-     * Resolve a portal by code
-     * @param {string} code - Portal code
-     * @returns {Promise<Object>} Portal with actions
-     */
-    async resolve(code) {
-        logger.info(`[SERVICE] portals:resolve - Resolving portal with code: ${code}`);
-        try {
-            const query = `
-                SELECT 
-                    uuid,
-                    code,
-                    name,
-                    base_url,
-                    thumbnail_url,
-                    is_active,
-                    created_at,
-                    updated_at
-                FROM core.portals
-                WHERE code = $1 AND is_active = true
-            `;
-
-            const result = await pool.query(query, [code]);
-
-            if (result.rows.length === 0) {
-                logger.error(`[SERVICE] portals:resolve - No active portal found for code: ${code}`);
-                const error = new Error('Portal not found or inactive');
-                error.code = 'NOT_FOUND';
-                throw error;
-            }
-
-            const portal = result.rows[0];
-
-            // Fetch actions for this portal
-            const actionsQuery = `
-                SELECT 
-                    uuid,
-                    rel_portal_uuid,
-                    action_code,
-                    http_method,
-                    endpoint,
-                    payload_json,
-                    headers_json,
-                    created_at,
-                    updated_at
-                FROM core.portal_actions
-                WHERE rel_portal_uuid = $1
-                ORDER BY action_code ASC
-            `;
-
-            const actionsResult = await pool.query(actionsQuery, [portal.uuid]);
-
-            logger.info(`[SERVICE] portals:resolve - Portal resolved with ${actionsResult.rows.length} actions`);
-
-            return {
-                ...portal,
-                actions: actionsResult.rows
-            };
-        } catch (error) {
-            logger.error(`[SERVICE] portals:resolve - Error: ${error.message}`);
-            throw error;
-        }
-    }
 }
 
 module.exports = new PortalsService();

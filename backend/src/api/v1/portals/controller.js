@@ -183,68 +183,6 @@ class PortalsController {
         }
     }
 
-    /**
-     * Resolve a portal by code
-     * GET /api/v1/portals/resolve?code=hello-portal
-     */
-    async resolve(req, res, next) {
-        logger.info('[CONTROLLER] portals:resolve - Starting request');
-        try {
-            const { code } = req.query;
-
-            logger.info(`[CONTROLLER] portals:resolve - Resolving with code=${code}`);
-            const portal = await portalsService.resolve(code);
-
-            // Mask sensitive values in actions headers_json
-            if (portal.actions && Array.isArray(portal.actions)) {
-                portal.actions = portal.actions.map(action => {
-                    if (action.headers_json && typeof action.headers_json === 'object') {
-                        const maskedHeaders = { ...action.headers_json };
-                        
-                        const sensitiveKeys = [
-                            'authorization',
-                            'Authorization',
-                            'api-key',
-                            'Api-Key',
-                            'API-Key',
-                            'x-api-key',
-                            'X-API-Key',
-                            'token',
-                            'Token',
-                            'bearer',
-                            'Bearer'
-                        ];
-
-                        Object.keys(maskedHeaders).forEach(key => {
-                            if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive.toLowerCase()))) {
-                                maskedHeaders[key] = '***';
-                            }
-                        });
-
-                        return {
-                            ...action,
-                            headers_json: maskedHeaders
-                        };
-                    }
-                    return action;
-                });
-            }
-
-            logger.info(`[CONTROLLER] portals:resolve - Portal resolved successfully: ${portal.uuid}`);
-            return res.status(200).json(portal);
-        } catch (error) {
-            if (error.code === 'NOT_FOUND') {
-                logger.error(`[CONTROLLER] portals:resolve - Not found: ${error.message}`);
-                return res.status(404).json({
-                    success: false,
-                    message: error.message
-                });
-            }
-
-            logger.error(`[CONTROLLER] portals:resolve - Error: ${error.message}`);
-            return next(error);
-        }
-    }
 }
 
 module.exports = new PortalsController();

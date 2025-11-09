@@ -76,9 +76,6 @@ getFullPortal(code)
 
 // Exécuter l'API d'un widget
 executeWidgetApi(widget)
-
-// Résoudre un portail (legacy)
-resolvePortal({ code, host })
 ```
 
 ## 📊 Configuration en base de données

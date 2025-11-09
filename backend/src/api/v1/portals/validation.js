@@ -87,23 +87,6 @@ const listQuerySchema = {
     })
 };
 
-// Schema for resolving a portal
-const resolveQuerySchema = {
-    query: Joi.object({
-        code: Joi.string()
-            .required()
-            .messages({
-                'string.base': 'code must be a string',
-                'any.required': 'code is required',
-                'string.empty': 'code cannot be empty'
-            })
-    })
-    .options({ 
-        abortEarly: false,
-        stripUnknown: true 
-    })
-};
-
 // Schema for getting actions of a portal
 const getActionsSchema = {
     params: Joi.object({
@@ -121,6 +104,5 @@ module.exports = {
     createSchema,
     activateSchema,
     listQuerySchema,
-    resolveQuerySchema,
     getActionsSchema
 };

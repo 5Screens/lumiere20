@@ -42,10 +42,10 @@ VITE_API_BASE_URL=http://localhost:3000
 
 ### `/:portalCode`
 Page dynamique qui charge un portail depuis la base de données :
-1. Appelle `GET /api/v1/portals/resolve?code=:portalCode`
+1. Appelle `GET /api/v1/portals/:portalCode`
 2. Affiche les informations du portail (titre, sous-titre, alertes, widgets)
 3. Rend les actions configurées (quick actions)
-4. Utilise le composant Vue spécifié dans `view_component` (DemoView, PortalViewV1, etc.)
+4. Utilise le composant Vue spécifié dans `view_component` (PortalViewV1, PortalPOC, etc.)
 
 **Exemples de portails disponibles :**
 - `/self-service-l` - Self-Service Large (portail complet pour employés)
@@ -86,7 +86,7 @@ portal-runner/
 ### ButtonStandard
 Bouton intelligent avec deux modes :
 - **Mode demo** : Utilise `demoPayload` pour appeler `POST /tickets`
-- **Mode config** : Utilise `action` (depuis `/portals/resolve`) pour exécuter l'action configurée
+- **Mode config** : Utilise `action` (depuis la config du portail) pour exécuter l'action configurée
 
 ### StatusInline
 Affiche les messages de succès (✅) ou d'erreur (❌) après l'exécution d'une action.
@@ -106,8 +106,7 @@ En production, placer l'API et le runner derrière le même domaine (reverse pro
 ## ✅ Critères d'acceptation
 
 - ✅ Build et run sur port 7240
-- ✅ `/demo` affiche Hello world + bouton fonctionnel
-- ✅ `/:portalCode` récupère config via `/portals/resolve`
+- ✅ `/:portalCode` récupère config via `GET /api/v1/portals/:code`
 - ✅ Bouton exécute l'action configurée (méthode/endpoint/payload)
 - ✅ Gestion loading/erreur/succès
 - ✅ Base URL API via `VITE_API_BASE_URL`

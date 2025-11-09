@@ -11,16 +11,6 @@ export const getFullPortal = async (code) => {
 }
 
 /**
- * Resolve portal configuration by code
- * @param {string} code - Portal code
- * @returns {Promise<Object>} Portal configuration with actions
- */
-export const resolvePortal = async (code) => {
-  const { data } = await api.get('/api/v1/portals/resolve', { params: { code } })
-  return data // { uuid, code, name, is_active, base_url, actions:[...] }
-}
-
-/**
  * Execute a widget API call to get dynamic data
  * @param {Object} widget - Widget configuration
  * @returns {Promise<any>} Widget data

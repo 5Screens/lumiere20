@@ -5,19 +5,6 @@ const validate = require('../../../middleware/validate');
 const portalsValidation = require('./validation');
 const logger = require('../../../config/logger');
 
-// Route to resolve a portal by code
-// GET /api/v1/portals/resolve?code=hello-portal
-// IMPORTANT: Must be BEFORE /:code to avoid being captured by the generic route
-router.get(
-    '/resolve',
-    (req, res, next) => {
-        logger.info(`[ROUTES] GET /api/v1/portals/resolve - Route handler started with code=${req.query.code}`);
-        next();
-    },
-    validate(portalsValidation.resolveQuerySchema),
-    portalsController.resolve
-);
-
 // Route to list all portals with optional filters
 // GET /api/v1/portals
 // GET /api/v1/portals?is_active=true&q=hello
@@ -33,7 +20,6 @@ router.get(
 
 // Route to get full portal configuration (v1) with actions, alerts, and widgets
 // GET /api/v1/portals/:code
-// IMPORTANT: Must be AFTER specific routes (/resolve, /) to avoid capturing them
 router.get(
     '/:code',
     (req, res, next) => {
