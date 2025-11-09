@@ -91,19 +91,12 @@ const listQuerySchema = {
 const resolveQuerySchema = {
     query: Joi.object({
         code: Joi.string()
-            .optional()
+            .required()
             .messages({
-                'string.base': 'code must be a string'
-            }),
-        host: Joi.string()
-            .optional()
-            .messages({
-                'string.base': 'host must be a string'
+                'string.base': 'code must be a string',
+                'any.required': 'code is required',
+                'string.empty': 'code cannot be empty'
             })
-    })
-    .or('code', 'host')
-    .messages({
-        'object.missing': 'At least one of code or host must be provided'
     })
     .options({ 
         abortEarly: false,

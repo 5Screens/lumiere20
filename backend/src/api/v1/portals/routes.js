@@ -16,13 +16,12 @@ router.get(
     portalsController.getFull
 );
 
-// Route to resolve a portal by code or host
+// Route to resolve a portal by code
 // GET /api/v1/portals/resolve?code=hello-portal
-// GET /api/v1/portals/resolve?host=client-a.local
 router.get(
     '/resolve',
     (req, res, next) => {
-        logger.info(`[ROUTES] GET /api/v1/portals/resolve - Route handler started with code=${req.query.code}, host=${req.query.host}`);
+        logger.info(`[ROUTES] GET /api/v1/portals/resolve - Route handler started with code=${req.query.code}`);
         next();
     },
     validate(portalsValidation.resolveQuerySchema),

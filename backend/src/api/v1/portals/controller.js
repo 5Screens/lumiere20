@@ -184,17 +184,16 @@ class PortalsController {
     }
 
     /**
-     * Resolve a portal by code or host
+     * Resolve a portal by code
      * GET /api/v1/portals/resolve?code=hello-portal
-     * GET /api/v1/portals/resolve?host=client-a.local
      */
     async resolve(req, res, next) {
         logger.info('[CONTROLLER] portals:resolve - Starting request');
         try {
-            const { code, host } = req.query;
+            const { code } = req.query;
 
-            logger.info(`[CONTROLLER] portals:resolve - Resolving with code=${code}, host=${host}`);
-            const portal = await portalsService.resolve({ code, host });
+            logger.info(`[CONTROLLER] portals:resolve - Resolving with code=${code}`);
+            const portal = await portalsService.resolve(code);
 
             // Mask sensitive values in actions headers_json
             if (portal.actions && Array.isArray(portal.actions)) {

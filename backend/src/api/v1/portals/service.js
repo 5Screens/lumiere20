@@ -321,56 +321,31 @@ class PortalsService {
     }
 
     /**
-     * Resolve a portal by code or host
-     * @param {Object} params - { code, host }
+     * Resolve a portal by code
+     * @param {string} code - Portal code
      * @returns {Promise<Object>} Portal with actions
      */
-    async resolve(params) {
-        logger.info(`[SERVICE] portals:resolve - Resolving portal with params: ${JSON.stringify(params)}`);
+    async resolve(code) {
+        logger.info(`[SERVICE] portals:resolve - Resolving portal with code: ${code}`);
         try {
-            const { code, host } = params;
-            let query, queryParams;
+            const query = `
+                SELECT 
+                    uuid,
+                    code,
+                    name,
+                    base_url,
+                    thumbnail_url,
+                    is_active,
+                    created_at,
+                    updated_at
+                FROM core.portals
+                WHERE code = $1 AND is_active = true
+            `;
 
-            if (code) {
-                // Priority to code
-                logger.info(`[SERVICE] portals:resolve - Searching by code: ${code}`);
-                query = `
-                    SELECT 
-                        uuid,
-                        code,
-                        name,
-                        base_url,
-                        thumbnail_url,
-                        is_active,
-                        created_at,
-                        updated_at
-                    FROM core.portals
-                    WHERE code = $1 AND is_active = true
-                `;
-                queryParams = [code];
-            } else if (host) {
-                // Search by host (simple LIKE match for POC)
-                logger.info(`[SERVICE] portals:resolve - Searching by host: ${host}`);
-                query = `
-                    SELECT 
-                        uuid,
-                        code,
-                        name,
-                        base_url,
-                        thumbnail_url,
-                        is_active,
-                        created_at,
-                        updated_at
-                    FROM core.portals
-                    WHERE base_url ILIKE $1 AND is_active = true
-                `;
-                queryParams = [`%${host}%`];
-            }
-
-            const result = await pool.query(query, queryParams);
+            const result = await pool.query(query, [code]);
 
             if (result.rows.length === 0) {
-                logger.error(`[SERVICE] portals:resolve - No active portal found for params: ${JSON.stringify(params)}`);
+                logger.error(`[SERVICE] portals:resolve - No active portal found for code: ${code}`);
                 const error = new Error('Portal not found or inactive');
                 error.code = 'NOT_FOUND';
                 throw error;
