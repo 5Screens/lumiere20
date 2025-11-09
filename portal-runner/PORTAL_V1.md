@@ -25,9 +25,9 @@ L'application sera disponible sur `http://localhost:7240`
 
 Tous les portails sont chargés dynamiquement depuis la base de données via `/:portalCode` :
 
-- **Demo Portal** : `http://localhost:7240/demo-portal`
-- **POC Portal** : `http://localhost:7240/poc`
-- **Admin Portal** : `http://localhost:7240/admin-portal`
+- **Self-Service L** : `http://localhost:7240/self-service-l` (portail complet)
+- **POC Portal** : `http://localhost:7240/poc` (proof of concept)
+- **Self-Service S** : `http://localhost:7240/self-service-s` (portail simplifié)
 
 ## 🏗️ Architecture
 

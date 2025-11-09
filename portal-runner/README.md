@@ -48,9 +48,9 @@ Page dynamique qui charge un portail depuis la base de données :
 4. Utilise le composant Vue spécifié dans `view_component` (DemoView, PortalViewV1, etc.)
 
 **Exemples de portails disponibles :**
-- `/demo-portal` - Portail de démonstration avec création de tickets
+- `/self-service-l` - Self-Service Large (portail complet pour employés)
 - `/poc` - Portail POC (Proof of Concept)
-- `/admin-portal` - Portail administration
+- `/self-service-s` - Self-Service Small (portail simplifié)
 
 ## 🏗️ Architecture
 

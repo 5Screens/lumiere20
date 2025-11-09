@@ -18,8 +18,8 @@ BEGIN;
 -- SECTION 1: INSERT TEST PORTALS
 -- ============================================================================
 
--- Portal 1: Demo Portal (Active) - Full featured portal
--- Purpose: Demo portal using PortalViewV1 component with quick actions
+-- Portal 1: Self-Service L (Active) - Full featured portal
+-- Purpose: Large self-service portal using PortalViewV1 component with quick actions
 INSERT INTO core.portals (
     code, 
     name, 
@@ -38,8 +38,8 @@ INSERT INTO core.portals (
     chat_default_message
 )
 VALUES (
-    'demo-portal',
-    'Demo Portal - Création de Tickets',
+    'self-service-l',
+    'Self-Service L - Portail Employés',
     'http://localhost:7240',
     NULL,
     true,
@@ -88,8 +88,8 @@ ON CONFLICT (code) DO UPDATE SET
     view_component = EXCLUDED.view_component,
     updated_at = now();
 
--- Portal 3: Admin Portal (Active) - Full featured admin portal
--- Purpose: Administrative portal with full V1 configuration
+-- Portal 3: Self-Service S (Active) - Simplified self-service portal
+-- Purpose: Small self-service portal with full V1 configuration
 INSERT INTO core.portals (
     code, 
     name, 
@@ -108,8 +108,8 @@ INSERT INTO core.portals (
     chat_default_message
 )
 VALUES (
-    'admin-portal',
-    'Portail Administration',
+    'self-service-s',
+    'Self-Service S - Portail Simplifié',
     'http://localhost:7240',
     NULL,
     true,
@@ -145,7 +145,7 @@ ON CONFLICT (code) DO UPDATE SET
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- Actions for demo-portal (Quick Actions with v1 enhancements)
+-- Actions for self-service-l (Quick Actions with v1 enhancements)
 -- ----------------------------------------------------------------------------
 
 -- Action 1: Demander l'accès à une application
@@ -190,7 +190,7 @@ SELECT
     1,
     true
 FROM core.portals p
-WHERE p.code = 'demo-portal'
+WHERE p.code = 'self-service-l'
 ON CONFLICT DO NOTHING;
 
 -- Action 2: Demander un matériel physique
@@ -235,7 +235,7 @@ SELECT
     2,
     true
 FROM core.portals p
-WHERE p.code = 'demo-portal'
+WHERE p.code = 'self-service-l'
 ON CONFLICT DO NOTHING;
 
 -- Action 3: JE N'ARRIVE PAS A ME CONNECTER
@@ -280,7 +280,7 @@ SELECT
     3,
     true
 FROM core.portals p
-WHERE p.code = 'demo-portal'
+WHERE p.code = 'self-service-l'
 ON CONFLICT DO NOTHING;
 
 -- Action 4: Autre demande
@@ -325,7 +325,7 @@ SELECT
     4,
     true
 FROM core.portals p
-WHERE p.code = 'demo-portal'
+WHERE p.code = 'self-service-l'
 ON CONFLICT DO NOTHING;
 
 -- ----------------------------------------------------------------------------
@@ -395,7 +395,7 @@ WHERE p.code = 'poc'
 ON CONFLICT DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- Actions for admin-portal (inactive portal)
+-- Actions for self-service-s
 -- ----------------------------------------------------------------------------
 
 -- Action: Admin Task
@@ -440,7 +440,7 @@ SELECT
     1,
     true
 FROM core.portals p
-WHERE p.code = 'admin-portal'
+WHERE p.code = 'self-service-s'
 ON CONFLICT DO NOTHING;
 
 -- Action: Admin Report
@@ -485,14 +485,14 @@ SELECT
     2,
     true
 FROM core.portals p
-WHERE p.code = 'admin-portal'
+WHERE p.code = 'self-service-s'
 ON CONFLICT DO NOTHING;
 
 -- ============================================================================
 -- SECTION 3: INSERT PORTAL ALERTS
 -- ============================================================================
 
--- Insert warning alert for maintenance (demo-portal)
+-- Insert warning alert for maintenance (self-service-l)
 INSERT INTO core.portal_alerts (
     rel_portal_uuid,
     message,
@@ -511,7 +511,7 @@ SELECT
     true,
     1
 FROM core.portals p
-WHERE p.code = 'demo-portal'
+WHERE p.code = 'self-service-l'
 ON CONFLICT DO NOTHING;
 
 DO $$ BEGIN
@@ -522,7 +522,7 @@ END $$;
 -- SECTION 4: INSERT PORTAL WIDGETS
 -- ============================================================================
 
--- Widget: Validations en attente (demo-portal)
+-- Widget: Validations en attente (self-service-l)
 INSERT INTO core.portal_widgets (
     rel_portal_uuid,
     widget_code,
@@ -560,10 +560,10 @@ SELECT
     true,
     1
 FROM core.portals p
-WHERE p.code = 'demo-portal'
+WHERE p.code = 'self-service-l'
 ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
 
--- Widget: Questions en attente (demo-portal)
+-- Widget: Questions en attente (self-service-l)
 INSERT INTO core.portal_widgets (
     rel_portal_uuid,
     widget_code,
@@ -601,10 +601,10 @@ SELECT
     true,
     2
 FROM core.portals p
-WHERE p.code = 'demo-portal'
+WHERE p.code = 'self-service-l'
 ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
 
--- Widget: Notifications non lues (demo-portal)
+-- Widget: Notifications non lues (self-service-l)
 INSERT INTO core.portal_widgets (
     rel_portal_uuid,
     widget_code,
@@ -629,18 +629,18 @@ SELECT
     true,
     3
 FROM core.portals p
-WHERE p.code = 'demo-portal'
+WHERE p.code = 'self-service-l'
 ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
 
 DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal widgets for demo-portal';
+    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal widgets for self-service-l';
 END $$;
 
 -- ----------------------------------------------------------------------------
--- Widgets for admin-portal
+-- Widgets for self-service-s
 -- ----------------------------------------------------------------------------
 
--- Widget: Tickets en cours (admin-portal)
+-- Widget: Tickets en cours (self-service-s)
 INSERT INTO core.portal_widgets (
     rel_portal_uuid,
     widget_code,
@@ -678,10 +678,10 @@ SELECT
     true,
     1
 FROM core.portals p
-WHERE p.code = 'admin-portal'
+WHERE p.code = 'self-service-s'
 ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
 
--- Widget: Incidents critiques (admin-portal)
+-- Widget: Incidents critiques (self-service-s)
 INSERT INTO core.portal_widgets (
     rel_portal_uuid,
     widget_code,
@@ -724,10 +724,10 @@ SELECT
     true,
     2
 FROM core.portals p
-WHERE p.code = 'admin-portal'
+WHERE p.code = 'self-service-s'
 ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
 
--- Widget: Tâches assignées (admin-portal)
+-- Widget: Tâches assignées (self-service-s)
 INSERT INTO core.portal_widgets (
     rel_portal_uuid,
     widget_code,
@@ -770,11 +770,11 @@ SELECT
     true,
     3
 FROM core.portals p
-WHERE p.code = 'admin-portal'
+WHERE p.code = 'self-service-s'
 ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
 
 DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal widgets for admin-portal';
+    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal widgets for self-service-s';
 END $$;
 
 -- ============================================================================
@@ -801,10 +801,9 @@ BEGIN
     RAISE NOTICE 'Total widgets: %', v_widget_count;
     RAISE NOTICE '============================================================================';
     RAISE NOTICE 'Active portals:';
-    RAISE NOTICE '  - demo-portal: http://localhost:7240/demo-portal (Self-Service v1)';
-    RAISE NOTICE '  - poc: http://localhost:7240/poc';
-    RAISE NOTICE 'Inactive portals:';
-    RAISE NOTICE '  - admin-portal (disabled for testing)';
+    RAISE NOTICE '  - self-service-l: http://localhost:7240/self-service-l (Self-Service Large)';
+    RAISE NOTICE '  - poc: http://localhost:7240/poc (POC Portal)';
+    RAISE NOTICE '  - self-service-s: http://localhost:7240/self-service-s (Self-Service Small)';
     RAISE NOTICE '============================================================================';
 END $$;
 
