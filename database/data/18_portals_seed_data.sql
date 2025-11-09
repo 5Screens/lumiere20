@@ -70,16 +70,16 @@ ON CONFLICT (code) DO UPDATE SET
     chat_default_message = EXCLUDED.chat_default_message,
     updated_at = now();
 
--- Portal 2: Support Portal (Active) - Full featured portal
--- Purpose: Portal for end-user ticket creation using PortalViewV1
+-- Portal 2: POC Portal (Active) - Proof of Concept portal
+-- Purpose: POC portal for testing using PortalPOC component
 INSERT INTO core.portals (code, name, base_url, thumbnail_url, is_active, view_component)
 VALUES (
-    'support-portal',
-    'Portail Support Utilisateurs',
+    'poc',
+    'Portail POC',
     'http://localhost:7240',
     NULL,
     true,
-    'PortalViewV1'
+    'PortalPOC'
 )
 ON CONFLICT (code) DO UPDATE SET
     name = EXCLUDED.name,
@@ -329,7 +329,7 @@ WHERE p.code = 'demo-portal'
 ON CONFLICT DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- Actions for support-portal
+-- Actions for poc
 -- ----------------------------------------------------------------------------
 
 -- Action: Create Support Request
@@ -360,7 +360,7 @@ SELECT
         'Accept', 'application/json'
     )
 FROM core.portals p
-WHERE p.code = 'support-portal'
+WHERE p.code = 'poc'
 ON CONFLICT DO NOTHING;
 
 -- Action: Report Problem
@@ -391,7 +391,7 @@ SELECT
         'Accept', 'application/json'
     )
 FROM core.portals p
-WHERE p.code = 'support-portal'
+WHERE p.code = 'poc'
 ON CONFLICT DO NOTHING;
 
 -- ----------------------------------------------------------------------------
@@ -802,7 +802,7 @@ BEGIN
     RAISE NOTICE '============================================================================';
     RAISE NOTICE 'Active portals:';
     RAISE NOTICE '  - demo-portal: http://localhost:7240/demo-portal (Self-Service v1)';
-    RAISE NOTICE '  - support-portal: http://localhost:7240/support-portal';
+    RAISE NOTICE '  - poc: http://localhost:7240/poc';
     RAISE NOTICE 'Inactive portals:';
     RAISE NOTICE '  - admin-portal (disabled for testing)';
     RAISE NOTICE '============================================================================';

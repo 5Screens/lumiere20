@@ -49,7 +49,7 @@ Page dynamique qui charge un portail depuis la base de données :
 
 **Exemples de portails disponibles :**
 - `/demo-portal` - Portail de démonstration avec création de tickets
-- `/support-portal` - Portail support utilisateurs
+- `/poc` - Portail POC (Proof of Concept)
 - `/admin-portal` - Portail administration
 
 ## 🏗️ Architecture
@@ -71,7 +71,7 @@ portal-runner/
 │   ├── views/
 │   │   ├── PortalWrapper.vue  # Wrapper dynamique qui charge le bon composant
 │   │   ├── PortalViewV1.vue   # Composant portail complet (v1)
-│   │   └── PortalView.vue     # Composant portail simple
+│   │   └── PortalPOC.vue      # Composant portail POC
 │   ├── App.vue                # Composant racine
 │   └── main.js                # Point d'entrée
 ├── .env                       # Variables d'environnement
