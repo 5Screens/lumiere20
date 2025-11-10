@@ -25,3 +25,4 @@ Thumbs.db
 # Fichiers de build
 /build/
 /dist/
+portal-runner/.vite/
