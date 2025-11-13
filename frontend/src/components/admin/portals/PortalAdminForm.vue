@@ -15,241 +15,140 @@
       <div class="form-section">
         <h3 class="section-title">{{ $t('portals.admin.basicInfo') }}</h3>
         
-        <!-- Code -->
-        <div class="form-field">
-          <label class="form-label required">{{ $t('portals.admin.code') }}</label>
-          <input
-            v-model="formData.code"
-            type="text"
-            class="form-input"
-            :class="{ 'error': errors.code }"
-            :placeholder="$t('portals.admin.codePlaceholder')"
-            pattern="[a-z0-9-]{2,50}"
-            maxlength="50"
-            required
-            @blur="checkCodeUniqueness"
-          />
-          <p v-if="errors.code" class="error-message">{{ errors.code }}</p>
-          <p class="field-hint">{{ $t('portals.admin.codeHint') }}</p>
-        </div>
+        <TextField
+          v-model="formData.code"
+          :label="$t('portals.admin.code')"
+          :placeholder="$t('portals.admin.codePlaceholder')"
+          :error="errors.code"
+          :required="true"
+          @blur="checkCodeUniqueness"
+        >
+          <span class="field-hint">{{ $t('portals.admin.codeHint') }}</span>
+        </TextField>
 
-        <!-- Name -->
-        <div class="form-field">
-          <label class="form-label required">{{ $t('portals.admin.name') }}</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="form-input"
-            :class="{ 'error': errors.name }"
-            :placeholder="$t('portals.admin.namePlaceholder')"
-            maxlength="150"
-            required
-          />
-          <p v-if="errors.name" class="error-message">{{ errors.name }}</p>
-        </div>
+        <TextField
+          v-model="formData.name"
+          :label="$t('portals.admin.name')"
+          :placeholder="$t('portals.admin.namePlaceholder')"
+          :error="errors.name"
+          :required="true"
+        />
 
-        <!-- Base URL -->
-        <div class="form-field">
-          <label class="form-label required">{{ $t('portals.admin.baseUrl') }}</label>
-          <input
-            v-model="formData.base_url"
-            type="url"
-            class="form-input"
-            :class="{ 'error': errors.base_url }"
-            :placeholder="$t('portals.admin.baseUrlPlaceholder')"
-            required
-          />
-          <p v-if="errors.base_url" class="error-message">{{ errors.base_url }}</p>
-        </div>
+        <TextField
+          v-model="formData.base_url"
+          :label="$t('portals.admin.baseUrl')"
+          :placeholder="$t('portals.admin.baseUrlPlaceholder')"
+          :error="errors.base_url"
+          :required="true"
+        />
 
-        <!-- Thumbnail URL -->
-        <div class="form-field">
-          <label class="form-label">{{ $t('portals.admin.thumbnailUrl') }}</label>
-          <input
-            v-model="formData.thumbnail_url"
-            type="url"
-            class="form-input"
-            :class="{ 'error': errors.thumbnail_url }"
-            :placeholder="$t('portals.admin.thumbnailUrlPlaceholder')"
-          />
-          <p v-if="errors.thumbnail_url" class="error-message">{{ errors.thumbnail_url }}</p>
-        </div>
+        <TextField
+          v-model="formData.thumbnail_url"
+          :label="$t('portals.admin.thumbnailUrl')"
+          :placeholder="$t('portals.admin.thumbnailUrlPlaceholder')"
+          :error="errors.thumbnail_url"
+        />
 
-        <!-- View Component -->
-        <div class="form-field">
-          <label class="form-label required">{{ $t('portals.admin.viewComponent') }}</label>
-          <select
-            v-model="formData.view_component"
-            class="form-select"
-            :class="{ 'error': errors.view_component }"
-            required
-          >
-            <option value="PortalViewV1">PortalViewV1</option>
-            <option value="PortalPOC">PortalPOC</option>
-          </select>
-          <p v-if="errors.view_component" class="error-message">{{ errors.view_component }}</p>
-        </div>
+        <sSelectField
+          v-model="formData.view_component"
+          :label="$t('portals.admin.viewComponent')"
+          :required="true"
+          mode="creation"
+          :endpoint="() => Promise.resolve(viewComponentOptions)"
+          display-field="label"
+          value-field="value"
+        />
       </div>
 
       <!-- Section: Display Configuration -->
       <div class="form-section">
         <h3 class="section-title">{{ $t('portals.admin.displayConfig') }}</h3>
 
-        <!-- Title -->
-        <div class="form-field">
-          <label class="form-label">{{ $t('portals.admin.title') }}</label>
-          <input
-            v-model="formData.title"
-            type="text"
-            class="form-input"
-            :class="{ 'error': errors.title }"
-            :placeholder="$t('portals.admin.titlePlaceholder')"
-            maxlength="150"
-          />
-          <p v-if="errors.title" class="error-message">{{ errors.title }}</p>
-        </div>
+        <TextField
+          v-model="formData.title"
+          :label="$t('portals.admin.title')"
+          :placeholder="$t('portals.admin.titlePlaceholder')"
+          :error="errors.title"
+        />
 
-        <!-- Subtitle -->
-        <div class="form-field">
-          <label class="form-label">{{ $t('portals.admin.subtitle') }}</label>
-          <input
-            v-model="formData.subtitle"
-            type="text"
-            class="form-input"
-            :class="{ 'error': errors.subtitle }"
-            :placeholder="$t('portals.admin.subtitlePlaceholder')"
-            maxlength="255"
-          />
-          <p v-if="errors.subtitle" class="error-message">{{ errors.subtitle }}</p>
-        </div>
+        <TextField
+          v-model="formData.subtitle"
+          :label="$t('portals.admin.subtitle')"
+          :placeholder="$t('portals.admin.subtitlePlaceholder')"
+          :error="errors.subtitle"
+        />
 
-        <!-- Welcome Template -->
-        <div class="form-field">
-          <label class="form-label">{{ $t('portals.admin.welcomeTemplate') }}</label>
-          <input
-            v-model="formData.welcome_template"
-            type="text"
-            class="form-input"
-            :class="{ 'error': errors.welcome_template }"
-            :placeholder="$t('portals.admin.welcomeTemplatePlaceholder')"
-            maxlength="255"
-          />
-          <p v-if="errors.welcome_template" class="error-message">{{ errors.welcome_template }}</p>
-          <p class="field-hint">{{ $t('portals.admin.welcomeTemplateHint') }}</p>
-        </div>
+        <TextField
+          v-model="formData.welcome_template"
+          :label="$t('portals.admin.welcomeTemplate')"
+          :placeholder="$t('portals.admin.welcomeTemplatePlaceholder')"
+          :error="errors.welcome_template"
+        >
+          <span class="field-hint">{{ $t('portals.admin.welcomeTemplateHint') }}</span>
+        </TextField>
 
-        <!-- Logo URL -->
-        <div class="form-field">
-          <label class="form-label">{{ $t('portals.admin.logoUrl') }}</label>
-          <input
-            v-model="formData.logo_url"
-            type="url"
-            class="form-input"
-            :class="{ 'error': errors.logo_url }"
-            :placeholder="$t('portals.admin.logoUrlPlaceholder')"
-          />
-          <p v-if="errors.logo_url" class="error-message">{{ errors.logo_url }}</p>
-        </div>
+        <TextField
+          v-model="formData.logo_url"
+          :label="$t('portals.admin.logoUrl')"
+          :placeholder="$t('portals.admin.logoUrlPlaceholder')"
+          :error="errors.logo_url"
+        />
       </div>
 
       <!-- Section: Theme -->
       <div class="form-section">
         <h3 class="section-title">{{ $t('portals.admin.theme') }}</h3>
 
-        <!-- Primary Color -->
-        <div class="form-field">
-          <label class="form-label">{{ $t('portals.admin.themePrimaryColor') }}</label>
-          <div class="color-input-wrapper">
-            <input
-              v-model="formData.theme_primary_color"
-              type="color"
-              class="form-color"
-            />
-            <input
-              v-model="formData.theme_primary_color"
-              type="text"
-              class="form-input"
-              :class="{ 'error': errors.theme_primary_color }"
-              :placeholder="$t('portals.admin.colorPlaceholder')"
-              pattern="^#[0-9A-Fa-f]{6}$"
-              maxlength="7"
-            />
-          </div>
-          <p v-if="errors.theme_primary_color" class="error-message">{{ errors.theme_primary_color }}</p>
-        </div>
+        <ColorPicker
+          v-model="formData.theme_primary_color"
+          :label="$t('portals.admin.themePrimaryColor')"
+          :placeholder="$t('portals.admin.colorPlaceholder')"
+          :error="errors.theme_primary_color"
+        />
 
-        <!-- Secondary Color -->
-        <div class="form-field">
-          <label class="form-label">{{ $t('portals.admin.themeSecondaryColor') }}</label>
-          <div class="color-input-wrapper">
-            <input
-              v-model="formData.theme_secondary_color"
-              type="color"
-              class="form-color"
-            />
-            <input
-              v-model="formData.theme_secondary_color"
-              type="text"
-              class="form-input"
-              :class="{ 'error': errors.theme_secondary_color }"
-              :placeholder="$t('portals.admin.colorPlaceholder')"
-              pattern="^#[0-9A-Fa-f]{6}$"
-              maxlength="7"
-            />
-          </div>
-          <p v-if="errors.theme_secondary_color" class="error-message">{{ errors.theme_secondary_color }}</p>
-        </div>
+        <ColorPicker
+          v-model="formData.theme_secondary_color"
+          :label="$t('portals.admin.themeSecondaryColor')"
+          :placeholder="$t('portals.admin.colorPlaceholder')"
+          :error="errors.theme_secondary_color"
+        />
       </div>
 
       <!-- Section: Features -->
       <div class="form-section">
         <h3 class="section-title">{{ $t('portals.admin.features') }}</h3>
 
-        <!-- Show Chat -->
-        <div class="form-field checkbox-field">
-          <label class="checkbox-label">
-            <input
-              v-model="formData.show_chat"
-              type="checkbox"
-              class="form-checkbox"
-            />
-            <span>{{ $t('portals.admin.showChat') }}</span>
-          </label>
-        </div>
+        <Checkbox
+          v-model="formData.show_chat"
+          :label="$t('portals.admin.features')"
+          :item-label="$t('portals.admin.showChat')"
+        />
 
-        <!-- Show Alerts -->
-        <div class="form-field checkbox-field">
-          <label class="checkbox-label">
-            <input
-              v-model="formData.show_alerts"
-              type="checkbox"
-              class="form-checkbox"
-            />
-            <span>{{ $t('portals.admin.showAlerts') }}</span>
-          </label>
-        </div>
+        <Checkbox
+          v-model="formData.show_alerts"
+          :label="$t('portals.admin.features')"
+          :item-label="$t('portals.admin.showAlerts')"
+        />
 
-        <!-- Chat Default Message -->
-        <div class="form-field">
-          <label class="form-label">{{ $t('portals.admin.chatDefaultMessage') }}</label>
-          <textarea
-            v-model="formData.chat_default_message"
-            class="form-textarea"
-            :class="{ 'error': errors.chat_default_message }"
-            :placeholder="$t('portals.admin.chatDefaultMessagePlaceholder')"
-            rows="3"
-          ></textarea>
-          <p v-if="errors.chat_default_message" class="error-message">{{ errors.chat_default_message }}</p>
-        </div>
+        <TextArea
+          v-model="formData.chat_default_message"
+          :label="$t('portals.admin.chatDefaultMessage')"
+          :placeholder="$t('portals.admin.chatDefaultMessagePlaceholder')"
+          :error="errors.chat_default_message"
+          :rows="3"
+        />
       </div>
 
       <!-- Form Actions -->
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary" :disabled="saving">
-          <i v-if="saving" class="fas fa-spinner fa-spin"></i>
-          <i v-else class="fas fa-save"></i>
-          {{ saving ? $t('common.saving') : $t('common.save') }}
-        </button>
+        <ButtonStandard
+          type="submit"
+          :label="saving ? $t('common.saving') : $t('common.save')"
+          :loading="saving"
+          :disabled="saving"
+          icon="fas fa-save"
+          variant="primary"
+        />
       </div>
     </form>
   </div>
@@ -260,6 +159,12 @@ import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import apiService from '@/services/apiService'
 import { useTabsStore } from '@/stores/tabsStore'
+import TextField from '@/components/common/TextField.vue'
+import TextArea from '@/components/common/TextArea.vue'
+import ColorPicker from '@/components/common/ColorPicker.vue'
+import Checkbox from '@/components/common/Checkbox.vue'
+import sSelectField from '@/components/common/sSelectField.vue'
+import ButtonStandard from '@/components/common/ButtonStandard.vue'
 
 const { t } = useI18n()
 const tabsStore = useTabsStore()
@@ -292,6 +197,11 @@ const formData = ref({
   show_alerts: true,
   chat_default_message: 'En cours d\'implémentation'
 })
+
+const viewComponentOptions = [
+  { value: 'PortalViewV1', label: 'PortalViewV1' },
+  { value: 'PortalPOC', label: 'PortalPOC' }
+]
 
 // Load portal data
 onMounted(async () => {
@@ -480,6 +390,9 @@ const handleSubmit = async () => {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .section-title {
@@ -491,113 +404,11 @@ const handleSubmit = async () => {
   border-bottom: 2px solid var(--primary-color);
 }
 
-.form-field {
-  margin-bottom: 1.25rem;
-  box-sizing: border-box;
-}
-
-.form-field:last-child {
-  margin-bottom: 0;
-}
-
-.form-label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-color);
-  margin-bottom: 0.5rem;
-}
-
-.form-label.required::after {
-  content: ' *';
-  color: var(--error-color);
-}
-
-.form-input,
-.form-select,
-.form-textarea {
-  width: 100%;
-  padding: 0.625rem 0.75rem;
-  font-size: 0.875rem;
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
-  background: var(--input-bg);
-  color: var(--text-color);
-  transition: border-color 0.2s, box-shadow 0.2s;
-  font-family: var(--font-family);
-  box-sizing: border-box;
-}
-
-.form-input:focus,
-.form-select:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-color-light);
-}
-
-.form-input.error,
-.form-select.error,
-.form-textarea.error {
-  border-color: var(--error-color);
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.color-input-wrapper {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.form-color {
-  width: 60px;
-  height: 40px;
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
-  cursor: pointer;
-  background: var(--input-bg);
-}
-
-.color-input-wrapper .form-input {
-  flex: 1;
-}
-
-.checkbox-field {
-  margin-bottom: 0.75rem;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: var(--text-color);
-  cursor: pointer;
-  user-select: none;
-}
-
-.form-checkbox {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--primary-color);
-}
-
-.error-message {
-  margin: 0.375rem 0 0 0;
-  font-size: 0.75rem;
-  color: var(--error-color);
-}
-
 .field-hint {
-  margin: 0.375rem 0 0 0;
   font-size: 0.75rem;
   color: var(--text-secondary);
   font-style: italic;
+  margin-top: 0.25rem;
 }
 
 .form-actions {
@@ -606,39 +417,5 @@ const handleSubmit = async () => {
   gap: 0.75rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border-color);
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: var(--font-family);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: var(--primary-color);
-  color: #fff;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-  box-shadow: 0 2px 8px var(--shadow-color);
-  transform: translateY(-1px);
-}
-
-.btn i {
-  font-size: 1rem;
 }
 </style>

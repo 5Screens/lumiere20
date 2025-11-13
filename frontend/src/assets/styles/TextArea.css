@@ -1,0 +1,100 @@
+/* Conteneur principal du champ textarea - organise le label et la zone de saisie côte à côte */
+.text-area {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Étiquette du champ - affiche le nom du champ à remplir avec une taille fixe */
+.text-area__label {
+  font-size: 0.875rem;
+  color: var(--text-color);
+  font-weight: 500;
+  min-width: 100px;
+  flex-shrink: 0;
+  padding-top: 0.625rem;
+}
+
+/* Ajoute un astérisque rouge après l'étiquette pour indiquer que le champ est obligatoire */
+.text-area__label--required::after {
+  content: '*';
+  color: var(--error-color);
+  margin-left: 0.25rem;
+}
+
+/* Conteneur qui enveloppe la zone de saisie et les messages d'erreur éventuels */
+.text-area__input-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+}
+
+/* Zone de saisie où l'utilisateur peut taper du texte multiligne */
+.text-area__input {
+  padding: 0.625rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+  outline: none;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  box-sizing: border-box;
+  font-family: var(--font-family);
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Effet visuel lorsque la zone de saisie est sélectionnée (contour bleu) */
+.text-area__input:focus:not(:disabled):not([readonly]) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-color-light);
+}
+
+/* Effet visuel lorsque la souris passe au-dessus de la zone de saisie */
+.text-area__input:hover:not(:disabled):not([readonly]) {
+  border-color: var(--primary-hover);
+}
+
+/* Style spécial pour indiquer une erreur dans la saisie (contour rouge) */
+.text-area__input--error {
+  border-color: var(--error-color);
+}
+
+/* Style lorsque la zone d'erreur est sélectionnée (contour et ombre rouges) */
+.text-area__input--error:focus {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.1);
+}
+
+/* Style pour les champs désactivés (grisés et non modifiables) */
+.text-area__input:disabled {
+  background-color: var(--bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Style pour les champs en lecture seule (non modifiables mais visibles normalement) */
+.text-area__input[readonly] {
+  background-color: var(--bg-secondary);
+  cursor: default;
+}
+
+/* Message d'erreur affiché sous le champ en cas de saisie incorrecte */
+.text-area__error {
+  font-size: 0.75rem;
+  color: var(--error-color);
+  margin-top: 0.25rem;
+}
+
+/* Zone pour afficher des informations supplémentaires sous le champ */
+.text-area__slot {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
