@@ -1,20 +1,17 @@
-/* Conteneur principal du checkbox - organise le label et l'item côte à côte */
+/* Conteneur principal du checkbox - organise le label au-dessus de l'item */
 .checkbox {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Étiquette du champ - affiche le nom du champ avec une taille fixe */
+/* Étiquette du champ - affiche le nom du champ */
 .checkbox__label {
   font-size: 0.875rem;
   color: var(--text-color);
   font-weight: 500;
-  min-width: 100px;
-  flex-shrink: 0;
 }
 
 /* Conteneur qui enveloppe l'input et les messages d'erreur éventuels */

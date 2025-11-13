@@ -3,23 +3,19 @@
  * Un sélecteur de date permet aux utilisateurs de choisir une date via un calendrier
  */
 
-/* Conteneur principal pour le sélecteur de date */
+/* Conteneur principal pour le sélecteur de date - organise le label au-dessus du champ */
 .s-date-picker {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Conteneur pour le label - largeur fixe pour aligner tous les champs */
+/* Conteneur pour le label */
 .s-date-picker__label-container {
   display: flex;
   align-items: flex-start;
-  width: 180px;
-  min-width: 180px;
-  flex-shrink: 0;
 }
 
 /* Le texte du label - décrit le champ */
@@ -27,9 +23,6 @@
   font-size: 0.875rem;
   color: var(--text-color);
   font-weight: 500;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
 }
 
 /* Style pour les labels de champs obligatoires - ajoute un astérisque rouge */

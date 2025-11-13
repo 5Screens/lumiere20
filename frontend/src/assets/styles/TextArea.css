@@ -1,21 +1,17 @@
-/* Conteneur principal du champ textarea - organise le label et la zone de saisie côte à côte */
+/* Conteneur principal du champ textarea - organise le label au-dessus de la zone de saisie */
 .text-area {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Étiquette du champ - affiche le nom du champ à remplir avec une taille fixe */
+/* Étiquette du champ - affiche le nom du champ à remplir */
 .text-area__label {
   font-size: 0.875rem;
   color: var(--text-color);
   font-weight: 500;
-  min-width: 100px;
-  flex-shrink: 0;
-  padding-top: 0.625rem;
 }
 
 /* Ajoute un astérisque rouge après l'étiquette pour indiquer que le champ est obligatoire */
