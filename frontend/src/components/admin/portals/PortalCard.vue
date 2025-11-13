@@ -15,14 +15,18 @@
       
       <!-- Details -->
       <div class="portal-card__details">
-        <div class="portal-card__detail">
+        <div class="portal-card__detail portal-card__detail--hoverable">
           <i class="fas fa-code"></i>
           <span>{{ portal.code }}</span>
-        </div>
-        <div v-if="portal.base_url" class="portal-card__detail">
-          <i class="fas fa-link"></i>
-          <a :href="portal.base_url" target="_blank" rel="noopener noreferrer" class="portal-card__link">
-            {{ truncateUrl(portal.base_url) }}
+          <a 
+            v-if="portal.base_url" 
+            :href="`${portal.base_url}/${portal.code}`" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="portal-card__link-icon"
+            :title="t('portalsBuilder.openPortal')"
+          >
+            <i class="fas fa-link"></i>
           </a>
         </div>
       </div>
@@ -180,6 +184,11 @@ const formatDate = (dateString) => {
   gap: 8px;
   font-size: 0.875rem;
   color: var(--text-secondary);
+  position: relative;
+}
+
+.portal-card__detail--hoverable {
+  padding-right: 32px;
 }
 
 .portal-card__detail i {
@@ -188,15 +197,31 @@ const formatDate = (dateString) => {
   opacity: 0.6;
 }
 
-.portal-card__link {
+.portal-card__link-icon {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   color: var(--primary-color);
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
-.portal-card__link:hover {
-  opacity: 0.8;
-  text-decoration: underline;
+.portal-card:hover .portal-card__link-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.portal-card__link-icon:hover {
+  color: var(--primary-hover);
+  background: rgba(33, 150, 243, 0.1);
 }
 
 .portal-card__description {

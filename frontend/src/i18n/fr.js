@@ -116,7 +116,8 @@ export default {
   portalsBuilder :{
     title:'Portails clients',
     description:'Créez et gérer ici les portails créés pour vos clients >>> EN COURS DE DEVELOPPEMENT !!',
-    portals: 'Portails'
+    portals: 'Portails',
+    openPortal: 'Ouvrir le portail',
   },
   dataPane: {
     title: 'Données',
