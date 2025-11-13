@@ -268,6 +268,74 @@ class PortalsController {
         }
     }
 
+    /**
+     * List all portal models
+     * GET /api/v1/portals/models
+     */
+    async listModels(req, res, next) {
+        logger.info('[CONTROLLER] portals:listModels - Starting request');
+        try {
+            const models = await portalsService.listModels();
+
+            logger.info(`[CONTROLLER] portals:listModels - Successfully retrieved ${models.length} models`);
+            return res.status(200).json(models);
+        } catch (error) {
+            logger.error(`[CONTROLLER] portals:listModels - Error: ${error.message}`);
+            return next(error);
+        }
+    }
+
+    /**
+     * List all portal actions (not linked to a specific portal)
+     * GET /api/v1/portals/actions
+     */
+    async listAllActions(req, res, next) {
+        logger.info('[CONTROLLER] portals:listAllActions - Starting request');
+        try {
+            const actions = await portalsService.listAllActions();
+
+            logger.info(`[CONTROLLER] portals:listAllActions - Successfully retrieved ${actions.length} actions`);
+            return res.status(200).json(actions);
+        } catch (error) {
+            logger.error(`[CONTROLLER] portals:listAllActions - Error: ${error.message}`);
+            return next(error);
+        }
+    }
+
+    /**
+     * List all portal alerts (not linked to a specific portal)
+     * GET /api/v1/portals/alerts
+     */
+    async listAllAlerts(req, res, next) {
+        logger.info('[CONTROLLER] portals:listAllAlerts - Starting request');
+        try {
+            const alerts = await portalsService.listAllAlerts();
+
+            logger.info(`[CONTROLLER] portals:listAllAlerts - Successfully retrieved ${alerts.length} alerts`);
+            return res.status(200).json(alerts);
+        } catch (error) {
+            logger.error(`[CONTROLLER] portals:listAllAlerts - Error: ${error.message}`);
+            return next(error);
+        }
+    }
+
+    /**
+     * List all portal widgets (not linked to a specific portal)
+     * GET /api/v1/portals/widgets
+     */
+    async listAllWidgets(req, res, next) {
+        logger.info('[CONTROLLER] portals:listAllWidgets - Starting request');
+        try {
+            const widgets = await portalsService.listAllWidgets();
+
+            logger.info(`[CONTROLLER] portals:listAllWidgets - Successfully retrieved ${widgets.length} widgets`);
+            return res.status(200).json(widgets);
+        } catch (error) {
+            logger.error(`[CONTROLLER] portals:listAllWidgets - Error: ${error.message}`);
+            return next(error);
+        }
+    }
+
 }
 
 module.exports = new PortalsController();

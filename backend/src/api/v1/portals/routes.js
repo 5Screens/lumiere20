@@ -5,6 +5,50 @@ const validate = require('../../../middleware/validate');
 const portalsValidation = require('./validation');
 const logger = require('../../../config/logger');
 
+// Route to get all portal models
+// GET /api/v1/portals/models
+router.get(
+    '/models',
+    (req, res, next) => {
+        logger.info('[ROUTES] GET /api/v1/portals/models - Route handler started');
+        next();
+    },
+    portalsController.listModels
+);
+
+// Route to get all portal actions (not linked to a specific portal)
+// GET /api/v1/portals/actions
+router.get(
+    '/actions',
+    (req, res, next) => {
+        logger.info('[ROUTES] GET /api/v1/portals/actions - Route handler started');
+        next();
+    },
+    portalsController.listAllActions
+);
+
+// Route to get all portal alerts (not linked to a specific portal)
+// GET /api/v1/portals/alerts
+router.get(
+    '/alerts',
+    (req, res, next) => {
+        logger.info('[ROUTES] GET /api/v1/portals/alerts - Route handler started');
+        next();
+    },
+    portalsController.listAllAlerts
+);
+
+// Route to get all portal widgets (not linked to a specific portal)
+// GET /api/v1/portals/widgets
+router.get(
+    '/widgets',
+    (req, res, next) => {
+        logger.info('[ROUTES] GET /api/v1/portals/widgets - Route handler started');
+        next();
+    },
+    portalsController.listAllWidgets
+);
+
 // Route to check code uniqueness
 // GET /api/v1/portals/check-code?code=xxx&exclude_uuid=yyy
 router.get(

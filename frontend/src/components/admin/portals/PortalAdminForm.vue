@@ -130,6 +130,96 @@
           :item-label="$t('portals.admin.showAlerts')"
         />
 
+        <!-- Alerts Table -->
+        <div v-if="formData.show_alerts" class="subsection">
+          <h4 class="subsection-title">Alertes disponibles</h4>
+          <div class="items-table">
+            <div v-if="allAlerts.length === 0" class="empty-state">
+              Aucune alerte disponible pour ce portail
+            </div>
+            <div v-else class="table-rows">
+              <div v-for="alert in allAlerts" :key="alert.uuid" class="table-row">
+                <input 
+                  type="checkbox" 
+                  :value="alert.uuid"
+                  v-model="selectedAlerts"
+                  class="row-checkbox"
+                />
+                <div class="row-content">
+                  <div class="row-title">{{ alert.message }}</div>
+                  <div class="row-meta">
+                    <span class="badge" :class="`badge-${alert.alert_type}`">{{ alert.alert_type }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Checkbox
+          v-model="formData.show_actions"
+          :label="$t('portals.admin.features')"
+          :item-label="$t('portals.admin.showActions')"
+        />
+
+        <!-- Actions Table -->
+        <div v-if="formData.show_actions" class="subsection">
+          <h4 class="subsection-title">Actions rapides disponibles</h4>
+          <div class="items-table">
+            <div v-if="allActions.length === 0" class="empty-state">
+              Aucune action disponible pour ce portail
+            </div>
+            <div v-else class="table-rows">
+              <div v-for="action in allActions" :key="action.uuid" class="table-row">
+                <input 
+                  type="checkbox" 
+                  :value="action.uuid"
+                  v-model="selectedActions"
+                  class="row-checkbox"
+                />
+                <div class="row-content">
+                  <div class="row-title">{{ action.display_title || action.action_code }}</div>
+                  <div class="row-meta">
+                    <span v-if="action.description" class="description">{{ action.description }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Checkbox
+          v-model="formData.show_widgets"
+          :label="$t('portals.admin.features')"
+          :item-label="$t('portals.admin.showWidgets')"
+        />
+
+        <!-- Widgets Table -->
+        <div v-if="formData.show_widgets" class="subsection">
+          <h4 class="subsection-title">Widgets disponibles</h4>
+          <div class="items-table">
+            <div v-if="allWidgets.length === 0" class="empty-state">
+              Aucun widget disponible pour ce portail
+            </div>
+            <div v-else class="table-rows">
+              <div v-for="widget in allWidgets" :key="widget.uuid" class="table-row">
+                <input 
+                  type="checkbox" 
+                  :value="widget.uuid"
+                  v-model="selectedWidgets"
+                  class="row-checkbox"
+                />
+                <div class="row-content">
+                  <div class="row-title">{{ widget.display_title }}</div>
+                  <div class="row-meta">
+                    <span class="badge">{{ widget.widget_type }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <TextArea
           v-model="formData.chat_default_message"
           :label="$t('portals.admin.chatDefaultMessage')"
@@ -195,19 +285,49 @@ const formData = ref({
   theme_secondary_color: '#111111',
   show_chat: true,
   show_alerts: true,
+  show_actions: true,
+  show_widgets: true,
   chat_default_message: 'En cours d\'implémentation'
 })
 
-const viewComponentOptions = [
-  { value: 'PortalViewV1', label: 'PortalViewV1' },
-  { value: 'PortalPOC', label: 'PortalPOC' }
-]
+const viewComponentOptions = ref([])
+const allActions = ref([])
+const allAlerts = ref([])
+const allWidgets = ref([])
+const selectedActions = ref([])
+const selectedAlerts = ref([])
+const selectedWidgets = ref([])
 
 // Load portal data
 onMounted(async () => {
   try {
     loading.value = true
-    const portal = await apiService.get(`portals/uuid/${props.portalUuid}`)
+    
+    // Load portal models
+    const models = await apiService.get('portals/models')
+    viewComponentOptions.value = models.map(m => ({
+      value: m.name,
+      label: m.name
+    }))
+    
+    // Load all actions, alerts, widgets
+    const [actions, alerts, widgets, portal] = await Promise.all([
+      apiService.get('portals/actions'),
+      apiService.get('portals/alerts'),
+      apiService.get('portals/widgets'),
+      apiService.get(`portals/uuid/${props.portalUuid}`)
+    ])
+    
+    // Filter to get only items for this portal
+    allActions.value = actions.filter(a => a.rel_portal_uuid === portal.uuid)
+    allAlerts.value = alerts.filter(a => a.rel_portal_uuid === portal.uuid)
+    allWidgets.value = widgets.filter(w => w.rel_portal_uuid === portal.uuid)
+    
+    // TODO: Load selected items from junction tables
+    // For now, we'll mark all as selected
+    selectedActions.value = allActions.value.map(a => a.uuid)
+    selectedAlerts.value = allAlerts.value.map(a => a.uuid)
+    selectedWidgets.value = allWidgets.value.map(w => w.uuid)
     
     // Populate form with portal data
     formData.value = {
@@ -224,6 +344,8 @@ onMounted(async () => {
       theme_secondary_color: portal.theme_secondary_color || '#111111',
       show_chat: portal.show_chat !== undefined ? portal.show_chat : true,
       show_alerts: portal.show_alerts !== undefined ? portal.show_alerts : true,
+      show_actions: portal.show_actions !== undefined ? portal.show_actions : true,
+      show_widgets: portal.show_widgets !== undefined ? portal.show_widgets : true,
       chat_default_message: portal.chat_default_message || 'En cours d\'implémentation'
     }
   } catch (err) {
@@ -417,5 +539,108 @@ const handleSubmit = async () => {
   gap: 0.75rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border-color);
+}
+
+.subsection {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.subsection-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 0.75rem 0;
+}
+
+.items-table {
+  width: 100%;
+}
+
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.table-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.table-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.table-row:hover {
+  background: var(--hover-bg);
+  border-color: var(--primary-color);
+}
+
+.row-checkbox {
+  margin-top: 0.25rem;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-color);
+}
+
+.row-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.row-title {
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 0.95rem;
+}
+
+.row-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.description {
+  color: var(--text-secondary);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.badge-info {
+  background: #2196F3;
+}
+
+.badge-warning {
+  background: #FF9800;
+}
+
+.badge-error {
+  background: #F44336;
 }
 </style>

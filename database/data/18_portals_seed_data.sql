@@ -15,6 +15,24 @@
 BEGIN;
 
 -- ============================================================================
+-- SECTION 0: INSERT PORTAL MODELS
+-- ============================================================================
+
+-- Insert available portal view components
+INSERT INTO core.portal_models (name, description, is_active)
+VALUES 
+    ('PortalViewV1', 'Portal view component version 1 - Full featured self-service portal', true),
+    ('PortalPOC', 'Portal POC component - Proof of concept portal for testing', true)
+ON CONFLICT (name) DO UPDATE SET
+    description = EXCLUDED.description,
+    is_active = EXCLUDED.is_active,
+    updated_at = now();
+
+DO $$ BEGIN
+    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal models';
+END $$;
+
+-- ============================================================================
 -- SECTION 1: INSERT TEST PORTALS
 -- ============================================================================
 
@@ -35,6 +53,8 @@ INSERT INTO core.portals (
     theme_secondary_color,
     show_chat,
     show_alerts,
+    show_actions,
+    show_widgets,
     chat_default_message
 )
 VALUES (
@@ -52,6 +72,8 @@ VALUES (
     '#111111',
     true,
     true,
+    true,
+    true,
     'En cours d''implémentation'
 )
 ON CONFLICT (code) DO UPDATE SET
@@ -67,6 +89,8 @@ ON CONFLICT (code) DO UPDATE SET
     theme_secondary_color = EXCLUDED.theme_secondary_color,
     show_chat = EXCLUDED.show_chat,
     show_alerts = EXCLUDED.show_alerts,
+    show_actions = EXCLUDED.show_actions,
+    show_widgets = EXCLUDED.show_widgets,
     chat_default_message = EXCLUDED.chat_default_message,
     updated_at = now();
 
@@ -105,6 +129,8 @@ INSERT INTO core.portals (
     theme_secondary_color,
     show_chat,
     show_alerts,
+    show_actions,
+    show_widgets,
     chat_default_message
 )
 VALUES (
@@ -122,6 +148,8 @@ VALUES (
     '#111111',
     true,
     true,
+    true,
+    true,
     'Support administrateur disponible'
 )
 ON CONFLICT (code) DO UPDATE SET
@@ -137,6 +165,8 @@ ON CONFLICT (code) DO UPDATE SET
     theme_secondary_color = EXCLUDED.theme_secondary_color,
     show_chat = EXCLUDED.show_chat,
     show_alerts = EXCLUDED.show_alerts,
+    show_actions = EXCLUDED.show_actions,
+    show_widgets = EXCLUDED.show_widgets,
     chat_default_message = EXCLUDED.chat_default_message,
     updated_at = now();
 
@@ -806,7 +836,119 @@ DO $$ BEGIN
 END $$;
 
 -- ============================================================================
--- SECTION 5: VERIFICATION
+-- SECTION 5: INSERT JUNCTION TABLE DATA
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- Link actions to portals (portal__portal_actions)
+-- ----------------------------------------------------------------------------
+
+-- Link all actions to self-service-l portal
+INSERT INTO core.portal__portal_actions (rel_portal, rel_portal_action, display_order)
+SELECT 
+    p.uuid,
+    pa.uuid,
+    pa.display_order
+FROM core.portals p
+CROSS JOIN core.portal_actions pa
+WHERE p.code = 'self-service-l' 
+  AND pa.rel_portal_uuid = p.uuid
+ON CONFLICT (rel_portal, rel_portal_action) DO UPDATE SET
+    display_order = EXCLUDED.display_order,
+    updated_at = now();
+
+-- Link all actions to poc portal
+INSERT INTO core.portal__portal_actions (rel_portal, rel_portal_action, display_order)
+SELECT 
+    p.uuid,
+    pa.uuid,
+    pa.display_order
+FROM core.portals p
+CROSS JOIN core.portal_actions pa
+WHERE p.code = 'poc' 
+  AND pa.rel_portal_uuid = p.uuid
+ON CONFLICT (rel_portal, rel_portal_action) DO UPDATE SET
+    display_order = EXCLUDED.display_order,
+    updated_at = now();
+
+-- Link all actions to self-service-s portal
+INSERT INTO core.portal__portal_actions (rel_portal, rel_portal_action, display_order)
+SELECT 
+    p.uuid,
+    pa.uuid,
+    pa.display_order
+FROM core.portals p
+CROSS JOIN core.portal_actions pa
+WHERE p.code = 'self-service-s' 
+  AND pa.rel_portal_uuid = p.uuid
+ON CONFLICT (rel_portal, rel_portal_action) DO UPDATE SET
+    display_order = EXCLUDED.display_order,
+    updated_at = now();
+
+DO $$ BEGIN
+    RAISE NOTICE '[18_portals_seed_data.sql] Linked actions to portals';
+END $$;
+
+-- ----------------------------------------------------------------------------
+-- Link alerts to portals (portal__portal_alerts)
+-- ----------------------------------------------------------------------------
+
+-- Link all alerts to self-service-l portal
+INSERT INTO core.portal__portal_alerts (rel_portal, rel_portal_alert, display_order)
+SELECT 
+    p.uuid,
+    pa.uuid,
+    pa.display_order
+FROM core.portals p
+CROSS JOIN core.portal_alerts pa
+WHERE p.code = 'self-service-l' 
+  AND pa.rel_portal_uuid = p.uuid
+ON CONFLICT (rel_portal, rel_portal_alert) DO UPDATE SET
+    display_order = EXCLUDED.display_order,
+    updated_at = now();
+
+DO $$ BEGIN
+    RAISE NOTICE '[18_portals_seed_data.sql] Linked alerts to portals';
+END $$;
+
+-- ----------------------------------------------------------------------------
+-- Link widgets to portals (portal__portal_widgets)
+-- ----------------------------------------------------------------------------
+
+-- Link all widgets to self-service-l portal
+INSERT INTO core.portal__portal_widgets (rel_portal, rel_portal_widget, display_order)
+SELECT 
+    p.uuid,
+    pw.uuid,
+    pw.display_order
+FROM core.portals p
+CROSS JOIN core.portal_widgets pw
+WHERE p.code = 'self-service-l' 
+  AND pw.rel_portal_uuid = p.uuid
+ON CONFLICT (rel_portal, rel_portal_widget) DO UPDATE SET
+    display_order = EXCLUDED.display_order,
+    updated_at = now();
+
+-- Link all widgets to self-service-s portal
+INSERT INTO core.portal__portal_widgets (rel_portal, rel_portal_widget, display_order)
+SELECT 
+    p.uuid,
+    pw.uuid,
+    pw.display_order
+FROM core.portals p
+CROSS JOIN core.portal_widgets pw
+WHERE p.code = 'self-service-s' 
+  AND pw.rel_portal_uuid = p.uuid
+ON CONFLICT (rel_portal, rel_portal_widget) DO UPDATE SET
+    display_order = EXCLUDED.display_order,
+    updated_at = now();
+
+DO $$ BEGIN
+    RAISE NOTICE '[18_portals_seed_data.sql] Linked widgets to portals';
+END $$;
+
+-- ============================================================================
+-- SECTION 6: VERIFICATION
 -- ============================================================================
 
 DO $$

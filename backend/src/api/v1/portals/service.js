@@ -225,6 +225,8 @@ class PortalsService {
                     theme_secondary_color,
                     show_chat,
                     show_alerts,
+                    show_actions,
+                    show_widgets,
                     chat_default_message,
                     created_at,
                     updated_at
@@ -293,7 +295,7 @@ class PortalsService {
                 'code', 'name', 'base_url', 'thumbnail_url', 'view_component',
                 'title', 'subtitle', 'welcome_template', 'logo_url',
                 'theme_primary_color', 'theme_secondary_color',
-                'show_chat', 'show_alerts', 'chat_default_message'
+                'show_chat', 'show_alerts', 'show_actions', 'show_widgets', 'chat_default_message'
             ];
             
             for (const field of allowedFields) {
@@ -335,6 +337,8 @@ class PortalsService {
                     theme_secondary_color,
                     show_chat,
                     show_alerts,
+                    show_actions,
+                    show_widgets,
                     chat_default_message,
                     created_at,
                     updated_at
@@ -373,6 +377,138 @@ class PortalsService {
             return { isUnique };
         } catch (error) {
             logger.error(`[SERVICE] portals:checkCodeUniqueness - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * List all portal models
+     * @returns {Promise<Array>} List of portal models
+     */
+    async listModels() {
+        logger.info('[SERVICE] portal_models:list - Starting query');
+        try {
+            const query = `
+                SELECT 
+                    uuid,
+                    name,
+                    description,
+                    is_active,
+                    created_at,
+                    updated_at
+                FROM core.portal_models
+                WHERE is_active = true
+                ORDER BY name ASC
+            `;
+            
+            const result = await pool.query(query);
+            logger.info(`[SERVICE] portal_models:list - Found ${result.rows.length} models`);
+            return result.rows;
+        } catch (error) {
+            logger.error(`[SERVICE] portal_models:list - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * List all portal actions (not linked to a specific portal)
+     * @returns {Promise<Array>} List of all portal actions
+     */
+    async listAllActions() {
+        logger.info('[SERVICE] portal_actions:listAll - Starting query');
+        try {
+            const query = `
+                SELECT 
+                    uuid,
+                    rel_portal_uuid,
+                    action_code,
+                    http_method,
+                    endpoint,
+                    display_title,
+                    description,
+                    icon_type,
+                    icon_value,
+                    is_quick_action,
+                    display_order,
+                    is_visible,
+                    created_at,
+                    updated_at
+                FROM core.portal_actions
+                ORDER BY rel_portal_uuid, display_order ASC
+            `;
+            
+            const result = await pool.query(query);
+            logger.info(`[SERVICE] portal_actions:listAll - Found ${result.rows.length} actions`);
+            return result.rows;
+        } catch (error) {
+            logger.error(`[SERVICE] portal_actions:listAll - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * List all portal alerts (not linked to a specific portal)
+     * @returns {Promise<Array>} List of all portal alerts
+     */
+    async listAllAlerts() {
+        logger.info('[SERVICE] portal_alerts:listAll - Starting query');
+        try {
+            const query = `
+                SELECT 
+                    uuid,
+                    rel_portal_uuid,
+                    message,
+                    alert_type,
+                    start_date,
+                    end_date,
+                    is_active,
+                    display_order,
+                    created_at,
+                    updated_at
+                FROM core.portal_alerts
+                ORDER BY rel_portal_uuid, display_order ASC
+            `;
+            
+            const result = await pool.query(query);
+            logger.info(`[SERVICE] portal_alerts:listAll - Found ${result.rows.length} alerts`);
+            return result.rows;
+        } catch (error) {
+            logger.error(`[SERVICE] portal_alerts:listAll - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * List all portal widgets (not linked to a specific portal)
+     * @returns {Promise<Array>} List of all portal widgets
+     */
+    async listAllWidgets() {
+        logger.info('[SERVICE] portal_widgets:listAll - Starting query');
+        try {
+            const query = `
+                SELECT 
+                    uuid,
+                    rel_portal_uuid,
+                    widget_code,
+                    display_title,
+                    widget_type,
+                    api_endpoint,
+                    api_method,
+                    api_params,
+                    refresh_interval,
+                    is_visible,
+                    display_order,
+                    created_at,
+                    updated_at
+                FROM core.portal_widgets
+                ORDER BY rel_portal_uuid, display_order ASC
+            `;
+            
+            const result = await pool.query(query);
+            logger.info(`[SERVICE] portal_widgets:listAll - Found ${result.rows.length} widgets`);
+            return result.rows;
+        } catch (error) {
+            logger.error(`[SERVICE] portal_widgets:listAll - Error: ${error.message}`);
             throw error;
         }
     }
@@ -421,64 +557,67 @@ class PortalsService {
             
             const portal = portalResult.rows[0];
             
-            // Get quick actions (ordered by display_order)
+            // Get quick actions through junction table (ordered by junction table display_order)
             const actionsQuery = `
                 SELECT 
-                    uuid,
-                    action_code,
-                    http_method,
-                    endpoint,
-                    payload_json,
-                    headers_json,
-                    display_title,
-                    description,
-                    icon_type,
-                    icon_value,
-                    display_order
-                FROM core.portal_actions
-                WHERE rel_portal_uuid = $1 
-                  AND is_quick_action = true 
-                  AND is_visible = true
-                ORDER BY display_order ASC
+                    pa.uuid,
+                    pa.action_code,
+                    pa.http_method,
+                    pa.endpoint,
+                    pa.payload_json,
+                    pa.headers_json,
+                    pa.display_title,
+                    pa.description,
+                    pa.icon_type,
+                    pa.icon_value,
+                    ppa.display_order
+                FROM core.portal__portal_actions ppa
+                INNER JOIN core.portal_actions pa ON ppa.rel_portal_action = pa.uuid
+                WHERE ppa.rel_portal = $1 
+                  AND pa.is_quick_action = true 
+                  AND pa.is_visible = true
+                ORDER BY ppa.display_order ASC
             `;
             
             const actionsResult = await pool.query(actionsQuery, [portal.uuid]);
             
-            // Get active alerts (within date range)
+            // Get active alerts through junction table (within date range, ordered by junction table display_order)
             const alertsQuery = `
                 SELECT 
-                    uuid,
-                    message,
-                    alert_type,
-                    start_date,
-                    end_date,
-                    display_order
-                FROM core.portal_alerts
-                WHERE rel_portal_uuid = $1 
-                  AND is_active = true
-                  AND start_date <= CURRENT_TIMESTAMP
-                  AND (end_date IS NULL OR end_date >= CURRENT_TIMESTAMP)
-                ORDER BY display_order ASC
+                    pa.uuid,
+                    pa.message,
+                    pa.alert_type,
+                    pa.start_date,
+                    pa.end_date,
+                    ppa.display_order
+                FROM core.portal__portal_alerts ppa
+                INNER JOIN core.portal_alerts pa ON ppa.rel_portal_alert = pa.uuid
+                WHERE ppa.rel_portal = $1 
+                  AND pa.is_active = true
+                  AND pa.start_date <= CURRENT_TIMESTAMP
+                  AND (pa.end_date IS NULL OR pa.end_date >= CURRENT_TIMESTAMP)
+                ORDER BY ppa.display_order ASC
             `;
             
             const alertsResult = await pool.query(alertsQuery, [portal.uuid]);
             
-            // Get visible widgets (ordered by display_order)
+            // Get visible widgets through junction table (ordered by junction table display_order)
             const widgetsQuery = `
                 SELECT 
-                    uuid,
-                    widget_code,
-                    display_title,
-                    widget_type,
-                    api_endpoint,
-                    api_method,
-                    api_params,
-                    refresh_interval,
-                    display_order
-                FROM core.portal_widgets
-                WHERE rel_portal_uuid = $1 
-                  AND is_visible = true
-                ORDER BY display_order ASC
+                    pw.uuid,
+                    pw.widget_code,
+                    pw.display_title,
+                    pw.widget_type,
+                    pw.api_endpoint,
+                    pw.api_method,
+                    pw.api_params,
+                    pw.refresh_interval,
+                    ppw.display_order
+                FROM core.portal__portal_widgets ppw
+                INNER JOIN core.portal_widgets pw ON ppw.rel_portal_widget = pw.uuid
+                WHERE ppw.rel_portal = $1 
+                  AND pw.is_visible = true
+                ORDER BY ppw.display_order ASC
             `;
             
             const widgetsResult = await pool.query(widgetsQuery, [portal.uuid]);
