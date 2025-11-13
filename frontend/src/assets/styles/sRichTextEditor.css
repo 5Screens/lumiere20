@@ -162,7 +162,7 @@
   outline: none;
 }
 
-.color-picker {
+.s-rich-text-editor .color-picker {
   display: flex;
   flex-wrap: wrap;
   position: absolute;
