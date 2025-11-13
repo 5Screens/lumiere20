@@ -135,7 +135,7 @@
           <h4 class="subsection-title">Alertes disponibles</h4>
           <div class="items-table">
             <div v-if="allAlerts.length === 0" class="empty-state">
-              Aucune alerte disponible pour ce portail
+              Aucune alerte disponible dans le système
             </div>
             <div v-else class="table-rows">
               <div v-for="alert in allAlerts" :key="alert.uuid" class="table-row">
@@ -167,7 +167,7 @@
           <h4 class="subsection-title">Actions rapides disponibles</h4>
           <div class="items-table">
             <div v-if="allActions.length === 0" class="empty-state">
-              Aucune action disponible pour ce portail
+              Aucune action disponible dans le système
             </div>
             <div v-else class="table-rows">
               <div v-for="action in allActions" :key="action.uuid" class="table-row">
@@ -199,7 +199,7 @@
           <h4 class="subsection-title">Widgets disponibles</h4>
           <div class="items-table">
             <div v-if="allWidgets.length === 0" class="empty-state">
-              Aucun widget disponible pour ce portail
+              Aucun widget disponible dans le système
             </div>
             <div v-else class="table-rows">
               <div v-for="widget in allWidgets" :key="widget.uuid" class="table-row">
@@ -310,7 +310,7 @@ onMounted(async () => {
       label: m.name
     }))
     
-    // Load all actions, alerts, widgets
+    // Load all actions, alerts, widgets and current portal data
     const [actions, alerts, widgets, portal] = await Promise.all([
       apiService.get('portals/actions'),
       apiService.get('portals/alerts'),
@@ -318,16 +318,18 @@ onMounted(async () => {
       apiService.get(`portals/uuid/${props.portalUuid}`)
     ])
     
-    // Filter to get only items for this portal
-    allActions.value = actions.filter(a => a.rel_portal_uuid === portal.uuid)
-    allAlerts.value = alerts.filter(a => a.rel_portal_uuid === portal.uuid)
-    allWidgets.value = widgets.filter(w => w.rel_portal_uuid === portal.uuid)
+    // Store ALL actions, alerts, widgets (not filtered)
+    allActions.value = actions
+    allAlerts.value = alerts
+    allWidgets.value = widgets
     
-    // TODO: Load selected items from junction tables
-    // For now, we'll mark all as selected
-    selectedActions.value = allActions.value.map(a => a.uuid)
-    selectedAlerts.value = allAlerts.value.map(a => a.uuid)
-    selectedWidgets.value = allWidgets.value.map(w => w.uuid)
+    // Load the full portal configuration to get linked items from junction tables
+    const portalFull = await apiService.get(`portals/${portal.code}`)
+    
+    // Extract UUIDs of linked items from the full portal response
+    selectedActions.value = portalFull.quick_actions ? portalFull.quick_actions.map(a => a.uuid) : []
+    selectedAlerts.value = portalFull.alerts ? portalFull.alerts.map(a => a.uuid) : []
+    selectedWidgets.value = portalFull.widgets ? portalFull.widgets.map(w => w.uuid) : []
     
     // Populate form with portal data
     formData.value = {
