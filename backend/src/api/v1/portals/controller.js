@@ -156,6 +156,91 @@ class PortalsController {
     }
 
     /**
+     * Get a portal by UUID
+     * GET /api/v1/portals/uuid/:uuid
+     */
+    async getByUuid(req, res, next) {
+        logger.info('[CONTROLLER] portals:getByUuid - Starting request');
+        try {
+            const { uuid } = req.params;
+
+            logger.info(`[CONTROLLER] portals:getByUuid - Fetching portal: ${uuid}`);
+            const portal = await portalsService.getByUuid(uuid);
+
+            logger.info(`[CONTROLLER] portals:getByUuid - Portal loaded successfully: ${portal.code}`);
+            return res.status(200).json(portal);
+        } catch (error) {
+            if (error.code === 'NOT_FOUND') {
+                logger.error(`[CONTROLLER] portals:getByUuid - Not found: ${error.message}`);
+                return res.status(404).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+
+            logger.error(`[CONTROLLER] portals:getByUuid - Error: ${error.message}`);
+            return next(error);
+        }
+    }
+
+    /**
+     * Update a portal
+     * PUT /api/v1/portals/:uuid
+     */
+    async update(req, res, next) {
+        logger.info('[CONTROLLER] portals:update - Starting request');
+        try {
+            const { uuid } = req.params;
+            const updateData = req.body;
+
+            logger.info(`[CONTROLLER] portals:update - Updating portal ${uuid}`);
+            const portal = await portalsService.update(uuid, updateData);
+
+            logger.info(`[CONTROLLER] portals:update - Portal updated successfully: ${portal.uuid}`);
+            return res.status(200).json(portal);
+        } catch (error) {
+            if (error.code === 'NOT_FOUND') {
+                logger.error(`[CONTROLLER] portals:update - Not found: ${error.message}`);
+                return res.status(404).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+
+            if (error.code === 'CONFLICT') {
+                logger.error(`[CONTROLLER] portals:update - Conflict: ${error.message}`);
+                return res.status(409).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+
+            logger.error(`[CONTROLLER] portals:update - Error: ${error.message}`);
+            return next(error);
+        }
+    }
+
+    /**
+     * Check if a portal code is unique
+     * GET /api/v1/portals/check-code?code=xxx&exclude_uuid=yyy
+     */
+    async checkCodeUniqueness(req, res, next) {
+        logger.info('[CONTROLLER] portals:checkCodeUniqueness - Starting request');
+        try {
+            const { code, exclude_uuid } = req.query;
+
+            logger.info(`[CONTROLLER] portals:checkCodeUniqueness - Checking code: ${code}`);
+            const result = await portalsService.checkCodeUniqueness(code, exclude_uuid);
+
+            logger.info(`[CONTROLLER] portals:checkCodeUniqueness - Result: ${result.isUnique}`);
+            return res.status(200).json(result);
+        } catch (error) {
+            logger.error(`[CONTROLLER] portals:checkCodeUniqueness - Error: ${error.message}`);
+            return next(error);
+        }
+    }
+
+    /**
      * Get full portal configuration (v1) with actions, alerts, and widgets
      * GET /api/v1/portals/:code
      */

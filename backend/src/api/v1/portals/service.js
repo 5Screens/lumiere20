@@ -201,6 +201,183 @@ class PortalsService {
     }
 
     /**
+     * Get a portal by UUID
+     * @param {string} uuid - Portal UUID
+     * @returns {Promise<Object>} Portal data
+     */
+    async getByUuid(uuid) {
+        logger.info(`[SERVICE] portals:getByUuid - Fetching portal with UUID: ${uuid}`);
+        try {
+            const query = `
+                SELECT 
+                    uuid,
+                    code,
+                    name,
+                    base_url,
+                    thumbnail_url,
+                    is_active,
+                    view_component,
+                    title,
+                    subtitle,
+                    welcome_template,
+                    logo_url,
+                    theme_primary_color,
+                    theme_secondary_color,
+                    show_chat,
+                    show_alerts,
+                    chat_default_message,
+                    created_at,
+                    updated_at
+                FROM core.portals
+                WHERE uuid = $1
+            `;
+            
+            const result = await pool.query(query, [uuid]);
+            
+            if (result.rows.length === 0) {
+                logger.error(`[SERVICE] portals:getByUuid - Portal not found: ${uuid}`);
+                const error = new Error('Portal not found');
+                error.code = 'NOT_FOUND';
+                throw error;
+            }
+            
+            logger.info(`[SERVICE] portals:getByUuid - Portal found: ${result.rows[0].code}`);
+            return result.rows[0];
+        } catch (error) {
+            logger.error(`[SERVICE] portals:getByUuid - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Update a portal
+     * @param {string} uuid - Portal UUID
+     * @param {Object} updateData - Data to update
+     * @returns {Promise<Object>} Updated portal
+     */
+    async update(uuid, updateData) {
+        logger.info(`[SERVICE] portals:update - Updating portal ${uuid}`);
+        try {
+            // Check if portal exists
+            const checkQuery = `SELECT uuid, code FROM core.portals WHERE uuid = $1`;
+            const checkResult = await pool.query(checkQuery, [uuid]);
+            
+            if (checkResult.rows.length === 0) {
+                logger.error(`[SERVICE] portals:update - Portal not found: ${uuid}`);
+                const error = new Error('Portal not found');
+                error.code = 'NOT_FOUND';
+                throw error;
+            }
+            
+            const currentPortal = checkResult.rows[0];
+            
+            // If code is being updated, check uniqueness
+            if (updateData.code && updateData.code !== currentPortal.code) {
+                const codeCheckQuery = `SELECT 1 FROM core.portals WHERE code = $1 AND uuid != $2`;
+                const codeCheckResult = await pool.query(codeCheckQuery, [updateData.code, uuid]);
+                
+                if (codeCheckResult.rows.length > 0) {
+                    logger.error(`[SERVICE] portals:update - Code already exists: ${updateData.code}`);
+                    const error = new Error('Portal code already exists');
+                    error.code = 'CONFLICT';
+                    throw error;
+                }
+            }
+            
+            // Build dynamic update query
+            const fields = [];
+            const values = [];
+            let paramCount = 1;
+            
+            const allowedFields = [
+                'code', 'name', 'base_url', 'thumbnail_url', 'view_component',
+                'title', 'subtitle', 'welcome_template', 'logo_url',
+                'theme_primary_color', 'theme_secondary_color',
+                'show_chat', 'show_alerts', 'chat_default_message'
+            ];
+            
+            for (const field of allowedFields) {
+                if (updateData.hasOwnProperty(field)) {
+                    fields.push(`${field} = $${paramCount}`);
+                    values.push(updateData[field]);
+                    paramCount++;
+                }
+            }
+            
+            if (fields.length === 0) {
+                logger.warn(`[SERVICE] portals:update - No fields to update`);
+                return currentPortal;
+            }
+            
+            // Add updated_at
+            fields.push(`updated_at = CURRENT_TIMESTAMP`);
+            
+            // Add UUID as last parameter
+            values.push(uuid);
+            
+            const updateQuery = `
+                UPDATE core.portals
+                SET ${fields.join(', ')}
+                WHERE uuid = $${paramCount}
+                RETURNING 
+                    uuid,
+                    code,
+                    name,
+                    base_url,
+                    thumbnail_url,
+                    is_active,
+                    view_component,
+                    title,
+                    subtitle,
+                    welcome_template,
+                    logo_url,
+                    theme_primary_color,
+                    theme_secondary_color,
+                    show_chat,
+                    show_alerts,
+                    chat_default_message,
+                    created_at,
+                    updated_at
+            `;
+            
+            const result = await pool.query(updateQuery, values);
+            logger.info(`[SERVICE] portals:update - Portal ${uuid} updated successfully`);
+            return result.rows[0];
+        } catch (error) {
+            logger.error(`[SERVICE] portals:update - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Check if a portal code is unique
+     * @param {string} code - Portal code to check
+     * @param {string} excludeUuid - UUID to exclude from check (for updates)
+     * @returns {Promise<Object>} { isUnique: boolean }
+     */
+    async checkCodeUniqueness(code, excludeUuid = null) {
+        logger.info(`[SERVICE] portals:checkCodeUniqueness - Checking code: ${code}`);
+        try {
+            let query = `SELECT 1 FROM core.portals WHERE code = $1`;
+            const params = [code];
+            
+            if (excludeUuid) {
+                query += ` AND uuid != $2`;
+                params.push(excludeUuid);
+            }
+            
+            const result = await pool.query(query, params);
+            const isUnique = result.rows.length === 0;
+            
+            logger.info(`[SERVICE] portals:checkCodeUniqueness - Code ${code} is ${isUnique ? 'unique' : 'not unique'}`);
+            return { isUnique };
+        } catch (error) {
+            logger.error(`[SERVICE] portals:checkCodeUniqueness - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
      * Get full portal configuration (v1) with actions, alerts, and widgets
      * @param {string} code - Portal code
      * @returns {Promise<Object>} Complete portal configuration

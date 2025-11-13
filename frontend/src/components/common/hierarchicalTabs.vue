@@ -65,7 +65,15 @@
           v-show="store.activeChildTabId === tab.id_tab"
           class="tab-content-wrapper"
         >
+          <!-- Composant personnalisé si spécifié -->
+          <component 
+            v-if="tab.component"
+            :is="tab.component"
+            v-bind="tab.props || {}"
+          />
+          <!-- Composant par défaut pour les créations/modifications -->
           <ObjectCreationsAndUpdates 
+            v-else
             :mode="tab.mode"
             :objectId="tab.objectId"
             :tabId="tab.id_tab"
@@ -83,13 +91,15 @@ import { getClassByName } from '@/services/classMapping'
 import ObjectsTab from '@/components/objectsTab.vue'
 import ObjectCreationsAndUpdates from '@/components/coreForms/objectCreationsAndUpdates.vue'
 import AdminPortals from '@/components/admin/AdminPortals.vue'
+import PortalAdminForm from '@/components/admin/portals/PortalAdminForm.vue'
 
 export default {
   name: 'HierarchicalTabs',
   components: {
     ObjectsTab,
     ObjectCreationsAndUpdates,
-    AdminPortals
+    AdminPortals,
+    PortalAdminForm
   },
   setup() {
     console.log('[HierarchicalTabs] Exécution de setup()')

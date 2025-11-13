@@ -82,6 +82,7 @@
         :portal="portal"
         :loading-action="!!toggling[portal.uuid]"
         @toggle="onToggle(portal)"
+        @admin="onAdminClick(portal)"
       />
     </div>
 
@@ -208,6 +209,31 @@ const onToggle = async (portal) => {
   } finally {
     toggling.value[portal.uuid] = false;
   }
+};
+
+const onAdminClick = (portal) => {
+  console.info(`[ADMIN PORTALS] Opening admin form for portal: ${portal.name}`);
+  
+  // Get the current active tab ID (should be the AdminPortals tab)
+  const parentTabId = tabsStore.activeTabId;
+  
+  if (!parentTabId) {
+    console.error('[ADMIN PORTALS] No active parent tab found');
+    return;
+  }
+  
+  // Open a child tab with the portal admin form
+  tabsStore.openTab({
+    id: `portal-admin-${portal.uuid}`,
+    objectId: portal.uuid,
+    objectClass: 'portal',
+    parentId: parentTabId,
+    label: portal.name,
+    component: 'PortalAdminForm',
+    props: {
+      portalUuid: portal.uuid
+    }
+  });
 };
 
 // Lifecycle

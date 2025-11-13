@@ -45,8 +45,15 @@
           </span>
         </div>
         
-        <!-- Toggle -->
+        <!-- Actions -->
         <div class="portal-card__actions">
+          <button
+            class="portal-card__admin-btn"
+            :title="t('portals.admin.openAdmin')"
+            @click="$emit('admin')"
+          >
+            <i class="fas fa-wrench"></i>
+          </button>
           <PortalToggle
             :model-value="portal.is_active"
             :loading="loadingAction"
@@ -77,7 +84,7 @@ const props = defineProps({
   }
 });
 
-defineEmits(['toggle', 'preview']);
+defineEmits(['toggle', 'preview', 'admin']);
 
 const badgeClass = computed(() => ({
   'portal-card__badge--active': props.portal.is_active,
@@ -265,6 +272,33 @@ const formatDate = (dateString) => {
 .portal-card__actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+}
+
+.portal-card__admin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.portal-card__admin-btn:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.portal-card__admin-btn i {
+  font-size: 0.875rem;
 }
 </style>

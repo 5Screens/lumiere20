@@ -255,7 +255,61 @@ export default {
     inactive_count: '{count} inactif(s)',
     activation_success: 'Le portail "{name}" a été activé avec succès',
     deactivation_success: 'Le portail "{name}" a été désactivé avec succès',
-    toggle_error: 'Erreur lors de la modification du portail "{name}": {error}'
+    toggle_error: 'Erreur lors de la modification du portail "{name}": {error}',
+
+admin: {
+    openAdmin: 'Administrer le portail',
+    basicInfo: 'Informations de base',
+    displayConfig: 'Configuration d\'affichage',
+    theme: 'Thème',
+    features: 'Fonctionnalités',
+    
+    // Fields
+    code: 'Code',
+    codePlaceholder: 'ex: self-service-l',
+    codeHint: 'Minuscules, chiffres et tirets uniquement (2-50 caractères)',
+    codeInvalid: 'Le code doit contenir uniquement des minuscules, chiffres et tirets (2-50 caractères)',
+    codeAlreadyExists: 'Ce code est déjà utilisé par un autre portail',
+    
+    name: 'Nom',
+    namePlaceholder: 'ex: Self-Service L - Portail Employés',
+    
+    baseUrl: 'URL de base',
+    baseUrlPlaceholder: 'ex: http://localhost:7240',
+    
+    thumbnailUrl: 'URL de la miniature',
+    thumbnailUrlPlaceholder: 'ex: https://example.com/thumbnail.png',
+    
+    viewComponent: 'Composant de vue',
+    
+    title: 'Titre',
+    titlePlaceholder: 'ex: Lumière Self-service',
+    
+    subtitle: 'Sous-titre',
+    subtitlePlaceholder: 'ex: Portail des employés',
+    
+    welcomeTemplate: 'Template de bienvenue',
+    welcomeTemplatePlaceholder: 'ex: Bienvenue {firstName} !',
+    welcomeTemplateHint: 'Utilisez {firstName} pour le prénom de l\'utilisateur',
+    
+    logoUrl: 'URL du logo',
+    logoUrlPlaceholder: 'ex: https://example.com/logo.png',
+    
+    themePrimaryColor: 'Couleur primaire',
+    themeSecondaryColor: 'Couleur secondaire',
+    colorPlaceholder: 'ex: #FF6B00',
+    colorInvalid: 'La couleur doit être au format hexadécimal (ex: #FF6B00)',
+    
+    showChat: 'Afficher le chat',
+    showAlerts: 'Afficher les alertes',
+    
+    chatDefaultMessage: 'Message par défaut du chat',
+    chatDefaultMessagePlaceholder: 'ex: En cours d\'implémentation',
+    
+    // Messages
+    updateSuccess: 'Portail mis à jour avec succès',
+    updateError: 'Erreur lors de la mise à jour du portail'
+},
   },
   objectCreationsAndUpdates: {
     taskCreation: 'Créer une tâche',
@@ -368,6 +422,7 @@ export default {
     requiredField: 'Champ obligatoire',
     noClassFound: 'Aucune classe trouvée',
     valueMustBeANumber: 'La valeur doit être un nombre',
+    portalNameTooLong: 'Waouh. C\'est le nom du portail le plus long que nous ayons jamais vu. Mais il ne peut pas dépasser 128 caractères'
   },
   notifications: {
     title: 'Notification',
