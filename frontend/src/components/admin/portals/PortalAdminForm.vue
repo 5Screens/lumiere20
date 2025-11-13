@@ -427,9 +427,11 @@ const handleSubmit = async () => {
 
 <style scoped>
 .portal-admin-form {
-  padding: 24px;
+  padding: 1.5rem;
   max-width: 800px;
   margin: 0 auto;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .loading-state,
@@ -438,18 +440,19 @@ const handleSubmit = async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: 4rem 1.5rem;
   text-align: center;
+  color: var(--text-color);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid var(--primary-color, #2196F3);
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -458,38 +461,39 @@ const handleSubmit = async () => {
 }
 
 .error-state {
-  color: #d32f2f;
+  color: var(--error-color);
 }
 
 .error-state i {
-  font-size: 48px;
-  margin-bottom: 16px;
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 1.5rem;
 }
 
 .form-section {
-  background: var(--background-primary, #fff);
-  border: 1px solid var(--border-color, #e0e0e0);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  padding: 24px;
+  padding: 1.5rem;
 }
 
 .section-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-color, #111);
-  margin: 0 0 20px 0;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--primary-color, #2196F3);
+  color: var(--text-color);
+  margin: 0 0 1.25rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--primary-color);
 }
 
 .form-field {
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
+  box-sizing: border-box;
 }
 
 .form-field:last-child {
@@ -500,40 +504,42 @@ const handleSubmit = async () => {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-color, #111);
-  margin-bottom: 8px;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
 }
 
 .form-label.required::after {
   content: ' *';
-  color: #d32f2f;
+  color: var(--error-color);
 }
 
 .form-input,
 .form-select,
 .form-textarea {
   width: 100%;
-  padding: 10px 12px;
+  padding: 0.625rem 0.75rem;
   font-size: 0.875rem;
-  border: 1px solid var(--border-color, #e0e0e0);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  background: var(--background-primary, #fff);
-  color: var(--text-color, #111);
+  background: var(--input-bg);
+  color: var(--text-color);
   transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: var(--font-family);
+  box-sizing: border-box;
 }
 
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: var(--primary-color, #2196F3);
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-light);
 }
 
 .form-input.error,
 .form-select.error,
 .form-textarea.error {
-  border-color: #d32f2f;
+  border-color: var(--error-color);
 }
 
 .form-textarea {
@@ -543,16 +549,17 @@ const handleSubmit = async () => {
 
 .color-input-wrapper {
   display: flex;
-  gap: 12px;
+  gap: 0.75rem;
   align-items: center;
 }
 
 .form-color {
   width: 60px;
   height: 40px;
-  border: 1px solid var(--border-color, #e0e0e0);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   cursor: pointer;
+  background: var(--input-bg);
 }
 
 .color-input-wrapper .form-input {
@@ -560,56 +567,59 @@ const handleSubmit = async () => {
 }
 
 .checkbox-field {
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem;
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   font-size: 0.875rem;
-  color: var(--text-color, #111);
+  color: var(--text-color);
   cursor: pointer;
+  user-select: none;
 }
 
 .form-checkbox {
   width: 18px;
   height: 18px;
   cursor: pointer;
+  accent-color: var(--primary-color);
 }
 
 .error-message {
-  margin: 6px 0 0 0;
+  margin: 0.375rem 0 0 0;
   font-size: 0.75rem;
-  color: #d32f2f;
+  color: var(--error-color);
 }
 
 .field-hint {
-  margin: 6px 0 0 0;
+  margin: 0.375rem 0 0 0;
   font-size: 0.75rem;
-  color: var(--text-secondary, #666);
+  color: var(--text-secondary);
   font-style: italic;
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-color, #e0e0e0);
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 500;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
 }
 
 .btn:disabled {
@@ -618,13 +628,14 @@ const handleSubmit = async () => {
 }
 
 .btn-primary {
-  background: var(--primary-color, #2196F3);
+  background: var(--primary-color);
   color: #fff;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover, #1976D2);
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+  background: var(--primary-hover);
+  box-shadow: 0 2px 8px var(--shadow-color);
+  transform: translateY(-1px);
 }
 
 .btn i {
