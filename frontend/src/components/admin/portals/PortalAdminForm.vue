@@ -399,7 +399,7 @@ const handleSubmit = async () => {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-color);
-  margin: 0 0 1.25rem 0;
+  margin: 0;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid var(--primary-color);
 }
