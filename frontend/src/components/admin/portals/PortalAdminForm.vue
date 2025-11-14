@@ -120,13 +120,13 @@
 
         <Checkbox
           v-model="formData.show_chat"
-          :label="$t('portals.admin.features')"
+          
           :item-label="$t('portals.admin.showChat')"
         />
 
         <Checkbox
           v-model="formData.show_alerts"
-          :label="$t('portals.admin.features')"
+     
           :item-label="$t('portals.admin.showAlerts')"
         />
 
@@ -158,7 +158,7 @@
 
         <Checkbox
           v-model="formData.show_actions"
-          :label="$t('portals.admin.features')"
+          
           :item-label="$t('portals.admin.showActions')"
         />
 
@@ -190,7 +190,7 @@
 
         <Checkbox
           v-model="formData.show_widgets"
-          :label="$t('portals.admin.features')"
+          
           :item-label="$t('portals.admin.showWidgets')"
         />
 

@@ -48,7 +48,7 @@ INSERT INTO core.portals (
 VALUES (
     'self-service-l',
     'Self-Service Lumière',
-    'http://localhost:5174',
+    'http://localhost:7240',
     NULL,
     true,
     'PortalViewV1',
@@ -105,7 +105,7 @@ INSERT INTO core.portals (
 VALUES (
     'self-service-s',
     'Self-Service Support',
-    'http://localhost:5174',
+    'http://localhost:7240',
     NULL,
     true,
     'PortalViewV1',
@@ -162,7 +162,7 @@ INSERT INTO core.portals (
 VALUES (
     'poc',
     'POC Portal',
-    'http://localhost:5174',
+    'http://localhost:7240',
     NULL,
     true,
     'PortalViewV1',
