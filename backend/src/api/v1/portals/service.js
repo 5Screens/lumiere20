@@ -345,10 +345,106 @@ class PortalsService {
             `;
             
             const result = await pool.query(updateQuery, values);
+            const updatedPortal = result.rows[0];
             logger.info(`[SERVICE] portals:update - Portal ${uuid} updated successfully`);
-            return result.rows[0];
+            
+            // Update junction tables if provided
+            if (updateData.selected_actions !== undefined) {
+                await this.updatePortalActions(uuid, updateData.selected_actions);
+            }
+            
+            if (updateData.selected_alerts !== undefined) {
+                await this.updatePortalAlerts(uuid, updateData.selected_alerts);
+            }
+            
+            if (updateData.selected_widgets !== undefined) {
+                await this.updatePortalWidgets(uuid, updateData.selected_widgets);
+            }
+            
+            return updatedPortal;
         } catch (error) {
             logger.error(`[SERVICE] portals:update - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Update portal actions junction table
+     * @param {string} portalUuid - Portal UUID
+     * @param {Array} actionUuids - Array of action UUIDs to link
+     */
+    async updatePortalActions(portalUuid, actionUuids) {
+        logger.info(`[SERVICE] portals:updatePortalActions - Updating actions for portal ${portalUuid}`);
+        try {
+            // Delete existing links
+            await pool.query('DELETE FROM core.portal__portal_actions WHERE rel_portal = $1', [portalUuid]);
+            
+            // Insert new links
+            if (actionUuids && actionUuids.length > 0) {
+                for (let i = 0; i < actionUuids.length; i++) {
+                    await pool.query(
+                        'INSERT INTO core.portal__portal_actions (rel_portal, rel_portal_action, display_order) VALUES ($1, $2, $3)',
+                        [portalUuid, actionUuids[i], i + 1]
+                    );
+                }
+                logger.info(`[SERVICE] portals:updatePortalActions - Linked ${actionUuids.length} actions`);
+            }
+        } catch (error) {
+            logger.error(`[SERVICE] portals:updatePortalActions - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Update portal alerts junction table
+     * @param {string} portalUuid - Portal UUID
+     * @param {Array} alertUuids - Array of alert UUIDs to link
+     */
+    async updatePortalAlerts(portalUuid, alertUuids) {
+        logger.info(`[SERVICE] portals:updatePortalAlerts - Updating alerts for portal ${portalUuid}`);
+        try {
+            // Delete existing links
+            await pool.query('DELETE FROM core.portal__portal_alerts WHERE rel_portal = $1', [portalUuid]);
+            
+            // Insert new links
+            if (alertUuids && alertUuids.length > 0) {
+                for (let i = 0; i < alertUuids.length; i++) {
+                    await pool.query(
+                        'INSERT INTO core.portal__portal_alerts (rel_portal, rel_portal_alert, display_order) VALUES ($1, $2, $3)',
+                        [portalUuid, alertUuids[i], i + 1]
+                    );
+                }
+                logger.info(`[SERVICE] portals:updatePortalAlerts - Linked ${alertUuids.length} alerts`);
+            }
+        } catch (error) {
+            logger.error(`[SERVICE] portals:updatePortalAlerts - Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Update portal widgets junction table
+     * @param {string} portalUuid - Portal UUID
+     * @param {Array} widgetUuids - Array of widget UUIDs to link
+     */
+    async updatePortalWidgets(portalUuid, widgetUuids) {
+        logger.info(`[SERVICE] portals:updatePortalWidgets - Updating widgets for portal ${portalUuid}`);
+        try {
+            // Delete existing links
+            await pool.query('DELETE FROM core.portal__portal_widgets WHERE rel_portal = $1', [portalUuid]);
+            
+            // Insert new links
+            if (widgetUuids && widgetUuids.length > 0) {
+                for (let i = 0; i < widgetUuids.length; i++) {
+                    await pool.query(
+                        'INSERT INTO core.portal__portal_widgets (rel_portal, rel_portal_widget, display_order) VALUES ($1, $2, $3)',
+                        [portalUuid, widgetUuids[i], i + 1]
+                    );
+                }
+                logger.info(`[SERVICE] portals:updatePortalWidgets - Linked ${widgetUuids.length} widgets`);
+            }
+        } catch (error) {
+            logger.error(`[SERVICE] portals:updatePortalWidgets - Error: ${error.message}`);
             throw error;
         }
     }

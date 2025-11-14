@@ -449,6 +449,16 @@ const handleSubmit = async () => {
       }
     }
 
+    // Add selected actions, alerts, and widgets
+    updateData.selected_actions = selectedActions.value
+    updateData.selected_alerts = selectedAlerts.value
+    updateData.selected_widgets = selectedWidgets.value
+
+    console.log('[PORTAL ADMIN FORM] Submitting portal update:', {
+      uuid: props.portalUuid,
+      data: updateData
+    })
+
     await apiService.put(`portals/${props.portalUuid}`, updateData)
     
     tabsStore.setMessage(t('portals.admin.updateSuccess'))
@@ -456,7 +466,7 @@ const handleSubmit = async () => {
     // Emit success event (could be used by parent)
     // emit('update:success')
   } catch (err) {
-    console.error('Error updating portal:', err)
+    console.error('[PORTAL ADMIN FORM] Error updating portal:', err)
     tabsStore.setMessage(t('portals.admin.updateError') + ': ' + err.message)
   } finally {
     saving.value = false
