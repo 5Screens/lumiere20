@@ -51,7 +51,7 @@
           </div>
           
           <!-- Quick Actions -->
-          <section class="section">
+          <section v-if="portal.show_actions && portal.quick_actions && portal.quick_actions.length > 0" class="section">
             <h3 class="section-title">Actions rapides</h3>
             <div class="quick-actions-grid">
               <QuickActionCard
@@ -65,7 +65,7 @@
           </section>
           
           <!-- Dashboard Widgets -->
-          <section v-if="portal.widgets && portal.widgets.length > 0" class="section">
+          <section v-if="portal.show_widgets && portal.widgets && portal.widgets.length > 0" class="section">
             <h3 class="section-title">Ce qui vous attend aujourd'hui</h3>
             <div class="widgets-grid">
               <DashboardWidget
