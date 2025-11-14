@@ -54,7 +54,7 @@
           :label="$t('portals.admin.viewComponent')"
           :required="true"
           mode="creation"
-          :endpoint="() => Promise.resolve(viewComponentOptions)"
+          :endpoint="getViewComponentOptions"
           display-field="label"
           value-field="value"
         />
@@ -297,6 +297,11 @@ const allWidgets = ref([])
 const selectedActions = ref([])
 const selectedAlerts = ref([])
 const selectedWidgets = ref([])
+
+// Function to return view component options for sSelectField
+const getViewComponentOptions = () => {
+  return Promise.resolve(viewComponentOptions.value)
+}
 
 // Load portal data
 onMounted(async () => {
