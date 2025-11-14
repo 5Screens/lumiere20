@@ -98,8 +98,7 @@ END $$;
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS core.portal_actions (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_portal_uuid UUID NOT NULL,
-    action_code VARCHAR(50) NOT NULL,
+    action_code VARCHAR(50) NOT NULL UNIQUE,
     http_method VARCHAR(10) NOT NULL,
     endpoint TEXT NOT NULL,
     payload_json JSONB NULL,
@@ -109,16 +108,9 @@ CREATE TABLE IF NOT EXISTS core.portal_actions (
     icon_type VARCHAR(20) DEFAULT 'fontawesome',
     icon_value VARCHAR(255),
     is_quick_action BOOLEAN DEFAULT false,
-    display_order INTEGER DEFAULT 0,
     is_visible BOOLEAN DEFAULT true,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP NOT NULL DEFAULT now(),
-    
-    -- Foreign key constraint
-    CONSTRAINT fk_portal_actions_portal
-        FOREIGN KEY (rel_portal_uuid)
-        REFERENCES core.portals(uuid)
-        ON DELETE CASCADE
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
 DO $$ BEGIN
@@ -153,17 +145,9 @@ END $$;
 -- Indexes for core.portal_actions
 -- ----------------------------------------------------------------------------
 
--- Performance index: lookup actions by portal and action code
-CREATE INDEX IF NOT EXISTS idx_portal_actions_portal_action
-    ON core.portal_actions(rel_portal_uuid, action_code);
-
--- Performance index: filter by portal UUID (for FK joins)
-CREATE INDEX IF NOT EXISTS idx_portal_actions_portal_uuid
-    ON core.portal_actions(rel_portal_uuid);
-
 -- Performance index: lookup quick actions
 CREATE INDEX IF NOT EXISTS idx_portal_actions_quick_actions
-    ON core.portal_actions(rel_portal_uuid, is_quick_action, display_order)
+    ON core.portal_actions(is_quick_action, is_visible)
     WHERE is_quick_action = true AND is_visible = true;
 
 DO $$ BEGIN
@@ -341,11 +325,8 @@ COMMENT ON TABLE core.portal_actions IS
 COMMENT ON COLUMN core.portal_actions.uuid IS 
     'Primary key (UUID v4)';
 
-COMMENT ON COLUMN core.portal_actions.rel_portal_uuid IS 
-    'Foreign key to core.portals(uuid) - the portal this action belongs to';
-
 COMMENT ON COLUMN core.portal_actions.action_code IS 
-    'Unique code for the action within the portal (e.g., "login", "create_ticket", "search")';
+    'Unique code for the action (e.g., "CREATE_TASK", "CREATE_INCIDENT")';
 
 COMMENT ON COLUMN core.portal_actions.http_method IS 
     'HTTP method for the action (GET, POST, PATCH, PUT, DELETE)';
@@ -380,9 +361,6 @@ COMMENT ON COLUMN core.portal_actions.icon_value IS
 COMMENT ON COLUMN core.portal_actions.is_quick_action IS 
     'Whether this action appears in quick actions section';
 
-COMMENT ON COLUMN core.portal_actions.display_order IS 
-    'Display order (lower numbers first)';
-
 COMMENT ON COLUMN core.portal_actions.is_visible IS 
     'Whether this action is currently visible';
 
@@ -400,35 +378,25 @@ END $$;
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS core.portal_alerts (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_portal_uuid UUID NOT NULL,
     message TEXT NOT NULL,
     alert_type VARCHAR(20) NOT NULL CHECK (alert_type IN ('info', 'warning', 'error')),
     start_date TIMESTAMP NOT NULL DEFAULT now(),
     end_date TIMESTAMP,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP NOT NULL DEFAULT now(),
-    
-    -- Foreign key constraint
-    CONSTRAINT fk_portal_alerts_portal
-        FOREIGN KEY (rel_portal_uuid)
-        REFERENCES core.portals(uuid)
-        ON DELETE CASCADE
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
 COMMENT ON TABLE core.portal_alerts IS 'Alert banners displayed on portals (info, warning, error)';
-COMMENT ON COLUMN core.portal_alerts.rel_portal_uuid IS 'Portal this alert belongs to';
 COMMENT ON COLUMN core.portal_alerts.message IS 'Alert message text';
 COMMENT ON COLUMN core.portal_alerts.alert_type IS 'Type of alert: info, warning, or error';
 COMMENT ON COLUMN core.portal_alerts.start_date IS 'When the alert becomes active';
 COMMENT ON COLUMN core.portal_alerts.end_date IS 'When the alert expires (NULL = no expiration)';
 COMMENT ON COLUMN core.portal_alerts.is_active IS 'Whether the alert is currently active';
-COMMENT ON COLUMN core.portal_alerts.display_order IS 'Display order (lower numbers first)';
 
 -- Create indexes
-CREATE INDEX IF NOT EXISTS idx_portal_alerts_portal_active
-    ON core.portal_alerts(rel_portal_uuid, is_active, start_date, end_date)
+CREATE INDEX IF NOT EXISTS idx_portal_alerts_active
+    ON core.portal_alerts(is_active, start_date, end_date)
     WHERE is_active = true;
 
 -- Create triggers
@@ -454,8 +422,7 @@ END $$;
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS core.portal_widgets (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    rel_portal_uuid UUID NOT NULL,
-    widget_code VARCHAR(50) NOT NULL,
+    widget_code VARCHAR(50) NOT NULL UNIQUE,
     display_title VARCHAR(150) NOT NULL,
     widget_type VARCHAR(50) NOT NULL CHECK (widget_type IN ('counter', 'list', 'chart', 'custom')),
     api_endpoint TEXT,
@@ -463,19 +430,8 @@ CREATE TABLE IF NOT EXISTS core.portal_widgets (
     api_params JSONB,
     refresh_interval INTEGER DEFAULT 300,
     is_visible BOOLEAN NOT NULL DEFAULT true,
-    display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP NOT NULL DEFAULT now(),
-    
-    -- Foreign key constraint
-    CONSTRAINT fk_portal_widgets_portal
-        FOREIGN KEY (rel_portal_uuid)
-        REFERENCES core.portals(uuid)
-        ON DELETE CASCADE,
-    
-    -- Unique constraint
-    CONSTRAINT uq_portal_widgets_code
-        UNIQUE (rel_portal_uuid, widget_code)
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
 COMMENT ON TABLE core.portal_widgets IS 'Dynamic widgets displayed on portal dashboard (e.g., "Validations en attente")';
@@ -487,11 +443,10 @@ COMMENT ON COLUMN core.portal_widgets.api_method IS 'HTTP method for API call';
 COMMENT ON COLUMN core.portal_widgets.api_params IS 'JSON parameters for API call';
 COMMENT ON COLUMN core.portal_widgets.refresh_interval IS 'Auto-refresh interval in seconds (0 = no auto-refresh)';
 COMMENT ON COLUMN core.portal_widgets.is_visible IS 'Whether the widget is currently visible';
-COMMENT ON COLUMN core.portal_widgets.display_order IS 'Display order (lower numbers first)';
 
 -- Create indexes
-CREATE INDEX IF NOT EXISTS idx_portal_widgets_portal_visible
-    ON core.portal_widgets(rel_portal_uuid, is_visible, display_order)
+CREATE INDEX IF NOT EXISTS idx_portal_widgets_visible
+    ON core.portal_widgets(is_visible)
     WHERE is_visible = true;
 
 -- Create triggers

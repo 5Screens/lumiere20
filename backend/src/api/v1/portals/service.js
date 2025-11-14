@@ -516,7 +516,6 @@ class PortalsService {
             const query = `
                 SELECT 
                     uuid,
-                    rel_portal_uuid,
                     action_code,
                     http_method,
                     endpoint,
@@ -525,12 +524,11 @@ class PortalsService {
                     icon_type,
                     icon_value,
                     is_quick_action,
-                    display_order,
                     is_visible,
                     created_at,
                     updated_at
                 FROM core.portal_actions
-                ORDER BY rel_portal_uuid, display_order ASC
+                ORDER BY action_code ASC
             `;
             
             const result = await pool.query(query);
@@ -552,17 +550,15 @@ class PortalsService {
             const query = `
                 SELECT 
                     uuid,
-                    rel_portal_uuid,
                     message,
                     alert_type,
                     start_date,
                     end_date,
                     is_active,
-                    display_order,
                     created_at,
                     updated_at
                 FROM core.portal_alerts
-                ORDER BY rel_portal_uuid, display_order ASC
+                ORDER BY created_at DESC
             `;
             
             const result = await pool.query(query);
@@ -584,7 +580,6 @@ class PortalsService {
             const query = `
                 SELECT 
                     uuid,
-                    rel_portal_uuid,
                     widget_code,
                     display_title,
                     widget_type,
@@ -593,11 +588,10 @@ class PortalsService {
                     api_params,
                     refresh_interval,
                     is_visible,
-                    display_order,
                     created_at,
                     updated_at
                 FROM core.portal_widgets
-                ORDER BY rel_portal_uuid, display_order ASC
+                ORDER BY widget_code ASC
             `;
             
             const result = await pool.query(query);

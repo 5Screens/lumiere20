@@ -1,15 +1,9 @@
 -- ============================================================================
 -- Script: 18_portals_seed_data.sql
--- Description: Insert test data for portal management system (Self-Service v1)
+-- Description: Seed data for portal management tables
 -- Author: Lumière 16 Project
--- Date: 2025-11-05
+-- Date: 2025-11-14
 -- Version: 2.0
--- ============================================================================
--- This script inserts:
--- - Enhanced portal configuration for employee self-service
--- - Quick actions with icons and descriptions
--- - Alert banners
--- - Dashboard widgets
 -- ============================================================================
 
 BEGIN;
@@ -18,31 +12,25 @@ BEGIN;
 -- SECTION 0: INSERT PORTAL MODELS
 -- ============================================================================
 
--- Insert available portal view components
 INSERT INTO core.portal_models (name, description, is_active)
 VALUES 
-    ('PortalViewV1', 'Portal view component version 1 - Full featured self-service portal', true),
-    ('PortalPOC', 'Portal POC component - Proof of concept portal for testing', true)
+    ('PortalViewV1', 'Portal view version 1 with full features', true),
+    ('PortalPOC', 'Proof of concept portal view', true)
 ON CONFLICT (name) DO UPDATE SET
     description = EXCLUDED.description,
     is_active = EXCLUDED.is_active,
     updated_at = now();
 
-DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal models';
-END $$;
-
 -- ============================================================================
--- SECTION 1: INSERT TEST PORTALS
+-- SECTION 1: INSERT PORTALS
 -- ============================================================================
 
--- Portal 1: Self-Service L (Active) - Full featured portal
--- Purpose: Large self-service portal using PortalViewV1 component with quick actions
+-- Portal 1: Self-Service Lumière (main portal)
 INSERT INTO core.portals (
-    code, 
-    name, 
-    base_url, 
-    thumbnail_url, 
+    code,
+    name,
+    base_url,
+    thumbnail_url,
     is_active,
     view_component,
     title,
@@ -59,8 +47,8 @@ INSERT INTO core.portals (
 )
 VALUES (
     'self-service-l',
-    'Self-Service L - Portail Employés',
-    'http://localhost:7240',
+    'Self-Service Lumière',
+    'http://localhost:5174',
     NULL,
     true,
     'PortalViewV1',
@@ -74,7 +62,7 @@ VALUES (
     true,
     true,
     true,
-    'En cours d''implémentation'
+    'Assistant virtuel disponible 24/7'
 )
 ON CONFLICT (code) DO UPDATE SET
     name = EXCLUDED.name,
@@ -94,31 +82,12 @@ ON CONFLICT (code) DO UPDATE SET
     chat_default_message = EXCLUDED.chat_default_message,
     updated_at = now();
 
--- Portal 2: POC Portal (Active) - Proof of Concept portal
--- Purpose: POC portal for testing using PortalPOC component
-INSERT INTO core.portals (code, name, base_url, thumbnail_url, is_active, view_component)
-VALUES (
-    'poc',
-    'Portail POC',
-    'http://localhost:7240',
-    NULL,
-    true,
-    'PortalPOC'
-)
-ON CONFLICT (code) DO UPDATE SET
-    name = EXCLUDED.name,
-    base_url = EXCLUDED.base_url,
-    is_active = EXCLUDED.is_active,
-    view_component = EXCLUDED.view_component,
-    updated_at = now();
-
--- Portal 3: Self-Service S (Active) - Simplified self-service portal
--- Purpose: Small self-service portal with full V1 configuration
+-- Portal 2: Self-Service Support (support portal)
 INSERT INTO core.portals (
-    code, 
-    name, 
-    base_url, 
-    thumbnail_url, 
+    code,
+    name,
+    base_url,
+    thumbnail_url,
     is_active,
     view_component,
     title,
@@ -135,8 +104,65 @@ INSERT INTO core.portals (
 )
 VALUES (
     'self-service-s',
-    'Self-Service S - Portail Simplifié',
-    'http://localhost:7240',
+    'Self-Service Support',
+    'http://localhost:5174',
+    NULL,
+    true,
+    'PortalViewV1',
+    'Support Technique',
+    'Portail de support IT',
+    'Bonjour {firstName}, comment puis-je vous aider ?',
+    NULL,
+    '#2196F3',
+    '#111111',
+    true,
+    true,
+    true,
+    true,
+    'Support technique disponible'
+)
+ON CONFLICT (code) DO UPDATE SET
+    name = EXCLUDED.name,
+    base_url = EXCLUDED.base_url,
+    is_active = EXCLUDED.is_active,
+    view_component = EXCLUDED.view_component,
+    title = EXCLUDED.title,
+    subtitle = EXCLUDED.subtitle,
+    welcome_template = EXCLUDED.welcome_template,
+    logo_url = EXCLUDED.logo_url,
+    theme_primary_color = EXCLUDED.theme_primary_color,
+    theme_secondary_color = EXCLUDED.theme_secondary_color,
+    show_chat = EXCLUDED.show_chat,
+    show_alerts = EXCLUDED.show_alerts,
+    show_actions = EXCLUDED.show_actions,
+    show_widgets = EXCLUDED.show_widgets,
+    chat_default_message = EXCLUDED.chat_default_message,
+    updated_at = now();
+
+-- Portal 3: POC Portal (demo/test portal)
+INSERT INTO core.portals (
+    code,
+    name,
+    base_url,
+    thumbnail_url,
+    is_active,
+    view_component,
+    title,
+    subtitle,
+    welcome_template,
+    logo_url,
+    theme_primary_color,
+    theme_secondary_color,
+    show_chat,
+    show_alerts,
+    show_actions,
+    show_widgets,
+    chat_default_message
+)
+VALUES (
+    'poc',
+    'POC Portal',
+    'http://localhost:5174',
     NULL,
     true,
     'PortalViewV1',
@@ -171,16 +197,10 @@ ON CONFLICT (code) DO UPDATE SET
     updated_at = now();
 
 -- ============================================================================
--- SECTION 2: INSERT PORTAL ACTIONS
+-- SECTION 2: INSERT PORTAL ACTIONS (Global actions)
 -- ============================================================================
 
--- ----------------------------------------------------------------------------
--- Actions for self-service-l (Quick Actions with v1 enhancements)
--- ----------------------------------------------------------------------------
-
--- Action 1: Demander l'accès à une application
 INSERT INTO core.portal_actions (
-    rel_portal_uuid,
     action_code,
     http_method,
     endpoint,
@@ -191,11 +211,10 @@ INSERT INTO core.portal_actions (
     icon_type,
     icon_value,
     is_quick_action,
-    display_order,
     is_visible
 )
-SELECT
-    p.uuid,
+VALUES 
+(
     'CREATE_TASK',
     'POST',
     '/api/v1/tickets',
@@ -217,30 +236,9 @@ SELECT
     'fontawesome',
     'fa-laptop',
     true,
-    1,
     true
-FROM core.portals p
-WHERE p.code = 'self-service-l'
-ON CONFLICT DO NOTHING;
-
--- Action 2: Demander un matériel physique
-INSERT INTO core.portal_actions (
-    rel_portal_uuid,
-    action_code,
-    http_method,
-    endpoint,
-    payload_json,
-    headers_json,
-    display_title,
-    description,
-    icon_type,
-    icon_value,
-    is_quick_action,
-    display_order,
-    is_visible
-)
-SELECT
-    p.uuid,
+),
+(
     'CREATE_INCIDENT',
     'POST',
     '/api/v1/tickets',
@@ -262,30 +260,9 @@ SELECT
     'fontawesome',
     'fa-desktop',
     true,
-    2,
     true
-FROM core.portals p
-WHERE p.code = 'self-service-l'
-ON CONFLICT DO NOTHING;
-
--- Action 3: JE N'ARRIVE PAS A ME CONNECTER
-INSERT INTO core.portal_actions (
-    rel_portal_uuid,
-    action_code,
-    http_method,
-    endpoint,
-    payload_json,
-    headers_json,
-    display_title,
-    description,
-    icon_type,
-    icon_value,
-    is_quick_action,
-    display_order,
-    is_visible
-)
-SELECT
-    p.uuid,
+),
+(
     'REPORT_CONNECTION_ISSUE',
     'POST',
     '/api/v1/tickets',
@@ -302,43 +279,22 @@ SELECT
         'Content-Type', 'application/json',
         'Accept', 'application/json'
     ),
-    'JE N''ARRIVE PAS A ME CONNECTER',
-    'Signalez un problème de connexion à votre compte ou application',
+    'Je n''arrive pas à me connecter',
+    'Signalez un problème de connexion à votre compte',
     'fontawesome',
     'fa-exclamation-triangle',
     true,
-    3,
     true
-FROM core.portals p
-WHERE p.code = 'self-service-l'
-ON CONFLICT DO NOTHING;
-
--- Action 4: Autre demande
-INSERT INTO core.portal_actions (
-    rel_portal_uuid,
-    action_code,
-    http_method,
-    endpoint,
-    payload_json,
-    headers_json,
-    display_title,
-    description,
-    icon_type,
-    icon_value,
-    is_quick_action,
-    display_order,
-    is_visible
-)
-SELECT
-    p.uuid,
+),
+(
     'OTHER_REQUEST',
     'POST',
     '/api/v1/tickets',
     jsonb_build_object(
-        'ticket_type_code', 'TASK',
+        'ticket_type_code', 'REQUEST',
         'ticket_status_code', 'NEW',
         'title', 'Autre demande',
-        'description', 'Demande personnalisée',
+        'description', 'Autre demande depuis le portail',
         'writer_uuid', 'efd1c5ce-8ab0-446a-95cd-c8262217dff0',
         'requested_by_uuid', 'feabfba9-884b-4fe2-88ea-b53ca52cc10d',
         'requested_for_uuid', '1e65c43e-da9e-4592-a3a9-bef1cf2d52e2'
@@ -352,237 +308,53 @@ SELECT
     'fontawesome',
     'fa-question-circle',
     true,
-    4,
     true
-FROM core.portals p
-WHERE p.code = 'self-service-l'
-ON CONFLICT DO NOTHING;
-
--- ----------------------------------------------------------------------------
--- Actions for poc
--- ----------------------------------------------------------------------------
-
--- Action: Create Support Request
-INSERT INTO core.portal_actions (
-    rel_portal_uuid,
-    action_code,
-    http_method,
-    endpoint,
-    payload_json,
-    headers_json,
-    display_title,
-    description,
-    icon_type,
-    icon_value,
-    is_quick_action,
-    display_order,
-    is_visible
 )
-SELECT
-    p.uuid,
-    'CREATE_SUPPORT_REQUEST',
-    'POST',
-    '/api/v1/tickets',
-    jsonb_build_object(
-        'ticket_type_code', 'TASK',
-        'ticket_status_code', 'NEW',
-        'title', 'Demande de support utilisateur',
-        'description', 'Demande créée depuis le portail support',
-        'writer_uuid', 'efd1c5ce-8ab0-446a-95cd-c8262217dff0',
-        'requested_by_uuid', 'feabfba9-884b-4fe2-88ea-b53ca52cc10d',
-        'requested_for_uuid', '1e65c43e-da9e-4592-a3a9-bef1cf2d52e2'
-    ),
-    jsonb_build_object(
-        'Content-Type', 'application/json',
-        'Accept', 'application/json'
-    ),
-    'Demande de support',
-    'Créer une demande de support utilisateur',
-    'fontawesome',
-    'fa-life-ring',
-    true,
-    1,
-    true
-FROM core.portals p
-WHERE p.code = 'poc'
-ON CONFLICT DO NOTHING;
-
--- Action: Report Problem
-INSERT INTO core.portal_actions (
-    rel_portal_uuid,
-    action_code,
-    http_method,
-    endpoint,
-    payload_json,
-    headers_json,
-    display_title,
-    description,
-    icon_type,
-    icon_value,
-    is_quick_action,
-    display_order,
-    is_visible
-)
-SELECT
-    p.uuid,
-    'REPORT_PROBLEM',
-    'POST',
-    '/api/v1/tickets',
-    jsonb_build_object(
-        'ticket_type_code', 'PROBLEM',
-        'ticket_status_code', 'NEW',
-        'title', 'Signalement de problème',
-        'description', 'Problème signalé depuis le portail support',
-        'writer_uuid', 'efd1c5ce-8ab0-446a-95cd-c8262217dff0',
-        'requested_by_uuid', 'feabfba9-884b-4fe2-88ea-b53ca52cc10d',
-        'requested_for_uuid', '1e65c43e-da9e-4592-a3a9-bef1cf2d52e2'
-    ),
-    jsonb_build_object(
-        'Content-Type', 'application/json',
-        'Accept', 'application/json'
-    ),
-    'Signaler un problème',
-    'Signaler un problème technique ou fonctionnel',
-    'fontawesome',
-    'fa-bug',
-    true,
-    2,
-    true
-FROM core.portals p
-WHERE p.code = 'poc'
-ON CONFLICT DO NOTHING;
-
--- ----------------------------------------------------------------------------
--- Actions for self-service-s
--- ----------------------------------------------------------------------------
-
--- Action: Admin Task
-INSERT INTO core.portal_actions (
-    rel_portal_uuid,
-    action_code,
-    http_method,
-    endpoint,
-    payload_json,
-    headers_json,
-    display_title,
-    description,
-    icon_type,
-    icon_value,
-    is_quick_action,
-    display_order,
-    is_visible
-)
-SELECT
-    p.uuid,
-    'ADMIN_TASK',
-    'POST',
-    '/api/v1/tickets',
-    jsonb_build_object(
-        'ticket_type_code', 'TASK',
-        'ticket_status_code', 'NEW',
-        'title', 'Tâche administrative',
-        'description', 'Tâche créée depuis le portail admin',
-        'writer_uuid', 'efd1c5ce-8ab0-446a-95cd-c8262217dff0',
-        'requested_by_uuid', 'feabfba9-884b-4fe2-88ea-b53ca52cc10d',
-        'requested_for_uuid', '1e65c43e-da9e-4592-a3a9-bef1cf2d52e2'
-    ),
-    jsonb_build_object(
-        'Content-Type', 'application/json',
-        'Accept', 'application/json'
-    ),
-    'Créer une tâche administrative',
-    'Créez une nouvelle tâche pour l''équipe d''administration',
-    'fontawesome',
-    'fa-tasks',
-    true,
-    1,
-    true
-FROM core.portals p
-WHERE p.code = 'self-service-s'
-ON CONFLICT DO NOTHING;
-
--- Action: Admin Report
-INSERT INTO core.portal_actions (
-    rel_portal_uuid,
-    action_code,
-    http_method,
-    endpoint,
-    payload_json,
-    headers_json,
-    display_title,
-    description,
-    icon_type,
-    icon_value,
-    is_quick_action,
-    display_order,
-    is_visible
-)
-SELECT
-    p.uuid,
-    'ADMIN_REPORT',
-    'POST',
-    '/api/v1/tickets',
-    jsonb_build_object(
-        'ticket_type_code', 'INCIDENT',
-        'ticket_status_code', 'NEW',
-        'title', 'Rapport d''incident',
-        'description', 'Rapport d''incident créé depuis le portail admin',
-        'writer_uuid', 'efd1c5ce-8ab0-446a-95cd-c8262217dff0',
-        'requested_by_uuid', 'feabfba9-884b-4fe2-88ea-b53ca52cc10d',
-        'requested_for_uuid', '1e65c43e-da9e-4592-a3a9-bef1cf2d52e2'
-    ),
-    jsonb_build_object(
-        'Content-Type', 'application/json',
-        'Accept', 'application/json'
-    ),
-    'Signaler un incident',
-    'Créez un rapport d''incident pour suivi et résolution',
-    'fontawesome',
-    'fa-exclamation-triangle',
-    true,
-    2,
-    true
-FROM core.portals p
-WHERE p.code = 'self-service-s'
-ON CONFLICT DO NOTHING;
+ON CONFLICT (action_code) DO UPDATE SET
+    http_method = EXCLUDED.http_method,
+    endpoint = EXCLUDED.endpoint,
+    payload_json = EXCLUDED.payload_json,
+    headers_json = EXCLUDED.headers_json,
+    display_title = EXCLUDED.display_title,
+    description = EXCLUDED.description,
+    icon_type = EXCLUDED.icon_type,
+    icon_value = EXCLUDED.icon_value,
+    is_quick_action = EXCLUDED.is_quick_action,
+    is_visible = EXCLUDED.is_visible,
+    updated_at = now();
 
 -- ============================================================================
--- SECTION 3: INSERT PORTAL ALERTS
+-- SECTION 3: INSERT PORTAL ALERTS (Global alerts)
 -- ============================================================================
 
--- Insert warning alert for maintenance (self-service-l)
 INSERT INTO core.portal_alerts (
-    rel_portal_uuid,
     message,
     alert_type,
     start_date,
     end_date,
-    is_active,
-    display_order
+    is_active
 )
-SELECT
-    p.uuid,
-    'ALERTE IMPORTANTE : INTERVENTION PROGRAMMÉE ! Porte : Samedi 9 novembre 2025 | Heure : de 23h00 à 3h00 | Service impacté : Accès VPN et messagerie Outlook.',
+VALUES 
+(
+    'Maintenance programmée ce soir de 22h à minuit. Les services seront temporairement indisponibles.',
     'warning',
-    '2025-11-05 00:00:00',
-    '2025-11-10 00:00:00',
-    true,
-    1
-FROM core.portals p
-WHERE p.code = 'self-service-l'
-ON CONFLICT DO NOTHING;
-
-DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal alerts';
-END $$;
+    NOW(),
+    NOW() + INTERVAL '7 days',
+    true
+),
+(
+    'Bienvenue sur le nouveau portail Lumière 16 !',
+    'info',
+    NOW(),
+    NULL,
+    true
+);
 
 -- ============================================================================
--- SECTION 4: INSERT PORTAL WIDGETS
+-- SECTION 4: INSERT PORTAL WIDGETS (Global widgets)
 -- ============================================================================
 
--- Widget: Validations en attente (self-service-l)
 INSERT INTO core.portal_widgets (
-    rel_portal_uuid,
     widget_code,
     display_title,
     widget_type,
@@ -590,395 +362,186 @@ INSERT INTO core.portal_widgets (
     api_method,
     api_params,
     refresh_interval,
-    is_visible,
-    display_order
+    is_visible
 )
-SELECT
-    p.uuid,
+VALUES 
+(
     'PENDING_VALIDATIONS',
     'Validations en attente',
     'counter',
-    '/api/v1/tickets/search/tasks',
-    'POST',
-    jsonb_build_object(
-        'filters', jsonb_build_object(
-            'mode', 'include',
-            'operator', 'AND',
-            'conditions', jsonb_build_array(
-                jsonb_build_object(
-                    'column', 'ticket_status_code',
-                    'operator', 'equals',
-                    'value', jsonb_build_array('PENDING_VALIDATION')
-                )
-            )
-        ),
-        'pagination', jsonb_build_object('page', 1, 'limit', 1)
-    ),
+    '/api/v1/tickets/count',
+    'GET',
+    jsonb_build_object('status', 'PENDING_VALIDATION'),
     300,
-    true,
-    1
-FROM core.portals p
-WHERE p.code = 'self-service-l'
-ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
-
--- Widget: Questions en attente (self-service-l)
-INSERT INTO core.portal_widgets (
-    rel_portal_uuid,
-    widget_code,
-    display_title,
-    widget_type,
-    api_endpoint,
-    api_method,
-    api_params,
-    refresh_interval,
-    is_visible,
-    display_order
-)
-SELECT
-    p.uuid,
+    true
+),
+(
     'PENDING_QUESTIONS',
     'Questions en attente',
     'counter',
-    '/api/v1/tickets/search/tasks',
-    'POST',
-    jsonb_build_object(
-        'filters', jsonb_build_object(
-            'mode', 'include',
-            'operator', 'AND',
-            'conditions', jsonb_build_array(
-                jsonb_build_object(
-                    'column', 'ticket_status_code',
-                    'operator', 'equals',
-                    'value', jsonb_build_array('PENDING_USER_INFO')
-                )
-            )
-        ),
-        'pagination', jsonb_build_object('page', 1, 'limit', 1)
-    ),
+    '/api/v1/tickets/count',
+    'GET',
+    jsonb_build_object('status', 'WAITING_FOR_RESPONSE'),
     300,
-    true,
-    2
-FROM core.portals p
-WHERE p.code = 'self-service-l'
-ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
-
--- Widget: Notifications non lues (self-service-l)
-INSERT INTO core.portal_widgets (
-    rel_portal_uuid,
-    widget_code,
-    display_title,
-    widget_type,
-    api_endpoint,
-    api_method,
-    api_params,
-    refresh_interval,
-    is_visible,
-    display_order
-)
-SELECT
-    p.uuid,
+    true
+),
+(
     'UNREAD_NOTIFICATIONS',
     'Notifications non lues',
     'counter',
-    '/api/v1/notifications/unread',
+    '/api/v1/notifications/count',
     'GET',
-    NULL,
+    jsonb_build_object('read', false),
     60,
-    true,
-    3
-FROM core.portals p
-WHERE p.code = 'self-service-l'
-ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
-
-DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal widgets for self-service-l';
-END $$;
-
--- ----------------------------------------------------------------------------
--- Widgets for self-service-s
--- ----------------------------------------------------------------------------
-
--- Widget: Tickets en cours (self-service-s)
-INSERT INTO core.portal_widgets (
-    rel_portal_uuid,
-    widget_code,
-    display_title,
-    widget_type,
-    api_endpoint,
-    api_method,
-    api_params,
-    refresh_interval,
-    is_visible,
-    display_order
-)
-SELECT
-    p.uuid,
+    true
+),
+(
     'ACTIVE_TICKETS',
     'Tickets en cours',
-    'counter',
-    '/api/v1/tickets/search/tasks',
-    'POST',
-    jsonb_build_object(
-        'filters', jsonb_build_object(
-            'mode', 'include',
-            'operator', 'AND',
-            'conditions', jsonb_build_array(
-                jsonb_build_object(
-                    'column', 'ticket_status_code',
-                    'operator', 'in',
-                    'value', jsonb_build_array('NEW', 'IN_PROGRESS', 'PENDING_VALIDATION')
-                )
-            )
-        ),
-        'pagination', jsonb_build_object('page', 1, 'limit', 1)
-    ),
+    'list',
+    '/api/v1/tickets',
+    'GET',
+    jsonb_build_object('status', 'IN_PROGRESS', 'limit', 5),
     300,
-    true,
-    1
-FROM core.portals p
-WHERE p.code = 'self-service-s'
-ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
-
--- Widget: Incidents critiques (self-service-s)
-INSERT INTO core.portal_widgets (
-    rel_portal_uuid,
-    widget_code,
-    display_title,
-    widget_type,
-    api_endpoint,
-    api_method,
-    api_params,
-    refresh_interval,
-    is_visible,
-    display_order
-)
-SELECT
-    p.uuid,
+    true
+),
+(
     'CRITICAL_INCIDENTS',
     'Incidents critiques',
-    'counter',
-    '/api/v1/tickets/search/tasks',
-    'POST',
-    jsonb_build_object(
-        'filters', jsonb_build_object(
-            'mode', 'include',
-            'operator', 'AND',
-            'conditions', jsonb_build_array(
-                jsonb_build_object(
-                    'column', 'ticket_type_code',
-                    'operator', 'equals',
-                    'value', jsonb_build_array('INCIDENT')
-                ),
-                jsonb_build_object(
-                    'column', 'ticket_status_code',
-                    'operator', 'in',
-                    'value', jsonb_build_array('NEW', 'IN_PROGRESS')
-                )
-            )
-        ),
-        'pagination', jsonb_build_object('page', 1, 'limit', 1)
-    ),
+    'list',
+    '/api/v1/tickets',
+    'GET',
+    jsonb_build_object('type', 'INCIDENT', 'priority', 'HIGH', 'limit', 5),
     180,
-    true,
-    2
-FROM core.portals p
-WHERE p.code = 'self-service-s'
-ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
-
--- Widget: Tâches assignées (self-service-s)
-INSERT INTO core.portal_widgets (
-    rel_portal_uuid,
-    widget_code,
-    display_title,
-    widget_type,
-    api_endpoint,
-    api_method,
-    api_params,
-    refresh_interval,
-    is_visible,
-    display_order
-)
-SELECT
-    p.uuid,
+    true
+),
+(
     'ASSIGNED_TASKS',
     'Tâches assignées',
-    'counter',
-    '/api/v1/tickets/search/tasks',
-    'POST',
-    jsonb_build_object(
-        'filters', jsonb_build_object(
-            'mode', 'include',
-            'operator', 'AND',
-            'conditions', jsonb_build_array(
-                jsonb_build_object(
-                    'column', 'ticket_type_code',
-                    'operator', 'equals',
-                    'value', jsonb_build_array('TASK')
-                ),
-                jsonb_build_object(
-                    'column', 'ticket_status_code',
-                    'operator', 'in',
-                    'value', jsonb_build_array('NEW', 'IN_PROGRESS')
-                )
-            )
-        ),
-        'pagination', jsonb_build_object('page', 1, 'limit', 1)
-    ),
+    'list',
+    '/api/v1/tickets',
+    'GET',
+    jsonb_build_object('type', 'TASK', 'assigned_to_me', true, 'limit', 5),
     300,
-    true,
-    3
-FROM core.portals p
-WHERE p.code = 'self-service-s'
-ON CONFLICT (rel_portal_uuid, widget_code) DO NOTHING;
-
-DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Inserted portal widgets for self-service-s';
-END $$;
+    true
+)
+ON CONFLICT (widget_code) DO UPDATE SET
+    display_title = EXCLUDED.display_title,
+    widget_type = EXCLUDED.widget_type,
+    api_endpoint = EXCLUDED.api_endpoint,
+    api_method = EXCLUDED.api_method,
+    api_params = EXCLUDED.api_params,
+    refresh_interval = EXCLUDED.refresh_interval,
+    is_visible = EXCLUDED.is_visible,
+    updated_at = now();
 
 -- ============================================================================
--- SECTION 5: INSERT JUNCTION TABLE DATA
+-- SECTION 5: LINK ACTIONS TO PORTALS (Junction table)
 -- ============================================================================
 
--- ----------------------------------------------------------------------------
--- Link actions to portals (portal__portal_actions)
--- ----------------------------------------------------------------------------
-
--- Link all actions to self-service-l portal
+-- Link all actions to all portals
 INSERT INTO core.portal__portal_actions (rel_portal, rel_portal_action, display_order)
 SELECT 
     p.uuid,
     pa.uuid,
-    pa.display_order
+    ROW_NUMBER() OVER (PARTITION BY p.uuid ORDER BY pa.action_code)
 FROM core.portals p
 CROSS JOIN core.portal_actions pa
-WHERE p.code = 'self-service-l' 
-  AND pa.rel_portal_uuid = p.uuid
+WHERE p.code IN ('self-service-l', 'self-service-s', 'poc')
+  AND pa.action_code IN ('CREATE_TASK', 'CREATE_INCIDENT', 'REPORT_CONNECTION_ISSUE', 'OTHER_REQUEST')
 ON CONFLICT (rel_portal, rel_portal_action) DO UPDATE SET
     display_order = EXCLUDED.display_order,
     updated_at = now();
 
--- Link all actions to poc portal
-INSERT INTO core.portal__portal_actions (rel_portal, rel_portal_action, display_order)
-SELECT 
-    p.uuid,
-    pa.uuid,
-    pa.display_order
-FROM core.portals p
-CROSS JOIN core.portal_actions pa
-WHERE p.code = 'poc' 
-  AND pa.rel_portal_uuid = p.uuid
-ON CONFLICT (rel_portal, rel_portal_action) DO UPDATE SET
-    display_order = EXCLUDED.display_order,
-    updated_at = now();
+-- ============================================================================
+-- SECTION 6: LINK ALERTS TO PORTALS (Junction table)
+-- ============================================================================
 
--- Link all actions to self-service-s portal
-INSERT INTO core.portal__portal_actions (rel_portal, rel_portal_action, display_order)
-SELECT 
-    p.uuid,
-    pa.uuid,
-    pa.display_order
-FROM core.portals p
-CROSS JOIN core.portal_actions pa
-WHERE p.code = 'self-service-s' 
-  AND pa.rel_portal_uuid = p.uuid
-ON CONFLICT (rel_portal, rel_portal_action) DO UPDATE SET
-    display_order = EXCLUDED.display_order,
-    updated_at = now();
-
-DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Linked actions to portals';
-END $$;
-
--- ----------------------------------------------------------------------------
--- Link alerts to portals (portal__portal_alerts)
--- ----------------------------------------------------------------------------
-
--- Link all alerts to self-service-l portal
+-- Link all alerts to self-service portals
 INSERT INTO core.portal__portal_alerts (rel_portal, rel_portal_alert, display_order)
 SELECT 
     p.uuid,
     pa.uuid,
-    pa.display_order
+    ROW_NUMBER() OVER (PARTITION BY p.uuid ORDER BY pa.created_at)
 FROM core.portals p
 CROSS JOIN core.portal_alerts pa
-WHERE p.code = 'self-service-l' 
-  AND pa.rel_portal_uuid = p.uuid
+WHERE p.code IN ('self-service-l', 'self-service-s')
 ON CONFLICT (rel_portal, rel_portal_alert) DO UPDATE SET
     display_order = EXCLUDED.display_order,
     updated_at = now();
 
-DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Linked alerts to portals';
-END $$;
+-- ============================================================================
+-- SECTION 7: LINK WIDGETS TO PORTALS (Junction table)
+-- ============================================================================
 
--- ----------------------------------------------------------------------------
--- Link widgets to portals (portal__portal_widgets)
--- ----------------------------------------------------------------------------
-
--- Link all widgets to self-service-l portal
+-- Link widgets to self-service-l: PENDING_VALIDATIONS, PENDING_QUESTIONS, UNREAD_NOTIFICATIONS
 INSERT INTO core.portal__portal_widgets (rel_portal, rel_portal_widget, display_order)
 SELECT 
     p.uuid,
     pw.uuid,
-    pw.display_order
+    CASE pw.widget_code
+        WHEN 'PENDING_VALIDATIONS' THEN 1
+        WHEN 'PENDING_QUESTIONS' THEN 2
+        WHEN 'UNREAD_NOTIFICATIONS' THEN 3
+    END
 FROM core.portals p
 CROSS JOIN core.portal_widgets pw
-WHERE p.code = 'self-service-l' 
-  AND pw.rel_portal_uuid = p.uuid
+WHERE p.code = 'self-service-l'
+  AND pw.widget_code IN ('PENDING_VALIDATIONS', 'PENDING_QUESTIONS', 'UNREAD_NOTIFICATIONS')
 ON CONFLICT (rel_portal, rel_portal_widget) DO UPDATE SET
     display_order = EXCLUDED.display_order,
     updated_at = now();
 
--- Link all widgets to self-service-s portal
+-- Link widgets to self-service-s: ACTIVE_TICKETS, CRITICAL_INCIDENTS, ASSIGNED_TASKS
 INSERT INTO core.portal__portal_widgets (rel_portal, rel_portal_widget, display_order)
 SELECT 
     p.uuid,
     pw.uuid,
-    pw.display_order
+    CASE pw.widget_code
+        WHEN 'ACTIVE_TICKETS' THEN 1
+        WHEN 'CRITICAL_INCIDENTS' THEN 2
+        WHEN 'ASSIGNED_TASKS' THEN 3
+    END
 FROM core.portals p
 CROSS JOIN core.portal_widgets pw
-WHERE p.code = 'self-service-s' 
-  AND pw.rel_portal_uuid = p.uuid
+WHERE p.code = 'self-service-s'
+  AND pw.widget_code IN ('ACTIVE_TICKETS', 'CRITICAL_INCIDENTS', 'ASSIGNED_TASKS')
 ON CONFLICT (rel_portal, rel_portal_widget) DO UPDATE SET
     display_order = EXCLUDED.display_order,
     updated_at = now();
-
-DO $$ BEGIN
-    RAISE NOTICE '[18_portals_seed_data.sql] Linked widgets to portals';
-END $$;
 
 -- ============================================================================
--- SECTION 6: VERIFICATION
+-- SECTION 8: VERIFICATION
 -- ============================================================================
 
 DO $$
 DECLARE
-    v_portal_count INTEGER;
-    v_action_count INTEGER;
-    v_alert_count INTEGER;
-    v_widget_count INTEGER;
+    v_portals_count INTEGER;
+    v_actions_count INTEGER;
+    v_alerts_count INTEGER;
+    v_widgets_count INTEGER;
+    v_portal_actions_count INTEGER;
+    v_portal_alerts_count INTEGER;
+    v_portal_widgets_count INTEGER;
 BEGIN
-    SELECT COUNT(*) INTO v_portal_count FROM core.portals;
-    SELECT COUNT(*) INTO v_action_count FROM core.portal_actions;
-    SELECT COUNT(*) INTO v_alert_count FROM core.portal_alerts;
-    SELECT COUNT(*) INTO v_widget_count FROM core.portal_widgets;
+    SELECT COUNT(*) INTO v_portals_count FROM core.portals;
+    SELECT COUNT(*) INTO v_actions_count FROM core.portal_actions;
+    SELECT COUNT(*) INTO v_alerts_count FROM core.portal_alerts;
+    SELECT COUNT(*) INTO v_widgets_count FROM core.portal_widgets;
+    SELECT COUNT(*) INTO v_portal_actions_count FROM core.portal__portal_actions;
+    SELECT COUNT(*) INTO v_portal_alerts_count FROM core.portal__portal_alerts;
+    SELECT COUNT(*) INTO v_portal_widgets_count FROM core.portal__portal_widgets;
     
     RAISE NOTICE '============================================================================';
     RAISE NOTICE '[18_portals_seed_data.sql] Seed data inserted successfully';
-    RAISE NOTICE 'Total portals: %', v_portal_count;
-    RAISE NOTICE 'Total actions: %', v_action_count;
-    RAISE NOTICE 'Total alerts: %', v_alert_count;
-    RAISE NOTICE 'Total widgets: %', v_widget_count;
-    RAISE NOTICE '============================================================================';
-    RAISE NOTICE 'Active portals:';
-    RAISE NOTICE '  - self-service-l: http://localhost:7240/self-service-l (Self-Service Large)';
-    RAISE NOTICE '  - poc: http://localhost:7240/poc (POC Portal)';
-    RAISE NOTICE '  - self-service-s: http://localhost:7240/self-service-s (Self-Service Small)';
+    RAISE NOTICE 'Portals: %', v_portals_count;
+    RAISE NOTICE 'Actions: %', v_actions_count;
+    RAISE NOTICE 'Alerts: %', v_alerts_count;
+    RAISE NOTICE 'Widgets: %', v_widgets_count;
+    RAISE NOTICE 'Portal-Action links: %', v_portal_actions_count;
+    RAISE NOTICE 'Portal-Alert links: %', v_portal_alerts_count;
+    RAISE NOTICE 'Portal-Widget links: %', v_portal_widgets_count;
     RAISE NOTICE '============================================================================';
 END $$;
-
--- ============================================================================
--- SCRIPT COMPLETION
--- ============================================================================
 
 COMMIT;
