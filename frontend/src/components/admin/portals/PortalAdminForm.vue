@@ -197,27 +197,10 @@
         <!-- Widgets Table -->
         <div v-if="formData.show_widgets" class="subsection">
           <h4 class="subsection-title">Widgets disponibles</h4>
-          <div class="items-table">
-            <div v-if="allWidgets.length === 0" class="empty-state">
-              Aucun widget disponible dans le système
-            </div>
-            <div v-else class="table-rows">
-              <div v-for="widget in allWidgets" :key="widget.uuid" class="table-row">
-                <input 
-                  type="checkbox" 
-                  :value="widget.uuid"
-                  v-model="selectedWidgets"
-                  class="row-checkbox"
-                />
-                <div class="row-content">
-                  <div class="row-title">{{ widget.display_title }}</div>
-                  <div class="row-meta">
-                    <span class="badge">{{ widget.widget_type }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <WidgetsTable
+            :widgets="allWidgets"
+            v-model="selectedWidgets"
+          />
         </div>
 
         <TextArea
@@ -255,6 +238,7 @@ import ColorPicker from '@/components/common/ColorPicker.vue'
 import Checkbox from '@/components/common/Checkbox.vue'
 import sSelectField from '@/components/common/sSelectField.vue'
 import ButtonStandard from '@/components/common/ButtonStandard.vue'
+import WidgetsTable from './WidgetsTable.vue'
 
 const { t } = useI18n()
 const tabsStore = useTabsStore()
