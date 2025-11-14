@@ -319,6 +319,7 @@ onMounted(() => {
   color: var(--text-color);
   font-size: 0.95rem;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .admin-portals__search-input:focus {

@@ -629,6 +629,8 @@ class PortalsService {
                     theme_secondary_color,
                     show_chat,
                     show_alerts,
+                    show_actions,
+                    show_widgets,
                     chat_default_message,
                     created_at,
                     updated_at
