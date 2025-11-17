@@ -10,7 +10,7 @@ CREATE SCHEMA IF NOT EXISTS audit;
 
 -- Ajout du schéma audit au search_path
 SET search_path TO configuration, core, data, translations, audit, public;
-ALTER DATABASE lumiere_v16 SET search_path TO configuration, core, data, translations, audit, public;
+ALTER DATABASE lumiere_db_v17 SET search_path TO configuration, core, data, translations, audit, public;
 
 -- Création de la table d'audit pour journaliser les changements
 CREATE TABLE audit.audit_changes (
