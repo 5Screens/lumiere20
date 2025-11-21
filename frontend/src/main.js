@@ -2,9 +2,16 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import PrimeVue from 'primevue/config'
+import Aura from '@primevue/themes/aura'
+import ToastService from 'primevue/toastservice'
+import ConfirmationService from 'primevue/confirmationservice'
 import App from './App.vue'
 import i18n from './i18n'
 import { useUserProfileStore } from './stores/userProfileStore'
+
+// PrimeVue CSS - PrimeVue v4 uses CSS-in-JS theming, no need to import theme CSS
+import 'primeicons/primeicons.css'
 
 // Router configuration
 const router = createRouter({
@@ -14,6 +21,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: App
+    },
+    {
+      path: '/admin/configuration-items',
+      name: 'configuration-items',
+      component: () => import('./components/admin/ConfigurationItemsCrud.vue')
     }
   ]
 })
@@ -26,6 +38,16 @@ const app = createApp(App)
 app.use(router)
 app.use(i18n)
 app.use(pinia)
+app.use(PrimeVue, {
+    theme: {
+        preset: Aura,
+        options: {
+            darkModeSelector: '[data-theme="dark"]'
+        }
+    }
+})
+app.use(ToastService)
+app.use(ConfirmationService)
 
 // Initialize user profile store, theme and language
 const userProfileStore = useUserProfileStore()

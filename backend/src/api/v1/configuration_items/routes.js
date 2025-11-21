@@ -1,20 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const { getAllConfigurationItems, searchConfigurationItems } = require('./controller');
-const { validateGetAll, validateSearch } = require('./validation');
-const logger = require('../../../config/logger');
+const controller = require('./controller');
 
-// GET /api/v1/configuration_items - Get all (legacy)
-router.get('/', validateGetAll, (req, res) => {
-    logger.info('[ROUTES] GET /api/v1/configuration_items - Route handler started');
-    
-    // If search parameters are present, use search endpoint
-    if (req.query.search || req.query.page || req.query.limit) {
-        logger.info('[ROUTES] Redirecting to search endpoint');
-        return validateSearch(req, res, () => searchConfigurationItems(req, res));
-    }
-    
-    return getAllConfigurationItems(req, res);
-});
+// GET /api/v1/configuration_items - Get all configuration items with pagination
+router.get('/', controller.getConfigurationItems);
+
+// GET /api/v1/configuration_items/schemas - Get CI type schemas
+router.get('/schemas', controller.getCITypeSchemas);
+
+// GET /api/v1/configuration_items/:uuid - Get configuration item by UUID
+router.get('/:uuid', controller.getConfigurationItemById);
+
+// POST /api/v1/configuration_items - Create new configuration item
+router.post('/', controller.createConfigurationItem);
+
+// PATCH /api/v1/configuration_items/:uuid - Update configuration item
+router.patch('/:uuid', controller.updateConfigurationItem);
+
+// DELETE /api/v1/configuration_items/:uuid - Delete configuration item
+router.delete('/:uuid', controller.deleteConfigurationItem);
 
 module.exports = router;

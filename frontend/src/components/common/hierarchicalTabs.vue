@@ -69,6 +69,9 @@
           <component 
             v-if="tab.component"
             :is="tab.component"
+            :mode="tab.mode"
+            :objectId="tab.objectId"
+            :tabId="tab.id_tab"
             v-bind="tab.props || {}"
           />
           <!-- Composant par défaut pour les créations/modifications -->
@@ -92,6 +95,8 @@ import ObjectsTab from '@/components/objectsTab.vue'
 import ObjectCreationsAndUpdates from '@/components/coreForms/objectCreationsAndUpdates.vue'
 import AdminPortals from '@/components/admin/AdminPortals.vue'
 import PortalAdminForm from '@/components/admin/portals/PortalAdminForm.vue'
+import ConfigurationItemsCrud from '@/components/admin/ConfigurationItemsCrud.vue'
+import ConfigurationItemForm from '@/components/admin/ConfigurationItemForm.vue'
 
 export default {
   name: 'HierarchicalTabs',
@@ -99,7 +104,9 @@ export default {
     ObjectsTab,
     ObjectCreationsAndUpdates,
     AdminPortals,
-    PortalAdminForm
+    PortalAdminForm,
+    ConfigurationItemsCrud,
+    ConfigurationItemForm
   },
   setup() {
     console.log('[HierarchicalTabs] Exécution de setup()')
