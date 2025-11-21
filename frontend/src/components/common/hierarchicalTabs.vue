@@ -59,26 +59,20 @@
           </div>
           <div class="secondary-tab-body">
             <span class="tab-info" v-if="tab.objectId" :title="tab.objectId">
-              ID: {{ formatShortId(tab.objectId) }}
+              <!-- ID: {{ formatShortId(tab.objectId) }} -->
+              ID: {{ tab.objectId }}
             </span>
-            <span class="tab-info" v-if="tab.status" :class="'status-badge status-' + getStatusClass(tab.status)">
-              {{ tab.status }}
+            <span class="tab-info" v-if="tab.ticketStatus" :class="'status-badge status-' + getStatusClass(tab.ticketStatus)">
+              {{ tab.ticketStatusLabel || formatStatus(tab.ticketStatus) }}
             </span>
             <span class="tab-info" v-if="tab.mode">
               {{ tab.mode === 'creation' ? 'Création' : 'Modification' }}
             </span>
             <span class="tab-info" v-if="tab.updatedAt">
-              Modifié: {{ formatDate(tab.updatedAt) }}
+              Modifié : {{ formatDate(tab.updatedAt) }}
             </span>
             <span class="tab-info" v-else-if="tab.createdAt">
-              Créé: {{ formatDate(tab.createdAt) }}
-            </span>
-            <!-- Debug temporaire -->
-            <span class="tab-info" style="color: red; font-size: 9px;">
-              Debug: {{ JSON.stringify({ status: tab.status, updatedAt: tab.updatedAt, createdAt: tab.createdAt }) }}
-            </span>
-            <span class="tab-info" style="color: red; font-size: 9px;">
-              Debug: {{ tab }}
+              Créé : {{ formatDate(tab.createdAt) }}
             </span>
           </div>
         </div>
@@ -225,17 +219,57 @@ export default {
     },
 
     /**
-     * Retourne la classe CSS appropriée pour un statut
-     * @param {string} status - Le statut du ticket
+     * Formate un code de statut en texte lisible
+     * @param {string} statusCode - Le code du statut
+     * @returns {string} - Texte formaté
+     */
+    formatStatus(statusCode) {
+      if (!statusCode) return 'N/A'
+      // Remplace les underscores par des espaces et capitalise les mots
+      return statusCode
+        .split('_')
+        .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+        .join(' ')
+    },
+
+    /**
+     * Retourne la classe CSS appropriée pour un statut basée sur sa signification
+     * @param {string} statusCode - Le code du statut du ticket
      * @returns {string} - Nom de la classe CSS
      */
-    getStatusClass(status) {
-      if (!status) return 'unknown'
-      const statusLower = status.toLowerCase()
-      if (statusLower.includes('ouvert') || statusLower.includes('open')) return 'open'
-      if (statusLower.includes('cours') || statusLower.includes('progress')) return 'in-progress'
-      if (statusLower.includes('fermé') || statusLower.includes('close')) return 'closed'
-      if (statusLower.includes('bloqué') || statusLower.includes('block')) return 'blocked'
+    getStatusClass(statusCode) {
+      if (!statusCode) return 'unknown'
+
+      // Statuts de début/nouveaux (bleu)
+      const startStatuses = ['NEW', 'DRAFT', 'TO_DO', 'SUBMITTED', 'REQUESTED', 'INITIATED',
+                            'PLANNED', 'IN_PREPARATION']
+      if (startStatuses.includes(statusCode)) return 'start'
+
+      // Statuts en cours (orange)
+      const progressStatuses = ['IN_PROGRESS', 'INVESTIGATING', 'ASSIGNED', 'ACTIVE',
+                               'EXECUTING', 'MONITORING', 'EVALUATED', 'PLANNING']
+      if (progressStatuses.includes(statusCode)) return 'in-progress'
+
+      // Statuts en attente/révision (jaune/orange clair)
+      const reviewStatuses = ['IN_REVIEW', 'IN_TEST', 'PENDING', 'DIAGNOSED', 'WORKAROUND',
+                             'TRIAGE', 'ACKNOWLEDGED', 'READY']
+      if (reviewStatuses.includes(statusCode)) return 'review'
+
+      // Statuts terminés/résolus (vert)
+      const completedStatuses = ['DONE', 'COMPLETED', 'RESOLVED', 'CLOSED', 'FULFILLED',
+                                'IMPLEMENTED', 'REVIEWED', 'APPROVED', 'SOLUTION_APPROVED',
+                                'APPROVED_REQUEST', 'SCHEDULED']
+      if (completedStatuses.includes(statusCode)) return 'completed'
+
+      // Statuts problématiques (rouge)
+      const problemStatuses = ['ESCALATED', 'REJECTED', 'CANCELLED', 'REOPENED', 'KNOWN_ERROR',
+                              'REJECTED_REQUEST']
+      if (problemStatuses.includes(statusCode)) return 'problem'
+
+      // Statuts neutres (gris)
+      const neutralStatuses = ['ARCHIVED', 'ROOT_CAUSE_IDENTIFIED', 'SOLUTION_PROPOSED']
+      if (neutralStatuses.includes(statusCode)) return 'neutral'
+
       return 'default'
     }
   }

@@ -141,27 +141,39 @@
   text-align: center;
 }
 
-/* Statut ouvert - vert */
-.status-open {
-  background-color: #28a745;
+/* Statuts de début/nouveaux - bleu */
+.status-start {
+  background-color: #007bff;
   color: #ffffff;
 }
 
-/* Statut en cours - orange */
+/* Statuts en cours - orange */
 .status-in-progress {
   background-color: #fd7e14;
   color: #ffffff;
 }
 
-/* Statut fermé - gris */
-.status-closed {
-  background-color: #6c757d;
+/* Statuts en révision/attente - jaune/orange clair */
+.status-review {
+  background-color: #ffc107;
+  color: #000000;
+}
+
+/* Statuts terminés/résolus - vert */
+.status-completed {
+  background-color: #28a745;
   color: #ffffff;
 }
 
-/* Statut bloqué - rouge */
-.status-blocked {
+/* Statuts problématiques - rouge */
+.status-problem {
   background-color: #dc3545;
+  color: #ffffff;
+}
+
+/* Statuts neutres - gris */
+.status-neutral {
+  background-color: #6c757d;
   color: #ffffff;
 }
 

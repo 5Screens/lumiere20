@@ -189,10 +189,6 @@ export default {
         const uniqueIdentifier = modelClass.getUniqueIdentifier();
         const childTabLabel = modelClass.getChildTabLabel();
         selectedRows.forEach(row => {
-            // Debug: afficher tous les champs disponibles dans la row
-            console.log('[objectsTab] Champs disponibles dans row:', Object.keys(row))
-            console.log('[objectsTab] Valeur du status:', row.status, row.statut, row.state, row.etat)
-
             this.store.openTab({
               id_tab: `${this.objectType}-form-${row[uniqueIdentifier]}-${Date.now()}`,
               label: row[childTabLabel],
@@ -202,7 +198,10 @@ export default {
               objectId: row.uuid,
               className: this.data.className,
               parentId: this.store.activeTabId,
-              status: row.ticket_status_code,
+              ticketStatus: row.ticket_status_code,
+              ticketStatusLabel: row.ticket_status_label,
+              ticketType: row.ticket_type_code,
+              ticketTypeLabel: row.ticket_type_label,
               updatedAt: row.updated_at || row.date_modification,
               createdAt: row.created_at || row.date_creation
             })
