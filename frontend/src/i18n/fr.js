@@ -24,6 +24,10 @@ export default {
       sa: 'Sa'
     }
   },
+  welcome: {
+    title: 'Bienvenue dans Lumière',
+    subtitle: 'Sélectionnez une option dans le menu latéral pour commencer ou créez un nouvel élément.'
+  },
   common: {
     id: 'Identifiant',
     close: 'Fermer',

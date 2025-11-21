@@ -24,6 +24,10 @@ export default {
       sa: 'Sa'
     }
   },
+  welcome: {
+    title: 'Bem-vindo ao Lumière',
+    subtitle: 'Selecione uma opção no menu lateral para começar ou crie um novo item.'
+  },
   common: {
     loading: 'Carregando...',
     underConstruction: 'Este recurso está em construção'

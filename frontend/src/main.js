@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
+import HomePage from './components/HomePage.vue'
 import i18n from './i18n'
 import { useUserProfileStore } from './stores/userProfileStore'
 
@@ -13,7 +14,8 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: App
+      // component: App
+      component: HomePage
     }
   ]
 })

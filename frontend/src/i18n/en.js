@@ -24,6 +24,10 @@ export default {
       sa: 'Sa'
     }
   },
+  welcome: {
+    title: 'Welcome to Lumière',
+    subtitle: 'Select an option from the sidebar to get started or create a new item.'
+  },
   common: {
     loading: 'Loading...',
     underConstruction: 'This feature is under construction'
