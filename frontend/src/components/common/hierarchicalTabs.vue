@@ -5,7 +5,7 @@
       <div 
         v-for="tab in store.parentTabs" 
         :key="tab.id_tab" 
-        class="tab" 
+        class="tab primary-tab" 
         :class="{ 
           active: store.isParentTabActive(tab.id_tab),
           'has-active-child': store.activeTabId === tab.id_tab && store.activeChildTabId !== null 
@@ -20,16 +20,68 @@
     
     <!-- Onglets secondaires (niveau 2) si un onglet parent est actif -->
     <div v-if="store.activeChildTabs.length > 0" class="tabs-container secondary-tabs">
-      <div 
-        v-for="tab in store.activeChildTabs" 
-        :key="tab.id_tab" 
-        class="tab" 
+      <div>
+        <!-- Onglet fixe de retour à la table de l'onglet parent actif si au moins un onglet secondaire actif est ouvert -->
+        <div
+          v-if="store.activeTab"
+          class="tab secondary-tab"
+          :class="{
+            active: store.isParentTabActive(store.activeTab.id_tab)
+          }"
+          @click="handleTabSwitch(store.activeTab)"
+        >
+          <div class="secondary-tab-main">
+            <div class="secondary-tab-head">
+              <i v-if="store.activeTab.icon" class="fas fa-table"></i>
+              <span class="tab-title">Filtres de la table</span>
+            </div>
+            <div class="secondary-tab-body">
+              <span class="tab-info">Retour à la vue principale</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Onglets secondaires (niveau 2) -->
+      <div
+        v-for="tab in store.activeChildTabs"
+        :key="tab.id_tab"
+        class="tab secondary-tab"
         :class="{ active: store.activeChildTabId === tab.id_tab }"
         @click="handleChildTabSwitch(tab)"
       >
-        <i v-if="tab.icon" :class="tab.icon"></i>
-        <span class="tab-title" :title="tab.label">{{ tab.label && tab.label.length > 15 ? tab.label.substring(0, 15) + '...' : (tab.label || 'Sans titre') }}</span>
-        <button class="close-tab" @click.stop="store.closeTab(tab.id_tab)">×</button>
+        <div class="secondary-tab-main">
+          <div class="secondary-tab-head">
+            <i v-if="tab.icon" :class="tab.icon"></i>
+            <span class="tab-title" :title="tab.label">
+              {{ tab.label && tab.label.length > 15 ? tab.label.substring(0, 15) + '...' : (tab.label || 'Sans titre') }}
+            </span>
+            <button class="close-tab" @click.stop="store.closeTab(tab.id_tab)">×</button>
+          </div>
+          <div class="secondary-tab-body">
+            <span class="tab-info" v-if="tab.objectId" :title="tab.objectId">
+              ID: {{ formatShortId(tab.objectId) }}
+            </span>
+            <span class="tab-info" v-if="tab.status" :class="'status-badge status-' + getStatusClass(tab.status)">
+              {{ tab.status }}
+            </span>
+            <span class="tab-info" v-if="tab.mode">
+              {{ tab.mode === 'creation' ? 'Création' : 'Modification' }}
+            </span>
+            <span class="tab-info" v-if="tab.updatedAt">
+              Modifié: {{ formatDate(tab.updatedAt) }}
+            </span>
+            <span class="tab-info" v-else-if="tab.createdAt">
+              Créé: {{ formatDate(tab.createdAt) }}
+            </span>
+            <!-- Debug temporaire -->
+            <span class="tab-info" style="color: red; font-size: 9px;">
+              Debug: {{ JSON.stringify({ status: tab.status, updatedAt: tab.updatedAt, createdAt: tab.createdAt }) }}
+            </span>
+            <span class="tab-info" style="color: red; font-size: 9px;">
+              Debug: {{ tab }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -140,12 +192,51 @@ export default {
         console.info(`[HierarchicalTabs] Onglet enfant ${tab.id_tab} déjà actif, pas de mise à jour.`)
         return
       }
-      
+
       // Active l'onglet enfant
       const wasActive = this.store.switchChildTab(tab.id_tab)
       if (!wasActive) {
         console.info(`[HierarchicalTabs] Changement d'onglet enfant : ${tab.id_tab}`)
       }
+    },
+
+    /**
+     * Formate un UUID en version courte (8 premiers caractères)
+     * @param {string} uuid - L'UUID complet
+     * @returns {string} - Version courte de l'UUID
+     */
+    formatShortId(uuid) {
+      if (!uuid) return 'N/A'
+      return uuid.substring(0, 8)
+    },
+
+    /**
+     * Formate une date en format court (JJ/MM/AAAA)
+     * @param {string} dateString - Date au format ISO
+     * @returns {string} - Date formatée
+     */
+    formatDate(dateString) {
+      if (!dateString) return 'N/A'
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}/${month}/${year}`
+    },
+
+    /**
+     * Retourne la classe CSS appropriée pour un statut
+     * @param {string} status - Le statut du ticket
+     * @returns {string} - Nom de la classe CSS
+     */
+    getStatusClass(status) {
+      if (!status) return 'unknown'
+      const statusLower = status.toLowerCase()
+      if (statusLower.includes('ouvert') || statusLower.includes('open')) return 'open'
+      if (statusLower.includes('cours') || statusLower.includes('progress')) return 'in-progress'
+      if (statusLower.includes('fermé') || statusLower.includes('close')) return 'closed'
+      if (statusLower.includes('bloqué') || statusLower.includes('block')) return 'blocked'
+      return 'default'
     }
   }
 }

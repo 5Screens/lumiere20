@@ -16,9 +16,9 @@
   overflow-y: hidden; /* Empêche l'ascenseur vertical */
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
-  height: 40px;
+  /*height: 40px;*/
   align-items: center;
-  min-height: 40px; /* Hauteur minimale fixe */
+  /*min-height: 40px;*/ /* Hauteur minimale fixe */
 }
 
 /* Onglets de premier niveau - généralement en haut de la hiérarchie */
@@ -29,10 +29,11 @@
 /* Onglets de second niveau - apparaissent sous un onglet principal sélectionné */
 .secondary-tabs {
   background-color: var(--bg-color);
-  padding-left: 20px; /* Indentation pour montrer la hiérarchie */
+  /*padding-left: 20px;*/ /* Indentation pour montrer la hiérarchie */
   border-bottom: 1px solid var(--border-color);
-  height: 36px;
-  min-height: 36px; /* Hauteur minimale fixe */
+  /*height: 36px;*/
+  /*min-height: 36px;*/ /* Hauteur minimale fixe */
+  padding: 15px 0 15px 15px;
 }
 
 /* Onglet individuel - élément cliquable qui affiche un contenu spécifique */
@@ -46,6 +47,37 @@
   white-space: nowrap;
   flex-shrink: 0; /* Empêche la compression des onglets */
   color: var(--text-color); /* Couleur par défaut du texte */
+}
+
+/* Onglet secondaire en format carte - dimensions fixes pour l'affichage type carte */
+.tab.secondary-tab {
+  width: 150px;
+  height: 150px;
+  margin: 0 15px 0 0;
+}
+
+/* Conteneur principal de la carte d'onglet secondaire - structure en colonne */
+.secondary-tab-main {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+/* En-tête de la carte - titre, icône et bouton de fermeture */
+.secondary-tab-head {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+}
+
+/* Corps de la carte - affiche les métadonnées du ticket */
+.secondary-tab-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 /* Style pour l'icône dans l'onglet */
@@ -86,6 +118,63 @@
 .tab-title {
   margin-right: 8px;
   color: inherit; /* Hérite la couleur du parent (.tab) */
+}
+
+/* Informations secondaires dans le body des cartes - métadonnées du ticket */
+.tab-info {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+/* Badge de statut avec couleur - identifie visuellement l'état du ticket */
+.tab-info.status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  opacity: 1;
+  font-size: 10px;
+  text-align: center;
+}
+
+/* Statut ouvert - vert */
+.status-open {
+  background-color: #28a745;
+  color: #ffffff;
+}
+
+/* Statut en cours - orange */
+.status-in-progress {
+  background-color: #fd7e14;
+  color: #ffffff;
+}
+
+/* Statut fermé - gris */
+.status-closed {
+  background-color: #6c757d;
+  color: #ffffff;
+}
+
+/* Statut bloqué - rouge */
+.status-blocked {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+/* Statut par défaut - bleu clair */
+.status-default {
+  background-color: #17a2b8;
+  color: #ffffff;
+}
+
+/* Statut inconnu - gris foncé */
+.status-unknown {
+  background-color: #495057;
+  color: #ffffff;
 }
 
 /* Bouton de fermeture d'onglet - petit "x" à côté du titre */
