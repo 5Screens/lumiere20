@@ -208,7 +208,9 @@ export default {
               writerName: row.writer_name,
               // Données spécifiques selon le type
               impact: row.impact,
+              impactLabel: row.impact_label,
               urgency: row.urgency,
+              urgencyLabel: row.urgency_label,
               priority: row.priority,
               category: row.category,
               requestedByName: row.requested_by_name,

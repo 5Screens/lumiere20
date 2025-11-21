@@ -70,9 +70,22 @@
 
             <!-- Informations spécifiques INCIDENT -->
             <template v-if="tab.ticketType === 'INCIDENT'">
-              <span class="tab-info" v-if="tab.priority">Priorité: {{ tab.priority }}</span>
-              <span class="tab-info" v-if="tab.impact">Impact: {{ tab.impact }}</span>
-              <span class="tab-info" v-if="tab.urgency">Urgence: {{ tab.urgency }}</span>
+              <span class="tab-info level-badge"
+                    v-if="tab.priority"
+                    :class="getLevelBadge(tab.priority).class"
+                    :title="'Priorité: ' + tab.priority">
+                Priorité : {{ getLevelBadge(tab.priority).emoji }} {{ getLevelBadge(tab.priority).label }}
+              </span>
+              <span class="tab-info level-badge"
+                    v-if="tab.impact"
+                    :title="'Impact: ' + (tab.impactLabel || tab.impact)">
+                Impact : {{ getLevelBadge(tab.impact).emoji }} {{ tab.impactLabel || tab.impact }}
+              </span>
+              <span class="tab-info level-badge"
+                    v-if="tab.urgency"
+                    :title="'Urgence: ' + (tab.urgencyLabel || tab.urgency)">
+                Urgence : {{ getLevelBadge(tab.urgency).emoji }} {{ tab.urgencyLabel || tab.urgency }}
+              </span>
               <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
               <span class="tab-info" v-if="tab.updatedAt">
                 Modifié : {{ formatDate(tab.updatedAt) }}
@@ -85,8 +98,16 @@
             <!-- Informations spécifiques PROBLEM -->
             <template v-else-if="tab.ticketType === 'PROBLEM'">
               <span class="tab-info" v-if="tab.category">Catégorie: {{ tab.category }}</span>
-              <span class="tab-info" v-if="tab.impact">Impact: {{ tab.impact }}</span>
-              <span class="tab-info" v-if="tab.urgency">Urgence: {{ tab.urgency }}</span>
+              <span class="tab-info level-badge"
+                    v-if="tab.impact"
+                    :title="'Impact: ' + (tab.impactLabel || tab.impact)">
+                Catégorie : {{ getLevelBadge(tab.impact).emoji }} {{ tab.impactLabel || tab.impact }}
+              </span>
+              <span class="tab-info level-badge"
+                    v-if="tab.urgency"
+                    :title="'Urgence: ' + (tab.urgencyLabel || tab.urgency)">
+                Urgence : {{ getLevelBadge(tab.urgency).emoji }} {{ tab.urgencyLabel || tab.urgency }}
+              </span>
               <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
               <span class="tab-info" v-if="tab.updatedAt">
                 Modifié : {{ formatDate(tab.updatedAt) }}
@@ -316,6 +337,43 @@ export default {
       if (neutralStatuses.includes(statusCode)) return 'neutral'
 
       return 'default'
+    },
+
+    /**
+     * Retourne la classe CSS et l'emoji appropriés pour un niveau (impact/urgence/priorité)
+     * @param {string} level - Le niveau (peut être en français ou anglais)
+     * @returns {Object} - Objet contenant la classe CSS et l'emoji
+     */
+    getLevelBadge(level) {
+      if (!level) return { class: '', emoji: '', label: 'N/A' }
+
+      const levelStr = level.toString().toUpperCase()
+
+      // Niveau critique - rouge
+      if (levelStr.includes('CRITICAL') || levelStr.includes('CRITIQUE') || levelStr === '1') {
+        return { class: 'level-critical', emoji: '🔴', label: level }
+      }
+
+      // Niveau élevé - orange
+      if (levelStr.includes('HIGH') || levelStr.includes('ÉLEVÉ') || levelStr.includes('ELEVE') ||
+          levelStr.includes('HAUT') || levelStr === '2') {
+        return { class: 'level-high', emoji: '🟠', label: level }
+      }
+
+      // Niveau moyen - jaune
+      if (levelStr.includes('MEDIUM') || levelStr.includes('MOYEN') || levelStr.includes('MODERATE') ||
+          levelStr === '3') {
+        return { class: 'level-medium', emoji: '🟡', label: level }
+      }
+
+      // Niveau faible - vert
+      if (levelStr.includes('LOW') || levelStr.includes('FAIBLE') || levelStr.includes('BAS') ||
+          levelStr === '4') {
+        return { class: 'level-low', emoji: '🟢', label: level }
+      }
+
+      // Par défaut
+      return { class: 'level-low', emoji: '🟢', label: level }
     }
   }
 }
