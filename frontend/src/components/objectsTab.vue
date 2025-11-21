@@ -203,7 +203,16 @@ export default {
               ticketType: row.ticket_type_code,
               ticketTypeLabel: row.ticket_type_label,
               updatedAt: row.updated_at || row.date_modification,
-              createdAt: row.created_at || row.date_creation
+              createdAt: row.created_at || row.date_creation,
+              // Données communes
+              writerName: row.writer_name,
+              // Données spécifiques selon le type
+              impact: row.impact,
+              urgency: row.urgency,
+              priority: row.priority,
+              category: row.category,
+              requestedByName: row.requested_by_name,
+              requestedForName: row.requested_for_name
             })
           })
 

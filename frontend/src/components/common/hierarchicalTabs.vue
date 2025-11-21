@@ -58,22 +58,67 @@
             <button class="close-tab" @click.stop="store.closeTab(tab.id_tab)">×</button>
           </div>
           <div class="secondary-tab-body">
+            <!-- ID -->
             <span class="tab-info" v-if="tab.objectId" :title="tab.objectId">
-              <!-- ID: {{ formatShortId(tab.objectId) }} -->
               ID: {{ tab.objectId }}
             </span>
+
+            <!-- Statut -->
             <span class="tab-info" v-if="tab.ticketStatus" :class="'status-badge status-' + getStatusClass(tab.ticketStatus)">
               {{ tab.ticketStatusLabel || formatStatus(tab.ticketStatus) }}
             </span>
-            <span class="tab-info" v-if="tab.mode">
-              {{ tab.mode === 'creation' ? 'Création' : 'Modification' }}
-            </span>
-            <span class="tab-info" v-if="tab.updatedAt">
-              Modifié : {{ formatDate(tab.updatedAt) }}
-            </span>
-            <span class="tab-info" v-else-if="tab.createdAt">
-              Créé : {{ formatDate(tab.createdAt) }}
-            </span>
+
+            <!-- Informations spécifiques INCIDENT -->
+            <template v-if="tab.ticketType === 'INCIDENT'">
+              <span class="tab-info" v-if="tab.priority">Priorité: {{ tab.priority }}</span>
+              <span class="tab-info" v-if="tab.impact">Impact: {{ tab.impact }}</span>
+              <span class="tab-info" v-if="tab.urgency">Urgence: {{ tab.urgency }}</span>
+              <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
+              <span class="tab-info" v-if="tab.updatedAt">
+                Modifié : {{ formatDate(tab.updatedAt) }}
+              </span>
+              <span class="tab-info" v-else-if="tab.createdAt">
+                Créé : {{ formatDate(tab.createdAt) }}
+              </span>
+            </template>
+
+            <!-- Informations spécifiques PROBLEM -->
+            <template v-else-if="tab.ticketType === 'PROBLEM'">
+              <span class="tab-info" v-if="tab.category">Catégorie: {{ tab.category }}</span>
+              <span class="tab-info" v-if="tab.impact">Impact: {{ tab.impact }}</span>
+              <span class="tab-info" v-if="tab.urgency">Urgence: {{ tab.urgency }}</span>
+              <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
+              <span class="tab-info" v-if="tab.updatedAt">
+                Modifié : {{ formatDate(tab.updatedAt) }}
+              </span>
+              <span class="tab-info" v-else-if="tab.createdAt">
+                Créé : {{ formatDate(tab.createdAt) }}
+              </span>
+            </template>
+
+            <!-- Informations spécifiques TASK -->
+            <template v-else-if="tab.ticketType === 'TASK'">
+              <span class="tab-info" v-if="tab.requestedByName">Demandé par: {{ tab.requestedByName }}</span>
+              <span class="tab-info" v-if="tab.requestedForName">Demandé pour: {{ tab.requestedForName }}</span>
+              <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
+              <span class="tab-info" v-if="tab.updatedAt">
+                Modifié : {{ formatDate(tab.updatedAt) }}
+              </span>
+              <span class="tab-info" v-else-if="tab.createdAt">
+                Créé : {{ formatDate(tab.createdAt) }}
+              </span>
+            </template>
+
+            <!-- Informations génériques pour autres types -->
+            <template v-else>
+              <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
+              <span class="tab-info" v-if="tab.updatedAt">
+                Modifié : {{ formatDate(tab.updatedAt) }}
+              </span>
+              <span class="tab-info" v-else-if="tab.createdAt">
+                Créé : {{ formatDate(tab.createdAt) }}
+              </span>
+            </template>
           </div>
         </div>
       </div>

@@ -51,9 +51,11 @@
 
 /* Onglet secondaire en format carte - dimensions fixes pour l'affichage type carte */
 .tab.secondary-tab {
+  display: block; /* Surcharge le display: flex du .tab parent pour permettre la structure verticale de la carte */
   width: 150px;
   height: 150px;
   margin: 0 15px 0 0;
+  padding: 8px; /* Padding uniforme pour les cartes */
 }
 
 /* Conteneur principal de la carte d'onglet secondaire - structure en colonne */
@@ -78,6 +80,28 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  min-height: 0; /* Force le respect des contraintes de hauteur dans un conteneur flex */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px;
+}
+
+/* Style de la scrollbar pour le body des cartes */
+.secondary-tab-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.secondary-tab-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.secondary-tab-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.secondary-tab-body::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
 
 /* Style pour l'icône dans l'onglet */
@@ -122,12 +146,14 @@
 
 /* Informations secondaires dans le body des cartes - métadonnées du ticket */
 .tab-info {
+  display: block;
   font-size: 11px;
   color: var(--text-secondary);
   margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 0;
   opacity: 0.8;
 }
 
