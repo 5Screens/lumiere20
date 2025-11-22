@@ -18,11 +18,16 @@
                 :value="items"
                 dataKey="uuid"
                 :paginator="true"
-                :rows="10"
+                :rows="pageSize"
+                :totalRecords="totalRecords"
+                :lazy="true"
                 :filters="filters"
                 :loading="loading"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                :rowsPerPageOptions="[5, 10, 25, 50]"
+                @page="onPage"
+                @sort="onSort"
+                :sortField="sortField"
+                :sortOrder="sortOrder"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} configuration items"
             >
                 <template #header>
@@ -98,6 +103,7 @@ import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { useTabsStore } from '@/stores/tabsStore';
 import configurationItemsService from '@/services/configurationItemsService';
+import { PAGINATION_CONFIG } from '@/config/config';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Toolbar from 'primevue/toolbar';
@@ -130,6 +136,11 @@ const filters = ref({
     'global': { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const loading = ref(false);
+const totalRecords = ref(0);
+const currentPage = ref(1);
+const pageSize = PAGINATION_CONFIG.pageSizes['Configuration_items'] || 25;
+const sortField = ref('name');
+const sortOrder = ref(1); // 1 for asc, -1 for desc
 
 const ciTypes = ref([
     { label: 'All Types', value: null },
@@ -153,14 +164,20 @@ watch(() => tabsStore.activeChildTabs.length, (newLength, oldLength) => {
     }
 });
 
-const loadItems = async () => {
+const loadItems = async (page = null) => {
     try {
         loading.value = true;
         const result = await configurationItemsService.getAll({
             ci_type: selectedCiType.value,
-            search: filters.value.global.value || ''
+            search: filters.value.global.value || '',
+            page: page || currentPage.value,
+            limit: pageSize,
+            sortBy: sortField.value,
+            sortDirection: sortOrder.value === 1 ? 'asc' : 'desc'
         });
         items.value = result.data || [];
+        totalRecords.value = result.pagination?.total || 0;
+        if (page) currentPage.value = page;
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load configuration items', life: 3000 });
     } finally {
@@ -168,8 +185,20 @@ const loadItems = async () => {
     }
 };
 
-const onSearch = () => {
+const onPage = (event) => {
+    const page = event.page + 1; // PrimeVue uses 0-based index
+    loadItems(page);
+};
+
+const onSort = (event) => {
+    sortField.value = event.sortField;
+    sortOrder.value = event.sortOrder;
     loadItems();
+};
+
+const onSearch = () => {
+    currentPage.value = 1;
+    loadItems(1);
 };
 
 const openNewTab = () => {
