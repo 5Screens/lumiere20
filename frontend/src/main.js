@@ -37,7 +37,45 @@ app.use(PrimeVue, {
     theme: {
         preset: Aura,
         options: {
-            darkModeSelector: '[data-theme="dark"]'
+            darkModeSelector: '[data-theme="dark"]',
+            cssLayer: {
+                name: 'primevue',
+                order: 'tailwind-base, primevue, tailwind-utilities'
+            }
+        }
+    },
+    // Override primary color to use blue instead of green
+    pt: {
+        global: {
+            css: `
+                :root {
+                    --p-primary-50: #e3f2fd;
+                    --p-primary-100: #bbdefb;
+                    --p-primary-200: #90caf9;
+                    --p-primary-300: #64b5f6;
+                    --p-primary-400: #42a5f5;
+                    --p-primary-500: #2196f3;
+                    --p-primary-600: #1e88e5;
+                    --p-primary-700: #1976d2;
+                    --p-primary-800: #1565c0;
+                    --p-primary-900: #0d47a1;
+                    --p-primary-950: #082f6b;
+                }
+                
+                [data-theme="dark"] {
+                    --p-primary-50: #082f6b;
+                    --p-primary-100: #0d47a1;
+                    --p-primary-200: #1565c0;
+                    --p-primary-300: #1976d2;
+                    --p-primary-400: #1e88e5;
+                    --p-primary-500: #2196f3;
+                    --p-primary-600: #42a5f5;
+                    --p-primary-700: #64b5f6;
+                    --p-primary-800: #90caf9;
+                    --p-primary-900: #bbdefb;
+                    --p-primary-950: #e3f2fd;
+                }
+            `
         }
     }
 })
