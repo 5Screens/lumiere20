@@ -21,11 +21,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: App
-    },
-    {
-      path: '/admin/configuration-items',
-      name: 'configuration-items',
-      component: () => import('./components/admin/ConfigurationItemsCrud.vue')
     }
   ]
 })

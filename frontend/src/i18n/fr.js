@@ -126,7 +126,8 @@ export default {
       entities: 'Entités',
       locations: 'Localisations',
       persons: 'Personnes',
-      groups: 'Groupes'
+      groups: 'Groupes',
+      configurationItems: 'Eléments de configuration'
     },
     applications: {
       title: 'Applications',
