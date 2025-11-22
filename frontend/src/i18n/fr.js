@@ -504,6 +504,143 @@ export default {
     name: 'Nom',
     description: 'Description'
   },
+  configurationItems: {
+  // Titre et actions principales
+  title: 'Éléments de configuration',
+  
+  actions: {
+    new: 'Nouveau',
+    delete: 'Supprimer',
+    export: 'Exporter',
+    edit: 'Modifier',
+    remove: 'Supprimer'
+  },
+  
+  // En-têtes de table
+  table: {
+    title: 'Gérer les éléments de configuration',
+    columns: {
+      name: 'Nom',
+      type: 'Type',
+      description: 'Description',
+      created: 'Créé le'
+    }
+  },
+  
+  // Pagination et recherche
+  pagination: {
+    showing: 'Affichage de {first} à {last} sur {totalRecords} éléments de configuration'
+  },
+  
+  search: {
+    placeholder: 'Rechercher...'
+  },
+  
+  filter: {
+    placeholder: 'Filtrer par type'
+  },
+  
+  // Types de CI
+  types: {
+    all: 'Tous les types',
+    ups: 'Onduleur',
+    application: 'Application',
+    server: 'Serveur',
+    networkDevice: 'Équipement réseau',
+    generic: 'Générique'
+  },
+  
+  // Dialogues de confirmation
+  dialog: {
+    confirm: {
+      title: 'Confirmation'
+    },
+    deleteOne: {
+      message: 'Êtes-vous sûr de vouloir supprimer <b>{name}</b> ?'
+    },
+    deleteMany: {
+      message: 'Êtes-vous sûr de vouloir supprimer les éléments de configuration sélectionnés ?'
+    },
+    actions: {
+      no: 'Non',
+      yes: 'Oui'
+    }
+  },
+  
+  // Messages toast
+  toast: {
+    error: {
+      title: 'Erreur',
+      load: 'Échec du chargement des éléments de configuration',
+      delete: 'Échec de la suppression de l\'élément de configuration',
+      deleteMany: 'Échec de la suppression des éléments de configuration'
+    },
+    success: {
+      title: 'Succès',
+      delete: 'Élément de configuration supprimé',
+      deleteMany: 'Éléments de configuration supprimés'
+    }
+  },
+  
+  // Libellés d'onglets
+  tab: {
+    new: 'Nouvel élément de configuration'
+  }
+},
+
+  configurationItemForm: {
+    // Titres de formulaire
+    title: {
+      create: 'Nouvel élément de configuration',
+      edit: 'Modifier l\'élément de configuration'
+    },
+    
+    // Sections
+    sections: {
+      basicInfo: 'Informations de base',
+      extendedFields: 'Champs étendus'
+    },
+    
+    // Champs de formulaire
+    fields: {
+      name: {
+        label: 'Nom',
+        required: 'Le nom est obligatoire.'
+      },
+      description: {
+        label: 'Description'
+      },
+      type: {
+        label: 'Type',
+        placeholder: 'Sélectionnez un type'
+      }
+    },
+    
+    // Actions
+    actions: {
+      cancel: 'Annuler',
+      save: 'Enregistrer'
+    },
+    
+    // Messages toast
+    toast: {
+      error: {
+        title: 'Erreur',
+        loadSchemas: 'Échec du chargement des schémas CI',
+        loadItem: 'Échec du chargement de l\'élément de configuration',
+        save: 'Échec de l\'enregistrement de l\'élément de configuration'
+      },
+      success: {
+        title: 'Succès',
+        create: 'Élément de configuration créé',
+        update: 'Élément de configuration mis à jour'
+      },
+      validation: {
+        title: 'Erreur de validation',
+        nameRequired: 'Le nom est obligatoire'
+      }
+    }
+  },
   group: {
     name: 'Nom du groupe',
     phone: 'Téléphone'

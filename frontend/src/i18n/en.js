@@ -414,6 +414,143 @@ export default {
     name: 'Name',
     description: 'Description'
   },
+  configurationItems: {
+  // Title and main actions
+  title: 'Configuration Items',
+  
+  actions: {
+    new: 'New',
+    delete: 'Delete',
+    export: 'Export',
+    edit: 'Edit',
+    remove: 'Remove'
+  },
+  
+  // Table headers
+  table: {
+    title: 'Manage Configuration Items',
+    columns: {
+      name: 'Name',
+      type: 'Type',
+      description: 'Description',
+      created: 'Created'
+    }
+  },
+  
+  // Pagination and search
+  pagination: {
+    showing: 'Showing {first} to {last} of {totalRecords} configuration items'
+  },
+  
+  search: {
+    placeholder: 'Search...'
+  },
+  
+  filter: {
+    placeholder: 'Filter by Type'
+  },
+  
+  // CI Types
+  types: {
+    all: 'All Types',
+    ups: 'UPS',
+    application: 'Application',
+    server: 'Server',
+    networkDevice: 'Network Device',
+    generic: 'Generic'
+  },
+  
+  // Confirmation dialogs
+  dialog: {
+    confirm: {
+      title: 'Confirm'
+    },
+    deleteOne: {
+      message: 'Are you sure you want to delete <b>{name}</b>?'
+    },
+    deleteMany: {
+      message: 'Are you sure you want to delete the selected configuration items?'
+    },
+    actions: {
+      no: 'No',
+      yes: 'Yes'
+    }
+  },
+  
+  // Toast messages
+  toast: {
+    error: {
+      title: 'Error',
+      load: 'Failed to load configuration items',
+      delete: 'Failed to delete configuration item',
+      deleteMany: 'Failed to delete configuration items'
+    },
+    success: {
+      title: 'Successful',
+      delete: 'Configuration Item Deleted',
+      deleteMany: 'Configuration Items Deleted'
+    }
+  },
+  
+  // Tab labels
+  tab: {
+    new: 'New Configuration Item'
+  }
+},
+
+configurationItemForm: {
+  // Form titles
+  title: {
+    create: 'New Configuration Item',
+    edit: 'Edit Configuration Item'
+  },
+  
+  // Sections
+  sections: {
+    basicInfo: 'Basic Information',
+    extendedFields: 'Extended Fields'
+  },
+  
+  // Form fields
+  fields: {
+    name: {
+      label: 'Name',
+      required: 'Name is required.'
+    },
+    description: {
+      label: 'Description'
+    },
+    type: {
+      label: 'Type',
+      placeholder: 'Select a Type'
+    }
+  },
+  
+  // Actions
+  actions: {
+    cancel: 'Cancel',
+    save: 'Save'
+  },
+  
+  // Toast messages
+  toast: {
+    error: {
+      title: 'Error',
+      loadSchemas: 'Failed to load CI schemas',
+      loadItem: 'Failed to load configuration item',
+      save: 'Failed to save configuration item'
+    },
+    success: {
+      title: 'Success',
+      create: 'Configuration Item created',
+      update: 'Configuration Item updated'
+    },
+    validation: {
+      title: 'Validation Error',
+      nameRequired: 'Name is required'
+    }
+  }
+},
   group: {
     name: 'Group name',
     phone: 'Phone'

@@ -3,12 +3,12 @@
         <div class="card">
             <Toolbar class="mb-6">
                 <template #start>
-                    <Button label="New" icon="pi pi-plus" class="mr-2" @click="openNewTab" />
-                    <Button label="Delete" icon="pi pi-trash" severity="danger" variant="outlined" @click="confirmDeleteSelected" :disabled="!selectedItems || !selectedItems.length" />
+                    <Button :label="$t('configurationItems.actions.new')" icon="pi pi-plus" class="mr-2" @click="openNewTab" />
+                    <Button :label="$t('configurationItems.actions.delete')" icon="pi pi-trash" severity="danger" variant="outlined" @click="confirmDeleteSelected" :disabled="!selectedItems || !selectedItems.length" />
                 </template>
 
                 <template #end>
-                    <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                    <Button :label="$t('configurationItems.actions.export')" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
                 </template>
             </Toolbar>
 
@@ -32,32 +32,32 @@
             >
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Manage Configuration Items</h4>
+                        <h4 class="m-0">{{ $t('configurationItems.table.title') }}</h4>
                         <div class="flex gap-2">
-                            <Select v-model="selectedCiType" :options="ciTypes" optionLabel="label" optionValue="value" placeholder="Filter by Type" @change="loadItems" class="w-48" />
+                            <Select v-model="selectedCiType" :options="ciTypes" optionLabel="label" optionValue="value" :placeholder="$t('configurationItems.filter.placeholder')" @change="loadItems" class="w-48" />
                             <IconField>
                                 <InputIcon>
                                     <i class="pi pi-search" />
                                 </InputIcon>
-                                <InputText v-model="filters['global'].value" placeholder="Search..." @input="onSearch" />
+                                <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" @input="onSearch" />
                             </IconField>
                         </div>
                     </div>
                 </template>
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="name" header="Name" sortable style="min-width: 16rem"></Column>
-                <Column field="ci_type" header="Type" sortable style="min-width: 10rem">
+                <Column field="name" :header="$t('configurationItems.table.columns.name')" sortable style="min-width: 16rem"></Column>
+                <Column field="ci_type" :header="$t('configurationItems.table.columns.type')" sortable style="min-width: 10rem">
                     <template #body="slotProps">
                         <Tag :value="slotProps.data.ci_type" :severity="getTypeSeverity(slotProps.data.ci_type)" />
                     </template>
                 </Column>
-                <Column field="description" header="Description" sortable style="min-width: 20rem">
+                <Column field="description" :header="$t('configurationItems.table.columns.description')" sortable style="min-width: 20rem">
                     <template #body="slotProps">
                         <span class="text-ellipsis">{{ slotProps.data.description || '-' }}</span>
                     </template>
                 </Column>
-                <Column field="created_at" header="Created" sortable style="min-width: 12rem">
+                <Column field="created_at" :header="$t('configurationItems.table.columns.created')" sortable style="min-width: 12rem">
                     <template #body="slotProps">
                         {{ formatDate(slotProps.data.created_at) }}
                     </template>
@@ -71,25 +71,25 @@
             </DataTable>
         </div>
 
-        <Dialog v-model:visible="deleteItemDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+        <Dialog v-model:visible="deleteItemDialog" :style="{ width: '450px' }" :header="$t('configurationItems.dialog.confirm.title')" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="item">Are you sure you want to delete <b>{{ item.name }}</b>?</span>
+                <span v-if="item" v-html="$t('configurationItems.dialog.deleteOne.message', { name: item.name })"></span>
             </div>
             <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteItemDialog = false" severity="secondary" variant="text" />
-                <Button label="Yes" icon="pi pi-check" @click="deleteItem" severity="danger" />
+                <Button :label="$t('configurationItems.dialog.actions.no')" icon="pi pi-times" text @click="deleteItemDialog = false" severity="secondary" variant="text" />
+                <Button :label="$t('configurationItems.dialog.actions.yes')" icon="pi pi-check" @click="deleteItem" severity="danger" />
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="deleteItemsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+        <Dialog v-model:visible="deleteItemsDialog" :style="{ width: '450px' }" :header="$t('configurationItems.dialog.confirm.title')" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span>Are you sure you want to delete the selected configuration items?</span>
+                <span>{{ $t('configurationItems.dialog.deleteMany.message') }}</span>
             </div>
             <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteItemsDialog = false" severity="secondary" variant="text" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedItems" severity="danger" />
+                <Button :label="$t('configurationItems.dialog.actions.no')" icon="pi pi-times" text @click="deleteItemsDialog = false" severity="secondary" variant="text" />
+                <Button :label="$t('configurationItems.dialog.actions.yes')" icon="pi pi-check" text @click="deleteSelectedItems" severity="danger" />
             </template>
         </Dialog>
 
@@ -101,6 +101,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
+import { useI18n } from 'vue-i18n';
 import { useTabsStore } from '@/stores/tabsStore';
 import configurationItemsService from '@/services/configurationItemsService';
 import { PAGINATION_CONFIG } from '@/config/config';
@@ -124,6 +125,7 @@ const props = defineProps({
 });
 
 const toast = useToast();
+const { t } = useI18n();
 const tabsStore = useTabsStore();
 const dt = ref();
 const items = ref([]);
@@ -143,12 +145,12 @@ const sortField = ref('name');
 const sortOrder = ref(1); // 1 for asc, -1 for desc
 
 const ciTypes = ref([
-    { label: 'All Types', value: null },
-    { label: 'UPS', value: 'UPS' },
-    { label: 'Application', value: 'APPLICATION' },
-    { label: 'Server', value: 'SERVER' },
-    { label: 'Network Device', value: 'NETWORK_DEVICE' },
-    { label: 'Generic', value: 'GENERIC' }
+    { label: t('configurationItems.types.all'), value: null },
+    { label: t('configurationItems.types.ups'), value: 'UPS' },
+    { label: t('configurationItems.types.application'), value: 'APPLICATION' },
+    { label: t('configurationItems.types.server'), value: 'SERVER' },
+    { label: t('configurationItems.types.networkDevice'), value: 'NETWORK_DEVICE' },
+    { label: t('configurationItems.types.generic'), value: 'GENERIC' }
 ]);
 
 onMounted(async () => {
@@ -179,7 +181,7 @@ const loadItems = async (page = null) => {
         totalRecords.value = result.pagination?.total || 0;
         if (page) currentPage.value = page;
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load configuration items', life: 3000 });
+        toast.add({ severity: 'error', summary: t('configurationItems.toast.error.title'), detail: t('configurationItems.toast.error.load'), life: 3000 });
     } finally {
         loading.value = false;
     }
@@ -206,7 +208,7 @@ const openNewTab = () => {
     const uniqueId = `configuration-item-new-${Date.now()}`;
     tabsStore.openTab({
         id: uniqueId,
-        label: 'New Configuration Item',
+        label: t('configurationItems.tab.new'),
         icon: 'fas fa-plus',
         parentId: props.tabId,
         component: 'ConfigurationItemForm',
@@ -237,10 +239,10 @@ const deleteItem = async () => {
         await configurationItemsService.delete(item.value.uuid);
         deleteItemDialog.value = false;
         item.value = {};
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Configuration Item Deleted', life: 3000 });
+        toast.add({ severity: 'success', summary: t('configurationItems.toast.success.title'), detail: t('configurationItems.toast.success.delete'), life: 3000 });
         await loadItems();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete configuration item', life: 3000 });
+        toast.add({ severity: 'error', summary: t('configurationItems.toast.error.title'), detail: t('configurationItems.toast.error.delete'), life: 3000 });
     }
 };
 
@@ -257,10 +259,10 @@ const deleteSelectedItems = async () => {
         await Promise.all(selectedItems.value.map(item => configurationItemsService.delete(item.uuid)));
         deleteItemsDialog.value = false;
         selectedItems.value = null;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Configuration Items Deleted', life: 3000 });
+        toast.add({ severity: 'success', summary: t('configurationItems.toast.success.title'), detail: t('configurationItems.toast.success.deleteMany'), life: 3000 });
         await loadItems();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete configuration items', life: 3000 });
+        toast.add({ severity: 'error', summary: t('configurationItems.toast.error.title'), detail: t('configurationItems.toast.error.deleteMany'), life: 3000 });
     }
 };
 

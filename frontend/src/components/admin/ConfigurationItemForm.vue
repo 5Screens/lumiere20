@@ -1,26 +1,26 @@
 <template>
     <div class="configuration-item-form">
         <div class="form-header">
-            <h2>{{ mode === 'create' ? 'New Configuration Item' : 'Edit Configuration Item' }}</h2>
+            <h2>{{ mode === 'create' ? $t('configurationItemForm.title.create') : $t('configurationItemForm.title.edit') }}</h2>
         </div>
 
         <div class="form-content">
             <div class="form-section">
-                <h3>Basic Information</h3>
+                <h3>{{ $t('configurationItemForm.sections.basicInfo') }}</h3>
                 
                 <div class="form-field">
-                    <label for="name" class="required">Name</label>
+                    <label for="name" class="required">{{ $t('configurationItemForm.fields.name.label') }}</label>
                     <InputText 
                         id="name" 
                         v-model.trim="formData.name" 
                         :invalid="submitted && !formData.name"
                         fluid 
                     />
-                    <small v-if="submitted && !formData.name" class="error-message">Name is required.</small>
+                    <small v-if="submitted && !formData.name" class="error-message">{{ $t('configurationItemForm.fields.name.required') }}</small>
                 </div>
 
                 <div class="form-field">
-                    <label for="description">Description</label>
+                    <label for="description">{{ $t('configurationItemForm.fields.description.label') }}</label>
                     <Textarea 
                         id="description" 
                         v-model="formData.description" 
@@ -30,14 +30,14 @@
                 </div>
 
                 <div class="form-field">
-                    <label for="ci_type" class="required">Type</label>
+                    <label for="ci_type" class="required">{{ $t('configurationItemForm.fields.type.label') }}</label>
                     <Select 
                         id="ci_type" 
                         v-model="formData.ci_type" 
                         :options="ciTypes" 
                         optionLabel="label" 
                         optionValue="value" 
-                        placeholder="Select a Type" 
+                        :placeholder="$t('configurationItemForm.fields.type.placeholder')" 
                         fluid 
                         @change="onTypeChange"
                     />
@@ -46,7 +46,7 @@
 
             <!-- Extended Fields -->
             <div v-if="formData.ci_type && formData.ci_type !== 'GENERIC'" class="form-section">
-                <h3>Extended Fields</h3>
+                <h3>{{ $t('configurationItemForm.sections.extendedFields') }}</h3>
                 
                 <div v-for="field in getExtendedFields(formData.ci_type)" :key="field.name" class="form-field">
                     <label :for="field.name" :class="{ required: field.required }">
@@ -78,8 +78,8 @@
         </div>
 
         <div class="form-actions">
-            <Button label="Cancel" icon="pi pi-times" severity="secondary" @click="handleCancel" />
-            <Button label="Save" icon="pi pi-check" @click="handleSave" :loading="saving" />
+            <Button :label="$t('configurationItemForm.actions.cancel')" icon="pi pi-times" severity="secondary" @click="handleCancel" />
+            <Button :label="$t('configurationItemForm.actions.save')" icon="pi pi-check" @click="handleSave" :loading="saving" />
         </div>
 
         <Toast />
@@ -89,6 +89,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
+import { useI18n } from 'vue-i18n';
 import { useTabsStore } from '@/stores/tabsStore';
 import configurationItemsService from '@/services/configurationItemsService';
 import InputText from 'primevue/inputtext';
@@ -116,6 +117,7 @@ const props = defineProps({
 });
 
 const toast = useToast();
+const { t } = useI18n();
 const tabsStore = useTabsStore();
 
 const formData = ref({
@@ -130,11 +132,11 @@ const saving = ref(false);
 const schemas = ref({});
 
 const ciTypes = ref([
-    { label: 'UPS', value: 'UPS' },
-    { label: 'Application', value: 'APPLICATION' },
-    { label: 'Server', value: 'SERVER' },
-    { label: 'Network Device', value: 'NETWORK_DEVICE' },
-    { label: 'Generic', value: 'GENERIC' }
+    { label: t('configurationItems.types.ups'), value: 'UPS' },
+    { label: t('configurationItems.types.application'), value: 'APPLICATION' },
+    { label: t('configurationItems.types.server'), value: 'SERVER' },
+    { label: t('configurationItems.types.networkDevice'), value: 'NETWORK_DEVICE' },
+    { label: t('configurationItems.types.generic'), value: 'GENERIC' }
 ]);
 
 onMounted(async () => {
@@ -152,7 +154,7 @@ const loadSchemas = async () => {
     try {
         schemas.value = await configurationItemsService.getSchemas();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load CI schemas', life: 3000 });
+        toast.add({ severity: 'error', summary: t('configurationItemForm.toast.error.title'), detail: t('configurationItemForm.toast.error.loadSchemas'), life: 3000 });
     }
 };
 
@@ -164,7 +166,7 @@ const loadItem = async () => {
             extended_core_fields: item.extended_core_fields || {}
         };
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load configuration item', life: 3000 });
+        toast.add({ severity: 'error', summary: t('configurationItemForm.toast.error.title'), detail: t('configurationItemForm.toast.error.loadItem'), life: 3000 });
     }
 };
 
@@ -195,7 +197,7 @@ const handleSave = async () => {
     submitted.value = true;
 
     if (!formData.value.name?.trim()) {
-        toast.add({ severity: 'warn', summary: 'Validation Error', detail: 'Name is required', life: 3000 });
+        toast.add({ severity: 'warn', summary: t('configurationItemForm.toast.validation.title'), detail: t('configurationItemForm.toast.validation.nameRequired'), life: 3000 });
         return;
     }
 
@@ -204,16 +206,16 @@ const handleSave = async () => {
         
         if (props.mode === 'edit') {
             await configurationItemsService.update(props.objectId, formData.value);
-            toast.add({ severity: 'success', summary: 'Success', detail: 'Configuration Item updated', life: 3000 });
+            toast.add({ severity: 'success', summary: t('configurationItemForm.toast.success.title'), detail: t('configurationItemForm.toast.success.update'), life: 3000 });
         } else {
             await configurationItemsService.create(formData.value);
-            toast.add({ severity: 'success', summary: 'Success', detail: 'Configuration Item created', life: 3000 });
+            toast.add({ severity: 'success', summary: t('configurationItemForm.toast.success.title'), detail: t('configurationItemForm.toast.success.create'), life: 3000 });
         }
         
         // Close the tab after successful save
         tabsStore.closeTab(props.tabId);
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: error.message || 'Failed to save configuration item', life: 3000 });
+        toast.add({ severity: 'error', summary: t('configurationItemForm.toast.error.title'), detail: error.message || t('configurationItemForm.toast.error.save'), life: 3000 });
     } finally {
         saving.value = false;
     }
