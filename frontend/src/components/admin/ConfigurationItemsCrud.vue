@@ -141,6 +141,7 @@ const ciTypes = ref([
 ]);
 
 onMounted(async () => {
+    console.log('[ConfigurationItemsCrud] Mounted with tabId:', props.tabId);
     await loadItems();
 });
 
@@ -172,8 +173,10 @@ const onSearch = () => {
 };
 
 const openNewTab = () => {
+    // Generate unique ID for each new tab to allow multiple creations
+    const uniqueId = `configuration-item-new-${Date.now()}`;
     tabsStore.openTab({
-        id: 'configuration-item-new',
+        id: uniqueId,
         label: 'New Configuration Item',
         icon: 'fas fa-plus',
         parentId: props.tabId,

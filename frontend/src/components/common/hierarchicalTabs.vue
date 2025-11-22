@@ -47,6 +47,7 @@
           <component 
             v-if="tab.component"
             :is="tab.component"
+            :tabId="tab.id_tab"
           />
           <!-- Composant par défaut pour les grilles -->
           <ObjectsTab 

@@ -138,9 +138,12 @@ const ciTypes = ref([
 ]);
 
 onMounted(async () => {
+    console.log('[ConfigurationItemForm] Mounted with props:', { mode: props.mode, objectId: props.objectId, tabId: props.tabId });
+    
     await loadSchemas();
     
     if (props.mode === 'edit' && props.objectId) {
+        console.log('[ConfigurationItemForm] Loading item:', props.objectId);
         await loadItem();
     }
 });
@@ -251,7 +254,7 @@ const handleCancel = () => {
 .form-section {
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background: var(--surface-color, #fff);
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
 }
