@@ -11,7 +11,7 @@
                 </template>
 
                 <template #end>
-                    <Button :label="$t('configurationItems.actions.export')" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                    <Button :label="$t('configurationItems.actions.export')" icon="pi pi-file-export" severity="secondary" @click="exportCSV($event)" />
                 </template>
             </Toolbar>
 
@@ -40,12 +40,15 @@
             >
                 <template #header>
                     <div class="flex justify-between">
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" />
-                        </IconField>
+                        <div class="flex gap-2">
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" />
+                            </IconField>
+                            <Button icon="pi pi-refresh" severity="secondary" @click="loadItems()" :loading="loading" />
+                        </div>
                         <Button type="button" icon="pi pi-filter-slash" :label="$t('configurationItems.actions.clearFilters')" variant="outlined" @click="clearFilters()" />
                     </div>
                 </template>
