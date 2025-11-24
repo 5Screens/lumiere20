@@ -10,6 +10,9 @@ import App from './App.vue'
 import i18n from './i18n'
 import { useUserProfileStore } from './stores/userProfileStore'
 
+// Tailwind CSS
+import './assets/styles/tailwind.css'
+
 // PrimeVue CSS - PrimeVue v4 uses CSS-in-JS theming, no need to import theme CSS
 import 'primeicons/primeicons.css'
 
