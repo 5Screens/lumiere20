@@ -19,14 +19,16 @@
                 ref="dt"
                 v-model:selection="selectedItems"
                 v-model:contextMenuSelection="selectedItem"
+                v-model:filters="filters"
                 :value="items"
                 dataKey="uuid"
                 :paginator="true"
                 :rows="pageSize"
                 :totalRecords="totalRecords"
                 :lazy="true"
-                :filters="filters"
                 :loading="loading"
+                filterDisplay="menu"
+                :globalFilterFields="['name', 'ci_type', 'description']"
                 contextMenu
                 @page="onPage"
                 @sort="onSort"
@@ -37,35 +39,49 @@
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} configuration items"
             >
                 <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">{{ $t('configurationItems.table.title') }}</h4>
-                        <div class="flex gap-2">
-                            <Select v-model="selectedCiType" :options="ciTypes" optionLabel="label" optionValue="value" :placeholder="$t('configurationItems.filter.placeholder')" @change="loadItems" class="w-48" />
-                            <IconField>
-                                <InputIcon>
-                                    <i class="pi pi-search" />
-                                </InputIcon>
-                                <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" @input="onSearch" />
-                            </IconField>
-                        </div>
+                    <div class="flex justify-between">
+                        <Button type="button" icon="pi pi-filter-slash" :label="$t('configurationItems.actions.clearFilters')" variant="outlined" @click="clearFilters()" />
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" />
+                        </IconField>
                     </div>
                 </template>
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="name" :header="$t('configurationItems.table.columns.name')" sortable style="min-width: 16rem"></Column>
-                <Column field="ci_type" :header="$t('configurationItems.table.columns.type')" sortable style="min-width: 10rem">
-                    <template #body="slotProps">
-                        <Tag :value="slotProps.data.ci_type" :severity="getTypeSeverity(slotProps.data.ci_type)" />
+                <Column field="name" :header="$t('configurationItems.table.columns.name')" sortable style="min-width: 16rem">
+                    <template #body="{ data }">
+                        {{ data.name }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText v-model="filterModel.value" type="text" :placeholder="$t('configurationItems.search.placeholder')" />
+                    </template>
+                </Column>
+                <Column field="ci_type" :header="$t('configurationItems.table.columns.type')" sortable :filterMenuStyle="{ width: '14rem' }" style="min-width: 10rem">
+                    <template #body="{ data }">
+                        <Tag :value="data.ci_type" :severity="getTypeSeverity(data.ci_type)" />
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <Select v-model="filterModel.value" :options="ciTypeOptions" optionLabel="label" optionValue="value" :placeholder="$t('configurationItems.filter.placeholder')" showClear>
+                            <template #option="slotProps">
+                                <Tag :value="slotProps.option.value" :severity="getTypeSeverity(slotProps.option.value)" />
+                            </template>
+                        </Select>
                     </template>
                 </Column>
                 <Column field="description" :header="$t('configurationItems.table.columns.description')" sortable style="min-width: 20rem">
-                    <template #body="slotProps">
-                        <span class="text-ellipsis">{{ slotProps.data.description || '-' }}</span>
+                    <template #body="{ data }">
+                        <span class="text-ellipsis">{{ data.description || '-' }}</span>
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <InputText v-model="filterModel.value" type="text" :placeholder="$t('configurationItems.search.placeholder')" />
                     </template>
                 </Column>
-                <Column field="created_at" :header="$t('configurationItems.table.columns.created')" sortable style="min-width: 12rem">
-                    <template #body="slotProps">
-                        {{ formatDate(slotProps.data.created_at) }}
+                <Column field="created_at" :header="$t('configurationItems.table.columns.created')" sortable dataType="date" style="min-width: 12rem">
+                    <template #body="{ data }">
+                        {{ formatDate(data.created_at) }}
                     </template>
                 </Column>
             </DataTable>
@@ -99,7 +115,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import { FilterMatchMode } from '@primevue/core/api';
+import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
 import { useTabsStore } from '@/stores/tabsStore';
@@ -137,10 +153,17 @@ const deleteItemsDialog = ref(false);
 const item = ref({});
 const selectedItem = ref();
 const selectedItems = ref();
-const selectedCiType = ref(null);
-const filters = ref({
-    'global': { value: null, matchMode: FilterMatchMode.CONTAINS }
-});
+
+const initFilters = () => {
+    return {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+        ci_type: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+        description: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
+    };
+};
+
+const filters = ref(initFilters());
 const loading = ref(false);
 const totalRecords = ref(0);
 const currentPage = ref(1);
@@ -148,8 +171,7 @@ const pageSize = PAGINATION_CONFIG.pageSizes['Configuration_items'] || 25;
 const sortField = ref('name');
 const sortOrder = ref(1); // 1 for asc, -1 for desc
 
-const ciTypes = ref([
-    { label: t('configurationItems.types.all'), value: null },
+const ciTypeOptions = ref([
     { label: t('configurationItems.types.ups'), value: 'UPS' },
     { label: t('configurationItems.types.application'), value: 'APPLICATION' },
     { label: t('configurationItems.types.server'), value: 'SERVER' },
@@ -179,7 +201,6 @@ const loadItems = async (page = null) => {
     try {
         loading.value = true;
         const result = await configurationItemsService.getAll({
-            ci_type: selectedCiType.value,
             search: filters.value.global.value || '',
             page: page || currentPage.value,
             limit: pageSize,
@@ -207,9 +228,8 @@ const onSort = (event) => {
     loadItems();
 };
 
-const onSearch = () => {
-    currentPage.value = 1;
-    loadItems(1);
+const clearFilters = () => {
+    filters.value = initFilters();
 };
 
 const openNewTab = () => {

@@ -423,7 +423,8 @@ export default {
     delete: 'Delete',
     export: 'Export',
     edit: 'Edit',
-    remove: 'Remove'
+    remove: 'Remove',
+    clearFilters: 'Clear'
   },
   
   // Table headers

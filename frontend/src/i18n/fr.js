@@ -514,7 +514,8 @@ export default {
     delete: 'Supprimer',
     export: 'Exporter',
     edit: 'Modifier',
-    remove: 'Supprimer'
+    remove: 'Retirer',
+    clearFilters: 'Effacer'
   },
   
   // En-têtes de table
