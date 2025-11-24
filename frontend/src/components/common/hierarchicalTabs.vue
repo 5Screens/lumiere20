@@ -37,6 +37,15 @@
             </div>
             <div class="secondary-tab-body">
               <span class="tab-info">{{ $t('common.backToMain') }}</span>
+              <!-- Affichage des filtres actifs sous forme de badges -->
+              <span
+                v-for="(filter, index) in activeFilters"
+                :key="index"
+                class="tab-info level-badge"
+                :title="getFilterLabel(filter) + ': ' + formatFilterValue(filter)"
+              >
+                {{ getFilterLabel(filter) }}: {{ formatFilterValue(filter) }}
+              </span>
             </div>
           </div>
         </div>
@@ -191,6 +200,7 @@
 
 <script>
 import { useTabsStore } from '@/stores/tabsStore'
+import { useFilterStore } from '@/stores/filterStore'
 import { getClassByName } from '@/services/classMapping'
 import ObjectsTab from '@/components/objectsTab.vue'
 import ObjectCreationsAndUpdates from '@/components/coreForms/objectCreationsAndUpdates.vue'
@@ -206,12 +216,24 @@ export default {
   setup() {
     console.log('[HierarchicalTabs] Exécution de setup()')
     const store = useTabsStore()
-    return { 
+    const filterStore = useFilterStore()
+    return {
       store,
+      filterStore,
       getClassByName // Exposer la fonction au template
     }
   },
   computed: {
+    /**
+     * Retourne les filtres actifs pour l'onglet parent actif
+     */
+    activeFilters() {
+      if (!this.store.activeTab || !this.store.activeTab.className) {
+        return []
+      }
+      const tableName = this.store.activeTab.className
+      return this.filterStore.getActiveFiltersForTable(tableName) || []
+    }
   },
   created() {
     console.log('[HierarchicalTabs] Exécution de created()')
@@ -374,6 +396,69 @@ export default {
 
       // Par défaut
       return { class: 'level-low', emoji: '🟢', label: level }
+    },
+
+    /**
+     * Récupère le label traduit d'un filtre
+     * @param {Object} filter - L'objet filtre contenant column
+     * @returns {string} - Label traduit ou nom de la colonne
+     */
+    getFilterLabel(filter) {
+      if (!filter || !filter.column) return 'N/A'
+
+      // Récupérer la configuration du filtre pour obtenir le label
+      if (this.store.activeTab && this.store.activeTab.className) {
+        const filterConfig = this.filterStore.getConfigForTable(this.store.activeTab.className)
+        if (filterConfig) {
+          const config = filterConfig.find(f => f.column === filter.column)
+          if (config && config.label) {
+            // Appliquer la traduction sur le label (qui est une clé de traduction)
+            return this.$t(config.label)
+          }
+        }
+      }
+
+      // Sinon, formater le nom de colonne (remplacer _ par espaces et capitaliser)
+      return filter.column
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    },
+
+    /**
+     * Formate la valeur d'un filtre pour l'affichage
+     * @param {Object} filter - L'objet filtre contenant column, type et value
+     * @returns {string} - Valeur formatée pour l'affichage
+     */
+    formatFilterValue(filter) {
+      if (!filter || !filter.value) {
+        // Gérer les filtres qui n'ont pas besoin de valeur
+        const noValueOperators = ['is_null', 'is_not_null', 'is_true', 'is_false']
+        if (filter.type && noValueOperators.includes(filter.type)) {
+          return this.$t(`filters.${filter.type}`) || filter.type
+        }
+        return 'N/A'
+      }
+
+      const value = filter.value
+
+      // Si c'est un tableau
+      if (Array.isArray(value)) {
+        if (value.length === 0) return 'N/A'
+        if (value.length === 1) return value[0]
+        return value.join(', ')
+      }
+
+      // Si c'est un objet (ex: date_range)
+      if (typeof value === 'object' && value !== null) {
+        const parts = []
+        if (value.gte) parts.push(`≥ ${value.gte}`)
+        if (value.lte) parts.push(`≤ ${value.lte}`)
+        return parts.length > 0 ? parts.join(' & ') : 'N/A'
+      }
+
+      // Sinon, retourner la valeur telle quelle
+      return value.toString()
     }
   }
 }
