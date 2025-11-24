@@ -33,10 +33,10 @@
           <div class="secondary-tab-main">
             <div class="secondary-tab-head">
               <i v-if="store.activeTab.icon" class="fas fa-table"></i>
-              <span class="tab-title">Filtres de la table</span>
+              <span class="tab-title">{{ $t('common.tableFilters') }}</span>
             </div>
             <div class="secondary-tab-body">
-              <span class="tab-info">Retour à la vue principale</span>
+              <span class="tab-info">{{ $t('common.backToMain') }}</span>
             </div>
           </div>
         </div>
@@ -60,7 +60,7 @@
           <div class="secondary-tab-body">
             <!-- ID -->
             <span class="tab-info" v-if="tab.objectId" :title="tab.objectId">
-              ID: {{ tab.objectId }}
+              {{ $t('common.id') }}: {{ tab.objectId }}
             </span>
 
             <!-- Statut -->
@@ -73,71 +73,71 @@
               <span class="tab-info level-badge"
                     v-if="tab.priority"
                     :class="getLevelBadge(tab.priority).class"
-                    :title="'Priorité: ' + tab.priority">
-                Priorité : {{ getLevelBadge(tab.priority).emoji }} {{ getLevelBadge(tab.priority).label }}
+                    :title="$t('common.priority') + ': ' + tab.priority">
+                {{ $t('common.priority') }} : {{ getLevelBadge(tab.priority).emoji }} {{ getLevelBadge(tab.priority).label }}
               </span>
               <span class="tab-info level-badge"
                     v-if="tab.impact"
-                    :title="'Impact: ' + (tab.impactLabel || tab.impact)">
-                Impact : {{ getLevelBadge(tab.impact).emoji }} {{ tab.impactLabel || tab.impact }}
+                    :title="$t('common.impact') + ': ' + (tab.impactLabel || tab.impact)">
+                {{ $t('common.impact') }} : {{ getLevelBadge(tab.impact).emoji }} {{ tab.impactLabel || tab.impact }}
               </span>
               <span class="tab-info level-badge"
                     v-if="tab.urgency"
-                    :title="'Urgence: ' + (tab.urgencyLabel || tab.urgency)">
-                Urgence : {{ getLevelBadge(tab.urgency).emoji }} {{ tab.urgencyLabel || tab.urgency }}
+                    :title="$t('common.urgency') + ': ' + (tab.urgencyLabel || tab.urgency)">
+                {{ $t('common.urgency') }} : {{ getLevelBadge(tab.urgency).emoji }} {{ tab.urgencyLabel || tab.urgency }}
               </span>
-              <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
+              <span class="tab-info" v-if="tab.writerName">{{ $t('common.createdBy') }}: {{ tab.writerName }}</span>
               <span class="tab-info" v-if="tab.updatedAt">
-                Modifié : {{ formatDate(tab.updatedAt) }}
+                {{ $t('common.modified') }} : {{ formatDate(tab.updatedAt) }}
               </span>
               <span class="tab-info" v-else-if="tab.createdAt">
-                Créé : {{ formatDate(tab.createdAt) }}
+                {{ $t('common.created') }} : {{ formatDate(tab.createdAt) }}
               </span>
             </template>
 
             <!-- Informations spécifiques PROBLEM -->
             <template v-else-if="tab.ticketType === 'PROBLEM'">
-              <span class="tab-info" v-if="tab.category">Catégorie: {{ tab.category }}</span>
+              <span class="tab-info" v-if="tab.category">{{ $t('common.category') }}: {{ tab.category }}</span>
               <span class="tab-info level-badge"
                     v-if="tab.impact"
-                    :title="'Impact: ' + (tab.impactLabel || tab.impact)">
-                Catégorie : {{ getLevelBadge(tab.impact).emoji }} {{ tab.impactLabel || tab.impact }}
+                    :title="$t('common.impact') + ': ' + (tab.impactLabel || tab.impact)">
+                {{ $t('common.impact') }} : {{ getLevelBadge(tab.impact).emoji }} {{ tab.impactLabel || tab.impact }}
               </span>
               <span class="tab-info level-badge"
                     v-if="tab.urgency"
-                    :title="'Urgence: ' + (tab.urgencyLabel || tab.urgency)">
-                Urgence : {{ getLevelBadge(tab.urgency).emoji }} {{ tab.urgencyLabel || tab.urgency }}
+                    :title="$t('common.urgency') + ': ' + (tab.urgencyLabel || tab.urgency)">
+                {{ $t('common.urgency') }} : {{ getLevelBadge(tab.urgency).emoji }} {{ tab.urgencyLabel || tab.urgency }}
               </span>
-              <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
+              <span class="tab-info" v-if="tab.writerName">{{ $t('common.createdBy') }}: {{ tab.writerName }}</span>
               <span class="tab-info" v-if="tab.updatedAt">
-                Modifié : {{ formatDate(tab.updatedAt) }}
+                {{ $t('common.modified') }} : {{ formatDate(tab.updatedAt) }}
               </span>
               <span class="tab-info" v-else-if="tab.createdAt">
-                Créé : {{ formatDate(tab.createdAt) }}
+                {{ $t('common.created') }} : {{ formatDate(tab.createdAt) }}
               </span>
             </template>
 
             <!-- Informations spécifiques TASK -->
             <template v-else-if="tab.ticketType === 'TASK'">
-              <span class="tab-info" v-if="tab.requestedByName">Demandé par: {{ tab.requestedByName }}</span>
-              <span class="tab-info" v-if="tab.requestedForName">Demandé pour: {{ tab.requestedForName }}</span>
-              <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
+              <span class="tab-info" v-if="tab.requestedByName">{{ $t('common.requestedBy') }}: {{ tab.requestedByName }}</span>
+              <span class="tab-info" v-if="tab.requestedForName">{{ $t('common.requestedFor') }}: {{ tab.requestedForName }}</span>
+              <span class="tab-info" v-if="tab.writerName">{{ $t('common.createdBy') }}: {{ tab.writerName }}</span>
               <span class="tab-info" v-if="tab.updatedAt">
-                Modifié : {{ formatDate(tab.updatedAt) }}
+                {{ $t('common.modified') }} : {{ formatDate(tab.updatedAt) }}
               </span>
               <span class="tab-info" v-else-if="tab.createdAt">
-                Créé : {{ formatDate(tab.createdAt) }}
+                {{ $t('common.created') }} : {{ formatDate(tab.createdAt) }}
               </span>
             </template>
 
             <!-- Informations génériques pour autres types -->
             <template v-else>
-              <span class="tab-info" v-if="tab.writerName">Créé par: {{ tab.writerName }}</span>
+              <span class="tab-info" v-if="tab.writerName">{{ $t('common.createdBy') }}: {{ tab.writerName }}</span>
               <span class="tab-info" v-if="tab.updatedAt">
-                Modifié : {{ formatDate(tab.updatedAt) }}
+                {{ $t('common.modified') }} : {{ formatDate(tab.updatedAt) }}
               </span>
               <span class="tab-info" v-else-if="tab.createdAt">
-                Créé : {{ formatDate(tab.createdAt) }}
+                {{ $t('common.created') }} : {{ formatDate(tab.createdAt) }}
               </span>
             </template>
           </div>

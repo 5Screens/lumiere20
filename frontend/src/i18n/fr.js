@@ -60,6 +60,16 @@ export default {
     underConstruction: 'Cette fonctionnalité est en cours de construction',
     totalFetchedData: 'Total de lignes trouvées : ',
     totalLoadedData: 'en prévisualisation',
+    tableFilters: 'Filtres de la table',
+    backToMain: 'Retour à la vue principale',
+    priority: 'Priorité',
+    impact: 'Impact',
+    urgency: 'Urgence',
+    category: 'Catégorie',
+    modified: 'Modifié',
+    created: 'Créé',
+    requestedBy: 'Demandé par',
+    requestedFor: 'Demandé pour'
   },
   tabs: {
     symptoms: 'Symptômes',

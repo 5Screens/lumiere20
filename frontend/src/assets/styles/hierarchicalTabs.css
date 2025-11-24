@@ -140,6 +140,7 @@
 
 /* Titre de l'onglet - texte principal affiché dans l'onglet */
 .tab-title {
+  flex-grow: 1;
   margin-right: 8px;
   color: inherit; /* Hérite la couleur du parent (.tab) */
 }

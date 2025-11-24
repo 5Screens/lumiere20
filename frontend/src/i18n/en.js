@@ -271,7 +271,17 @@ export default {
     created_at: 'Created at',
     updated_at: 'Updated at',
     assigned_at: 'Assigned at',
-    no_data: 'No data'
+    no_data: 'No data',
+    tableFilters: 'Table filters',
+    backToMain: 'Back to main view',
+    priority: 'Priority',
+    impact: 'Impact',
+    urgency: 'Urgency',
+    category: 'Category',
+    modified: 'Modified',
+    created: 'Created',
+    requestedBy: 'Requested by',
+    requestedFor: 'Requested for'
   },
   notifications: {
     title: 'Notification',

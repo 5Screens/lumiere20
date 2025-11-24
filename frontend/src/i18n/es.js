@@ -53,7 +53,17 @@ export default {
     modification_date: 'Última actualización el',
     closure_date: 'Cerrado el',
     writer_name: 'Creado por',
-    uuid: 'Identificador'
+    uuid: 'Identificador',
+    tableFilters: 'Filtros de la tabla',
+    backToMain: 'Volver a la vista principal',
+    priority: 'Prioridad',
+    impact: 'Impacto',
+    urgency: 'Urgencia',
+    category: 'Categoría',
+    modified: 'Modificado',
+    created: 'Creado',
+    requestedBy: 'Solicitado por',
+    requestedFor: 'Solicitado para'
   },
   tabs: {
     symptoms: 'Síntomas',
