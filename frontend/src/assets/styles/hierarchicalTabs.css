@@ -181,6 +181,7 @@
   border: 1px solid rgb(176, 176, 176);
   color: var(--text-color);
   /*color: rgb(26, 26, 26);*/
+  text-align: left;
 }
 
 /* Badge de priorité avec couleur - identifie visuellement le niveau de priorité */
