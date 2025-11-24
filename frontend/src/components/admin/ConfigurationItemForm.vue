@@ -227,6 +227,13 @@ const handleCancel = () => {
 </script>
 
 <style scoped>
+.configuration-item-form,
+.configuration-item-form *,
+.configuration-item-form *::before,
+.configuration-item-form *::after {
+    transition: none !important;
+}
+
 .configuration-item-form {
     padding: 1.5rem;
     height: 100%;

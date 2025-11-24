@@ -362,5 +362,10 @@ const formatDate = (dateString) => {
 </script>
 
 <style scoped>
-/* No custom styles needed - using Tailwind classes */
+/* Disable all transitions to prevent theme change animations */
+:deep(*),
+:deep(*::before),
+:deep(*::after) {
+    transition: none !important;
+}
 </style>
