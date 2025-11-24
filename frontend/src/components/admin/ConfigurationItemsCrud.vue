@@ -2,10 +2,12 @@
     <div class="configuration-items-crud">
         <ContextMenu ref="cm" :model="menuModel" @hide="selectedItem = null" />
         <div class="card">
-            <Toolbar class="mb-6">
+            <Toolbar class="mb-6 toolbar-no-border">
                 <template #start>
-                    <Button :label="$t('configurationItems.actions.new')" icon="pi pi-plus" class="mr-2" @click="openNewTab" />
-                    <Button :label="$t('configurationItems.actions.delete')" icon="pi pi-trash" severity="danger" variant="outlined" @click="confirmDeleteSelected" :disabled="!selectedItems || !selectedItems.length" />
+                    <ButtonGroup>
+                        <Button :label="$t('configurationItems.actions.new')" icon="pi pi-plus" variant="outlined" @click="openNewTab" />
+                        <Button :label="$t('configurationItems.actions.delete')" icon="pi pi-trash" severity="danger" variant="outlined" @click="confirmDeleteSelected" :disabled="!selectedItems || !selectedItems.length" />
+                    </ButtonGroup>
                 </template>
 
                 <template #end>
@@ -115,6 +117,7 @@ import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import Toast from 'primevue/toast';
 import ContextMenu from 'primevue/contextmenu';
+import ButtonGroup from 'primevue/buttongroup';
 
 const props = defineProps({
     tabId: {
@@ -309,5 +312,11 @@ const formatDate = (dateString) => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Remove toolbar border */
+.toolbar-no-border {
+    border: none !important;
+    background: transparent !important;
 }
 </style>
