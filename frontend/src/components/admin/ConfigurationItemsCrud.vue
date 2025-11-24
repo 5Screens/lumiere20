@@ -1,8 +1,8 @@
 <template>
-    <div class="configuration-items-crud">
+    <div class="p-4">
         <ContextMenu ref="cm" :model="menuModel" @hide="selectedItem = null" />
         <div class="card">
-            <Toolbar class="mb-6 toolbar-no-border">
+            <Toolbar class="mb-6 !border-0 !bg-transparent">
                 <template #start>
                     <ButtonGroup>
                         <Button :label="$t('configurationItems.actions.new')" icon="pi pi-plus" variant="outlined" @click="openNewTab" />
@@ -73,7 +73,7 @@
                 </Column>
                 <Column field="description" :header="$t('configurationItems.table.columns.description')" sortable style="min-width: 20rem">
                     <template #body="{ data }">
-                        <span class="text-ellipsis">{{ data.description || '-' }}</span>
+                        <span class="block max-w-[300px] truncate">{{ data.description || '-' }}</span>
                     </template>
                     <template #filter="{ filterModel }">
                         <InputText v-model="filterModel.value" type="text" :placeholder="$t('configurationItems.search.placeholder')" />
@@ -322,21 +322,5 @@ const formatDate = (dateString) => {
 </script>
 
 <style scoped>
-.configuration-items-crud {
-    padding: 1rem;
-}
-
-.text-ellipsis {
-    display: block;
-    max-width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Remove toolbar border */
-.toolbar-no-border {
-    border: none !important;
-    background: transparent !important;
-}
+/* No custom styles needed - using Tailwind classes */
 </style>
