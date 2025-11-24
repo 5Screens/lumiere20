@@ -36,6 +36,18 @@ const app = createApp(App)
 app.use(router)
 app.use(i18n)
 app.use(pinia)
+
+// Initialize user profile store AFTER Pinia is installed
+const userProfileStore = useUserProfileStore()
+
+// Définir le thème et la langue depuis le store persistant
+document.documentElement.setAttribute('data-theme', userProfileStore.theme)
+
+// S'assurer que la langue est définie avant le montage de l'application
+i18n.global.locale.value = userProfileStore.language
+console.log(`Langue initialisée depuis le store: ${userProfileStore.language}`)
+
+// Configure PrimeVue with the user's language
 app.use(PrimeVue, {
     theme: {
         preset: Aura,
@@ -47,6 +59,8 @@ app.use(PrimeVue, {
             }
         }
     },
+    // Configure locale from i18n
+    locale: i18n.global.messages.value[userProfileStore.language]?.primevue || i18n.global.messages.value['en'].primevue,
     // Override primary color to use blue instead of green
     pt: {
         global: {
@@ -84,15 +98,5 @@ app.use(PrimeVue, {
 })
 app.use(ToastService)
 app.use(ConfirmationService)
-
-// Initialize user profile store, theme and language
-const userProfileStore = useUserProfileStore()
-
-// Définir le thème et la langue depuis le store persistant
-document.documentElement.setAttribute('data-theme', userProfileStore.theme)
-
-// S'assurer que la langue est définie avant le montage de l'application
-i18n.global.locale.value = userProfileStore.language
-console.log(`Langue initialisée depuis le store: ${userProfileStore.language}`)
 
 app.mount('#app')

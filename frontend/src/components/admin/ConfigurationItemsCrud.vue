@@ -36,7 +36,7 @@
                 :sortField="sortField"
                 :sortOrder="sortOrder"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} configuration items"
+                :currentPageReportTemplate="$t('configurationItems.pagination.showing')"
             >
                 <template #header>
                     <div class="flex justify-between">

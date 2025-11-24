@@ -177,6 +177,7 @@ import { useObjectStore } from '@/stores/objectStore'
 import { usePaneStore } from '@/stores/paneStore'
 import { usePopoverStore } from '@/stores/popoverStore'
 import { useUserProfileStore } from '@/stores/userProfileStore'
+import { usePrimeVueLocale } from '@/composables/usePrimeVueLocale'
 import HierarchicalTabs from '@/components/common/hierarchicalTabs.vue'
 import ProfilePane from '@/components/panes/ProfilePane.vue'
 import DynamicToolTipMenu from '@/components/panes/dynamicToolTipMenu.vue'
@@ -198,6 +199,9 @@ export default {
     const paneStore = usePaneStore()
     const popoverStore = usePopoverStore()
     const userProfileStore = useUserProfileStore()
+    
+    // Initialize PrimeVue locale synchronization
+    usePrimeVueLocale()
     
     // Types de panneaux disponibles
     const paneTypes = ['admin', 'configuration', 'data', 'serviceHub', 'sprintCenter']
