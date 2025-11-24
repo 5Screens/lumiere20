@@ -31,6 +31,11 @@
                 :globalFilterFields="['name', 'ci_type', 'description']"
                 resizableColumns
                 columnResizeMode="expand"
+                reorderableColumns
+                stateStorage="local"
+                stateKey="configuration-items-table"
+                editMode="cell"
+                @cellEditComplete="onCellEditComplete"
                 contextMenu
                 @page="onPage"
                 @sort="onSort"
@@ -49,24 +54,45 @@
                                 </InputIcon>
                                 <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" />
                             </IconField>
+                            <Button type="button" icon="pi pi-filter-slash" variant="outlined" @click="clearFilters()" />
+                            <Popover ref="columnTogglePopover">
+                                <template #default>
+                                    <div class="p-4">
+                                        <div class="flex flex-col gap-2">
+                                            <div v-for="col of toggleableColumns" :key="col.field" class="flex items-center gap-2">
+                                                <Checkbox v-model="selectedColumns" :inputId="col.field" :value="col" />
+                                                <label :for="col.field">{{ col.header }}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </Popover>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Button type="button" icon="pi pi-cog" severity="secondary" @click="toggleColumnSelector" />
                             <Button icon="pi pi-refresh" severity="secondary" @click="loadItems()" :loading="loading" style="margin-left: 0.75rem" />
                         </div>
-                        <Button type="button" icon="pi pi-filter-slash" :label="$t('configurationItems.actions.clearFilters')" variant="outlined" @click="clearFilters()" />
                     </div>
                 </template>
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false" class="no-resize"></Column>
-                <Column field="name" :header="$t('configurationItems.table.columns.name')" sortable style="min-width: 16rem">
+                <Column v-if="isColumnVisible('name')" field="name" :header="$t('configurationItems.table.columns.name')" sortable style="min-width: 16rem">
                     <template #body="{ data }">
                         {{ data.name }}
+                    </template>
+                    <template #editor="{ data, field }">
+                        <InputText v-model="data[field]" autofocus fluid />
                     </template>
                     <template #filter="{ filterModel }">
                         <InputText v-model="filterModel.value" type="text" :placeholder="$t('configurationItems.search.placeholder')" />
                     </template>
                 </Column>
-                <Column field="ci_type" :header="$t('configurationItems.table.columns.type')" sortable :filterMenuStyle="{ width: '14rem' }" style="min-width: 10rem">
+                <Column v-if="isColumnVisible('ci_type')" field="ci_type" :header="$t('configurationItems.table.columns.type')" sortable :filterMenuStyle="{ width: '14rem' }" style="min-width: 10rem">
                     <template #body="{ data }">
                         <Tag :value="data.ci_type" :severity="getTypeSeverity(data.ci_type)" />
+                    </template>
+                    <template #editor="{ data, field }">
+                        <Select v-model="data[field]" :options="ciTypeOptions" optionLabel="label" optionValue="value" autofocus fluid />
                     </template>
                     <template #filter="{ filterModel }">
                         <Select v-model="filterModel.value" :options="ciTypeOptions" optionLabel="label" optionValue="value" :placeholder="$t('configurationItems.filter.placeholder')" showClear>
@@ -76,15 +102,18 @@
                         </Select>
                     </template>
                 </Column>
-                <Column field="description" :header="$t('configurationItems.table.columns.description')" sortable style="min-width: 20rem">
+                <Column v-if="isColumnVisible('description')" field="description" :header="$t('configurationItems.table.columns.description')" sortable style="min-width: 20rem">
                     <template #body="{ data }">
                         <span class="block max-w-[300px] truncate">{{ data.description || '-' }}</span>
+                    </template>
+                    <template #editor="{ data, field }">
+                        <InputText v-model="data[field]" autofocus fluid />
                     </template>
                     <template #filter="{ filterModel }">
                         <InputText v-model="filterModel.value" type="text" :placeholder="$t('configurationItems.search.placeholder')" />
                     </template>
                 </Column>
-                <Column field="created_at" :header="$t('configurationItems.table.columns.created')" sortable dataType="date" style="min-width: 12rem">
+                <Column v-if="isColumnVisible('created_at')" field="created_at" :header="$t('configurationItems.table.columns.created')" sortable dataType="date" style="min-width: 12rem">
                     <template #body="{ data }">
                         {{ formatDate(data.created_at) }}
                     </template>
@@ -92,7 +121,7 @@
                         <DatePicker v-model="filterModel.value" dateFormat="dd/mm/yy" :placeholder="$t('configurationItems.search.placeholder')" showButtonBar />
                     </template>
                 </Column>
-                <Column field="updated_at" :header="$t('configurationItems.table.columns.updated')" sortable dataType="date" style="min-width: 12rem">
+                <Column v-if="isColumnVisible('updated_at')" field="updated_at" :header="$t('configurationItems.table.columns.updated')" sortable dataType="date" style="min-width: 12rem">
                     <template #body="{ data }">
                         {{ formatDate(data.updated_at) }}
                     </template>
@@ -125,7 +154,7 @@
             </template>
         </Dialog>
 
-        <Toast />
+        <Toast position="bottom-right" />
     </div>
 </template>
 
@@ -151,6 +180,8 @@ import Toast from 'primevue/toast';
 import ContextMenu from 'primevue/contextmenu';
 import ButtonGroup from 'primevue/buttongroup';
 import DatePicker from 'primevue/datepicker';
+import Popover from 'primevue/popover';
+import Checkbox from 'primevue/checkbox';
 
 const props = defineProps({
     tabId: {
@@ -164,6 +195,7 @@ const { t, locale } = useI18n();
 const tabsStore = useTabsStore();
 const cm = ref();
 const dt = ref();
+const columnTogglePopover = ref();
 const items = ref([]);
 const deleteItemDialog = ref(false);
 const deleteItemsDialog = ref(false);
@@ -171,6 +203,24 @@ const item = ref({});
 const selectedItem = ref();
 const selectedItems = ref();
 let searchTimeout = null;
+
+// Column toggle
+const toggleableColumns = computed(() => [
+    { field: 'name', header: t('configurationItems.table.columns.name') },
+    { field: 'ci_type', header: t('configurationItems.table.columns.type') },
+    { field: 'description', header: t('configurationItems.table.columns.description') },
+    { field: 'created_at', header: t('configurationItems.table.columns.created') },
+    { field: 'updated_at', header: t('configurationItems.table.columns.updated') }
+]);
+const selectedColumns = ref([...toggleableColumns.value]);
+
+const isColumnVisible = (field) => {
+    return selectedColumns.value.some(col => col.field === field);
+};
+
+const toggleColumnSelector = (event) => {
+    columnTogglePopover.value.toggle(event);
+};
 
 // Computed property for pagination template based on current locale
 const paginationTemplate = computed(() => {
@@ -363,6 +413,37 @@ const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+};
+
+const onCellEditComplete = async (event) => {
+    const { data, newValue, field } = event;
+    
+    // Skip if value hasn't changed
+    if (data[field] === newValue) return;
+    
+    try {
+        // Update the item via API
+        await configurationItemsService.update(data.uuid, { [field]: newValue });
+        
+        // Update local data
+        data[field] = newValue;
+        
+        toast.add({ 
+            severity: 'success', 
+            summary: t('configurationItems.toast.success.title'), 
+            detail: t('configurationItems.toast.success.update'), 
+            life: 3000 
+        });
+    } catch (error) {
+        // Revert the change on error
+        event.preventDefault();
+        toast.add({ 
+            severity: 'error', 
+            summary: t('configurationItems.toast.error.title'), 
+            detail: t('configurationItems.toast.error.update'), 
+            life: 3000 
+        });
+    }
 };
 </script>
 
