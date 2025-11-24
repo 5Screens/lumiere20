@@ -525,7 +525,8 @@ export default {
       name: 'Nom',
       type: 'Type',
       description: 'Description',
-      created: 'Créé le'
+      created: 'Créé le',
+      updated: 'Modifié le'
     }
   },
   

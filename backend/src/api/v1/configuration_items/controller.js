@@ -102,6 +102,22 @@ const deleteConfigurationItem = async (req, res) => {
 };
 
 /**
+ * Search configuration items with advanced filters
+ */
+const searchConfigurationItems = async (req, res) => {
+    try {
+        logger.info('[CMDB CONTROLLER] Searching configuration items with filters');
+        const searchParams = req.body;
+        
+        const result = await service.searchConfigurationItems(searchParams);
+        res.json(result);
+    } catch (error) {
+        logger.error('[CMDB CONTROLLER] Error searching configuration items:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
  * Get CI type schemas
  */
 const getCITypeSchemas = async (req, res) => {
@@ -121,5 +137,6 @@ module.exports = {
     createConfigurationItem,
     updateConfigurationItem,
     deleteConfigurationItem,
+    searchConfigurationItems,
     getCITypeSchemas
 };

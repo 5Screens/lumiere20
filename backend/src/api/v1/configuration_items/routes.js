@@ -8,6 +8,9 @@ router.get('/', controller.getConfigurationItems);
 // GET /api/v1/configuration_items/schemas - Get CI type schemas
 router.get('/schemas', controller.getCITypeSchemas);
 
+// POST /api/v1/configuration_items/search - Search with advanced filters
+router.post('/search', controller.searchConfigurationItems);
+
 // GET /api/v1/configuration_items/:uuid - Get configuration item by UUID
 router.get('/:uuid', controller.getConfigurationItemById);
 

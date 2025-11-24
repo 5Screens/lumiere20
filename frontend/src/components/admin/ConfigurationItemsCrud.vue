@@ -83,6 +83,17 @@
                     <template #body="{ data }">
                         {{ formatDate(data.created_at) }}
                     </template>
+                    <template #filter="{ filterModel }">
+                        <DatePicker v-model="filterModel.value" dateFormat="dd/mm/yy" :placeholder="$t('configurationItems.search.placeholder')" showButtonBar />
+                    </template>
+                </Column>
+                <Column field="updated_at" :header="$t('configurationItems.table.columns.updated')" sortable dataType="date" style="min-width: 12rem">
+                    <template #body="{ data }">
+                        {{ formatDate(data.updated_at) }}
+                    </template>
+                    <template #filter="{ filterModel }">
+                        <DatePicker v-model="filterModel.value" dateFormat="dd/mm/yy" :placeholder="$t('configurationItems.search.placeholder')" showButtonBar />
+                    </template>
                 </Column>
             </DataTable>
         </div>
@@ -134,6 +145,7 @@ import InputIcon from 'primevue/inputicon';
 import Toast from 'primevue/toast';
 import ContextMenu from 'primevue/contextmenu';
 import ButtonGroup from 'primevue/buttongroup';
+import DatePicker from 'primevue/datepicker';
 
 const props = defineProps({
     tabId: {
@@ -160,7 +172,9 @@ const initFilters = () => {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
         ci_type: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
-        description: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
+        description: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+        created_at: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
+        updated_at: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] }
     };
 };
 
@@ -198,8 +212,8 @@ watch(() => tabsStore.activeChildTabs.length, (newLength, oldLength) => {
     }
 });
 
-// Watch for global filter changes to trigger search with debounce
-watch(() => filters.value.global.value, () => {
+// Watch for any filter changes to trigger search with debounce
+watch(filters, () => {
     if (searchTimeout) {
         clearTimeout(searchTimeout);
     }
@@ -207,20 +221,23 @@ watch(() => filters.value.global.value, () => {
         currentPage.value = 1;
         loadItems(1);
     }, DEBOUNCE_DELAY_MS);
-});
+}, { deep: true });
 
 const loadItems = async (page = null) => {
     try {
         loading.value = true;
-        const result = await configurationItemsService.getAll({
-            search: filters.value.global.value || '',
+        
+        // Use the new search endpoint with PrimeVue filters format
+        const result = await configurationItemsService.search({
+            filters: filters.value,
+            sortField: sortField.value,
+            sortOrder: sortOrder.value,
             page: page || currentPage.value,
-            limit: pageSize,
-            sortBy: sortField.value,
-            sortDirection: sortOrder.value === 1 ? 'asc' : 'desc'
+            limit: pageSize
         });
+        
         items.value = result.data || [];
-        totalRecords.value = result.pagination?.total || 0;
+        totalRecords.value = result.total || 0;
         if (page) currentPage.value = page;
     } catch (error) {
         toast.add({ severity: 'error', summary: t('configurationItems.toast.error.title'), detail: t('configurationItems.toast.error.load'), life: 3000 });

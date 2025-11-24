@@ -434,7 +434,8 @@ export default {
       name: 'Name',
       type: 'Type',
       description: 'Description',
-      created: 'Created'
+      created: 'Created',
+      updated: 'Updated'
     }
   },
   

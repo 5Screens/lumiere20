@@ -5,7 +5,7 @@ import apiService from './apiService';
  */
 const configurationItemsService = {
   /**
-   * Get all configuration items with pagination and filters
+   * Get all configuration items with pagination and filters (legacy - simple search)
    * @param {Object} options - Query options
    * @returns {Promise<Object>} - Paginated configuration items
    */
@@ -20,6 +20,15 @@ const configurationItemsService = {
     };
     
     return await apiService.get('configuration_items', params);
+  },
+
+  /**
+   * Search configuration items with advanced filters (PrimeVue format)
+   * @param {Object} searchParams - Search parameters with PrimeVue filters
+   * @returns {Promise<Object>} - Search results
+   */
+  async search(searchParams = {}) {
+    return await apiService.post('configuration_items/search', searchParams);
   },
 
   /**
