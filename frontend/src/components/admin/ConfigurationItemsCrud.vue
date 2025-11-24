@@ -36,7 +36,7 @@
                 :sortField="sortField"
                 :sortOrder="sortOrder"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
-                :currentPageReportTemplate="$t('configurationItems.pagination.showing')"
+                :currentPageReportTemplate="paginationTemplate"
             >
                 <template #header>
                     <div class="flex justify-between">
@@ -125,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
@@ -155,7 +155,7 @@ const props = defineProps({
 });
 
 const toast = useToast();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const tabsStore = useTabsStore();
 const cm = ref();
 const dt = ref();
@@ -166,6 +166,17 @@ const item = ref({});
 const selectedItem = ref();
 const selectedItems = ref();
 let searchTimeout = null;
+
+// Computed property for pagination template based on current locale
+const paginationTemplate = computed(() => {
+    const templates = {
+        fr: 'Affichage de {first} à {last} sur {totalRecords} éléments de configuration',
+        en: 'Showing {first} to {last} of {totalRecords} configuration items',
+        es: 'Mostrando {first} a {last} de {totalRecords} elementos de configuración',
+        pt: 'Mostrando {first} a {last} de {totalRecords} itens de configuração'
+    };
+    return templates[locale.value] || templates.en;
+});
 
 const initFilters = () => {
     return {

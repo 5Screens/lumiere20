@@ -111,23 +111,49 @@ Les labels des filtres (Commence par, Contient, etc.) seront automatiquement tra
 
 Lorsque l'utilisateur change de langue via le `ProfilePane`, la locale PrimeVue est automatiquement mise à jour grâce au composable `usePrimeVueLocale`.
 
+## Templates de pagination personnalisés
+
+Pour les templates qui utilisent des placeholders PrimeVue (comme `{first}`, `{last}`, `{totalRecords}`), une computed property est nécessaire car ces placeholders ne passent pas par le système de traduction Vue-i18n.
+
+Exemple dans `ConfigurationItemsCrud.vue` :
+
+```javascript
+const paginationTemplate = computed(() => {
+    const templates = {
+        fr: 'Affichage de {first} à {last} sur {totalRecords} éléments de configuration',
+        en: 'Showing {first} to {last} of {totalRecords} configuration items',
+        es: 'Mostrando {first} a {last} de {totalRecords} elementos de configuración',
+        pt: 'Mostrando {first} a {last} de {totalRecords} itens de configuração'
+    };
+    return templates[locale.value] || templates.en;
+});
+```
+
+Utilisation dans le template :
+
+```vue
+<DataTable :currentPageReportTemplate="paginationTemplate">
+```
+
+## Langues supportées
+
+L'application supporte actuellement 4 langues avec traductions PrimeVue complètes :
+
+- **Français (fr)** - Langue par défaut
+- **Anglais (en)** - Fallback
+- **Espagnol (es)** - Complet
+- **Portugais (pt)** - Complet
+
 ## Ajout de nouvelles langues
 
 Pour ajouter une nouvelle langue :
 
-1. Ajouter la section `primevue` dans le fichier de traduction correspondant (ex: `es.js`, `pt.js`)
-2. Copier la structure depuis `fr.js` ou `en.js`
-3. Traduire toutes les clés
-
-Exemple pour l'espagnol (`es.js`) :
-
-```javascript
-primevue: {
-  startsWith: 'Comienza con',
-  contains: 'Contiene',
-  // ... autres traductions
-}
-```
+1. Créer un nouveau fichier dans `frontend/src/i18n/` (ex: `de.js` pour l'allemand)
+2. Ajouter la section `primevue` avec toutes les traductions
+3. Copier la structure depuis `fr.js` ou `en.js`
+4. Traduire toutes les clés
+5. Ajouter la langue dans `index.js`
+6. Mettre à jour les computed properties de pagination si nécessaire
 
 ## Référence complète
 
