@@ -29,6 +29,8 @@
                 :loading="loading"
                 filterDisplay="menu"
                 :globalFilterFields="['name', 'ci_type', 'description']"
+                resizableColumns
+                columnResizeMode="expand"
                 contextMenu
                 @page="onPage"
                 @sort="onSort"
@@ -53,7 +55,7 @@
                     </div>
                 </template>
 
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
+                <Column selectionMode="multiple" style="width: 3rem" :exportable="false" class="no-resize"></Column>
                 <Column field="name" :header="$t('configurationItems.table.columns.name')" sortable style="min-width: 16rem">
                     <template #body="{ data }">
                         {{ data.name }}
@@ -370,5 +372,11 @@ const formatDate = (dateString) => {
 :deep(*::before),
 :deep(*::after) {
     transition: none !important;
+}
+
+/* Disable resize handle on checkbox column */
+:deep(th.no-resize .p-datatable-column-resizer) {
+    display: none !important;
+    pointer-events: none !important;
 }
 </style>
