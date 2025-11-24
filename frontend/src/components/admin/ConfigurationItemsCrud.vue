@@ -40,14 +40,14 @@
             >
                 <template #header>
                     <div class="flex justify-between">
-                        <div class="flex gap-2">
+                        <div class="flex items-center">
                             <IconField>
                                 <InputIcon>
                                     <i class="pi pi-search" />
                                 </InputIcon>
                                 <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" />
                             </IconField>
-                            <Button icon="pi pi-refresh" severity="secondary" @click="loadItems()" :loading="loading" />
+                            <Button icon="pi pi-refresh" severity="secondary" @click="loadItems()" :loading="loading" style="margin-left: 0.75rem" />
                         </div>
                         <Button type="button" icon="pi pi-filter-slash" :label="$t('configurationItems.actions.clearFilters')" variant="outlined" @click="clearFilters()" />
                     </div>
