@@ -120,7 +120,7 @@ import { useToast } from 'primevue/usetoast';
 import { useI18n } from 'vue-i18n';
 import { useTabsStore } from '@/stores/tabsStore';
 import configurationItemsService from '@/services/configurationItemsService';
-import { PAGINATION_CONFIG } from '@/config/config';
+import { PAGINATION_CONFIG, DEBOUNCE_DELAY_MS } from '@/config/config';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Toolbar from 'primevue/toolbar';
@@ -153,6 +153,7 @@ const deleteItemsDialog = ref(false);
 const item = ref({});
 const selectedItem = ref();
 const selectedItems = ref();
+let searchTimeout = null;
 
 const initFilters = () => {
     return {
@@ -195,6 +196,17 @@ watch(() => tabsStore.activeChildTabs.length, (newLength, oldLength) => {
     if (newLength < oldLength) {
         loadItems();
     }
+});
+
+// Watch for global filter changes to trigger search with debounce
+watch(() => filters.value.global.value, () => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    searchTimeout = setTimeout(() => {
+        currentPage.value = 1;
+        loadItems(1);
+    }, DEBOUNCE_DELAY_MS);
 });
 
 const loadItems = async (page = null) => {
