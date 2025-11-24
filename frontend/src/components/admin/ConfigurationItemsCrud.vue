@@ -1,5 +1,6 @@
 <template>
     <div class="configuration-items-crud">
+        <ContextMenu ref="cm" :model="menuModel" @hide="selectedItem = null" />
         <div class="card">
             <Toolbar class="mb-6">
                 <template #start>
@@ -15,6 +16,7 @@
             <DataTable
                 ref="dt"
                 v-model:selection="selectedItems"
+                v-model:contextMenuSelection="selectedItem"
                 :value="items"
                 dataKey="uuid"
                 :paginator="true"
@@ -23,8 +25,10 @@
                 :lazy="true"
                 :filters="filters"
                 :loading="loading"
+                contextMenu
                 @page="onPage"
                 @sort="onSort"
+                @rowContextmenu="onRowContextMenu"
                 :sortField="sortField"
                 :sortOrder="sortOrder"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
@@ -60,12 +64,6 @@
                 <Column field="created_at" :header="$t('configurationItems.table.columns.created')" sortable style="min-width: 12rem">
                     <template #body="slotProps">
                         {{ formatDate(slotProps.data.created_at) }}
-                    </template>
-                </Column>
-                <Column :exportable="false" style="min-width: 12rem">
-                    <template #body="slotProps">
-                        <Button icon="pi pi-pencil" variant="outlined" rounded class="mr-2" @click="openEditTab(slotProps.data)" />
-                        <Button icon="pi pi-trash" variant="outlined" rounded severity="danger" @click="confirmDeleteItem(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
@@ -116,6 +114,7 @@ import Tag from 'primevue/tag';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import Toast from 'primevue/toast';
+import ContextMenu from 'primevue/contextmenu';
 
 const props = defineProps({
     tabId: {
@@ -127,11 +126,13 @@ const props = defineProps({
 const toast = useToast();
 const { t } = useI18n();
 const tabsStore = useTabsStore();
+const cm = ref();
 const dt = ref();
 const items = ref([]);
 const deleteItemDialog = ref(false);
 const deleteItemsDialog = ref(false);
 const item = ref({});
+const selectedItem = ref();
 const selectedItems = ref();
 const selectedCiType = ref(null);
 const filters = ref({
@@ -151,6 +152,11 @@ const ciTypes = ref([
     { label: t('configurationItems.types.server'), value: 'SERVER' },
     { label: t('configurationItems.types.networkDevice'), value: 'NETWORK_DEVICE' },
     { label: t('configurationItems.types.generic'), value: 'GENERIC' }
+]);
+
+const menuModel = ref([
+    { label: t('configurationItems.contextMenu.edit'), icon: 'pi pi-pencil', command: () => openEditTab(selectedItem.value) },
+    { label: t('configurationItems.contextMenu.delete'), icon: 'pi pi-trash', command: () => confirmDeleteItem(selectedItem.value) }
 ]);
 
 onMounted(async () => {
@@ -279,6 +285,10 @@ const getTypeSeverity = (type) => {
         default:
             return null;
     }
+};
+
+const onRowContextMenu = (event) => {
+    cm.value.show(event.originalEvent);
 };
 
 const formatDate = (dateString) => {

@@ -460,6 +460,12 @@ export default {
     generic: 'Generic'
   },
   
+  // Context menu
+  contextMenu: {
+    edit: 'Edit',
+    delete: 'Delete'
+  },
+  
   // Confirmation dialogs
   dialog: {
     confirm: {

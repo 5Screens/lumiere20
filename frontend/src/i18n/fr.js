@@ -551,6 +551,12 @@ export default {
     generic: 'Générique'
   },
   
+  // Menu contextuel
+  contextMenu: {
+    edit: 'Modifier',
+    delete: 'Supprimer'
+  },
+  
   // Dialogues de confirmation
   dialog: {
     confirm: {
