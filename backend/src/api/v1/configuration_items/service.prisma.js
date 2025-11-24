@@ -294,10 +294,16 @@ const searchConfigurationItems = async (searchParams = {}) => {
           .map(constraint => convertMatchModeToPrisma(fieldName, constraint.matchMode, constraint.value));
 
         if (fieldConditions.length > 0) {
-          // Apply the operator from PrimeVue (AND or OR)
-          if (filter.operator === 'OR' && fieldConditions.length > 1) {
+          // Apply the operator from PrimeVue (AND or OR) - case insensitive
+          const operator = filter.operator?.toUpperCase() || 'AND';
+          
+          if (operator === 'OR' && fieldConditions.length > 1) {
             andConditions.push({ OR: fieldConditions });
+          } else if (fieldConditions.length === 1) {
+            // Single condition, add directly
+            andConditions.push(fieldConditions[0]);
           } else {
+            // Multiple conditions with AND
             andConditions.push(...fieldConditions);
           }
         }
