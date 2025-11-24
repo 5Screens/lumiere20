@@ -40,13 +40,13 @@
             >
                 <template #header>
                     <div class="flex justify-between">
-                        <Button type="button" icon="pi pi-filter-slash" :label="$t('configurationItems.actions.clearFilters')" variant="outlined" @click="clearFilters()" />
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
                             <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" />
                         </IconField>
+                        <Button type="button" icon="pi pi-filter-slash" :label="$t('configurationItems.actions.clearFilters')" variant="outlined" @click="clearFilters()" />
                     </div>
                 </template>
 
