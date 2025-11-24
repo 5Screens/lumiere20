@@ -280,6 +280,7 @@ export default {
     category: 'Category',
     modified: 'Modified',
     created: 'Created',
+    createdBy: 'Created by',
     requestedBy: 'Requested by',
     requestedFor: 'Requested for'
   },

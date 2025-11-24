@@ -64,6 +64,7 @@ export default {
     category: 'Categoria',
     modified: 'Modificado',
     created: 'Criado',
+    createdBy: 'Criado por',
     requestedBy: 'Solicitado por',
     requestedFor: 'Solicitado para'
   },
