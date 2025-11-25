@@ -10,20 +10,39 @@ use backend directory to store all the backend sources
 use database directory to store all the database sources
 
 --frontend rules:
-use Vue.js V3 for the frond end
+use Vue.js V3 for the front end
 don't use vue.js 2
 don't use typescript
 use Vue-i18n for internationalization of the front end
 use modern UI
 use subtle animations during transitions (example : hover over menus, content appearance).
 
---backend rules :
+--frontend CSS rules:
+use Tailwind CSS v4 (not v3)
+use @import "tailwindcss" syntax (not @tailwind directives)
+use @theme directive for custom theme variables in Tailwind v4
+use PrimeVue v4 for UI components with Aura theme preset
+CSS layers order must be: theme, base, primevue, components, utilities
+configure PrimeVue cssLayer option to match Tailwind layers order
+Tailwind utilities classes (like ml-2, flex, gap-2) must override PrimeVue styles
+use Tailwind utility classes for spacing, layout, and simple styling
+use PrimeVue components for complex UI elements (DataTable, Dialog, Button, etc.)
+
+--backend rules:
 use node.js for the back end
 use winston for logging with format YYYY-MM-DD HH:mm:ss
 do not use i18n in the back end 
 do not add metadata within the api response except when it is a GET without query parameters
 
---database rules :
+--backend ORM rules:
+use Prisma as ORM for database access
+Prisma client is configured in backend/src/config/prisma.js
+service files using Prisma are named service.prisma.js (e.g., backend/src/api/v1/configuration_items/service.prisma.js)
+use Prisma schema in backend/prisma/schema.prisma
+use prisma migrate dev for database migrations
+always use uuid for primary keys in Prisma models
+
+--database rules:
 use sql for the database
 all objects in database have a uuid primary key
 do not use serial id as primary key in the database

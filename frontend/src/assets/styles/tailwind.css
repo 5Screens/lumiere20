@@ -1,7 +1,14 @@
-/* Tailwind CSS directives */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind CSS v4 - Import the framework */
+@import "tailwindcss";
+
+/* Define CSS layer order for proper cascade with PrimeVue */
+@layer theme, base, primevue, components, utilities;
+
+/* Custom theme variables */
+@theme {
+  --color-primary: #2196f3;
+  --color-primary-hover: #1976d2;
+}
 
 /* Custom base styles */
 @layer base {
@@ -10,14 +17,4 @@
     --primary-color: #2196f3;
     --primary-hover: #1976d2;
   }
-}
-
-/* Custom component styles */
-@layer components {
-  /* Add your custom component styles here */
-}
-
-/* Custom utility styles */
-@layer utilities {
-  /* Add your custom utility styles here */
 }

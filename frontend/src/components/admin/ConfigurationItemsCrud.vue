@@ -54,7 +54,7 @@
                                 </InputIcon>
                                 <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" />
                             </IconField>
-                            <Button type="button" icon="pi pi-filter-slash" variant="outlined" @click="clearFilters()" />
+                            <Button type="button" icon="pi pi-filter-slash" variant="outlined" class="ml-2" @click="clearFilters()" />
                             <Popover ref="columnTogglePopover">
                                 <template #default>
                                     <div class="p-4">
