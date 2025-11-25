@@ -415,7 +415,8 @@ export default {
         if (filterConfig) {
           const config = filterConfig.find(f => f.column === filter.column)
           if (config && config.label) {
-            return config.label
+            // Appliquer la traduction sur le label (qui est une clé de traduction)
+            return this.$t(config.label)
           }
         }
       }
