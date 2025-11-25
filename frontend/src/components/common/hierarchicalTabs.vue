@@ -71,6 +71,9 @@
             <span class="tab-info" v-if="tab.objectId" :title="tab.objectId">
               {{ $t('common.id') }}: {{ tab.objectId }}
             </span>
+            <span class="tab-info" v-else>
+              {{ tab.label }}
+            </span>
 
             <!-- Statut -->
             <span class="tab-info" v-if="tab.ticketStatus" :class="'status-badge status-' + getStatusClass(tab.ticketStatus)">
@@ -412,8 +415,7 @@ export default {
         if (filterConfig) {
           const config = filterConfig.find(f => f.column === filter.column)
           if (config && config.label) {
-            // Appliquer la traduction sur le label (qui est une clé de traduction)
-            return this.$t(config.label)
+            return config.label
           }
         }
       }
