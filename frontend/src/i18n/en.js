@@ -28,6 +28,50 @@ export default {
     title: 'Welcome to Lumière',
     subtitle: 'Select an option from the sidebar to get started or create a new item.'
   },
+  // PrimeVue locale configuration
+  primevue: {
+    startsWith: 'Starts with',
+    contains: 'Contains',
+    notContains: 'Not contains',
+    endsWith: 'Ends with',
+    equals: 'Equals',
+    notEquals: 'Not equals',
+    noFilter: 'No Filter',
+    lt: 'Less than',
+    lte: 'Less than or equal to',
+    gt: 'Greater than',
+    gte: 'Greater than or equal to',
+    dateIs: 'Date is',
+    dateIsNot: 'Date is not',
+    dateBefore: 'Date is before',
+    dateAfter: 'Date is after',
+    clear: 'Clear',
+    apply: 'Apply',
+    matchAll: 'Match All',
+    matchAny: 'Match Any',
+    addRule: 'Add Rule',
+    removeRule: 'Remove Rule',
+    accept: 'Yes',
+    reject: 'No',
+    choose: 'Choose',
+    upload: 'Upload',
+    cancel: 'Cancel',
+    dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    dayNamesMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+    monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    today: 'Today',
+    weekHeader: 'Wk',
+    firstDayOfWeek: 0,
+    dateFormat: 'mm/dd/yy',
+    weak: 'Weak',
+    medium: 'Medium',
+    strong: 'Strong',
+    passwordPrompt: 'Enter a password',
+    emptyFilterMessage: 'No results found',
+    emptyMessage: 'No available options'
+  },
   common: {
     loading: 'Loading...',
     underConstruction: 'This feature is under construction'
@@ -429,6 +473,151 @@ export default {
     name: 'Name',
     description: 'Description'
   },
+  configurationItems: {
+  // Title and main actions
+  title: 'Configuration Items',
+  
+  actions: {
+    new: 'New',
+    delete: 'Delete',
+    export: 'Export',
+    edit: 'Edit',
+    remove: 'Remove',
+    clearFilters: 'Clear'
+  },
+  
+  // Table headers
+  table: {
+    title: 'Manage Configuration Items',
+    columns: {
+      name: 'Name',
+      type: 'Type',
+      description: 'Description',
+      created: 'Created',
+      updated: 'Updated'
+    }
+  },
+  
+  // Pagination and search
+  pagination: {
+    showing: 'Showing {first} to {last} of {totalRecords} configuration items'
+  },
+  
+  search: {
+    placeholder: 'Search...'
+  },
+  
+  filter: {
+    placeholder: 'Filter by Type'
+  },
+  
+  // CI Types
+  types: {
+    all: 'All Types',
+    ups: 'UPS',
+    application: 'Application',
+    server: 'Server',
+    networkDevice: 'Network Device',
+    generic: 'Generic'
+  },
+  
+  // Context menu
+  contextMenu: {
+    edit: 'Edit',
+    delete: 'Delete'
+  },
+  
+  // Confirmation dialogs
+  dialog: {
+    confirm: {
+      title: 'Confirm'
+    },
+    deleteOne: {
+      message: 'Are you sure you want to delete <b>{name}</b>?'
+    },
+    deleteMany: {
+      message: 'Are you sure you want to delete the selected configuration items?'
+    },
+    actions: {
+      no: 'No',
+      yes: 'Yes'
+    }
+  },
+  
+  // Toast messages
+  toast: {
+    error: {
+      title: 'Error',
+      load: 'Failed to load configuration items',
+      delete: 'Failed to delete configuration item',
+      deleteMany: 'Failed to delete configuration items'
+    },
+    success: {
+      title: 'Successful',
+      delete: 'Configuration Item Deleted',
+      deleteMany: 'Configuration Items Deleted'
+    }
+  },
+  
+  // Tab labels
+  tab: {
+    new: 'New Configuration Item'
+  }
+},
+
+configurationItemForm: {
+  // Form titles
+  title: {
+    create: 'New Configuration Item',
+    edit: 'Edit Configuration Item'
+  },
+  
+  // Sections
+  sections: {
+    basicInfo: 'Basic Information',
+    extendedFields: 'Extended Fields'
+  },
+  
+  // Form fields
+  fields: {
+    name: {
+      label: 'Name',
+      required: 'Name is required.'
+    },
+    description: {
+      label: 'Description'
+    },
+    type: {
+      label: 'Type',
+      placeholder: 'Select a Type'
+    }
+  },
+  
+  // Actions
+  actions: {
+    cancel: 'Cancel',
+    save: 'Save'
+  },
+  
+  // Toast messages
+  toast: {
+    error: {
+      title: 'Error',
+      loadSchemas: 'Failed to load CI schemas',
+      loadItem: 'Failed to load configuration item',
+      save: 'Failed to save configuration item'
+    },
+    success: {
+      title: 'Success',
+      create: 'Configuration Item created',
+      update: 'Configuration Item updated'
+    },
+    validation: {
+      title: 'Validation Error',
+      nameRequired: 'Name is required'
+    }
+  }
+},
   group: {
     name: 'Group name',
     phone: 'Phone'

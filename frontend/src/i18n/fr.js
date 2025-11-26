@@ -28,6 +28,50 @@ export default {
     title: 'Bienvenue dans Lumière',
     subtitle: 'Sélectionnez une option dans le menu latéral pour commencer ou créez un nouvel élément.'
   },
+  // PrimeVue locale configuration
+  primevue: {
+    startsWith: 'Commence par',
+    contains: 'Contient',
+    notContains: 'Ne contient pas',
+    endsWith: 'Se termine par',
+    equals: 'Égal à',
+    notEquals: 'Différent de',
+    noFilter: 'Aucun filtre',
+    lt: 'Inférieur à',
+    lte: 'Inférieur ou égal à',
+    gt: 'Supérieur à',
+    gte: 'Supérieur ou égal à',
+    dateIs: 'La date est',
+    dateIsNot: 'La date n\'est pas',
+    dateBefore: 'Avant le',
+    dateAfter: 'Après le',
+    clear: 'Effacer',
+    apply: 'Appliquer',
+    matchAll: 'Correspond à tous',
+    matchAny: 'Au moins un correspond',
+    addRule: 'Ajouter une règle',
+    removeRule: 'Retirer une règle',
+    accept: 'Oui',
+    reject: 'Non',
+    choose: 'Choisir',
+    upload: 'Envoyer',
+    cancel: 'Annuler',
+    dayNames: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+    dayNamesShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+    dayNamesMin: ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'],
+    monthNames: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+    monthNamesShort: ['Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin', 'Juill', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'],
+    today: 'Aujourd\'hui',
+    weekHeader: 'Sem',
+    firstDayOfWeek: 1,
+    dateFormat: 'dd/mm/yy',
+    weak: 'Faible',
+    medium: 'Moyen',
+    strong: 'Fort',
+    passwordPrompt: 'Saisissez un mot de passe',
+    emptyFilterMessage: 'Aucun résultat trouvé',
+    emptyMessage: 'Aucune option disponible'
+  },
   common: {
     id: 'Identifiant',
     close: 'Fermer',
@@ -56,7 +100,6 @@ export default {
     closed_at: 'Fermé le',
     assigned_at: 'Assigné le',
     no_data: 'Aucune donnée',
-    loading: 'Chargement...',
     underConstruction: 'Cette fonctionnalité est en cours de construction',
     totalFetchedData: 'Total de lignes trouvées : ',
     totalLoadedData: 'en prévisualisation',
@@ -131,7 +174,8 @@ export default {
   portalsBuilder :{
     title:'Portails clients',
     description:'Créez et gérer ici les portails créés pour vos clients >>> EN COURS DE DEVELOPPEMENT !!',
-    portals: 'Portails'
+    portals: 'Portails',
+    openPortal: 'Ouvrir le portail',
   },
   dataPane: {
     title: 'Données',
@@ -141,7 +185,8 @@ export default {
       entities: 'Entités',
       locations: 'Localisations',
       persons: 'Personnes',
-      groups: 'Groupes'
+      groups: 'Groupes',
+      configurationItems: 'Eléments de configuration'
     },
     applications: {
       title: 'Applications',
@@ -269,7 +314,63 @@ export default {
     inactive_count: '{count} inactif(s)',
     activation_success: 'Le portail "{name}" a été activé avec succès',
     deactivation_success: 'Le portail "{name}" a été désactivé avec succès',
-    toggle_error: 'Erreur lors de la modification du portail "{name}": {error}'
+    toggle_error: 'Erreur lors de la modification du portail "{name}": {error}',
+
+    admin: {
+        openAdmin: 'Administrer le portail',
+        basicInfo: 'Informations de base',
+        displayConfig: 'Configuration d\'affichage',
+        theme: 'Thème',
+        features: 'Fonctionnalités',
+        
+        // Fields
+        code: 'Code',
+        codePlaceholder: 'ex: self-service-l',
+        codeHint: 'Minuscules, chiffres et tirets uniquement (2-50 caractères)',
+        codeInvalid: 'Le code doit contenir uniquement des minuscules, chiffres et tirets (2-50 caractères)',
+        codeAlreadyExists: 'Ce code est déjà utilisé par un autre portail',
+        
+        name: 'Nom',
+        namePlaceholder: 'ex: Self-Service L - Portail Employés',
+        
+        baseUrl: 'URL de base',
+        baseUrlPlaceholder: 'ex: http://localhost:7240',
+        
+        thumbnailUrl: 'URL de la miniature',
+        thumbnailUrlPlaceholder: 'ex: https://example.com/thumbnail.png',
+        
+        viewComponent: 'Composant de vue',
+        
+        title: 'Titre',
+        titlePlaceholder: 'ex: Lumière Self-service',
+        
+        subtitle: 'Sous-titre',
+        subtitlePlaceholder: 'ex: Portail des employés',
+        
+        welcomeTemplate: 'Template de bienvenue',
+        welcomeTemplatePlaceholder: 'ex: Bienvenue {firstName} !',
+        welcomeTemplateHint: 'Utilisez {firstName} pour le prénom de l\'utilisateur',
+        
+        logoUrl: 'URL du logo',
+        logoUrlPlaceholder: 'ex: https://example.com/logo.png',
+        
+        themePrimaryColor: 'Couleur primaire',
+        themeSecondaryColor: 'Couleur secondaire',
+        colorPlaceholder: 'ex: #FF6B00',
+        colorInvalid: 'La couleur doit être au format hexadécimal (ex: #FF6B00)',
+        
+        showChat: 'Afficher le chat',
+        showAlerts: 'Afficher les alertes',
+        showActions: 'Afficher les actions',
+        showWidgets: 'Afficher les widgets',
+        
+        chatDefaultMessage: 'Message par défaut du chat',
+        chatDefaultMessagePlaceholder: 'Demandez ce que vous voulez',
+        
+        // Messages
+        updateSuccess: 'Portail mis à jour avec succès',
+        updateError: 'Erreur lors de la mise à jour du portail'
+    },
   },
   objectCreationsAndUpdates: {
     taskCreation: 'Créer une tâche',
@@ -382,6 +483,7 @@ export default {
     requiredField: 'Champ obligatoire',
     noClassFound: 'Aucune classe trouvée',
     valueMustBeANumber: 'La valeur doit être un nombre',
+    portalNameTooLong: 'Waouh. C\'est le nom du portail le plus long que nous ayons jamais vu. Mais il ne peut pas dépasser 128 caractères'
   },
   notifications: {
     title: 'Notification',
@@ -461,6 +563,151 @@ export default {
     created_at: 'Date de Création',
     name: 'Nom',
     description: 'Description'
+  },
+  configurationItems: {
+  // Titre et actions principales
+  title: 'Éléments de configuration',
+  
+  actions: {
+    new: 'Nouveau',
+    delete: 'Supprimer',
+    export: 'Exporter',
+    edit: 'Modifier',
+    remove: 'Retirer',
+    clearFilters: 'Effacer'
+  },
+  
+  // En-têtes de table
+  table: {
+    title: 'Gérer les éléments de configuration',
+    columns: {
+      name: 'Nom',
+      type: 'Type',
+      description: 'Description',
+      created: 'Créé le',
+      updated: 'Modifié le'
+    }
+  },
+  
+  // Pagination et recherche
+  pagination: {
+    showing: 'Affichage de {first} à {last} sur {totalRecords} éléments de configuration'
+  },
+  
+  search: {
+    placeholder: 'Rechercher...'
+  },
+  
+  filter: {
+    placeholder: 'Filtrer par type'
+  },
+  
+  // Types de CI
+  types: {
+    all: 'Tous les types',
+    ups: 'Onduleur',
+    application: 'Application',
+    server: 'Serveur',
+    networkDevice: 'Équipement réseau',
+    generic: 'Générique'
+  },
+  
+  // Menu contextuel
+  contextMenu: {
+    edit: 'Modifier',
+    delete: 'Supprimer'
+  },
+  
+  // Dialogues de confirmation
+  dialog: {
+    confirm: {
+      title: 'Confirmation'
+    },
+    deleteOne: {
+      message: 'Êtes-vous sûr de vouloir supprimer <b>{name}</b> ?'
+    },
+    deleteMany: {
+      message: 'Êtes-vous sûr de vouloir supprimer les éléments de configuration sélectionnés ?'
+    },
+    actions: {
+      no: 'Non',
+      yes: 'Oui'
+    }
+  },
+  
+  // Messages toast
+  toast: {
+    error: {
+      title: 'Erreur',
+      load: 'Échec du chargement des éléments de configuration',
+      delete: 'Échec de la suppression de l\'élément de configuration',
+      deleteMany: 'Échec de la suppression des éléments de configuration'
+    },
+    success: {
+      title: 'Succès',
+      delete: 'Élément de configuration supprimé',
+      deleteMany: 'Éléments de configuration supprimés'
+    }
+  },
+  
+  // Libellés d'onglets
+  tab: {
+    new: 'Nouvel élément de configuration'
+  }
+},
+
+  configurationItemForm: {
+    // Titres de formulaire
+    title: {
+      create: 'Nouvel élément de configuration',
+      edit: 'Modifier l\'élément de configuration'
+    },
+    
+    // Sections
+    sections: {
+      basicInfo: 'Informations de base',
+      extendedFields: 'Champs étendus'
+    },
+    
+    // Champs de formulaire
+    fields: {
+      name: {
+        label: 'Nom',
+        required: 'Le nom est obligatoire.'
+      },
+      description: {
+        label: 'Description'
+      },
+      type: {
+        label: 'Type',
+        placeholder: 'Sélectionnez un type'
+      }
+    },
+    
+    // Actions
+    actions: {
+      cancel: 'Annuler',
+      save: 'Enregistrer'
+    },
+    
+    // Messages toast
+    toast: {
+      error: {
+        title: 'Erreur',
+        loadSchemas: 'Échec du chargement des schémas CI',
+        loadItem: 'Échec du chargement de l\'élément de configuration',
+        save: 'Échec de l\'enregistrement de l\'élément de configuration'
+      },
+      success: {
+        title: 'Succès',
+        create: 'Élément de configuration créé',
+        update: 'Élément de configuration mis à jour'
+      },
+      validation: {
+        title: 'Erreur de validation',
+        nameRequired: 'Le nom est obligatoire'
+      }
+    }
   },
   group: {
     name: 'Nom du groupe',

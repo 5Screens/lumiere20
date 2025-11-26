@@ -27,7 +27,8 @@ export const PAGINATION_CONFIG = {
     'Story': 50,
     'Defect': 50,
     'Entity': 100,
-    'Location': 75
+    'Location': 75,
+    'Configuration_items': 25
   },
   
   // Types d'objets utilisant l'infinite scroll

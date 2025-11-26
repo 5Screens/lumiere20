@@ -117,7 +117,8 @@ export const usePaneStore = defineStore('pane', {
               { tabToOpen: 'entities', icon: 'fas fa-cube', label: 'dataPane.foundations.entities', className: 'Entity' },
               { tabToOpen: 'locations', icon: 'fas fa-map-marker-alt', label: 'dataPane.foundations.locations', className: 'Location' },
               { tabToOpen: 'persons', icon: 'fas fa-user', label: 'dataPane.foundations.persons', className: 'Person' },
-              { tabToOpen: 'groups', icon: 'fas fa-users', label: 'dataPane.foundations.groups', className: 'Group' }
+              { tabToOpen: 'groups', icon: 'fas fa-users', label: 'dataPane.foundations.groups', className: 'Group' },
+              { tabToOpen: 'configuration-items', icon: 'fas fa-database', label: 'dataPane.foundations.configurationItems', className: null, component: 'ConfigurationItemsCrud' }
             ]
           },
           {

@@ -15,14 +15,18 @@
       
       <!-- Details -->
       <div class="portal-card__details">
-        <div class="portal-card__detail">
+        <div class="portal-card__detail portal-card__detail--hoverable">
           <i class="fas fa-code"></i>
           <span>{{ portal.code }}</span>
-        </div>
-        <div v-if="portal.base_url" class="portal-card__detail">
-          <i class="fas fa-link"></i>
-          <a :href="portal.base_url" target="_blank" rel="noopener noreferrer" class="portal-card__link">
-            {{ truncateUrl(portal.base_url) }}
+          <a 
+            v-if="portal.base_url" 
+            :href="`${portal.base_url}/${portal.code}`" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="portal-card__link-icon"
+            :title="t('portalsBuilder.openPortal')"
+          >
+            <i class="fas fa-link"></i>
           </a>
         </div>
       </div>
@@ -41,8 +45,15 @@
           </span>
         </div>
         
-        <!-- Toggle -->
+        <!-- Actions -->
         <div class="portal-card__actions">
+          <button
+            class="portal-card__admin-btn"
+            :title="t('portals.admin.openAdmin')"
+            @click="$emit('admin')"
+          >
+            <i class="fas fa-wrench"></i>
+          </button>
           <PortalToggle
             :model-value="portal.is_active"
             :loading="loadingAction"
@@ -73,7 +84,7 @@ const props = defineProps({
   }
 });
 
-defineEmits(['toggle', 'preview']);
+defineEmits(['toggle', 'preview', 'admin']);
 
 const badgeClass = computed(() => ({
   'portal-card__badge--active': props.portal.is_active,
@@ -180,6 +191,11 @@ const formatDate = (dateString) => {
   gap: 8px;
   font-size: 0.875rem;
   color: var(--text-secondary);
+  position: relative;
+}
+
+.portal-card__detail--hoverable {
+  padding-right: 32px;
 }
 
 .portal-card__detail i {
@@ -188,15 +204,31 @@ const formatDate = (dateString) => {
   opacity: 0.6;
 }
 
-.portal-card__link {
+.portal-card__link-icon {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   color: var(--primary-color);
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
-.portal-card__link:hover {
-  opacity: 0.8;
-  text-decoration: underline;
+.portal-card:hover .portal-card__link-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.portal-card__link-icon:hover {
+  color: var(--primary-hover);
+  background: rgba(33, 150, 243, 0.1);
 }
 
 .portal-card__description {
@@ -240,6 +272,33 @@ const formatDate = (dateString) => {
 .portal-card__actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+}
+
+.portal-card__admin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.portal-card__admin-btn:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.portal-card__admin-btn i {
+  font-size: 0.875rem;
 }
 </style>

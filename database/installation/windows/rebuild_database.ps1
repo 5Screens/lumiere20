@@ -91,7 +91,8 @@ $structureScripts = @(
     "17_populate_table_metadata_sprint.sql",
     "17_populate_table_metadata_epic.sql",
     "17_populate_table_metadata_user_story.sql",
-    "18_create_portals.sql"
+    "18_create_portals.sql",
+    "30_add_cmdb_fields.sql"
 )
 
 foreach ($script in $structureScripts) {

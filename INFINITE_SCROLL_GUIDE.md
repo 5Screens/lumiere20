@@ -10,7 +10,7 @@ Le système de scroll infini a été implémenté pour améliorer les performanc
 
 #### 1. API unifiée et paginée
 
-**Endpoint :** `GET /api/v1/persons` (maintenant toujours paginé)
+**Endpoint :** `POST /api/v1/persons/search` (maintenant toujours paginé)
 
 **Paramètres de requête :**
 - `offset` (number) : Nombre d'enregistrements à ignorer (défaut: 0)

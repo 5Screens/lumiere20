@@ -59,7 +59,7 @@
           @keydown.enter.exact.prevent="sendMessage"
           @input="adjustTextareaHeight"
           ref="textarea"
-          placeholder="Demandez ce que vous voulez..."
+          :placeholder="props.defaultMessage"
           rows="1"
           :style="{ height: textareaHeight }"
         ></textarea>

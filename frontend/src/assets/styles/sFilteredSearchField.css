@@ -3,22 +3,18 @@
  * A filtered search field allows users to search and select from a dropdown list with filtering capabilities
  */
 
-/* Main container for the filtered search field - organizes label and search component horizontally */
+/* Main container for the filtered search field - organizes label above the search component */
 .s-filtered-search-field {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
   width: 100%;
 }
 
-/* Container for the field label - fixed width to align all fields consistently */
+/* Container for the field label */
 .s-filtered-search-field__label-container {
   display: flex;
   align-items: flex-start;
-  width: 180px;
-  min-width: 180px;
-  flex-shrink: 0;
 }
 
 /* The label text - describes what the search field is for */
@@ -26,9 +22,6 @@
   font-size: 0.875rem;
   color: var(--text-color);
   font-weight: 500;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
 }
 
 /* Style for required field labels - adds a red asterisk to indicate required fields */
