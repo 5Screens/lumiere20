@@ -41,24 +41,30 @@ npx prisma init
 ```
 
 ### 1.3 Configuration `.env`
-Ajouter dans `backend/.env` :
+Le projet utilise les variables d'environnement existantes (pas de `DATABASE_URL`). Vérifier que `backend/.env` contient :
 ```env
-DATABASE_URL="postgresql://user:password@host:port/database?schema=data"
+DB_USER=your_user
+DB_HOST=localhost
+DB_NAME=your_database
+DB_PASSWORD=your_password
+DB_PORT=5432
 ```
 
 ### 1.4 Créer le schéma Prisma
 **Fichier : `backend/prisma/schema.prisma`**
 
 ```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  schemas  = ["data", "core", "configuration"]
-}
+// Prisma schema for Lumiere16 - Configuration Items CRUD
+// Database: PostgreSQL with multi-schema support
 
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["data", "core", "configuration"]
 }
 
 // ============================================
@@ -68,38 +74,18 @@ model configuration_items {
   uuid                  String    @id @default(uuid()) @db.Uuid
   name                  String    @db.VarChar(255)
   description           String?   @db.Text
-  ci_type               String    @db.VarChar(50)
+  ci_type               String    @default("GENERIC") @db.VarChar(50)
   extended_core_fields  Json?     @db.JsonB
   created_at            DateTime  @default(now()) @db.Timestamptz(6)
   updated_at            DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
-  
-  tickets               tickets[] @relation("ConfigurationItemTickets")
   
   @@index([ci_type])
   @@schema("data")
   @@map("configuration_items")
 }
-
-// ============================================
-// Tickets (pour relation uniquement)
-// ============================================
-model tickets {
-  uuid                     String    @id @default(uuid()) @db.Uuid
-  title                    String    @db.VarChar(500)
-  configuration_item_uuid  String?   @db.Uuid
-  ticket_type_code         String    @db.VarChar(50)
-  ticket_status_code       String    @db.VarChar(50)
-  writer_uuid              String    @db.Uuid
-  core_extended_attributes Json?     @db.JsonB
-  created_at               DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at               DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
-  
-  configuration_item       configuration_items? @relation("ConfigurationItemTickets", fields: [configuration_item_uuid], references: [uuid])
-  
-  @@schema("core")
-  @@map("tickets")
-}
 ```
+
+> **Note Prisma v7 :** L'URL de la base de données n'est plus dans le schema.prisma mais gérée via l'adaptateur dans `prisma.js`.
 
 ### 1.5 Générer le client Prisma
 ```bash
@@ -111,9 +97,25 @@ npx prisma generate
 
 ```javascript
 const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const { Pool } = require('pg');
 const logger = require('./logger');
 
+// Create PostgreSQL connection pool using existing env variables
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
+
+// Create Prisma adapter
+const adapter = new PrismaPg(pool);
+
+// Create Prisma Client with adapter
 const prisma = new PrismaClient({
+  adapter,
   log: [
     { level: 'query', emit: 'event' },
     { level: 'error', emit: 'stdout' },
@@ -137,11 +139,13 @@ process.on('beforeExit', async () => {
 module.exports = prisma;
 ```
 
+> **Important :** Cette configuration utilise `@prisma/adapter-pg` pour Prisma v7, ce qui permet d'utiliser les variables d'environnement existantes (DB_USER, DB_HOST, etc.) au lieu de DATABASE_URL.
+
 **✅ Checkpoint 1 :** Prisma installé et configuré
 
 ---
 
-## 🎯 Phase 2 : Migration de la base de données (30 min)
+## Phase 2 : Migration de la base de données (30 min)
 
 ### 2.1 Vérifier la table existante
 ```bash
@@ -153,7 +157,7 @@ psql -U user -d database
 ```
 
 ### 2.2 Ajouter les colonnes manquantes (si nécessaire)
-**Fichier : `database/scripts/19_add_cmdb_fields.sql`**
+**Fichier : `database/scripts/30_add_cmdb_fields.sql`**
 
 ```sql
 -- Add ci_type column if not exists
@@ -204,7 +208,7 @@ ALTER COLUMN ci_type SET NOT NULL;
 
 ### 2.3 Exécuter la migration
 ```bash
-psql -U user -d database -f database/scripts/19_add_cmdb_fields.sql
+psql -U user -d database -f database/scripts/30_add_cmdb_fields.sql
 ```
 
 ### 2.4 Synchroniser Prisma avec la DB
@@ -217,7 +221,7 @@ npx prisma generate
 
 ---
 
-## 🎯 Phase 3 : Schémas de validation par type de CI (1h)
+## Phase 3 : Schémas de validation par type de CI (1h)
 
 ### 3.1 Créer le fichier de schémas
 **Fichier : `backend/src/api/v1/configuration_items/schemas.js`**
@@ -335,264 +339,12 @@ module.exports = {
 
 ---
 
-## 🎯 Phase 4 : Service CMDB avec Prisma (2h)
+## Phase 4 : Service CMDB avec Prisma (2h)
 
 ### 4.1 Créer le service Prisma
 **Fichier : `backend/src/api/v1/configuration_items/service.prisma.js`**
 
-Voir le fichier complet dans les exemples précédents (trop long pour ce document).
-
-**Fonctions principales :**
-- `getConfigurationItems(options)` - Liste avec pagination et recherche
-- `getConfigurationItemById(uuid)` - Détails d'un CI
-- `createConfigurationItem(data)` - Création avec validation
-- `updateConfigurationItem(uuid, data)` - Mise à jour
-- `deleteConfigurationItem(uuid)` - Suppression (avec vérification tickets)
-- `getConfigurationItemTickets(uuid, options)` - Tickets liés
-- `searchByExtendedFields(ciType, jsonbFilters)` - Recherche JSONB
-- `getCITypeSchemas()` - Récupérer les schémas disponibles
-
-**✅ Checkpoint 4 :** Service Prisma implémenté
-
----
-
-## 🎯 Phase 5 : Controller et Routes (1h)
-
-### 5.1 Créer le controller
-**Fichier : `backend/src/api/v1/configuration_items/controller.js`**
-
 ```javascript
-const service = require('./service.prisma');
-const logger = require('../../../config/logger');
-
-const getConfigurationItems = async (req, res) => {
-  try {
-    const options = {
-      search: req.query.search || '',
-      ci_type: req.query.ci_type || null,
-      page: parseInt(req.query.page) || 1,
-      limit: parseInt(req.query.limit) || 50,
-      sortBy: req.query.sortBy || 'name',
-      sortDirection: req.query.sortDirection || 'asc'
-    };
-    
-    const result = await service.getConfigurationItems(options);
-    res.json(result);
-  } catch (error) {
-    logger.error('[CMDB CONTROLLER] Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
-// ... autres fonctions (voir exemples précédents)
-
-module.exports = {
-  getConfigurationItems,
-  getConfigurationItemById,
-  createConfigurationItem,
-  updateConfigurationItem,
-  deleteConfigurationItem,
-  getConfigurationItemTickets,
-  getCITypeSchemas
-};
-```
-
-### 5.2 Créer les routes
-**Fichier : `backend/src/api/v1/configuration_items/routes.js`**
-
-```javascript
-const express = require('express');
-const router = express.Router();
-const controller = require('./controller');
-
-router.get('/', controller.getConfigurationItems);
-router.get('/schemas', controller.getCITypeSchemas);
-router.get('/:uuid', controller.getConfigurationItemById);
-router.get('/:uuid/tickets', controller.getConfigurationItemTickets);
-router.post('/', controller.createConfigurationItem);
-router.patch('/:uuid', controller.updateConfigurationItem);
-router.delete('/:uuid', controller.deleteConfigurationItem);
-
-module.exports = router;
-```
-
-### 5.3 Enregistrer les routes dans server.js
-**Fichier : `backend/src/server.js`**
-
-```javascript
-// Ajouter après les autres imports de routes
-const configurationItemsRoutes = require('./api/v1/configuration_items/routes');
-
-// Ajouter après les autres app.use
-app.use('/api/v1/configuration_items', configurationItemsRoutes);
-```
-
-**✅ Checkpoint 5 :** API REST complète
-
----
-
-## 🎯 Phase 6 : Tests (1h)
-
-### 6.1 Tester avec cURL ou Postman
-
-#### Créer un onduleur
-```bash
-curl -X POST http://localhost:3000/api/v1/configuration_items \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "UPS-DATACENTER-01",
-    "description": "Onduleur principal datacenter",
-    "ci_type": "UPS",
-    "extended_core_fields": {
-      "voltage": 220,
-      "capacity_va": 3000,
-      "battery_autonomy_min": 30,
-      "brand": "APC",
-      "model": "Smart-UPS 3000"
-    }
-  }'
-```
-
-#### Créer une application
-```bash
-curl -X POST http://localhost:3000/api/v1/configuration_items \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Lumiere ITSM",
-    "description": "Application de gestion des tickets",
-    "ci_type": "APPLICATION",
-    "extended_core_fields": {
-      "version": "16.0.0",
-      "deployment_date": "2025-01-15",
-      "server_count": 3,
-      "language": "JavaScript",
-      "framework": "Vue.js 3 + Node.js"
-    }
-  }'
-```
-
-#### Lister les CIs
-```bash
-curl http://localhost:3000/api/v1/configuration_items?page=1&limit=10
-```
-
-#### Filtrer par type
-```bash
-curl http://localhost:3000/api/v1/configuration_items?ci_type=UPS
-```
-
-#### Rechercher
-```bash
-curl http://localhost:3000/api/v1/configuration_items?search=datacenter
-```
-
-**✅ Checkpoint 6 :** Tests fonctionnels OK
-
----
-
-## 📊 Checklist complète
-
-### Installation
-- [ ] `npm install @prisma/client`
-- [ ] `npm install -D prisma`
-- [ ] `npx prisma init`
-- [ ] Configurer `DATABASE_URL` dans `.env`
-
-### Configuration
-- [ ] Créer `prisma/schema.prisma`
-- [ ] Créer `src/config/prisma.js`
-- [ ] `npx prisma generate`
-
-### Migration DB
-- [ ] Créer `database/scripts/19_add_cmdb_fields.sql`
-- [ ] Exécuter la migration SQL
-- [ ] `npx prisma db pull`
-
-### Code
-- [ ] Créer `api/v1/configuration_items/schemas.js`
-- [ ] Créer `api/v1/configuration_items/service.prisma.js`
-- [ ] Créer `api/v1/configuration_items/controller.js`
-- [ ] Créer `api/v1/configuration_items/routes.js`
-- [ ] Enregistrer routes dans `server.js`
-
-### Tests
-- [ ] Tester création UPS
-- [ ] Tester création APPLICATION
-- [ ] Tester création SERVER
-- [ ] Tester liste avec pagination
-- [ ] Tester recherche
-- [ ] Tester filtrage par type
-- [ ] Tester mise à jour
-- [ ] Tester suppression
-- [ ] Tester validation des champs
-
-### Documentation
-- [ ] Documenter les schémas de CI types
-- [ ] Documenter l'API REST
-- [ ] Mettre à jour le README
-
----
-
-## 🚀 Commandes utiles
-
-### Prisma
-```bash
-# Générer le client
-npx prisma generate
-
-# Synchroniser avec la DB
-npx prisma db pull
-
-# Ouvrir Prisma Studio (GUI)
-npx prisma studio
-
-# Formater le schéma
-npx prisma format
-```
-
-### Développement
-```bash
-# Démarrer le serveur
-npm run dev
-
-# Logs Prisma
-NODE_ENV=development npm run dev
-```
-
----
-
-## 📚 Ressources
-
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [PostgreSQL JSONB](https://www.postgresql.org/docs/current/datatype-json.html)
-- [Prisma JSONB Support](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields)
-
----
-
-## ⚠️ Points d'attention
-
-1. **Validation obligatoire** : Toujours valider `extended_core_fields` avant insertion
-2. **Index JSONB** : Créer des index GIN pour les recherches fréquentes
-3. **Transactions** : Utiliser `prisma.$transaction` pour opérations multiples
-4. **Logs** : Activer les logs Prisma en développement uniquement
-5. **Graceful shutdown** : Toujours appeler `prisma.$disconnect()`
-
----
-
-## 🎯 Prochaines étapes (après CMDB)
-
-1. Migrer `persons` vers Prisma
-2. Migrer `groups` vers Prisma
-3. Évaluer migration des tickets (complexe)
-4. Créer des seeders Prisma
-5. Mettre en place des migrations versionnées
-
----
-
-**Bonne chance ! 🚀**
-
-backend/src/api/v1/configuration_items/service.prisma.js
-
 const prisma = require('../../../config/prisma');
 const logger = require('../../../config/logger');
 
@@ -711,11 +463,13 @@ const createConfigurationItem = async (data) => {
     const item = await prisma.configuration_items.create({
       data: {
         name: data.name,
-        description: data.description || null
+        description: data.description,
+        ci_type: data.ci_type,
+        extended_core_fields: data.extended_core_fields
       }
     });
     
-    logger.info(`[CMDB SERVICE PRISMA] Created configuration item: ${item.uuid}`);
+    logger.info(`[CMDB SERVICE PRISMA] Created configuration item: ${item.name}`);
     return item;
   } catch (error) {
     logger.error('[CMDB SERVICE PRISMA] Error creating configuration item:', error);
@@ -723,138 +477,248 @@ const createConfigurationItem = async (data) => {
   }
 };
 
-/**
- * Update configuration item
- * @param {string} uuid - Configuration item UUID
- * @param {Object} data - Update data
- * @returns {Promise<Object>} - Updated configuration item
- */
-const updateConfigurationItem = async (uuid, data) => {
-  try {
-    logger.info(`[CMDB SERVICE PRISMA] Updating configuration item: ${uuid}`);
-    
-    const item = await prisma.configuration_items.update({
-      where: { uuid },
-      data: {
-        name: data.name,
-        description: data.description,
-        updated_at: new Date()
-      }
-    });
-    
-    logger.info(`[CMDB SERVICE PRISMA] Updated configuration item: ${uuid}`);
-    return item;
-  } catch (error) {
-    if (error.code === 'P2025') {
-      logger.warn(`[CMDB SERVICE PRISMA] Configuration item not found: ${uuid}`);
-      return null;
-    }
-    logger.error('[CMDB SERVICE PRISMA] Error updating configuration item:', error);
-    throw error;
-  }
-};
-
-/**
- * Delete configuration item (soft delete by setting updated_at)
- * @param {string} uuid - Configuration item UUID
- * @returns {Promise<boolean>} - Success status
- */
-const deleteConfigurationItem = async (uuid) => {
-  try {
-    logger.info(`[CMDB SERVICE PRISMA] Deleting configuration item: ${uuid}`);
-    
-    // Check if item has related tickets
-    const item = await prisma.configuration_items.findUnique({
-      where: { uuid },
-      include: {
-        _count: {
-          select: { tickets: true }
-        }
-      }
-    });
-    
-    if (!item) {
-      logger.warn(`[CMDB SERVICE PRISMA] Configuration item not found: ${uuid}`);
-      return false;
-    }
-    
-    if (item._count.tickets > 0) {
-      logger.error(`[CMDB SERVICE PRISMA] Cannot delete: ${item._count.tickets} tickets linked`);
-      throw new Error(`Cannot delete configuration item: ${item._count.tickets} tickets are linked to it`);
-    }
-    
-    await prisma.configuration_items.delete({
-      where: { uuid }
-    });
-    
-    logger.info(`[CMDB SERVICE PRISMA] Deleted configuration item: ${uuid}`);
-    return true;
-  } catch (error) {
-    if (error.code === 'P2025') {
-      logger.warn(`[CMDB SERVICE PRISMA] Configuration item not found: ${uuid}`);
-      return false;
-    }
-    logger.error('[CMDB SERVICE PRISMA] Error deleting configuration item:', error);
-    throw error;
-  }
-};
-
-/**
- * Get tickets linked to a configuration item
- * @param {string} uuid - Configuration item UUID
- * @param {Object} options - Query options
- * @returns {Promise<Object>} - Paginated tickets
- */
-const getConfigurationItemTickets = async (uuid, options = {}) => {
-  try {
-    const { page = 1, limit = 25 } = options;
-    const skip = (page - 1) * limit;
-    
-    logger.info(`[CMDB SERVICE PRISMA] Getting tickets for CI: ${uuid}`);
-    
-    const [tickets, total] = await Promise.all([
-      prisma.tickets.findMany({
-        where: { configuration_item_uuid: uuid },
-        orderBy: { created_at: 'desc' },
-        skip,
-        take: limit,
-        select: {
-          uuid: true,
-          title: true,
-          description: true,
-          ticket_type_code: true,
-          ticket_status_code: true,
-          created_at: true,
-          updated_at: true
-        }
-      }),
-      prisma.tickets.count({
-        where: { configuration_item_uuid: uuid }
-      })
-    ]);
-    
-    logger.info(`[CMDB SERVICE PRISMA] Found ${tickets.length} tickets for CI: ${uuid}`);
-    
-    return {
-      data: tickets,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
-  } catch (error) {
-    logger.error('[CMDB SERVICE PRISMA] Error getting CI tickets:', error);
-    throw error;
-  }
-};
+// ... autres fonctions (voir exemples précédents)
 
 module.exports = {
   getConfigurationItems,
   getConfigurationItemById,
   createConfigurationItem,
-  updateConfigurationItem,
-  deleteConfigurationItem,
-  getConfigurationItemTickets
+  // ... autres fonctions
 };
+```
+
+**✅ Checkpoint 4 :** Service Prisma implémenté
+
+---
+
+## Phase 5 : Controller et Routes (1h)
+
+### 5.1 Créer le controller
+**Fichier : `backend/src/api/v1/configuration_items/controller.js`**
+
+```javascript
+const service = require('./service.prisma');
+const logger = require('../../../config/logger');
+
+const getConfigurationItems = async (req, res) => {
+  try {
+    const options = {
+      search: req.query.search || '',
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 50,
+      sortBy: req.query.sortBy || 'name',
+      sortDirection: req.query.sortDirection || 'asc'
+    };
+    
+    const result = await service.getConfigurationItems(options);
+    res.json(result);
+  } catch (error) {
+    logger.error('[CMDB CONTROLLER] Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// ... autres fonctions (voir exemples précédents)
+
+module.exports = {
+  getConfigurationItems,
+  getConfigurationItemById,
+  createConfigurationItem,
+  // ... autres fonctions
+};
+```
+
+### 5.2 Créer les routes
+**Fichier : `backend/src/api/v1/configuration_items/routes.js`**
+
+```javascript
+const express = require('express');
+const router = express.Router();
+const controller = require('./controller');
+
+router.get('/', controller.getConfigurationItems);
+router.get('/schemas', controller.getCITypeSchemas);
+router.get('/:uuid', controller.getConfigurationItemById);
+router.get('/:uuid/tickets', controller.getConfigurationItemTickets);
+router.post('/', controller.createConfigurationItem);
+router.patch('/:uuid', controller.updateConfigurationItem);
+router.delete('/:uuid', controller.deleteConfigurationItem);
+
+module.exports = router;
+```
+
+### 5.3 Enregistrer les routes dans server.js
+**Fichier : `backend/src/server.js`**
+
+```javascript
+// Ajouter après les autres imports de routes
+const configurationItemsRoutes = require('./api/v1/configuration_items/routes');
+
+// Ajouter après les autres app.use
+app.use('/api/v1/configuration_items', configurationItemsRoutes);
+```
+
+**✅ Checkpoint 5 :** API REST complète
+
+---
+
+## Phase 6 : Tests (1h)
+
+### 6.1 Tester avec cURL ou Postman
+
+#### Créer un onduleur
+```bash
+curl -X POST http://localhost:3000/api/v1/configuration_items \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "UPS-DATACENTER-01",
+    "description": "Onduleur principal datacenter",
+    "ci_type": "UPS",
+    "extended_core_fields": {
+      "voltage": 220,
+      "capacity_va": 3000,
+      "battery_autonomy_min": 30,
+      "brand": "APC",
+      "model": "Smart-UPS 3000"
+    }
+  }'
+```
+
+#### Créer une application
+```bash
+curl -X POST http://localhost:3000/api/v1/configuration_items \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Lumiere ITSM",
+    "description": "Application de gestion des tickets",
+    "ci_type": "APPLICATION",
+    "extended_core_fields": {
+      "version": "16.0.0",
+      "deployment_date": "2025-01-15",
+      "server_count": 3,
+      "language": "JavaScript",
+      "framework": "Vue.js 3 + Node.js"
+    }
+  }'
+```
+
+#### Lister les CIs
+```bash
+curl http://localhost:3000/api/v1/configuration_items?page=1&limit=10
+```
+
+#### Filtrer par type
+```bash
+curl http://localhost:3000/api/v1/configuration_items?ci_type=UPS
+```
+
+#### Rechercher
+```bash
+curl http://localhost:3000/api/v1/configuration_items?search=datacenter
+```
+
+**✅ Checkpoint 6 :** Tests fonctionnels OK
+
+---
+
+## Checklist complète
+
+### Installation
+- [ ] `npm install @prisma/client`
+- [ ] `npm install -D prisma`
+- [ ] `npm install @prisma/adapter-pg pg`
+- [ ] `npx prisma init`
+- [ ] Configurer `DB_USER`, `DB_HOST`, `DB_NAME`, `DB_PASSWORD`, `DB_PORT` dans `.env`
+
+### Configuration
+- [ ] Créer `prisma/schema.prisma`
+- [ ] Créer `src/config/prisma.js`
+- [ ] `npx prisma generate`
+
+### Migration DB
+- [ ] Créer `database/scripts/30_add_cmdb_fields.sql`
+- [ ] Exécuter la migration SQL
+- [ ] `npx prisma db pull`
+
+### Code
+- [ ] Créer `api/v1/configuration_items/schemas.js`
+- [ ] Créer `api/v1/configuration_items/service.prisma.js`
+- [ ] Créer `api/v1/configuration_items/controller.js`
+- [ ] Créer `api/v1/configuration_items/routes.js`
+- [ ] Enregistrer routes dans `server.js`
+
+### Tests
+- [ ] Tester création UPS
+- [ ] Tester création APPLICATION
+- [ ] Tester création SERVER
+- [ ] Tester liste avec pagination
+- [ ] Tester recherche
+- [ ] Tester filtrage par type
+- [ ] Tester mise à jour
+- [ ] Tester suppression
+- [ ] Tester validation des champs
+
+### Documentation
+- [ ] Documenter les schémas de CI types
+- [ ] Documenter l'API REST
+- [ ] Mettre à jour le README
+
+---
+
+## 🚀 Commandes utiles
+
+### Prisma
+```bash
+# Générer le client
+npx prisma generate
+
+# Synchroniser avec la DB
+npx prisma db pull
+
+# Ouvrir Prisma Studio (GUI)
+npx prisma studio
+
+# Formater le schéma
+npx prisma format
+```
+
+### Développement
+```bash
+# Démarrer le serveur
+npm run dev
+
+# Logs Prisma
+NODE_ENV=development npm run dev
+```
+
+---
+
+## 📚 Ressources
+
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [PostgreSQL JSONB](https://www.postgresql.org/docs/current/datatype-json.html)
+- [Prisma JSONB Support](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields)
+
+---
+
+## ⚠️ Points d'attention
+
+1. **Validation obligatoire** : Toujours valider `extended_core_fields` avant insertion
+2. **Index JSONB** : Créer des index GIN pour les recherches fréquentes
+3. **Transactions** : Utiliser `prisma.$transaction` pour opérations multiples
+4. **Logs** : Activer les logs Prisma en développement uniquement
+5. **Graceful shutdown** : Toujours appeler `prisma.$disconnect()`
+
+---
+
+## 🎯 Prochaines étapes (après CMDB)
+
+1. Migrer `persons` vers Prisma
+2. Migrer `groups` vers Prisma
+3. Évaluer migration des tickets (complexe)
+4. Créer des seeders Prisma
+5. Mettre en place des migrations versionnées
+
+---
+
+**Bonne chance ! 🚀**

@@ -18,7 +18,8 @@ Implémentation complète d'un CRUD pour les Configuration Items (CMDB) avec :
 
 ### Frontend (Vue.js 3 + PrimeVue v4)
 - ✅ Interface CRUD moderne avec DataTable PrimeVue
-- ✅ Formulaire modal avec validation
+- ✅ Formulaire dans onglets enfants (pas de modal)
+- ✅ Création multiple simultanée
 - ✅ Champs dynamiques selon le type de CI
 - ✅ Recherche et filtrage en temps réel
 - ✅ Export CSV
@@ -68,9 +69,20 @@ npm install -D prisma
 ```
 
 #### Configuration de la base de données
-Le fichier `prisma.config.ts` contient déjà la configuration. Assurez-vous que votre `.env` contient :
+Prisma v7 utilise un adaptateur PostgreSQL avec pool de connexions. Assurez-vous que votre `.env` contient :
 ```env
-DATABASE_URL="postgresql://user:password@host:port/database?schema=data"
+DB_USER=your_user
+DB_HOST=localhost
+DB_NAME=your_database
+DB_PASSWORD=your_password
+DB_PORT=5432
+```
+
+**Note :** Le projet utilise `@prisma/adapter-pg` au lieu de `DATABASE_URL` pour la compatibilité avec les variables d'environnement existantes.
+
+#### Installation des dépendances Prisma supplémentaires
+```bash
+npm install @prisma/adapter-pg pg
 ```
 
 #### Migration de la base de données
@@ -234,7 +246,7 @@ npm run dev
 Le frontend sera accessible sur `http://localhost:5173`
 
 ### Accéder au CRUD
-Naviguer vers : `http://localhost:5173/admin/configuration-items`
+Dans l'application, cliquer sur **Données** → **Configuration Items** dans le menu latéral.
 
 ## 🔧 Commandes utiles
 
