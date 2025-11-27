@@ -76,6 +76,11 @@
                 </template>
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false" class="no-resize"></Column>
+                <Column style="width: 3rem" :exportable="false" class="no-resize">
+                    <template #body="{ data }">
+                        <Button icon="pi pi-search" @click="openEditTab(data)" severity="secondary" rounded size="small" />
+                    </template>
+                </Column>
                 <Column v-if="isColumnVisible('name')" field="name" :header="$t('configurationItems.table.columns.name')" sortable style="min-width: 16rem">
                     <template #body="{ data }">
                         {{ data.name }}
@@ -249,8 +254,8 @@ const loading = ref(false);
 const totalRecords = ref(0);
 const currentPage = ref(1);
 const pageSize = PAGINATION_CONFIG.pageSizes['Configuration_items'] || 25;
-const sortField = ref('name');
-const sortOrder = ref(1); // 1 for asc, -1 for desc
+const sortField = ref('updated_at');
+const sortOrder = ref(-1); // 1 for asc, -1 for desc (descending = most recent first)
 
 const ciTypeOptions = ref([
     { label: t('configurationItems.types.ups'), value: 'UPS' },
@@ -265,9 +270,14 @@ const menuModel = ref([
     { label: t('configurationItems.contextMenu.delete'), icon: 'pi pi-trash', command: () => confirmDeleteItem(selectedItem.value) }
 ]);
 
+// Flag to prevent double loading on mount
+let isInitialLoad = true;
+
 onMounted(async () => {
     console.log('[ConfigurationItemsCrud] Mounted with tabId:', props.tabId);
     await loadItems();
+    // After initial load, allow watcher to trigger
+    isInitialLoad = false;
 });
 
 // Watch for child tabs closing to reload data
@@ -280,6 +290,9 @@ watch(() => tabsStore.activeChildTabs.length, (newLength, oldLength) => {
 
 // Watch for any filter changes to trigger search with debounce
 watch(filters, () => {
+    // Skip if this is the initial load (already handled by onMounted)
+    if (isInitialLoad) return;
+    
     if (searchTimeout) {
         clearTimeout(searchTimeout);
     }

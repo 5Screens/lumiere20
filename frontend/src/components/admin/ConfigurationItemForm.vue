@@ -82,7 +82,6 @@
             <Button :label="$t('configurationItemForm.actions.save')" icon="pi pi-check" @click="handleSave" :loading="saving" />
         </div>
 
-        <Toast />
     </div>
 </template>
 
@@ -98,7 +97,6 @@ import Select from 'primevue/select';
 import InputNumber from 'primevue/inputnumber';
 import Checkbox from 'primevue/checkbox';
 import Button from 'primevue/button';
-import Toast from 'primevue/toast';
 
 const props = defineProps({
     mode: {
