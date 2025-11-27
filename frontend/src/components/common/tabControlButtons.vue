@@ -2,24 +2,24 @@
   <div class="tab-control-buttons">
     <div class="left-buttons">
       <button class="control-button create" @click="handleCreate">
-        <i class="fas fa-plus"></i> 
+        <i class="fas fa-plus"></i> {{ $t('common.create') }}
       </button>
       <button class="control-button update" @click="handleUpdate" v-show="hasSelection">
-        <i class="fas fa-edit"></i> 
+        <i class="fas fa-edit"></i> {{ $t('common.update') }}
       </button>
       <button class="control-button delete" @click="handleDelete" v-show="hasSelection">
-        <i class="fas fa-trash"></i> 
+        <i class="fas fa-trash"></i> {{ $t('common.delete') }}
       </button>
     </div>
     <div class="right-buttons">
       <button class="control-button import" @click="handleImport">
-        <i class="fas fa-file-import"></i> 
+        <i class="fas fa-file-import"></i> {{ $t('common.import') }}
       </button>
       <button class="control-button export" @click="handleExport">
-        <i class="fas fa-file-export"></i> 
+        <i class="fas fa-file-export"></i> {{ $t('common.export') }}
       </button>
       <button class="control-button refresh" @click="handleRefresh">
-        <i class="fas fa-sync"></i> 
+        <i class="fas fa-sync"></i> {{ $t('common.refresh') }}
       </button>
     </div>
   </div>

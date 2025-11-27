@@ -24,6 +24,10 @@ export default {
       sa: 'Sa'
     }
   },
+  welcome: {
+    title: 'Bem-vindo ao Lumière',
+    subtitle: 'Selecione uma opção no menu lateral para começar ou crie um novo item.'
+  },
   // PrimeVue locale configuration
   primevue: {
     startsWith: 'Começa com',
@@ -70,7 +74,43 @@ export default {
   },
   common: {
     loading: 'Carregando...',
-    underConstruction: 'Este recurso está em construção'
+    underConstruction: 'Este recurso está em construção',
+    id: 'Identificador',
+    close: 'Fechar',
+    save: 'Salvar',
+    cancel: 'Cancelar',
+    delete: 'Excluir',
+    create: 'Criar',
+    update: 'Modificar',
+    import: 'Importar',
+    export: 'Exportar',
+    refresh: 'Atualizar',
+    selectOption: 'Selecionar uma opção',
+    loading_in_progress: 'Carregamento em andamento',
+    confirm_edit: 'Confirmar modificação',
+    cancel_edit: 'Cancelar modificação',
+    yes: 'Sim',
+    no: 'Não',
+    na: 'N/D',
+    createLabel: 'O que você gostaria de criar?',
+    writer_name: 'Criado por',
+    uuid: 'Identificador',
+    created_at: 'Criado em',
+    updated_at: 'Atualizado em',
+    closed_at: 'Fechado em',
+    assigned_at: 'Atribuído em',
+    no_data: 'Sem dados',
+    tableFilters: 'Filtros da tabela',
+    backToMain: 'Voltar à vista principal',
+    priority: 'Prioridade',
+    impact: 'Impacto',
+    urgency: 'Urgência',
+    category: 'Categoria',
+    modified: 'Modificado',
+    created: 'Criado',
+    createdBy: 'Criado por',
+    requestedBy: 'Solicitado por',
+    requestedFor: 'Solicitado para'
   },
   tabs: {
     symptoms: 'Sintomas',

@@ -24,6 +24,10 @@ export default {
       sa: 'Sa'
     }
   },
+  welcome: {
+    title: 'Bienvenido a Lumière',
+    subtitle: 'Seleccione una opción del menú lateral para comenzar o cree un nuevo elemento.'
+  },
   // PrimeVue locale configuration
   primevue: {
     startsWith: 'Comienza con',
@@ -93,7 +97,18 @@ export default {
     modification_date: 'Última actualización el',
     closure_date: 'Cerrado el',
     writer_name: 'Creado por',
-    uuid: 'Identificador'
+    uuid: 'Identificador',
+    tableFilters: 'Filtros de la tabla',
+    backToMain: 'Volver a la vista principal',
+    priority: 'Prioridad',
+    impact: 'Impacto',
+    urgency: 'Urgencia',
+    category: 'Categoría',
+    modified: 'Modificado',
+    created: 'Creado',
+    createdBy: 'Creado por',
+    requestedBy: 'Solicitado por',
+    requestedFor: 'Solicitado para'
   },
   tabs: {
     symptoms: 'Síntomas',

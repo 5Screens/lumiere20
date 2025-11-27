@@ -7,6 +7,7 @@ import Aura from '@primevue/themes/aura'
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
 import App from './App.vue'
+import HomePage from './components/HomePage.vue'
 import i18n from './i18n'
 import { useUserProfileStore } from './stores/userProfileStore'
 
@@ -23,7 +24,8 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: App
+      // component: App
+      component: HomePage
     }
   ]
 })

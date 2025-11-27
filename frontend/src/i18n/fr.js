@@ -24,6 +24,10 @@ export default {
       sa: 'Sa'
     }
   },
+  welcome: {
+    title: 'Bienvenue dans Lumière',
+    subtitle: 'Sélectionnez une option dans le menu latéral pour commencer ou créez un nouvel élément.'
+  },
   // PrimeVue locale configuration
   primevue: {
     startsWith: 'Commence par',
@@ -99,6 +103,17 @@ export default {
     underConstruction: 'Cette fonctionnalité est en cours de construction',
     totalFetchedData: 'Total de lignes trouvées : ',
     totalLoadedData: 'en prévisualisation',
+    tableFilters: 'Filtres de la table',
+    backToMain: 'Retour à la vue principale',
+    priority: 'Priorité',
+    impact: 'Impact',
+    urgency: 'Urgence',
+    category: 'Catégorie',
+    modified: 'Modifié',
+    created: 'Créé',
+    createdBy: 'Créé par',
+    requestedBy: 'Demandé par',
+    requestedFor: 'Demandé pour'
   },
   tabs: {
     symptoms: 'Symptômes',

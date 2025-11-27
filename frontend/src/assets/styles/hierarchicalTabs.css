@@ -16,9 +16,9 @@
   overflow-y: hidden; /* Empêche l'ascenseur vertical */
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
-  height: 40px;
+  /*height: 40px;*/
   align-items: center;
-  min-height: 40px; /* Hauteur minimale fixe */
+  /*min-height: 40px;*/ /* Hauteur minimale fixe */
 }
 
 /* Onglets de premier niveau - généralement en haut de la hiérarchie */
@@ -29,10 +29,11 @@
 /* Onglets de second niveau - apparaissent sous un onglet principal sélectionné */
 .secondary-tabs {
   background-color: var(--bg-color);
-  padding-left: 20px; /* Indentation pour montrer la hiérarchie */
+  /*padding-left: 20px;*/ /* Indentation pour montrer la hiérarchie */
   border-bottom: 1px solid var(--border-color);
-  height: 36px;
-  min-height: 36px; /* Hauteur minimale fixe */
+  /*height: 36px;*/
+  /*min-height: 36px;*/ /* Hauteur minimale fixe */
+  padding: 15px 0 15px 15px;
 }
 
 /* Onglet individuel - élément cliquable qui affiche un contenu spécifique */
@@ -46,6 +47,61 @@
   white-space: nowrap;
   flex-shrink: 0; /* Empêche la compression des onglets */
   color: var(--text-color); /* Couleur par défaut du texte */
+}
+
+/* Onglet secondaire en format carte - dimensions fixes pour l'affichage type carte */
+.tab.secondary-tab {
+  display: block; /* Surcharge le display: flex du .tab parent pour permettre la structure verticale de la carte */
+  width: 175px;
+  height: 150px;
+  margin: 0 15px 0 0;
+  padding: 8px; /* Padding uniforme pour les cartes */
+}
+
+/* Conteneur principal de la carte d'onglet secondaire - structure en colonne */
+.secondary-tab-main {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+/* En-tête de la carte - titre, icône et bouton de fermeture */
+.secondary-tab-head {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+}
+
+/* Corps de la carte - affiche les métadonnées du ticket */
+.secondary-tab-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0; /* Force le respect des contraintes de hauteur dans un conteneur flex */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px;
+}
+
+/* Style de la scrollbar pour le body des cartes */
+.secondary-tab-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.secondary-tab-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.secondary-tab-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.secondary-tab-body::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
 
 /* Style pour l'icône dans l'onglet */
@@ -84,8 +140,130 @@
 
 /* Titre de l'onglet - texte principal affiché dans l'onglet */
 .tab-title {
+  flex-grow: 1;
   margin-right: 8px;
   color: inherit; /* Hérite la couleur du parent (.tab) */
+}
+
+/* Informations secondaires dans le body des cartes - métadonnées du ticket */
+.tab-info {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+/* Badge de statut avec couleur - identifie visuellement l'état du ticket */
+.tab-info.status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  opacity: 1;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Badge de niveau (impact/urgence) avec fond gris clair - identifie visuellement le niveau de criticité */
+.tab-info.level-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  opacity: 1;
+  font-size: 12px;
+  text-align: center;
+  /*background-color: rgb(176, 176, 176);*/
+  background-color: transparent;
+  border: 1px solid rgb(176, 176, 176);
+  color: var(--text-color);
+  /*color: rgb(26, 26, 26);*/
+  text-align: left;
+}
+
+/* Badge de priorité avec couleur - identifie visuellement le niveau de priorité */
+.tab-info.priority-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  opacity: 1;
+  font-size: 10px;
+  text-align: center;
+}
+
+/* Niveau critique - rouge */
+.level-critical {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+/* Niveau élevé - orange */
+.level-high {
+  background-color: #fd7e14;
+  color: #ffffff;
+}
+
+/* Niveau moyen - jaune */
+.level-medium {
+  background-color: #ffc107;
+  color: #000000;
+}
+
+/* Niveau faible - vert */
+.level-low {
+  background-color: #28a745;
+  color: #ffffff;
+}
+
+/* Statuts de début/nouveaux - bleu */
+.status-start {
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+/* Statuts en cours - orange */
+.status-in-progress {
+  background-color: #fd7e14;
+  color: #ffffff;
+}
+
+/* Statuts en révision/attente - jaune/orange clair */
+.status-review {
+  background-color: #ffc107;
+  color: #000000;
+}
+
+/* Statuts terminés/résolus - vert */
+.status-completed {
+  background-color: #28a745;
+  color: #ffffff;
+}
+
+/* Statuts problématiques - rouge */
+.status-problem {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+/* Statuts neutres - gris */
+.status-neutral {
+  background-color: #6c757d;
+  color: #ffffff;
+}
+
+/* Statut par défaut - bleu clair */
+.status-default {
+  background-color: #17a2b8;
+  color: #ffffff;
+}
+
+/* Statut inconnu - gris foncé */
+.status-unknown {
+  background-color: #495057;
+  color: #ffffff;
 }
 
 /* Bouton de fermeture d'onglet - petit "x" à côté du titre */
