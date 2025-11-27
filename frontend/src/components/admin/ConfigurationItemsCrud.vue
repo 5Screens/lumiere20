@@ -1,5 +1,5 @@
 <template>
-    <div class="p-4">
+    <div class="configuration-items-container">
         <ContextMenu ref="cm" :model="menuModel" @hide="selectedItem = null" />
         <div class="card">
             <Toolbar class="mb-6 !border-0 !bg-transparent">
@@ -28,6 +28,8 @@
                 :lazy="true"
                 :loading="loading"
                 filterDisplay="menu"
+                scrollable
+                scrollHeight="flex"
                 :globalFilterFields="['name', 'ci_type', 'description']"
                 resizableColumns
                 columnResizeMode="expand"
@@ -485,11 +487,41 @@ const onCellEditComplete = async (event) => {
 </script>
 
 <style scoped>
+/* Container takes full height and uses flexbox */
+.configuration-items-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow: hidden;
+}
+
+/* Card takes remaining space */
+.configuration-items-container .card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* DataTable takes remaining space after toolbar */
+:deep(.p-datatable) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+:deep(.p-datatable-wrapper) {
+    flex: 1;
+    min-height: 0;
+}
+
 /* Disable all transitions to prevent theme change animations */
 :deep(*),
 :deep(*::before),
 :deep(*::after) {
     transition: none !important;
 }
-
 </style>
