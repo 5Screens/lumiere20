@@ -40,6 +40,9 @@
                 @page="onPage"
                 @sort="onSort"
                 @rowContextmenu="onRowContextMenu"
+                @columnReorder="onColumnReorder"
+                @stateRestore="onStateRestore"
+                @stateSave="onStateSave"
                 :sortField="sortField"
                 :sortOrder="sortOrder"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
@@ -75,8 +78,8 @@
                     </div>
                 </template>
 
-                <Column selectionMode="multiple" style="min-width: 3rem; width: 3rem" :exportable="false"></Column>
-                <Column style="min-width: 3rem; width: 3rem" :exportable="false">
+                <Column field="_selection" selectionMode="multiple" style="min-width: 3rem; width: 3rem" :exportable="false" :reorderableColumn="false" frozen></Column>
+                <Column field="_actions" style="min-width: 3rem; width: 3rem" :exportable="false" :reorderableColumn="false" frozen>
                     <template #body="{ data }">
                         <Button icon="pi pi-search" @click="openEditTab(data)" severity="secondary" rounded size="small" />
                     </template>
@@ -426,6 +429,27 @@ const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+};
+
+const onColumnReorder = (event) => {
+    console.log('[ConfigurationItemsCrud] Column reorder event:', event);
+    console.log('[ConfigurationItemsCrud] New column order:', event.columns?.map(c => c.props?.field || c.props?.selectionMode || 'unknown'));
+};
+
+const onStateRestore = (event) => {
+    console.log('[ConfigurationItemsCrud] State restored from localStorage:', event);
+    const savedState = localStorage.getItem('configuration-items-table');
+    if (savedState) {
+        const parsed = JSON.parse(savedState);
+        console.log('[ConfigurationItemsCrud] Saved columnOrder:', parsed.columnOrder);
+        console.log('[ConfigurationItemsCrud] Full saved state:', parsed);
+    }
+};
+
+const onStateSave = (event) => {
+    console.log('[ConfigurationItemsCrud] State saved to localStorage:', event);
+    console.log('[ConfigurationItemsCrud] columnOrder in state:', event.columnOrder);
+    console.log('[ConfigurationItemsCrud] columnWidths in state:', event.columnWidths);
 };
 
 const onCellEditComplete = async (event) => {
