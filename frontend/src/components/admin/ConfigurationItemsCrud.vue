@@ -1,7 +1,7 @@
 <template>
-    <div class="configuration-items-container">
+    <div class="h-full flex flex-col p-4 overflow-hidden">
         <ContextMenu ref="cm" :model="menuModel" @hide="selectedItem = null" />
-        <div class="card">
+        <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
             <Toolbar class="mb-6 !border-0 !bg-transparent">
                 <template #start>
                     <ButtonGroup>
@@ -45,8 +45,9 @@
                 @columnReorder="onColumnReorder"
                 @stateRestore="onStateRestore"
                 @stateSave="onStateSave"
-                :sortField="sortField"
-                :sortOrder="sortOrder"
+                v-model:sortField="sortField"
+                v-model:sortOrder="sortOrder"
+                removableSort
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                 :currentPageReportTemplate="paginationTemplate"
             >
@@ -336,9 +337,13 @@ const onPage = (event) => {
 };
 
 const onSort = (event) => {
-    sortField.value = event.sortField;
-    sortOrder.value = event.sortOrder;
-    loadItems();
+    console.log('[ConfigurationItemsCrud] onSort event:', event);
+    console.log('[ConfigurationItemsCrud] sortField before:', sortField.value, '-> after:', event.sortField);
+    console.log('[ConfigurationItemsCrud] sortOrder before:', sortOrder.value, '-> after:', event.sortOrder);
+    // With v-model, values are already updated by PrimeVue
+    // Just reload with current page reset to 1
+    currentPage.value = 1;
+    loadItems(1);
 };
 
 const clearFilters = () => {
@@ -487,25 +492,7 @@ const onCellEditComplete = async (event) => {
 </script>
 
 <style scoped>
-/* Container takes full height and uses flexbox */
-.configuration-items-container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
-    overflow: hidden;
-}
-
-/* Card takes remaining space */
-.configuration-items-container .card {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-}
-
-/* DataTable takes remaining space after toolbar */
+/* DataTable flex layout for scrollable content */
 :deep(.p-datatable) {
     flex: 1;
     display: flex;
