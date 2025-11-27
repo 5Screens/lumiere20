@@ -197,7 +197,24 @@ export default {
               mode: 'update',
               objectId: row.uuid,
               className: this.data.className,
-              parentId: this.store.activeTabId
+              parentId: this.store.activeTabId,
+              ticketStatus: row.ticket_status_code,
+              ticketStatusLabel: row.ticket_status_label,
+              ticketType: row.ticket_type_code,
+              ticketTypeLabel: row.ticket_type_label,
+              updatedAt: row.updated_at || row.date_modification,
+              createdAt: row.created_at || row.date_creation,
+              // Données communes
+              writerName: row.writer_name,
+              // Données spécifiques selon le type
+              impact: row.impact,
+              impactLabel: row.impact_label,
+              urgency: row.urgency,
+              urgencyLabel: row.urgency_label,
+              priority: row.priority,
+              category: row.category,
+              requestedByName: row.requested_by_name,
+              requestedForName: row.requested_for_name
             })
           })
 
