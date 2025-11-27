@@ -5,8 +5,8 @@
             <Toolbar class="mb-6 !border-0 !bg-transparent">
                 <template #start>
                     <ButtonGroup>
-                        <Button :label="$t('configurationItems.actions.new')" icon="pi pi-plus" variant="outlined" @click="openNewTab" />
-                        <Button :label="$t('configurationItems.actions.delete')" icon="pi pi-trash" severity="danger" variant="outlined" @click="confirmDeleteSelected" :disabled="!selectedItems || !selectedItems.length" />
+                        <Button :label="$t('configurationItems.actions.new')" icon="pi pi-plus" severity="secondary" @click="openNewTab" />
+                        <Button :label="$t('configurationItems.actions.delete')" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedItems || !selectedItems.length" />
                     </ButtonGroup>
                 </template>
 
@@ -60,7 +60,7 @@
                                 </InputIcon>
                                 <InputText v-model="filters['global'].value" :placeholder="$t('configurationItems.search.placeholder')" />
                             </IconField>
-                            <Button type="button" icon="pi pi-filter-slash" variant="outlined" class="ml-2" @click="clearFilters()" />
+                            <Button type="button" icon="pi pi-filter-slash" severity="secondary" class="ml-2" @click="clearFilters()" :disabled="!hasActiveFilters" />
                             <Popover ref="columnTogglePopover">
                                 <template #default>
                                     <div class="p-4">
@@ -256,6 +256,27 @@ const initFilters = () => {
 };
 
 const filters = ref(initFilters());
+
+// Check if any filter has an active value
+const hasActiveFilters = computed(() => {
+    // Check global filter
+    if (filters.value.global?.value) return true;
+    
+    // Check column filters
+    const columnFilters = ['name', 'ci_type', 'description', 'created_at', 'updated_at'];
+    for (const field of columnFilters) {
+        const filter = filters.value[field];
+        if (filter?.constraints) {
+            for (const constraint of filter.constraints) {
+                if (constraint.value !== null && constraint.value !== undefined && constraint.value !== '') {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+});
+
 const loading = ref(false);
 const totalRecords = ref(0);
 const currentPage = ref(1);
