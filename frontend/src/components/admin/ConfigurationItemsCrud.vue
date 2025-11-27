@@ -76,7 +76,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <Button type="button" icon="pi pi-cog" severity="secondary" @click="toggleColumnSelector" />
-                            <Button icon="pi pi-refresh" severity="secondary" @click="loadItems()" :loading="loading" style="margin-left: 0.75rem" />
+                            <Button icon="pi pi-refresh" severity="secondary" @click="loadItems()" :loading="loading" />
                         </div>
                     </div>
                 </template>
