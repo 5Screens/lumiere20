@@ -75,8 +75,8 @@
                     </div>
                 </template>
 
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false" class="no-resize"></Column>
-                <Column style="width: 3rem" :exportable="false" class="no-resize">
+                <Column selectionMode="multiple" style="min-width: 3rem; width: 3rem" :exportable="false"></Column>
+                <Column style="min-width: 3rem; width: 3rem" :exportable="false">
                     <template #body="{ data }">
                         <Button icon="pi pi-search" @click="openEditTab(data)" severity="secondary" rounded size="small" />
                     </template>
@@ -468,9 +468,4 @@ const onCellEditComplete = async (event) => {
     transition: none !important;
 }
 
-/* Disable resize handle on checkbox column */
-:deep(th.no-resize .p-datatable-column-resizer) {
-    display: none !important;
-    pointer-events: none !important;
-}
 </style>
