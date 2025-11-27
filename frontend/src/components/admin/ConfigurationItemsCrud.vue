@@ -2,10 +2,11 @@
     <div class="h-full flex flex-col p-4 overflow-hidden">
         <ContextMenu ref="cm" :model="menuModel" @hide="selectedItem = null" />
         <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <Toolbar class="mb-6 !border-0 !bg-transparent">
+            <Toolbar class="!border-0 !bg-transparent">
                 <template #start>
                     <ButtonGroup>
                         <Button :label="$t('configurationItems.actions.new')" icon="pi pi-plus" severity="secondary" @click="openNewTab" />
+                        <Button :label="$t('configurationItems.actions.edit')" icon="pi pi-pencil" severity="secondary" @click="openEditSelectedTabs" :disabled="!selectedItems || !selectedItems.length" />
                         <Button :label="$t('configurationItems.actions.delete')" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedItems || !selectedItems.length" />
                     </ButtonGroup>
                 </template>
@@ -395,6 +396,14 @@ const openEditTab = (itemData) => {
         mode: 'edit',
         objectId: itemData.uuid
     });
+};
+
+const openEditSelectedTabs = () => {
+    if (!selectedItems.value || !selectedItems.value.length) return;
+    
+    for (const item of selectedItems.value) {
+        openEditTab(item);
+    }
 };
 
 const confirmDeleteItem = (deleteItem) => {
