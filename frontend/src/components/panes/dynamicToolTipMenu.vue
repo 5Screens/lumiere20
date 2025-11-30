@@ -7,6 +7,8 @@
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
+    <!-- Triangle pointant vers le menu appelant -->
+    <div class="tooltip-arrow" :style="arrowStyle"></div>
     <!-- Section 1: Titre du module -->
     <div class="tooltip-header">
       <div class="tooltip-title">
@@ -67,42 +69,6 @@
         </div>
       </div>
     </div>
-    
-    <!-- Tooltip secondaire pour les sections dataPane -->
-    <div
-      v-if="secondaryTooltip.isVisible"
-      class="dynamic-tooltip-menu secondary-tooltip"
-      :class="{ 'is-visible': secondaryTooltip.isVisible }"
-      :style="{ left: `${secondaryTooltip.position.x}px`, top: `${secondaryTooltip.position.y}px` }"
-      @click.stop
-      @mouseenter="handleSecondaryMouseEnter"
-      @mouseleave="handleSecondaryMouseLeave"
-    >
-      <!-- Header du tooltip secondaire -->
-      <div class="tooltip-header">
-        <div class="tooltip-title">
-          <i :class="secondaryTooltip.titleIcon" class="title-icon"></i>
-          <h3>{{ $t(`dataPane.${secondaryTooltip.paneType}.title`) }}</h3>
-        </div>
-      </div>
-      
-      <!-- Contenu du tooltip secondaire -->
-      <div class="tooltip-content">
-        <div class="tooltip-items">
-          <div 
-            class="tooltip-item" 
-            v-for="(item, index) in secondaryTooltip.items" 
-            :key="index"
-            @click="handleItemClick(item)"
-          >
-            <div class="item-content">
-              <i :class="item.icon" class="item-icon"></i>
-              <span class="item-label">{{ $t(item.label) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -136,6 +102,10 @@ export default {
       type: Object,
       default: () => ({ x: 0, y: 0 })
     },
+    arrowY: {
+      type: Number,
+      default: 0
+    },
     titleIcon: {
       type: String,
       default: 'fas fa-cube'
@@ -143,20 +113,19 @@ export default {
   },
   emits: ['item-click', 'mouse-enter', 'mouse-leave'],
   setup(props, { emit }) {
-    const secondaryTooltip = ref({
-      isVisible: false,
-      paneType: '',
-      items: [],
-      sections: [],
-      hasSections: false,
-      position: { x: 0, y: 0 },
-      titleIcon: ''
-    })
-    
     const positionStyle = computed(() => {
       return {
         left: `${props.position.x}px`,
         top: `${props.position.y}px`
+      }
+    })
+    
+    const arrowStyle = computed(() => {
+      // Calculate arrow position relative to tooltip top
+      // Subtract 10px to center the arrow (arrow height is 20px total)
+      const arrowOffset = props.arrowY - props.position.y - 10
+      return {
+        top: `${Math.max(12, arrowOffset)}px`
       }
     })
     
@@ -173,56 +142,21 @@ export default {
     }
     
     const handleItemHover = (item, event) => {
-      // Si c'est un item de dataPane avec des sections, afficher le tooltip secondaire
-      if (props.paneType === 'dataPane' && props.hasSections) {
-        const rect = event.target.getBoundingClientRect()
-        const section = props.sections.find(s => s.items.includes(item))
-        
-        if (section) {
-          secondaryTooltip.value = {
-            isVisible: true,
-            paneType: section.id,
-            items: section.items,
-            sections: [],
-            hasSections: false,
-            position: {
-              x: rect.right + 10,
-              y: rect.top
-            },
-            titleIcon: 'fas fa-cube'
-          }
-        }
-      }
+      // Reserved for future use
     }
     
     const handleItemLeave = (item) => {
-      // Délai avant de masquer le tooltip secondaire
-      setTimeout(() => {
-        if (!secondaryTooltip.value.mouseOver) {
-          secondaryTooltip.value.isVisible = false
-        }
-      }, 100)
-    }
-    
-    const handleSecondaryMouseEnter = () => {
-      secondaryTooltip.value.mouseOver = true
-    }
-    
-    const handleSecondaryMouseLeave = () => {
-      secondaryTooltip.value.mouseOver = false
-      secondaryTooltip.value.isVisible = false
+      // Reserved for future use
     }
     
     return {
-      secondaryTooltip,
       positionStyle,
+      arrowStyle,
       handleMouseEnter,
       handleMouseLeave,
       handleItemClick,
       handleItemHover,
-      handleItemLeave,
-      handleSecondaryMouseEnter,
-      handleSecondaryMouseLeave
+      handleItemLeave
     }
   }
 }

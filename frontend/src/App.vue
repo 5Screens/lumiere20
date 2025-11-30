@@ -163,6 +163,7 @@
       :sections="tooltipMenu.sections"
       :has-sections="tooltipMenu.hasSections"
       :position="tooltipMenu.position"
+      :arrow-y="tooltipMenu.arrowY"
       :title-icon="tooltipMenu.titleIcon"
       @item-click="handleTooltipItemClick"
       @mouse-enter="handleTooltipMouseEnter"
@@ -226,6 +227,7 @@ export default {
         sections: [],
         hasSections: false,
         position: { x: 0, y: 0 },
+        arrowY: 0,
         titleIcon: '',
         mouseOverTooltip: false,
         mouseOverTrigger: false
@@ -392,6 +394,7 @@ export default {
           x: sideMenuWidth + 10, // À droite du menu latéral
           y: yPosition // Position ajustée pour ne pas dépasser
         },
+        arrowY: rect.top + rect.height / 2, // Center of the calling menu item
         titleIcon: paneIcons[paneType] || 'fas fa-cube',
         mouseOverTooltip: false,
         mouseOverTrigger: true
