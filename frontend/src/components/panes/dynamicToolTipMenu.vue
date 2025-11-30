@@ -122,10 +122,10 @@ export default {
     
     const arrowStyle = computed(() => {
       // Calculate arrow position relative to tooltip top
-      // Subtract 10px to center the arrow (arrow height is 20px total)
-      const arrowOffset = props.arrowY - props.position.y - 10
+      // CSS transform: translateY(-50%) handles vertical centering
+      const arrowOffset = props.arrowY - props.position.y
       return {
-        top: `${Math.max(12, arrowOffset)}px`
+        top: `${Math.max(20, arrowOffset)}px`
       }
     })
     
