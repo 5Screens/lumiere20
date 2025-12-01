@@ -71,6 +71,8 @@
         @page="onPage"
         @sort="onSort"
         @rowContextmenu="onRowContextMenu"
+        @columnReorder="onColumnReorder"
+        @stateRestore="onStateRestore"
         removableSort
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
         :currentPageReportTemplate="paginationTemplate"
@@ -129,16 +131,20 @@
 
         <!-- Selection column -->
         <Column 
+          field="_selection"
           selectionMode="multiple" 
           style="min-width: 3rem; width: 3rem" 
           :exportable="false" 
+          :reorderableColumn="false"
           frozen 
         />
         
         <!-- Actions column -->
         <Column 
+          field="_actions"
           style="min-width: 3rem; width: 3rem" 
           :exportable="false" 
+          :reorderableColumn="false"
           frozen
         >
           <template #body="{ data }">
@@ -589,6 +595,16 @@ const getTypeSeverity = (type) => {
     case 'NETWORK_DEVICE': return 'secondary'
     default: return null
   }
+}
+
+const onColumnReorder = (event) => {
+  console.log('[ObjectsCrud] Column reorder event:', event)
+}
+
+const onStateRestore = (event) => {
+  console.log('[ObjectsCrud] State restored:', event)
+  // Clear saved state if it causes issues with frozen columns
+  // The frozen columns should always stay in position
 }
 
 // Watch filters with debounce
