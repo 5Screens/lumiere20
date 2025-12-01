@@ -1,4 +1,24 @@
 export default {
+  menu: {
+    dashboard: 'Dashboard',
+    configuration: 'Configuration',
+    configurationItems: 'Configuration Items',
+    entities: 'Entities',
+    locations: 'Locations',
+    groups: 'Groups',
+    persons: 'Persons',
+    tickets: 'Tickets',
+    incidents: 'Incidents',
+    problems: 'Problems',
+    changes: 'Changes',
+    services: 'Services',
+    serviceCatalog: 'Service Catalog',
+    serviceOfferings: 'Service Offerings',
+    admin: 'Administration',
+    ticketTypes: 'Ticket Types',
+    ticketStatus: 'Ticket Status',
+    symptoms: 'Symptoms'
+  },
   auth: {
     loginTitle: 'Sign In',
     registerTitle: 'Create Account',
@@ -15,6 +35,8 @@ export default {
     login: 'Sign In',
     register: 'Sign Up',
     logout: 'Logout',
+    profile: 'Profile',
+    settings: 'Settings',
     or: 'or',
     noAccount: 'No account yet? Sign up',
     hasAccount: 'Already have an account? Sign in'

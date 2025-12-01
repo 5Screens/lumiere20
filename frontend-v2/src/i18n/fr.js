@@ -1,4 +1,24 @@
 export default {
+  menu: {
+    dashboard: 'Tableau de bord',
+    configuration: 'Configuration',
+    configurationItems: 'Éléments de configuration',
+    entities: 'Entités',
+    locations: 'Localisations',
+    groups: 'Groupes',
+    persons: 'Personnes',
+    tickets: 'Tickets',
+    incidents: 'Incidents',
+    problems: 'Problèmes',
+    changes: 'Changements',
+    services: 'Services',
+    serviceCatalog: 'Catalogue de services',
+    serviceOfferings: 'Offres de service',
+    admin: 'Administration',
+    ticketTypes: 'Types de tickets',
+    ticketStatus: 'Statuts de tickets',
+    symptoms: 'Symptômes'
+  },
   auth: {
     loginTitle: 'Connexion',
     registerTitle: 'Créer un compte',
@@ -15,6 +35,8 @@ export default {
     login: 'Se connecter',
     register: 'S\'inscrire',
     logout: 'Déconnexion',
+    profile: 'Profil',
+    settings: 'Paramètres',
     or: 'ou',
     noAccount: 'Pas encore de compte ? Inscrivez-vous',
     hasAccount: 'Déjà un compte ? Connectez-vous'
