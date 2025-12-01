@@ -1,0 +1,457 @@
+// Prisma schema for Lumiere V2
+// Database: PostgreSQL with multi-schema support
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["data", "core", "configuration", "translations"]
+}
+
+// ============================================
+// SCHEMA: data
+// ============================================
+
+model configuration_items {
+  uuid                 String    @id @default(uuid()) @db.Uuid
+  name                 String    @db.VarChar(255)
+  description          String?   @db.Text
+  ci_type              String    @default("GENERIC") @db.VarChar(50)
+  extended_core_fields Json?     @db.JsonB
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  tickets tickets[]
+
+  @@index([ci_type])
+  @@schema("data")
+  @@map("configuration_items")
+}
+
+model services {
+  uuid                 String    @id @default(uuid()) @db.Uuid
+  name                 String    @db.VarChar(255)
+  description          String?   @db.Text
+  owning_entity_uuid   String?   @db.Uuid
+  owned_by_uuid        String?   @db.Uuid
+  managed_by_uuid      String?   @db.Uuid
+  business_criticality String?   @db.VarChar(50)
+  lifecycle_status     String?   @db.VarChar(50)
+  version              String?   @db.VarChar(50)
+  operational          String?   @db.VarChar(50)
+  legal_regulatory     String?   @db.VarChar(50)
+  reputational         String?   @db.VarChar(50)
+  financial            String?   @db.VarChar(50)
+  comments             String?   @db.Text
+  cab_uuid             String?   @db.Uuid
+  parent_uuid          String?   @db.Uuid
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  owning_entity   entities? @relation("ServiceOwningEntity", fields: [owning_entity_uuid], references: [uuid])
+  owned_by        persons?  @relation("ServiceOwnedBy", fields: [owned_by_uuid], references: [uuid])
+  managed_by      persons?  @relation("ServiceManagedBy", fields: [managed_by_uuid], references: [uuid])
+  cab             groups?   @relation("ServiceCAB", fields: [cab_uuid], references: [uuid])
+  parent          services? @relation("ServiceParent", fields: [parent_uuid], references: [uuid])
+  children        services[] @relation("ServiceParent")
+  service_offerings service_offerings[]
+
+  @@schema("data")
+  @@map("services")
+}
+
+model service_offerings {
+  uuid                  String    @id @default(uuid()) @db.Uuid
+  name                  String    @db.VarChar(255)
+  description           String?   @db.Text
+  start_date            DateTime  @default(now()) @db.Date
+  end_date              DateTime? @db.Date
+  business_criticality  String?   @db.VarChar(50)
+  environment           String?   @db.VarChar(100)
+  price_model           String?   @db.VarChar(100)
+  currency              String?   @db.VarChar(3)
+  service_uuid          String    @db.Uuid
+  operator_entity_uuid  String    @db.Uuid
+  created_at            DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  service         services @relation(fields: [service_uuid], references: [uuid], onDelete: Cascade)
+  operator_entity entities @relation("ServiceOfferingOperator", fields: [operator_entity_uuid], references: [uuid], onDelete: Cascade)
+
+  @@schema("data")
+  @@map("service_offerings")
+}
+
+// ============================================
+// SCHEMA: configuration
+// ============================================
+
+model ticket_types {
+  uuid       String   @id @default(uuid()) @db.Uuid
+  code       String   @unique @db.VarChar(50)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  ticket_status      ticket_status[]
+  tickets            tickets[]
+  translations       ticket_types_translation[]
+
+  @@schema("configuration")
+  @@map("ticket_types")
+}
+
+model ticket_status {
+  uuid            String   @id @default(uuid()) @db.Uuid
+  code            String   @db.VarChar(50)
+  rel_ticket_type String?  @db.VarChar(50)
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  ticket_type  ticket_types? @relation(fields: [rel_ticket_type], references: [code])
+  locations    locations[]
+  translations ticket_status_translation[]
+
+  @@unique([code, rel_ticket_type])
+  @@schema("configuration")
+  @@map("ticket_status")
+}
+
+model symptoms {
+  uuid       String   @id @default(uuid()) @db.Uuid
+  code       String   @unique @db.VarChar(50)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  translations symptoms_translation[]
+
+  @@schema("configuration")
+  @@map("symptoms")
+}
+
+model entities {
+  uuid                     String    @id @default(uuid()) @db.Uuid
+  name                     String    @db.VarChar(255)
+  entity_id                String    @unique @db.VarChar(50)
+  external_id              String?   @db.VarChar(100)
+  entity_type              String    @db.VarChar(50)
+  budget_approver_uuid     String?   @db.Uuid
+  rel_headquarters_location String?  @db.Uuid
+  is_active                Boolean   @default(true)
+  parent_uuid              String?   @db.Uuid
+  created_at               DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  budget_approver       persons?   @relation("EntityBudgetApprover", fields: [budget_approver_uuid], references: [uuid])
+  headquarters_location locations? @relation("EntityHeadquarters", fields: [rel_headquarters_location], references: [uuid])
+  parent                entities?  @relation("EntityParent", fields: [parent_uuid], references: [uuid])
+  children              entities[] @relation("EntityParent")
+  
+  // Reverse relations
+  persons               persons[]  @relation("PersonEntity")
+  services_owned        services[] @relation("ServiceOwningEntity")
+  service_offerings     service_offerings[] @relation("ServiceOfferingOperator")
+  locations_primary     locations[] @relation("LocationPrimaryEntity")
+  rel_entities_locations rel_entities_locations[]
+  rel_persons_entities  rel_persons_entities[]
+
+  @@schema("configuration")
+  @@map("entities")
+}
+
+model locations {
+  uuid                     String    @id @default(uuid()) @db.Uuid
+  name                     String    @db.VarChar(255)
+  primary_entity_uuid      String?   @db.Uuid
+  field_service_group_uuid String?   @db.Uuid
+  rel_status_uuid          String?   @db.Uuid
+  site_created_on          DateTime? @db.Timestamptz(6)
+  site_id                  String?   @db.VarChar(100)
+  type                     String?   @db.VarChar(100)
+  business_criticality     String?   @db.VarChar(50)
+  opening_hours            String?   @db.VarChar(255)
+  parent_uuid              String?   @db.Uuid
+  phone                    String?   @db.VarChar(50)
+  time_zone                String?   @db.VarChar(100)
+  street                   String?   @db.VarChar(255)
+  city                     String?   @db.VarChar(255)
+  state_province           String?   @db.VarChar(255)
+  country                  String?   @db.VarChar(100)
+  postal_code              String?   @db.VarChar(20)
+  comments                 String?   @db.Text
+  alternative_site_reference String? @db.VarChar(255)
+  wan_design               String?   @db.Text
+  network_telecom_service  String?   @db.Text
+  created_at               DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  primary_entity      entities?      @relation("LocationPrimaryEntity", fields: [primary_entity_uuid], references: [uuid])
+  field_service_group groups?        @relation("LocationFieldServiceGroup", fields: [field_service_group_uuid], references: [uuid])
+  rel_status          ticket_status? @relation(fields: [rel_status_uuid], references: [uuid])
+  parent              locations?     @relation("LocationParent", fields: [parent_uuid], references: [uuid])
+  children            locations[]    @relation("LocationParent")
+  
+  // Reverse relations
+  persons             persons[]      @relation("PersonLocation")
+  entities_headquarters entities[]   @relation("EntityHeadquarters")
+  rel_entities_locations rel_entities_locations[]
+
+  @@schema("configuration")
+  @@map("locations")
+}
+
+model persons {
+  uuid                      String    @id @default(uuid()) @db.Uuid
+  first_name                String    @db.VarChar(100)
+  last_name                 String    @db.VarChar(100)
+  job_role                  String?   @db.VarChar(255)
+  ref_entity_uuid           String?   @db.Uuid
+  password_hash             String?   @db.VarChar(255)
+  password_needs_reset      Boolean   @default(false)
+  locked_out                Boolean   @default(false)
+  is_active                 Boolean   @default(true)
+  critical_user             Boolean   @default(false)
+  external_user             Boolean   @default(false)
+  date_format               String?   @db.VarChar(50)
+  internal_id               String?   @db.VarChar(100)
+  email                     String    @unique @db.VarChar(255)
+  notification              Boolean   @default(true)
+  time_zone                 String?   @db.VarChar(100)
+  ref_location_uuid         String?   @db.Uuid
+  floor                     String?   @db.VarChar(50)
+  room                      String?   @db.VarChar(50)
+  ref_approving_manager_uuid String?  @db.Uuid
+  phone                     String?   @db.VarChar(50)
+  business_phone            String?   @db.VarChar(50)
+  business_mobile_phone     String?   @db.VarChar(50)
+  personal_mobile_phone     String?   @db.VarChar(50)
+  language                  String?   @db.VarChar(10)
+  role                      String    @default("user") @db.VarChar(50)
+  roles                     Json?     @db.JsonB
+  photo                     String?   @db.Text
+  last_login                DateTime? @db.Timestamptz(6)
+  created_at                DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  ref_entity           entities? @relation("PersonEntity", fields: [ref_entity_uuid], references: [uuid])
+  ref_location         locations? @relation("PersonLocation", fields: [ref_location_uuid], references: [uuid])
+  ref_approving_manager persons?  @relation("PersonApprovingManager", fields: [ref_approving_manager_uuid], references: [uuid])
+  subordinates         persons[] @relation("PersonApprovingManager")
+  
+  // Reverse relations
+  entities_budget_approver entities[] @relation("EntityBudgetApprover")
+  services_owned_by        services[] @relation("ServiceOwnedBy")
+  services_managed_by      services[] @relation("ServiceManagedBy")
+  groups_supervisor        groups[]   @relation("GroupSupervisor")
+  groups_manager           groups[]   @relation("GroupManager")
+  tickets_requested_by     tickets[]  @relation("TicketRequestedBy")
+  tickets_requested_for    tickets[]  @relation("TicketRequestedFor")
+  tickets_writer           tickets[]  @relation("TicketWriter")
+  rel_persons_groups       rel_persons_groups[]
+  rel_persons_delegates_person   rel_persons_delegates[] @relation("DelegatePerson")
+  rel_persons_delegates_delegate rel_persons_delegates[] @relation("DelegateDelegate")
+  rel_persons_entities     rel_persons_entities[]
+
+  @@schema("configuration")
+  @@map("persons")
+}
+
+model groups {
+  uuid          String   @id @default(uuid()) @db.Uuid
+  group_name    String   @db.VarChar(255)
+  support_level Int?
+  description   String?  @db.Text
+  rel_supervisor String? @db.Uuid
+  rel_manager   String?  @db.Uuid
+  rel_schedule  String?  @db.Uuid
+  email         String?  @db.VarChar(255)
+  phone         String?  @db.VarChar(50)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  supervisor    persons? @relation("GroupSupervisor", fields: [rel_supervisor], references: [uuid])
+  manager       persons? @relation("GroupManager", fields: [rel_manager], references: [uuid])
+  
+  // Reverse relations
+  services_cab           services[]  @relation("ServiceCAB")
+  locations_field_service locations[] @relation("LocationFieldServiceGroup")
+  rel_persons_groups     rel_persons_groups[]
+
+  @@schema("configuration")
+  @@map("groups")
+}
+
+// Junction tables
+model rel_persons_groups {
+  uuid       String   @id @default(uuid()) @db.Uuid
+  rel_member String   @db.Uuid
+  rel_group  String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  member persons @relation(fields: [rel_member], references: [uuid], onDelete: Cascade)
+  group  groups  @relation(fields: [rel_group], references: [uuid], onDelete: Cascade)
+
+  @@unique([rel_member, rel_group])
+  @@schema("configuration")
+  @@map("rel_persons_groups")
+}
+
+model rel_persons_delegates {
+  uuid          String    @id @default(uuid()) @db.Uuid
+  person_uuid   String    @db.Uuid
+  delegate_uuid String    @db.Uuid
+  start_date    DateTime  @db.Date
+  end_date      DateTime? @db.Date
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  person   persons @relation("DelegatePerson", fields: [person_uuid], references: [uuid], onDelete: Cascade)
+  delegate persons @relation("DelegateDelegate", fields: [delegate_uuid], references: [uuid], onDelete: Cascade)
+
+  @@schema("configuration")
+  @@map("rel_persons_delegates")
+}
+
+model rel_entities_locations {
+  uuid          String    @id @default(uuid()) @db.Uuid
+  entity_uuid   String    @db.Uuid
+  location_uuid String    @db.Uuid
+  start_date    DateTime  @default(now()) @db.Date
+  end_date      DateTime? @db.Date
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  entity   entities  @relation(fields: [entity_uuid], references: [uuid], onDelete: Cascade)
+  location locations @relation(fields: [location_uuid], references: [uuid], onDelete: Cascade)
+
+  @@schema("configuration")
+  @@map("rel_entities_locations")
+}
+
+model rel_persons_entities {
+  uuid        String   @id @default(uuid()) @db.Uuid
+  person_uuid String   @db.Uuid
+  entity_uuid String   @db.Uuid
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  person persons  @relation(fields: [person_uuid], references: [uuid], onDelete: Restrict)
+  entity entities @relation(fields: [entity_uuid], references: [uuid], onDelete: Restrict)
+
+  @@unique([person_uuid, entity_uuid])
+  @@schema("configuration")
+  @@map("rel_persons_entities")
+}
+
+// ============================================
+// SCHEMA: core
+// ============================================
+
+model tickets {
+  uuid                    String    @id @default(uuid()) @db.Uuid
+  title                   String    @db.VarChar(255)
+  description             String?   @db.Text
+  configuration_item_uuid String?   @db.Uuid
+  requested_by_uuid       String?   @db.Uuid
+  requested_for_uuid      String?   @db.Uuid
+  writer_uuid             String    @db.Uuid
+  ticket_type_code        String    @db.VarChar(50)
+  ticket_status_code      String    @db.VarChar(50)
+  core_extended_attributes Json?    @db.JsonB
+  user_extended_attributes Json?    @db.JsonB
+  created_at              DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  closed_at               DateTime? @db.Timestamptz(6)
+
+  // Relations
+  configuration_item configuration_items? @relation(fields: [configuration_item_uuid], references: [uuid], onDelete: Restrict)
+  requested_by       persons?             @relation("TicketRequestedBy", fields: [requested_by_uuid], references: [uuid], onDelete: Restrict)
+  requested_for      persons?             @relation("TicketRequestedFor", fields: [requested_for_uuid], references: [uuid], onDelete: Restrict)
+  writer             persons              @relation("TicketWriter", fields: [writer_uuid], references: [uuid], onDelete: Restrict)
+  ticket_type        ticket_types         @relation(fields: [ticket_type_code], references: [code], onDelete: Restrict)
+  
+  // Parent/child relations
+  parent_relations   rel_parent_child_tickets[] @relation("TicketParent")
+  child_relations    rel_parent_child_tickets[] @relation("TicketChild")
+
+  @@schema("core")
+  @@map("tickets")
+}
+
+model rel_parent_child_tickets {
+  uuid                   String    @id @default(uuid()) @db.Uuid
+  rel_parent_ticket_uuid String    @db.Uuid
+  rel_child_ticket_uuid  String    @db.Uuid
+  dependency_code        String    @db.VarChar(50)
+  created_at             DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  ended_at               DateTime? @db.Timestamptz(6)
+
+  parent_ticket tickets @relation("TicketParent", fields: [rel_parent_ticket_uuid], references: [uuid], onDelete: Cascade)
+  child_ticket  tickets @relation("TicketChild", fields: [rel_child_ticket_uuid], references: [uuid], onDelete: Cascade)
+
+  @@schema("core")
+  @@map("rel_parent_child_tickets")
+}
+
+// ============================================
+// SCHEMA: translations
+// ============================================
+
+model ticket_types_translation {
+  uuid            String   @id @default(uuid()) @db.Uuid
+  ticket_type_uuid String  @db.Uuid
+  lang            String   @db.VarChar(5)
+  label           String   @db.VarChar(255)
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  ticket_type ticket_types @relation(fields: [ticket_type_uuid], references: [uuid], onDelete: Restrict)
+
+  @@unique([ticket_type_uuid, lang])
+  @@schema("translations")
+  @@map("ticket_types_translation")
+}
+
+model ticket_status_translation {
+  uuid              String   @id @default(uuid()) @db.Uuid
+  ticket_status_uuid String  @db.Uuid
+  lang              String   @db.VarChar(5)
+  label             String   @db.VarChar(255)
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  ticket_status ticket_status @relation(fields: [ticket_status_uuid], references: [uuid], onDelete: Restrict)
+
+  @@unique([ticket_status_uuid, lang])
+  @@schema("translations")
+  @@map("ticket_status_translation")
+}
+
+model symptoms_translation {
+  uuid         String   @id @default(uuid()) @db.Uuid
+  symptom_code String   @db.VarChar(50)
+  lang         String   @db.VarChar(5)
+  label        String   @db.VarChar(255)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  symptom symptoms @relation(fields: [symptom_code], references: [code], onDelete: Restrict)
+
+  @@unique([symptom_code, lang])
+  @@schema("translations")
+  @@map("symptoms_translation")
+}
