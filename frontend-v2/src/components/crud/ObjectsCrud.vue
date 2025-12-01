@@ -1,9 +1,24 @@
 <template>
   <div class="h-full flex flex-col overflow-hidden">
-    <!-- Context Menu -->
-    <ContextMenu ref="cm" :model="menuModel" @hide="selectedItem = null" />
+    <!-- Service not available message -->
+    <div v-if="!serviceAvailable" class="flex-1 flex items-center justify-center">
+      <div class="text-center p-8">
+        <i class="pi pi-wrench text-5xl text-surface-400 mb-4" />
+        <h3 class="text-xl font-semibold text-surface-600 dark:text-surface-300 mb-2">
+          {{ $t('common.serviceNotAvailable') }}
+        </h3>
+        <p class="text-surface-500 dark:text-surface-400">
+          {{ $t('common.serviceNotAvailableDesc', { type: objectType }) }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Main content when service is available -->
+    <template v-else>
+      <!-- Context Menu -->
+      <ContextMenu ref="cm" :model="menuModel" @hide="selectedItem = null" />
     
-    <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
       <!-- Toolbar -->
       <Toolbar class="mb-4">
         <template #start>
@@ -326,6 +341,7 @@
 
     <!-- Toast -->
     <Toast position="bottom-right" />
+    </template>
   </div>
 </template>
 
@@ -334,7 +350,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
-import configurationItemsService from '@/services/configurationItemsService'
+import { getService, hasService } from '@/services'
+import { getObjectTypeConfig } from '@/config/objectTypes'
 
 // PrimeVue components
 import DataTable from 'primevue/datatable'
@@ -360,8 +377,17 @@ const props = defineProps({
   objectType: {
     type: String,
     required: true
+  },
+  tabId: {
+    type: String,
+    default: null
   }
 })
+
+// Get service and config for this object type
+const service = computed(() => getService(props.objectType))
+const config = computed(() => getObjectTypeConfig(props.objectType))
+const serviceAvailable = computed(() => hasService(props.objectType))
 
 // Composables
 const toast = useToast()
@@ -464,10 +490,15 @@ const paginationTemplate = computed(() => {
 
 // Methods
 const loadItems = async (pageNum = null) => {
+  if (!service.value) {
+    console.warn(`[ObjectsCrud] No service available for objectType: ${props.objectType}`)
+    return
+  }
+  
   try {
     loading.value = true
     const page = typeof pageNum === 'number' ? pageNum : currentPage.value
-    const result = await configurationItemsService.search({
+    const result = await service.value.search({
       filters: filters.value,
       sortField: sortField.value,
       sortOrder: sortOrder.value,
@@ -518,12 +549,13 @@ const saveItem = async () => {
 
   try {
     saving.value = true
+    const translationPrefix = config.value?.translationPrefix || 'common'
     if (dialogMode.value === 'create') {
-      await configurationItemsService.create(editItem.value)
-      toast.add({ severity: 'success', summary: 'Success', detail: t('configurationItems.messages.created'), life: 3000 })
+      await service.value.create(editItem.value)
+      toast.add({ severity: 'success', summary: 'Success', detail: t(`${translationPrefix}.messages.created`), life: 3000 })
     } else {
-      await configurationItemsService.update(editItem.value.uuid, editItem.value)
-      toast.add({ severity: 'success', summary: 'Success', detail: t('configurationItems.messages.updated'), life: 3000 })
+      await service.value.update(editItem.value.uuid, editItem.value)
+      toast.add({ severity: 'success', summary: 'Success', detail: t(`${translationPrefix}.messages.updated`), life: 3000 })
     }
     itemDialog.value = false
     await loadItems()
@@ -542,11 +574,12 @@ const deleteSelectedItems = async () => {
   try {
     deleting.value = true
     const uuids = selectedItems.value.map(item => item.uuid)
-    await configurationItemsService.deleteMany(uuids)
+    const translationPrefix = config.value?.translationPrefix || 'common'
+    await service.value.deleteMany(uuids)
     toast.add({ 
       severity: 'success', 
       summary: 'Success', 
-      detail: t('configurationItems.messages.deletedMultiple', { count: uuids.length }), 
+      detail: t(`${translationPrefix}.messages.deletedMultiple`, { count: uuids.length }), 
       life: 3000 
     })
     deleteDialog.value = false
@@ -564,9 +597,10 @@ const onCellEditComplete = async (event) => {
   if (data[field] === newValue) return
 
   try {
-    await configurationItemsService.update(data.uuid, { [field]: newValue })
+    const translationPrefix = config.value?.translationPrefix || 'common'
+    await service.value.update(data.uuid, { [field]: newValue })
     data[field] = newValue
-    toast.add({ severity: 'success', summary: 'Success', detail: t('configurationItems.messages.updated'), life: 3000 })
+    toast.add({ severity: 'success', summary: 'Success', detail: t(`${translationPrefix}.messages.updated`), life: 3000 })
   } catch (error) {
     event.preventDefault()
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to update item', life: 3000 })

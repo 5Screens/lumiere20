@@ -56,7 +56,31 @@ export default {
     no: 'Non',
     actions: 'Actions',
     export: 'Exporter',
-    refresh: 'Actualiser'
+    refresh: 'Actualiser',
+    success: 'Succès',
+    error: 'Erreur',
+    serviceNotAvailable: 'Service non disponible',
+    serviceNotAvailableDesc: 'Le service pour "{type}" n\'est pas encore implémenté.'
+  },
+  tabs: {
+    backToList: 'Retour à la liste',
+    noContent: 'Aucun contenu',
+    noTabsOpen: 'Aucun onglet ouvert',
+    untitled: 'Sans titre'
+  },
+  profile: {
+    title: 'Mon profil',
+    personalInfo: 'Informations personnelles',
+    phone: 'Téléphone',
+    changePassword: 'Changer le mot de passe',
+    currentPassword: 'Mot de passe actuel',
+    newPassword: 'Nouveau mot de passe',
+    confirmNewPassword: 'Confirmer le nouveau mot de passe',
+    edit: 'Modifier le profil',
+    passwordMismatch: 'Les mots de passe ne correspondent pas',
+    currentPasswordRequired: 'Le mot de passe actuel est requis',
+    updateSuccess: 'Profil mis à jour avec succès',
+    updateError: 'Erreur lors de la mise à jour du profil'
   },
   configurationItems: {
     title: 'Éléments de configuration',

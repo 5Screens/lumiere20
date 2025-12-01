@@ -26,7 +26,7 @@
           text 
           rounded
           class="w-12 h-12"
-          @click="item.command ? item.command() : navigateTo(item.to)"
+          @click="item.command()"
           v-tooltip.right="item.label"
         />
       </div>
@@ -47,8 +47,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useTabsStore } from '@/stores/tabsStore'
 import PanelMenu from 'primevue/panelmenu'
 import Button from 'primevue/button'
 
@@ -61,19 +61,28 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle-collapse'])
 
-const router = useRouter()
-const route = useRoute()
 const { t } = useI18n()
+const tabsStore = useTabsStore()
 
-const navigateTo = (path) => {
-  if (path) router.push(path)
+/**
+ * Opens a tab for the given object type
+ */
+const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud') => {
+  tabsStore.openTab({
+    id,
+    label,
+    labelKey,
+    icon,
+    objectType,
+    component
+  })
 }
 
 const menuItems = computed(() => [
   {
     label: t('menu.dashboard') || 'Dashboard',
     icon: 'pi pi-home',
-    command: () => navigateTo('/')
+    command: () => openTab('dashboard', 'Dashboard', 'menu.dashboard', 'pi pi-home', 'dashboard', 'Dashboard')
   },
   {
     label: t('menu.configuration') || 'Configuration',
@@ -82,27 +91,27 @@ const menuItems = computed(() => [
       {
         label: t('menu.configurationItems') || 'Configuration Items',
         icon: 'pi pi-box',
-        command: () => navigateTo('/configuration-items')
+        command: () => openTab('configuration-items', 'Configuration Items', 'menu.configurationItems', 'pi pi-box', 'configuration_items')
       },
       {
         label: t('menu.entities') || 'Entities',
         icon: 'pi pi-building',
-        command: () => navigateTo('/entities')
+        command: () => openTab('entities', 'Entities', 'menu.entities', 'pi pi-building', 'entities')
       },
       {
         label: t('menu.locations') || 'Locations',
         icon: 'pi pi-map-marker',
-        command: () => navigateTo('/locations')
+        command: () => openTab('locations', 'Locations', 'menu.locations', 'pi pi-map-marker', 'locations')
       },
       {
         label: t('menu.groups') || 'Groups',
         icon: 'pi pi-users',
-        command: () => navigateTo('/groups')
+        command: () => openTab('groups', 'Groups', 'menu.groups', 'pi pi-users', 'groups')
       },
       {
         label: t('menu.persons') || 'Persons',
         icon: 'pi pi-user',
-        command: () => navigateTo('/persons')
+        command: () => openTab('persons', 'Persons', 'menu.persons', 'pi pi-user', 'persons')
       }
     ]
   },
@@ -113,17 +122,17 @@ const menuItems = computed(() => [
       {
         label: t('menu.incidents') || 'Incidents',
         icon: 'pi pi-exclamation-triangle',
-        command: () => navigateTo('/tickets/incidents')
+        command: () => openTab('incidents', 'Incidents', 'menu.incidents', 'pi pi-exclamation-triangle', 'incidents')
       },
       {
         label: t('menu.problems') || 'Problems',
         icon: 'pi pi-question-circle',
-        command: () => navigateTo('/tickets/problems')
+        command: () => openTab('problems', 'Problems', 'menu.problems', 'pi pi-question-circle', 'problems')
       },
       {
         label: t('menu.changes') || 'Changes',
         icon: 'pi pi-sync',
-        command: () => navigateTo('/tickets/changes')
+        command: () => openTab('changes', 'Changes', 'menu.changes', 'pi pi-sync', 'changes')
       }
     ]
   },
@@ -134,12 +143,12 @@ const menuItems = computed(() => [
       {
         label: t('menu.serviceCatalog') || 'Service Catalog',
         icon: 'pi pi-list',
-        command: () => navigateTo('/services')
+        command: () => openTab('services', 'Services', 'menu.serviceCatalog', 'pi pi-list', 'services')
       },
       {
         label: t('menu.serviceOfferings') || 'Service Offerings',
         icon: 'pi pi-gift',
-        command: () => navigateTo('/service-offerings')
+        command: () => openTab('service-offerings', 'Service Offerings', 'menu.serviceOfferings', 'pi pi-gift', 'service_offerings')
       }
     ]
   },
@@ -150,17 +159,17 @@ const menuItems = computed(() => [
       {
         label: t('menu.ticketTypes') || 'Ticket Types',
         icon: 'pi pi-tags',
-        command: () => navigateTo('/admin/ticket-types')
+        command: () => openTab('ticket-types', 'Ticket Types', 'menu.ticketTypes', 'pi pi-tags', 'ticket_types')
       },
       {
         label: t('menu.ticketStatus') || 'Ticket Status',
         icon: 'pi pi-flag',
-        command: () => navigateTo('/admin/ticket-status')
+        command: () => openTab('ticket-status', 'Ticket Status', 'menu.ticketStatus', 'pi pi-flag', 'ticket_status')
       },
       {
         label: t('menu.symptoms') || 'Symptoms',
         icon: 'pi pi-info-circle',
-        command: () => navigateTo('/admin/symptoms')
+        command: () => openTab('symptoms', 'Symptoms', 'menu.symptoms', 'pi pi-info-circle', 'symptoms')
       }
     ]
   }
@@ -168,11 +177,11 @@ const menuItems = computed(() => [
 
 // Flat menu for collapsed view
 const flatMenuItems = computed(() => [
-  { label: 'Dashboard', icon: 'pi pi-home', to: '/' },
-  { label: 'Configuration', icon: 'pi pi-cog', to: '/configuration-items' },
-  { label: 'Tickets', icon: 'pi pi-ticket', to: '/tickets/incidents' },
-  { label: 'Services', icon: 'pi pi-server', to: '/services' },
-  { label: 'Admin', icon: 'pi pi-shield', to: '/admin/ticket-types' }
+  { label: 'Dashboard', icon: 'pi pi-home', command: () => openTab('dashboard', 'Dashboard', 'menu.dashboard', 'pi pi-home', 'dashboard', 'Dashboard') },
+  { label: 'Configuration', icon: 'pi pi-cog', command: () => openTab('configuration-items', 'Configuration Items', 'menu.configurationItems', 'pi pi-box', 'configuration_items') },
+  { label: 'Tickets', icon: 'pi pi-ticket', command: () => openTab('incidents', 'Incidents', 'menu.incidents', 'pi pi-exclamation-triangle', 'incidents') },
+  { label: 'Services', icon: 'pi pi-server', command: () => openTab('services', 'Services', 'menu.serviceCatalog', 'pi pi-list', 'services') },
+  { label: 'Admin', icon: 'pi pi-shield', command: () => openTab('ticket-types', 'Ticket Types', 'menu.ticketTypes', 'pi pi-tags', 'ticket_types') }
 ])
 </script>
 

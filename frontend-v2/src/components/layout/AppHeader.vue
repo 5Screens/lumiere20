@@ -85,7 +85,7 @@ import InputIcon from 'primevue/inputicon'
 import Select from 'primevue/select'
 import Menu from 'primevue/menu'
 
-const emit = defineEmits(['toggle-sidebar'])
+const emit = defineEmits(['toggle-sidebar', 'open-profile'])
 
 const router = useRouter()
 const { locale, t } = useI18n()
@@ -126,7 +126,7 @@ const userMenuItems = computed(() => [
       {
         label: t('auth.profile') || 'Profile',
         icon: 'pi pi-user',
-        command: () => router.push('/profile')
+        command: () => emit('open-profile')
       },
       {
         label: t('auth.settings') || 'Settings',

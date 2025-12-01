@@ -56,7 +56,31 @@ export default {
     no: 'No',
     actions: 'Actions',
     export: 'Export',
-    refresh: 'Refresh'
+    refresh: 'Refresh',
+    success: 'Success',
+    error: 'Error',
+    serviceNotAvailable: 'Service not available',
+    serviceNotAvailableDesc: 'The service for "{type}" is not yet implemented.'
+  },
+  tabs: {
+    backToList: 'Back to list',
+    noContent: 'No content',
+    noTabsOpen: 'No tabs open',
+    untitled: 'Untitled'
+  },
+  profile: {
+    title: 'My Profile',
+    personalInfo: 'Personal Information',
+    phone: 'Phone',
+    changePassword: 'Change Password',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmNewPassword: 'Confirm New Password',
+    edit: 'Edit Profile',
+    passwordMismatch: 'Passwords do not match',
+    currentPasswordRequired: 'Current password is required',
+    updateSuccess: 'Profile updated successfully',
+    updateError: 'Error updating profile'
   },
   configurationItems: {
     title: 'Configuration Items',

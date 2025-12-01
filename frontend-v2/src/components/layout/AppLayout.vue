@@ -1,7 +1,10 @@
 <template>
   <div class="h-screen flex flex-col" :data-theme="theme">
     <!-- Header -->
-    <AppHeader @toggle-sidebar="toggleSidebar" />
+    <AppHeader 
+      @toggle-sidebar="toggleSidebar" 
+      @open-profile="profileDrawerOpen = true"
+    />
 
     <!-- Main container -->
     <div class="flex-1 flex overflow-hidden">
@@ -30,10 +33,14 @@
       </transition>
 
       <!-- Content area -->
-      <main class="flex-1 overflow-auto bg-surface-50 p-4">
-        <router-view />
+      <main class="flex-1 overflow-hidden bg-surface-50 dark:bg-surface-900">
+        <!-- Tabs system -->
+        <AppTabs />
       </main>
     </div>
+
+    <!-- Profile Drawer -->
+    <ProfileDrawer v-model="profileDrawerOpen" />
 
     <!-- Toast & Dialogs -->
     <Toast position="bottom-right" />
@@ -45,6 +52,8 @@
 import { ref, onMounted } from 'vue'
 import AppHeader from './AppHeader.vue'
 import AppSidebar from './AppSidebar.vue'
+import AppTabs from './AppTabs.vue'
+import ProfileDrawer from './ProfileDrawer.vue'
 import Toast from 'primevue/toast'
 import ConfirmDialog from 'primevue/confirmdialog'
 
@@ -58,6 +67,9 @@ onMounted(() => {
 // Sidebar state
 const sidebarOpen = ref(false)
 const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === 'true')
+
+// Profile drawer state
+const profileDrawerOpen = ref(false)
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
