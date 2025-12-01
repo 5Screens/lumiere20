@@ -113,6 +113,73 @@ export default {
     },
     pagination: 'Affichage de {first} à {last} sur {totalRecords} éléments'
   },
+  entities: {
+    title: 'Entités',
+    name: 'Nom',
+    entityId: 'ID Entité',
+    entityType: 'Type',
+    externalId: 'ID Externe',
+    isActive: 'Actif',
+    createdAt: 'Créé le',
+    updatedAt: 'Modifié le',
+    messages: {
+      created: 'Entité créée avec succès',
+      updated: 'Entité mise à jour avec succès',
+      deleted: 'Entité supprimée avec succès',
+      deletedMultiple: '{count} entités supprimées avec succès'
+    }
+  },
+  locations: {
+    title: 'Localisations',
+    name: 'Nom',
+    city: 'Ville',
+    country: 'Pays',
+    street: 'Rue',
+    postalCode: 'Code postal',
+    type: 'Type',
+    createdAt: 'Créé le',
+    updatedAt: 'Modifié le',
+    messages: {
+      created: 'Localisation créée avec succès',
+      updated: 'Localisation mise à jour avec succès',
+      deleted: 'Localisation supprimée avec succès',
+      deletedMultiple: '{count} localisations supprimées avec succès'
+    }
+  },
+  groups: {
+    title: 'Groupes',
+    groupName: 'Nom du groupe',
+    description: 'Description',
+    supportLevel: 'Niveau de support',
+    email: 'Email',
+    phone: 'Téléphone',
+    createdAt: 'Créé le',
+    updatedAt: 'Modifié le',
+    messages: {
+      created: 'Groupe créé avec succès',
+      updated: 'Groupe mis à jour avec succès',
+      deleted: 'Groupe supprimé avec succès',
+      deletedMultiple: '{count} groupes supprimés avec succès'
+    }
+  },
+  persons: {
+    title: 'Personnes',
+    firstName: 'Prénom',
+    lastName: 'Nom',
+    email: 'Email',
+    role: 'Rôle',
+    jobRole: 'Fonction',
+    isActive: 'Actif',
+    phone: 'Téléphone',
+    createdAt: 'Créé le',
+    updatedAt: 'Modifié le',
+    messages: {
+      created: 'Personne créée avec succès',
+      updated: 'Personne mise à jour avec succès',
+      deleted: 'Personne supprimée avec succès',
+      deletedMultiple: '{count} personnes supprimées avec succès'
+    }
+  },
   primevue: {
     startsWith: 'Commence par',
     contains: 'Contient',

@@ -2,15 +2,18 @@
  * Service registry for dynamic service loading based on objectType
  */
 import configurationItemsService from './configurationItemsService'
+import entitiesService from './entitiesService'
+import locationsService from './locationsService'
+import groupsService from './groupsService'
+import personsService from './personsService'
 
 // Service registry mapping objectType to service
 const services = {
   configuration_items: configurationItemsService,
-  // Add more services as they are created:
-  // entities: entitiesService,
-  // locations: locationsService,
-  // groups: groupsService,
-  // persons: personsService,
+  entities: entitiesService,
+  locations: locationsService,
+  groups: groupsService,
+  persons: personsService,
 }
 
 /**

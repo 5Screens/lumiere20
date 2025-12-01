@@ -113,6 +113,73 @@ export default {
     },
     pagination: 'Showing {first} to {last} of {totalRecords} items'
   },
+  entities: {
+    title: 'Entities',
+    name: 'Name',
+    entityId: 'Entity ID',
+    entityType: 'Type',
+    externalId: 'External ID',
+    isActive: 'Active',
+    createdAt: 'Created at',
+    updatedAt: 'Updated at',
+    messages: {
+      created: 'Entity created successfully',
+      updated: 'Entity updated successfully',
+      deleted: 'Entity deleted successfully',
+      deletedMultiple: '{count} entities deleted successfully'
+    }
+  },
+  locations: {
+    title: 'Locations',
+    name: 'Name',
+    city: 'City',
+    country: 'Country',
+    street: 'Street',
+    postalCode: 'Postal Code',
+    type: 'Type',
+    createdAt: 'Created at',
+    updatedAt: 'Updated at',
+    messages: {
+      created: 'Location created successfully',
+      updated: 'Location updated successfully',
+      deleted: 'Location deleted successfully',
+      deletedMultiple: '{count} locations deleted successfully'
+    }
+  },
+  groups: {
+    title: 'Groups',
+    groupName: 'Group Name',
+    description: 'Description',
+    supportLevel: 'Support Level',
+    email: 'Email',
+    phone: 'Phone',
+    createdAt: 'Created at',
+    updatedAt: 'Updated at',
+    messages: {
+      created: 'Group created successfully',
+      updated: 'Group updated successfully',
+      deleted: 'Group deleted successfully',
+      deletedMultiple: '{count} groups deleted successfully'
+    }
+  },
+  persons: {
+    title: 'Persons',
+    firstName: 'First Name',
+    lastName: 'Last Name',
+    email: 'Email',
+    role: 'Role',
+    jobRole: 'Job Role',
+    isActive: 'Active',
+    phone: 'Phone',
+    createdAt: 'Created at',
+    updatedAt: 'Updated at',
+    messages: {
+      created: 'Person created successfully',
+      updated: 'Person updated successfully',
+      deleted: 'Person deleted successfully',
+      deletedMultiple: '{count} persons deleted successfully'
+    }
+  },
   primevue: {
     startsWith: 'Starts with',
     contains: 'Contains',

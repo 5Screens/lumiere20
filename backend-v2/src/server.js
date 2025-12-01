@@ -21,9 +21,17 @@ app.use((req, res, next) => {
 // API Routes
 const authRoutes = require('./api/v1/auth/routes');
 const configurationItemsRoutes = require('./api/v1/configuration_items/routes');
+const entitiesRoutes = require('./api/v1/entities/routes');
+const locationsRoutes = require('./api/v1/locations/routes');
+const groupsRoutes = require('./api/v1/groups/routes');
+const personsRoutes = require('./api/v1/persons/routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
+app.use('/api/v1/entities', entitiesRoutes);
+app.use('/api/v1/locations', locationsRoutes);
+app.use('/api/v1/groups', groupsRoutes);
+app.use('/api/v1/persons', personsRoutes);
 
 // Health check
 app.get('/', (req, res) => {
