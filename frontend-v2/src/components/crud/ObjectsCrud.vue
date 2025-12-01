@@ -95,13 +95,35 @@
                 @click="clearFilters" 
                 :disabled="!hasActiveFilters" 
               />
+              <!-- Column toggle popover -->
+              <Popover ref="columnTogglePopover">
+                <template #default>
+                  <div class="p-4">
+                    <div class="flex flex-col gap-2">
+                      <div v-for="col of toggleableColumns" :key="col.field" class="flex items-center gap-2">
+                        <Checkbox v-model="selectedColumns" :inputId="col.field" :value="col" />
+                        <label :for="col.field">{{ col.header }}</label>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </Popover>
             </div>
-            <Button 
-              icon="pi pi-refresh" 
-              severity="secondary" 
-              @click="loadItems" 
-              :loading="loading" 
-            />
+            <div class="flex items-center gap-2">
+              <Button 
+                type="button" 
+                icon="pi pi-cog" 
+                severity="secondary" 
+                @click="toggleColumnSelector" 
+                v-tooltip.bottom="$t('common.columns')"
+              />
+              <Button 
+                icon="pi pi-refresh" 
+                severity="secondary" 
+                @click="loadItems(1)" 
+                :loading="loading" 
+              />
+            </div>
           </div>
         </template>
 
@@ -132,6 +154,7 @@
 
         <!-- Name column -->
         <Column 
+          v-if="isColumnVisible('name')"
           field="name" 
           :header="$t('configurationItems.name')" 
           sortable 
@@ -150,6 +173,7 @@
 
         <!-- Type column -->
         <Column 
+          v-if="isColumnVisible('ci_type')"
           field="ci_type" 
           :header="$t('configurationItems.ciType')" 
           sortable 
@@ -185,6 +209,7 @@
 
         <!-- Description column -->
         <Column 
+          v-if="isColumnVisible('description')"
           field="description" 
           :header="$t('configurationItems.description')" 
           sortable 
@@ -203,6 +228,7 @@
 
         <!-- Created at column -->
         <Column 
+          v-if="isColumnVisible('created_at')"
           field="created_at" 
           :header="$t('configurationItems.createdAt')" 
           sortable 
@@ -219,6 +245,7 @@
 
         <!-- Updated at column -->
         <Column 
+          v-if="isColumnVisible('updated_at')"
           field="updated_at" 
           :header="$t('configurationItems.updatedAt')" 
           sortable 
@@ -319,6 +346,8 @@ import InputIcon from 'primevue/inputicon'
 import Toast from 'primevue/toast'
 import ContextMenu from 'primevue/contextmenu'
 import DatePicker from 'primevue/datepicker'
+import Popover from 'primevue/popover'
+import Checkbox from 'primevue/checkbox'
 
 // Props
 const props = defineProps({
@@ -335,6 +364,7 @@ const { t, locale } = useI18n()
 // Refs
 const dt = ref()
 const cm = ref()
+const columnTogglePopover = ref()
 const items = ref([])
 const selectedItems = ref([])
 const selectedItem = ref(null)
@@ -382,6 +412,25 @@ const menuModel = ref([
   { label: t('common.delete'), icon: 'pi pi-trash', command: () => confirmDeleteSelected() }
 ])
 
+// Column toggle
+const toggleableColumns = computed(() => [
+  { field: 'name', header: t('configurationItems.name') },
+  { field: 'ci_type', header: t('configurationItems.ciType') },
+  { field: 'description', header: t('configurationItems.description') },
+  { field: 'created_at', header: t('configurationItems.createdAt') },
+  { field: 'updated_at', header: t('configurationItems.updatedAt') }
+])
+
+const selectedColumns = ref([...toggleableColumns.value])
+
+const isColumnVisible = (field) => {
+  return selectedColumns.value.some(col => col.field === field)
+}
+
+const toggleColumnSelector = (event) => {
+  columnTogglePopover.value.toggle(event)
+}
+
 // Computed
 const hasActiveFilters = computed(() => {
   if (filters.value.global?.value) return true
@@ -408,20 +457,22 @@ const paginationTemplate = computed(() => {
 })
 
 // Methods
-const loadItems = async (page = null) => {
+const loadItems = async (pageNum = null) => {
   try {
     loading.value = true
+    const page = typeof pageNum === 'number' ? pageNum : currentPage.value
     const result = await configurationItemsService.search({
       filters: filters.value,
       sortField: sortField.value,
       sortOrder: sortOrder.value,
-      page: page || currentPage.value,
+      page,
       limit: pageSize
     })
     items.value = result.data || []
     totalRecords.value = result.total || 0
-    if (page) currentPage.value = page
+    if (typeof pageNum === 'number') currentPage.value = pageNum
   } catch (error) {
+    console.error('Failed to load items:', error)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load items', life: 3000 })
   } finally {
     loading.value = false
@@ -552,7 +603,7 @@ watch(filters, () => {
 
 // Lifecycle
 onMounted(() => {
-  loadItems()
+  loadItems(1)
 })
 </script>
 

@@ -48,6 +48,7 @@ export default {
     edit: 'Modifier',
     create: 'Créer',
     search: 'Rechercher',
+    columns: 'Colonnes',
     loading: 'Chargement...',
     noData: 'Aucune donnée',
     confirm: 'Confirmer',

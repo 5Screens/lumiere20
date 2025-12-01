@@ -48,6 +48,7 @@ export default {
     edit: 'Edit',
     create: 'Create',
     search: 'Search',
+    columns: 'Columns',
     loading: 'Loading...',
     noData: 'No data',
     confirm: 'Confirm',

@@ -25,7 +25,19 @@ const validate = (schema) => {
         if (result.params) req.params = result.params;
       } else {
         // Simple schema - validate body by default
-        req.body = schema.parse(req.body);
+        const result = schema.safeParse(req.body);
+        if (!result.success) {
+          console.log('[VALIDATE] Body received:', JSON.stringify(req.body, null, 2));
+          console.log('[VALIDATE] Errors:', result.error.errors);
+          return res.status(400).json({
+            error: 'Validation error',
+            details: result.error.errors.map((e) => ({
+              field: e.path.join('.'),
+              message: e.message,
+            })),
+          });
+        }
+        req.body = result.data;
       }
       
       next();
