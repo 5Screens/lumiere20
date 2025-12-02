@@ -174,10 +174,9 @@
         </Column>
 
         <!-- Dynamic columns from metadata -->
+        <template v-for="col in tableColumns" :key="col.field_name">
         <Column 
-          v-for="col in tableColumns"
-          :key="col.field_name"
-          v-show="isColumnVisible(col.field_name)"
+          v-if="isColumnVisible(col.field_name)"
           :field="col.field_name" 
           :header="$t(col.label_key)" 
           :sortable="col.is_sortable"
@@ -267,6 +266,7 @@
             </template>
           </template>
         </Column>
+        </template>
       </DataTable>
     </div>
 
