@@ -24,12 +24,12 @@
       v-model:visible="dialogVisible"
       modal
       :header="$t('common.selectTagStyle')"
-      :style="{ width: '500px' }"
+      :style="{ width: '90vw', maxWidth: '900px', height: '80vh' }"
       class="tag-style-dialog"
       :draggable="false"
     >
       <!-- Styles grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 overflow-auto" style="max-height: calc(80vh - 120px);">
         <button
           v-for="option in tagStyleOptions"
           :key="option.value"
