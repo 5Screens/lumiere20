@@ -5,6 +5,11 @@
 
 const prisma = require('../../../config/prisma');
 const logger = require('../../../config/logger');
+const {
+  buildPrismaWhereFromFilters,
+  buildPrismaOrderBy,
+  buildPaginationResponse,
+} = require('../../../utils/primeVueFilters');
 
 // Translatable fields for ci_types
 const TRANSLATABLE_FIELDS = ['label', 'description'];
@@ -259,11 +264,97 @@ const remove = async (uuid) => {
   }
 };
 
+/**
+ * Search CI types with PrimeVue filters
+ * @param {Object} searchParams - Search parameters
+ * @param {string} locale - Locale for translations
+ * @returns {Promise<Object>} - Search results with pagination
+ */
+const search = async (searchParams = {}, locale = 'en') => {
+  try {
+    const { filters = {}, sortField = 'display_order', sortOrder = 1, page = 1, limit = 50 } = searchParams;
+
+    logger.info('[CI_TYPES] Searching with PrimeVue filters', {
+      filters,
+      sortField,
+      sortOrder,
+      page,
+      limit,
+    });
+
+    const skip = (page - 1) * limit;
+
+    // Build Prisma where clause
+    const where = buildPrismaWhereFromFilters(filters, {
+      globalSearchFields: ['code', 'label', 'description'],
+      booleanColumns: ['is_active'],
+    });
+
+    // Count total
+    const total = await prisma.ci_types.count({ where });
+
+    // Fetch data with translations
+    const items = await prisma.ci_types.findMany({
+      where,
+      include: {
+        translations: locale ? {
+          where: { locale }
+        } : true
+      },
+      orderBy: buildPrismaOrderBy(sortField, sortOrder),
+      skip,
+      take: limit,
+    });
+
+    // Transform with translations
+    const transformedItems = items.map(ct => transformWithTranslations(ct, locale));
+
+    logger.info(`[CI_TYPES] Found ${items.length} items (total: ${total})`);
+
+    return {
+      data: transformedItems,
+      total,
+      pagination: buildPaginationResponse(page, limit, total),
+    };
+  } catch (error) {
+    logger.error('[CI_TYPES] Error searching:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete multiple CI types
+ * @param {string[]} uuids - Array of UUIDs to delete
+ * @returns {Promise<number>} - Number of deleted items
+ */
+const removeMany = async (uuids) => {
+  try {
+    logger.info(`[CI_TYPES] Deleting ${uuids.length} items`);
+
+    // First delete translations (cascade should handle this, but being explicit)
+    await prisma.ci_types_translation.deleteMany({
+      where: { ci_type_uuid: { in: uuids } }
+    });
+
+    const result = await prisma.ci_types.deleteMany({
+      where: { uuid: { in: uuids } },
+    });
+
+    logger.info(`[CI_TYPES] Deleted ${result.count} items`);
+    return result.count;
+  } catch (error) {
+    logger.error('[CI_TYPES] Error deleting many:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   getAll,
   getByCode,
   getAsOptions,
   create,
   update,
-  remove
+  remove,
+  search,
+  removeMany
 };

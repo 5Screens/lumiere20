@@ -4,6 +4,16 @@ const BASE_URL = '/ci_types'
 
 export default {
   /**
+   * Search CI types with PrimeVue filters
+   * @param {Object} params - Search parameters
+   * @returns {Promise<Object>} - Search results
+   */
+  async search(params = {}) {
+    const response = await api.post(`${BASE_URL}/search`, params)
+    return response.data
+  },
+
+  /**
    * Get all CI types
    * @param {boolean} activeOnly - If true, only return active types
    */
@@ -59,16 +69,12 @@ export default {
   },
 
   /**
-   * Search CI types with filters (for DataTable)
-   * @param {Object} params - Search parameters
+   * Delete multiple CI types
+   * @param {string[]} uuids - Array of UUIDs
+   * @returns {Promise<Object>} - Deletion result
    */
-  async search(params) {
-    // For now, just return all and filter client-side
-    // TODO: Implement server-side filtering if needed
-    const all = await this.getAll(false)
-    return {
-      data: all,
-      total: all.length
-    }
+  async deleteMany(uuids) {
+    const response = await api.post(`${BASE_URL}/delete-many`, { uuids })
+    return response.data
   }
 }

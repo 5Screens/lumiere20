@@ -6,6 +6,13 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
+const { validate, primeVueFilterSchema } = require('../../../middleware/validate');
+
+// POST /api/v1/ci_types/search - Search CI types with PrimeVue filters
+router.post('/search', validate(primeVueFilterSchema), controller.search);
+
+// POST /api/v1/ci_types/delete-many - Delete multiple CI types
+router.post('/delete-many', controller.removeMany);
 
 // GET /api/v1/ci_types - Get all CI types
 router.get('/', controller.getAll);

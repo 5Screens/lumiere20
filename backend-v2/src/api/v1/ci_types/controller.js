@@ -156,11 +156,57 @@ const remove = async (req, res) => {
   }
 };
 
+/**
+ * Search CI types with PrimeVue filters
+ */
+const search = async (req, res) => {
+  try {
+    const locale = getLocale(req);
+    const result = await service.search(req.body, locale);
+    
+    res.json(result);
+  } catch (error) {
+    logger.error('Controller error - search CI types:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'Failed to search CI types'
+    });
+  }
+};
+
+/**
+ * Delete multiple CI types
+ */
+const removeMany = async (req, res) => {
+  try {
+    const { uuids } = req.body;
+    
+    if (!uuids || !Array.isArray(uuids) || uuids.length === 0) {
+      return res.status(400).json({
+        error: 'Bad request',
+        message: 'uuids array is required'
+      });
+    }
+    
+    const count = await service.removeMany(uuids);
+    
+    res.json({ deleted: count });
+  } catch (error) {
+    logger.error('Controller error - delete many CI types:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'Failed to delete CI types'
+    });
+  }
+};
+
 module.exports = {
   getAll,
   getOptions,
   getByCode,
   create,
   update,
-  remove
+  remove,
+  search,
+  removeMany
 };
