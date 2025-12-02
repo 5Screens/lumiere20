@@ -455,3 +455,77 @@ model symptoms_translation {
   @@schema("translations")
   @@map("symptoms_translation")
 }
+
+// ============================================
+// SCHEMA: configuration - Object Metadata
+// ============================================
+
+// Stores metadata about object types (tables) for dynamic UI generation
+model object_types {
+  uuid              String   @id @default(uuid()) @db.Uuid
+  code              String   @unique @db.VarChar(100)  // e.g., 'entities', 'locations', 'groups', 'persons'
+  label_key         String   @db.VarChar(100)          // i18n key for the object type label
+  icon              String?  @db.VarChar(50)           // PrimeVue icon class
+  api_endpoint      String   @db.VarChar(255)          // API endpoint path
+  default_sort_field String  @default("updated_at") @db.VarChar(100)
+  default_sort_order Int     @default(-1)              // 1 = asc, -1 = desc
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  fields object_fields[]
+
+  @@schema("configuration")
+  @@map("object_types")
+}
+
+// Stores metadata about fields (columns) for each object type
+model object_fields {
+  uuid              String   @id @default(uuid()) @db.Uuid
+  object_type_uuid  String   @db.Uuid
+  field_name        String   @db.VarChar(100)          // Database column name
+  label_key         String   @db.VarChar(100)          // i18n key for the field label
+  field_type        String   @db.VarChar(50)           // text, number, boolean, date, datetime, select, relation
+  data_type         String   @default("string") @db.VarChar(50) // string, number, boolean, date
+  
+  // Display options
+  show_in_table     Boolean  @default(true)            // Show in DataTable
+  show_in_form      Boolean  @default(true)            // Show in create/edit form
+  show_in_detail    Boolean  @default(true)            // Show in detail view
+  is_sortable       Boolean  @default(true)
+  is_filterable     Boolean  @default(true)
+  is_editable       Boolean  @default(true)            // Allow inline editing
+  is_required       Boolean  @default(false)
+  is_readonly       Boolean  @default(false)
+  
+  // Column display
+  min_width         String?  @db.VarChar(20)           // e.g., '10rem', '150px'
+  default_visible   Boolean  @default(true)            // Visible by default in table
+  display_order     Int      @default(0)               // Order in table/form
+  
+  // Validation
+  max_length        Int?
+  min_value         Float?
+  max_value         Float?
+  pattern           String?  @db.VarChar(255)          // Regex pattern for validation
+  
+  // Select/Relation options
+  options_source    String?  @db.VarChar(255)          // For select: static options JSON or API endpoint
+  relation_object   String?  @db.VarChar(100)          // For relation: target object type code
+  relation_display  String?  @db.VarChar(100)          // For relation: field to display (e.g., 'name')
+  
+  // Formatting
+  format_pattern    String?  @db.VarChar(100)          // Date format, number format, etc.
+  
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  object_type object_types @relation(fields: [object_type_uuid], references: [uuid], onDelete: Cascade)
+
+  @@unique([object_type_uuid, field_name])
+  @@index([object_type_uuid, display_order])
+  @@schema("configuration")
+  @@map("object_fields")
+}

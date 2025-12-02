@@ -33,7 +33,7 @@
               :label="$t('common.edit')" 
               icon="pi pi-pencil" 
               severity="secondary" 
-              @click="openEditDialog(selectedItems[0])" 
+              @click="openEditInTab(selectedItems[0])" 
               :disabled="!selectedItems || selectedItems.length !== 1" 
             />
             <Button 
@@ -173,142 +173,203 @@
           </template>
         </Column>
 
-        <!-- Name column -->
+        <!-- Dynamic columns from metadata -->
         <Column 
-          v-if="isColumnVisible('name')"
-          field="name" 
-          :header="$t('configurationItems.name')" 
-          sortable 
-          style="min-width: 16rem"
+          v-for="col in tableColumns"
+          :key="col.field_name"
+          v-show="isColumnVisible(col.field_name)"
+          :field="col.field_name" 
+          :header="$t(col.label_key)" 
+          :sortable="col.is_sortable"
+          :dataType="col.data_type === 'date' ? 'date' : undefined"
+          :style="col.min_width ? `min-width: ${col.min_width}` : undefined"
         >
+          <!-- Body template based on field type -->
           <template #body="{ data }">
-            {{ data.name }}
+            <!-- Boolean -->
+            <template v-if="col.field_type === 'boolean'">
+              <i :class="data[col.field_name] ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
+            </template>
+            <!-- Select with Tag -->
+            <template v-else-if="col.field_type === 'select'">
+              <Tag :value="formatCellValue(data[col.field_name], col)" />
+            </template>
+            <!-- Date/Datetime -->
+            <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
+              {{ formatDate(data[col.field_name]) }}
+            </template>
+            <!-- Textarea (truncated) -->
+            <template v-else-if="col.field_type === 'textarea'">
+              <span class="block max-w-xs truncate">{{ data[col.field_name] || '-' }}</span>
+            </template>
+            <!-- Default text -->
+            <template v-else>
+              {{ data[col.field_name] ?? '-' }}
+            </template>
           </template>
-          <template #editor="{ data, field }">
-            <InputText v-model="data[field]" autofocus fluid />
+          
+          <!-- Editor template (only for editable fields) -->
+          <template v-if="col.is_editable" #editor="{ data, field }">
+            <!-- Select editor -->
+            <template v-if="col.field_type === 'select'">
+              <Select 
+                v-model="data[field]" 
+                :options="getFieldOptions(col)" 
+                optionLabel="label" 
+                optionValue="value" 
+                autofocus 
+                fluid 
+              />
+            </template>
+            <!-- Boolean editor -->
+            <template v-else-if="col.field_type === 'boolean'">
+              <ToggleSwitch v-model="data[field]" />
+            </template>
+            <!-- Number editor -->
+            <template v-else-if="col.field_type === 'number'">
+              <InputNumber v-model="data[field]" autofocus fluid />
+            </template>
+            <!-- Default text editor -->
+            <template v-else>
+              <InputText v-model="data[field]" autofocus fluid />
+            </template>
           </template>
-          <template #filter="{ filterModel }">
-            <InputText v-model="filterModel.value" type="text" :placeholder="$t('common.search')" />
-          </template>
-        </Column>
-
-        <!-- Type column -->
-        <Column 
-          v-if="isColumnVisible('ci_type')"
-          field="ci_type" 
-          :header="$t('configurationItems.ciType')" 
-          sortable 
-          style="min-width: 10rem"
-        >
-          <template #body="{ data }">
-            <Tag :value="data.ci_type" :severity="getTypeSeverity(data.ci_type)" />
-          </template>
-          <template #editor="{ data, field }">
-            <Select 
-              v-model="data[field]" 
-              :options="ciTypeOptions" 
-              optionLabel="label" 
-              optionValue="value" 
-              autofocus 
-              fluid 
-            />
-          </template>
-          <template #filter="{ filterModel }">
-            <Select 
-              v-model="filterModel.value" 
-              :options="ciTypeOptions" 
-              optionLabel="label" 
-              optionValue="value" 
-              showClear
-            >
-              <template #option="slotProps">
-                <Tag :value="slotProps.option.value" :severity="getTypeSeverity(slotProps.option.value)" />
-              </template>
-            </Select>
-          </template>
-        </Column>
-
-        <!-- Description column -->
-        <Column 
-          v-if="isColumnVisible('description')"
-          field="description" 
-          :header="$t('configurationItems.description')" 
-          sortable 
-          style="min-width: 20rem"
-        >
-          <template #body="{ data }">
-            <span class="block max-w-xs truncate">{{ data.description || '-' }}</span>
-          </template>
-          <template #editor="{ data, field }">
-            <InputText v-model="data[field]" autofocus fluid />
-          </template>
-          <template #filter="{ filterModel }">
-            <InputText v-model="filterModel.value" type="text" :placeholder="$t('common.search')" />
-          </template>
-        </Column>
-
-        <!-- Created at column -->
-        <Column 
-          v-if="isColumnVisible('created_at')"
-          field="created_at" 
-          :header="$t('configurationItems.createdAt')" 
-          sortable 
-          dataType="date" 
-          style="min-width: 12rem"
-        >
-          <template #body="{ data }">
-            {{ formatDate(data.created_at) }}
-          </template>
-          <template #filter="{ filterModel }">
-            <DatePicker v-model="filterModel.value" dateFormat="dd/mm/yy" showButtonBar />
-          </template>
-        </Column>
-
-        <!-- Updated at column -->
-        <Column 
-          v-if="isColumnVisible('updated_at')"
-          field="updated_at" 
-          :header="$t('configurationItems.updatedAt')" 
-          sortable 
-          dataType="date" 
-          style="min-width: 12rem"
-        >
-          <template #body="{ data }">
-            {{ formatDate(data.updated_at) }}
-          </template>
-          <template #filter="{ filterModel }">
-            <DatePicker v-model="filterModel.value" dateFormat="dd/mm/yy" showButtonBar />
+          
+          <!-- Filter template (only for filterable fields) -->
+          <template v-if="col.is_filterable" #filter="{ filterModel }">
+            <!-- Select filter -->
+            <template v-if="col.field_type === 'select'">
+              <Select 
+                v-model="filterModel.value" 
+                :options="getFieldOptions(col)" 
+                optionLabel="label" 
+                optionValue="value" 
+                showClear
+              />
+            </template>
+            <!-- Date filter -->
+            <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
+              <DatePicker v-model="filterModel.value" dateFormat="dd/mm/yy" showButtonBar />
+            </template>
+            <!-- Boolean filter -->
+            <template v-else-if="col.field_type === 'boolean'">
+              <Select 
+                v-model="filterModel.value" 
+                :options="[{ label: $t('common.yes'), value: true }, { label: $t('common.no'), value: false }]" 
+                optionLabel="label" 
+                optionValue="value" 
+                showClear
+              />
+            </template>
+            <!-- Default text filter -->
+            <template v-else>
+              <InputText v-model="filterModel.value" type="text" :placeholder="$t('common.search')" />
+            </template>
           </template>
         </Column>
       </DataTable>
     </div>
 
-    <!-- Create/Edit Dialog -->
+    <!-- Create/Edit Dialog with dynamic fields -->
     <Dialog 
       v-model:visible="itemDialog" 
       :style="{ width: '500px' }" 
-      :header="dialogMode === 'create' ? $t('configurationItems.dialog.createTitle') : $t('configurationItems.dialog.editTitle')" 
+      :header="dialogMode === 'create' ? $t('common.create') : $t('common.edit')" 
       :modal="true"
     >
       <div class="flex flex-col gap-4">
-        <div class="flex flex-col gap-2">
-          <label for="name" class="font-semibold">{{ $t('configurationItems.name') }} *</label>
-          <InputText id="name" v-model="editItem.name" autofocus fluid />
-        </div>
-        <div class="flex flex-col gap-2">
-          <label for="ci_type" class="font-semibold">{{ $t('configurationItems.ciType') }}</label>
-          <Select 
-            id="ci_type" 
-            v-model="editItem.ci_type" 
-            :options="ciTypeOptions" 
-            optionLabel="label" 
-            optionValue="value" 
+        <!-- Dynamic form fields from metadata -->
+        <div 
+          v-for="field in formFields" 
+          :key="field.field_name" 
+          class="flex flex-col gap-2"
+        >
+          <label :for="field.field_name" class="font-semibold">
+            {{ $t(field.label_key) }}
+            <span v-if="field.is_required" class="text-red-500">*</span>
+          </label>
+          
+          <!-- Text input -->
+          <InputText 
+            v-if="field.field_type === 'text'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :disabled="field.is_readonly"
+            :maxlength="field.max_length"
             fluid 
           />
-        </div>
-        <div class="flex flex-col gap-2">
-          <label for="description" class="font-semibold">{{ $t('configurationItems.description') }}</label>
-          <Textarea id="description" v-model="editItem.description" rows="3" fluid />
+          
+          <!-- Textarea -->
+          <Textarea 
+            v-else-if="field.field_type === 'textarea'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :disabled="field.is_readonly"
+            rows="3" 
+            fluid 
+          />
+          
+          <!-- Number input -->
+          <InputNumber 
+            v-else-if="field.field_type === 'number'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :disabled="field.is_readonly"
+            :min="field.min_value"
+            :max="field.max_value"
+            fluid 
+          />
+          
+          <!-- Select -->
+          <Select 
+            v-else-if="field.field_type === 'select'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :options="getFieldOptions(field)" 
+            optionLabel="label" 
+            optionValue="value" 
+            :disabled="field.is_readonly"
+            fluid 
+          />
+          
+          <!-- Boolean toggle -->
+          <ToggleSwitch 
+            v-else-if="field.field_type === 'boolean'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :disabled="field.is_readonly"
+          />
+          
+          <!-- Date picker -->
+          <DatePicker 
+            v-else-if="field.field_type === 'date'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :disabled="field.is_readonly"
+            dateFormat="dd/mm/yy"
+            fluid 
+          />
+          
+          <!-- Datetime picker -->
+          <DatePicker 
+            v-else-if="field.field_type === 'datetime'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :disabled="field.is_readonly"
+            dateFormat="dd/mm/yy"
+            showTime
+            fluid 
+          />
+          
+          <!-- Relation (placeholder - will need autocomplete) -->
+          <InputText 
+            v-else-if="field.field_type === 'relation'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :disabled="field.is_readonly"
+            :placeholder="`Select ${field.relation_object}...`"
+            fluid 
+          />
         </div>
       </div>
       <template #footer>
@@ -321,16 +382,16 @@
     <Dialog 
       v-model:visible="deleteDialog" 
       :style="{ width: '450px' }" 
-      :header="$t('configurationItems.dialog.deleteTitle')" 
+      :header="$t('common.delete')" 
       :modal="true"
     >
       <div class="flex items-center gap-4">
         <i class="pi pi-exclamation-triangle text-3xl text-orange-500" />
         <span v-if="selectedItems?.length === 1">
-          {{ $t('configurationItems.dialog.deleteMessage') }}
+          {{ $t('common.confirmDelete') }}
         </span>
         <span v-else>
-          {{ $t('configurationItems.dialog.deleteMultipleMessage', { count: selectedItems?.length }) }}
+          {{ $t('common.confirmDeleteMultiple', { count: selectedItems?.length }) }}
         </span>
       </div>
       <template #footer>
@@ -351,7 +412,8 @@ import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 import { getService, hasService } from '@/services'
-import { getObjectTypeConfig } from '@/config/objectTypes'
+import metadataService from '@/services/metadataService'
+import { useTabsStore } from '@/stores/tabsStore'
 
 // PrimeVue components
 import DataTable from 'primevue/datatable'
@@ -361,6 +423,7 @@ import Button from 'primevue/button'
 import ButtonGroup from 'primevue/buttongroup'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
@@ -371,6 +434,7 @@ import ContextMenu from 'primevue/contextmenu'
 import DatePicker from 'primevue/datepicker'
 import Popover from 'primevue/popover'
 import Checkbox from 'primevue/checkbox'
+import ToggleSwitch from 'primevue/toggleswitch'
 
 // Props
 const props = defineProps({
@@ -384,10 +448,18 @@ const props = defineProps({
   }
 })
 
-// Get service and config for this object type
+// Stores
+const tabsStore = useTabsStore()
+
+// Get service for this object type
 const service = computed(() => getService(props.objectType))
-const config = computed(() => getObjectTypeConfig(props.objectType))
 const serviceAvailable = computed(() => hasService(props.objectType))
+
+// Metadata
+const objectTypeMetadata = ref(null)
+const tableColumns = ref([])
+const formFields = ref([])
+const metadataLoading = ref(true)
 
 // Composables
 const toast = useToast()
@@ -417,26 +489,43 @@ const deleteDialog = ref(false)
 const dialogMode = ref('create')
 const editItem = ref({})
 
-// Filters
-const initFilters = () => ({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
-  ci_type: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
-  description: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-  created_at: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
-  updated_at: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] }
-})
+// Filters - built dynamically from metadata
+const initFilters = () => {
+  const baseFilters = {
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+  }
+  
+  // Add filters for each column
+  for (const col of tableColumns.value) {
+    if (col.is_filterable) {
+      const matchMode = getDefaultMatchMode(col)
+      baseFilters[col.field_name] = {
+        operator: col.field_type === 'select' ? FilterOperator.OR : FilterOperator.AND,
+        constraints: [{ value: null, matchMode }]
+      }
+    }
+  }
+  
+  return baseFilters
+}
 
-const filters = ref(initFilters())
+const getDefaultMatchMode = (col) => {
+  switch (col.field_type) {
+    case 'select':
+      return FilterMatchMode.EQUALS
+    case 'date':
+    case 'datetime':
+      return FilterMatchMode.DATE_IS
+    case 'number':
+      return FilterMatchMode.EQUALS
+    case 'boolean':
+      return FilterMatchMode.EQUALS
+    default:
+      return FilterMatchMode.CONTAINS
+  }
+}
 
-// Options
-const ciTypeOptions = [
-  { label: 'UPS', value: 'UPS' },
-  { label: 'Application', value: 'APPLICATION' },
-  { label: 'Server', value: 'SERVER' },
-  { label: 'Network Device', value: 'NETWORK_DEVICE' },
-  { label: 'Generic', value: 'GENERIC' }
-]
+const filters = ref({ global: { value: null, matchMode: FilterMatchMode.CONTAINS } })
 
 // Context menu
 const menuModel = ref([
@@ -444,16 +533,15 @@ const menuModel = ref([
   { label: t('common.delete'), icon: 'pi pi-trash', command: () => confirmDeleteSelected() }
 ])
 
-// Column toggle
-const toggleableColumns = computed(() => [
-  { field: 'name', header: t('configurationItems.name') },
-  { field: 'ci_type', header: t('configurationItems.ciType') },
-  { field: 'description', header: t('configurationItems.description') },
-  { field: 'created_at', header: t('configurationItems.createdAt') },
-  { field: 'updated_at', header: t('configurationItems.updatedAt') }
-])
+// Column toggle - built from metadata
+const toggleableColumns = computed(() => {
+  return tableColumns.value.map(col => ({
+    field: col.field_name,
+    header: t(col.label_key)
+  }))
+})
 
-const selectedColumns = ref([...toggleableColumns.value])
+const selectedColumns = ref([])
 
 const isColumnVisible = (field) => {
   return selectedColumns.value.some(col => col.field === field)
@@ -463,12 +551,17 @@ const toggleColumnSelector = (event) => {
   columnTogglePopover.value.toggle(event)
 }
 
+// Get options for select fields
+const getFieldOptions = (field) => {
+  if (!field.options_source) return []
+  return metadataService.parseOptions(field.options_source)
+}
+
 // Computed
 const hasActiveFilters = computed(() => {
   if (filters.value.global?.value) return true
-  const columnFilters = ['name', 'ci_type', 'description', 'created_at', 'updated_at']
-  for (const field of columnFilters) {
-    const filter = filters.value[field]
+  for (const col of tableColumns.value) {
+    const filter = filters.value[col.field_name]
     if (filter?.constraints) {
       for (const constraint of filter.constraints) {
         if (constraint.value !== null && constraint.value !== undefined && constraint.value !== '') {
@@ -530,7 +623,19 @@ const clearFilters = () => {
 }
 
 const openCreateDialog = () => {
-  editItem.value = { name: '', ci_type: 'GENERIC', description: '' }
+  // Initialize with default values from form fields
+  const defaults = {}
+  for (const field of formFields.value) {
+    if (field.field_type === 'boolean') {
+      defaults[field.field_name] = false
+    } else if (field.field_type === 'select' && field.options_source) {
+      const options = getFieldOptions(field)
+      defaults[field.field_name] = options.length > 0 ? options[0].value : null
+    } else {
+      defaults[field.field_name] = null
+    }
+  }
+  editItem.value = defaults
   dialogMode.value = 'create'
   itemDialog.value = true
 }
@@ -541,21 +646,46 @@ const openEditDialog = (data) => {
   itemDialog.value = true
 }
 
+// Open edit in child tab (for toolbar Edit button)
+const openEditInTab = (data) => {
+  if (!data) return
+  
+  // Get the first required field as display name
+  const nameField = formFields.value.find(f => f.is_required) || formFields.value[0]
+  const displayName = data[nameField?.field_name] || data.uuid?.substring(0, 8)
+  
+  tabsStore.openTab({
+    id_tab: `${props.objectType}-edit-${data.uuid}`,
+    label: `${t(objectTypeMetadata.value?.label_key || props.objectType)} - ${displayName}`,
+    icon: objectTypeMetadata.value?.icon || 'pi-file',
+    component: 'ObjectDetail',
+    objectType: props.objectType,
+    objectUuid: data.uuid,
+    parentTabId: props.tabId,
+    closable: true
+  })
+}
+
 const saveItem = async () => {
-  if (!editItem.value.name?.trim()) {
-    toast.add({ severity: 'warn', summary: 'Warning', detail: 'Name is required', life: 3000 })
-    return
+  // Validate required fields
+  const requiredFields = formFields.value.filter(f => f.is_required)
+  for (const field of requiredFields) {
+    const value = editItem.value[field.field_name]
+    if (value === null || value === undefined || value === '') {
+      toast.add({ severity: 'warn', summary: 'Warning', detail: `${t(field.label_key)} is required`, life: 3000 })
+      return
+    }
   }
 
   try {
     saving.value = true
-    const translationPrefix = config.value?.translationPrefix || 'common'
+    const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'
     if (dialogMode.value === 'create') {
       await service.value.create(editItem.value)
-      toast.add({ severity: 'success', summary: 'Success', detail: t(`${translationPrefix}.messages.created`), life: 3000 })
+      toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.created`), life: 3000 })
     } else {
       await service.value.update(editItem.value.uuid, editItem.value)
-      toast.add({ severity: 'success', summary: 'Success', detail: t(`${translationPrefix}.messages.updated`), life: 3000 })
+      toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
     }
     itemDialog.value = false
     await loadItems()
@@ -574,12 +704,12 @@ const deleteSelectedItems = async () => {
   try {
     deleting.value = true
     const uuids = selectedItems.value.map(item => item.uuid)
-    const translationPrefix = config.value?.translationPrefix || 'common'
+    const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'
     await service.value.deleteMany(uuids)
     toast.add({ 
       severity: 'success', 
       summary: 'Success', 
-      detail: t(`${translationPrefix}.messages.deletedMultiple`, { count: uuids.length }), 
+      detail: t(`${labelKey}.messages.deletedMultiple`, { count: uuids.length }), 
       life: 3000 
     })
     deleteDialog.value = false
@@ -597,10 +727,10 @@ const onCellEditComplete = async (event) => {
   if (data[field] === newValue) return
 
   try {
-    const translationPrefix = config.value?.translationPrefix || 'common'
+    const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'
     await service.value.update(data.uuid, { [field]: newValue })
     data[field] = newValue
-    toast.add({ severity: 'success', summary: 'Success', detail: t(`${translationPrefix}.messages.updated`), life: 3000 })
+    toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
   } catch (error) {
     event.preventDefault()
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to update item', life: 3000 })
@@ -621,13 +751,22 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
 }
 
-const getTypeSeverity = (type) => {
-  switch (type) {
-    case 'UPS': return 'warn'
-    case 'APPLICATION': return 'success'
-    case 'SERVER': return 'info'
-    case 'NETWORK_DEVICE': return 'secondary'
-    default: return null
+// Format cell value based on field type
+const formatCellValue = (value, field) => {
+  if (value === null || value === undefined) return '-'
+  
+  switch (field.field_type) {
+    case 'datetime':
+    case 'date':
+      return formatDate(value)
+    case 'boolean':
+      return value ? t('common.yes') : t('common.no')
+    case 'select':
+      const options = getFieldOptions(field)
+      const option = options.find(o => o.value === value)
+      return option?.label || value
+    default:
+      return value
   }
 }
 
@@ -637,8 +776,39 @@ const onColumnReorder = (event) => {
 
 const onStateRestore = (event) => {
   console.log('[ObjectsCrud] State restored:', event)
-  // Clear saved state if it causes issues with frozen columns
-  // The frozen columns should always stay in position
+}
+
+// Load metadata for this object type
+const loadMetadata = async () => {
+  try {
+    metadataLoading.value = true
+    
+    // Load object type with all fields
+    objectTypeMetadata.value = await metadataService.getObjectType(props.objectType)
+    
+    if (objectTypeMetadata.value) {
+      // Separate table columns and form fields
+      tableColumns.value = objectTypeMetadata.value.fields.filter(f => f.show_in_table)
+      formFields.value = objectTypeMetadata.value.fields.filter(f => f.show_in_form)
+      
+      // Set default sort from metadata
+      sortField.value = objectTypeMetadata.value.default_sort_field || 'updated_at'
+      sortOrder.value = objectTypeMetadata.value.default_sort_order || -1
+      
+      // Initialize filters based on columns
+      filters.value = initFilters()
+      
+      // Initialize selected columns (visible by default)
+      selectedColumns.value = tableColumns.value
+        .filter(col => col.default_visible)
+        .map(col => ({ field: col.field_name, header: t(col.label_key) }))
+    }
+  } catch (error) {
+    console.error('Failed to load metadata:', error)
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load metadata', life: 3000 })
+  } finally {
+    metadataLoading.value = false
+  }
 }
 
 // Watch filters with debounce
@@ -652,8 +822,11 @@ watch(filters, () => {
 }, { deep: true })
 
 // Lifecycle
-onMounted(() => {
-  loadItems(1)
+onMounted(async () => {
+  await loadMetadata()
+  if (serviceAvailable.value) {
+    await loadItems(1)
+  }
 })
 </script>
 
