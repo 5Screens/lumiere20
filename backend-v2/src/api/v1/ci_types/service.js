@@ -11,8 +11,38 @@ const {
   buildPaginationResponse,
 } = require('../../../utils/primeVueFilters');
 
+// Entity type for translations table
+const ENTITY_TYPE = 'ci_types';
 // Translatable fields for ci_types
 const TRANSLATABLE_FIELDS = ['label', 'description'];
+
+/**
+ * Fetch translations for CI types from translated_fields table
+ * @param {string[]} uuids - Array of CI type UUIDs
+ * @param {string} locale - Locale filter (optional)
+ * @returns {Promise<Object>} Translations grouped by entity_uuid
+ */
+const fetchTranslations = async (uuids, locale = null) => {
+  const where = {
+    entity_type: ENTITY_TYPE,
+    entity_uuid: { in: uuids }
+  };
+  if (locale) {
+    where.locale = locale;
+  }
+  
+  const translations = await prisma.translated_fields.findMany({ where });
+  
+  // Group by entity_uuid
+  const grouped = {};
+  for (const t of translations) {
+    if (!grouped[t.entity_uuid]) {
+      grouped[t.entity_uuid] = [];
+    }
+    grouped[t.entity_uuid].push(t);
+  }
+  return grouped;
+};
 
 /**
  * Get all CI types with translations
@@ -27,19 +57,18 @@ const getAll = async ({ activeOnly = true, locale = null } = {}) => {
     
     const ciTypes = await prisma.ci_types.findMany({
       where,
-      include: {
-        translations: locale ? {
-          where: { locale }
-        } : true
-      },
       orderBy: [
         { display_order: 'asc' },
         { label: 'asc' }
       ]
     });
     
+    // Fetch translations separately
+    const uuids = ciTypes.map(ct => ct.uuid);
+    const translationsMap = await fetchTranslations(uuids, locale);
+    
     // Transform to include translated values
-    return ciTypes.map(ct => transformWithTranslations(ct, locale));
+    return ciTypes.map(ct => transformWithTranslations(ct, translationsMap[ct.uuid] || [], locale));
   } catch (error) {
     logger.error('Error fetching CI types:', error);
     throw error;
@@ -48,15 +77,15 @@ const getAll = async ({ activeOnly = true, locale = null } = {}) => {
 
 /**
  * Transform CI type with translations applied
- * @param {Object} ciType - CI type with translations relation
+ * @param {Object} ciType - CI type object
+ * @param {Array} translations - Array of translation records
  * @param {string} locale - Target locale
  * @returns {Object} CI type with translated fields
  */
-const transformWithTranslations = (ciType, locale) => {
-  const { translations, ...rest } = ciType;
-  const result = { ...rest };
+const transformWithTranslations = (ciType, translations = [], locale = null) => {
+  const result = { ...ciType };
   
-  if (translations && translations.length > 0 && locale) {
+  if (translations.length > 0 && locale) {
     for (const t of translations) {
       if (t.locale === locale && TRANSLATABLE_FIELDS.includes(t.field_name)) {
         result[t.field_name] = t.value;
@@ -66,13 +95,11 @@ const transformWithTranslations = (ciType, locale) => {
   
   // Include all translations for editing purposes
   result._translations = {};
-  if (translations) {
-    for (const t of translations) {
-      if (!result._translations[t.field_name]) {
-        result._translations[t.field_name] = {};
-      }
-      result._translations[t.field_name][t.locale] = t.value;
+  for (const t of translations) {
+    if (!result._translations[t.field_name]) {
+      result._translations[t.field_name] = {};
     }
+    result._translations[t.field_name][t.locale] = t.value;
   }
   
   return result;
@@ -87,15 +114,14 @@ const transformWithTranslations = (ciType, locale) => {
 const getByCode = async (code, locale = null) => {
   try {
     const ciType = await prisma.ci_types.findUnique({
-      where: { code },
-      include: {
-        translations: locale ? {
-          where: { locale }
-        } : true
-      }
+      where: { code }
     });
     
-    return ciType ? transformWithTranslations(ciType, locale) : null;
+    if (!ciType) return null;
+    
+    // Fetch translations
+    const translationsMap = await fetchTranslations([ciType.uuid], locale);
+    return transformWithTranslations(ciType, translationsMap[ciType.uuid] || [], locale);
   } catch (error) {
     logger.error(`Error fetching CI type ${code}:`, error);
     throw error;
@@ -111,31 +137,35 @@ const getAsOptions = async (locale = 'en') => {
   try {
     const ciTypes = await prisma.ci_types.findMany({
       where: { is_active: true },
-      include: {
-        translations: {
-          where: { 
-            locale,
-            field_name: 'label'
-          }
-        }
-      },
       orderBy: [
         { display_order: 'asc' },
         { label: 'asc' }
       ]
     });
     
-    return ciTypes.map(ct => {
-      // Get translated label or fallback to default
-      const translatedLabel = ct.translations.find(t => t.field_name === 'label')?.value || ct.label;
-      
-      return {
-        label: translatedLabel,
-        value: ct.code,
-        icon: ct.icon,
-        color: ct.color
-      };
+    // Fetch translations for label field only
+    const uuids = ciTypes.map(ct => ct.uuid);
+    const translations = await prisma.translated_fields.findMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        entity_uuid: { in: uuids },
+        locale,
+        field_name: 'label'
+      }
     });
+    
+    // Map translations by uuid
+    const translationsByUuid = {};
+    for (const t of translations) {
+      translationsByUuid[t.entity_uuid] = t.value;
+    }
+    
+    return ciTypes.map(ct => ({
+      label: translationsByUuid[ct.uuid] || ct.label,
+      value: ct.code,
+      icon: ct.icon,
+      color: ct.color
+    }));
   } catch (error) {
     logger.error('Error fetching CI types as options:', error);
     throw error;
@@ -213,29 +243,31 @@ const update = async (uuid, data) => {
 };
 
 /**
- * Save translations for a CI type
- * @param {string} ciTypeUuid - CI type UUID
+ * Save translations for a CI type using translated_fields table
+ * @param {string} entityUuid - CI type UUID
  * @param {Object} translations - Object { fieldName: { locale: value } }
  */
-const saveTranslations = async (ciTypeUuid, translations) => {
+const saveTranslations = async (entityUuid, translations) => {
   for (const [fieldName, locales] of Object.entries(translations)) {
     if (!TRANSLATABLE_FIELDS.includes(fieldName)) continue;
     
     for (const [locale, value] of Object.entries(locales)) {
       if (value !== null && value !== undefined && value !== '') {
-        await prisma.ci_types_translation.upsert({
+        await prisma.translated_fields.upsert({
           where: {
-            ci_type_uuid_locale_field_name: {
-              ci_type_uuid: ciTypeUuid,
-              locale,
-              field_name: fieldName
+            entity_type_entity_uuid_field_name_locale: {
+              entity_type: ENTITY_TYPE,
+              entity_uuid: entityUuid,
+              field_name: fieldName,
+              locale
             }
           },
           update: { value },
           create: {
-            ci_type_uuid: ciTypeUuid,
-            locale,
+            entity_type: ENTITY_TYPE,
+            entity_uuid: entityUuid,
             field_name: fieldName,
+            locale,
             value
           }
         });
@@ -245,13 +277,20 @@ const saveTranslations = async (ciTypeUuid, translations) => {
 };
 
 /**
- * Delete a CI type (translations are cascade deleted)
+ * Delete a CI type and its translations
  * @param {string} uuid - CI type UUID
  * @returns {Promise<Object>} Deleted CI type
  */
 const remove = async (uuid) => {
   try {
-    // Translations are cascade deleted via Prisma relation
+    // Delete translations first (no cascade since generic table)
+    await prisma.translated_fields.deleteMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        entity_uuid: uuid
+      }
+    });
+    
     const ciType = await prisma.ci_types.delete({
       where: { uuid }
     });
@@ -293,21 +332,20 @@ const search = async (searchParams = {}, locale = 'en') => {
     // Count total
     const total = await prisma.ci_types.count({ where });
 
-    // Fetch data with translations
+    // Fetch data
     const items = await prisma.ci_types.findMany({
       where,
-      include: {
-        translations: locale ? {
-          where: { locale }
-        } : true
-      },
       orderBy: buildPrismaOrderBy(sortField, sortOrder),
       skip,
       take: limit,
     });
 
+    // Fetch translations separately
+    const uuids = items.map(ct => ct.uuid);
+    const translationsMap = await fetchTranslations(uuids, locale);
+
     // Transform with translations
-    const transformedItems = items.map(ct => transformWithTranslations(ct, locale));
+    const transformedItems = items.map(ct => transformWithTranslations(ct, translationsMap[ct.uuid] || [], locale));
 
     logger.info(`[CI_TYPES] Found ${items.length} items (total: ${total})`);
 
@@ -331,9 +369,12 @@ const removeMany = async (uuids) => {
   try {
     logger.info(`[CI_TYPES] Deleting ${uuids.length} items`);
 
-    // First delete translations (cascade should handle this, but being explicit)
-    await prisma.ci_types_translation.deleteMany({
-      where: { ci_type_uuid: { in: uuids } }
+    // First delete translations from generic table
+    await prisma.translated_fields.deleteMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        entity_uuid: { in: uuids }
+      }
     });
 
     const result = await prisma.ci_types.deleteMany({

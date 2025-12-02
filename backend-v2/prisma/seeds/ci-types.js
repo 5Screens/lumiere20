@@ -180,41 +180,45 @@ async function seedCiTypes() {
     });
     console.log(`  - CI type '${ciType.code}' created/updated`);
     
-    // Upsert translations for each locale
+    // Upsert translations for each locale using translated_fields table
     for (const [locale, trans] of Object.entries(translations)) {
       // Label translation
-      await prisma.ci_types_translation.upsert({
+      await prisma.translated_fields.upsert({
         where: {
-          ci_type_uuid_locale_field_name: {
-            ci_type_uuid: createdCiType.uuid,
-            locale,
-            field_name: 'label'
+          entity_type_entity_uuid_field_name_locale: {
+            entity_type: 'ci_types',
+            entity_uuid: createdCiType.uuid,
+            field_name: 'label',
+            locale
           }
         },
         update: { value: trans.label },
         create: {
-          ci_type_uuid: createdCiType.uuid,
-          locale,
+          entity_type: 'ci_types',
+          entity_uuid: createdCiType.uuid,
           field_name: 'label',
+          locale,
           value: trans.label
         }
       });
       
       // Description translation
       if (trans.description) {
-        await prisma.ci_types_translation.upsert({
+        await prisma.translated_fields.upsert({
           where: {
-            ci_type_uuid_locale_field_name: {
-              ci_type_uuid: createdCiType.uuid,
-              locale,
-              field_name: 'description'
+            entity_type_entity_uuid_field_name_locale: {
+              entity_type: 'ci_types',
+              entity_uuid: createdCiType.uuid,
+              field_name: 'description',
+              locale
             }
           },
           update: { value: trans.description },
           create: {
-            ci_type_uuid: createdCiType.uuid,
-            locale,
+            entity_type: 'ci_types',
+            entity_uuid: createdCiType.uuid,
             field_name: 'description',
+            locale,
             value: trans.description
           }
         });

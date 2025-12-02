@@ -24,7 +24,7 @@ const getTranslations = async (entityType, entityUuid, locale = null) => {
       where.locale = locale;
     }
     
-    const translations = await prisma.entity_translations.findMany({
+    const translations = await prisma.translated_fields.findMany({
       where,
       orderBy: [
         { field_name: 'asc' },
@@ -59,7 +59,7 @@ const getTranslations = async (entityType, entityUuid, locale = null) => {
  */
 const getTranslatedValue = async (entityType, entityUuid, fieldName, locale, fallback = null) => {
   try {
-    const translation = await prisma.entity_translations.findUnique({
+    const translation = await prisma.translated_fields.findUnique({
       where: {
         entity_type_entity_uuid_field_name_locale: {
           entity_type: entityType,
@@ -88,7 +88,7 @@ const getTranslatedValue = async (entityType, entityUuid, fieldName, locale, fal
  */
 const setTranslation = async (entityType, entityUuid, fieldName, locale, value) => {
   try {
-    const translation = await prisma.entity_translations.upsert({
+    const translation = await prisma.translated_fields.upsert({
       where: {
         entity_type_entity_uuid_field_name_locale: {
           entity_type: entityType,
@@ -151,7 +151,7 @@ const setTranslations = async (entityType, entityUuid, translations) => {
  */
 const deleteTranslations = async (entityType, entityUuid) => {
   try {
-    const result = await prisma.entity_translations.deleteMany({
+    const result = await prisma.translated_fields.deleteMany({
       where: {
         entity_type: entityType,
         entity_uuid: entityUuid
@@ -173,7 +173,7 @@ const deleteTranslations = async (entityType, entityUuid) => {
  */
 const getAvailableLocales = async (entityType) => {
   try {
-    const locales = await prisma.entity_translations.findMany({
+    const locales = await prisma.translated_fields.findMany({
       where: { entity_type: entityType },
       select: { locale: true },
       distinct: ['locale']
@@ -230,7 +230,7 @@ const enrichManyWithTranslations = async (entities, entityType, locale, translat
     // Batch fetch all translations for these entities
     const uuids = entities.map(e => e.uuid);
     
-    const translations = await prisma.entity_translations.findMany({
+    const translations = await prisma.translated_fields.findMany({
       where: {
         entity_type: entityType,
         entity_uuid: { in: uuids },

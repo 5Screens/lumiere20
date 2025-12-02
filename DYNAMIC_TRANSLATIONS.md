@@ -12,42 +12,28 @@ Lumiere supports dynamic translations for user-created content. Unlike static UI
 
 ## Database Schema
 
-### Tables
+### Single Generic Table: `translations.translated_fields`
 
-#### `translations.ci_types_translation`
-Specific translation table for CI types (optimized with foreign key constraint).
-
-```sql
-ci_types_translation (
-  uuid            UUID PRIMARY KEY,
-  ci_type_uuid    UUID REFERENCES ci_types(uuid) ON DELETE CASCADE,
-  locale          VARCHAR(10),   -- 'fr', 'en', 'es', 'pt', 'de', 'zh', etc.
-  field_name      VARCHAR(50),   -- 'label', 'description'
-  value           TEXT,
-  created_at      TIMESTAMPTZ,
-  updated_at      TIMESTAMPTZ,
-  
-  UNIQUE(ci_type_uuid, locale, field_name)
-)
-```
-
-#### `translations.entity_translations`
-Generic translation table for any entity type (scalable approach).
+All translations are stored in a single table for simplicity and maintainability.
 
 ```sql
-entity_translations (
+translated_fields (
   uuid            UUID PRIMARY KEY,
   entity_type     VARCHAR(100),  -- 'ci_types', 'ticket_status', 'symptoms', etc.
   entity_uuid     UUID,          -- UUID of the translated entity
   field_name      VARCHAR(100),  -- 'label', 'description', etc.
   locale          VARCHAR(10),   -- 'fr', 'en', 'es', 'pt', 'de', 'zh', etc.
-  value           TEXT,
+  value           TEXT,          -- The translated value
   created_at      TIMESTAMPTZ,
   updated_at      TIMESTAMPTZ,
   
   UNIQUE(entity_type, entity_uuid, field_name, locale)
 )
 ```
+
+**Indexes:**
+- `(entity_type, entity_uuid)` - Fast lookup by entity
+- `(locale)` - Filter by language
 
 ### Metadata Column
 
@@ -207,11 +193,13 @@ When migrating from `label_key`/`description_key` to dynamic translations:
 
 ## Files Modified
 
-- `backend-v2/prisma/schema.prisma` - Added translation tables and `is_translatable` column
-- `backend-v2/prisma/seeds/ci-types.js` - Updated to create translations
+- `backend-v2/prisma/schema.prisma` - Added `translated_fields` table and `is_translatable` column
+- `backend-v2/prisma/seeds/ci-types.js` - Updated to create translations in `translated_fields`
 - `backend-v2/prisma/seeds/object-metadata.js` - Added `is_translatable` flag
-- `backend-v2/src/api/v1/ci_types/service.js` - Translation support
-- `backend-v2/src/api/v1/ci_types/controller.js` - Locale handling
+- `backend-v2/src/api/v1/ci_types/service.js` - Translation support using `translated_fields`
+- `backend-v2/src/api/v1/ci_types/controller.js` - Locale handling via `Accept-Language` header
 - `backend-v2/src/api/v1/translations/service.js` - Generic translation service
+- `frontend-v2/src/services/api.js` - Added `Accept-Language` header to all requests
+- `frontend-v2/src/components/layout/AppHeader.vue` - Cache clear on locale change
 - `frontend-v2/src/i18n/fr.js` - Removed hardcoded CI type translations
 - `frontend-v2/src/i18n/en.js` - Removed hardcoded CI type translations
