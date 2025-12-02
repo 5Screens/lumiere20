@@ -78,6 +78,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/authStore'
+import metadataService from '@/services/metadataService'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
@@ -114,6 +115,10 @@ const currentLocale = computed({
   set: (val) => {
     locale.value = val
     localStorage.setItem('locale', val)
+    // Clear cached data to reload with new locale translations
+    metadataService.clearCache()
+    // Reload current route to refresh data
+    router.go(0)
   }
 })
 

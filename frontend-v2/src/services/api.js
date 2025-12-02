@@ -9,13 +9,19 @@ const api = axios.create({
   }
 })
 
-// Request interceptor for auth token
+// Request interceptor for auth token and locale
 api.interceptors.request.use(
   (config) => {
+    // Add auth token
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    
+    // Add locale for dynamic translations
+    const locale = localStorage.getItem('locale') || 'fr'
+    config.headers['Accept-Language'] = locale
+    
     return config
   },
   (error) => Promise.reject(error)
