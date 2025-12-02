@@ -372,44 +372,54 @@
             fluid 
           />
           
-          <!-- Select -->
-          <Select 
-            v-else-if="field.field_type === 'select'"
-            :id="field.field_name" 
-            v-model="editItem[field.field_name]" 
-            :options="getFieldOptions(field)" 
-            optionLabel="label" 
-            optionValue="value" 
-            :disabled="field.is_readonly"
-            fluid 
-          >
-            <template #value="slotProps">
-              <div 
-                v-if="slotProps.value" 
-                class="flex items-center gap-2 px-2 py-1 rounded"
-                :style="getTagStyle(getOptionByValue(field, slotProps.value)?.color)"
-              >
-                <i 
-                  v-if="getOptionByValue(field, slotProps.value)?.icon" 
-                  :class="['pi', getOptionByValue(field, slotProps.value)?.icon]" 
-                />
-                <span>{{ getOptionByValue(field, slotProps.value)?.label }}</span>
-              </div>
-              <span v-else>{{ slotProps.placeholder }}</span>
-            </template>
-            <template #option="slotProps">
-              <div 
-                class="flex items-center gap-2 px-2 py-1 rounded"
-                :style="getTagStyle(slotProps.option.color)"
-              >
-                <i 
-                  v-if="slotProps.option.icon" 
-                  :class="['pi', slotProps.option.icon]" 
-                />
-                <span>{{ slotProps.option.label }}</span>
-              </div>
-            </template>
-          </Select>
+          <!-- Select with refresh button -->
+          <div v-else-if="field.field_type === 'select'" class="flex gap-2">
+            <Select 
+              :id="field.field_name" 
+              v-model="editItem[field.field_name]" 
+              :options="getFieldOptions(field)" 
+              optionLabel="label" 
+              optionValue="value" 
+              :disabled="field.is_readonly"
+              :loading="refreshingField === field.field_name"
+              class="flex-1"
+            >
+              <template #value="slotProps">
+                <div 
+                  v-if="slotProps.value" 
+                  class="flex items-center gap-2 px-2 py-1 rounded"
+                  :style="getTagStyle(getOptionByValue(field, slotProps.value)?.color)"
+                >
+                  <i 
+                    v-if="getOptionByValue(field, slotProps.value)?.icon" 
+                    :class="['pi', getOptionByValue(field, slotProps.value)?.icon]" 
+                  />
+                  <span>{{ getOptionByValue(field, slotProps.value)?.label }}</span>
+                </div>
+                <span v-else>{{ slotProps.placeholder }}</span>
+              </template>
+              <template #option="slotProps">
+                <div 
+                  class="flex items-center gap-2 px-2 py-1 rounded"
+                  :style="getTagStyle(slotProps.option.color)"
+                >
+                  <i 
+                    v-if="slotProps.option.icon" 
+                    :class="['pi', slotProps.option.icon]" 
+                  />
+                  <span>{{ slotProps.option.label }}</span>
+                </div>
+              </template>
+            </Select>
+            <Button 
+              v-if="isApiOptionsSource(field)"
+              icon="pi pi-refresh" 
+              severity="secondary" 
+              @click="refreshFieldOptions(field)"
+              :loading="refreshingField === field.field_name"
+              v-tooltip.top="$t('common.refresh')"
+            />
+          </div>
           
           <!-- Boolean toggle -->
           <ToggleSwitch 
@@ -555,6 +565,7 @@ const selectedItem = ref(null)
 const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
+const refreshingField = ref(null)
 
 // Pagination
 const totalRecords = ref(0)
@@ -638,14 +649,16 @@ const getFieldOptions = (field) => {
 }
 
 // Load options for a field (handles both static JSON and API endpoints)
-const loadFieldOptions = async (field) => {
+const loadFieldOptions = async (field, useCache = true) => {
   if (!field.options_source) return
   
   let options = []
   
   if (metadataService.isApiEndpoint(field.options_source)) {
     // Load from API
-    options = await metadataService.fetchOptions(field.options_source)
+    console.log(`[ObjectsCrud] Loading options from API: ${field.options_source}, useCache: ${useCache}`)
+    options = await metadataService.fetchOptions(field.options_source, useCache)
+    console.log(`[ObjectsCrud] Loaded ${options.length} options`)
   } else {
     // Parse static JSON
     options = metadataService.parseOptions(field.options_source)
@@ -664,6 +677,40 @@ const loadFieldOptions = async (field) => {
 const loadAllFieldOptions = async (fields) => {
   const selectFields = fields.filter(f => f.field_type === 'select' && f.options_source)
   await Promise.all(selectFields.map(f => loadFieldOptions(f)))
+}
+
+// Check if field options come from API (not static JSON)
+const isApiOptionsSource = (field) => {
+  return field.options_source && metadataService.isApiEndpoint(field.options_source)
+}
+
+// Refresh options for a specific field
+const refreshFieldOptions = async (field) => {
+  if (!field.options_source) return
+  
+  console.log(`[ObjectsCrud] Refreshing options for field: ${field.field_name}`)
+  
+  try {
+    refreshingField.value = field.field_name
+    // Pass useCache = false to force reload from API
+    await loadFieldOptions(field, false)
+    toast.add({ 
+      severity: 'success', 
+      summary: 'Success', 
+      detail: t('common.optionsRefreshed'), 
+      life: 2000 
+    })
+  } catch (error) {
+    console.error('Failed to refresh field options:', error)
+    toast.add({ 
+      severity: 'error', 
+      summary: 'Error', 
+      detail: 'Failed to refresh options', 
+      life: 3000 
+    })
+  } finally {
+    refreshingField.value = null
+  }
 }
 
 // Computed

@@ -60,6 +60,7 @@ export default {
     actions: 'Actions',
     export: 'Export',
     refresh: 'Refresh',
+    optionsRefreshed: 'Options refreshed',
     success: 'Success',
     error: 'Error',
     serviceNotAvailable: 'Service not available',
