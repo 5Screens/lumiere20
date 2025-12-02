@@ -38,7 +38,7 @@ const router = createRouter({
     {
       path: '/configuration-items',
       name: 'configuration-items',
-      component: () => import('./views/ConfigurationItemsView.vue')
+      component: () => import('./views/ObjectsTableView.vue')
     }
   ]
 })
