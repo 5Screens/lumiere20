@@ -189,9 +189,22 @@
             <template v-if="col.field_type === 'boolean'">
               <i :class="data[col.field_name] ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
             </template>
-            <!-- Select with Tag -->
+            <!-- Select with Tag and color -->
             <template v-else-if="col.field_type === 'select'">
-              <Tag :value="formatCellValue(data[col.field_name], col)" />
+              <Tag 
+                :value="formatCellValue(data[col.field_name], col)"
+                :style="getTagStyle(getOptionByValue(col, data[col.field_name])?.color)"
+              >
+                <template #default>
+                  <div class="flex items-center gap-2">
+                    <i 
+                      v-if="getOptionByValue(col, data[col.field_name])?.icon" 
+                      :class="['pi', getOptionByValue(col, data[col.field_name])?.icon]" 
+                    />
+                    <span>{{ formatCellValue(data[col.field_name], col) }}</span>
+                  </div>
+                </template>
+              </Tag>
             </template>
             <!-- Date/Datetime -->
             <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
@@ -218,7 +231,33 @@
                 optionValue="value" 
                 autofocus 
                 fluid 
-              />
+              >
+                <template #value="slotProps">
+                  <div 
+                    v-if="slotProps.value" 
+                    class="flex items-center gap-2 px-2 py-1 rounded"
+                    :style="getTagStyle(getOptionByValue(col, slotProps.value)?.color)"
+                  >
+                    <i 
+                      v-if="getOptionByValue(col, slotProps.value)?.icon" 
+                      :class="['pi', getOptionByValue(col, slotProps.value)?.icon]" 
+                    />
+                    <span>{{ getOptionByValue(col, slotProps.value)?.label }}</span>
+                  </div>
+                </template>
+                <template #option="slotProps">
+                  <div 
+                    class="flex items-center gap-2 px-2 py-1 rounded"
+                    :style="getTagStyle(slotProps.option.color)"
+                  >
+                    <i 
+                      v-if="slotProps.option.icon" 
+                      :class="['pi', slotProps.option.icon]" 
+                    />
+                    <span>{{ slotProps.option.label }}</span>
+                  </div>
+                </template>
+              </Select>
             </template>
             <!-- Boolean editor -->
             <template v-else-if="col.field_type === 'boolean'">
@@ -244,7 +283,20 @@
                 optionLabel="label" 
                 optionValue="value" 
                 showClear
-              />
+              >
+                <template #option="slotProps">
+                  <div 
+                    class="flex items-center gap-2 px-2 py-1 rounded"
+                    :style="getTagStyle(slotProps.option.color)"
+                  >
+                    <i 
+                      v-if="slotProps.option.icon" 
+                      :class="['pi', slotProps.option.icon]" 
+                    />
+                    <span>{{ slotProps.option.label }}</span>
+                  </div>
+                </template>
+              </Select>
             </template>
             <!-- Date filter -->
             <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
@@ -330,7 +382,34 @@
             optionValue="value" 
             :disabled="field.is_readonly"
             fluid 
-          />
+          >
+            <template #value="slotProps">
+              <div 
+                v-if="slotProps.value" 
+                class="flex items-center gap-2 px-2 py-1 rounded"
+                :style="getTagStyle(getOptionByValue(field, slotProps.value)?.color)"
+              >
+                <i 
+                  v-if="getOptionByValue(field, slotProps.value)?.icon" 
+                  :class="['pi', getOptionByValue(field, slotProps.value)?.icon]" 
+                />
+                <span>{{ getOptionByValue(field, slotProps.value)?.label }}</span>
+              </div>
+              <span v-else>{{ slotProps.placeholder }}</span>
+            </template>
+            <template #option="slotProps">
+              <div 
+                class="flex items-center gap-2 px-2 py-1 rounded"
+                :style="getTagStyle(slotProps.option.color)"
+              >
+                <i 
+                  v-if="slotProps.option.icon" 
+                  :class="['pi', slotProps.option.icon]" 
+                />
+                <span>{{ slotProps.option.label }}</span>
+              </div>
+            </template>
+          </Select>
           
           <!-- Boolean toggle -->
           <ToggleSwitch 
@@ -806,6 +885,59 @@ const onColumnReorder = (event) => {
 
 const onStateRestore = (event) => {
   console.log('[ObjectsCrud] State restored:', event)
+}
+
+// Get option by value for a field
+const getOptionByValue = (field, value) => {
+  const options = getFieldOptions(field)
+  return options.find(o => o.value === value)
+}
+
+// Convert color name to CSS color value
+const getColorValue = (colorName) => {
+  const colorMap = {
+    yellow: '#eab308',
+    blue: '#3b82f6',
+    green: '#22c55e',
+    purple: '#a855f7',
+    orange: '#f97316',
+    cyan: '#06b6d4',
+    gray: '#6b7280',
+    teal: '#14b8a6',
+    indigo: '#6366f1',
+    red: '#ef4444',
+    pink: '#ec4899'
+  }
+  return colorMap[colorName] || colorName
+}
+
+// Get Tag style with pastel background and colored border/text
+const getTagStyle = (colorName) => {
+  if (!colorName) return {}
+  
+  const colorStyles = {
+    yellow: { backgroundColor: '#fef9c3', color: '#a16207', borderColor: '#fde047' },
+    blue: { backgroundColor: '#dbeafe', color: '#1d4ed8', borderColor: '#93c5fd' },
+    green: { backgroundColor: '#dcfce7', color: '#15803d', borderColor: '#86efac' },
+    purple: { backgroundColor: '#f3e8ff', color: '#7e22ce', borderColor: '#d8b4fe' },
+    orange: { backgroundColor: '#ffedd5', color: '#c2410c', borderColor: '#fdba74' },
+    cyan: { backgroundColor: '#cffafe', color: '#0e7490', borderColor: '#67e8f9' },
+    gray: { backgroundColor: '#f3f4f6', color: '#4b5563', borderColor: '#d1d5db' },
+    teal: { backgroundColor: '#ccfbf1', color: '#0f766e', borderColor: '#5eead4' },
+    indigo: { backgroundColor: '#e0e7ff', color: '#4338ca', borderColor: '#a5b4fc' },
+    red: { backgroundColor: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' },
+    pink: { backgroundColor: '#fce7f3', color: '#be185d', borderColor: '#f9a8d4' }
+  }
+  
+  const style = colorStyles[colorName]
+  if (!style) return {}
+  
+  return {
+    backgroundColor: style.backgroundColor,
+    color: style.color,
+    border: `1px solid ${style.borderColor}`,
+    fontWeight: '500'
+  }
 }
 
 // Load metadata for this object type

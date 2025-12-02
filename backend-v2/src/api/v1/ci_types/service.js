@@ -50,7 +50,7 @@ const getByCode = async (code) => {
 
 /**
  * Get CI types formatted as select options
- * @returns {Promise<Array>} List of options { label_key, value }
+ * @returns {Promise<Array>} List of options { label_key, value, icon, color }
  */
 const getAsOptions = async () => {
   try {
@@ -62,13 +62,17 @@ const getAsOptions = async () => {
       ],
       select: {
         code: true,
-        label_key: true
+        label_key: true,
+        icon: true,
+        color: true
       }
     });
     
     return ciTypes.map(ct => ({
       label_key: ct.label_key,
-      value: ct.code
+      value: ct.code,
+      icon: ct.icon,
+      color: ct.color
     }));
   } catch (error) {
     logger.error('Error fetching CI types as options:', error);
