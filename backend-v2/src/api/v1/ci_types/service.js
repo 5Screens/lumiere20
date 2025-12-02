@@ -19,7 +19,7 @@ const getAll = async (activeOnly = true) => {
       where,
       orderBy: [
         { display_order: 'asc' },
-        { label: 'asc' }
+        { label_key: 'asc' }
       ]
     });
     
@@ -50,7 +50,7 @@ const getByCode = async (code) => {
 
 /**
  * Get CI types formatted as select options
- * @returns {Promise<Array>} List of options { label, value }
+ * @returns {Promise<Array>} List of options { label_key, value }
  */
 const getAsOptions = async () => {
   try {
@@ -58,16 +58,16 @@ const getAsOptions = async () => {
       where: { is_active: true },
       orderBy: [
         { display_order: 'asc' },
-        { label: 'asc' }
+        { label_key: 'asc' }
       ],
       select: {
         code: true,
-        label: true
+        label_key: true
       }
     });
     
     return ciTypes.map(ct => ({
-      label: ct.label,
+      label_key: ct.label_key,
       value: ct.code
     }));
   } catch (error) {
@@ -86,8 +86,8 @@ const create = async (data) => {
     const ciType = await prisma.ci_types.create({
       data: {
         code: data.code,
-        label: data.label,
-        description: data.description,
+        label_key: data.label_key,
+        description_key: data.description_key,
         icon: data.icon,
         color: data.color,
         is_active: data.is_active ?? true,
@@ -115,8 +115,8 @@ const update = async (uuid, data) => {
       where: { uuid },
       data: {
         code: data.code,
-        label: data.label,
-        description: data.description,
+        label_key: data.label_key,
+        description_key: data.description_key,
         icon: data.icon,
         color: data.color,
         is_active: data.is_active,

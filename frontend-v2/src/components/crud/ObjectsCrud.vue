@@ -562,14 +562,23 @@ const getFieldOptions = (field) => {
 const loadFieldOptions = async (field) => {
   if (!field.options_source) return
   
+  let options = []
+  
   if (metadataService.isApiEndpoint(field.options_source)) {
     // Load from API
-    const options = await metadataService.fetchOptions(field.options_source)
-    fieldOptions.value[field.field_name] = options
+    options = await metadataService.fetchOptions(field.options_source)
   } else {
     // Parse static JSON
-    fieldOptions.value[field.field_name] = metadataService.parseOptions(field.options_source)
+    options = metadataService.parseOptions(field.options_source)
   }
+  
+  // Transform options: if label_key exists, translate it to label
+  fieldOptions.value[field.field_name] = options.map(opt => {
+    if (opt.label_key) {
+      return { ...opt, label: t(opt.label_key) }
+    }
+    return opt
+  })
 }
 
 // Load all field options for select fields

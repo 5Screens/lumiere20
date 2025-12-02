@@ -112,6 +112,11 @@ const menuItems = computed(() => [
         label: t('menu.persons') || 'Persons',
         icon: 'pi pi-user',
         command: () => openTab('persons', 'Persons', 'menu.persons', 'pi pi-user', 'persons')
+      },
+      {
+        label: t('menu.ciTypes') || 'CI Types',
+        icon: 'pi pi-tags',
+        command: () => openTab('ci-types', 'CI Types', 'menu.ciTypes', 'pi pi-tags', 'ci_types')
       }
     ]
   },

@@ -12,80 +12,80 @@ async function seedCiTypes() {
   const ciTypes = [
     {
       code: 'UPS',
-      label: 'UPS',
-      description: 'Uninterruptible Power Supply',
+      label_key: 'ciTypes.ups',
+      description_key: 'ciTypes.upsDesc',
       icon: 'pi-bolt',
       color: 'yellow',
       display_order: 1
     },
     {
       code: 'APPLICATION',
-      label: 'Application',
-      description: 'Software application',
+      label_key: 'ciTypes.application',
+      description_key: 'ciTypes.applicationDesc',
       icon: 'pi-desktop',
       color: 'blue',
       display_order: 2
     },
     {
       code: 'SERVER',
-      label: 'Server',
-      description: 'Physical or virtual server',
+      label_key: 'ciTypes.server',
+      description_key: 'ciTypes.serverDesc',
       icon: 'pi-server',
       color: 'green',
       display_order: 3
     },
     {
       code: 'NETWORK_DEVICE',
-      label: 'Network Device',
-      description: 'Router, switch, firewall, etc.',
+      label_key: 'ciTypes.networkDevice',
+      description_key: 'ciTypes.networkDeviceDesc',
       icon: 'pi-sitemap',
       color: 'purple',
       display_order: 4
     },
     {
       code: 'STORAGE',
-      label: 'Storage',
-      description: 'SAN, NAS, storage arrays',
+      label_key: 'ciTypes.storage',
+      description_key: 'ciTypes.storageDesc',
       icon: 'pi-database',
       color: 'orange',
       display_order: 5
     },
     {
       code: 'WORKSTATION',
-      label: 'Workstation',
-      description: 'Desktop computer or laptop',
+      label_key: 'ciTypes.workstation',
+      description_key: 'ciTypes.workstationDesc',
       icon: 'pi-desktop',
       color: 'cyan',
       display_order: 6
     },
     {
       code: 'PRINTER',
-      label: 'Printer',
-      description: 'Printer or multifunction device',
+      label_key: 'ciTypes.printer',
+      description_key: 'ciTypes.printerDesc',
       icon: 'pi-print',
       color: 'gray',
       display_order: 7
     },
     {
       code: 'MOBILE_DEVICE',
-      label: 'Mobile Device',
-      description: 'Smartphone, tablet',
+      label_key: 'ciTypes.mobileDevice',
+      description_key: 'ciTypes.mobileDeviceDesc',
       icon: 'pi-mobile',
       color: 'teal',
       display_order: 8
     },
     {
       code: 'DATABASE',
-      label: 'Database',
-      description: 'Database instance',
+      label_key: 'ciTypes.database',
+      description_key: 'ciTypes.databaseDesc',
       icon: 'pi-database',
       color: 'indigo',
       display_order: 9
     },
     {
       code: 'GENERIC',
-      label: 'Generic',
-      description: 'Generic configuration item',
+      label_key: 'ciTypes.generic',
+      description_key: 'ciTypes.genericDesc',
       icon: 'pi-box',
       color: 'gray',
       display_order: 99
@@ -96,8 +96,8 @@ async function seedCiTypes() {
     await prisma.ci_types.upsert({
       where: { code: ciType.code },
       update: {
-        label: ciType.label,
-        description: ciType.description,
+        label_key: ciType.label_key,
+        description_key: ciType.description_key,
         icon: ciType.icon,
         color: ciType.color,
         display_order: ciType.display_order
