@@ -26,6 +26,7 @@ const locationsRoutes = require('./api/v1/locations/routes');
 const groupsRoutes = require('./api/v1/groups/routes');
 const personsRoutes = require('./api/v1/persons/routes');
 const metadataRoutes = require('./api/v1/metadata/routes');
+const ciTypesRoutes = require('./api/v1/ci_types/routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
@@ -34,6 +35,7 @@ app.use('/api/v1/locations', locationsRoutes);
 app.use('/api/v1/groups', groupsRoutes);
 app.use('/api/v1/persons', personsRoutes);
 app.use('/api/v1/metadata', metadataRoutes);
+app.use('/api/v1/ci_types', ciTypesRoutes);
 
 // Health check
 app.get('/', (req, res) => {

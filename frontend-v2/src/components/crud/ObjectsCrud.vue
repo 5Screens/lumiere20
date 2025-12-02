@@ -460,6 +460,7 @@ const objectTypeMetadata = ref(null)
 const tableColumns = ref([])
 const formFields = ref([])
 const metadataLoading = ref(true)
+const fieldOptions = ref({}) // Cache for field options (including API-loaded ones)
 
 // Composables
 const toast = useToast()
@@ -551,10 +552,30 @@ const toggleColumnSelector = (event) => {
   columnTogglePopover.value.toggle(event)
 }
 
-// Get options for select fields
+// Get options for select fields (from cache)
 const getFieldOptions = (field) => {
   if (!field.options_source) return []
-  return metadataService.parseOptions(field.options_source)
+  return fieldOptions.value[field.field_name] || []
+}
+
+// Load options for a field (handles both static JSON and API endpoints)
+const loadFieldOptions = async (field) => {
+  if (!field.options_source) return
+  
+  if (metadataService.isApiEndpoint(field.options_source)) {
+    // Load from API
+    const options = await metadataService.fetchOptions(field.options_source)
+    fieldOptions.value[field.field_name] = options
+  } else {
+    // Parse static JSON
+    fieldOptions.value[field.field_name] = metadataService.parseOptions(field.options_source)
+  }
+}
+
+// Load all field options for select fields
+const loadAllFieldOptions = async (fields) => {
+  const selectFields = fields.filter(f => f.field_type === 'select' && f.options_source)
+  await Promise.all(selectFields.map(f => loadFieldOptions(f)))
 }
 
 // Computed
@@ -790,6 +811,10 @@ const loadMetadata = async () => {
       // Separate table columns and form fields
       tableColumns.value = objectTypeMetadata.value.fields.filter(f => f.show_in_table)
       formFields.value = objectTypeMetadata.value.fields.filter(f => f.show_in_form)
+      
+      // Load options for all select fields (including API endpoints)
+      const allFields = objectTypeMetadata.value.fields
+      await loadAllFieldOptions(allFields)
       
       // Set default sort from metadata
       sortField.value = objectTypeMetadata.value.default_sort_field || 'updated_at'

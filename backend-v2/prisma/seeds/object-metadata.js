@@ -55,13 +55,7 @@ async function seedObjectMetadata() {
   const fieldsByObjectType = {
     configuration_items: [
       { field_name: 'name', label_key: 'configurationItems.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1 },
-      { field_name: 'ci_type', label_key: 'configurationItems.ciType', field_type: 'select', min_width: '10rem', display_order: 2, options_source: JSON.stringify([
-        { label: 'UPS', value: 'UPS' },
-        { label: 'Application', value: 'APPLICATION' },
-        { label: 'Server', value: 'SERVER' },
-        { label: 'Network Device', value: 'NETWORK_DEVICE' },
-        { label: 'Generic', value: 'GENERIC' }
-      ])},
+      { field_name: 'ci_type', label_key: 'configurationItems.ciType', field_type: 'select', min_width: '10rem', display_order: 2, options_source: '/ci_types/options' },
       { field_name: 'description', label_key: 'configurationItems.description', field_type: 'textarea', min_width: '20rem', display_order: 3 },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10 },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11 },
