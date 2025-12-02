@@ -9,102 +9,218 @@ const prisma = new PrismaClient();
 async function seedCiTypes() {
   console.log('Seeding CI types...');
 
+  // CI Types with default labels (English as fallback)
   const ciTypes = [
     {
       code: 'UPS',
-      label_key: 'ciTypes.ups',
-      description_key: 'ciTypes.upsDesc',
+      label: 'UPS',
+      description: 'Uninterruptible Power Supply',
       icon: 'pi-bolt',
       color: 'yellow',
-      display_order: 1
+      display_order: 1,
+      translations: {
+        fr: { label: 'Onduleur (UPS)', description: 'Alimentation sans interruption' },
+        en: { label: 'UPS', description: 'Uninterruptible Power Supply' },
+        es: { label: 'SAI', description: 'Sistema de alimentación ininterrumpida' },
+        pt: { label: 'UPS', description: 'Fonte de alimentação ininterrupta' },
+        de: { label: 'USV', description: 'Unterbrechungsfreie Stromversorgung' }
+      }
     },
     {
       code: 'APPLICATION',
-      label_key: 'ciTypes.application',
-      description_key: 'ciTypes.applicationDesc',
+      label: 'Application',
+      description: 'Software application',
       icon: 'pi-desktop',
       color: 'blue',
-      display_order: 2
+      display_order: 2,
+      translations: {
+        fr: { label: 'Application', description: 'Application logicielle' },
+        en: { label: 'Application', description: 'Software application' },
+        es: { label: 'Aplicación', description: 'Aplicación de software' },
+        pt: { label: 'Aplicação', description: 'Aplicação de software' },
+        de: { label: 'Anwendung', description: 'Softwareanwendung' }
+      }
     },
     {
       code: 'SERVER',
-      label_key: 'ciTypes.server',
-      description_key: 'ciTypes.serverDesc',
+      label: 'Server',
+      description: 'Physical or virtual server',
       icon: 'pi-server',
       color: 'green',
-      display_order: 3
+      display_order: 3,
+      translations: {
+        fr: { label: 'Serveur', description: 'Serveur physique ou virtuel' },
+        en: { label: 'Server', description: 'Physical or virtual server' },
+        es: { label: 'Servidor', description: 'Servidor físico o virtual' },
+        pt: { label: 'Servidor', description: 'Servidor físico ou virtual' },
+        de: { label: 'Server', description: 'Physischer oder virtueller Server' }
+      }
     },
     {
       code: 'NETWORK_DEVICE',
-      label_key: 'ciTypes.networkDevice',
-      description_key: 'ciTypes.networkDeviceDesc',
+      label: 'Network Device',
+      description: 'Router, switch, firewall, etc.',
       icon: 'pi-sitemap',
       color: 'purple',
-      display_order: 4
+      display_order: 4,
+      translations: {
+        fr: { label: 'Équipement réseau', description: 'Routeur, switch, firewall, etc.' },
+        en: { label: 'Network Device', description: 'Router, switch, firewall, etc.' },
+        es: { label: 'Dispositivo de red', description: 'Router, switch, firewall, etc.' },
+        pt: { label: 'Dispositivo de rede', description: 'Router, switch, firewall, etc.' },
+        de: { label: 'Netzwerkgerät', description: 'Router, Switch, Firewall, etc.' }
+      }
     },
     {
       code: 'STORAGE',
-      label_key: 'ciTypes.storage',
-      description_key: 'ciTypes.storageDesc',
+      label: 'Storage',
+      description: 'SAN, NAS, storage arrays',
       icon: 'pi-database',
       color: 'orange',
-      display_order: 5
+      display_order: 5,
+      translations: {
+        fr: { label: 'Stockage', description: 'SAN, NAS, baies de stockage' },
+        en: { label: 'Storage', description: 'SAN, NAS, storage arrays' },
+        es: { label: 'Almacenamiento', description: 'SAN, NAS, matrices de almacenamiento' },
+        pt: { label: 'Armazenamento', description: 'SAN, NAS, matrizes de armazenamento' },
+        de: { label: 'Speicher', description: 'SAN, NAS, Speicher-Arrays' }
+      }
     },
     {
       code: 'WORKSTATION',
-      label_key: 'ciTypes.workstation',
-      description_key: 'ciTypes.workstationDesc',
+      label: 'Workstation',
+      description: 'Desktop or laptop computer',
       icon: 'pi-desktop',
       color: 'cyan',
-      display_order: 6
+      display_order: 6,
+      translations: {
+        fr: { label: 'Poste de travail', description: 'Ordinateur de bureau ou portable' },
+        en: { label: 'Workstation', description: 'Desktop or laptop computer' },
+        es: { label: 'Estación de trabajo', description: 'Ordenador de escritorio o portátil' },
+        pt: { label: 'Estação de trabalho', description: 'Computador de mesa ou portátil' },
+        de: { label: 'Arbeitsstation', description: 'Desktop- oder Laptop-Computer' }
+      }
     },
     {
       code: 'PRINTER',
-      label_key: 'ciTypes.printer',
-      description_key: 'ciTypes.printerDesc',
+      label: 'Printer',
+      description: 'Printer or multifunction device',
       icon: 'pi-print',
       color: 'gray',
-      display_order: 7
+      display_order: 7,
+      translations: {
+        fr: { label: 'Imprimante', description: 'Imprimante ou multifonction' },
+        en: { label: 'Printer', description: 'Printer or multifunction device' },
+        es: { label: 'Impresora', description: 'Impresora o dispositivo multifunción' },
+        pt: { label: 'Impressora', description: 'Impressora ou dispositivo multifuncional' },
+        de: { label: 'Drucker', description: 'Drucker oder Multifunktionsgerät' }
+      }
     },
     {
       code: 'MOBILE_DEVICE',
-      label_key: 'ciTypes.mobileDevice',
-      description_key: 'ciTypes.mobileDeviceDesc',
+      label: 'Mobile Device',
+      description: 'Smartphone, tablet',
       icon: 'pi-mobile',
       color: 'teal',
-      display_order: 8
+      display_order: 8,
+      translations: {
+        fr: { label: 'Appareil mobile', description: 'Smartphone, tablette' },
+        en: { label: 'Mobile Device', description: 'Smartphone, tablet' },
+        es: { label: 'Dispositivo móvil', description: 'Smartphone, tableta' },
+        pt: { label: 'Dispositivo móvel', description: 'Smartphone, tablet' },
+        de: { label: 'Mobilgerät', description: 'Smartphone, Tablet' }
+      }
     },
     {
       code: 'DATABASE',
-      label_key: 'ciTypes.database',
-      description_key: 'ciTypes.databaseDesc',
+      label: 'Database',
+      description: 'Database instance',
       icon: 'pi-database',
       color: 'indigo',
-      display_order: 9
+      display_order: 9,
+      translations: {
+        fr: { label: 'Base de données', description: 'Instance de base de données' },
+        en: { label: 'Database', description: 'Database instance' },
+        es: { label: 'Base de datos', description: 'Instancia de base de datos' },
+        pt: { label: 'Base de dados', description: 'Instância de base de dados' },
+        de: { label: 'Datenbank', description: 'Datenbankinstanz' }
+      }
     },
     {
       code: 'GENERIC',
-      label_key: 'ciTypes.generic',
-      description_key: 'ciTypes.genericDesc',
+      label: 'Generic',
+      description: 'Generic configuration item',
       icon: 'pi-box',
       color: 'gray',
-      display_order: 99
+      display_order: 99,
+      translations: {
+        fr: { label: 'Générique', description: 'Élément de configuration générique' },
+        en: { label: 'Generic', description: 'Generic configuration item' },
+        es: { label: 'Genérico', description: 'Elemento de configuración genérico' },
+        pt: { label: 'Genérico', description: 'Item de configuração genérico' },
+        de: { label: 'Generisch', description: 'Generisches Konfigurationselement' }
+      }
     }
   ];
 
   for (const ciType of ciTypes) {
-    await prisma.ci_types.upsert({
+    const { translations, ...ciTypeData } = ciType;
+    
+    // Upsert CI type
+    const createdCiType = await prisma.ci_types.upsert({
       where: { code: ciType.code },
       update: {
-        label_key: ciType.label_key,
-        description_key: ciType.description_key,
-        icon: ciType.icon,
-        color: ciType.color,
-        display_order: ciType.display_order
+        label: ciTypeData.label,
+        description: ciTypeData.description,
+        icon: ciTypeData.icon,
+        color: ciTypeData.color,
+        display_order: ciTypeData.display_order
       },
-      create: ciType
+      create: ciTypeData
     });
     console.log(`  - CI type '${ciType.code}' created/updated`);
+    
+    // Upsert translations for each locale
+    for (const [locale, trans] of Object.entries(translations)) {
+      // Label translation
+      await prisma.ci_types_translation.upsert({
+        where: {
+          ci_type_uuid_locale_field_name: {
+            ci_type_uuid: createdCiType.uuid,
+            locale,
+            field_name: 'label'
+          }
+        },
+        update: { value: trans.label },
+        create: {
+          ci_type_uuid: createdCiType.uuid,
+          locale,
+          field_name: 'label',
+          value: trans.label
+        }
+      });
+      
+      // Description translation
+      if (trans.description) {
+        await prisma.ci_types_translation.upsert({
+          where: {
+            ci_type_uuid_locale_field_name: {
+              ci_type_uuid: createdCiType.uuid,
+              locale,
+              field_name: 'description'
+            }
+          },
+          update: { value: trans.description },
+          create: {
+            ci_type_uuid: createdCiType.uuid,
+            locale,
+            field_name: 'description',
+            value: trans.description
+          }
+        });
+      }
+    }
+    console.log(`    - Translations added for ${Object.keys(translations).length} locales`);
   }
 
   console.log('CI types seeding completed!');

@@ -7,12 +7,23 @@ const service = require('./service');
 const logger = require('../../../config/logger');
 
 /**
+ * Get locale from request (header or query param)
+ */
+const getLocale = (req) => {
+  // Check Accept-Language header first, then query param
+  const headerLocale = req.headers['accept-language']?.split(',')[0]?.split('-')[0];
+  return req.query.locale || headerLocale || 'en';
+};
+
+/**
  * Get all CI types
  */
 const getAll = async (req, res) => {
   try {
     const activeOnly = req.query.active !== 'false';
-    const ciTypes = await service.getAll(activeOnly);
+    const locale = getLocale(req);
+    
+    const ciTypes = await service.getAll({ activeOnly, locale });
     
     res.json(ciTypes);
   } catch (error) {
@@ -29,7 +40,8 @@ const getAll = async (req, res) => {
  */
 const getOptions = async (req, res) => {
   try {
-    const options = await service.getAsOptions();
+    const locale = getLocale(req);
+    const options = await service.getAsOptions(locale);
     
     res.json(options);
   } catch (error) {
@@ -47,7 +59,8 @@ const getOptions = async (req, res) => {
 const getByCode = async (req, res) => {
   try {
     const { code } = req.params;
-    const ciType = await service.getByCode(code);
+    const locale = getLocale(req);
+    const ciType = await service.getByCode(code, locale);
     
     if (!ciType) {
       return res.status(404).json({ 

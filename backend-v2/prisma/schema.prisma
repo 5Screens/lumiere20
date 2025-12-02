@@ -96,14 +96,17 @@ model service_offerings {
 model ci_types {
   uuid            String   @id @default(uuid()) @db.Uuid
   code            String   @unique @db.VarChar(50)
-  label_key       String   @db.VarChar(100)  // i18n key for label
-  description_key String?  @db.VarChar(100)  // i18n key for description
+  label           String   @db.VarChar(255)  // Default label (fallback if no translation)
+  description     String?  @db.Text          // Default description (fallback if no translation)
   icon            String?  @db.VarChar(50)
   color           String?  @db.VarChar(20)
   is_active       Boolean  @default(true)
   display_order   Int      @default(0)
   created_at      DateTime @default(now()) @db.Timestamptz(6)
   updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  translations    ci_types_translation[]
 
   @@schema("configuration")
   @@map("ci_types")
@@ -473,6 +476,44 @@ model symptoms_translation {
   @@map("symptoms_translation")
 }
 
+// CI Types translations
+model ci_types_translation {
+  uuid            String   @id @default(uuid()) @db.Uuid
+  ci_type_uuid    String   @db.Uuid
+  locale          String   @db.VarChar(10)   // 'fr', 'en', 'es', 'pt', 'de', 'zh', etc.
+  field_name      String   @db.VarChar(50)   // 'label', 'description'
+  value           String   @db.Text          // The translated value
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  ci_type ci_types @relation(fields: [ci_type_uuid], references: [uuid], onDelete: Cascade)
+
+  @@unique([ci_type_uuid, locale, field_name])
+  @@index([ci_type_uuid])
+  @@index([locale])
+  @@schema("translations")
+  @@map("ci_types_translation")
+}
+
+// Generic translations table for any entity with translatable fields
+// This is the scalable approach for future entities
+model entity_translations {
+  uuid            String   @id @default(uuid()) @db.Uuid
+  entity_type     String   @db.VarChar(100)  // 'ci_types', 'ticket_status', 'symptoms', etc.
+  entity_uuid     String   @db.Uuid          // UUID of the translated entity
+  field_name      String   @db.VarChar(100)  // 'label', 'description', etc.
+  locale          String   @db.VarChar(10)   // 'fr', 'en', 'es', 'pt', 'de', 'zh', etc.
+  value           String   @db.Text          // The translated value
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@unique([entity_type, entity_uuid, field_name, locale])
+  @@index([entity_type, entity_uuid])
+  @@index([locale])
+  @@schema("translations")
+  @@map("entity_translations")
+}
+
 // ============================================
 // SCHEMA: configuration - Object Metadata
 // ============================================
@@ -515,6 +556,7 @@ model object_fields {
   is_editable       Boolean  @default(true)            // Allow inline editing
   is_required       Boolean  @default(false)
   is_readonly       Boolean  @default(false)
+  is_translatable   Boolean  @default(false)           // Field supports dynamic translations
   
   // Column display
   min_width         String?  @db.VarChar(20)           // e.g., '10rem', '150px'
