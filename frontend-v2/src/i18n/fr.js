@@ -71,7 +71,13 @@ export default {
     parent: 'Parent',
     phone: 'Téléphone',
     email: 'Email',
-    comments: 'Commentaires'
+    comments: 'Commentaires',
+    selectTagStyle: 'Sélectionner un style',
+    selectIcon: 'Sélectionner une icône',
+    searchIcon: 'Rechercher une icône...',
+    noResults: 'Aucun résultat',
+    selected: 'Sélectionné',
+    clear: 'Effacer'
   },
   tabs: {
     backToList: 'Retour à la liste',
@@ -242,6 +248,7 @@ export default {
     descriptionKey: 'Clé de description',
     icon: 'Icône',
     color: 'Couleur',
+    tagStyle: 'Style du tag',
     displayOrder: 'Ordre d\'affichage',
     messages: {
       created: 'Type de CI créé avec succès',

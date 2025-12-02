@@ -71,7 +71,13 @@ export default {
     parent: 'Parent',
     phone: 'Phone',
     email: 'Email',
-    comments: 'Comments'
+    comments: 'Comments',
+    selectTagStyle: 'Select a style',
+    selectIcon: 'Select an icon',
+    searchIcon: 'Search icon...',
+    noResults: 'No results',
+    selected: 'Selected',
+    clear: 'Clear'
   },
   tabs: {
     backToList: 'Back to list',
@@ -242,6 +248,7 @@ export default {
     descriptionKey: 'Description Key',
     icon: 'Icon',
     color: 'Color',
+    tagStyle: 'Tag Style',
     displayOrder: 'Display Order',
     messages: {
       created: 'CI type created successfully',

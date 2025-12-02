@@ -214,6 +214,24 @@
             <template v-else-if="col.field_type === 'textarea'">
               <span class="block max-w-xs truncate">{{ data[col.field_name] || '-' }}</span>
             </template>
+            <!-- Tag Style display -->
+            <template v-else-if="col.field_type === 'tag_style'">
+              <Tag 
+                v-if="data[col.field_name]"
+                :style="getTagStyle(data[col.field_name])"
+              >
+                {{ data[col.field_name] }}
+              </Tag>
+              <span v-else>-</span>
+            </template>
+            <!-- Icon display -->
+            <template v-else-if="col.field_type === 'icon_picker'">
+              <div v-if="data[col.field_name]" class="flex items-center gap-2">
+                <i :class="`pi ${data[col.field_name]}`" />
+                <span class="text-sm text-surface-500">{{ data[col.field_name] }}</span>
+              </div>
+              <span v-else>-</span>
+            </template>
             <!-- Default text -->
             <template v-else>
               {{ data[col.field_name] ?? '-' }}
@@ -459,6 +477,22 @@
             :placeholder="`Select ${field.relation_object}...`"
             fluid 
           />
+          
+          <!-- Tag Style Selector -->
+          <TagStyleSelector 
+            v-else-if="field.field_type === 'tag_style'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :disabled="field.is_readonly"
+          />
+          
+          <!-- Icon Picker -->
+          <IconSelector 
+            v-else-if="field.field_type === 'icon_picker'"
+            :id="field.field_name" 
+            v-model="editItem[field.field_name]" 
+            :disabled="field.is_readonly"
+          />
         </div>
       </div>
       <template #footer>
@@ -524,6 +558,13 @@ import DatePicker from 'primevue/datepicker'
 import Popover from 'primevue/popover'
 import Checkbox from 'primevue/checkbox'
 import ToggleSwitch from 'primevue/toggleswitch'
+
+// Custom form components
+import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
+import IconSelector from '@/components/form/IconSelector.vue'
+
+// Utils
+import { getTagStyle, getColorValue } from '@/utils/tagStyles'
 
 // Props
 const props = defineProps({
@@ -940,52 +981,7 @@ const getOptionByValue = (field, value) => {
   return options.find(o => o.value === value)
 }
 
-// Convert color name to CSS color value
-const getColorValue = (colorName) => {
-  const colorMap = {
-    yellow: '#eab308',
-    blue: '#3b82f6',
-    green: '#22c55e',
-    purple: '#a855f7',
-    orange: '#f97316',
-    cyan: '#06b6d4',
-    gray: '#6b7280',
-    teal: '#14b8a6',
-    indigo: '#6366f1',
-    red: '#ef4444',
-    pink: '#ec4899'
-  }
-  return colorMap[colorName] || colorName
-}
-
-// Get Tag style with pastel background and colored border/text
-const getTagStyle = (colorName) => {
-  if (!colorName) return {}
-  
-  const colorStyles = {
-    yellow: { backgroundColor: '#fef9c3', color: '#a16207', borderColor: '#fde047' },
-    blue: { backgroundColor: '#dbeafe', color: '#1d4ed8', borderColor: '#93c5fd' },
-    green: { backgroundColor: '#dcfce7', color: '#15803d', borderColor: '#86efac' },
-    purple: { backgroundColor: '#f3e8ff', color: '#7e22ce', borderColor: '#d8b4fe' },
-    orange: { backgroundColor: '#ffedd5', color: '#c2410c', borderColor: '#fdba74' },
-    cyan: { backgroundColor: '#cffafe', color: '#0e7490', borderColor: '#67e8f9' },
-    gray: { backgroundColor: '#f3f4f6', color: '#4b5563', borderColor: '#d1d5db' },
-    teal: { backgroundColor: '#ccfbf1', color: '#0f766e', borderColor: '#5eead4' },
-    indigo: { backgroundColor: '#e0e7ff', color: '#4338ca', borderColor: '#a5b4fc' },
-    red: { backgroundColor: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' },
-    pink: { backgroundColor: '#fce7f3', color: '#be185d', borderColor: '#f9a8d4' }
-  }
-  
-  const style = colorStyles[colorName]
-  if (!style) return {}
-  
-  return {
-    backgroundColor: style.backgroundColor,
-    color: style.color,
-    border: `1px solid ${style.borderColor}`,
-    fontWeight: '500'
-  }
-}
+// Note: getTagStyle and getColorValue are now imported from @/utils/tagStyles
 
 // Load metadata for this object type
 const loadMetadata = async () => {
