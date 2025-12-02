@@ -346,6 +346,7 @@
       :style="{ width: '500px' }" 
       :header="dialogMode === 'create' ? $t('common.create') : $t('common.edit')" 
       :modal="true"
+      position="right"
     >
       <div class="flex flex-col gap-4">
         <!-- Dynamic form fields from metadata -->
