@@ -304,6 +304,29 @@ const remove = async (uuid) => {
 };
 
 /**
+ * Search for UUIDs matching a text query in translated_fields
+ * @param {string} searchText - Text to search for
+ * @param {string} locale - Locale to search in
+ * @returns {Promise<string[]>} Array of matching entity UUIDs
+ */
+const searchInTranslations = async (searchText, locale) => {
+  if (!searchText) return [];
+  
+  const translations = await prisma.translated_fields.findMany({
+    where: {
+      entity_type: ENTITY_TYPE,
+      locale,
+      field_name: { in: TRANSLATABLE_FIELDS },
+      value: { contains: searchText, mode: 'insensitive' }
+    },
+    select: { entity_uuid: true },
+    distinct: ['entity_uuid']
+  });
+  
+  return translations.map(t => t.entity_uuid);
+};
+
+/**
  * Search CI types with PrimeVue filters
  * @param {Object} searchParams - Search parameters
  * @param {string} locale - Locale for translations
@@ -319,15 +342,56 @@ const search = async (searchParams = {}, locale = 'en') => {
       sortOrder,
       page,
       limit,
+      locale,
     });
 
     const skip = (page - 1) * limit;
 
-    // Build Prisma where clause
-    const where = buildPrismaWhereFromFilters(filters, {
-      globalSearchFields: ['code', 'label', 'description'],
+    // Extract global search value if present
+    const globalSearchValue = filters.global?.value || null;
+    
+    // Build base Prisma where clause (excludes translatable fields from global search)
+    const baseWhere = buildPrismaWhereFromFilters(filters, {
+      globalSearchFields: ['code'],  // Only non-translatable fields
       booleanColumns: ['is_active'],
     });
+
+    let where = baseWhere;
+
+    // If there's a global search, also search in translations
+    if (globalSearchValue) {
+      // Search in translated_fields for the current locale
+      const translatedUuids = await searchInTranslations(globalSearchValue, locale);
+      
+      // Combine: match in ci_types OR match in translations
+      if (translatedUuids.length > 0) {
+        // If baseWhere has conditions, combine with OR for translations
+        const baseConditions = baseWhere.OR || [baseWhere];
+        where = {
+          AND: [
+            // Keep non-global filters (like is_active)
+            ...(baseWhere.is_active !== undefined ? [{ is_active: baseWhere.is_active }] : []),
+            {
+              OR: [
+                // Original search in code
+                { code: { contains: globalSearchValue, mode: 'insensitive' } },
+                // Search in default label/description (fallback)
+                { label: { contains: globalSearchValue, mode: 'insensitive' } },
+                { description: { contains: globalSearchValue, mode: 'insensitive' } },
+                // Match UUIDs found in translations
+                { uuid: { in: translatedUuids } }
+              ]
+            }
+          ]
+        };
+      } else {
+        // No translation matches, search in ci_types fields only
+        where = buildPrismaWhereFromFilters(filters, {
+          globalSearchFields: ['code', 'label', 'description'],
+          booleanColumns: ['is_active'],
+        });
+      }
+    }
 
     // Count total
     const total = await prisma.ci_types.count({ where });
