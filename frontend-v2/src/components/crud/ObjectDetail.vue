@@ -23,29 +23,35 @@
       </div>
 
       <!-- Tabs for ci_types, simple form for others -->
-      <TabView v-if="objectType === 'ci_types'" class="flex-1">
-        <!-- General tab -->
-        <TabPanel :header="$t('ciTypes.tabs.general')">
-          <div class="p-4">
-            <ObjectForm 
-              :fields="formFields" 
-              :item="item" 
-              :fieldOptions="fieldOptions"
-              @update:item="item = $event"
-            />
-          </div>
-        </TabPanel>
+      <Tabs v-if="objectType === 'ci_types'" value="general" class="flex-1">
+        <TabList>
+          <Tab value="general">{{ $t('ciTypes.tabs.general') }}</Tab>
+          <Tab value="extendedFields">{{ $t('ciTypes.tabs.extendedFields') }}</Tab>
+        </TabList>
+        <TabPanels>
+          <!-- General tab -->
+          <TabPanel value="general">
+            <div class="p-4">
+              <ObjectForm 
+                :fields="formFields" 
+                :item="item" 
+                :fieldOptions="fieldOptions"
+                @update:item="item = $event"
+              />
+            </div>
+          </TabPanel>
 
-        <!-- Extended fields tab -->
-        <TabPanel :header="$t('ciTypes.tabs.extendedFields')">
-          <div class="p-4">
-            <CiTypeFieldsEditor 
-              :ciTypeUuid="item.uuid"
-              :ciTypeCode="item.code"
-            />
-          </div>
-        </TabPanel>
-      </TabView>
+          <!-- Extended fields tab -->
+          <TabPanel value="extendedFields">
+            <div class="p-4">
+              <CiTypeFieldsEditor 
+                :ciTypeUuid="item.uuid"
+                :ciTypeCode="item.code"
+              />
+            </div>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
 
       <!-- Simple form for other object types -->
       <div v-else class="flex-1 overflow-auto">
@@ -80,7 +86,10 @@ import metadataService from '@/services/metadataService'
 
 // PrimeVue components
 import Button from 'primevue/button'
-import TabView from 'primevue/tabview'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import ProgressSpinner from 'primevue/progressspinner'
 import Toast from 'primevue/toast'
