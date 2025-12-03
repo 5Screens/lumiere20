@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { prisma } = require('../client');
 
 /**
  * Seed object types and fields metadata
@@ -207,14 +206,3 @@ async function seedObjectMetadata() {
 }
 
 module.exports = { seedObjectMetadata };
-
-// Run directly if called as script
-if (require.main === module) {
-  seedObjectMetadata()
-    .then(() => prisma.$disconnect())
-    .catch((e) => {
-      console.error(e);
-      prisma.$disconnect();
-      process.exit(1);
-    });
-}

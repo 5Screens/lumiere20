@@ -3,8 +3,7 @@
  * Run with: npx prisma db seed
  */
 
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { prisma } = require('../client');
 
 async function seedCiTypes() {
   console.log('Seeding CI types...');
@@ -231,14 +230,3 @@ async function seedCiTypes() {
 }
 
 module.exports = { seedCiTypes };
-
-// Allow running directly
-if (require.main === module) {
-  seedCiTypes()
-    .then(() => prisma.$disconnect())
-    .catch((e) => {
-      console.error(e);
-      prisma.$disconnect();
-      process.exit(1);
-    });
-}

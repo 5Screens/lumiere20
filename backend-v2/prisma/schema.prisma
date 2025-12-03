@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
   schemas  = ["data", "core", "configuration", "translations"]
 }
 
@@ -118,7 +117,6 @@ model ticket_types {
   // Relations
   ticket_status      ticket_status[]
   tickets            tickets[]
-  translations       ticket_types_translation[]
 
   @@schema("configuration")
   @@map("ticket_types")
@@ -134,7 +132,6 @@ model ticket_status {
   // Relations
   ticket_type  ticket_types? @relation(fields: [rel_ticket_type], references: [code])
   locations    locations[]
-  translations ticket_status_translation[]
 
   @@unique([code, rel_ticket_type])
   @@schema("configuration")
@@ -147,8 +144,6 @@ model symptoms {
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
-  // Relations
-  translations symptoms_translation[]
 
   @@schema("configuration")
   @@map("symptoms")
@@ -428,52 +423,7 @@ model rel_parent_child_tickets {
 // SCHEMA: translations
 // ============================================
 
-model ticket_types_translation {
-  uuid            String   @id @default(uuid()) @db.Uuid
-  ticket_type_uuid String  @db.Uuid
-  lang            String   @db.VarChar(5)
-  label           String   @db.VarChar(255)
-  created_at      DateTime @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
-
-  ticket_type ticket_types @relation(fields: [ticket_type_uuid], references: [uuid], onDelete: Restrict)
-
-  @@unique([ticket_type_uuid, lang])
-  @@schema("translations")
-  @@map("ticket_types_translation")
-}
-
-model ticket_status_translation {
-  uuid              String   @id @default(uuid()) @db.Uuid
-  ticket_status_uuid String  @db.Uuid
-  lang              String   @db.VarChar(5)
-  label             String   @db.VarChar(255)
-  created_at        DateTime @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime @default(now()) @updatedAt @db.Timestamptz(6)
-
-  ticket_status ticket_status @relation(fields: [ticket_status_uuid], references: [uuid], onDelete: Restrict)
-
-  @@unique([ticket_status_uuid, lang])
-  @@schema("translations")
-  @@map("ticket_status_translation")
-}
-
-model symptoms_translation {
-  uuid         String   @id @default(uuid()) @db.Uuid
-  symptom_code String   @db.VarChar(50)
-  lang         String   @db.VarChar(5)
-  label        String   @db.VarChar(255)
-  created_at   DateTime @default(now()) @db.Timestamptz(6)
-  updated_at   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
-
-  symptom symptoms @relation(fields: [symptom_code], references: [code], onDelete: Restrict)
-
-  @@unique([symptom_code, lang])
-  @@schema("translations")
-  @@map("symptoms_translation")
-}
-
-// Generic translations table for any entity with translatable fields
+// Generic translations table (single table for all entities) for any entity with translatable fields
 // Single table for all entities: ci_types, ticket_status, symptoms, etc.
 model translated_fields {
   uuid            String   @id @default(uuid()) @db.Uuid

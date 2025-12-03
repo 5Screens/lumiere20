@@ -67,6 +67,22 @@ CREATE TABLE "data"."service_offerings" (
 );
 
 -- CreateTable
+CREATE TABLE "configuration"."ci_types" (
+    "uuid" UUID NOT NULL,
+    "code" VARCHAR(50) NOT NULL,
+    "label" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "icon" VARCHAR(50),
+    "color" VARCHAR(20),
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "display_order" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ci_types_pkey" PRIMARY KEY ("uuid")
+);
+
+-- CreateTable
 CREATE TABLE "configuration"."ticket_types" (
     "uuid" UUID NOT NULL,
     "code" VARCHAR(50) NOT NULL,
@@ -151,10 +167,10 @@ CREATE TABLE "configuration"."persons" (
     "last_name" VARCHAR(100) NOT NULL,
     "job_role" VARCHAR(255),
     "ref_entity_uuid" UUID,
-    "password" VARCHAR(255),
+    "password_hash" VARCHAR(255),
     "password_needs_reset" BOOLEAN NOT NULL DEFAULT false,
     "locked_out" BOOLEAN NOT NULL DEFAULT false,
-    "active" BOOLEAN NOT NULL DEFAULT true,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
     "critical_user" BOOLEAN NOT NULL DEFAULT false,
     "external_user" BOOLEAN NOT NULL DEFAULT false,
     "date_format" VARCHAR(50),
@@ -166,12 +182,15 @@ CREATE TABLE "configuration"."persons" (
     "floor" VARCHAR(50),
     "room" VARCHAR(50),
     "ref_approving_manager_uuid" UUID,
+    "phone" VARCHAR(50),
     "business_phone" VARCHAR(50),
     "business_mobile_phone" VARCHAR(50),
     "personal_mobile_phone" VARCHAR(50),
     "language" VARCHAR(10),
+    "role" VARCHAR(50) NOT NULL DEFAULT 'user',
     "roles" JSONB,
     "photo" TEXT,
+    "last_login" TIMESTAMPTZ(6),
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -277,43 +296,74 @@ CREATE TABLE "core"."rel_parent_child_tickets" (
 );
 
 -- CreateTable
-CREATE TABLE "translations"."ticket_types_translation" (
+CREATE TABLE "translations"."translated_fields" (
     "uuid" UUID NOT NULL,
-    "ticket_type_uuid" UUID NOT NULL,
-    "lang" VARCHAR(5) NOT NULL,
-    "label" VARCHAR(255) NOT NULL,
+    "entity_type" VARCHAR(100) NOT NULL,
+    "entity_uuid" UUID NOT NULL,
+    "field_name" VARCHAR(100) NOT NULL,
+    "locale" VARCHAR(10) NOT NULL,
+    "value" TEXT NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ticket_types_translation_pkey" PRIMARY KEY ("uuid")
+    CONSTRAINT "translated_fields_pkey" PRIMARY KEY ("uuid")
 );
 
 -- CreateTable
-CREATE TABLE "translations"."ticket_status_translation" (
+CREATE TABLE "configuration"."object_types" (
     "uuid" UUID NOT NULL,
-    "ticket_status_uuid" UUID NOT NULL,
-    "lang" VARCHAR(5) NOT NULL,
-    "label" VARCHAR(255) NOT NULL,
+    "code" VARCHAR(100) NOT NULL,
+    "label_key" VARCHAR(100) NOT NULL,
+    "icon" VARCHAR(50),
+    "api_endpoint" VARCHAR(255) NOT NULL,
+    "default_sort_field" VARCHAR(100) NOT NULL DEFAULT 'updated_at',
+    "default_sort_order" INTEGER NOT NULL DEFAULT -1,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ticket_status_translation_pkey" PRIMARY KEY ("uuid")
+    CONSTRAINT "object_types_pkey" PRIMARY KEY ("uuid")
 );
 
 -- CreateTable
-CREATE TABLE "translations"."symptoms_translation" (
+CREATE TABLE "configuration"."object_fields" (
     "uuid" UUID NOT NULL,
-    "symptom_code" VARCHAR(50) NOT NULL,
-    "lang" VARCHAR(5) NOT NULL,
-    "label" VARCHAR(255) NOT NULL,
+    "object_type_uuid" UUID NOT NULL,
+    "field_name" VARCHAR(100) NOT NULL,
+    "label_key" VARCHAR(100) NOT NULL,
+    "field_type" VARCHAR(50) NOT NULL,
+    "data_type" VARCHAR(50) NOT NULL DEFAULT 'string',
+    "show_in_table" BOOLEAN NOT NULL DEFAULT true,
+    "show_in_form" BOOLEAN NOT NULL DEFAULT true,
+    "show_in_detail" BOOLEAN NOT NULL DEFAULT true,
+    "is_sortable" BOOLEAN NOT NULL DEFAULT true,
+    "is_filterable" BOOLEAN NOT NULL DEFAULT true,
+    "is_editable" BOOLEAN NOT NULL DEFAULT true,
+    "is_required" BOOLEAN NOT NULL DEFAULT false,
+    "is_readonly" BOOLEAN NOT NULL DEFAULT false,
+    "is_translatable" BOOLEAN NOT NULL DEFAULT false,
+    "min_width" VARCHAR(20),
+    "default_visible" BOOLEAN NOT NULL DEFAULT true,
+    "display_order" INTEGER NOT NULL DEFAULT 0,
+    "max_length" INTEGER,
+    "min_value" DOUBLE PRECISION,
+    "max_value" DOUBLE PRECISION,
+    "pattern" VARCHAR(255),
+    "options_source" VARCHAR(255),
+    "relation_object" VARCHAR(100),
+    "relation_display" VARCHAR(100),
+    "format_pattern" VARCHAR(100),
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "symptoms_translation_pkey" PRIMARY KEY ("uuid")
+    CONSTRAINT "object_fields_pkey" PRIMARY KEY ("uuid")
 );
 
 -- CreateIndex
 CREATE INDEX "configuration_items_ci_type_idx" ON "data"."configuration_items"("ci_type");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ci_types_code_key" ON "configuration"."ci_types"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ticket_types_code_key" ON "configuration"."ticket_types"("code");
@@ -337,13 +387,22 @@ CREATE UNIQUE INDEX "rel_persons_groups_rel_member_rel_group_key" ON "configurat
 CREATE UNIQUE INDEX "rel_persons_entities_person_uuid_entity_uuid_key" ON "configuration"."rel_persons_entities"("person_uuid", "entity_uuid");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ticket_types_translation_ticket_type_uuid_lang_key" ON "translations"."ticket_types_translation"("ticket_type_uuid", "lang");
+CREATE INDEX "translated_fields_entity_type_entity_uuid_idx" ON "translations"."translated_fields"("entity_type", "entity_uuid");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ticket_status_translation_ticket_status_uuid_lang_key" ON "translations"."ticket_status_translation"("ticket_status_uuid", "lang");
+CREATE INDEX "translated_fields_locale_idx" ON "translations"."translated_fields"("locale");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "symptoms_translation_symptom_code_lang_key" ON "translations"."symptoms_translation"("symptom_code", "lang");
+CREATE UNIQUE INDEX "translated_fields_entity_type_entity_uuid_field_name_locale_key" ON "translations"."translated_fields"("entity_type", "entity_uuid", "field_name", "locale");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "object_types_code_key" ON "configuration"."object_types"("code");
+
+-- CreateIndex
+CREATE INDEX "object_fields_object_type_uuid_display_order_idx" ON "configuration"."object_fields"("object_type_uuid", "display_order");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "object_fields_object_type_uuid_field_name_key" ON "configuration"."object_fields"("object_type_uuid", "field_name");
 
 -- AddForeignKey
 ALTER TABLE "data"."services" ADD CONSTRAINT "services_owning_entity_uuid_fkey" FOREIGN KEY ("owning_entity_uuid") REFERENCES "configuration"."entities"("uuid") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -451,10 +510,4 @@ ALTER TABLE "core"."rel_parent_child_tickets" ADD CONSTRAINT "rel_parent_child_t
 ALTER TABLE "core"."rel_parent_child_tickets" ADD CONSTRAINT "rel_parent_child_tickets_rel_child_ticket_uuid_fkey" FOREIGN KEY ("rel_child_ticket_uuid") REFERENCES "core"."tickets"("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "translations"."ticket_types_translation" ADD CONSTRAINT "ticket_types_translation_ticket_type_uuid_fkey" FOREIGN KEY ("ticket_type_uuid") REFERENCES "configuration"."ticket_types"("uuid") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "translations"."ticket_status_translation" ADD CONSTRAINT "ticket_status_translation_ticket_status_uuid_fkey" FOREIGN KEY ("ticket_status_uuid") REFERENCES "configuration"."ticket_status"("uuid") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "translations"."symptoms_translation" ADD CONSTRAINT "symptoms_translation_symptom_code_fkey" FOREIGN KEY ("symptom_code") REFERENCES "configuration"."symptoms"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "configuration"."object_fields" ADD CONSTRAINT "object_fields_object_type_uuid_fkey" FOREIGN KEY ("object_type_uuid") REFERENCES "configuration"."object_types"("uuid") ON DELETE CASCADE ON UPDATE CASCADE;
