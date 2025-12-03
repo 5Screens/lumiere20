@@ -28,7 +28,7 @@ export default {
    * @param {string} uuid - Item UUID
    * @returns {Promise<Object>} - Item data
    */
-  async getById(uuid) {
+  async getByUuid(uuid) {
     const response = await api.get(`${ENDPOINT}/${uuid}`)
     return response.data
   },

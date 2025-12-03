@@ -22,7 +22,7 @@ export default {
   /**
    * Get location by UUID
    */
-  async getById(uuid) {
+  async getByUuid(uuid) {
     const response = await api.get(`${BASE_URL}/${uuid}`)
     return response.data
   },
