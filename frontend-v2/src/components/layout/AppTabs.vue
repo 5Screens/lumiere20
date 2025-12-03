@@ -26,10 +26,10 @@
       </div>
     </div>
 
-    <!-- Secondary tabs (child level) -->
-    <div v-if="tabsStore.activeChildTabs.length > 0" class="child-tabs-header border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
+    <!-- Secondary tabs (child level) - always show when parent tab supports child tabs -->
+    <div v-if="showChildTabsBar" class="child-tabs-header border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50">
       <div class="flex items-center gap-1 px-2 py-1 overflow-x-auto">
-        <!-- Back to parent tab button -->
+        <!-- Back to parent tab button (list view) -->
         <div 
           class="tab-item flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer transition-colors whitespace-nowrap"
           :class="{
@@ -39,33 +39,35 @@
           @click="handleBackToParent"
         >
           <i class="pi pi-table text-xs" />
-          <span class="text-xs">{{ $t('tabs.backToList') }}</span>
+          <span class="text-xs">{{ $t('tabs.list') }}</span>
         </div>
 
-        <div class="w-px h-4 bg-surface-300 dark:bg-surface-600 mx-1" />
+        <template v-if="tabsStore.activeChildTabs.length > 0">
+          <div class="w-px h-4 bg-surface-300 dark:bg-surface-600 mx-1" />
 
-        <!-- Child tabs -->
-        <div 
-          v-for="tab in tabsStore.activeChildTabs" 
-          :key="tab.id_tab"
-          class="tab-item flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer transition-colors whitespace-nowrap"
-          :class="{
-            'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300': tabsStore.activeChildTabId === tab.id_tab,
-            'bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-400 hover:bg-surface-300 dark:hover:bg-surface-600': tabsStore.activeChildTabId !== tab.id_tab
-          }"
-          @click="handleChildTabClick(tab)"
-        >
-          <i v-if="tab.icon" :class="tab.icon" class="text-xs" />
-          <span class="text-xs font-medium" :title="tab.label">
-            {{ truncateLabel(tab.label, 20) }}
-          </span>
-          <button 
-            class="close-btn w-4 h-4 flex items-center justify-center rounded hover:bg-surface-400 dark:hover:bg-surface-500 transition-colors"
-            @click.stop="tabsStore.closeTab(tab.id_tab)"
+          <!-- Child tabs -->
+          <div 
+            v-for="tab in tabsStore.activeChildTabs" 
+            :key="tab.id_tab"
+            class="tab-item flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer transition-colors whitespace-nowrap"
+            :class="{
+              'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300': tabsStore.activeChildTabId === tab.id_tab,
+              'bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-400 hover:bg-surface-300 dark:hover:bg-surface-600': tabsStore.activeChildTabId !== tab.id_tab
+            }"
+            @click="handleChildTabClick(tab)"
           >
-            <i class="pi pi-times" style="font-size: 0.6rem" />
-          </button>
-        </div>
+            <i v-if="tab.icon" :class="tab.icon" class="text-xs" />
+            <span class="text-xs font-medium" :title="tab.label">
+              {{ truncateLabel(tab.label, 20) }}
+            </span>
+            <button 
+              class="close-btn w-4 h-4 flex items-center justify-center rounded hover:bg-surface-400 dark:hover:bg-surface-500 transition-colors"
+              @click.stop="tabsStore.closeTab(tab.id_tab)"
+            >
+              <i class="pi pi-times" style="font-size: 0.6rem" />
+            </button>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -124,6 +126,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useTabsStore } from '@/stores/tabsStore'
 import { useI18n } from 'vue-i18n'
 import { markRaw, defineAsyncComponent } from 'vue'
@@ -134,8 +137,18 @@ const componentRegistry = {
   ObjectDetail: markRaw(defineAsyncComponent(() => import('@/components/crud/ObjectDetail.vue'))),
 }
 
+// Components that support child tabs
+const componentsWithChildTabs = ['ObjectsCrud']
+
 const tabsStore = useTabsStore()
 const { t } = useI18n()
+
+// Show child tabs bar when active parent tab supports child tabs
+const showChildTabsBar = computed(() => {
+  const activeTab = tabsStore.activeTab
+  if (!activeTab) return false
+  return componentsWithChildTabs.includes(activeTab.component)
+})
 
 const getComponent = (componentName) => {
   return componentRegistry[componentName] || null

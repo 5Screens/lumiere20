@@ -83,6 +83,7 @@ export default {
   },
   tabs: {
     backToList: 'Retour à la liste',
+    list: 'Liste',
     noContent: 'Aucun contenu',
     noTabsOpen: 'Aucun onglet ouvert',
     untitled: 'Sans titre'

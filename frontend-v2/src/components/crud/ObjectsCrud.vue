@@ -33,8 +33,8 @@
               :label="$t('common.edit')" 
               icon="pi pi-pencil" 
               severity="secondary" 
-              @click="openEditInTab(selectedItems[0])" 
-              :disabled="!selectedItems || selectedItems.length !== 1" 
+              @click="openEditMultiple" 
+              :disabled="!selectedItems || selectedItems.length === 0" 
             />
             <Button 
               :label="$t('common.delete')" 
@@ -865,6 +865,16 @@ const openEditInTab = (data) => {
     parentId: parentTab?.id_tab || props.tabId,
     mode: 'edit'
   })
+}
+
+// Open edit for multiple selected items
+const openEditMultiple = () => {
+  if (!selectedItems.value || selectedItems.value.length === 0) return
+  
+  // Open a tab for each selected item
+  for (const item of selectedItems.value) {
+    openEditInTab(item)
+  }
 }
 
 const saveItem = async () => {

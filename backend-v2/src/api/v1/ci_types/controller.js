@@ -80,6 +80,32 @@ const getByCode = async (req, res) => {
 };
 
 /**
+ * Get CI type by UUID
+ */
+const getByUuid = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    const locale = getLocale(req);
+    const ciType = await service.getByUuid(uuid, locale);
+    
+    if (!ciType) {
+      return res.status(404).json({ 
+        error: 'Not found',
+        message: `CI type with UUID '${uuid}' not found`
+      });
+    }
+    
+    res.json(ciType);
+  } catch (error) {
+    logger.error('Controller error - getByUuid CI types:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'Failed to fetch CI type'
+    });
+  }
+};
+
+/**
  * Create a new CI type
  */
 const create = async (req, res) => {
@@ -254,6 +280,7 @@ module.exports = {
   getAll,
   getOptions,
   getByCode,
+  getByUuid,
   getByCodeWithFields,
   getFields,
   create,

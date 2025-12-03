@@ -129,6 +129,29 @@ const getByCode = async (code, locale = null) => {
 };
 
 /**
+ * Get CI type by UUID with translations
+ * @param {string} uuid - CI type UUID
+ * @param {string} locale - Locale for translations (optional)
+ * @returns {Promise<Object|null>} CI type or null
+ */
+const getByUuid = async (uuid, locale = null) => {
+  try {
+    const ciType = await prisma.ci_types.findUnique({
+      where: { uuid }
+    });
+    
+    if (!ciType) return null;
+    
+    // Fetch translations
+    const translationsMap = await fetchTranslations([ciType.uuid], locale);
+    return transformWithTranslations(ciType, translationsMap[ciType.uuid] || [], locale);
+  } catch (error) {
+    logger.error(`Error fetching CI type by UUID ${uuid}:`, error);
+    throw error;
+  }
+};
+
+/**
  * Get CI types formatted as select options with translations
  * @param {string} locale - Locale for translations
  * @returns {Promise<Array>} List of options { label, value, icon, color }
@@ -538,6 +561,7 @@ const removeMany = async (uuids) => {
 module.exports = {
   getAll,
   getByCode,
+  getByUuid,
   getByCodeWithFields,
   getFieldsByCode,
   getFieldsByUuid,
