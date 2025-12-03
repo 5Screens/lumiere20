@@ -56,18 +56,78 @@ async function seedCiTypes() {
       }
     },
     {
-      code: 'NETWORK_DEVICE',
-      label: 'Network Device',
-      description: 'Router, switch, firewall, etc.',
+      code: 'ROUTER',
+      label: 'Router',
+      description: 'Network router for traffic routing between networks',
       icon: 'pi-sitemap',
       color: 'purple',
       display_order: 4,
       translations: {
-        fr: { label: 'Équipement réseau', description: 'Routeur, switch, firewall, etc.' },
-        en: { label: 'Network Device', description: 'Router, switch, firewall, etc.' },
-        es: { label: 'Dispositivo de red', description: 'Router, switch, firewall, etc.' },
-        pt: { label: 'Dispositivo de rede', description: 'Router, switch, firewall, etc.' },
-        de: { label: 'Netzwerkgerät', description: 'Router, Switch, Firewall, etc.' }
+        fr: { label: 'Routeur', description: 'Routeur réseau pour le routage du trafic entre réseaux' },
+        en: { label: 'Router', description: 'Network router for traffic routing between networks' },
+        es: { label: 'Router', description: 'Router de red para enrutamiento de tráfico entre redes' },
+        pt: { label: 'Router', description: 'Router de rede para roteamento de tráfego entre redes' },
+        de: { label: 'Router', description: 'Netzwerk-Router für Verkehrsweiterleitung zwischen Netzwerken' }
+      }
+    },
+    {
+      code: 'SWITCH',
+      label: 'Switch',
+      description: 'Network switch for local network connectivity',
+      icon: 'pi-share-alt',
+      color: 'violet',
+      display_order: 5,
+      translations: {
+        fr: { label: 'Switch', description: 'Commutateur réseau pour la connectivité locale' },
+        en: { label: 'Switch', description: 'Network switch for local network connectivity' },
+        es: { label: 'Switch', description: 'Conmutador de red para conectividad de red local' },
+        pt: { label: 'Switch', description: 'Switch de rede para conectividade de rede local' },
+        de: { label: 'Switch', description: 'Netzwerk-Switch für lokale Netzwerkverbindung' }
+      }
+    },
+    {
+      code: 'FIREWALL',
+      label: 'Firewall',
+      description: 'Network security firewall',
+      icon: 'pi-shield',
+      color: 'red',
+      display_order: 6,
+      translations: {
+        fr: { label: 'Pare-feu', description: 'Pare-feu de sécurité réseau' },
+        en: { label: 'Firewall', description: 'Network security firewall' },
+        es: { label: 'Firewall', description: 'Firewall de seguridad de red' },
+        pt: { label: 'Firewall', description: 'Firewall de segurança de rede' },
+        de: { label: 'Firewall', description: 'Netzwerk-Sicherheits-Firewall' }
+      }
+    },
+    {
+      code: 'ACCESS_POINT',
+      label: 'Access Point',
+      description: 'Wireless access point for WiFi connectivity',
+      icon: 'pi-wifi',
+      color: 'sky',
+      display_order: 7,
+      translations: {
+        fr: { label: 'Point d\'accès', description: 'Point d\'accès sans fil pour la connectivité WiFi' },
+        en: { label: 'Access Point', description: 'Wireless access point for WiFi connectivity' },
+        es: { label: 'Punto de acceso', description: 'Punto de acceso inalámbrico para conectividad WiFi' },
+        pt: { label: 'Ponto de acesso', description: 'Ponto de acesso sem fio para conectividade WiFi' },
+        de: { label: 'Access Point', description: 'Drahtloser Zugangspunkt für WiFi-Konnektivität' }
+      }
+    },
+    {
+      code: 'LOAD_BALANCER',
+      label: 'Load Balancer',
+      description: 'Load balancer for traffic distribution',
+      icon: 'pi-arrows-h',
+      color: 'amber',
+      display_order: 8,
+      translations: {
+        fr: { label: 'Répartiteur de charge', description: 'Répartiteur de charge pour la distribution du trafic' },
+        en: { label: 'Load Balancer', description: 'Load balancer for traffic distribution' },
+        es: { label: 'Balanceador de carga', description: 'Balanceador de carga para distribución de tráfico' },
+        pt: { label: 'Balanceador de carga', description: 'Balanceador de carga para distribuição de tráfego' },
+        de: { label: 'Load Balancer', description: 'Lastverteiler für Verkehrsverteilung' }
       }
     },
     {
@@ -76,7 +136,7 @@ async function seedCiTypes() {
       description: 'SAN, NAS, storage arrays',
       icon: 'pi-database',
       color: 'orange',
-      display_order: 5,
+      display_order: 9,
       translations: {
         fr: { label: 'Stockage', description: 'SAN, NAS, baies de stockage' },
         en: { label: 'Storage', description: 'SAN, NAS, storage arrays' },
@@ -91,7 +151,7 @@ async function seedCiTypes() {
       description: 'Desktop or laptop computer',
       icon: 'pi-desktop',
       color: 'cyan',
-      display_order: 6,
+      display_order: 10,
       translations: {
         fr: { label: 'Poste de travail', description: 'Ordinateur de bureau ou portable' },
         en: { label: 'Workstation', description: 'Desktop or laptop computer' },
@@ -106,7 +166,7 @@ async function seedCiTypes() {
       description: 'Printer or multifunction device',
       icon: 'pi-print',
       color: 'gray',
-      display_order: 7,
+      display_order: 11,
       translations: {
         fr: { label: 'Imprimante', description: 'Imprimante ou multifonction' },
         en: { label: 'Printer', description: 'Printer or multifunction device' },
@@ -121,7 +181,7 @@ async function seedCiTypes() {
       description: 'Smartphone, tablet',
       icon: 'pi-mobile',
       color: 'teal',
-      display_order: 8,
+      display_order: 12,
       translations: {
         fr: { label: 'Appareil mobile', description: 'Smartphone, tablette' },
         en: { label: 'Mobile Device', description: 'Smartphone, tablet' },
@@ -136,7 +196,7 @@ async function seedCiTypes() {
       description: 'Database instance',
       icon: 'pi-database',
       color: 'indigo',
-      display_order: 9,
+      display_order: 13,
       translations: {
         fr: { label: 'Base de données', description: 'Instance de base de données' },
         en: { label: 'Database', description: 'Database instance' },

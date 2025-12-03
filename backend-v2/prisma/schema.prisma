@@ -104,8 +104,57 @@ model ci_types {
   created_at      DateTime @default(now()) @db.Timestamptz(6)
   updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
+  // Relations
+  fields          ci_type_fields[]
+
   @@schema("configuration")
   @@map("ci_types")
+}
+
+// CI Type Fields - Extended fields definition for each CI type
+// These fields define what attributes are stored in configuration_items.extended_core_fields
+model ci_type_fields {
+  uuid              String   @id @default(uuid()) @db.Uuid
+  ci_type_uuid      String   @db.Uuid
+  field_name        String   @db.VarChar(100)          // Field key in extended_core_fields JSON
+  label_key         String   @db.VarChar(100)          // i18n key for the field label
+  field_type        String   @db.VarChar(50)           // text, number, boolean, date, datetime, select, multiselect
+  data_type         String   @default("string") @db.VarChar(50) // string, number, boolean, date, array
+  
+  // Display options
+  show_in_table     Boolean  @default(false)           // Show in DataTable
+  show_in_form      Boolean  @default(true)            // Show in create/edit form
+  is_required       Boolean  @default(false)
+  is_readonly       Boolean  @default(false)
+  
+  // Column display
+  min_width         String?  @db.VarChar(20)           // e.g., '10rem', '150px'
+  display_order     Int      @default(0)               // Order in form
+  
+  // Validation
+  max_length        Int?
+  min_value         Float?
+  max_value         Float?
+  pattern           String?  @db.VarChar(255)          // Regex pattern for validation
+  default_value     String?  @db.VarChar(255)          // Default value for the field
+  
+  // Select options
+  options_source    String?  @db.Text                  // JSON array of options or API endpoint
+  
+  // Formatting
+  format_pattern    String?  @db.VarChar(100)          // Date format, number format, etc.
+  unit              String?  @db.VarChar(20)           // Unit suffix (e.g., 'GB', 'VA', 'Gbps')
+  
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  ci_type ci_types @relation(fields: [ci_type_uuid], references: [uuid], onDelete: Cascade)
+
+  @@unique([ci_type_uuid, field_name])
+  @@index([ci_type_uuid, display_order])
+  @@schema("configuration")
+  @@map("ci_type_fields")
 }
 
 model ticket_types {

@@ -175,6 +175,56 @@ const search = async (req, res) => {
 };
 
 /**
+ * Get extended fields for a CI type by code
+ */
+const getFields = async (req, res) => {
+  try {
+    const { code } = req.params;
+    const fields = await service.getFieldsByCode(code);
+    
+    // Parse options_source JSON for select fields
+    const parsedFields = fields.map(field => ({
+      ...field,
+      options: field.options_source ? JSON.parse(field.options_source) : null
+    }));
+    
+    res.json(parsedFields);
+  } catch (error) {
+    logger.error('Controller error - getFields CI type:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'Failed to fetch CI type fields'
+    });
+  }
+};
+
+/**
+ * Get CI type with fields included
+ */
+const getByCodeWithFields = async (req, res) => {
+  try {
+    const { code } = req.params;
+    const locale = getLocale(req);
+    const ciType = await service.getByCodeWithFields(code, locale);
+    
+    if (!ciType) {
+      return res.status(404).json({ 
+        error: 'Not found',
+        message: `CI type '${code}' not found`
+      });
+    }
+    
+    res.json(ciType);
+  } catch (error) {
+    logger.error('Controller error - getByCodeWithFields CI type:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'Failed to fetch CI type with fields'
+    });
+  }
+};
+
+/**
  * Delete multiple CI types
  */
 const removeMany = async (req, res) => {
@@ -204,6 +254,8 @@ module.exports = {
   getAll,
   getOptions,
   getByCode,
+  getByCodeWithFields,
+  getFields,
   create,
   update,
   remove,

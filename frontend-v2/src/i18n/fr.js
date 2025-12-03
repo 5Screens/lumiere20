@@ -77,7 +77,9 @@ export default {
     searchIcon: 'Rechercher une icône...',
     noResults: 'Aucun résultat',
     selected: 'Sélectionné',
-    clear: 'Effacer'
+    clear: 'Effacer',
+    saved: 'Enregistré avec succès',
+    notFound: 'Élément non trouvé'
   },
   tabs: {
     backToList: 'Retour à la liste',
@@ -230,12 +232,49 @@ export default {
     color: 'Couleur',
     tagStyle: 'Style du tag',
     displayOrder: 'Ordre d\'affichage',
+    tabs: {
+      general: 'Général',
+      extendedFields: 'Champs étendus'
+    },
     messages: {
       created: 'Type de CI créé avec succès',
       updated: 'Type de CI mis à jour avec succès',
       deleted: 'Type de CI supprimé avec succès',
       deletedMultiple: '{count} types de CI supprimés avec succès'
     }
+  },
+  ciTypeFields: {
+    fieldsCount: 'champ(s)',
+    addField: 'Ajouter un champ',
+    editField: 'Modifier le champ',
+    noFields: 'Aucun champ défini',
+    noFieldsHint: 'Ajoutez des champs pour personnaliser ce type de CI',
+    fieldName: 'Nom du champ',
+    fieldNameHelp: 'Identifiant unique du champ (snake_case)',
+    labelKey: 'Clé de traduction',
+    labelKeyHelp: 'Clé i18n pour le libellé (ex: ciFields.serialNumber)',
+    fieldType: 'Type de champ',
+    dataType: 'Type de données',
+    type: 'Type',
+    form: 'Formulaire',
+    table: 'Table',
+    req: 'Req.',
+    showInForm: 'Afficher dans le formulaire',
+    showInTable: 'Afficher dans la table',
+    required: 'Obligatoire',
+    readonly: 'Lecture seule',
+    minValue: 'Valeur min',
+    maxValue: 'Valeur max',
+    maxLength: 'Longueur max',
+    unit: 'Unité',
+    options: 'Options (JSON)',
+    optionsHelp: 'Format JSON: [{"label": "...", "value": "..."}]',
+    defaultValue: 'Valeur par défaut',
+    requiredFields: 'Les champs obligatoires doivent être remplis',
+    fieldCreated: 'Champ créé avec succès',
+    fieldUpdated: 'Champ mis à jour avec succès',
+    fieldDeleted: 'Champ supprimé avec succès',
+    confirmDelete: 'Êtes-vous sûr de vouloir supprimer le champ "{name}" ?'
   },
   primevue: {
     startsWith: 'Commence par',

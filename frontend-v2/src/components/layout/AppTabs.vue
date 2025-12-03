@@ -131,7 +131,7 @@ import { markRaw, defineAsyncComponent } from 'vue'
 // Components registry
 const componentRegistry = {
   ObjectsCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/ObjectsCrud.vue'))),
-  // Add more components as needed
+  ObjectDetail: markRaw(defineAsyncComponent(() => import('@/components/crud/ObjectDetail.vue'))),
 }
 
 const tabsStore = useTabsStore()

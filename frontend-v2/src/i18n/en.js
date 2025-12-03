@@ -77,7 +77,9 @@ export default {
     searchIcon: 'Search icon...',
     noResults: 'No results',
     selected: 'Selected',
-    clear: 'Clear'
+    clear: 'Clear',
+    saved: 'Saved successfully',
+    notFound: 'Item not found'
   },
   tabs: {
     backToList: 'Back to list',
@@ -230,12 +232,49 @@ export default {
     color: 'Color',
     tagStyle: 'Tag Style',
     displayOrder: 'Display Order',
+    tabs: {
+      general: 'General',
+      extendedFields: 'Extended Fields'
+    },
     messages: {
       created: 'CI type created successfully',
       updated: 'CI type updated successfully',
       deleted: 'CI type deleted successfully',
       deletedMultiple: '{count} CI types deleted successfully'
     }
+  },
+  ciTypeFields: {
+    fieldsCount: 'field(s)',
+    addField: 'Add Field',
+    editField: 'Edit Field',
+    noFields: 'No fields defined',
+    noFieldsHint: 'Add fields to customize this CI type',
+    fieldName: 'Field Name',
+    fieldNameHelp: 'Unique field identifier (snake_case)',
+    labelKey: 'Label Key',
+    labelKeyHelp: 'i18n key for the label (e.g., ciFields.serialNumber)',
+    fieldType: 'Field Type',
+    dataType: 'Data Type',
+    type: 'Type',
+    form: 'Form',
+    table: 'Table',
+    req: 'Req.',
+    showInForm: 'Show in Form',
+    showInTable: 'Show in Table',
+    required: 'Required',
+    readonly: 'Read-only',
+    minValue: 'Min Value',
+    maxValue: 'Max Value',
+    maxLength: 'Max Length',
+    unit: 'Unit',
+    options: 'Options (JSON)',
+    optionsHelp: 'JSON format: [{"label": "...", "value": "..."}]',
+    defaultValue: 'Default Value',
+    requiredFields: 'Required fields must be filled',
+    fieldCreated: 'Field created successfully',
+    fieldUpdated: 'Field updated successfully',
+    fieldDeleted: 'Field deleted successfully',
+    confirmDelete: 'Are you sure you want to delete the field "{name}"?'
   },
   primevue: {
     startsWith: 'Starts with',

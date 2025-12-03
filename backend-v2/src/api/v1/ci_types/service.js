@@ -425,6 +425,88 @@ const search = async (searchParams = {}, locale = 'en') => {
 };
 
 /**
+ * Get extended fields definition for a CI type by code
+ * @param {string} code - CI type code
+ * @returns {Promise<Array>} List of field definitions
+ */
+const getFieldsByCode = async (code) => {
+  try {
+    const ciType = await prisma.ci_types.findUnique({
+      where: { code },
+      include: {
+        fields: {
+          orderBy: { display_order: 'asc' }
+        }
+      }
+    });
+    
+    if (!ciType) {
+      return [];
+    }
+    
+    return ciType.fields;
+  } catch (error) {
+    logger.error(`Error fetching fields for CI type ${code}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Get extended fields definition for a CI type by UUID
+ * @param {string} uuid - CI type UUID
+ * @returns {Promise<Array>} List of field definitions
+ */
+const getFieldsByUuid = async (uuid) => {
+  try {
+    const fields = await prisma.ci_type_fields.findMany({
+      where: { ci_type_uuid: uuid },
+      orderBy: { display_order: 'asc' }
+    });
+    
+    return fields;
+  } catch (error) {
+    logger.error(`Error fetching fields for CI type UUID ${uuid}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Get CI type with its fields included
+ * @param {string} code - CI type code
+ * @param {string} locale - Locale for translations (optional)
+ * @returns {Promise<Object|null>} CI type with fields or null
+ */
+const getByCodeWithFields = async (code, locale = null) => {
+  try {
+    const ciType = await prisma.ci_types.findUnique({
+      where: { code },
+      include: {
+        fields: {
+          orderBy: { display_order: 'asc' }
+        }
+      }
+    });
+    
+    if (!ciType) return null;
+    
+    // Fetch translations
+    const translationsMap = await fetchTranslations([ciType.uuid], locale);
+    const result = transformWithTranslations(ciType, translationsMap[ciType.uuid] || [], locale);
+    
+    // Parse options_source JSON for select fields
+    result.fields = ciType.fields.map(field => ({
+      ...field,
+      options: field.options_source ? JSON.parse(field.options_source) : null
+    }));
+    
+    return result;
+  } catch (error) {
+    logger.error(`Error fetching CI type with fields ${code}:`, error);
+    throw error;
+  }
+};
+
+/**
  * Delete multiple CI types
  * @param {string[]} uuids - Array of UUIDs to delete
  * @returns {Promise<number>} - Number of deleted items
@@ -456,6 +538,9 @@ const removeMany = async (uuids) => {
 module.exports = {
   getAll,
   getByCode,
+  getByCodeWithFields,
+  getFieldsByCode,
+  getFieldsByUuid,
   getAsOptions,
   create,
   update,

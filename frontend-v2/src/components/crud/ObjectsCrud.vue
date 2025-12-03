@@ -852,15 +852,18 @@ const openEditInTab = (data) => {
   const nameField = formFields.value.find(f => f.is_required) || formFields.value[0]
   const displayName = data[nameField?.field_name] || data.uuid?.substring(0, 8)
   
+  // Find the parent tab id_tab
+  const parentTab = tabsStore.tabs.find(t => t.id === `${props.objectType}s` || t.objectType === props.objectType)
+  
   tabsStore.openTab({
-    id_tab: `${props.objectType}-edit-${data.uuid}`,
-    label: `${t(objectTypeMetadata.value?.label_key || props.objectType)} - ${displayName}`,
-    icon: objectTypeMetadata.value?.icon || 'pi-file',
+    id: `${props.objectType}-edit-${data.uuid}`,
+    label: `${displayName}`,
+    icon: objectTypeMetadata.value?.icon || 'pi pi-file',
     component: 'ObjectDetail',
     objectType: props.objectType,
-    objectUuid: data.uuid,
-    parentTabId: props.tabId,
-    closable: true
+    objectId: data.uuid,
+    parentId: parentTab?.id_tab || props.tabId,
+    mode: 'edit'
   })
 }
 
