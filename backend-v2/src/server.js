@@ -52,6 +52,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Health check under /api/v1 for frontend proxy
+app.get('/api/v1/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Error handling middleware (must be last)
 app.use(errorHandler);
 

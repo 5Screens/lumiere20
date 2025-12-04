@@ -277,6 +277,19 @@ export default {
     fieldDeleted: 'Field deleted successfully',
     confirmDelete: 'Are you sure you want to delete the field "{name}"?'
   },
+  connection: {
+    title: 'Server Connection Lost',
+    description: 'The backend server is not responding. This may be due to maintenance, a restart, or a network issue.',
+    showDetails: 'Show details',
+    hideDetails: 'Hide details',
+    errorType: 'Error type',
+    errorTime: 'Time',
+    retrying: 'Reconnection attempt {count}/{max}...',
+    retryFailed: 'Automatic reconnection failed',
+    retry: 'Retry',
+    reload: 'Reload page',
+    helpText: 'If the problem persists, contact your system administrator.'
+  },
   primevue: {
     startsWith: 'Starts with',
     contains: 'Contains',

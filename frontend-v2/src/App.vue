@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <!-- Connection lost overlay -->
+    <ConnectionLostOverlay />
+    
     <!-- Authenticated: Show layout -->
     <AppLayout v-if="authStore.isAuthenticated" />
     
@@ -11,9 +14,16 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
+import { useConnectionStore } from '@/stores/connectionStore'
+import { setConnectionStore } from '@/services/api'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import ConnectionLostOverlay from '@/components/common/ConnectionLostOverlay.vue'
 
 const authStore = useAuthStore()
+const connectionStore = useConnectionStore()
+
+// Link connection store to API interceptor
+setConnectionStore(connectionStore)
 
 // Initialize auth on mount
 onMounted(() => {

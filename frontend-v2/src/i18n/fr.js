@@ -277,6 +277,19 @@ export default {
     fieldDeleted: 'Champ supprimé avec succès',
     confirmDelete: 'Êtes-vous sûr de vouloir supprimer le champ "{name}" ?'
   },
+  connection: {
+    title: 'Connexion au serveur perdue',
+    description: 'Le serveur backend ne répond pas. Cela peut être dû à une maintenance, un redémarrage ou un problème réseau.',
+    showDetails: 'Afficher les détails',
+    hideDetails: 'Masquer les détails',
+    errorType: 'Type d\'erreur',
+    errorTime: 'Heure',
+    retrying: 'Tentative de reconnexion {count}/{max}...',
+    retryFailed: 'Reconnexion automatique échouée',
+    retry: 'Réessayer',
+    reload: 'Recharger la page',
+    helpText: 'Si le problème persiste, contactez votre administrateur système.'
+  },
   primevue: {
     startsWith: 'Commence par',
     contains: 'Contient',
