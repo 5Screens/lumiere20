@@ -406,7 +406,7 @@
     <!-- Create/Edit Dialog with dynamic fields -->
     <Dialog 
       v-model:visible="itemDialog" 
-      :style="{ width: '500px' }" 
+      :style="{ width: '600px' }" 
       :header="dialogMode === 'create' ? $t('common.create') : $t('common.edit')" 
       :modal="true"
       position="right"
@@ -423,9 +423,46 @@
             <span v-if="field.is_required" class="text-red-500">*</span>
           </label>
           
+          <!-- Special CI Type selector for configuration_items -->
+          <Select 
+            v-if="isConfigurationItems && field.field_name === 'ci_type'"
+            :id="field.field_name" 
+            :modelValue="editItem[field.field_name]"
+            @update:modelValue="handleCiTypeChange"
+            :options="ciTypes" 
+            optionLabel="label" 
+            optionValue="value" 
+            :disabled="field.is_readonly"
+            :loading="extendedFieldsLoading"
+            fluid
+          >
+            <template #value="slotProps">
+              <div 
+                v-if="slotProps.value" 
+                class="flex items-center gap-2"
+              >
+                <i 
+                  v-if="ciTypes.find(ct => ct.value === slotProps.value)?.icon" 
+                  :class="['pi', ciTypes.find(ct => ct.value === slotProps.value)?.icon]" 
+                />
+                <span>{{ ciTypes.find(ct => ct.value === slotProps.value)?.label }}</span>
+              </div>
+              <span v-else>{{ $t('configurationItems.selectType') }}</span>
+            </template>
+            <template #option="slotProps">
+              <div class="flex items-center gap-2">
+                <i 
+                  v-if="slotProps.option.icon" 
+                  :class="['pi', slotProps.option.icon]" 
+                />
+                <span>{{ slotProps.option.label }}</span>
+              </div>
+            </template>
+          </Select>
+          
           <!-- Text input -->
           <InputText 
-            v-if="field.field_type === 'text'"
+            v-else-if="field.field_type === 'text'"
             :id="field.field_name" 
             v-model="editItem[field.field_name]" 
             :disabled="field.is_readonly"
@@ -558,10 +595,155 @@
             :disabled="field.is_readonly"
           />
         </div>
+        
+        <!-- Extended fields section for configuration_items -->
+        <template v-if="isConfigurationItems && extendedFields.length > 0">
+          <div class="border-t border-surface-200 dark:border-surface-700 pt-4 mt-2">
+            <h4 class="text-sm font-semibold text-surface-600 dark:text-surface-400 mb-4">
+              {{ $t('configurationItems.extendedFields') }}
+            </h4>
+            
+            <!-- Loading state -->
+            <div v-if="extendedFieldsLoading" class="flex items-center gap-2 text-surface-500">
+              <i class="pi pi-spin pi-spinner" />
+              <span>{{ $t('common.loading') }}</span>
+            </div>
+            
+            <!-- Extended fields -->
+            <div 
+              v-else
+              v-for="field in extendedFields" 
+              :key="field.field_name" 
+              class="flex flex-col gap-2 mb-4"
+            >
+              <label :for="'ext_' + field.field_name" class="font-semibold text-sm">
+                {{ field.label }}
+                <span v-if="field.is_required" class="text-red-500">*</span>
+                <span v-if="field.unit" class="text-surface-400 font-normal">({{ field.unit }})</span>
+              </label>
+              
+              <!-- Text input -->
+              <InputText 
+                v-if="field.field_type === 'text'"
+                :id="'ext_' + field.field_name" 
+                :modelValue="getExtendedFieldValue(field.field_name)"
+                @update:modelValue="setExtendedFieldValue(field.field_name, $event)"
+                :disabled="field.is_readonly"
+                :maxlength="field.max_length"
+                :placeholder="field.pattern ? `Format: ${field.pattern}` : ''"
+                fluid 
+              />
+              
+              <!-- Textarea -->
+              <Textarea 
+                v-else-if="field.field_type === 'textarea'"
+                :id="'ext_' + field.field_name" 
+                :modelValue="getExtendedFieldValue(field.field_name)"
+                @update:modelValue="setExtendedFieldValue(field.field_name, $event)"
+                :disabled="field.is_readonly"
+                rows="3" 
+                fluid 
+              />
+              
+              <!-- Number input -->
+              <InputNumber 
+                v-else-if="field.field_type === 'number'"
+                :id="'ext_' + field.field_name" 
+                :modelValue="getExtendedFieldValue(field.field_name)"
+                @update:modelValue="setExtendedFieldValue(field.field_name, $event)"
+                :disabled="field.is_readonly"
+                :min="field.min_value"
+                :max="field.max_value"
+                fluid 
+              />
+              
+              <!-- Select -->
+              <Select 
+                v-else-if="field.field_type === 'select'"
+                :id="'ext_' + field.field_name" 
+                :modelValue="getExtendedFieldValue(field.field_name)"
+                @update:modelValue="setExtendedFieldValue(field.field_name, $event)"
+                :options="getExtendedFieldOptions(field)" 
+                optionLabel="label" 
+                optionValue="value" 
+                :disabled="field.is_readonly"
+                fluid
+              />
+              
+              <!-- Multiselect -->
+              <MultiSelect 
+                v-else-if="field.field_type === 'multiselect'"
+                :id="'ext_' + field.field_name" 
+                :modelValue="getExtendedFieldValue(field.field_name) || []"
+                @update:modelValue="setExtendedFieldValue(field.field_name, $event)"
+                :options="getExtendedFieldOptions(field)" 
+                optionLabel="label" 
+                optionValue="value" 
+                :disabled="field.is_readonly"
+                display="chip"
+                fluid
+              />
+              
+              <!-- Boolean toggle -->
+              <ToggleSwitch 
+                v-else-if="field.field_type === 'boolean'"
+                :id="'ext_' + field.field_name" 
+                :modelValue="getExtendedFieldValue(field.field_name) || false"
+                @update:modelValue="setExtendedFieldValue(field.field_name, $event)"
+                :disabled="field.is_readonly"
+              />
+              
+              <!-- Date picker -->
+              <DatePicker 
+                v-else-if="field.field_type === 'date'"
+                :id="'ext_' + field.field_name" 
+                :modelValue="getExtendedFieldValue(field.field_name)"
+                @update:modelValue="setExtendedFieldValue(field.field_name, $event)"
+                :disabled="field.is_readonly"
+                dateFormat="dd/mm/yy"
+                fluid 
+              />
+              
+              <!-- Datetime picker -->
+              <DatePicker 
+                v-else-if="field.field_type === 'datetime'"
+                :id="'ext_' + field.field_name" 
+                :modelValue="getExtendedFieldValue(field.field_name)"
+                @update:modelValue="setExtendedFieldValue(field.field_name, $event)"
+                :disabled="field.is_readonly"
+                dateFormat="dd/mm/yy"
+                showTime
+                fluid 
+              />
+            </div>
+          </div>
+        </template>
       </div>
       <template #footer>
         <Button :label="$t('common.cancel')" icon="pi pi-times" severity="secondary" text @click="itemDialog = false" />
         <Button :label="$t('common.save')" icon="pi pi-check" @click="saveItem" :loading="saving" />
+      </template>
+    </Dialog>
+    
+    <!-- CI Type Change Confirmation Dialog -->
+    <Dialog 
+      v-model:visible="changeTypeDialog" 
+      :style="{ width: '450px' }" 
+      :header="$t('configurationItems.changeTypeTitle')" 
+      :modal="true"
+    >
+      <div class="flex items-start gap-4">
+        <i class="pi pi-exclamation-triangle text-4xl text-orange-500" />
+        <div>
+          <p class="font-semibold mb-2">{{ $t('configurationItems.changeTypeWarning') }}</p>
+          <p class="text-sm text-surface-600 dark:text-surface-400">
+            {{ $t('configurationItems.changeTypeDescription') }}
+          </p>
+        </div>
+      </div>
+      <template #footer>
+        <Button :label="$t('common.cancel')" icon="pi pi-times" severity="secondary" text @click="cancelCiTypeChange" />
+        <Button :label="$t('common.confirm')" icon="pi pi-check" severity="warning" @click="confirmCiTypeChange" />
       </template>
     </Dialog>
 
@@ -764,6 +946,8 @@ import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 import { getService, hasService } from '@/services'
 import metadataService from '@/services/metadataService'
+import ciTypeFieldsService from '@/services/ciTypeFieldsService'
+import ciTypesService from '@/services/ciTypesService'
 import { useTabsStore } from '@/stores/tabsStore'
 
 // PrimeVue components
@@ -786,6 +970,7 @@ import DatePicker from 'primevue/datepicker'
 import Popover from 'primevue/popover'
 import Checkbox from 'primevue/checkbox'
 import ToggleSwitch from 'primevue/toggleswitch'
+import MultiSelect from 'primevue/multiselect'
 
 // Custom form components
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
@@ -850,6 +1035,14 @@ const itemDialog = ref(false)
 const deleteDialog = ref(false)
 const dialogMode = ref('create')
 const editItem = ref({})
+
+// Extended fields for configuration_items
+const extendedFields = ref([])
+const extendedFieldsLoading = ref(false)
+const ciTypes = ref([])
+const ciTypesLoaded = ref(false)
+const changeTypeDialog = ref(false)
+const pendingCiType = ref(null)
 
 // Inline picker dialogs
 const inlineIconDialog = ref(false)
@@ -1238,7 +1431,129 @@ const clearFilters = () => {
   filters.value = initFilters()
 }
 
-const openCreateDialog = () => {
+// ============================================
+// Extended fields support for configuration_items
+// ============================================
+
+// Check if current object type is configuration_items
+const isConfigurationItems = computed(() => props.objectType === 'configuration_items')
+
+// Load CI types for the select dropdown
+const loadCiTypes = async () => {
+  if (ciTypesLoaded.value || !isConfigurationItems.value) return
+  try {
+    const data = await ciTypesService.getAll()
+    ciTypes.value = data.map(ct => ({
+      value: ct.code,
+      label: ct._translations?.label?.[locale.value] || ct.label,
+      uuid: ct.uuid,
+      icon: ct.icon,
+      color: ct.color
+    }))
+    ciTypesLoaded.value = true
+  } catch (error) {
+    console.error('Failed to load CI types:', error)
+  }
+}
+
+// Get CI type UUID from code
+const getCiTypeUuid = (code) => {
+  const ciType = ciTypes.value.find(ct => ct.value === code)
+  return ciType?.uuid
+}
+
+// Load extended fields for a CI type
+const loadExtendedFields = async (ciTypeCode) => {
+  if (!ciTypeCode || !isConfigurationItems.value) {
+    extendedFields.value = []
+    return
+  }
+  
+  const ciTypeUuid = getCiTypeUuid(ciTypeCode)
+  if (!ciTypeUuid) {
+    extendedFields.value = []
+    return
+  }
+  
+  try {
+    extendedFieldsLoading.value = true
+    const fields = await ciTypeFieldsService.getByTypeUuid(ciTypeUuid)
+    // Filter only fields that should show in form
+    extendedFields.value = fields.filter(f => f.show_in_form).map(f => ({
+      ...f,
+      // Use translated label if available
+      label: f._translations?.label?.[locale.value] || f.label
+    }))
+  } catch (error) {
+    console.error('Failed to load extended fields:', error)
+    extendedFields.value = []
+  } finally {
+    extendedFieldsLoading.value = false
+  }
+}
+
+// Handle CI type change with confirmation
+const handleCiTypeChange = (newValue) => {
+  // If editing and type is changing, show confirmation
+  if (dialogMode.value === 'edit' && editItem.value.ci_type && editItem.value.ci_type !== newValue) {
+    pendingCiType.value = newValue
+    changeTypeDialog.value = true
+  } else {
+    editItem.value.ci_type = newValue
+    loadExtendedFields(newValue)
+  }
+}
+
+// Confirm CI type change
+const confirmCiTypeChange = () => {
+  editItem.value.ci_type = pendingCiType.value
+  // Clear extended fields values when type changes
+  editItem.value.extended_core_fields = {}
+  loadExtendedFields(pendingCiType.value)
+  changeTypeDialog.value = false
+  pendingCiType.value = null
+}
+
+// Cancel CI type change
+const cancelCiTypeChange = () => {
+  changeTypeDialog.value = false
+  pendingCiType.value = null
+}
+
+// Get extended field value from extended_core_fields
+const getExtendedFieldValue = (fieldName) => {
+  return editItem.value.extended_core_fields?.[fieldName] ?? null
+}
+
+// Set extended field value in extended_core_fields
+const setExtendedFieldValue = (fieldName, value) => {
+  if (!editItem.value.extended_core_fields) {
+    editItem.value.extended_core_fields = {}
+  }
+  editItem.value.extended_core_fields[fieldName] = value
+}
+
+// Get options for extended field
+const getExtendedFieldOptions = (field) => {
+  if (field.options) return field.options
+  if (field.options_source) {
+    try {
+      return JSON.parse(field.options_source)
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+// ============================================
+
+const openCreateDialog = async () => {
+  // Load CI types if needed
+  if (isConfigurationItems.value) {
+    await loadCiTypes()
+  }
+  
   // Initialize with default values from form fields
   const defaults = {}
   for (const field of formFields.value) {
@@ -1251,15 +1566,44 @@ const openCreateDialog = () => {
       defaults[field.field_name] = null
     }
   }
+  
+  // Initialize extended_core_fields for configuration_items
+  if (isConfigurationItems.value) {
+    defaults.extended_core_fields = {}
+    defaults.ci_type = 'GENERIC' // Default type
+  }
+  
   editItem.value = defaults
+  extendedFields.value = [] // Clear extended fields until type is selected
   dialogMode.value = 'create'
   itemDialog.value = true
+  
+  // Load extended fields for default type
+  if (isConfigurationItems.value && defaults.ci_type) {
+    await loadExtendedFields(defaults.ci_type)
+  }
 }
 
-const openEditDialog = (data) => {
+const openEditDialog = async (data) => {
+  // Load CI types if needed
+  if (isConfigurationItems.value) {
+    await loadCiTypes()
+  }
+  
   editItem.value = { ...data }
+  
+  // Ensure extended_core_fields exists
+  if (isConfigurationItems.value && !editItem.value.extended_core_fields) {
+    editItem.value.extended_core_fields = {}
+  }
+  
   dialogMode.value = 'edit'
   itemDialog.value = true
+  
+  // Load extended fields for current type
+  if (isConfigurationItems.value && editItem.value.ci_type) {
+    await loadExtendedFields(editItem.value.ci_type)
+  }
 }
 
 // Open edit in child tab (for toolbar Edit button)

@@ -134,7 +134,12 @@ export default {
       deleted: 'Item deleted successfully',
       deletedMultiple: '{count} items deleted successfully'
     },
-    pagination: 'Showing {first} to {last} of {totalRecords} items'
+    pagination: 'Showing {first} to {last} of {totalRecords} items',
+    selectType: 'Select a type...',
+    extendedFields: 'Extended Fields',
+    changeTypeTitle: 'Change Type',
+    changeTypeWarning: 'Warning: CI type change',
+    changeTypeDescription: 'The current extended field values will be lost because the new type has different fields. Do you want to continue?'
   },
   entities: {
     title: 'Entities',

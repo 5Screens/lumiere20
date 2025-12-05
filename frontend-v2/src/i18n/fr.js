@@ -134,7 +134,12 @@ export default {
       deleted: 'Élément supprimé avec succès',
       deletedMultiple: '{count} éléments supprimés avec succès'
     },
-    pagination: 'Affichage de {first} à {last} sur {totalRecords} éléments'
+    pagination: 'Affichage de {first} à {last} sur {totalRecords} éléments',
+    selectType: 'Sélectionner un type...',
+    extendedFields: 'Champs étendus',
+    changeTypeTitle: 'Changement de type',
+    changeTypeWarning: 'Attention : changement de type de CI',
+    changeTypeDescription: 'Les valeurs des champs étendus actuels seront perdues car le nouveau type a des champs différents. Voulez-vous continuer ?'
   },
   entities: {
     title: 'Entités',
