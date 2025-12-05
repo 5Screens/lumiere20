@@ -285,6 +285,49 @@
             <template v-else-if="col.field_type === 'number'">
               <InputNumber v-model="data[field]" autofocus fluid />
             </template>
+            <!-- Icon picker editor -->
+            <template v-else-if="col.field_type === 'icon_picker'">
+              <Button
+                type="button"
+                severity="secondary"
+                outlined
+                size="small"
+                class="w-full justify-between"
+                @click="openInlinePicker('icon', data, field)"
+              >
+                <template #default>
+                  <div class="flex items-center gap-2">
+                    <template v-if="data[field]">
+                      <i :class="`pi ${data[field]}`" />
+                      <span class="text-sm">{{ data[field] }}</span>
+                    </template>
+                    <span v-else class="text-surface-400">{{ $t('common.selectIcon') }}</span>
+                  </div>
+                  <i class="pi pi-pencil text-surface-400 ml-2" />
+                </template>
+              </Button>
+            </template>
+            <!-- Tag style editor -->
+            <template v-else-if="col.field_type === 'tag_style'">
+              <Button
+                type="button"
+                severity="secondary"
+                outlined
+                size="small"
+                class="w-full justify-between"
+                @click="openInlinePicker('tag_style', data, field)"
+              >
+                <template #default>
+                  <div class="flex items-center gap-2">
+                    <Tag v-if="data[field]" :style="getTagStyle(data[field])" class="text-sm">
+                      {{ data[field] }}
+                    </Tag>
+                    <span v-else class="text-surface-400">{{ $t('common.selectTagStyle') }}</span>
+                  </div>
+                  <i class="pi pi-pencil text-surface-400 ml-2" />
+                </template>
+              </Button>
+            </template>
             <!-- Default text editor -->
             <template v-else>
               <InputText v-model="data[field]" autofocus fluid />
@@ -524,6 +567,122 @@
       </template>
     </Dialog>
 
+    <!-- Inline Icon Picker Dialog -->
+    <Dialog
+      v-model:visible="inlineIconDialog"
+      modal
+      :header="$t('common.selectIcon')"
+      :style="{ width: '90vw', height: '90vh' }"
+      :draggable="false"
+    >
+      <!-- Search bar -->
+      <div class="mb-4 flex gap-2">
+        <IconField class="flex-1">
+          <InputIcon class="pi pi-search" />
+          <InputText
+            v-model="iconSearchQuery"
+            :placeholder="$t('common.searchIcon')"
+            class="w-full"
+          />
+        </IconField>
+        <Button
+          v-if="iconSearchQuery"
+          icon="pi pi-times"
+          severity="secondary"
+          text
+          @click="iconSearchQuery = ''"
+        />
+      </div>
+
+      <!-- Icons grid -->
+      <div class="overflow-auto" style="height: calc(90vh - 180px);">
+        <template v-if="iconSearchQuery">
+          <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
+            <button
+              v-for="icon in filteredIconsForInline"
+              :key="icon"
+              type="button"
+              class="icon-item p-3 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
+              :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === icon }"
+              @click="inlinePickerValue = icon"
+            >
+              <i :class="`pi ${icon} text-xl`" />
+              <span class="text-xs text-surface-500 truncate w-full text-center">{{ icon.replace('pi-', '') }}</span>
+            </button>
+          </div>
+          <div v-if="filteredIconsForInline.length === 0" class="text-center py-8 text-surface-500">
+            {{ $t('common.noResults') }}
+          </div>
+        </template>
+        <template v-else>
+          <div v-for="(category, key) in iconCategories" :key="key" class="mb-6">
+            <h3 class="text-sm font-semibold text-surface-600 dark:text-surface-300 mb-2 sticky top-0 bg-surface-0 dark:bg-surface-900 py-2 z-10">
+              {{ category.label }}
+            </h3>
+            <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
+              <button
+                v-for="icon in category.icons"
+                :key="icon"
+                type="button"
+                class="icon-item p-3 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
+                :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === icon }"
+                @click="inlinePickerValue = icon"
+              >
+                <i :class="`pi ${icon} text-xl`" />
+                <span class="text-xs text-surface-500 truncate w-full text-center">{{ icon.replace('pi-', '') }}</span>
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-between items-center w-full">
+          <div class="text-sm text-surface-500">
+            <span v-if="inlinePickerValue">
+              {{ $t('common.selected') }}: <i :class="`pi ${inlinePickerValue} mx-1`" /> {{ inlinePickerValue }}
+            </span>
+          </div>
+          <div class="flex gap-2">
+            <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
+            <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
+            <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
+          </div>
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Inline Tag Style Picker Dialog -->
+    <Dialog
+      v-model:visible="inlineTagStyleDialog"
+      modal
+      :header="$t('common.selectTagStyle')"
+      :style="{ width: '90vw', maxWidth: '900px', height: '80vh' }"
+      :draggable="false"
+    >
+      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 overflow-auto" style="max-height: calc(80vh - 120px);">
+        <button
+          v-for="option in tagStyleOptions"
+          :key="option.value"
+          type="button"
+          class="style-item p-4 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-2"
+          :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === option.value }"
+          @click="inlinePickerValue = option.value"
+        >
+          <Tag :style="option.style" class="text-sm px-4 py-2">{{ option.label }}</Tag>
+          <i v-if="inlinePickerValue === option.value" class="pi pi-check text-primary-500" />
+        </button>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
+          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
+          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Toast -->
     <Toast position="bottom-right" />
     </template>
@@ -565,7 +724,8 @@ import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
 import IconSelector from '@/components/form/IconSelector.vue'
 
 // Utils
-import { getTagStyle, getColorValue } from '@/utils/tagStyles'
+import { getTagStyle, getColorValue, getTagStyleOptions } from '@/utils/tagStyles'
+import { iconCategories, searchIcons } from '@/utils/primeIcons'
 
 // Props
 const props = defineProps({
@@ -621,6 +781,16 @@ const itemDialog = ref(false)
 const deleteDialog = ref(false)
 const dialogMode = ref('create')
 const editItem = ref({})
+
+// Inline picker dialogs
+const inlineIconDialog = ref(false)
+const inlineTagStyleDialog = ref(false)
+const inlinePickerData = ref(null) // The row data being edited
+const inlinePickerField = ref(null) // The field name being edited
+const inlinePickerValue = ref(null) // The temporary selected value
+const inlinePickerSaving = ref(false)
+const iconSearchQuery = ref('')
+const tagStyleOptions = getTagStyleOptions()
 
 // Filters - built dynamically from metadata
 const initFilters = () => {
@@ -779,7 +949,70 @@ const paginationTemplate = computed(() => {
   return templates[locale.value] || templates.en
 })
 
+// Filtered icons for inline picker
+const filteredIconsForInline = computed(() => {
+  return searchIcons(iconSearchQuery.value)
+})
+
 // Methods
+
+// Inline picker methods
+const openInlinePicker = (type, data, field) => {
+  inlinePickerData.value = data
+  inlinePickerField.value = field
+  inlinePickerValue.value = data[field]
+  
+  if (type === 'icon') {
+    iconSearchQuery.value = ''
+    inlineIconDialog.value = true
+  } else if (type === 'tag_style') {
+    inlineTagStyleDialog.value = true
+  }
+}
+
+const cancelInlinePicker = () => {
+  inlineIconDialog.value = false
+  inlineTagStyleDialog.value = false
+  inlinePickerData.value = null
+  inlinePickerField.value = null
+  inlinePickerValue.value = null
+}
+
+const confirmInlinePicker = async () => {
+  if (!inlinePickerData.value || !inlinePickerField.value) return
+  
+  const data = inlinePickerData.value
+  const field = inlinePickerField.value
+  const newValue = inlinePickerValue.value
+  const oldValue = data[field]
+  
+  // Skip if no change
+  if (oldValue === newValue) {
+    cancelInlinePicker()
+    return
+  }
+  
+  try {
+    inlinePickerSaving.value = true
+    const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'
+    await service.value.update(data.uuid, { [field]: newValue })
+    
+    // Update local data reactively by finding and updating the item in the array
+    const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
+    if (itemIndex !== -1) {
+      items.value[itemIndex] = { ...items.value[itemIndex], [field]: newValue }
+    }
+    
+    toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
+    cancelInlinePicker()
+  } catch (error) {
+    console.error('Failed to update item:', error)
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to update item', life: 3000 })
+  } finally {
+    inlinePickerSaving.value = false
+  }
+}
+
 const loadItems = async (pageNum = null) => {
   if (!service.value) {
     console.warn(`[ObjectsCrud] No service available for objectType: ${props.objectType}`)
@@ -1070,5 +1303,12 @@ onMounted(async () => {
   border: none;
   background: transparent;
   padding: 0;
+}
+
+/* Inline picker button styles */
+.icon-item:focus,
+.style-item:focus {
+  outline: 2px solid var(--p-primary-500);
+  outline-offset: 2px;
 }
 </style>
