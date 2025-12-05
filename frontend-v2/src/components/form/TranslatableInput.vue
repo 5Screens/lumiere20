@@ -75,12 +75,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import api from '@/services/api'
 
 const props = defineProps({
   // The main field value (default/fallback)
@@ -119,15 +120,43 @@ const emit = defineEmits(['update:modelValue', 'update:translations'])
 
 const { t, locale } = useI18n()
 
-// Available languages with flags (emoji)
-const availableLanguages = [
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' }
-]
+// Convert country code to flag emoji (e.g., 'fr' -> '🇫🇷')
+const getFlagEmoji = (countryCode) => {
+  if (!countryCode) return '🏳️'
+  const code = countryCode.toUpperCase()
+  return String.fromCodePoint(...[...code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65))
+}
+
+// Available languages loaded from API
+const availableLanguages = ref([])
+const languagesLoading = ref(false)
+
+// Load active languages from API
+const loadActiveLanguages = async () => {
+  try {
+    languagesLoading.value = true
+    const response = await api.get('/languages/active')
+    availableLanguages.value = response.data.map(lang => ({
+      code: lang.code,
+      name: lang.name,
+      flag: getFlagEmoji(lang.flag_code)
+    }))
+  } catch (error) {
+    console.error('Failed to load active languages:', error)
+    // Fallback to default languages if API fails
+    availableLanguages.value = [
+      { code: 'en', name: 'English', flag: '🇬🇧' },
+      { code: 'fr', name: 'Français', flag: '🇫🇷' }
+    ]
+  } finally {
+    languagesLoading.value = false
+  }
+}
+
+// Load languages on mount
+onMounted(() => {
+  loadActiveLanguages()
+})
 
 const dialogVisible = ref(false)
 const tempTranslations = ref({})

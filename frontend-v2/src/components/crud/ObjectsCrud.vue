@@ -865,14 +865,34 @@ const tagStyleOptions = getTagStyleOptions()
 
 // Translatable field support
 const inlineTranslations = ref({}) // Temporary translations { fr: '...', en: '...' }
-const availableLanguages = [
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' }
-]
+const availableLanguages = ref([])
+
+// Convert country code to flag emoji (e.g., 'fr' -> '🇫🇷')
+const getFlagEmoji = (countryCode) => {
+  if (!countryCode) return '🏳️'
+  const code = countryCode.toUpperCase()
+  return String.fromCodePoint(...[...code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65))
+}
+
+// Load active languages from API
+const loadActiveLanguages = async () => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1'}/languages/active`)
+    const data = await response.json()
+    availableLanguages.value = data.map(lang => ({
+      code: lang.code,
+      name: lang.name,
+      flag: getFlagEmoji(lang.flag_code)
+    }))
+  } catch (error) {
+    console.error('Failed to load active languages:', error)
+    // Fallback to default languages if API fails
+    availableLanguages.value = [
+      { code: 'en', name: 'English', flag: '🇬🇧' },
+      { code: 'fr', name: 'Français', flag: '🇫🇷' }
+    ]
+  }
+}
 
 // Filters - built dynamically from metadata
 const initFilters = () => {
@@ -1063,7 +1083,7 @@ const openInlinePicker = (type, data, field, colMeta = null) => {
     inlineTranslations.value = {}
     const existingTranslations = data._translations?.[field] || {}
     
-    for (const lang of availableLanguages) {
+    for (const lang of availableLanguages.value) {
       // Use existing translation or empty string
       inlineTranslations.value[lang.code] = existingTranslations[lang.code] || ''
     }
@@ -1460,6 +1480,9 @@ watch(filters, () => {
 
 // Lifecycle
 onMounted(async () => {
+  // Load active languages for translatable fields
+  loadActiveLanguages()
+  
   await loadMetadata()
   if (serviceAvailable.value) {
     await loadItems(1)
