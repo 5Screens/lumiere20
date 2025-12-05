@@ -63,11 +63,11 @@ const getAll = async ({ activeOnly = true, locale = null } = {}) => {
       ]
     });
     
-    // Fetch translations separately
+    // Fetch ALL translations (not filtered by locale) so admin can see all languages
     const uuids = ciTypes.map(ct => ct.uuid);
-    const translationsMap = await fetchTranslations(uuids, locale);
+    const translationsMap = await fetchTranslations(uuids, null);
     
-    // Transform to include translated values
+    // Transform to include translated values (locale used only for main field value)
     return ciTypes.map(ct => transformWithTranslations(ct, translationsMap[ct.uuid] || [], locale));
   } catch (error) {
     logger.error('Error fetching CI types:', error);
@@ -119,8 +119,8 @@ const getByCode = async (code, locale = null) => {
     
     if (!ciType) return null;
     
-    // Fetch translations
-    const translationsMap = await fetchTranslations([ciType.uuid], locale);
+    // Fetch ALL translations so admin can see all languages
+    const translationsMap = await fetchTranslations([ciType.uuid], null);
     return transformWithTranslations(ciType, translationsMap[ciType.uuid] || [], locale);
   } catch (error) {
     logger.error(`Error fetching CI type ${code}:`, error);
@@ -142,8 +142,8 @@ const getByUuid = async (uuid, locale = null) => {
     
     if (!ciType) return null;
     
-    // Fetch translations
-    const translationsMap = await fetchTranslations([ciType.uuid], locale);
+    // Fetch ALL translations so admin can see all languages
+    const translationsMap = await fetchTranslations([ciType.uuid], null);
     return transformWithTranslations(ciType, translationsMap[ciType.uuid] || [], locale);
   } catch (error) {
     logger.error(`Error fetching CI type by UUID ${uuid}:`, error);
@@ -427,11 +427,11 @@ const search = async (searchParams = {}, locale = 'en') => {
       take: limit,
     });
 
-    // Fetch translations separately
+    // Fetch ALL translations (not filtered by locale) so admin can see all languages
     const uuids = items.map(ct => ct.uuid);
-    const translationsMap = await fetchTranslations(uuids, locale);
+    const translationsMap = await fetchTranslations(uuids, null);
 
-    // Transform with translations
+    // Transform with translations (locale used only for main field value, _translations contains all)
     const transformedItems = items.map(ct => transformWithTranslations(ct, translationsMap[ct.uuid] || [], locale));
 
     logger.info(`[CI_TYPES] Found ${items.length} items (total: ${total})`);
@@ -512,8 +512,8 @@ const getByCodeWithFields = async (code, locale = null) => {
     
     if (!ciType) return null;
     
-    // Fetch translations
-    const translationsMap = await fetchTranslations([ciType.uuid], locale);
+    // Fetch ALL translations so admin can see all languages
+    const translationsMap = await fetchTranslations([ciType.uuid], null);
     const result = transformWithTranslations(ciType, translationsMap[ciType.uuid] || [], locale);
     
     // Parse options_source JSON for select fields
