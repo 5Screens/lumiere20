@@ -6,23 +6,140 @@
 const prisma = require('../../../config/prisma');
 const logger = require('../../../config/logger');
 
+// Entity type for translations table
+const ENTITY_TYPE = 'ci_type_fields';
+// Translatable fields
+const TRANSLATABLE_FIELDS = ['label', 'description'];
+
+/**
+ * Fetch translations for fields from translated_fields table
+ * @param {string[]} uuids - Array of field UUIDs
+ * @param {string} locale - Locale filter (optional)
+ * @returns {Promise<Object>} Translations grouped by entity_uuid
+ */
+const fetchTranslations = async (uuids, locale = null) => {
+  const where = {
+    entity_type: ENTITY_TYPE,
+    entity_uuid: { in: uuids }
+  };
+  if (locale) {
+    where.locale = locale;
+  }
+  
+  const translations = await prisma.translated_fields.findMany({ where });
+  
+  // Group by entity_uuid
+  const grouped = {};
+  for (const t of translations) {
+    if (!grouped[t.entity_uuid]) {
+      grouped[t.entity_uuid] = [];
+    }
+    grouped[t.entity_uuid].push(t);
+  }
+  return grouped;
+};
+
+/**
+ * Transform field with translations applied
+ * @param {Object} field - Field object
+ * @param {Array} translations - Array of translation records
+ * @param {string} locale - Target locale
+ * @returns {Object} Field with translated fields
+ */
+const transformWithTranslations = (field, translations = [], locale = null) => {
+  const result = {
+    ...field,
+    options: field.options_source ? JSON.parse(field.options_source) : null
+  };
+  
+  if (translations.length > 0 && locale) {
+    for (const t of translations) {
+      if (t.locale === locale && TRANSLATABLE_FIELDS.includes(t.field_name)) {
+        result[t.field_name] = t.value;
+      }
+    }
+  }
+  
+  // Include all translations for editing purposes
+  result._translations = {};
+  for (const t of translations) {
+    if (!result._translations[t.field_name]) {
+      result._translations[t.field_name] = {};
+    }
+    result._translations[t.field_name][t.locale] = t.value;
+  }
+  
+  return result;
+};
+
+/**
+ * Save translations for a field
+ * @param {string} uuid - Field UUID
+ * @param {Object} translations - Translations object { field_name: { locale: value } }
+ */
+const saveTranslations = async (uuid, translations) => {
+  if (!translations) return;
+  
+  for (const [fieldName, locales] of Object.entries(translations)) {
+    if (!TRANSLATABLE_FIELDS.includes(fieldName)) continue;
+    
+    for (const [locale, value] of Object.entries(locales)) {
+      if (!value || !value.trim()) {
+        // Delete empty translations
+        await prisma.translated_fields.deleteMany({
+          where: {
+            entity_type: ENTITY_TYPE,
+            entity_uuid: uuid,
+            field_name: fieldName,
+            locale
+          }
+        });
+      } else {
+        // Upsert translation
+        await prisma.translated_fields.upsert({
+          where: {
+            entity_type_entity_uuid_field_name_locale: {
+              entity_type: ENTITY_TYPE,
+              entity_uuid: uuid,
+              field_name: fieldName,
+              locale
+            }
+          },
+          update: { value: value.trim() },
+          create: {
+            entity_type: ENTITY_TYPE,
+            entity_uuid: uuid,
+            field_name: fieldName,
+            locale,
+            value: value.trim()
+          }
+        });
+      }
+    }
+  }
+};
+
 /**
  * Get all fields for a CI type
  * @param {string} ciTypeUuid - CI type UUID
+ * @param {string} locale - Locale for translations (optional)
  * @returns {Promise<Array>} List of fields
  */
-const getByTypeUuid = async (ciTypeUuid) => {
+const getByTypeUuid = async (ciTypeUuid, locale = null) => {
   try {
     const fields = await prisma.ci_type_fields.findMany({
       where: { ci_type_uuid: ciTypeUuid },
       orderBy: { display_order: 'asc' }
     });
     
-    // Parse options_source JSON
-    return fields.map(field => ({
-      ...field,
-      options: field.options_source ? JSON.parse(field.options_source) : null
-    }));
+    // Fetch translations
+    const uuids = fields.map(f => f.uuid);
+    const translationsMap = await fetchTranslations(uuids, locale);
+    
+    // Transform with translations
+    return fields.map(field => 
+      transformWithTranslations(field, translationsMap[field.uuid] || [], locale)
+    );
   } catch (error) {
     logger.error(`Error fetching fields for CI type ${ciTypeUuid}:`, error);
     throw error;
@@ -32,9 +149,10 @@ const getByTypeUuid = async (ciTypeUuid) => {
 /**
  * Get a single field by UUID
  * @param {string} uuid - Field UUID
+ * @param {string} locale - Locale for translations (optional)
  * @returns {Promise<Object|null>} Field or null
  */
-const getByUuid = async (uuid) => {
+const getByUuid = async (uuid, locale = null) => {
   try {
     const field = await prisma.ci_type_fields.findUnique({
       where: { uuid }
@@ -42,10 +160,9 @@ const getByUuid = async (uuid) => {
     
     if (!field) return null;
     
-    return {
-      ...field,
-      options: field.options_source ? JSON.parse(field.options_source) : null
-    };
+    // Fetch translations
+    const translationsMap = await fetchTranslations([uuid], locale);
+    return transformWithTranslations(field, translationsMap[uuid] || [], locale);
   } catch (error) {
     logger.error(`Error fetching field ${uuid}:`, error);
     throw error;
@@ -54,28 +171,32 @@ const getByUuid = async (uuid) => {
 
 /**
  * Create a new field
- * @param {Object} data - Field data
+ * @param {Object} data - Field data including _translations
  * @returns {Promise<Object>} Created field
  */
 const create = async (data) => {
   try {
     logger.info(`[CI_TYPE_FIELDS] Creating field: ${data.field_name} for type ${data.ci_type_uuid}`);
     
+    const { _translations, options, ...fieldData } = data;
+    
     // Convert options array to JSON string if present
-    const fieldData = {
-      ...data,
-      options_source: data.options ? JSON.stringify(data.options) : data.options_source
-    };
-    delete fieldData.options;
+    if (options) {
+      fieldData.options_source = JSON.stringify(options);
+    }
     
     const field = await prisma.ci_type_fields.create({
       data: fieldData
     });
     
-    return {
-      ...field,
-      options: field.options_source ? JSON.parse(field.options_source) : null
-    };
+    // Save translations if provided
+    if (_translations) {
+      await saveTranslations(field.uuid, _translations);
+    }
+    
+    // Fetch and return with translations
+    const translationsMap = await fetchTranslations([field.uuid]);
+    return transformWithTranslations(field, translationsMap[field.uuid] || [], null);
   } catch (error) {
     logger.error('[CI_TYPE_FIELDS] Error creating field:', error);
     throw error;
@@ -85,18 +206,18 @@ const create = async (data) => {
 /**
  * Update a field
  * @param {string} uuid - Field UUID
- * @param {Object} data - Field data
+ * @param {Object} data - Field data including _translations
  * @returns {Promise<Object>} Updated field
  */
 const update = async (uuid, data) => {
   try {
     logger.info(`[CI_TYPE_FIELDS] Updating field: ${uuid}`);
     
+    const { _translations, options, ...fieldData } = data;
+    
     // Convert options array to JSON string if present
-    const fieldData = { ...data };
-    if (data.options !== undefined) {
-      fieldData.options_source = data.options ? JSON.stringify(data.options) : null;
-      delete fieldData.options;
+    if (options !== undefined) {
+      fieldData.options_source = options ? JSON.stringify(options) : null;
     }
     
     const field = await prisma.ci_type_fields.update({
@@ -104,10 +225,14 @@ const update = async (uuid, data) => {
       data: fieldData
     });
     
-    return {
-      ...field,
-      options: field.options_source ? JSON.parse(field.options_source) : null
-    };
+    // Save translations if provided
+    if (_translations) {
+      await saveTranslations(uuid, _translations);
+    }
+    
+    // Fetch and return with translations
+    const translationsMap = await fetchTranslations([uuid]);
+    return transformWithTranslations(field, translationsMap[uuid] || [], null);
   } catch (error) {
     logger.error(`[CI_TYPE_FIELDS] Error updating field ${uuid}:`, error);
     throw error;
@@ -122,6 +247,14 @@ const update = async (uuid, data) => {
 const remove = async (uuid) => {
   try {
     logger.info(`[CI_TYPE_FIELDS] Deleting field: ${uuid}`);
+    
+    // Delete translations first
+    await prisma.translated_fields.deleteMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        entity_uuid: uuid
+      }
+    });
     
     await prisma.ci_type_fields.delete({
       where: { uuid }
@@ -140,6 +273,14 @@ const remove = async (uuid) => {
 const removeMany = async (uuids) => {
   try {
     logger.info(`[CI_TYPE_FIELDS] Deleting ${uuids.length} fields`);
+    
+    // Delete translations first
+    await prisma.translated_fields.deleteMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        entity_uuid: { in: uuids }
+      }
+    });
     
     const result = await prisma.ci_type_fields.deleteMany({
       where: { uuid: { in: uuids } }

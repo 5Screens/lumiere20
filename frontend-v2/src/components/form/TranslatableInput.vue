@@ -186,7 +186,7 @@ const openDialog = () => {
   // Initialize temp translations from props
   tempTranslations.value = {}
   
-  for (const lang of availableLanguages) {
+  for (const lang of availableLanguages.value) {
     // Use existing translation or empty string
     tempTranslations.value[lang.code] = props.translations?.[lang.code] || ''
   }

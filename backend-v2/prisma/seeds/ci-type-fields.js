@@ -1,71 +1,178 @@
 /**
  * Seed script for CI Type Fields
  * Defines extended fields for each CI type stored in configuration_items.extended_core_fields
+ * Labels are now stored with translations in translated_fields table
  */
 
 const { prisma } = require('../client');
 
+// Translations dictionary for field labels { field_name: { en: '...', fr: '...' } }
+const fieldTranslations = {
+  ip_address: { en: 'IP Address', fr: 'Adresse IP' },
+  mac_address: { en: 'MAC Address', fr: 'Adresse MAC' },
+  firmware_version: { en: 'Firmware Version', fr: 'Version firmware' },
+  manufacturer: { en: 'Manufacturer', fr: 'Fabricant' },
+  model: { en: 'Model', fr: 'Modèle' },
+  serial_number: { en: 'Serial Number', fr: 'Numéro de série' },
+  purchase_date: { en: 'Purchase Date', fr: "Date d'achat" },
+  warranty_expiry: { en: 'Warranty Expiry', fr: 'Fin de garantie' },
+  power_capacity_va: { en: 'Power Capacity (VA)', fr: 'Capacité (VA)' },
+  power_capacity_watts: { en: 'Power Capacity (W)', fr: 'Capacité (W)' },
+  battery_count: { en: 'Battery Count', fr: 'Nombre de batteries' },
+  runtime_minutes: { en: 'Runtime (min)', fr: 'Autonomie (min)' },
+  last_battery_change: { en: 'Last Battery Change', fr: 'Dernier changement batterie' },
+  next_battery_change: { en: 'Next Battery Change', fr: 'Prochain changement batterie' },
+  input_voltage: { en: 'Input Voltage', fr: 'Tension entrée' },
+  output_voltage: { en: 'Output Voltage', fr: 'Tension sortie' },
+  location_rack: { en: 'Rack Location', fr: 'Emplacement rack' },
+  version: { en: 'Version', fr: 'Version' },
+  vendor: { en: 'Vendor', fr: 'Éditeur' },
+  license_type: { en: 'License Type', fr: 'Type de licence' },
+  license_count: { en: 'License Count', fr: 'Nombre de licences' },
+  license_expiry: { en: 'License Expiry', fr: 'Expiration licence' },
+  environment: { en: 'Environment', fr: 'Environnement' },
+  url: { en: 'URL', fr: 'URL' },
+  documentation_url: { en: 'Documentation URL', fr: 'URL documentation' },
+  support_contact: { en: 'Support Contact', fr: 'Contact support' },
+  business_owner: { en: 'Business Owner', fr: 'Responsable métier' },
+  technical_owner: { en: 'Technical Owner', fr: 'Responsable technique' },
+  hostname: { en: 'Hostname', fr: "Nom d'hôte" },
+  os: { en: 'Operating System', fr: "Système d'exploitation" },
+  os_version: { en: 'OS Version', fr: 'Version OS' },
+  is_virtual: { en: 'Virtual', fr: 'Virtuel' },
+  hypervisor: { en: 'Hypervisor', fr: 'Hyperviseur' },
+  cpu_count: { en: 'CPU Count', fr: 'Nombre de CPU' },
+  cpu_cores: { en: 'CPU Cores', fr: 'Cœurs CPU' },
+  ram_gb: { en: 'RAM (GB)', fr: 'RAM (Go)' },
+  storage_gb: { en: 'Storage (GB)', fr: 'Stockage (Go)' },
+  location_datacenter: { en: 'Datacenter', fr: 'Datacenter' },
+  location_rack_unit: { en: 'Rack Unit', fr: 'Unité rack' },
+  routing_protocols: { en: 'Routing Protocols', fr: 'Protocoles de routage' },
+  wan_interfaces: { en: 'WAN Interfaces', fr: 'Interfaces WAN' },
+  lan_interfaces: { en: 'LAN Interfaces', fr: 'Interfaces LAN' },
+  nat_enabled: { en: 'NAT Enabled', fr: 'NAT activé' },
+  vpn_enabled: { en: 'VPN Enabled', fr: 'VPN activé' },
+  port_count: { en: 'Port Count', fr: 'Nombre de ports' },
+  port_speed: { en: 'Port Speed', fr: 'Vitesse des ports' },
+  layer: { en: 'Layer', fr: 'Couche' },
+  managed: { en: 'Managed', fr: 'Managé' },
+  poe_enabled: { en: 'PoE Enabled', fr: 'PoE activé' },
+  poe_budget_watts: { en: 'PoE Budget (W)', fr: 'Budget PoE (W)' },
+  vlan_count: { en: 'VLAN Count', fr: 'Nombre de VLAN' },
+  stacking_enabled: { en: 'Stacking Enabled', fr: 'Stacking activé' },
+  throughput_gbps: { en: 'Throughput (Gbps)', fr: 'Débit (Gbps)' },
+  max_connections: { en: 'Max Connections', fr: 'Connexions max' },
+  vpn_tunnels: { en: 'VPN Tunnels', fr: 'Tunnels VPN' },
+  ips_enabled: { en: 'IPS Enabled', fr: 'IPS activé' },
+  antivirus_enabled: { en: 'Antivirus Enabled', fr: 'Antivirus activé' },
+  web_filter_enabled: { en: 'Web Filter Enabled', fr: 'Filtrage web activé' },
+  ha_mode: { en: 'HA Mode', fr: 'Mode HA' },
+  wifi_standards: { en: 'WiFi Standards', fr: 'Standards WiFi' },
+  frequency_bands: { en: 'Frequency Bands', fr: 'Bandes de fréquence' },
+  max_clients: { en: 'Max Clients', fr: 'Clients max' },
+  poe_powered: { en: 'PoE Powered', fr: 'Alimenté PoE' },
+  controller_managed: { en: 'Controller Managed', fr: 'Géré par contrôleur' },
+  controller_ip: { en: 'Controller IP', fr: 'IP contrôleur' },
+  ssid_count: { en: 'SSID Count', fr: 'Nombre de SSID' },
+  virtual_servers: { en: 'Virtual Servers', fr: 'Serveurs virtuels' },
+  algorithm: { en: 'Algorithm', fr: 'Algorithme' },
+  ssl_offload: { en: 'SSL Offload', fr: 'Déchargement SSL' },
+  health_check_enabled: { en: 'Health Check Enabled', fr: 'Health check activé' },
+  storage_type: { en: 'Storage Type', fr: 'Type de stockage' },
+  total_capacity_tb: { en: 'Total Capacity (TB)', fr: 'Capacité totale (To)' },
+  used_capacity_tb: { en: 'Used Capacity (TB)', fr: 'Capacité utilisée (To)' },
+  raid_level: { en: 'RAID Level', fr: 'Niveau RAID' },
+  disk_type: { en: 'Disk Type', fr: 'Type de disque' },
+  disk_count: { en: 'Disk Count', fr: 'Nombre de disques' },
+  protocols: { en: 'Protocols', fr: 'Protocoles' },
+  device_type: { en: 'Device Type', fr: 'Type de périphérique' },
+  cpu: { en: 'CPU', fr: 'CPU' },
+  assigned_user: { en: 'Assigned User', fr: 'Utilisateur assigné' },
+  asset_tag: { en: 'Asset Tag', fr: "Numéro d'inventaire" },
+  printer_type: { en: 'Printer Type', fr: "Type d'imprimante" },
+  color_capable: { en: 'Color Capable', fr: 'Impression couleur' },
+  duplex_capable: { en: 'Duplex Capable', fr: 'Recto-verso' },
+  network_connected: { en: 'Network Connected', fr: 'Connecté au réseau' },
+  pages_per_minute: { en: 'Pages per Minute', fr: 'Pages par minute' },
+  paper_sizes: { en: 'Paper Sizes', fr: 'Formats papier' },
+  scan_capable: { en: 'Scan Capable', fr: 'Scanner' },
+  fax_capable: { en: 'Fax Capable', fr: 'Fax' },
+  imei: { en: 'IMEI', fr: 'IMEI' },
+  phone_number: { en: 'Phone Number', fr: 'Numéro de téléphone' },
+  mdm_enrolled: { en: 'MDM Enrolled', fr: 'Inscrit MDM' },
+  db_engine: { en: 'Database Engine', fr: 'Moteur de base de données' },
+  port: { en: 'Port', fr: 'Port' },
+  database_name: { en: 'Database Name', fr: 'Nom de la base' },
+  size_gb: { en: 'Size (GB)', fr: 'Taille (Go)' },
+  cluster_enabled: { en: 'Cluster Enabled', fr: 'Cluster activé' },
+  replication_enabled: { en: 'Replication Enabled', fr: 'Réplication activée' },
+  backup_enabled: { en: 'Backup Enabled', fr: 'Sauvegarde activée' },
+  backup_frequency: { en: 'Backup Frequency', fr: 'Fréquence de sauvegarde' },
+  ssl_enabled: { en: 'SSL Enabled', fr: 'SSL activé' },
+  notes: { en: 'Notes', fr: 'Notes' },
+};
+
 // Common fields shared across multiple CI types
 const commonNetworkFields = [
-  { field_name: 'ip_address', label_key: 'ciFields.ipAddress', field_type: 'text', display_order: 1, pattern: '^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$' },
-  { field_name: 'mac_address', label_key: 'ciFields.macAddress', field_type: 'text', display_order: 2, pattern: '^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$' },
-  { field_name: 'firmware_version', label_key: 'ciFields.firmwareVersion', field_type: 'text', display_order: 3 },
-  { field_name: 'manufacturer', label_key: 'ciFields.manufacturer', field_type: 'text', display_order: 10 },
-  { field_name: 'model', label_key: 'ciFields.model', field_type: 'text', display_order: 11 },
-  { field_name: 'serial_number', label_key: 'ciFields.serialNumber', field_type: 'text', display_order: 12 },
-  { field_name: 'purchase_date', label_key: 'ciFields.purchaseDate', field_type: 'date', data_type: 'date', display_order: 13 },
-  { field_name: 'warranty_expiry', label_key: 'ciFields.warrantyExpiry', field_type: 'date', data_type: 'date', display_order: 14 },
+  { field_name: 'ip_address', label: 'IP Address', field_type: 'text', display_order: 1, pattern: '^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$' },
+  { field_name: 'mac_address', label: 'MAC Address', field_type: 'text', display_order: 2, pattern: '^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$' },
+  { field_name: 'firmware_version', label: 'Firmware Version', field_type: 'text', display_order: 3 },
+  { field_name: 'manufacturer', label: 'Manufacturer', field_type: 'text', display_order: 10 },
+  { field_name: 'model', label: 'Model', field_type: 'text', display_order: 11 },
+  { field_name: 'serial_number', label: 'Serial Number', field_type: 'text', display_order: 12 },
+  { field_name: 'purchase_date', label: 'Purchase Date', field_type: 'date', data_type: 'date', display_order: 13 },
+  { field_name: 'warranty_expiry', label: 'Warranty Expiry', field_type: 'date', data_type: 'date', display_order: 14 },
 ];
 
 // Field definitions by CI type code
 const fieldsByCiType = {
   // UPS - Uninterruptible Power Supply
   UPS: [
-    { field_name: 'power_capacity_va', label_key: 'ciFields.powerCapacityVa', field_type: 'number', data_type: 'number', display_order: 1, unit: 'VA', min_value: 0 },
-    { field_name: 'power_capacity_watts', label_key: 'ciFields.powerCapacityWatts', field_type: 'number', data_type: 'number', display_order: 2, unit: 'W', min_value: 0 },
-    { field_name: 'battery_count', label_key: 'ciFields.batteryCount', field_type: 'number', data_type: 'number', display_order: 3, min_value: 1 },
-    { field_name: 'runtime_minutes', label_key: 'ciFields.runtimeMinutes', field_type: 'number', data_type: 'number', display_order: 4, unit: 'min', min_value: 0 },
-    { field_name: 'last_battery_change', label_key: 'ciFields.lastBatteryChange', field_type: 'date', data_type: 'date', display_order: 5 },
-    { field_name: 'next_battery_change', label_key: 'ciFields.nextBatteryChange', field_type: 'date', data_type: 'date', display_order: 6 },
-    { field_name: 'input_voltage', label_key: 'ciFields.inputVoltage', field_type: 'number', data_type: 'number', display_order: 7, unit: 'V' },
-    { field_name: 'output_voltage', label_key: 'ciFields.outputVoltage', field_type: 'number', data_type: 'number', display_order: 8, unit: 'V' },
-    { field_name: 'manufacturer', label_key: 'ciFields.manufacturer', field_type: 'text', display_order: 10 },
-    { field_name: 'model', label_key: 'ciFields.model', field_type: 'text', display_order: 11 },
-    { field_name: 'serial_number', label_key: 'ciFields.serialNumber', field_type: 'text', display_order: 12 },
-    { field_name: 'location_rack', label_key: 'ciFields.locationRack', field_type: 'text', display_order: 15 },
+    { field_name: 'power_capacity_va', label: 'powerCapacityVa', field_type: 'number', data_type: 'number', display_order: 1, unit: 'VA', min_value: 0 },
+    { field_name: 'power_capacity_watts', label: 'powerCapacityWatts', field_type: 'number', data_type: 'number', display_order: 2, unit: 'W', min_value: 0 },
+    { field_name: 'battery_count', label: 'batteryCount', field_type: 'number', data_type: 'number', display_order: 3, min_value: 1 },
+    { field_name: 'runtime_minutes', label: 'runtimeMinutes', field_type: 'number', data_type: 'number', display_order: 4, unit: 'min', min_value: 0 },
+    { field_name: 'last_battery_change', label: 'lastBatteryChange', field_type: 'date', data_type: 'date', display_order: 5 },
+    { field_name: 'next_battery_change', label: 'nextBatteryChange', field_type: 'date', data_type: 'date', display_order: 6 },
+    { field_name: 'input_voltage', label: 'inputVoltage', field_type: 'number', data_type: 'number', display_order: 7, unit: 'V' },
+    { field_name: 'output_voltage', label: 'outputVoltage', field_type: 'number', data_type: 'number', display_order: 8, unit: 'V' },
+    { field_name: 'manufacturer', label: 'manufacturer', field_type: 'text', display_order: 10 },
+    { field_name: 'model', label: 'model', field_type: 'text', display_order: 11 },
+    { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 12 },
+    { field_name: 'location_rack', label: 'locationRack', field_type: 'text', display_order: 15 },
   ],
 
   // APPLICATION - Software Application
   APPLICATION: [
-    { field_name: 'version', label_key: 'ciFields.version', field_type: 'text', display_order: 1, show_in_table: true },
-    { field_name: 'vendor', label_key: 'ciFields.vendor', field_type: 'text', display_order: 2, show_in_table: true },
-    { field_name: 'license_type', label_key: 'ciFields.licenseType', field_type: 'select', display_order: 3, options_source: JSON.stringify([
+    { field_name: 'version', label: 'version', field_type: 'text', display_order: 1, show_in_table: true },
+    { field_name: 'vendor', label: 'vendor', field_type: 'text', display_order: 2, show_in_table: true },
+    { field_name: 'license_type', label: 'licenseType', field_type: 'select', display_order: 3, options_source: JSON.stringify([
       { label: 'Perpetual', value: 'PERPETUAL' },
       { label: 'Subscription', value: 'SUBSCRIPTION' },
       { label: 'Open Source', value: 'OPEN_SOURCE' },
       { label: 'Freeware', value: 'FREEWARE' },
       { label: 'Trial', value: 'TRIAL' }
     ])},
-    { field_name: 'license_count', label_key: 'ciFields.licenseCount', field_type: 'number', data_type: 'number', display_order: 4, min_value: 0 },
-    { field_name: 'license_expiry', label_key: 'ciFields.licenseExpiry', field_type: 'date', data_type: 'date', display_order: 5 },
-    { field_name: 'environment', label_key: 'ciFields.environment', field_type: 'select', display_order: 6, show_in_table: true, options_source: JSON.stringify([
+    { field_name: 'license_count', label: 'licenseCount', field_type: 'number', data_type: 'number', display_order: 4, min_value: 0 },
+    { field_name: 'license_expiry', label: 'licenseExpiry', field_type: 'date', data_type: 'date', display_order: 5 },
+    { field_name: 'environment', label: 'environment', field_type: 'select', display_order: 6, show_in_table: true, options_source: JSON.stringify([
       { label: 'Production', value: 'PRODUCTION' },
       { label: 'Staging', value: 'STAGING' },
       { label: 'Development', value: 'DEVELOPMENT' },
       { label: 'Test', value: 'TEST' }
     ])},
-    { field_name: 'url', label_key: 'ciFields.url', field_type: 'text', display_order: 7 },
-    { field_name: 'documentation_url', label_key: 'ciFields.documentationUrl', field_type: 'text', display_order: 8 },
-    { field_name: 'support_contact', label_key: 'ciFields.supportContact', field_type: 'text', display_order: 9 },
-    { field_name: 'business_owner', label_key: 'ciFields.businessOwner', field_type: 'text', display_order: 10 },
-    { field_name: 'technical_owner', label_key: 'ciFields.technicalOwner', field_type: 'text', display_order: 11 },
+    { field_name: 'url', label: 'url', field_type: 'text', display_order: 7 },
+    { field_name: 'documentation_url', label: 'documentationUrl', field_type: 'text', display_order: 8 },
+    { field_name: 'support_contact', label: 'supportContact', field_type: 'text', display_order: 9 },
+    { field_name: 'business_owner', label: 'businessOwner', field_type: 'text', display_order: 10 },
+    { field_name: 'technical_owner', label: 'technicalOwner', field_type: 'text', display_order: 11 },
   ],
 
   // SERVER - Physical or Virtual Server
   SERVER: [
-    { field_name: 'hostname', label_key: 'ciFields.hostname', field_type: 'text', display_order: 1, is_required: true, show_in_table: true },
-    { field_name: 'ip_address', label_key: 'ciFields.ipAddress', field_type: 'text', display_order: 2, show_in_table: true },
-    { field_name: 'os', label_key: 'ciFields.os', field_type: 'select', display_order: 3, show_in_table: true, options_source: JSON.stringify([
+    { field_name: 'hostname', label: 'hostname', field_type: 'text', display_order: 1, is_required: true, show_in_table: true },
+    { field_name: 'ip_address', label: 'ipAddress', field_type: 'text', display_order: 2, show_in_table: true },
+    { field_name: 'os', label: 'os', field_type: 'select', display_order: 3, show_in_table: true, options_source: JSON.stringify([
       { label: 'Windows Server', value: 'WINDOWS_SERVER' },
       { label: 'Linux (RHEL)', value: 'LINUX_RHEL' },
       { label: 'Linux (Ubuntu)', value: 'LINUX_UBUNTU' },
@@ -74,9 +181,9 @@ const fieldsByCiType = {
       { label: 'VMware ESXi', value: 'VMWARE_ESXI' },
       { label: 'Other', value: 'OTHER' }
     ])},
-    { field_name: 'os_version', label_key: 'ciFields.osVersion', field_type: 'text', display_order: 4 },
-    { field_name: 'is_virtual', label_key: 'ciFields.isVirtual', field_type: 'boolean', data_type: 'boolean', display_order: 5, default_value: 'false' },
-    { field_name: 'hypervisor', label_key: 'ciFields.hypervisor', field_type: 'select', display_order: 6, options_source: JSON.stringify([
+    { field_name: 'os_version', label: 'osVersion', field_type: 'text', display_order: 4 },
+    { field_name: 'is_virtual', label: 'isVirtual', field_type: 'boolean', data_type: 'boolean', display_order: 5, default_value: 'false' },
+    { field_name: 'hypervisor', label: 'hypervisor', field_type: 'select', display_order: 6, options_source: JSON.stringify([
       { label: 'VMware vSphere', value: 'VMWARE' },
       { label: 'Microsoft Hyper-V', value: 'HYPERV' },
       { label: 'KVM', value: 'KVM' },
@@ -84,47 +191,47 @@ const fieldsByCiType = {
       { label: 'Proxmox', value: 'PROXMOX' },
       { label: 'None (Physical)', value: 'NONE' }
     ])},
-    { field_name: 'cpu_count', label_key: 'ciFields.cpuCount', field_type: 'number', data_type: 'number', display_order: 7, min_value: 1 },
-    { field_name: 'cpu_cores', label_key: 'ciFields.cpuCores', field_type: 'number', data_type: 'number', display_order: 8, min_value: 1 },
-    { field_name: 'ram_gb', label_key: 'ciFields.ramGb', field_type: 'number', data_type: 'number', display_order: 9, unit: 'GB', min_value: 1 },
-    { field_name: 'storage_gb', label_key: 'ciFields.storageGb', field_type: 'number', data_type: 'number', display_order: 10, unit: 'GB', min_value: 0 },
-    { field_name: 'environment', label_key: 'ciFields.environment', field_type: 'select', display_order: 11, options_source: JSON.stringify([
+    { field_name: 'cpu_count', label: 'cpuCount', field_type: 'number', data_type: 'number', display_order: 7, min_value: 1 },
+    { field_name: 'cpu_cores', label: 'cpuCores', field_type: 'number', data_type: 'number', display_order: 8, min_value: 1 },
+    { field_name: 'ram_gb', label: 'ramGb', field_type: 'number', data_type: 'number', display_order: 9, unit: 'GB', min_value: 1 },
+    { field_name: 'storage_gb', label: 'storageGb', field_type: 'number', data_type: 'number', display_order: 10, unit: 'GB', min_value: 0 },
+    { field_name: 'environment', label: 'environment', field_type: 'select', display_order: 11, options_source: JSON.stringify([
       { label: 'Production', value: 'PRODUCTION' },
       { label: 'Staging', value: 'STAGING' },
       { label: 'Development', value: 'DEVELOPMENT' },
       { label: 'Test', value: 'TEST' },
       { label: 'DR', value: 'DR' }
     ])},
-    { field_name: 'manufacturer', label_key: 'ciFields.manufacturer', field_type: 'text', display_order: 15 },
-    { field_name: 'model', label_key: 'ciFields.model', field_type: 'text', display_order: 16 },
-    { field_name: 'serial_number', label_key: 'ciFields.serialNumber', field_type: 'text', display_order: 17 },
-    { field_name: 'location_datacenter', label_key: 'ciFields.locationDatacenter', field_type: 'text', display_order: 20 },
-    { field_name: 'location_rack', label_key: 'ciFields.locationRack', field_type: 'text', display_order: 21 },
-    { field_name: 'location_rack_unit', label_key: 'ciFields.locationRackUnit', field_type: 'text', display_order: 22 },
+    { field_name: 'manufacturer', label: 'manufacturer', field_type: 'text', display_order: 15 },
+    { field_name: 'model', label: 'model', field_type: 'text', display_order: 16 },
+    { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 17 },
+    { field_name: 'location_datacenter', label: 'locationDatacenter', field_type: 'text', display_order: 20 },
+    { field_name: 'location_rack', label: 'locationRack', field_type: 'text', display_order: 21 },
+    { field_name: 'location_rack_unit', label: 'locationRackUnit', field_type: 'text', display_order: 22 },
   ],
 
   // ROUTER
   ROUTER: [
     ...commonNetworkFields.slice(0, 3), // ip, mac, firmware
-    { field_name: 'routing_protocols', label_key: 'ciFields.routingProtocols', field_type: 'multiselect', data_type: 'array', display_order: 4, options_source: JSON.stringify([
+    { field_name: 'routing_protocols', label: 'routingProtocols', field_type: 'multiselect', data_type: 'array', display_order: 4, options_source: JSON.stringify([
       { label: 'OSPF', value: 'OSPF' },
       { label: 'BGP', value: 'BGP' },
       { label: 'EIGRP', value: 'EIGRP' },
       { label: 'RIP', value: 'RIP' },
       { label: 'Static', value: 'STATIC' }
     ])},
-    { field_name: 'wan_interfaces', label_key: 'ciFields.wanInterfaces', field_type: 'number', data_type: 'number', display_order: 5, min_value: 0 },
-    { field_name: 'lan_interfaces', label_key: 'ciFields.lanInterfaces', field_type: 'number', data_type: 'number', display_order: 6, min_value: 0 },
-    { field_name: 'nat_enabled', label_key: 'ciFields.natEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 7 },
-    { field_name: 'vpn_enabled', label_key: 'ciFields.vpnEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
+    { field_name: 'wan_interfaces', label: 'wanInterfaces', field_type: 'number', data_type: 'number', display_order: 5, min_value: 0 },
+    { field_name: 'lan_interfaces', label: 'lanInterfaces', field_type: 'number', data_type: 'number', display_order: 6, min_value: 0 },
+    { field_name: 'nat_enabled', label: 'natEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 7 },
+    { field_name: 'vpn_enabled', label: 'vpnEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
     ...commonNetworkFields.slice(3), // manufacturer, model, serial, dates
   ],
 
   // SWITCH
   SWITCH: [
     ...commonNetworkFields.slice(0, 3),
-    { field_name: 'port_count', label_key: 'ciFields.portCount', field_type: 'number', data_type: 'number', display_order: 4, min_value: 1, show_in_table: true },
-    { field_name: 'port_speed', label_key: 'ciFields.portSpeed', field_type: 'select', display_order: 5, options_source: JSON.stringify([
+    { field_name: 'port_count', label: 'portCount', field_type: 'number', data_type: 'number', display_order: 4, min_value: 1, show_in_table: true },
+    { field_name: 'port_speed', label: 'portSpeed', field_type: 'select', display_order: 5, options_source: JSON.stringify([
       { label: '100 Mbps', value: '100M' },
       { label: '1 Gbps', value: '1G' },
       { label: '10 Gbps', value: '10G' },
@@ -132,29 +239,29 @@ const fieldsByCiType = {
       { label: '40 Gbps', value: '40G' },
       { label: '100 Gbps', value: '100G' }
     ])},
-    { field_name: 'layer', label_key: 'ciFields.layer', field_type: 'select', display_order: 6, options_source: JSON.stringify([
+    { field_name: 'layer', label: 'layer', field_type: 'select', display_order: 6, options_source: JSON.stringify([
       { label: 'Layer 2', value: 'L2' },
       { label: 'Layer 3', value: 'L3' }
     ])},
-    { field_name: 'managed', label_key: 'ciFields.managed', field_type: 'boolean', data_type: 'boolean', display_order: 7, default_value: 'true' },
-    { field_name: 'poe_enabled', label_key: 'ciFields.poeEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
-    { field_name: 'poe_budget_watts', label_key: 'ciFields.poeBudgetWatts', field_type: 'number', data_type: 'number', display_order: 9, unit: 'W', min_value: 0 },
-    { field_name: 'vlan_count', label_key: 'ciFields.vlanCount', field_type: 'number', data_type: 'number', display_order: 10, min_value: 0 },
-    { field_name: 'stacking_enabled', label_key: 'ciFields.stackingEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 11 },
+    { field_name: 'managed', label: 'managed', field_type: 'boolean', data_type: 'boolean', display_order: 7, default_value: 'true' },
+    { field_name: 'poe_enabled', label: 'poeEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
+    { field_name: 'poe_budget_watts', label: 'poeBudgetWatts', field_type: 'number', data_type: 'number', display_order: 9, unit: 'W', min_value: 0 },
+    { field_name: 'vlan_count', label: 'vlanCount', field_type: 'number', data_type: 'number', display_order: 10, min_value: 0 },
+    { field_name: 'stacking_enabled', label: 'stackingEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 11 },
     ...commonNetworkFields.slice(3),
   ],
 
   // FIREWALL
   FIREWALL: [
     ...commonNetworkFields.slice(0, 3),
-    { field_name: 'throughput_gbps', label_key: 'ciFields.throughputGbps', field_type: 'number', data_type: 'number', display_order: 4, unit: 'Gbps', min_value: 0 },
-    { field_name: 'max_connections', label_key: 'ciFields.maxConnections', field_type: 'number', data_type: 'number', display_order: 5, min_value: 0 },
-    { field_name: 'vpn_enabled', label_key: 'ciFields.vpnEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 6 },
-    { field_name: 'vpn_tunnels', label_key: 'ciFields.vpnTunnels', field_type: 'number', data_type: 'number', display_order: 7, min_value: 0 },
-    { field_name: 'ips_enabled', label_key: 'ciFields.ipsEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
-    { field_name: 'antivirus_enabled', label_key: 'ciFields.antivirusEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 9 },
-    { field_name: 'web_filter_enabled', label_key: 'ciFields.webFilterEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 10 },
-    { field_name: 'ha_mode', label_key: 'ciFields.haMode', field_type: 'select', display_order: 11, options_source: JSON.stringify([
+    { field_name: 'throughput_gbps', label: 'throughputGbps', field_type: 'number', data_type: 'number', display_order: 4, unit: 'Gbps', min_value: 0 },
+    { field_name: 'max_connections', label: 'maxConnections', field_type: 'number', data_type: 'number', display_order: 5, min_value: 0 },
+    { field_name: 'vpn_enabled', label: 'vpnEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 6 },
+    { field_name: 'vpn_tunnels', label: 'vpnTunnels', field_type: 'number', data_type: 'number', display_order: 7, min_value: 0 },
+    { field_name: 'ips_enabled', label: 'ipsEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
+    { field_name: 'antivirus_enabled', label: 'antivirusEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 9 },
+    { field_name: 'web_filter_enabled', label: 'webFilterEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 10 },
+    { field_name: 'ha_mode', label: 'haMode', field_type: 'select', display_order: 11, options_source: JSON.stringify([
       { label: 'Standalone', value: 'STANDALONE' },
       { label: 'Active-Passive', value: 'ACTIVE_PASSIVE' },
       { label: 'Active-Active', value: 'ACTIVE_ACTIVE' },
@@ -166,40 +273,40 @@ const fieldsByCiType = {
   // ACCESS_POINT
   ACCESS_POINT: [
     ...commonNetworkFields.slice(0, 3),
-    { field_name: 'wifi_standards', label_key: 'ciFields.wifiStandards', field_type: 'multiselect', data_type: 'array', display_order: 4, options_source: JSON.stringify([
+    { field_name: 'wifi_standards', label: 'wifiStandards', field_type: 'multiselect', data_type: 'array', display_order: 4, options_source: JSON.stringify([
       { label: 'WiFi 4 (802.11n)', value: 'WIFI4' },
       { label: 'WiFi 5 (802.11ac)', value: 'WIFI5' },
       { label: 'WiFi 6 (802.11ax)', value: 'WIFI6' },
       { label: 'WiFi 6E', value: 'WIFI6E' },
       { label: 'WiFi 7 (802.11be)', value: 'WIFI7' }
     ])},
-    { field_name: 'frequency_bands', label_key: 'ciFields.frequencyBands', field_type: 'multiselect', data_type: 'array', display_order: 5, options_source: JSON.stringify([
+    { field_name: 'frequency_bands', label: 'frequencyBands', field_type: 'multiselect', data_type: 'array', display_order: 5, options_source: JSON.stringify([
       { label: '2.4 GHz', value: '2.4GHZ' },
       { label: '5 GHz', value: '5GHZ' },
       { label: '6 GHz', value: '6GHZ' }
     ])},
-    { field_name: 'max_clients', label_key: 'ciFields.maxClients', field_type: 'number', data_type: 'number', display_order: 6, min_value: 0 },
-    { field_name: 'poe_powered', label_key: 'ciFields.poePowered', field_type: 'boolean', data_type: 'boolean', display_order: 7 },
-    { field_name: 'controller_managed', label_key: 'ciFields.controllerManaged', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
-    { field_name: 'controller_ip', label_key: 'ciFields.controllerIp', field_type: 'text', display_order: 9 },
-    { field_name: 'ssid_count', label_key: 'ciFields.ssidCount', field_type: 'number', data_type: 'number', display_order: 10, min_value: 0 },
+    { field_name: 'max_clients', label: 'maxClients', field_type: 'number', data_type: 'number', display_order: 6, min_value: 0 },
+    { field_name: 'poe_powered', label: 'poePowered', field_type: 'boolean', data_type: 'boolean', display_order: 7 },
+    { field_name: 'controller_managed', label: 'controllerManaged', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
+    { field_name: 'controller_ip', label: 'controllerIp', field_type: 'text', display_order: 9 },
+    { field_name: 'ssid_count', label: 'ssidCount', field_type: 'number', data_type: 'number', display_order: 10, min_value: 0 },
     ...commonNetworkFields.slice(3),
   ],
 
   // LOAD_BALANCER
   LOAD_BALANCER: [
     ...commonNetworkFields.slice(0, 3),
-    { field_name: 'throughput_gbps', label_key: 'ciFields.throughputGbps', field_type: 'number', data_type: 'number', display_order: 4, unit: 'Gbps', min_value: 0 },
-    { field_name: 'virtual_servers', label_key: 'ciFields.virtualServers', field_type: 'number', data_type: 'number', display_order: 5, min_value: 0 },
-    { field_name: 'algorithm', label_key: 'ciFields.algorithm', field_type: 'select', display_order: 6, options_source: JSON.stringify([
+    { field_name: 'throughput_gbps', label: 'throughputGbps', field_type: 'number', data_type: 'number', display_order: 4, unit: 'Gbps', min_value: 0 },
+    { field_name: 'virtual_servers', label: 'virtualServers', field_type: 'number', data_type: 'number', display_order: 5, min_value: 0 },
+    { field_name: 'algorithm', label: 'algorithm', field_type: 'select', display_order: 6, options_source: JSON.stringify([
       { label: 'Round Robin', value: 'ROUND_ROBIN' },
       { label: 'Least Connections', value: 'LEAST_CONN' },
       { label: 'IP Hash', value: 'IP_HASH' },
       { label: 'Weighted', value: 'WEIGHTED' }
     ])},
-    { field_name: 'ssl_offload', label_key: 'ciFields.sslOffload', field_type: 'boolean', data_type: 'boolean', display_order: 7 },
-    { field_name: 'health_check_enabled', label_key: 'ciFields.healthCheckEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
-    { field_name: 'ha_mode', label_key: 'ciFields.haMode', field_type: 'select', display_order: 9, options_source: JSON.stringify([
+    { field_name: 'ssl_offload', label: 'sslOffload', field_type: 'boolean', data_type: 'boolean', display_order: 7 },
+    { field_name: 'health_check_enabled', label: 'healthCheckEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
+    { field_name: 'ha_mode', label: 'haMode', field_type: 'select', display_order: 9, options_source: JSON.stringify([
       { label: 'Standalone', value: 'STANDALONE' },
       { label: 'Active-Passive', value: 'ACTIVE_PASSIVE' },
       { label: 'Active-Active', value: 'ACTIVE_ACTIVE' }
@@ -209,16 +316,16 @@ const fieldsByCiType = {
 
   // STORAGE
   STORAGE: [
-    { field_name: 'storage_type', label_key: 'ciFields.storageType', field_type: 'select', display_order: 1, show_in_table: true, options_source: JSON.stringify([
+    { field_name: 'storage_type', label: 'storageType', field_type: 'select', display_order: 1, show_in_table: true, options_source: JSON.stringify([
       { label: 'SAN', value: 'SAN' },
       { label: 'NAS', value: 'NAS' },
       { label: 'DAS', value: 'DAS' },
       { label: 'Object Storage', value: 'OBJECT' },
       { label: 'Tape Library', value: 'TAPE' }
     ])},
-    { field_name: 'total_capacity_tb', label_key: 'ciFields.totalCapacityTb', field_type: 'number', data_type: 'number', display_order: 2, unit: 'TB', min_value: 0, show_in_table: true },
-    { field_name: 'used_capacity_tb', label_key: 'ciFields.usedCapacityTb', field_type: 'number', data_type: 'number', display_order: 3, unit: 'TB', min_value: 0 },
-    { field_name: 'raid_level', label_key: 'ciFields.raidLevel', field_type: 'select', display_order: 4, options_source: JSON.stringify([
+    { field_name: 'total_capacity_tb', label: 'totalCapacityTb', field_type: 'number', data_type: 'number', display_order: 2, unit: 'TB', min_value: 0, show_in_table: true },
+    { field_name: 'used_capacity_tb', label: 'usedCapacityTb', field_type: 'number', data_type: 'number', display_order: 3, unit: 'TB', min_value: 0 },
+    { field_name: 'raid_level', label: 'raidLevel', field_type: 'select', display_order: 4, options_source: JSON.stringify([
       { label: 'RAID 0', value: 'RAID0' },
       { label: 'RAID 1', value: 'RAID1' },
       { label: 'RAID 5', value: 'RAID5' },
@@ -227,114 +334,114 @@ const fieldsByCiType = {
       { label: 'RAID 50', value: 'RAID50' },
       { label: 'RAID 60', value: 'RAID60' }
     ])},
-    { field_name: 'disk_type', label_key: 'ciFields.diskType', field_type: 'select', display_order: 5, options_source: JSON.stringify([
+    { field_name: 'disk_type', label: 'diskType', field_type: 'select', display_order: 5, options_source: JSON.stringify([
       { label: 'SSD', value: 'SSD' },
       { label: 'NVMe', value: 'NVME' },
       { label: 'SAS', value: 'SAS' },
       { label: 'SATA', value: 'SATA' },
       { label: 'Hybrid', value: 'HYBRID' }
     ])},
-    { field_name: 'disk_count', label_key: 'ciFields.diskCount', field_type: 'number', data_type: 'number', display_order: 6, min_value: 0 },
-    { field_name: 'protocols', label_key: 'ciFields.protocols', field_type: 'multiselect', data_type: 'array', display_order: 7, options_source: JSON.stringify([
+    { field_name: 'disk_count', label: 'diskCount', field_type: 'number', data_type: 'number', display_order: 6, min_value: 0 },
+    { field_name: 'protocols', label: 'protocols', field_type: 'multiselect', data_type: 'array', display_order: 7, options_source: JSON.stringify([
       { label: 'iSCSI', value: 'ISCSI' },
       { label: 'FC', value: 'FC' },
       { label: 'NFS', value: 'NFS' },
       { label: 'SMB/CIFS', value: 'SMB' },
       { label: 'S3', value: 'S3' }
     ])},
-    { field_name: 'ip_address', label_key: 'ciFields.ipAddress', field_type: 'text', display_order: 8 },
-    { field_name: 'manufacturer', label_key: 'ciFields.manufacturer', field_type: 'text', display_order: 10 },
-    { field_name: 'model', label_key: 'ciFields.model', field_type: 'text', display_order: 11 },
-    { field_name: 'serial_number', label_key: 'ciFields.serialNumber', field_type: 'text', display_order: 12 },
+    { field_name: 'ip_address', label: 'ipAddress', field_type: 'text', display_order: 8 },
+    { field_name: 'manufacturer', label: 'manufacturer', field_type: 'text', display_order: 10 },
+    { field_name: 'model', label: 'model', field_type: 'text', display_order: 11 },
+    { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 12 },
   ],
 
   // WORKSTATION
   WORKSTATION: [
-    { field_name: 'hostname', label_key: 'ciFields.hostname', field_type: 'text', display_order: 1, show_in_table: true },
-    { field_name: 'device_type', label_key: 'ciFields.deviceType', field_type: 'select', display_order: 2, show_in_table: true, options_source: JSON.stringify([
+    { field_name: 'hostname', label: 'hostname', field_type: 'text', display_order: 1, show_in_table: true },
+    { field_name: 'device_type', label: 'deviceType', field_type: 'select', display_order: 2, show_in_table: true, options_source: JSON.stringify([
       { label: 'Desktop', value: 'DESKTOP' },
       { label: 'Laptop', value: 'LAPTOP' },
       { label: 'Thin Client', value: 'THIN_CLIENT' },
       { label: 'All-in-One', value: 'AIO' }
     ])},
-    { field_name: 'os', label_key: 'ciFields.os', field_type: 'select', display_order: 3, options_source: JSON.stringify([
+    { field_name: 'os', label: 'os', field_type: 'select', display_order: 3, options_source: JSON.stringify([
       { label: 'Windows 11', value: 'WIN11' },
       { label: 'Windows 10', value: 'WIN10' },
       { label: 'macOS', value: 'MACOS' },
       { label: 'Linux', value: 'LINUX' },
       { label: 'Chrome OS', value: 'CHROMEOS' }
     ])},
-    { field_name: 'os_version', label_key: 'ciFields.osVersion', field_type: 'text', display_order: 4 },
-    { field_name: 'cpu', label_key: 'ciFields.cpu', field_type: 'text', display_order: 5 },
-    { field_name: 'ram_gb', label_key: 'ciFields.ramGb', field_type: 'number', data_type: 'number', display_order: 6, unit: 'GB', min_value: 1 },
-    { field_name: 'storage_gb', label_key: 'ciFields.storageGb', field_type: 'number', data_type: 'number', display_order: 7, unit: 'GB', min_value: 0 },
-    { field_name: 'storage_type', label_key: 'ciFields.storageType', field_type: 'select', display_order: 8, options_source: JSON.stringify([
+    { field_name: 'os_version', label: 'osVersion', field_type: 'text', display_order: 4 },
+    { field_name: 'cpu', label: 'cpu', field_type: 'text', display_order: 5 },
+    { field_name: 'ram_gb', label: 'ramGb', field_type: 'number', data_type: 'number', display_order: 6, unit: 'GB', min_value: 1 },
+    { field_name: 'storage_gb', label: 'storageGb', field_type: 'number', data_type: 'number', display_order: 7, unit: 'GB', min_value: 0 },
+    { field_name: 'storage_type', label: 'storageType', field_type: 'select', display_order: 8, options_source: JSON.stringify([
       { label: 'SSD', value: 'SSD' },
       { label: 'HDD', value: 'HDD' },
       { label: 'NVMe', value: 'NVME' }
     ])},
-    { field_name: 'ip_address', label_key: 'ciFields.ipAddress', field_type: 'text', display_order: 9 },
-    { field_name: 'mac_address', label_key: 'ciFields.macAddress', field_type: 'text', display_order: 10 },
-    { field_name: 'assigned_user', label_key: 'ciFields.assignedUser', field_type: 'text', display_order: 11, show_in_table: true },
-    { field_name: 'manufacturer', label_key: 'ciFields.manufacturer', field_type: 'text', display_order: 15 },
-    { field_name: 'model', label_key: 'ciFields.model', field_type: 'text', display_order: 16 },
-    { field_name: 'serial_number', label_key: 'ciFields.serialNumber', field_type: 'text', display_order: 17 },
-    { field_name: 'asset_tag', label_key: 'ciFields.assetTag', field_type: 'text', display_order: 18 },
+    { field_name: 'ip_address', label: 'ipAddress', field_type: 'text', display_order: 9 },
+    { field_name: 'mac_address', label: 'macAddress', field_type: 'text', display_order: 10 },
+    { field_name: 'assigned_user', label: 'assignedUser', field_type: 'text', display_order: 11, show_in_table: true },
+    { field_name: 'manufacturer', label: 'manufacturer', field_type: 'text', display_order: 15 },
+    { field_name: 'model', label: 'model', field_type: 'text', display_order: 16 },
+    { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 17 },
+    { field_name: 'asset_tag', label: 'assetTag', field_type: 'text', display_order: 18 },
   ],
 
   // PRINTER
   PRINTER: [
-    { field_name: 'printer_type', label_key: 'ciFields.printerType', field_type: 'select', display_order: 1, show_in_table: true, options_source: JSON.stringify([
+    { field_name: 'printer_type', label: 'printerType', field_type: 'select', display_order: 1, show_in_table: true, options_source: JSON.stringify([
       { label: 'Laser', value: 'LASER' },
       { label: 'Inkjet', value: 'INKJET' },
       { label: 'Thermal', value: 'THERMAL' },
       { label: 'Dot Matrix', value: 'DOT_MATRIX' },
       { label: 'Multifunction', value: 'MFP' }
     ])},
-    { field_name: 'color_capable', label_key: 'ciFields.colorCapable', field_type: 'boolean', data_type: 'boolean', display_order: 2 },
-    { field_name: 'duplex_capable', label_key: 'ciFields.duplexCapable', field_type: 'boolean', data_type: 'boolean', display_order: 3 },
-    { field_name: 'network_connected', label_key: 'ciFields.networkConnected', field_type: 'boolean', data_type: 'boolean', display_order: 4 },
-    { field_name: 'ip_address', label_key: 'ciFields.ipAddress', field_type: 'text', display_order: 5 },
-    { field_name: 'pages_per_minute', label_key: 'ciFields.pagesPerMinute', field_type: 'number', data_type: 'number', display_order: 6, unit: 'ppm', min_value: 0 },
-    { field_name: 'paper_sizes', label_key: 'ciFields.paperSizes', field_type: 'multiselect', data_type: 'array', display_order: 7, options_source: JSON.stringify([
+    { field_name: 'color_capable', label: 'colorCapable', field_type: 'boolean', data_type: 'boolean', display_order: 2 },
+    { field_name: 'duplex_capable', label: 'duplexCapable', field_type: 'boolean', data_type: 'boolean', display_order: 3 },
+    { field_name: 'network_connected', label: 'networkConnected', field_type: 'boolean', data_type: 'boolean', display_order: 4 },
+    { field_name: 'ip_address', label: 'ipAddress', field_type: 'text', display_order: 5 },
+    { field_name: 'pages_per_minute', label: 'pagesPerMinute', field_type: 'number', data_type: 'number', display_order: 6, unit: 'ppm', min_value: 0 },
+    { field_name: 'paper_sizes', label: 'paperSizes', field_type: 'multiselect', data_type: 'array', display_order: 7, options_source: JSON.stringify([
       { label: 'A4', value: 'A4' },
       { label: 'A3', value: 'A3' },
       { label: 'Letter', value: 'LETTER' },
       { label: 'Legal', value: 'LEGAL' }
     ])},
-    { field_name: 'scan_capable', label_key: 'ciFields.scanCapable', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
-    { field_name: 'fax_capable', label_key: 'ciFields.faxCapable', field_type: 'boolean', data_type: 'boolean', display_order: 9 },
-    { field_name: 'manufacturer', label_key: 'ciFields.manufacturer', field_type: 'text', display_order: 10 },
-    { field_name: 'model', label_key: 'ciFields.model', field_type: 'text', display_order: 11 },
-    { field_name: 'serial_number', label_key: 'ciFields.serialNumber', field_type: 'text', display_order: 12 },
+    { field_name: 'scan_capable', label: 'scanCapable', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
+    { field_name: 'fax_capable', label: 'faxCapable', field_type: 'boolean', data_type: 'boolean', display_order: 9 },
+    { field_name: 'manufacturer', label: 'manufacturer', field_type: 'text', display_order: 10 },
+    { field_name: 'model', label: 'model', field_type: 'text', display_order: 11 },
+    { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 12 },
   ],
 
   // MOBILE_DEVICE
   MOBILE_DEVICE: [
-    { field_name: 'device_type', label_key: 'ciFields.deviceType', field_type: 'select', display_order: 1, show_in_table: true, options_source: JSON.stringify([
+    { field_name: 'device_type', label: 'deviceType', field_type: 'select', display_order: 1, show_in_table: true, options_source: JSON.stringify([
       { label: 'Smartphone', value: 'SMARTPHONE' },
       { label: 'Tablet', value: 'TABLET' },
       { label: 'E-Reader', value: 'EREADER' }
     ])},
-    { field_name: 'os', label_key: 'ciFields.os', field_type: 'select', display_order: 2, options_source: JSON.stringify([
+    { field_name: 'os', label: 'os', field_type: 'select', display_order: 2, options_source: JSON.stringify([
       { label: 'iOS', value: 'IOS' },
       { label: 'Android', value: 'ANDROID' },
       { label: 'iPadOS', value: 'IPADOS' }
     ])},
-    { field_name: 'os_version', label_key: 'ciFields.osVersion', field_type: 'text', display_order: 3 },
-    { field_name: 'imei', label_key: 'ciFields.imei', field_type: 'text', display_order: 4 },
-    { field_name: 'phone_number', label_key: 'ciFields.phoneNumber', field_type: 'text', display_order: 5 },
-    { field_name: 'storage_gb', label_key: 'ciFields.storageGb', field_type: 'number', data_type: 'number', display_order: 6, unit: 'GB', min_value: 0 },
-    { field_name: 'mdm_enrolled', label_key: 'ciFields.mdmEnrolled', field_type: 'boolean', data_type: 'boolean', display_order: 7 },
-    { field_name: 'assigned_user', label_key: 'ciFields.assignedUser', field_type: 'text', display_order: 8, show_in_table: true },
-    { field_name: 'manufacturer', label_key: 'ciFields.manufacturer', field_type: 'text', display_order: 10 },
-    { field_name: 'model', label_key: 'ciFields.model', field_type: 'text', display_order: 11 },
-    { field_name: 'serial_number', label_key: 'ciFields.serialNumber', field_type: 'text', display_order: 12 },
+    { field_name: 'os_version', label: 'osVersion', field_type: 'text', display_order: 3 },
+    { field_name: 'imei', label: 'imei', field_type: 'text', display_order: 4 },
+    { field_name: 'phone_number', label: 'phoneNumber', field_type: 'text', display_order: 5 },
+    { field_name: 'storage_gb', label: 'storageGb', field_type: 'number', data_type: 'number', display_order: 6, unit: 'GB', min_value: 0 },
+    { field_name: 'mdm_enrolled', label: 'mdmEnrolled', field_type: 'boolean', data_type: 'boolean', display_order: 7 },
+    { field_name: 'assigned_user', label: 'assignedUser', field_type: 'text', display_order: 8, show_in_table: true },
+    { field_name: 'manufacturer', label: 'manufacturer', field_type: 'text', display_order: 10 },
+    { field_name: 'model', label: 'model', field_type: 'text', display_order: 11 },
+    { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 12 },
   ],
 
   // DATABASE
   DATABASE: [
-    { field_name: 'db_engine', label_key: 'ciFields.dbEngine', field_type: 'select', display_order: 1, show_in_table: true, is_required: true, options_source: JSON.stringify([
+    { field_name: 'db_engine', label: 'dbEngine', field_type: 'select', display_order: 1, show_in_table: true, is_required: true, options_source: JSON.stringify([
       { label: 'PostgreSQL', value: 'POSTGRESQL' },
       { label: 'MySQL', value: 'MYSQL' },
       { label: 'MariaDB', value: 'MARIADB' },
@@ -344,38 +451,67 @@ const fieldsByCiType = {
       { label: 'Redis', value: 'REDIS' },
       { label: 'Elasticsearch', value: 'ELASTICSEARCH' }
     ])},
-    { field_name: 'version', label_key: 'ciFields.version', field_type: 'text', display_order: 2 },
-    { field_name: 'hostname', label_key: 'ciFields.hostname', field_type: 'text', display_order: 3, show_in_table: true },
-    { field_name: 'port', label_key: 'ciFields.port', field_type: 'number', data_type: 'number', display_order: 4, min_value: 1, max_value: 65535 },
-    { field_name: 'database_name', label_key: 'ciFields.databaseName', field_type: 'text', display_order: 5 },
-    { field_name: 'size_gb', label_key: 'ciFields.sizeGb', field_type: 'number', data_type: 'number', display_order: 6, unit: 'GB', min_value: 0 },
-    { field_name: 'environment', label_key: 'ciFields.environment', field_type: 'select', display_order: 7, options_source: JSON.stringify([
+    { field_name: 'version', label: 'version', field_type: 'text', display_order: 2 },
+    { field_name: 'hostname', label: 'hostname', field_type: 'text', display_order: 3, show_in_table: true },
+    { field_name: 'port', label: 'port', field_type: 'number', data_type: 'number', display_order: 4, min_value: 1, max_value: 65535 },
+    { field_name: 'database_name', label: 'databaseName', field_type: 'text', display_order: 5 },
+    { field_name: 'size_gb', label: 'sizeGb', field_type: 'number', data_type: 'number', display_order: 6, unit: 'GB', min_value: 0 },
+    { field_name: 'environment', label: 'environment', field_type: 'select', display_order: 7, options_source: JSON.stringify([
       { label: 'Production', value: 'PRODUCTION' },
       { label: 'Staging', value: 'STAGING' },
       { label: 'Development', value: 'DEVELOPMENT' },
       { label: 'Test', value: 'TEST' }
     ])},
-    { field_name: 'cluster_enabled', label_key: 'ciFields.clusterEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
-    { field_name: 'replication_enabled', label_key: 'ciFields.replicationEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 9 },
-    { field_name: 'backup_enabled', label_key: 'ciFields.backupEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 10 },
-    { field_name: 'backup_frequency', label_key: 'ciFields.backupFrequency', field_type: 'select', display_order: 11, options_source: JSON.stringify([
+    { field_name: 'cluster_enabled', label: 'clusterEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 8 },
+    { field_name: 'replication_enabled', label: 'replicationEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 9 },
+    { field_name: 'backup_enabled', label: 'backupEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 10 },
+    { field_name: 'backup_frequency', label: 'backupFrequency', field_type: 'select', display_order: 11, options_source: JSON.stringify([
       { label: 'Hourly', value: 'HOURLY' },
       { label: 'Daily', value: 'DAILY' },
       { label: 'Weekly', value: 'WEEKLY' },
       { label: 'Monthly', value: 'MONTHLY' }
     ])},
-    { field_name: 'ssl_enabled', label_key: 'ciFields.sslEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 12 },
+    { field_name: 'ssl_enabled', label: 'sslEnabled', field_type: 'boolean', data_type: 'boolean', display_order: 12 },
   ],
 
   // GENERIC - No specific fields, just common ones
   GENERIC: [
-    { field_name: 'manufacturer', label_key: 'ciFields.manufacturer', field_type: 'text', display_order: 1 },
-    { field_name: 'model', label_key: 'ciFields.model', field_type: 'text', display_order: 2 },
-    { field_name: 'serial_number', label_key: 'ciFields.serialNumber', field_type: 'text', display_order: 3 },
-    { field_name: 'asset_tag', label_key: 'ciFields.assetTag', field_type: 'text', display_order: 4 },
-    { field_name: 'notes', label_key: 'ciFields.notes', field_type: 'textarea', display_order: 10 },
+    { field_name: 'manufacturer', label: 'manufacturer', field_type: 'text', display_order: 1 },
+    { field_name: 'model', label: 'model', field_type: 'text', display_order: 2 },
+    { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 3 },
+    { field_name: 'asset_tag', label: 'assetTag', field_type: 'text', display_order: 4 },
+    { field_name: 'notes', label: 'notes', field_type: 'textarea', display_order: 10 },
   ],
 };
+
+/**
+ * Save translations for a field
+ */
+async function saveFieldTranslations(fieldUuid, fieldName) {
+  const translations = fieldTranslations[fieldName];
+  if (!translations) return;
+  
+  for (const [locale, value] of Object.entries(translations)) {
+    await prisma.translated_fields.upsert({
+      where: {
+        entity_type_entity_uuid_field_name_locale: {
+          entity_type: 'ci_type_fields',
+          entity_uuid: fieldUuid,
+          field_name: 'label',
+          locale
+        }
+      },
+      update: { value },
+      create: {
+        entity_type: 'ci_type_fields',
+        entity_uuid: fieldUuid,
+        field_name: 'label',
+        locale,
+        value
+      }
+    });
+  }
+}
 
 async function seedCiTypeFields() {
   console.log('Seeding CI type fields...');
@@ -383,6 +519,9 @@ async function seedCiTypeFields() {
   // Get all CI types
   const ciTypes = await prisma.ci_types.findMany();
   const ciTypeMap = new Map(ciTypes.map(ct => [ct.code, ct.uuid]));
+
+  let totalFields = 0;
+  let totalTranslations = 0;
 
   for (const [ciTypeCode, fields] of Object.entries(fieldsByCiType)) {
     const ciTypeUuid = ciTypeMap.get(ciTypeCode);
@@ -395,22 +534,41 @@ async function seedCiTypeFields() {
     console.log(`  Creating fields for CI type: ${ciTypeCode}`);
     
     for (const field of fields) {
-      await prisma.ci_type_fields.upsert({
+      // Get the English label from translations dictionary, or use field_name as fallback
+      const translations = fieldTranslations[field.field_name];
+      const englishLabel = translations?.en || field.label || field.field_name;
+      
+      // Create/update the field with English label as default
+      const fieldData = {
+        ...field,
+        label: englishLabel,
+        ci_type_uuid: ciTypeUuid
+      };
+      
+      const createdField = await prisma.ci_type_fields.upsert({
         where: {
           ci_type_uuid_field_name: {
             ci_type_uuid: ciTypeUuid,
             field_name: field.field_name,
           },
         },
-        update: { ...field, ci_type_uuid: ciTypeUuid },
-        create: { ...field, ci_type_uuid: ciTypeUuid },
+        update: fieldData,
+        create: fieldData,
       });
+      
+      // Save translations
+      if (translations) {
+        await saveFieldTranslations(createdField.uuid, field.field_name);
+        totalTranslations++;
+      }
+      
+      totalFields++;
     }
     
     console.log(`    Created ${fields.length} fields`);
   }
 
-  console.log('CI type fields seeding completed!');
+  console.log(`CI type fields seeding completed! ${totalFields} fields, ${totalTranslations} with translations`);
 }
 
 module.exports = { seedCiTypeFields };

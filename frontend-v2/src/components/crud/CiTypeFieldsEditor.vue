@@ -47,10 +47,10 @@
         </template>
       </Column>
 
-      <!-- Label key -->
-      <Column field="label_key" :header="$t('ciTypeFields.labelKey')" style="min-width: 160px">
+      <!-- Label -->
+      <Column field="label" :header="$t('ciTypeFields.label')" style="min-width: 160px">
         <template #body="{ data }">
-          <span class="text-xs text-surface-600 dark:text-surface-400">{{ data.label_key }}</span>
+          <span class="text-sm">{{ data.label }}</span>
         </template>
       </Column>
 
@@ -141,14 +141,15 @@
             />
           </div>
           <div class="flex flex-col gap-2">
-            <label for="label_key" class="font-semibold text-sm">
-              {{ $t('ciTypeFields.labelKey') }} <span class="text-red-500">*</span>
+            <label class="font-semibold text-sm">
+              {{ $t('ciTypeFields.label') }} <span class="text-red-500">*</span>
             </label>
-            <InputText 
-              id="label_key" 
-              v-model="editField.label_key" 
-              placeholder="ciFields.serialNumber"
-              size="small"
+            <TranslatableInput
+              v-model="editField.label"
+              :translations="editField._translations?.label || {}"
+              :fieldLabel="$t('ciTypeFields.label')"
+              :placeholder="$t('ciTypeFields.labelPlaceholder')"
+              @update:translations="updateLabelTranslations"
             />
           </div>
         </div>
@@ -278,6 +279,7 @@ import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Toast from 'primevue/toast'
+import TranslatableInput from '@/components/form/TranslatableInput.vue'
 
 const props = defineProps({
   ciTypeUuid: {
@@ -355,7 +357,7 @@ const openAddDialog = () => {
   editField.value = {
     ci_type_uuid: props.ciTypeUuid,
     field_name: '',
-    label_key: `ciFields.`,
+    label: '',
     field_type: 'text',
     data_type: 'string',
     show_in_form: true,
@@ -368,7 +370,8 @@ const openAddDialog = () => {
     max_length: null,
     default_value: null,
     options_source: null,
-    unit: null
+    unit: null,
+    _translations: { label: {} }
   }
   fieldDialogMode.value = 'create'
   fieldDialog.value = true
@@ -381,10 +384,18 @@ const openEditDialog = (field) => {
   fieldDialog.value = true
 }
 
+// Update label translations from TranslatableInput
+const updateLabelTranslations = (translations) => {
+  if (!editField.value._translations) {
+    editField.value._translations = {}
+  }
+  editField.value._translations.label = translations
+}
+
 // Save field
 const saveField = async () => {
   // Validation
-  if (!editField.value.field_name || !editField.value.label_key) {
+  if (!editField.value.field_name || !editField.value.label) {
     toast.add({ severity: 'warn', summary: 'Warning', detail: t('ciTypeFields.requiredFields'), life: 3000 })
     return
   }

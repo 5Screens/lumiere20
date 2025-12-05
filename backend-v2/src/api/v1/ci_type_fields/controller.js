@@ -7,12 +7,21 @@ const service = require('./service');
 const logger = require('../../../config/logger');
 
 /**
+ * Get locale from request (header or query param)
+ */
+const getLocale = (req) => {
+  const headerLocale = req.headers['accept-language']?.split(',')[0]?.split('-')[0];
+  return req.query.locale || headerLocale || 'en';
+};
+
+/**
  * Get all fields for a CI type
  */
 const getByTypeUuid = async (req, res) => {
   try {
     const { ciTypeUuid } = req.params;
-    const fields = await service.getByTypeUuid(ciTypeUuid);
+    const locale = getLocale(req);
+    const fields = await service.getByTypeUuid(ciTypeUuid, locale);
     res.json(fields);
   } catch (error) {
     logger.error('Controller error - getByTypeUuid:', error);
@@ -29,7 +38,8 @@ const getByTypeUuid = async (req, res) => {
 const getByUuid = async (req, res) => {
   try {
     const { uuid } = req.params;
-    const field = await service.getByUuid(uuid);
+    const locale = getLocale(req);
+    const field = await service.getByUuid(uuid, locale);
     
     if (!field) {
       return res.status(404).json({ 

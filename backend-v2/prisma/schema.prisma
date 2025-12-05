@@ -117,7 +117,8 @@ model ci_type_fields {
   uuid              String   @id @default(uuid()) @db.Uuid
   ci_type_uuid      String   @db.Uuid
   field_name        String   @db.VarChar(100)          // Field key in extended_core_fields JSON
-  label_key         String   @db.VarChar(100)          // i18n key for the field label
+  label             String   @db.VarChar(255)          // Default label (translations in translated_fields)
+  description       String?  @db.VarChar(500)          // Default description (translations in translated_fields)
   field_type        String   @db.VarChar(50)           // text, number, boolean, date, datetime, select, multiselect
   data_type         String   @default("string") @db.VarChar(50) // string, number, boolean, date, array
   
