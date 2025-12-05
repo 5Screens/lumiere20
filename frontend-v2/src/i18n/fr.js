@@ -18,7 +18,8 @@ export default {
     admin: 'Administration',
     ticketTypes: 'Types de tickets',
     ticketStatus: 'Statuts de tickets',
-    symptoms: 'Symptômes'
+    symptoms: 'Symptômes',
+    languages: 'Langues'
   },
   auth: {
     loginTitle: 'Connexion',
@@ -290,6 +291,28 @@ export default {
     retry: 'Réessayer',
     reload: 'Recharger la page',
     helpText: 'Si le problème persiste, contactez votre administrateur système.'
+  },
+  languages: {
+    title: 'Gestion des langues',
+    flag: 'Drapeau',
+    code: 'Code',
+    nativeName: 'Nom natif',
+    englishName: 'Nom anglais',
+    active: 'Actif',
+    status: 'Statut',
+    enabled: 'Activé',
+    disabled: 'Désactivé',
+    noLanguages: 'Aucune langue disponible',
+    activeCount: '{count} langue(s) active(s)',
+    totalCount: '{count} langue(s) au total',
+    saveChanges: 'Enregistrer les modifications',
+    infoMessage: 'Activez ou désactivez les langues disponibles dans l\'application. Les langues actives seront disponibles pour les utilisateurs.',
+    loadError: 'Erreur lors du chargement des langues',
+    toggleError: 'Erreur lors de la modification du statut',
+    enabledSuccess: 'Langue {name} activée',
+    disabledSuccess: 'Langue {name} désactivée',
+    bulkSaveSuccess: '{count} langue(s) mise(s) à jour',
+    bulkSaveError: 'Erreur lors de la sauvegarde'
   },
   primevue: {
     startsWith: 'Commence par',

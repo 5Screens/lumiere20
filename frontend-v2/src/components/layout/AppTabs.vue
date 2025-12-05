@@ -135,6 +135,7 @@ import { markRaw, defineAsyncComponent } from 'vue'
 const componentRegistry = {
   ObjectsCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/ObjectsCrud.vue'))),
   ObjectDetail: markRaw(defineAsyncComponent(() => import('@/components/crud/ObjectDetail.vue'))),
+  LanguagesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/LanguagesCrud.vue'))),
 }
 
 // Components that support child tabs

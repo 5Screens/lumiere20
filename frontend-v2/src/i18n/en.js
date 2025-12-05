@@ -18,7 +18,8 @@ export default {
     admin: 'Administration',
     ticketTypes: 'Ticket Types',
     ticketStatus: 'Ticket Status',
-    symptoms: 'Symptoms'
+    symptoms: 'Symptoms',
+    languages: 'Languages'
   },
   auth: {
     loginTitle: 'Sign In',
@@ -290,6 +291,28 @@ export default {
     retry: 'Retry',
     reload: 'Reload page',
     helpText: 'If the problem persists, contact your system administrator.'
+  },
+  languages: {
+    title: 'Language Management',
+    flag: 'Flag',
+    code: 'Code',
+    nativeName: 'Native Name',
+    englishName: 'English Name',
+    active: 'Active',
+    status: 'Status',
+    enabled: 'Enabled',
+    disabled: 'Disabled',
+    noLanguages: 'No languages available',
+    activeCount: '{count} active language(s)',
+    totalCount: '{count} total language(s)',
+    saveChanges: 'Save Changes',
+    infoMessage: 'Enable or disable available languages in the application. Active languages will be available to users.',
+    loadError: 'Error loading languages',
+    toggleError: 'Error changing status',
+    enabledSuccess: 'Language {name} enabled',
+    disabledSuccess: 'Language {name} disabled',
+    bulkSaveSuccess: '{count} language(s) updated',
+    bulkSaveError: 'Error saving changes'
   },
   primevue: {
     startsWith: 'Starts with',

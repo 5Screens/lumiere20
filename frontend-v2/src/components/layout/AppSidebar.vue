@@ -117,6 +117,11 @@ const menuItems = computed(() => [
         label: t('menu.ciTypes') || 'CI Types',
         icon: 'pi pi-tags',
         command: () => openTab('ci-types', 'CI Types', 'menu.ciTypes', 'pi pi-tags', 'ci_types')
+      },
+      {
+        label: t('menu.languages') || 'Languages',
+        icon: 'pi pi-globe',
+        command: () => openTab('languages', 'Languages', 'menu.languages', 'pi pi-globe', 'languages', 'LanguagesCrud')
       }
     ]
   },

@@ -28,6 +28,7 @@ const personsRoutes = require('./api/v1/persons/routes');
 const metadataRoutes = require('./api/v1/metadata/routes');
 const ciTypesRoutes = require('./api/v1/ci_types/routes');
 const ciTypeFieldsRoutes = require('./api/v1/ci_type_fields/routes');
+const languagesRoutes = require('./api/v1/languages/routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
@@ -38,6 +39,7 @@ app.use('/api/v1/persons', personsRoutes);
 app.use('/api/v1/metadata', metadataRoutes);
 app.use('/api/v1/ci_types', ciTypesRoutes);
 app.use('/api/v1/ci_type_fields', ciTypeFieldsRoutes);
+app.use('/api/v1/languages', languagesRoutes);
 
 // Health check
 app.get('/', (req, res) => {

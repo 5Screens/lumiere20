@@ -10,6 +10,7 @@ const { prisma } = require('./client');
 const { seedObjectMetadata } = require('./seeds/object-metadata');
 const { seedCiTypes } = require('./seeds/ci-types');
 const { seedCiTypeFields } = require('./seeds/ci-type-fields');
+const { seedLanguages } = require('./seeds/languages.seed');
 
 async function main() {
   console.log('========================================');
@@ -17,18 +18,23 @@ async function main() {
   console.log('========================================\n');
 
   try {
-    // 1. Object metadata (required for dynamic UI)
-    console.log('[1/3] Seeding object metadata...');
+    // 1. Languages (required for multi-language support)
+    console.log('[1/4] Seeding languages...');
+    await seedLanguages(prisma);
+    console.log('');
+
+    // 2. Object metadata (required for dynamic UI)
+    console.log('[2/4] Seeding object metadata...');
     await seedObjectMetadata();
     console.log('');
 
-    // 2. CI Types with translations
-    console.log('[2/3] Seeding CI types...');
+    // 3. CI Types with translations
+    console.log('[3/4] Seeding CI types...');
     await seedCiTypes();
     console.log('');
 
-    // 3. CI Type Fields (extended fields per CI type)
-    console.log('[3/3] Seeding CI type fields...');
+    // 4. CI Type Fields (extended fields per CI type)
+    console.log('[4/4] Seeding CI type fields...');
     await seedCiTypeFields();
     console.log('');
 

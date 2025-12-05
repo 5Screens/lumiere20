@@ -492,6 +492,25 @@ model translated_fields {
 }
 
 // ============================================
+// SCHEMA: configuration - Languages
+// ============================================
+
+// Languages table for multi-language support
+model languages {
+  uuid        String   @id @default(uuid()) @db.Uuid
+  code        String   @unique @db.VarChar(10)   // ISO 639-1 code (e.g., 'fr', 'en', 'es')
+  name        String   @db.VarChar(100)          // Native name (e.g., 'Français', 'English')
+  name_en     String   @db.VarChar(100)          // English name (e.g., 'French', 'English')
+  flag_code   String   @db.VarChar(10)           // Flag code for icons (e.g., 'fr', 'gb')
+  is_active   Boolean  @default(false)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@schema("configuration")
+  @@map("languages")
+}
+
+// ============================================
 // SCHEMA: configuration - Object Metadata
 // ============================================
 
