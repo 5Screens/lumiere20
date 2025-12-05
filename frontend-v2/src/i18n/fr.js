@@ -79,7 +79,8 @@ export default {
     selected: 'Sélectionné',
     clear: 'Effacer',
     saved: 'Enregistré avec succès',
-    notFound: 'Élément non trouvé'
+    notFound: 'Élément non trouvé',
+    translate: 'Traduire'
   },
   tabs: {
     backToList: 'Retour à la liste',

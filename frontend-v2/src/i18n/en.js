@@ -79,7 +79,8 @@ export default {
     selected: 'Selected',
     clear: 'Clear',
     saved: 'Saved successfully',
-    notFound: 'Item not found'
+    notFound: 'Item not found',
+    translate: 'Translate'
   },
   tabs: {
     backToList: 'Back to list',

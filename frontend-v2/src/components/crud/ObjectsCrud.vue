@@ -210,9 +210,11 @@
             <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
               {{ formatDate(data[col.field_name]) }}
             </template>
-            <!-- Textarea (truncated) -->
+            <!-- Textarea (truncated) - with translation support -->
             <template v-else-if="col.field_type === 'textarea'">
-              <span class="block max-w-xs truncate">{{ data[col.field_name] || '-' }}</span>
+              <span class="block max-w-xs truncate">
+                {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (data[col.field_name] || '-') }}
+              </span>
             </template>
             <!-- Tag Style display -->
             <template v-else-if="col.field_type === 'tag_style'">
@@ -232,9 +234,9 @@
               </div>
               <span v-else>-</span>
             </template>
-            <!-- Default text -->
+            <!-- Default text - with translation support -->
             <template v-else>
-              {{ data[col.field_name] ?? '-' }}
+              {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (data[col.field_name] ?? '-') }}
             </template>
           </template>
           
@@ -324,6 +326,24 @@
                     </Tag>
                     <span v-else class="text-surface-400">{{ $t('common.selectTagStyle') }}</span>
                   </div>
+                  <i class="pi pi-pencil text-surface-400 ml-2" />
+                </template>
+              </Button>
+            </template>
+            <!-- Translatable field editor -->
+            <template v-else-if="col.is_translatable">
+              <Button
+                type="button"
+                severity="secondary"
+                outlined
+                size="small"
+                class="w-full justify-between"
+                @click="openInlinePicker('translatable', data, field, col)"
+              >
+                <template #default>
+                  <span class="truncate text-left flex-1">
+                    {{ getTranslatedValue(data, field) }}
+                  </span>
                   <i class="pi pi-pencil text-surface-400 ml-2" />
                 </template>
               </Button>
@@ -683,6 +703,54 @@
       </template>
     </Dialog>
 
+    <!-- Inline Translatable Field Dialog -->
+    <Dialog
+      v-model:visible="inlineTranslatableDialog"
+      modal
+      :header="inlineTranslatableTitle"
+      :style="{ width: '500px' }"
+      :draggable="false"
+    >
+      <div class="flex flex-col gap-4">
+        <!-- One field per language -->
+        <div 
+          v-for="lang in availableLanguages" 
+          :key="lang.code"
+          class="flex flex-col gap-2"
+        >
+          <label :for="`trans-inline-${lang.code}`" class="flex items-center gap-2 font-medium">
+            <span class="text-xl" :title="lang.name">{{ lang.flag }}</span>
+            <span>{{ lang.name }}</span>
+          </label>
+          
+          <!-- Textarea for textarea fields -->
+          <Textarea
+            v-if="inlinePickerFieldMeta?.field_type === 'textarea'"
+            :id="`trans-inline-${lang.code}`"
+            v-model="inlineTranslations[lang.code]"
+            rows="3"
+            class="w-full"
+            :placeholder="`${lang.name}...`"
+          />
+          <!-- InputText for text fields -->
+          <InputText
+            v-else
+            :id="`trans-inline-${lang.code}`"
+            v-model="inlineTranslations[lang.code]"
+            class="w-full"
+            :placeholder="`${lang.name}...`"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
+          <Button :label="$t('common.confirm')" @click="confirmInlineTranslatable" :loading="inlinePickerSaving" />
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Toast -->
     <Toast position="bottom-right" />
     </template>
@@ -722,6 +790,7 @@ import ToggleSwitch from 'primevue/toggleswitch'
 // Custom form components
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
 import IconSelector from '@/components/form/IconSelector.vue'
+import TranslatableInput from '@/components/form/TranslatableInput.vue'
 
 // Utils
 import { getTagStyle, getColorValue, getTagStyleOptions } from '@/utils/tagStyles'
@@ -785,12 +854,25 @@ const editItem = ref({})
 // Inline picker dialogs
 const inlineIconDialog = ref(false)
 const inlineTagStyleDialog = ref(false)
+const inlineTranslatableDialog = ref(false)
 const inlinePickerData = ref(null) // The row data being edited
 const inlinePickerField = ref(null) // The field name being edited
+const inlinePickerFieldMeta = ref(null) // The field metadata (for translatable)
 const inlinePickerValue = ref(null) // The temporary selected value
 const inlinePickerSaving = ref(false)
 const iconSearchQuery = ref('')
 const tagStyleOptions = getTagStyleOptions()
+
+// Translatable field support
+const inlineTranslations = ref({}) // Temporary translations { fr: '...', en: '...' }
+const availableLanguages = [
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'pt', name: 'Português', flag: '🇵🇹' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' }
+]
 
 // Filters - built dynamically from metadata
 const initFilters = () => {
@@ -954,12 +1036,21 @@ const filteredIconsForInline = computed(() => {
   return searchIcons(iconSearchQuery.value)
 })
 
+// Title for translatable dialog
+const inlineTranslatableTitle = computed(() => {
+  if (inlinePickerFieldMeta.value?.label_key) {
+    return `${t('common.translate')} - ${t(inlinePickerFieldMeta.value.label_key)}`
+  }
+  return t('common.translate')
+})
+
 // Methods
 
 // Inline picker methods
-const openInlinePicker = (type, data, field) => {
+const openInlinePicker = (type, data, field, colMeta = null) => {
   inlinePickerData.value = data
   inlinePickerField.value = field
+  inlinePickerFieldMeta.value = colMeta
   inlinePickerValue.value = data[field]
   
   if (type === 'icon') {
@@ -967,14 +1058,32 @@ const openInlinePicker = (type, data, field) => {
     inlineIconDialog.value = true
   } else if (type === 'tag_style') {
     inlineTagStyleDialog.value = true
+  } else if (type === 'translatable') {
+    // Initialize translations from data._translations
+    inlineTranslations.value = {}
+    const existingTranslations = data._translations?.[field] || {}
+    
+    for (const lang of availableLanguages) {
+      // Use existing translation or empty string
+      inlineTranslations.value[lang.code] = existingTranslations[lang.code] || ''
+    }
+    
+    // If main value exists but no translation for current locale, use it
+    if (data[field] && !existingTranslations[locale.value]) {
+      inlineTranslations.value[locale.value] = data[field]
+    }
+    
+    inlineTranslatableDialog.value = true
   }
 }
 
 const cancelInlinePicker = () => {
   inlineIconDialog.value = false
   inlineTagStyleDialog.value = false
+  inlineTranslatableDialog.value = false
   inlinePickerData.value = null
   inlinePickerField.value = null
+  inlinePickerFieldMeta.value = null
   inlinePickerValue.value = null
 }
 
@@ -1008,6 +1117,62 @@ const confirmInlinePicker = async () => {
   } catch (error) {
     console.error('Failed to update item:', error)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to update item', life: 3000 })
+  } finally {
+    inlinePickerSaving.value = false
+  }
+}
+
+// Confirm translatable field update
+const confirmInlineTranslatable = async () => {
+  if (!inlinePickerData.value || !inlinePickerField.value) return
+  
+  const data = inlinePickerData.value
+  const field = inlinePickerField.value
+  
+  // Build clean translations object (remove empty values)
+  const cleanTranslations = {}
+  for (const [code, value] of Object.entries(inlineTranslations.value)) {
+    if (value && value.trim()) {
+      cleanTranslations[code] = value.trim()
+    }
+  }
+  
+  // Determine the main value (current locale or first available)
+  const newMainValue = cleanTranslations[locale.value] 
+    || Object.values(cleanTranslations)[0] 
+    || ''
+  
+  try {
+    inlinePickerSaving.value = true
+    const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'
+    
+    // Send update with both main value and translations
+    await service.value.update(data.uuid, { 
+      [field]: newMainValue,
+      _translations: {
+        ...data._translations,
+        [field]: cleanTranslations
+      }
+    })
+    
+    // Update local data reactively
+    const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
+    if (itemIndex !== -1) {
+      items.value[itemIndex] = { 
+        ...items.value[itemIndex], 
+        [field]: newMainValue,
+        _translations: {
+          ...items.value[itemIndex]._translations,
+          [field]: cleanTranslations
+        }
+      }
+    }
+    
+    toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
+    cancelInlinePicker()
+  } catch (error) {
+    console.error('Failed to update translations:', error)
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to update translations', life: 3000 })
   } finally {
     inlinePickerSaving.value = false
   }
@@ -1226,6 +1391,22 @@ const onStateRestore = (event) => {
 const getOptionByValue = (field, value) => {
   const options = getFieldOptions(field)
   return options.find(o => o.value === value)
+}
+
+// Get translated value for a translatable field
+const getTranslatedValue = (data, fieldName) => {
+  if (!data) return '-'
+  
+  // Check if translations exist for this field
+  const translations = data._translations?.[fieldName]
+  if (translations) {
+    // Try current locale first, then fallback to default value
+    const translatedValue = translations[locale.value]
+    if (translatedValue) return translatedValue
+  }
+  
+  // Fallback to the direct field value
+  return data[fieldName] ?? '-'
 }
 
 // Note: getTagStyle and getColorValue are now imported from @/utils/tagStyles
