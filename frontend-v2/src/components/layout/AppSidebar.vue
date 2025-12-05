@@ -180,6 +180,11 @@ const menuItems = computed(() => [
         label: t('menu.symptoms') || 'Symptoms',
         icon: 'pi pi-info-circle',
         command: () => openTab('symptoms', 'Symptoms', 'menu.symptoms', 'pi pi-info-circle', 'symptoms')
+      },
+      {
+        label: t('menu.metadata') || 'Metadata',
+        icon: 'pi pi-database',
+        command: () => openTab('metadata-object-types', 'Metadata', 'menu.metadata', 'pi pi-database', 'metadata', 'MetadataObjectTypesCrud')
       }
     ]
   }

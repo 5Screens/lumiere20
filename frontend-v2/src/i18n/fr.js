@@ -19,7 +19,8 @@ export default {
     ticketTypes: 'Types de tickets',
     ticketStatus: 'Statuts de tickets',
     symptoms: 'Symptômes',
-    languages: 'Langues'
+    languages: 'Langues',
+    metadata: 'Métadonnées'
   },
   auth: {
     loginTitle: 'Connexion',
@@ -291,6 +292,51 @@ export default {
     retry: 'Réessayer',
     reload: 'Recharger la page',
     helpText: 'Si le problème persiste, contactez votre administrateur système.'
+  },
+  metadata: {
+    objectTypes: {
+      title: 'Types d\'objets',
+      infoMessage: 'Cette vue affiche les types d\'objets configurés dans le système. Cliquez sur une ligne pour voir les champs associés.',
+      code: 'Code',
+      label: 'Libellé',
+      icon: 'Icône',
+      apiEndpoint: 'Endpoint API',
+      defaultSort: 'Tri par défaut',
+      fieldsCount: 'Champs',
+      viewFields: 'Voir les champs',
+      loadError: 'Erreur lors du chargement des types d\'objets'
+    },
+    objectFields: {
+      title: 'Champs',
+      allFields: 'Tous les champs',
+      tableFields: 'Champs table',
+      formFields: 'Champs formulaire',
+      fieldsCount: 'champ(s)',
+      order: 'Ordre',
+      fieldName: 'Nom du champ',
+      label: 'Libellé',
+      fieldType: 'Type',
+      dataType: 'Type de données',
+      visibility: 'Visibilité',
+      options: 'Options',
+      minWidth: 'Largeur min',
+      showInTable: 'Afficher dans la table',
+      showInForm: 'Afficher dans le formulaire',
+      showInDetail: 'Afficher dans le détail',
+      sortable: 'Triable',
+      filterable: 'Filtrable',
+      editable: 'Éditable',
+      required: 'Requis',
+      readonly: 'Lecture seule',
+      defaultVisible: 'Visible par défaut',
+      previewTable: 'Prévisualiser table',
+      previewForm: 'Prévisualiser formulaire',
+      tablePreviewTitle: 'Prévisualisation de la table',
+      tablePreviewInfo: 'Aperçu de l\'affichage des colonnes dans la DataTable avec des données fictives.',
+      formPreviewTitle: 'Prévisualisation du formulaire',
+      formPreviewInfo: 'Aperçu de l\'affichage des champs dans le formulaire de création/édition.',
+      loadError: 'Erreur lors du chargement des champs'
+    }
   },
   languages: {
     title: 'Gestion des langues',

@@ -19,7 +19,8 @@ export default {
     ticketTypes: 'Ticket Types',
     ticketStatus: 'Ticket Status',
     symptoms: 'Symptoms',
-    languages: 'Languages'
+    languages: 'Languages',
+    metadata: 'Metadata'
   },
   auth: {
     loginTitle: 'Sign In',
@@ -291,6 +292,51 @@ export default {
     retry: 'Retry',
     reload: 'Reload page',
     helpText: 'If the problem persists, contact your system administrator.'
+  },
+  metadata: {
+    objectTypes: {
+      title: 'Object Types',
+      infoMessage: 'This view displays the object types configured in the system. Click on a row to see the associated fields.',
+      code: 'Code',
+      label: 'Label',
+      icon: 'Icon',
+      apiEndpoint: 'API Endpoint',
+      defaultSort: 'Default Sort',
+      fieldsCount: 'Fields',
+      viewFields: 'View Fields',
+      loadError: 'Error loading object types'
+    },
+    objectFields: {
+      title: 'Fields',
+      allFields: 'All Fields',
+      tableFields: 'Table Fields',
+      formFields: 'Form Fields',
+      fieldsCount: 'field(s)',
+      order: 'Order',
+      fieldName: 'Field Name',
+      label: 'Label',
+      fieldType: 'Type',
+      dataType: 'Data Type',
+      visibility: 'Visibility',
+      options: 'Options',
+      minWidth: 'Min Width',
+      showInTable: 'Show in Table',
+      showInForm: 'Show in Form',
+      showInDetail: 'Show in Detail',
+      sortable: 'Sortable',
+      filterable: 'Filterable',
+      editable: 'Editable',
+      required: 'Required',
+      readonly: 'Read-only',
+      defaultVisible: 'Default Visible',
+      previewTable: 'Preview Table',
+      previewForm: 'Preview Form',
+      tablePreviewTitle: 'Table Preview',
+      tablePreviewInfo: 'Preview of column display in the DataTable with sample data.',
+      formPreviewTitle: 'Form Preview',
+      formPreviewInfo: 'Preview of field display in the create/edit form.',
+      loadError: 'Error loading fields'
+    }
   },
   languages: {
     title: 'Language Management',

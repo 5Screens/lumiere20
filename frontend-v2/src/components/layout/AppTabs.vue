@@ -136,10 +136,12 @@ const componentRegistry = {
   ObjectsCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/ObjectsCrud.vue'))),
   ObjectDetail: markRaw(defineAsyncComponent(() => import('@/components/crud/ObjectDetail.vue'))),
   LanguagesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/LanguagesCrud.vue'))),
+  MetadataObjectTypesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/MetadataObjectTypesCrud.vue'))),
+  MetadataObjectFieldsCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/MetadataObjectFieldsCrud.vue'))),
 }
 
 // Components that support child tabs
-const componentsWithChildTabs = ['ObjectsCrud']
+const componentsWithChildTabs = ['ObjectsCrud', 'MetadataObjectTypesCrud']
 
 const tabsStore = useTabsStore()
 const { t } = useI18n()
