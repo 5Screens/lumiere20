@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="h-full flex flex-col gap-4">
     <!-- Toolbar -->
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-center shrink-0">
       <span class="text-sm text-surface-500">
         {{ fields.length }} {{ $t('ciTypeFields.fieldsCount') }}
       </span>
@@ -34,8 +34,8 @@
       :reorderableRows="true"
       @rowReorder="onRowReorder"
       scrollable
-      scrollHeight="400px"
-      class="text-sm"
+      scrollHeight="flex"
+      class="text-sm flex-1"
     >
       <!-- Drag handle -->
       <Column :rowReorder="true" style="width: 2.5rem" />

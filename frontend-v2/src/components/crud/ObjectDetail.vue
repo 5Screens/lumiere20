@@ -23,14 +23,14 @@
       </div>
 
       <!-- Tabs for ci_types, simple form for others -->
-      <Tabs v-if="objectType === 'ci_types'" value="general" class="flex-1">
-        <TabList>
+      <Tabs v-if="objectType === 'ci_types'" value="general" class="flex-1 flex flex-col min-h-0">
+        <TabList class="shrink-0">
           <Tab value="general">{{ $t('ciTypes.tabs.general') }}</Tab>
           <Tab value="extendedFields">{{ $t('ciTypes.tabs.extendedFields') }}</Tab>
         </TabList>
-        <TabPanels>
+        <TabPanels class="flex-1 min-h-0">
           <!-- General tab -->
-          <TabPanel value="general">
+          <TabPanel value="general" class="h-full overflow-auto">
             <div class="p-4">
               <ObjectForm 
                 :fields="formFields" 
@@ -42,8 +42,8 @@
           </TabPanel>
 
           <!-- Extended fields tab -->
-          <TabPanel value="extendedFields">
-            <div class="p-4">
+          <TabPanel value="extendedFields" class="h-full">
+            <div class="p-4 h-full">
               <CiTypeFieldsEditor 
                 :ciTypeUuid="item.uuid"
                 :ciTypeCode="item.code"
