@@ -11,6 +11,7 @@ const seedMap = {
   'ci-types': () => require('./ci-types').seedCiTypes(),
   'object-metadata': () => require('./object-metadata').seedObjectMetadata(),
   'languages': () => require('./languages.seed').seedLanguages(prisma),
+  'default-admin': () => require('./default-admin.seed').seedDefaultAdmin(),
 };
 
 async function main() {

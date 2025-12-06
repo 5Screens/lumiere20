@@ -281,7 +281,20 @@ docker compose exec backend npx prisma migrate deploy
 docker compose exec backend node prisma/seeds/run-single.js languages
 docker compose exec backend node prisma/seeds/run-single.js ci-types
 docker compose exec backend node prisma/seeds/run-single.js ci-type-fields
+docker compose exec backend node prisma/seeds/run-single.js default-admin
 ```
+
+### 5.3 Compte administrateur par défaut
+
+Le seed `default-admin` crée un compte administrateur pour la première connexion :
+
+| Champ | Valeur |
+|-------|--------|
+| Email | `admin@lumiere.local` |
+| Mot de passe | `Lumiere2024!` |
+| Rôle | `admin` |
+
+⚠️ **IMPORTANT** : Changez le mot de passe après la première connexion !
 
 ---
 
