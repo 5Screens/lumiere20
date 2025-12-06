@@ -123,6 +123,11 @@ const buildPrismaWhereFromFilters = (filters = {}, options = {}) => {
         }
       }
     }
+    // Simple filter format: { value, matchMode } (without constraints array)
+    else if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
+      const condition = convertMatchModeToPrisma(fieldName, filter.matchMode || 'equals', filter.value, dateColumns);
+      andConditions.push(condition);
+    }
   });
 
   // Return where clause

@@ -138,6 +138,7 @@ const componentRegistry = {
   LanguagesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/LanguagesCrud.vue'))),
   MetadataObjectTypesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/MetadataObjectTypesCrud.vue'))),
   MetadataObjectFieldsCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/MetadataObjectFieldsCrud.vue'))),
+  AuditView: markRaw(defineAsyncComponent(() => import('@/components/crud/AuditView.vue'))),
 }
 
 // Components that support child tabs

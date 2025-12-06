@@ -20,7 +20,8 @@ export default {
     ticketStatus: 'Statuts de tickets',
     symptoms: 'Symptômes',
     languages: 'Langues',
-    metadata: 'Métadonnées'
+    metadata: 'Métadonnées',
+    audit: 'Audit'
   },
   auth: {
     loginTitle: 'Connexion',
@@ -82,7 +83,8 @@ export default {
     clear: 'Effacer',
     saved: 'Enregistré avec succès',
     notFound: 'Élément non trouvé',
-    translate: 'Traduire'
+    translate: 'Traduire',
+    select: 'Sélectionner...'
   },
   tabs: {
     backToList: 'Retour à la liste',
@@ -433,6 +435,23 @@ export default {
       nextPageLabel: 'Page suivante',
       prevPageLabel: 'Page précédente',
       rowsPerPageLabel: 'Lignes par page'
+    }
+  },
+  audit: {
+    title: 'Journal d\'audit',
+    objectType: 'Type d\'objet',
+    objectUuid: 'UUID de l\'objet',
+    eventType: 'Type d\'événement',
+    attributeName: 'Attribut modifié',
+    oldValue: 'Ancienne valeur',
+    newValue: 'Nouvelle valeur',
+    user: 'Utilisateur',
+    eventDate: 'Date',
+    eventTypes: {
+      Password_RESET: 'Réinitialisation mot de passe',
+      Obj_CREATED: 'Création',
+      Field_UPDATED: 'Modification',
+      Obj_DELETED: 'Suppression'
     }
   }
 }

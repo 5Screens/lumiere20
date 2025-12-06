@@ -185,6 +185,11 @@ const menuItems = computed(() => [
         label: t('menu.metadata') || 'Metadata',
         icon: 'pi pi-database',
         command: () => openTab('metadata-object-types', 'Metadata', 'menu.metadata', 'pi pi-database', 'metadata', 'MetadataObjectTypesCrud')
+      },
+      {
+        label: t('menu.audit') || 'Audit',
+        icon: 'pi pi-history',
+        command: () => openTab('audit', 'Audit', 'menu.audit', 'pi pi-history', 'audit', 'AuditView')
       }
     ]
   }

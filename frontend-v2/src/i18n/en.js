@@ -20,7 +20,8 @@ export default {
     ticketStatus: 'Ticket Status',
     symptoms: 'Symptoms',
     languages: 'Languages',
-    metadata: 'Metadata'
+    metadata: 'Metadata',
+    audit: 'Audit'
   },
   auth: {
     loginTitle: 'Sign In',
@@ -82,7 +83,8 @@ export default {
     clear: 'Clear',
     saved: 'Saved successfully',
     notFound: 'Item not found',
-    translate: 'Translate'
+    translate: 'Translate',
+    select: 'Select...'
   },
   tabs: {
     backToList: 'Back to list',
@@ -433,6 +435,23 @@ export default {
       nextPageLabel: 'Next Page',
       prevPageLabel: 'Previous Page',
       rowsPerPageLabel: 'Rows per page'
+    }
+  },
+  audit: {
+    title: 'Audit Log',
+    objectType: 'Object Type',
+    objectUuid: 'Object UUID',
+    eventType: 'Event Type',
+    attributeName: 'Modified Attribute',
+    oldValue: 'Old Value',
+    newValue: 'New Value',
+    user: 'User',
+    eventDate: 'Date',
+    eventTypes: {
+      Password_RESET: 'Password Reset',
+      Obj_CREATED: 'Created',
+      Field_UPDATED: 'Updated',
+      Obj_DELETED: 'Deleted'
     }
   }
 }
