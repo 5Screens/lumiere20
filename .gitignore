@@ -1,7 +1,6 @@
 # Fichiers d'environnement
-.env
-.env.local
-.env.*
+.env*
+!.env*.example
 
 # Dépendances
 node_modules/
