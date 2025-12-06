@@ -52,11 +52,10 @@
       />
 
       <!-- User menu -->
-      <Button 
-        :label="authStore.user?.first_name || ''" 
-        icon="pi pi-user" 
-        severity="secondary" 
-        text
+      <Avatar 
+        :label="userInitials" 
+        shape="circle"
+        class="cursor-pointer bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300"
         @click="toggleUserMenu"
       />
       <Menu ref="userMenu" :model="userMenuItems" :popup="true" />
@@ -74,6 +73,7 @@ import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Menu from 'primevue/menu'
+import Avatar from 'primevue/avatar'
 
 const emit = defineEmits(['toggle-sidebar', 'open-profile'])
 
@@ -92,6 +92,13 @@ const toggleTheme = () => {
   localStorage.setItem('theme', theme.value)
   document.documentElement.setAttribute('data-theme', theme.value)
 }
+
+// User initials for avatar
+const userInitials = computed(() => {
+  const first = authStore.user?.first_name?.[0] || ''
+  const last = authStore.user?.last_name?.[0] || ''
+  return (first + last).toUpperCase() || '?'
+})
 
 // User menu
 const userMenu = ref()
