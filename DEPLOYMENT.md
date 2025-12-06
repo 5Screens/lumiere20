@@ -1,5 +1,20 @@
 # Lumiere - Guide de Déploiement Production
 
+## Repartir de zéro sur le serveur
+
+  cd /var/www/lumiere
+
+  # Arrêter et supprimer tous les containers et volumes
+  docker compose down -v
+
+  # Supprimer tous les fichiers
+  cd /var/www
+  sudo rm -rf lumiere
+
+  # Recréer le dossier vide
+  sudo mkdir lumiere
+  sudo chown debian:debian lumiere
+
 ## Prérequis
 
 - **VPS Debian** avec accès SSH
