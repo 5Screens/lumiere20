@@ -4,8 +4,7 @@
       <Card>
         <template #title>
           <div class="text-center">
-            <h1 class="text-2xl font-bold text-primary">Lumiere V2</h1>
-            <p class="text-surface-500 mt-2">{{ $t('auth.loginTitle') }}</p>
+            <h1 class="text-2xl font-bold text-primary">Lumiere</h1>
           </div>
         </template>
         <template #content>
@@ -40,14 +39,6 @@
               class="mt-2"
             />
           </form>
-          <Divider align="center">
-            <span class="text-surface-400">{{ $t('auth.or') }}</span>
-          </Divider>
-          <div class="text-center">
-            <router-link to="/register" class="text-primary hover:underline">
-              {{ $t('auth.noAccount') }}
-            </router-link>
-          </div>
         </template>
       </Card>
     </div>
@@ -64,7 +55,6 @@ import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
-import Divider from 'primevue/divider'
 import Toast from 'primevue/toast'
 
 const router = useRouter()
