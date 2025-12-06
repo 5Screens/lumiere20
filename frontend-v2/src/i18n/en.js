@@ -105,7 +105,8 @@ export default {
     passwordMismatch: 'Passwords do not match',
     currentPasswordRequired: 'Current password is required',
     updateSuccess: 'Profile updated successfully',
-    updateError: 'Error updating profile'
+    updateError: 'Error updating profile',
+    language: 'Language'
   },
   configurationItems: {
     title: 'Configuration Items',

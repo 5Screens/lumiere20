@@ -41,15 +41,6 @@
         v-tooltip.bottom="theme === 'light' ? 'Dark mode' : 'Light mode'"
       />
 
-      <!-- Language selector -->
-      <Select 
-        v-model="currentLocale" 
-        :options="languages" 
-        optionLabel="label" 
-        optionValue="value"
-        class="w-28"
-      />
-
       <!-- Notifications -->
       <Button 
         icon="pi pi-bell" 
@@ -78,18 +69,16 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/authStore'
-import metadataService from '@/services/metadataService'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import Select from 'primevue/select'
 import Menu from 'primevue/menu'
 
 const emit = defineEmits(['toggle-sidebar', 'open-profile'])
 
 const router = useRouter()
-const { locale, t } = useI18n()
+const { t } = useI18n()
 const authStore = useAuthStore()
 
 // Search
@@ -103,24 +92,6 @@ const toggleTheme = () => {
   localStorage.setItem('theme', theme.value)
   document.documentElement.setAttribute('data-theme', theme.value)
 }
-
-// Language
-const languages = [
-  { label: 'FR', value: 'fr' },
-  { label: 'EN', value: 'en' }
-]
-
-const currentLocale = computed({
-  get: () => locale.value,
-  set: (val) => {
-    locale.value = val
-    localStorage.setItem('locale', val)
-    // Clear cached data to reload with new locale translations
-    metadataService.clearCache()
-    // Reload current route to refresh data
-    router.go(0)
-  }
-})
 
 // User menu
 const userMenu = ref()

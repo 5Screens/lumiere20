@@ -105,7 +105,8 @@ export default {
     passwordMismatch: 'Les mots de passe ne correspondent pas',
     currentPasswordRequired: 'Le mot de passe actuel est requis',
     updateSuccess: 'Profil mis à jour avec succès',
-    updateError: 'Erreur lors de la mise à jour du profil'
+    updateError: 'Erreur lors de la mise à jour du profil',
+    language: 'Langue'
   },
   configurationItems: {
     title: 'Éléments de configuration',

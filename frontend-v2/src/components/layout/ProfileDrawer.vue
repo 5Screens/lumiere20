@@ -32,9 +32,21 @@
 
       <!-- Profile form -->
       <div class="flex flex-col gap-4">
-        <h4 class="text-sm font-semibold text-surface-700 dark:text-surface-300 uppercase tracking-wide">
-          {{ $t('profile.personalInfo') }}
-        </h4>
+        <div class="flex items-center justify-between">
+          <h4 class="text-sm font-semibold text-surface-700 dark:text-surface-300 uppercase tracking-wide">
+            {{ $t('profile.personalInfo') }}
+          </h4>
+          <Button 
+            v-if="!editing"
+            icon="pi pi-pencil" 
+            severity="secondary" 
+            text 
+            rounded
+            size="small"
+            @click="startEditing"
+            v-tooltip.left="$t('profile.edit')"
+          />
+        </div>
         
         <div class="flex flex-col gap-1">
           <label class="text-sm text-surface-600 dark:text-surface-400">{{ $t('auth.firstName') }}</label>
@@ -68,6 +80,19 @@
           <InputText 
             v-model="form.phone" 
             :disabled="!editing"
+            class="w-full"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-surface-600 dark:text-surface-400">{{ $t('profile.language') }}</label>
+          <Select 
+            v-model="currentLocale" 
+            :options="languages" 
+            :optionLabel="getLanguageLabel"
+            optionValue="code"
+            :disabled="!editing"
+            :loading="loadingLanguages"
             class="w-full"
           />
         </div>
@@ -109,31 +134,22 @@
         </div>
       </div>
 
-      <!-- Actions -->
-      <div class="flex gap-2 pt-4 border-t border-surface-200 dark:border-surface-700">
+      <!-- Actions (only when editing) -->
+      <div v-if="editing" class="flex gap-2 pt-4 border-t border-surface-200 dark:border-surface-700">
         <Button 
-          v-if="!editing"
-          :label="$t('profile.edit')"
-          icon="pi pi-pencil"
-          @click="startEditing"
+          :label="$t('common.cancel')"
+          icon="pi pi-times"
+          severity="secondary"
+          @click="cancelEditing"
           class="flex-1"
         />
-        <template v-else>
-          <Button 
-            :label="$t('common.cancel')"
-            icon="pi pi-times"
-            severity="secondary"
-            @click="cancelEditing"
-            class="flex-1"
-          />
-          <Button 
-            :label="$t('common.save')"
-            icon="pi pi-check"
-            @click="saveProfile"
-            :loading="saving"
-            class="flex-1"
-          />
-        </template>
+        <Button 
+          :label="$t('common.save')"
+          icon="pi pi-check"
+          @click="saveProfile"
+          :loading="saving"
+          class="flex-1"
+        />
       </div>
 
       <!-- Logout button -->
@@ -164,6 +180,9 @@ import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
+import Select from 'primevue/select'
+import metadataService from '@/services/metadataService'
+import languagesService from '@/services/languagesService'
 
 const props = defineProps({
   modelValue: {
@@ -177,7 +196,44 @@ const emit = defineEmits(['update:modelValue'])
 const router = useRouter()
 const authStore = useAuthStore()
 const toast = useToast()
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+// Language
+const languages = ref([])
+const loadingLanguages = ref(false)
+
+const loadLanguages = async () => {
+  try {
+    loadingLanguages.value = true
+    languages.value = await languagesService.getActiveLanguages()
+  } catch (error) {
+    console.error('Error loading languages:', error)
+    // Fallback to default languages if API fails
+    languages.value = [
+      { code: 'fr', name: 'Français', name_en: 'French' },
+      { code: 'en', name: 'English', name_en: 'English' }
+    ]
+  } finally {
+    loadingLanguages.value = false
+  }
+}
+
+const getLanguageLabel = (lang) => {
+  // Show native name for current locale, or name_en as fallback
+  return locale.value === lang.code ? lang.name : (lang.name_en || lang.name)
+}
+
+const currentLocale = computed({
+  get: () => locale.value,
+  set: (val) => {
+    locale.value = val
+    localStorage.setItem('locale', val)
+    // Clear cached data to reload with new locale translations
+    metadataService.clearCache()
+    // Reload current route to refresh data
+    router.go(0)
+  }
+})
 
 const visible = computed({
   get: () => props.modelValue,
@@ -312,10 +368,11 @@ const handleLogout = async () => {
   router.push('/login')
 }
 
-// Load user data when drawer opens
+// Load user data and languages when drawer opens
 watch(visible, (newValue) => {
   if (newValue) {
     loadUserData()
+    loadLanguages()
     editing.value = false
   }
 })
