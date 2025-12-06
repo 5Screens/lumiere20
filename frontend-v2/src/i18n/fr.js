@@ -230,6 +230,18 @@ export default {
       updated: 'Personne mise à jour avec succès',
       deleted: 'Personne supprimée avec succès',
       deletedMultiple: '{count} personnes supprimées avec succès'
+    },
+    actions: {
+      resetPassword: 'Réinitialiser le mot de passe'
+    },
+    resetPassword: {
+      title: 'Réinitialiser le mot de passe',
+      description: 'Définir un mot de passe temporaire pour {name}. L\'utilisateur devra le changer à sa prochaine connexion.',
+      newPassword: 'Nouveau mot de passe',
+      confirmPassword: 'Confirmer le mot de passe',
+      passwordMismatch: 'Les mots de passe ne correspondent pas',
+      success: 'Mot de passe réinitialisé avec succès',
+      error: 'Erreur lors de la réinitialisation du mot de passe'
     }
   },
   ciTypes: {

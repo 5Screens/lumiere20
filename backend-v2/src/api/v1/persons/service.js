@@ -1,4 +1,6 @@
 const prisma = require('../../../config/prisma');
+const bcrypt = require('bcrypt');
+const authConfig = require('../../../config/auth');
 const { buildPrismaWhereFromFilters, buildPrismaOrderBy } = require('../../../utils/primeVueFilters');
 
 /**
@@ -193,6 +195,66 @@ const removeMany = async (uuids) => {
   return result.count;
 };
 
+/**
+ * Reset password for a person (admin action)
+ * @param {string} uuid - Person UUID
+ * @param {string} newPassword - New password to set
+ * @param {string} adminUuid - UUID of the admin performing the action
+ * @returns {Promise<Object>} - Updated person
+ */
+const resetPassword = async (uuid, newPassword, adminUuid) => {
+  // Check if person exists
+  const person = await prisma.persons.findUnique({
+    where: { uuid },
+    select: { uuid: true, email: true, first_name: true, last_name: true }
+  });
+
+  if (!person) {
+    const error = new Error('Person not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Hash the new password
+  const hashedPassword = await bcrypt.hash(newPassword, authConfig.saltRounds);
+
+  // Update password and set password_needs_reset flag
+  const updatedPerson = await prisma.persons.update({
+    where: { uuid },
+    data: {
+      password_hash: hashedPassword,
+      password_needs_reset: true
+    },
+    select: {
+      uuid: true,
+      email: true,
+      first_name: true,
+      last_name: true,
+      password_needs_reset: true
+    }
+  });
+
+  // Log the password reset in audit_changes (if audit schema exists)
+  try {
+    await prisma.audit_changes.create({
+      data: {
+        object_type: 'persons',
+        object_uuid: uuid,
+        event_type: 'Password_RESET',
+        attribute_name: 'password_hash',
+        old_value: null, // Don't store old password hash for security
+        new_value: null, // Don't store new password hash for security
+        rel_user_uuid: adminUuid
+      }
+    });
+  } catch (auditError) {
+    // If audit table doesn't exist yet, just log the error but don't fail the operation
+    console.warn('Could not create audit log for password reset:', auditError.message);
+  }
+
+  return updatedPerson;
+};
+
 module.exports = {
   search,
   getAll,
@@ -201,4 +263,5 @@ module.exports = {
   update,
   remove,
   removeMany,
+  resetPassword,
 };

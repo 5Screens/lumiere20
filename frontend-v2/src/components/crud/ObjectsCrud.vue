@@ -173,6 +173,27 @@
           </template>
         </Column>
 
+        <!-- Row actions menu column (only for persons) -->
+        <Column 
+          v-if="isPersons"
+          field="_rowActions"
+          style="min-width: 3rem; width: 3rem" 
+          :exportable="false" 
+          :reorderableColumn="false"
+          frozen
+        >
+          <template #body="{ data }">
+            <Button 
+              icon="pi pi-ellipsis-v" 
+              @click="toggleRowActionsMenu($event, data)" 
+              severity="secondary" 
+              text
+              rounded 
+              size="small" 
+            />
+          </template>
+        </Column>
+
         <!-- Dynamic columns from metadata -->
         <template v-for="col in tableColumns" :key="col.field_name">
         <Column 
@@ -933,6 +954,54 @@
       </template>
     </Dialog>
 
+    <!-- Row Actions Menu (for persons) -->
+    <Menu 
+      v-if="isPersons"
+      ref="rowActionsMenu" 
+      :model="rowActionsMenuItems" 
+      :popup="true" 
+    />
+
+    <!-- Reset Password Dialog -->
+    <Dialog 
+      v-model:visible="resetPasswordDialog" 
+      :style="{ width: '400px' }" 
+      :header="$t('persons.resetPassword.title')" 
+      :modal="true"
+    >
+      <div class="flex flex-col gap-4">
+        <p class="text-surface-600 dark:text-surface-400 text-sm">
+          {{ $t('persons.resetPassword.description', { name: `${rowActionsTarget?.first_name || ''} ${rowActionsTarget?.last_name || ''}`.trim() || rowActionsTarget?.email }) }}
+        </p>
+        
+        <div class="flex flex-col gap-2">
+          <label for="resetNewPassword" class="font-semibold">{{ $t('persons.resetPassword.newPassword') }}</label>
+          <Password 
+            id="resetNewPassword"
+            v-model="resetPasswordForm.newPassword" 
+            toggleMask
+            :feedback="true"
+            class="w-full"
+          />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="resetConfirmPassword" class="font-semibold">{{ $t('persons.resetPassword.confirmPassword') }}</label>
+          <Password 
+            id="resetConfirmPassword"
+            v-model="resetPasswordForm.confirmPassword" 
+            toggleMask
+            :feedback="false"
+            class="w-full"
+          />
+        </div>
+      </div>
+      <template #footer>
+        <Button :label="$t('common.cancel')" icon="pi pi-times" severity="secondary" text @click="resetPasswordDialog = false" />
+        <Button :label="$t('common.save')" icon="pi pi-check" @click="handleResetPassword" :loading="resetPasswordSaving" />
+      </template>
+    </Dialog>
+
     <!-- Toast -->
     <Toast position="bottom-right" />
     </template>
@@ -971,6 +1040,8 @@ import Popover from 'primevue/popover'
 import Checkbox from 'primevue/checkbox'
 import ToggleSwitch from 'primevue/toggleswitch'
 import MultiSelect from 'primevue/multiselect'
+import Menu from 'primevue/menu'
+import Password from 'primevue/password'
 
 // Custom form components
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
@@ -1059,6 +1130,16 @@ const tagStyleOptions = getTagStyleOptions()
 // Translatable field support
 const inlineTranslations = ref({}) // Temporary translations { fr: '...', en: '...' }
 const availableLanguages = ref([])
+
+// Row actions menu (for persons)
+const rowActionsMenu = ref()
+const rowActionsTarget = ref(null)
+const resetPasswordDialog = ref(false)
+const resetPasswordForm = ref({
+  newPassword: '',
+  confirmPassword: ''
+})
+const resetPasswordSaving = ref(false)
 
 // Convert country code to flag emoji (e.g., 'fr' -> '🇫🇷')
 const getFlagEmoji = (countryCode) => {
@@ -1437,6 +1518,86 @@ const clearFilters = () => {
 
 // Check if current object type is configuration_items
 const isConfigurationItems = computed(() => props.objectType === 'configuration_items')
+
+// Check if current object type is persons (for row actions menu)
+const isPersons = computed(() => props.objectType === 'persons')
+
+// Row actions menu items for persons
+const rowActionsMenuItems = computed(() => [
+  {
+    label: t('persons.actions.resetPassword'),
+    icon: 'pi pi-key',
+    command: () => openResetPasswordDialog()
+  }
+])
+
+// Toggle row actions menu
+const toggleRowActionsMenu = (event, data) => {
+  rowActionsTarget.value = data
+  rowActionsMenu.value.toggle(event)
+}
+
+// Open reset password dialog
+const openResetPasswordDialog = () => {
+  resetPasswordForm.value = {
+    newPassword: '',
+    confirmPassword: ''
+  }
+  resetPasswordDialog.value = true
+}
+
+// Handle reset password
+const handleResetPassword = async () => {
+  // Validate passwords match
+  if (resetPasswordForm.value.newPassword !== resetPasswordForm.value.confirmPassword) {
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: t('persons.resetPassword.passwordMismatch'),
+      life: 3000
+    })
+    return
+  }
+
+  // Validate password is not empty
+  if (!resetPasswordForm.value.newPassword) {
+    toast.add({
+      severity: 'warn',
+      summary: t('common.error'),
+      detail: t('persons.resetPassword.newPassword') + ' is required',
+      life: 3000
+    })
+    return
+  }
+
+  try {
+    resetPasswordSaving.value = true
+    
+    // Call API to reset password
+    await service.value.resetPassword(rowActionsTarget.value.uuid, {
+      newPassword: resetPasswordForm.value.newPassword
+    })
+    
+    toast.add({
+      severity: 'success',
+      summary: t('common.success'),
+      detail: t('persons.resetPassword.success'),
+      life: 3000
+    })
+    
+    resetPasswordDialog.value = false
+    rowActionsTarget.value = null
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: error.response?.data?.message || t('persons.resetPassword.error'),
+      life: 3000
+    })
+  } finally {
+    resetPasswordSaving.value = false
+  }
+}
 
 // Load CI types for the select dropdown
 const loadCiTypes = async () => {

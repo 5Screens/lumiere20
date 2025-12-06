@@ -57,5 +57,15 @@ export default {
   async deleteMany(uuids) {
     const response = await api.post(`${BASE_URL}/delete-many`, { uuids })
     return response.data
+  },
+
+  /**
+   * Reset password for a person (admin action)
+   * @param {string} uuid - Person UUID
+   * @param {Object} data - { newPassword: string }
+   */
+  async resetPassword(uuid, data) {
+    const response = await api.post(`${BASE_URL}/${uuid}/reset-password`, data)
+    return response.data
   }
 }

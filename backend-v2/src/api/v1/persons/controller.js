@@ -141,6 +141,39 @@ const removeMany = async (req, res, next) => {
   }
 };
 
+/**
+ * Reset password for a person (admin action)
+ * POST /api/v1/persons/:uuid/reset-password
+ */
+const resetPassword = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { newPassword } = req.body;
+    
+    // Get admin UUID from authenticated user
+    const adminUuid = req.user?.uuid;
+    
+    if (!adminUuid) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required',
+      });
+    }
+
+    const result = await service.resetPassword(uuid, newPassword, adminUuid);
+    
+    logger.info(`Password reset for user ${uuid} by admin ${adminUuid}`);
+    
+    res.json({ 
+      message: 'Password reset successfully',
+      user: result
+    });
+  } catch (error) {
+    logger.error('Error resetting password:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   search,
   getAll,
@@ -149,4 +182,5 @@ module.exports = {
   update,
   remove,
   removeMany,
+  resetPassword,
 };

@@ -230,6 +230,18 @@ export default {
       updated: 'Person updated successfully',
       deleted: 'Person deleted successfully',
       deletedMultiple: '{count} persons deleted successfully'
+    },
+    actions: {
+      resetPassword: 'Reset Password'
+    },
+    resetPassword: {
+      title: 'Reset Password',
+      description: 'Set a temporary password for {name}. The user will need to change it on next login.',
+      newPassword: 'New Password',
+      confirmPassword: 'Confirm Password',
+      passwordMismatch: 'Passwords do not match',
+      success: 'Password reset successfully',
+      error: 'Error resetting password'
     }
   },
   ciTypes: {

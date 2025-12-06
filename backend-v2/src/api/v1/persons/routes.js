@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 const { validate, primeVueFilterSchema } = require('../../../middleware/validate');
+const { authenticate } = require('../../../middleware/auth');
 const { z } = require('zod');
 
 // Validation schemas
@@ -59,6 +60,11 @@ const updateSchema = z.object({
   photo: z.string().optional().nullable(),
 });
 
+// Validation schema for reset password
+const resetPasswordSchema = z.object({
+  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
 // Routes
 router.post('/search', validate(primeVueFilterSchema), controller.search);
 router.get('/', controller.getAll);
@@ -67,5 +73,8 @@ router.post('/', validate(createSchema), controller.create);
 router.put('/:uuid', validate(updateSchema), controller.update);
 router.delete('/:uuid', controller.remove);
 router.post('/delete-many', controller.removeMany);
+
+// Admin action: Reset password (requires authentication)
+router.post('/:uuid/reset-password', authenticate, validate(resetPasswordSchema), controller.resetPassword);
 
 module.exports = router;

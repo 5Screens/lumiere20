@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["data", "core", "configuration", "translations"]
+  schemas  = ["data", "core", "configuration", "translations", "audit"]
 }
 
 // ============================================
@@ -324,6 +324,7 @@ model persons {
   rel_persons_delegates_person   rel_persons_delegates[] @relation("DelegatePerson")
   rel_persons_delegates_delegate rel_persons_delegates[] @relation("DelegateDelegate")
   rel_persons_entities     rel_persons_entities[]
+  audit_changes            audit_changes[] @relation("AuditUser")
 
   @@schema("configuration")
   @@map("persons")
@@ -584,4 +585,32 @@ model object_fields {
   @@index([object_type_uuid, display_order])
   @@schema("configuration")
   @@map("object_fields")
+}
+
+// ============================================
+// SCHEMA: audit
+// ============================================
+
+// Audit changes table for logging all modifications in the system
+model audit_changes {
+  uuid            String   @id @default(uuid()) @db.Uuid
+  object_type     String   @db.VarChar(50)       // Type of object: 'persons', 'locations', 'entities', etc.
+  object_uuid     String   @db.Uuid              // UUID of the modified object
+  event_type      String   @db.VarChar(50)       // Event type: 'Obj_CREATED', 'Field_UPDATED', 'Password_RESET', etc.
+  attribute_name  String?  @db.VarChar(255)      // Name of the modified field, NULL if event concerns the whole object
+  old_value       String?  @db.Text              // Value before modification, NULL for creations
+  new_value       String?  @db.Text              // Value after modification, NULL for deletions
+  rel_user_uuid   String   @db.Uuid              // UUID of the user who made the modification
+  event_date      DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  user persons @relation("AuditUser", fields: [rel_user_uuid], references: [uuid], onDelete: Restrict)
+
+  @@index([object_uuid])
+  @@index([rel_user_uuid])
+  @@index([event_date])
+  @@index([event_type])
+  @@index([object_type])
+  @@schema("audit")
+  @@map("audit_changes")
 }

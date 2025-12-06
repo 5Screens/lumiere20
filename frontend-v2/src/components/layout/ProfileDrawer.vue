@@ -266,8 +266,20 @@ const saveProfile = async () => {
   try {
     saving.value = true
     
-    // TODO: Call API to update profile
-    // await authStore.updateProfile(form.value, passwordForm.value)
+    // Update profile data
+    await authStore.updateProfile({
+      first_name: form.value.first_name,
+      last_name: form.value.last_name,
+      phone: form.value.phone
+    })
+    
+    // Change password if provided
+    if (passwordForm.value.newPassword) {
+      await authStore.changePassword({
+        currentPassword: passwordForm.value.currentPassword,
+        newPassword: passwordForm.value.newPassword
+      })
+    }
     
     toast.add({
       severity: 'success',
@@ -286,7 +298,7 @@ const saveProfile = async () => {
     toast.add({
       severity: 'error',
       summary: t('common.error'),
-      detail: t('profile.updateError'),
+      detail: error.response?.data?.message || t('profile.updateError'),
       life: 3000
     })
   } finally {
