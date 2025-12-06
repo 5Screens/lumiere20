@@ -294,8 +294,8 @@ const saveProfile = async () => {
   }
 }
 
-const handleLogout = () => {
-  authStore.logout()
+const handleLogout = async () => {
+  await authStore.logout()
   visible.value = false
   router.push('/login')
 }
