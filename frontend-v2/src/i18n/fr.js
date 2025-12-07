@@ -349,6 +349,7 @@ export default {
       required: 'Requis',
       readonly: 'Lecture seule',
       defaultVisible: 'Visible par défaut',
+      translatable: 'Multilangue',
       previewTable: 'Prévisualiser table',
       previewForm: 'Prévisualiser formulaire',
       tablePreviewTitle: 'Prévisualisation de la table',

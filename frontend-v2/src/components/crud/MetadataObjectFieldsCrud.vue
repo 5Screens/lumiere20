@@ -123,6 +123,16 @@
               </template>
             </Column>
 
+            <!-- Translatable column -->
+            <Column field="is_translatable" :header="$t('metadata.objectFields.translatable')" sortable style="width: 6rem">
+              <template #body="{ data }">
+                <div class="flex items-center gap-1">
+                  <i :class="data.is_translatable ? 'pi pi-globe text-blue-500' : 'pi pi-times text-surface-300'" />
+                  <span v-if="data.is_translatable" class="text-xs text-blue-500">i18n</span>
+                </div>
+              </template>
+            </Column>
+
             <!-- Visibility columns -->
             <Column :header="$t('metadata.objectFields.visibility')" style="width: 10rem">
               <template #body="{ data }">
@@ -226,6 +236,11 @@
                 <i :class="data.default_visible ? 'pi pi-check text-green-500' : 'pi pi-times text-surface-300'" />
               </template>
             </Column>
+            <Column field="is_translatable" :header="$t('metadata.objectFields.translatable')" style="width: 5rem">
+              <template #body="{ data }">
+                <i :class="data.is_translatable ? 'pi pi-globe text-blue-500' : 'pi pi-times text-surface-300'" />
+              </template>
+            </Column>
           </DataTable>
           </TabPanel>
 
@@ -267,6 +282,11 @@
             <Column field="is_editable" :header="$t('metadata.objectFields.editable')" style="width: 5rem">
               <template #body="{ data }">
                 <i :class="data.is_editable ? 'pi pi-check text-green-500' : 'pi pi-times text-surface-300'" />
+              </template>
+            </Column>
+            <Column field="is_translatable" :header="$t('metadata.objectFields.translatable')" style="width: 5rem">
+              <template #body="{ data }">
+                <i :class="data.is_translatable ? 'pi pi-globe text-blue-500' : 'pi pi-times text-surface-300'" />
               </template>
             </Column>
           </DataTable>

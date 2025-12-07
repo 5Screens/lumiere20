@@ -349,6 +349,7 @@ export default {
       required: 'Required',
       readonly: 'Read-only',
       defaultVisible: 'Default Visible',
+      translatable: 'Translatable',
       previewTable: 'Preview Table',
       previewForm: 'Preview Form',
       tablePreviewTitle: 'Table Preview',
