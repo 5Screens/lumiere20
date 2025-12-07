@@ -26,6 +26,9 @@ RUN rm .env
 # Copy source code
 COPY src ./src/
 
+# Re-copy prisma folder to ensure seeds are up-to-date (after cache layer)
+COPY prisma ./prisma/
+
 # Expose port
 EXPOSE 3000
 

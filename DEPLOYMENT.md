@@ -161,6 +161,7 @@ cd /var/www/lumiere
 ### 4.1 Créer les dossiers
 
 ```bash
+
 mkdir -p certbot/conf certbot/www
 ```
 
@@ -194,7 +195,7 @@ docker compose up -d postgres backend frontend nginx
 
 ```bash
 sudo apt update && sudo apt install -y certbot
-sudo certbot certonly --webroot -w /var/www/lumiere/certbot/www -d lumiere.mindcentra.com --email ton@email.com --agree-tos --no-eff-email
+sudo certbot certonly --webroot -w /var/www/lumiere/certbot/www -d lumiere.mindcentra.com --email 3pparisquinze@gmail.com --agree-tos --no-eff-email
 ```
 
 ### 4.5 Copier les certificats
@@ -296,6 +297,7 @@ docker compose exec backend npx prisma migrate deploy
 docker compose exec backend node prisma/seeds/run-single.js languages
 docker compose exec backend node prisma/seeds/run-single.js ci-types
 docker compose exec backend node prisma/seeds/run-single.js ci-type-fields
+docker compose exec backend node prisma/seeds/run-single.js object-metadata
 docker compose exec backend node prisma/seeds/run-single.js default-admin
 ```
 
@@ -380,7 +382,12 @@ docker compose up -d
 docker compose build backend --no-cache && docker compose up -d backend
 
 # Frontend
-docker compose build frontend --no-cache && docker compose up -d frontend && docker compose restart nginx
+docker compose build frontend --no-cache && docker compose up -d frontend
+
+# Tout reconstruire (après un nouvel upload)
+docker compose down
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ---
@@ -406,6 +413,22 @@ docker compose build frontend --no-cache && docker compose up -d frontend && doc
 ### Base de données vide après connexion
 
 → Exécuter les seeds (voir Étape 5.2)
+
+### Lignes vides dans les tableaux (données non affichées)
+
+→ Exécuter le seed object-metadata :
+```bash
+docker compose exec backend node prisma/seeds/run-single.js object-metadata
+```
+
+### Anciennes versions affichées après déploiement
+
+→ Le cache Docker n'a pas été invalidé. Reconstruire sans cache :
+```bash
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+```
 
 ---
 
