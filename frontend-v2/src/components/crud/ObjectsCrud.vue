@@ -432,7 +432,7 @@
       :modal="true"
       position="right"
     >
-      <ObjectEdition
+      <ObjectViewInDrawer
         v-model="editItem"
         :form-fields="formFields"
         :object-type="objectType"
@@ -752,7 +752,7 @@ import Password from 'primevue/password'
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
 import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
-import ObjectEdition from '@/components/form/ObjectEdition.vue'
+import ObjectViewInDrawer from '@/components/object/ObjectViewInDrawer.vue'
 
 // Utils
 import { getTagStyle, getColorValue, getTagStyleOptions } from '@/utils/tagStyles'
@@ -1467,7 +1467,7 @@ const openEditInTab = (data) => {
     id: `${props.objectType}-edit-${data.uuid}`,
     label: `${displayName}`,
     icon: objectTypeMetadata.value?.icon || 'pi pi-file',
-    component: 'ObjectView',
+    component: 'ObjectViewInTab',
     objectType: props.objectType,
     objectId: data.uuid,
     parentId: parentTab?.id_tab || props.tabId,

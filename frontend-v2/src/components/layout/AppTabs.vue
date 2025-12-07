@@ -175,7 +175,7 @@ import TabPanel from 'primevue/tabpanel'
 // Components registry
 const componentRegistry = {
   ObjectsCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/ObjectsCrud.vue'))),
-  ObjectView: markRaw(defineAsyncComponent(() => import('@/components/object/ObjectView.vue'))),
+  ObjectViewInTab: markRaw(defineAsyncComponent(() => import('@/components/object/ObjectViewInTab.vue'))),
   LanguagesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/LanguagesCrud.vue'))),
   MetadataObjectTypesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/MetadataObjectTypesCrud.vue'))),
   MetadataObjectFieldsCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/MetadataObjectFieldsCrud.vue'))),
