@@ -41,9 +41,16 @@
       </Toolbar>
 
       <!-- Tabs for different views -->
-      <TabView v-model:activeIndex="activeTab" class="flex-1 flex flex-col min-h-0">
-        <!-- All Fields Tab -->
-        <TabPanel :header="$t('metadata.objectFields.allFields')">
+      <Tabs v-model:value="activeTab" class="flex-1 flex flex-col min-h-0">
+        <TabList class="border-none">
+          <Tab value="0">{{ $t('metadata.objectFields.allFields') }}</Tab>
+          <Tab value="1">{{ $t('metadata.objectFields.tableFields') }}</Tab>
+          <Tab value="2">{{ $t('metadata.objectFields.formFields') }}</Tab>
+        </TabList>
+
+        <TabPanels class="flex-1 min-h-0">
+          <!-- All Fields Tab -->
+          <TabPanel value="0" class="h-full flex flex-col">
           <DataTable
             ref="dt"
             :value="fields"
@@ -177,10 +184,10 @@
               </div>
             </template>
           </DataTable>
-        </TabPanel>
+          </TabPanel>
 
-        <!-- Table Fields Tab -->
-        <TabPanel :header="$t('metadata.objectFields.tableFields')">
+          <!-- Table Fields Tab -->
+          <TabPanel value="1" class="h-full flex flex-col">
           <DataTable
             :value="tableFields"
             dataKey="uuid"
@@ -220,10 +227,10 @@
               </template>
             </Column>
           </DataTable>
-        </TabPanel>
+          </TabPanel>
 
-        <!-- Form Fields Tab -->
-        <TabPanel :header="$t('metadata.objectFields.formFields')">
+          <!-- Form Fields Tab -->
+          <TabPanel value="2" class="h-full flex flex-col">
           <DataTable
             :value="formFields"
             dataKey="uuid"
@@ -263,8 +270,9 @@
               </template>
             </Column>
           </DataTable>
-        </TabPanel>
-      </TabView>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </div>
 
     <!-- Table Preview Dialog -->
@@ -429,7 +437,10 @@ import InputIcon from 'primevue/inputicon'
 import Tag from 'primevue/tag'
 import Toast from 'primevue/toast'
 import Message from 'primevue/message'
-import TabView from 'primevue/tabview'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
@@ -461,7 +472,7 @@ const dt = ref()
 const fields = ref([])
 const loading = ref(false)
 const searchQuery = ref('')
-const activeTab = ref(0)
+const activeTab = ref('0')
 const showTablePreview = ref(false)
 const showFormPreview = ref(false)
 
@@ -553,43 +564,3 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-:deep(.p-datatable) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-:deep(.p-datatable-wrapper) {
-  flex: 1;
-  min-height: 0;
-}
-
-:deep(.p-toolbar) {
-  border: none;
-  background: transparent;
-  padding: 0;
-}
-
-:deep(.p-tabview) {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
-:deep(.p-tabview-panels) {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-:deep(.p-tabview-panel) {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-</style>
