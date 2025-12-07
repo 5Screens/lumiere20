@@ -208,6 +208,39 @@ export const useTabsStore = defineStore('tabs', {
       if (tab) {
         Object.assign(tab, data)
       }
+    },
+
+    /**
+     * Reorders parent tabs after drag & drop
+     * @param {Array} newOrder - New array of parent tabs in desired order
+     */
+    reorderParentTabs(newOrder) {
+      console.log('[TabsStore] Reordering parent tabs')
+      
+      // Get child tabs (they keep their position relative to parents)
+      const childTabs = this.tabs.filter(t => t.parentId)
+      
+      // Replace tabs with new order + children
+      this.tabs = [...newOrder, ...childTabs]
+    },
+
+    /**
+     * Reorders child tabs of a parent after drag & drop
+     * @param {string} parentId - Parent tab ID
+     * @param {Array} newOrder - New array of child tabs in desired order
+     */
+    reorderChildTabs(parentId, newOrder) {
+      console.log('[TabsStore] Reordering child tabs for parent:', parentId)
+      
+      // Get all tabs except children of this parent
+      const otherTabs = this.tabs.filter(t => t.parentId !== parentId)
+      
+      // Get parent tabs and other children in order
+      const parentTabs = otherTabs.filter(t => !t.parentId)
+      const otherChildTabs = otherTabs.filter(t => t.parentId)
+      
+      // Rebuild tabs array maintaining structure
+      this.tabs = [...parentTabs, ...newOrder, ...otherChildTabs]
     }
   },
 

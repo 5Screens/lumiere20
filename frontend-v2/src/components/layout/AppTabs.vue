@@ -20,23 +20,33 @@
       class="flex-1 flex flex-col min-h-0"
     >
       <TabList class="bg-transparent border-none gap-1 px-2 pt-2">
-        <Tab 
-          v-for="tab in tabsStore.parentTabs" 
-          :key="tab.id_tab"
-          :value="tab.id_tab"
-          class="bg-surface-100 dark:bg-surface-800 rounded-t-lg px-4 py-2.5 transition-all duration-200 hover:bg-surface-200 dark:hover:bg-surface-700"
+        <draggable 
+          :modelValue="tabsStore.parentTabs"
+          @update:modelValue="onParentTabsReorder"
+          item-key="id_tab"
+          class="flex gap-1"
+          ghost-class="opacity-40"
+          drag-class="shadow-lg"
+          :animation="200"
         >
-          <div class="flex items-center gap-2">
-            <i v-if="tab.icon" :class="tab.icon" class="text-sm" />
-            <span>{{ getTabLabel(tab) }}</span>
-            <button 
-              class="ml-1 w-5 h-5 flex items-center justify-center rounded-full hover:bg-surface-300 dark:hover:bg-surface-600 transition-all duration-200 opacity-60 hover:opacity-100"
-              @click.stop="closeParentTab(tab.id_tab)"
+          <template #item="{ element: tab }">
+            <Tab 
+              :value="tab.id_tab"
+              class="bg-surface-100 dark:bg-surface-800 rounded-t-lg px-4 py-2.5 transition-all duration-200 hover:bg-surface-200 dark:hover:bg-surface-700 cursor-grab active:cursor-grabbing"
             >
-              <i class="pi pi-times text-xs" />
-            </button>
-          </div>
-        </Tab>
+              <div class="flex items-center gap-2">
+                <i v-if="tab.icon" :class="tab.icon" class="text-sm" />
+                <span>{{ getTabLabel(tab) }}</span>
+                <button 
+                  class="ml-1 w-5 h-5 flex items-center justify-center rounded-full hover:bg-surface-300 dark:hover:bg-surface-600 transition-all duration-200 opacity-60 hover:opacity-100"
+                  @click.stop="closeParentTab(tab.id_tab)"
+                >
+                  <i class="pi pi-times text-xs" />
+                </button>
+              </div>
+            </Tab>
+          </template>
+        </draggable>
       </TabList>
 
       <TabPanels class="flex-1 min-h-0 overflow-hidden">
@@ -57,7 +67,7 @@
               class="flex-1 flex flex-col min-h-0"
             >
               <TabList class="bg-surface-50 dark:bg-surface-800/50 border-none gap-1 px-2 py-1.5">
-                <!-- List tab -->
+                <!-- List tab (not draggable) -->
                 <Tab 
                   :value="'list-' + tab.id_tab"
                   class="rounded px-3 py-1.5 text-sm transition-all duration-200 hover:bg-surface-200 dark:hover:bg-surface-700"
@@ -68,24 +78,34 @@
                   </div>
                 </Tab>
 
-                <!-- Child tabs -->
-                <Tab 
-                  v-for="childTab in getChildTabs(tab.id_tab)" 
-                  :key="childTab.id_tab"
-                  :value="childTab.id_tab"
-                  class="rounded px-3 py-1.5 text-sm transition-all duration-200 hover:bg-surface-200 dark:hover:bg-surface-700"
+                <!-- Child tabs (draggable) -->
+                <draggable 
+                  :modelValue="getChildTabs(tab.id_tab)"
+                  @update:modelValue="(newOrder) => onChildTabsReorder(tab.id_tab, newOrder)"
+                  item-key="id_tab"
+                  class="flex gap-1"
+                  ghost-class="opacity-40"
+                  drag-class="shadow-lg"
+                  :animation="200"
                 >
-                  <div class="flex items-center gap-1">
-                    <i v-if="childTab.icon" :class="childTab.icon" style="font-size: 0.65rem" />
-                    <span :title="childTab.label">{{ truncateLabel(childTab.label, 25) }}</span>
-                    <button 
-                      class="w-3.5 h-3.5 flex items-center justify-center rounded-full hover:bg-surface-300 dark:hover:bg-surface-500 transition-all duration-200 opacity-60 hover:opacity-100"
-                      @click.stop="tabsStore.closeTab(childTab.id_tab)"
+                  <template #item="{ element: childTab }">
+                    <Tab 
+                      :value="childTab.id_tab"
+                      class="rounded px-3 py-1.5 text-sm transition-all duration-200 hover:bg-surface-200 dark:hover:bg-surface-700 cursor-grab active:cursor-grabbing"
                     >
-                      <i class="pi pi-times" style="font-size: 0.5rem" />
-                    </button>
-                  </div>
-                </Tab>
+                      <div class="flex items-center gap-1">
+                        <i v-if="childTab.icon" :class="childTab.icon" style="font-size: 0.65rem" />
+                        <span :title="childTab.label">{{ truncateLabel(childTab.label, 25) }}</span>
+                        <button 
+                          class="w-3.5 h-3.5 flex items-center justify-center rounded-full hover:bg-surface-300 dark:hover:bg-surface-500 transition-all duration-200 opacity-60 hover:opacity-100"
+                          @click.stop="tabsStore.closeTab(childTab.id_tab)"
+                        >
+                          <i class="pi pi-times" style="font-size: 0.5rem" />
+                        </button>
+                      </div>
+                    </Tab>
+                  </template>
+                </draggable>
               </TabList>
 
               <TabPanels class="flex-1 min-h-0 overflow-hidden">
@@ -143,6 +163,7 @@ import { computed } from 'vue'
 import { useTabsStore } from '@/stores/tabsStore'
 import { useI18n } from 'vue-i18n'
 import { markRaw, defineAsyncComponent } from 'vue'
+import draggable from 'vuedraggable'
 
 // PrimeVue v4 Tabs components
 import Tabs from 'primevue/tabs'
@@ -210,6 +231,16 @@ const onChildTabChange = (parentId, value) => {
 // Close parent tab
 const closeParentTab = (tabId) => {
   tabsStore.closeTab(tabId)
+}
+
+// Handle parent tabs reorder
+const onParentTabsReorder = (newOrder) => {
+  tabsStore.reorderParentTabs(newOrder)
+}
+
+// Handle child tabs reorder
+const onChildTabsReorder = (parentId, newOrder) => {
+  tabsStore.reorderChildTabs(parentId, newOrder)
 }
 
 const getComponent = (componentName) => {
