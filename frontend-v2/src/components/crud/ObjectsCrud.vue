@@ -1467,7 +1467,7 @@ const openEditInTab = (data) => {
     id: `${props.objectType}-edit-${data.uuid}`,
     label: `${displayName}`,
     icon: objectTypeMetadata.value?.icon || 'pi pi-file',
-    component: 'ObjectDetail',
+    component: 'ObjectView',
     objectType: props.objectType,
     objectId: data.uuid,
     parentId: parentTab?.id_tab || props.tabId,

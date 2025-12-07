@@ -8,7 +8,7 @@
     <!-- Content -->
     <template v-else-if="item">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-4 px-4 pt-4">
         <h2 class="text-xl font-semibold">
           {{ getDisplayName() }}
         </h2>
@@ -22,46 +22,42 @@
         </div>
       </div>
 
-      <!-- Tabs for ci_types, simple form for others -->
-      <Tabs v-if="objectType === 'ci_types'" value="general" class="flex-1 flex flex-col min-h-0">
-        <TabList class="shrink-0">
-          <Tab value="general">{{ $t('ciTypes.tabs.general') }}</Tab>
-          <Tab value="extendedFields">{{ $t('ciTypes.tabs.extendedFields') }}</Tab>
+      <!-- Tabs -->
+      <Tabs v-model:value="activeTab" class="flex-1 flex flex-col min-h-0">
+        <TabList class="shrink-0 px-4">
+          <Tab value="general">
+            <i class="pi pi-file-edit mr-2" />
+            {{ $t('common.generalInfo') }}
+          </Tab>
+          <Tab v-if="hasExtendedInfo" value="extended">
+            <i class="pi pi-list mr-2" />
+            {{ $t('common.extendedInfo') }}
+          </Tab>
+          <!-- Future tabs can be added here -->
         </TabList>
-        <TabPanels class="flex-1 min-h-0">
-          <!-- General tab -->
+        
+        <TabPanels class="flex-1 min-h-0 overflow-hidden">
+          <!-- General Info Tab -->
           <TabPanel value="general" class="h-full overflow-auto">
-            <div class="p-4">
-              <ObjectForm 
-                :fields="formFields" 
-                :item="item" 
-                :fieldOptions="fieldOptions"
-                @update:item="item = $event"
-              />
-            </div>
+            <ObjectGeneralInfo 
+              v-model="item"
+              :formFields="formFields"
+              :fieldOptions="fieldOptions"
+              :loading="metadataLoading"
+            />
           </TabPanel>
 
-          <!-- Extended fields tab -->
-          <TabPanel value="extendedFields" class="h-full">
-            <div class="p-4 h-full">
-              <CiTypeFieldsEditor 
-                :ciTypeUuid="item.uuid"
-                :ciTypeCode="item.code"
-              />
-            </div>
+          <!-- Extended Info Tab -->
+          <TabPanel v-if="hasExtendedInfo" value="extended" class="h-full overflow-auto">
+            <ObjectExtendedInfo 
+              v-model="item"
+              :objectType="objectType"
+              :extendedFields="extendedFields"
+              :loading="extendedFieldsLoading"
+            />
           </TabPanel>
         </TabPanels>
       </Tabs>
-
-      <!-- Simple form for other object types -->
-      <div v-else class="flex-1 overflow-auto">
-        <ObjectForm 
-          :fields="formFields" 
-          :item="item" 
-          :fieldOptions="fieldOptions"
-          @update:item="item = $event"
-        />
-      </div>
     </template>
 
     <!-- Not found -->
@@ -78,11 +74,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 import { getService } from '@/services'
 import metadataService from '@/services/metadataService'
+import ciTypeFieldsService from '@/services/ciTypeFieldsService'
+import ciTypesService from '@/services/ciTypesService'
 
 // PrimeVue components
 import Button from 'primevue/button'
@@ -95,9 +93,10 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Toast from 'primevue/toast'
 
 // Custom components
-import ObjectForm from './ObjectForm.vue'
-import CiTypeFieldsEditor from './CiTypeFieldsEditor.vue'
+import ObjectGeneralInfo from './ObjectGeneralInfo.vue'
+import ObjectExtendedInfo from './ObjectExtendedInfo.vue'
 
+// Props
 const props = defineProps({
   objectType: {
     type: String,
@@ -117,8 +116,12 @@ const props = defineProps({
   }
 })
 
+// Emits
+const emit = defineEmits(['saved', 'close'])
+
+// Composables
 const toast = useToast()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // Service
 const service = computed(() => getService(props.objectType))
@@ -127,9 +130,26 @@ const service = computed(() => getService(props.objectType))
 const loading = ref(true)
 const saving = ref(false)
 const item = ref(null)
+const activeTab = ref('general')
+
+// Metadata
+const metadataLoading = ref(true)
 const formFields = ref([])
 const fieldOptions = ref({})
 const objectTypeMetadata = ref(null)
+
+// Extended fields (for configuration_items)
+const extendedFields = ref([])
+const extendedFieldsLoading = ref(false)
+const ciTypes = ref([])
+
+// Computed
+const hasExtendedInfo = computed(() => {
+  // Show extended tab for ci_types and configuration_items
+  return ['ci_types', 'configuration_items'].includes(props.objectType)
+})
+
+// Methods
 
 // Get display name for header
 const getDisplayName = () => {
@@ -141,12 +161,13 @@ const getDisplayName = () => {
     if (item.value[field]) return item.value[field]
   }
   
-  return item.value.uuid?.substring(0, 8) || ''
+  return item.value.uuid?.substring(0, 8) || t('common.new')
 }
 
 // Load metadata
 const loadMetadata = async () => {
   try {
+    metadataLoading.value = true
     objectTypeMetadata.value = await metadataService.getObjectType(props.objectType)
     
     if (objectTypeMetadata.value) {
@@ -172,11 +193,20 @@ const loadMetadata = async () => {
   } catch (error) {
     console.error('Failed to load metadata:', error)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load metadata', life: 3000 })
+  } finally {
+    metadataLoading.value = false
   }
 }
 
 // Load item
 const loadItem = async () => {
+  if (props.mode === 'create') {
+    // Initialize new item with defaults
+    item.value = initializeNewItem()
+    loading.value = false
+    return
+  }
+  
   if (!props.objectId || !service.value) {
     loading.value = false
     return
@@ -185,11 +215,10 @@ const loadItem = async () => {
   try {
     loading.value = true
     
-    // Use getByCode for ci_types, getByUuid for others
+    // Use getByCode for ci_types if not UUID, getByUuid for others
     if (props.objectType === 'ci_types' && !isUuid(props.objectId)) {
       item.value = await service.value.getByCode(props.objectId)
     } else {
-      // Most services have a get or getByUuid method
       if (service.value.getByUuid) {
         item.value = await service.value.getByUuid(props.objectId)
       } else if (service.value.get) {
@@ -204,6 +233,11 @@ const loadItem = async () => {
         item.value = result.data?.[0] || null
       }
     }
+    
+    // Load extended fields if configuration_items
+    if (props.objectType === 'configuration_items' && item.value?.ci_type) {
+      await loadExtendedFields(item.value.ci_type)
+    }
   } catch (error) {
     console.error('Failed to load item:', error)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load item', life: 3000 })
@@ -212,20 +246,94 @@ const loadItem = async () => {
   }
 }
 
+// Initialize new item with default values
+const initializeNewItem = () => {
+  const defaults = {}
+  for (const field of formFields.value) {
+    if (field.field_type === 'boolean') {
+      defaults[field.field_name] = false
+    } else {
+      defaults[field.field_name] = null
+    }
+  }
+  
+  // Initialize extended_core_fields for configuration_items
+  if (props.objectType === 'configuration_items') {
+    defaults.extended_core_fields = {}
+  }
+  
+  return defaults
+}
+
 // Check if string is UUID
 const isUuid = (str) => {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
   return uuidRegex.test(str)
 }
 
+// Load extended fields for configuration_items
+const loadExtendedFields = async (ciTypeCode) => {
+  if (!ciTypeCode || props.objectType !== 'configuration_items') {
+    extendedFields.value = []
+    return
+  }
+  
+  try {
+    extendedFieldsLoading.value = true
+    
+    // First get CI type UUID from code
+    if (ciTypes.value.length === 0) {
+      const types = await ciTypesService.getAll()
+      ciTypes.value = types
+    }
+    
+    const ciType = ciTypes.value.find(ct => ct.code === ciTypeCode)
+    if (!ciType) {
+      extendedFields.value = []
+      return
+    }
+    
+    // Load fields for this CI type
+    const fields = await ciTypeFieldsService.getByTypeUuid(ciType.uuid)
+    extendedFields.value = fields.filter(f => f.show_in_form).map(f => ({
+      ...f,
+      label: f._translations?.label?.[locale.value] || f.label
+    }))
+  } catch (error) {
+    console.error('Failed to load extended fields:', error)
+    extendedFields.value = []
+  } finally {
+    extendedFieldsLoading.value = false
+  }
+}
+
 // Save item
 const saveItem = async () => {
   if (!item.value || !service.value) return
   
+  // Validate required fields
+  const requiredFields = formFields.value.filter(f => f.is_required)
+  for (const field of requiredFields) {
+    const value = item.value[field.field_name]
+    if (value === null || value === undefined || value === '') {
+      toast.add({ severity: 'warn', summary: 'Warning', detail: `${t(field.label_key)} is required`, life: 3000 })
+      return
+    }
+  }
+  
   try {
     saving.value = true
-    await service.value.update(item.value.uuid, item.value)
-    toast.add({ severity: 'success', summary: 'Success', detail: t('common.saved'), life: 3000 })
+    
+    if (props.mode === 'create') {
+      const created = await service.value.create(item.value)
+      item.value = created
+      toast.add({ severity: 'success', summary: 'Success', detail: t('common.created'), life: 3000 })
+    } else {
+      await service.value.update(item.value.uuid, item.value)
+      toast.add({ severity: 'success', summary: 'Success', detail: t('common.saved'), life: 3000 })
+    }
+    
+    emit('saved', item.value)
   } catch (error) {
     console.error('Failed to save item:', error)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to save item', life: 3000 })
@@ -233,6 +341,13 @@ const saveItem = async () => {
     saving.value = false
   }
 }
+
+// Watch for ci_type changes to reload extended fields
+watch(() => item.value?.ci_type, async (newCiType, oldCiType) => {
+  if (newCiType && newCiType !== oldCiType && props.objectType === 'configuration_items') {
+    await loadExtendedFields(newCiType)
+  }
+})
 
 // Lifecycle
 onMounted(async () => {
