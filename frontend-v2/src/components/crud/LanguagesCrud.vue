@@ -286,14 +286,3 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-:deep(.p-datatable) {
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-:deep(.p-datatable-header) {
-  background: transparent;
-  border: none;
-}
-</style>

@@ -181,13 +181,3 @@ const confirmSelection = () => {
 }
 </script>
 
-<style scoped>
-.icon-item:focus {
-  outline: 2px solid var(--p-primary-500);
-  outline-offset: 2px;
-}
-
-.icon-selector-dialog :deep(.p-dialog-content) {
-  padding-bottom: 0;
-}
-</style>

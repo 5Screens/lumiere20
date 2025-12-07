@@ -1974,29 +1974,3 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
-:deep(.p-datatable) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-:deep(.p-datatable-wrapper) {
-  flex: 1;
-  min-height: 0;
-}
-
-:deep(.p-toolbar) {
-  border: none;
-  background: transparent;
-  padding: 0;
-}
-
-/* Inline picker button styles */
-.icon-item:focus,
-.style-item:focus {
-  outline: 2px solid var(--p-primary-500);
-  outline-offset: 2px;
-}
-</style>

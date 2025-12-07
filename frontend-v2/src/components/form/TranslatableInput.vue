@@ -205,13 +205,3 @@ const confirmDialog = () => {
 }
 </script>
 
-<style scoped>
-.flag-circle {
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.translatable-input :deep(.p-button) {
-  text-align: left;
-}
-</style>

@@ -378,16 +378,3 @@ watch(visible, (newValue) => {
 })
 </script>
 
-<style scoped>
-:deep(.p-drawer-content) {
-  padding: 1.5rem;
-}
-
-:deep(.p-password) {
-  width: 100%;
-}
-
-:deep(.p-password-input) {
-  width: 100%;
-}
-</style>

@@ -205,23 +205,3 @@ const flatMenuItems = computed(() => [
 ])
 </script>
 
-<style scoped>
-:deep(.p-panelmenu) {
-  border: none;
-  background: transparent;
-}
-
-:deep(.p-panelmenu-panel) {
-  border: none;
-}
-
-:deep(.p-panelmenu-header-content) {
-  border: none;
-  border-radius: 0.5rem;
-}
-
-:deep(.p-panelmenu-content) {
-  border: none;
-  background: transparent;
-}
-</style>
