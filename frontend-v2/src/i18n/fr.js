@@ -84,7 +84,16 @@ export default {
     saved: 'Enregistré avec succès',
     notFound: 'Élément non trouvé',
     translate: 'Traduire',
-    select: 'Sélectionner...'
+    select: 'Sélectionner...',
+    generalInfo: 'Informations générales',
+    extendedInfo: 'Informations étendues',
+    field: 'Champ',
+    value: 'Valeur',
+    type: 'Type',
+    saveFirst: 'Enregistrez d\'abord pour accéder à cette section',
+    noExtendedInfo: 'Pas d\'informations étendues disponibles',
+    new: 'Nouveau',
+    created: 'Créé avec succès'
   },
   tabs: {
     backToList: 'Retour à la liste',

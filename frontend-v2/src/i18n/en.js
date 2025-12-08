@@ -84,7 +84,16 @@ export default {
     saved: 'Saved successfully',
     notFound: 'Item not found',
     translate: 'Translate',
-    select: 'Select...'
+    select: 'Select...',
+    generalInfo: 'General Information',
+    extendedInfo: 'Extended Information',
+    field: 'Field',
+    value: 'Value',
+    type: 'Type',
+    saveFirst: 'Save first to access this section',
+    noExtendedInfo: 'No extended information available',
+    new: 'New',
+    created: 'Created successfully'
   },
   tabs: {
     backToList: 'Back to list',

@@ -17,15 +17,40 @@
           <span v-if="field.is_required" class="text-red-500">*</span>
         </label>
         
+        <!-- Translatable text input -->
+        <TranslatableInput 
+          v-if="field.field_type === 'text' && field.is_translatable"
+          :id="field.field_name" 
+          :modelValue="modelValue[field.field_name] || ''"
+          :translations="modelValue._translations?.[field.field_name] || {}"
+          :fieldLabel="$t(field.label_key)"
+          :disabled="field.is_readonly"
+          @update:modelValue="updateField(field.field_name, $event)"
+          @update:translations="updateTranslations(field.field_name, $event)"
+        />
+        
         <!-- Text input -->
         <InputText 
-          v-if="field.field_type === 'text'"
+          v-else-if="field.field_type === 'text'"
           :id="field.field_name" 
           :modelValue="modelValue[field.field_name]"
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly"
           :maxlength="field.max_length"
           fluid 
+        />
+        
+        <!-- Translatable textarea -->
+        <TranslatableInput 
+          v-else-if="field.field_type === 'textarea' && field.is_translatable"
+          :id="field.field_name" 
+          :modelValue="modelValue[field.field_name] || ''"
+          :translations="modelValue._translations?.[field.field_name] || {}"
+          :fieldLabel="$t(field.label_key)"
+          :disabled="field.is_readonly"
+          :multiline="true"
+          @update:modelValue="updateField(field.field_name, $event)"
+          @update:translations="updateTranslations(field.field_name, $event)"
         />
         
         <!-- Textarea -->
@@ -160,6 +185,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 // Custom form components
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
 import IconSelector from '@/components/form/IconSelector.vue'
+import TranslatableInput from '@/components/form/TranslatableInput.vue'
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'
@@ -198,6 +224,18 @@ const updateField = (fieldName, value) => {
   emit('update:modelValue', {
     ...props.modelValue,
     [fieldName]: value
+  })
+}
+
+// Update translations for a translatable field
+const updateTranslations = (fieldName, translations) => {
+  const currentTranslations = props.modelValue._translations || {}
+  emit('update:modelValue', {
+    ...props.modelValue,
+    _translations: {
+      ...currentTranslations,
+      [fieldName]: translations
+    }
   })
 }
 

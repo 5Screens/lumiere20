@@ -138,13 +138,6 @@
             />
           </template>
         </Column>
-
-        <!-- Type indicator column -->
-        <Column field="field_type" :header="$t('common.type')" style="width: 100px">
-          <template #body="{ data }">
-            <Tag :value="data.field_type" :severity="getFieldTypeSeverity(data.field_type)" size="small" />
-          </template>
-        </Column>
       </DataTable>
     </template>
 
@@ -184,7 +177,7 @@ import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 
 // Custom components
-import CiTypeFieldsEditor from '@/components/crud/CiTypeFieldsEditor.vue'
+import CiTypeFieldsEditor from '@/components/object/CiTypeFieldsEditor.vue'
 
 // Props
 const props = defineProps({
