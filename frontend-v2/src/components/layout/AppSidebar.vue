@@ -175,7 +175,7 @@ const menuItems = computed(() => [
       {
         label: t('menu.allConfigurationItems') || 'All Configuration Items',
         icon: 'pi pi-box',
-        command: () => openTab('configuration-items', 'All Configuration Items', 'menu.allConfigurationItems', 'pi pi-box', 'configuration_items', 'ConfigurationItemsCrud')
+        command: () => openTab('configuration-items', 'All Configuration Items', 'menu.allConfigurationItems', 'pi pi-box', 'configuration_items', 'ObjectsCrud')
       },
       // Section: Applications (collapsible)
       {
@@ -352,7 +352,7 @@ const menuItems = computed(() => [
           {
             label: t('menu.ciTypes') || 'CI Types',
             icon: 'pi pi-tags',
-            command: () => openTab('ci-types', 'CI Types', 'menu.ciTypes', 'pi pi-tags', 'ci_types', 'CiTypesCrud')
+            command: () => openTab('ci-types', 'CI Types', 'menu.ciTypes', 'pi pi-tags', 'ci_types', 'ObjectsCrud')
           },
           {
             label: t('menu.changeSetup') || 'Change Setup',
@@ -477,9 +477,9 @@ const flatMenuItems = computed(() => [
   { label: t('menu.sprintCenter'), icon: 'pi pi-bolt', command: () => openTab('sprint-tasks', 'Tasks', 'menu.sprintTasks', 'pi pi-check-square', 'sprint_tasks') },
   { label: t('menu.mail'), icon: 'pi pi-envelope', command: () => {} },
   { label: t('menu.portalsBuilder'), icon: 'pi pi-globe', command: () => openTab('portals', 'Portals', 'menu.portals', 'pi pi-globe', 'portals') },
-  { label: t('menu.assetsData'), icon: 'pi pi-database', command: () => openTab('configuration-items', 'All Configuration Items', 'menu.allConfigurationItems', 'pi pi-box', 'configuration_items', 'ConfigurationItemsCrud') },
+  { label: t('menu.assetsData'), icon: 'pi pi-database', command: () => openTab('configuration-items', 'All Configuration Items', 'menu.allConfigurationItems', 'pi pi-box', 'configuration_items', 'ObjectsCrud') },
   { label: t('menu.tableaux'), icon: 'pi pi-chart-bar', command: () => {} },
-  { label: t('menu.configuration'), icon: 'pi pi-cog', command: () => openTab('ci-types', 'CI Types', 'menu.ciTypes', 'pi pi-tags', 'ci_types', 'CiTypesCrud') },
+  { label: t('menu.configuration'), icon: 'pi pi-cog', command: () => openTab('ci-types', 'CI Types', 'menu.ciTypes', 'pi pi-tags', 'ci_types', 'ObjectsCrud') },
   { label: t('menu.admin'), icon: 'pi pi-shield', command: () => openTab('languages', 'Languages', 'menu.languages', 'pi pi-globe', 'languages', 'LanguagesCrud') }
 ])
 </script>
