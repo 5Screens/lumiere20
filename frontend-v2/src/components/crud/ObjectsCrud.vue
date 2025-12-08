@@ -424,13 +424,12 @@
       </DataTable>
     </div>
 
-    <!-- Create/Edit Dialog with dynamic fields -->
-    <Dialog 
+    <!-- Create/Edit Drawer with dynamic fields -->
+    <Drawer 
       v-model:visible="itemDialog" 
-      :style="{ width: '600px' }" 
       :header="dialogMode === 'create' ? $t('common.create') : $t('common.edit')" 
-      :modal="true"
       position="right"
+      class="w-full md:w-[600px]"
     >
       <ObjectViewInDrawer
         v-model="editItem"
@@ -446,10 +445,12 @@
         @refresh-options="refreshFieldOptions"
       />
       <template #footer>
-        <Button :label="$t('common.cancel')" icon="pi pi-times" severity="secondary" text @click="itemDialog = false" />
-        <Button :label="$t('common.save')" icon="pi pi-check" @click="saveItem" :loading="saving" />
+        <div class="flex gap-2 justify-end w-full">
+          <Button :label="$t('common.cancel')" icon="pi pi-times" severity="secondary" text @click="itemDialog = false" />
+          <Button :label="$t('common.save')" icon="pi pi-check" @click="saveItem" :loading="saving" />
+        </div>
       </template>
-    </Dialog>
+    </Drawer>
     
     <!-- CI Type Change Confirmation Dialog -->
     <Dialog 
@@ -747,6 +748,7 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import MultiSelect from 'primevue/multiselect'
 import Menu from 'primevue/menu'
 import Password from 'primevue/password'
+import Drawer from 'primevue/drawer'
 
 // Custom form components
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
