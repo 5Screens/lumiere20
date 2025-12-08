@@ -17,16 +17,19 @@ export function setConnectionStore(store) {
   connectionStore = store
 }
 
-// Helper to detect network/server errors
+// Helper to detect true network/connection errors (not API errors)
 function isNetworkError(error) {
-  // No response at all (network error, ECONNREFUSED, ECONNRESET)
+  // No response at all (network error, ECONNREFUSED, ECONNRESET, timeout)
   if (!error.response) {
     return true
   }
-  // Server errors (5xx) that indicate backend issues
-  if (error.response.status >= 500 && error.response.status < 600) {
+  // 502/503/504 indicate gateway/proxy issues (backend unreachable)
+  const gatewayErrors = [502, 503, 504]
+  if (gatewayErrors.includes(error.response.status)) {
     return true
   }
+  // 500 errors are application errors, not connection issues
+  // They should be handled by the component, not trigger connection overlay
   return false
 }
 
