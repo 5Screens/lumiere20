@@ -13,6 +13,7 @@ import i18n from './i18n'
 // Styles
 import './assets/styles/main.css'
 import 'primeicons/primeicons.css'
+import 'flag-icons/css/flag-icons.min.css'
 
 // Router configuration
 const router = createRouter({

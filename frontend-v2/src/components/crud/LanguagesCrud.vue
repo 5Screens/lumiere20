@@ -42,9 +42,11 @@
       <!-- Flag column -->
       <Column field="flag_code" :header="$t('languages.flag')" style="width: 5rem">
         <template #body="{ data }">
-          <span class="text-2xl" :title="data.name">
-            {{ getFlagEmoji(data.flag_code) }}
-          </span>
+          <span 
+            class="fi fis text-2xl rounded-sm" 
+            :class="`fi-${data.flag_code?.toLowerCase()}`"
+            :title="data.name"
+          ></span>
         </template>
       </Column>
 
@@ -176,15 +178,6 @@ const hasChanges = computed(() => {
   return languages.value.some(lang => lang.is_active !== originalStates.value[lang.uuid])
 })
 
-// Flag emoji helper
-const getFlagEmoji = (flagCode) => {
-  if (!flagCode) return '🏳️'
-  const codePoints = flagCode
-    .toUpperCase()
-    .split('')
-    .map(char => 127397 + char.charCodeAt(0))
-  return String.fromCodePoint(...codePoints)
-}
 
 // Load languages
 const loadLanguages = async () => {

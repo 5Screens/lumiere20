@@ -84,18 +84,6 @@
           />
         </div>
 
-        <div class="flex flex-col gap-1">
-          <label class="text-sm text-surface-600 dark:text-surface-400">{{ $t('profile.language') }}</label>
-          <Select 
-            v-model="currentLocale" 
-            :options="languages" 
-            :optionLabel="getLanguageLabel"
-            optionValue="code"
-            :disabled="!editing"
-            :loading="loadingLanguages"
-            class="w-full"
-          />
-        </div>
       </div>
 
       <!-- Password change section -->
@@ -180,9 +168,6 @@ import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
-import Select from 'primevue/select'
-import metadataService from '@/services/metadataService'
-import languagesService from '@/services/languagesService'
 
 const props = defineProps({
   modelValue: {
@@ -196,44 +181,7 @@ const emit = defineEmits(['update:modelValue'])
 const router = useRouter()
 const authStore = useAuthStore()
 const toast = useToast()
-const { t, locale } = useI18n()
-
-// Language
-const languages = ref([])
-const loadingLanguages = ref(false)
-
-const loadLanguages = async () => {
-  try {
-    loadingLanguages.value = true
-    languages.value = await languagesService.getActiveLanguages()
-  } catch (error) {
-    console.error('Error loading languages:', error)
-    // Fallback to default languages if API fails
-    languages.value = [
-      { code: 'fr', name: 'Français', name_en: 'French' },
-      { code: 'en', name: 'English', name_en: 'English' }
-    ]
-  } finally {
-    loadingLanguages.value = false
-  }
-}
-
-const getLanguageLabel = (lang) => {
-  // Show native name for current locale, or name_en as fallback
-  return locale.value === lang.code ? lang.name : (lang.name_en || lang.name)
-}
-
-const currentLocale = computed({
-  get: () => locale.value,
-  set: (val) => {
-    locale.value = val
-    localStorage.setItem('locale', val)
-    // Clear cached data to reload with new locale translations
-    metadataService.clearCache()
-    // Reload current route to refresh data
-    router.go(0)
-  }
-})
+const { t } = useI18n()
 
 const visible = computed({
   get: () => props.modelValue,
@@ -368,11 +316,10 @@ const handleLogout = async () => {
   router.push('/login')
 }
 
-// Load user data and languages when drawer opens
+// Load user data when drawer opens
 watch(visible, (newValue) => {
   if (newValue) {
     loadUserData()
-    loadLanguages()
     editing.value = false
   }
 })

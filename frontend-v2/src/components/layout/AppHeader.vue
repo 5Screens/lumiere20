@@ -31,6 +31,23 @@
 
     <!-- Right: Actions -->
     <div class="flex items-center gap-2">
+      <!-- Language selector -->
+      <Button 
+        severity="secondary" 
+        text 
+        rounded
+        @click="toggleLanguageMenu"
+        v-tooltip.bottom="$t('profile.language')"
+        class="p-2"
+      >
+        <span 
+          class="fi fis rounded-sm" 
+          :class="`fi-${currentLanguage?.flag_code?.toLowerCase() || 'fr'}`"
+          style="font-size: 1.25rem;"
+        ></span>
+      </Button>
+      <Menu ref="languageMenu" :model="languageMenuItems" :popup="true" />
+
       <!-- Theme toggle -->
       <Button 
         :icon="theme === 'light' ? 'pi pi-moon' : 'pi pi-sun'" 
@@ -64,10 +81,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/authStore'
+import languagesService from '@/services/languagesService'
+import metadataService from '@/services/metadataService'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
@@ -78,8 +97,48 @@ import Avatar from 'primevue/avatar'
 const emit = defineEmits(['toggle-sidebar', 'open-profile'])
 
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const authStore = useAuthStore()
+
+// Languages
+const languages = ref([])
+const languageMenu = ref()
+
+const loadLanguages = async () => {
+  try {
+    languages.value = await languagesService.getActiveLanguages()
+  } catch (error) {
+    console.error('Error loading languages:', error)
+    languages.value = [
+      { code: 'fr', name: 'Français', flag_code: 'fr' },
+      { code: 'en', name: 'English', flag_code: 'gb' }
+    ]
+  }
+}
+
+const currentLanguage = computed(() => {
+  return languages.value.find(l => l.code === locale.value) || { flag_code: 'fr' }
+})
+
+const languageMenuItems = computed(() => 
+  languages.value.map(lang => ({
+    label: lang.name,
+    icon: `fi fi-${lang.flag_code?.toLowerCase()}`,
+    class: locale.value === lang.code ? 'bg-primary-50 dark:bg-primary-900/20' : '',
+    command: () => changeLanguage(lang.code)
+  }))
+)
+
+const toggleLanguageMenu = (event) => {
+  languageMenu.value.toggle(event)
+}
+
+const changeLanguage = (code) => {
+  locale.value = code
+  localStorage.setItem('locale', code)
+  metadataService.clearCache()
+  router.go(0)
+}
 
 // Search
 const searchQuery = ref('')
@@ -132,4 +191,16 @@ const userMenuItems = computed(() => [
 const toggleUserMenu = (event) => {
   userMenu.value.toggle(event)
 }
+
+onMounted(() => {
+  loadLanguages()
+})
 </script>
+
+<style>
+/* Custom style for language menu items with flag icons */
+.p-menu .fi {
+  font-size: 1rem;
+  margin-right: 0.5rem;
+}
+</style>
