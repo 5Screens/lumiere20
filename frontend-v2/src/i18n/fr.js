@@ -1,27 +1,103 @@
 export default {
   menu: {
-    dashboard: 'Tableau de bord',
+    // Main menu items
+    serviceHub: 'Service Hub',
+    sprintCenter: 'Sprint Center',
+    mail: 'Mail',
+    portalsBuilder: 'Portals Builder',
+    assetsData: 'Assets & Data',
+    tableaux: 'Tableaux',
     configuration: 'Configuration',
-    configurationItems: 'Éléments de configuration',
-    entities: 'Entités',
-    locations: 'Localisations',
-    groups: 'Groupes',
-    persons: 'Personnes',
-    ciTypes: 'Types de CI',
-    tickets: 'Tickets',
+    admin: 'Administration',
+    
+    // Service Hub items
     incidents: 'Incidents',
     problems: 'Problèmes',
+    tasks: 'Tâches',
     changes: 'Changements',
+    knowledge: 'Base de connaissances',
+    
+    // Sprint Center items
+    sprintTasks: 'Tâches',
+    userStories: 'User Stories',
+    projects: 'Projets',
+    sprints: 'Sprints',
+    epics: 'Epics',
+    defects: 'Défauts',
+    
+    // Portals Builder items
+    portals: 'Portails',
+    
+    // Assets & Data items
+    allConfigurationItems: 'Tous les éléments de configuration',
+    applications: 'Applications',
+    virtualClient: 'Client virtuel',
+    hardware: 'Matériel',
+    workstation: 'Poste de travail',
+    server: 'Serveur',
+    storage: 'Stockage',
+    rack: 'Rack',
+    ups: 'Onduleur',
+    firewall: 'Pare-feu',
+    switch: 'Switch',
+    router: 'Routeur',
+    routingRule: 'Règle de routage',
+    networkPrinter: 'Imprimante réseau',
+    zoneCluster: 'Zone Cluster',
+    virtualRackBilling: 'Facturation rack virtuel',
+    farm: 'Ferme',
+    databaseCatalog: 'Catalogue de bases de données',
+    databaseInstance: 'Instance de base de données',
+    contract: 'Contrat',
+    softwareLicense: 'Licence logicielle',
+    cloudService: 'Service cloud',
+    
+    // Configuration items
+    ciTypes: 'Types de CI',
+    changeSetup: 'Configuration des changements',
+    changeQuestions: 'Questions de changement',
+    changeOptions: 'Options de changement',
+    problemCategories: 'Catégories de problèmes',
+    incidentSetup: 'Configuration des incidents',
+    symptoms: 'Symptômes',
+    knowledgeSetup: 'Configuration base de connaissances',
+    defectSetup: 'Configuration des défauts',
+    projectSetup: 'Configuration des projets',
+    entitySetup: 'Configuration des entités',
+    contactTypes: 'Types de contact',
+    entities: 'Entités',
+    locations: 'Localisations',
+    persons: 'Personnes',
+    groups: 'Groupes',
+    
+    // Admin items
+    languages: 'Langues',
+    metadata: 'Métadonnées',
+    audit: 'Audit',
+    
+    // Section headers
+    sections: {
+      applications: 'Applications',
+      hardware: 'Matériel',
+      network: 'Réseau',
+      virtualization: 'Virtualisation',
+      database: 'Base de données',
+      contracts: 'Contrats',
+      cloud: 'Cloud',
+      serviceManagement: 'Gestion des services',
+      agileBacklog: 'Backlog Agile',
+      foundations: 'Fondations'
+    },
+    
+    // Legacy (keep for compatibility)
+    dashboard: 'Tableau de bord',
+    configurationItems: 'Éléments de configuration',
+    tickets: 'Tickets',
     services: 'Services',
     serviceCatalog: 'Catalogue de services',
     serviceOfferings: 'Offres de service',
-    admin: 'Administration',
     ticketTypes: 'Types de tickets',
-    ticketStatus: 'Statuts de tickets',
-    symptoms: 'Symptômes',
-    languages: 'Langues',
-    metadata: 'Métadonnées',
-    audit: 'Audit'
+    ticketStatus: 'Statuts de tickets'
   },
   auth: {
     loginTitle: 'Connexion',

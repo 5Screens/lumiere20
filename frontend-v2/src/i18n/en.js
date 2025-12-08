@@ -1,27 +1,103 @@
 export default {
   menu: {
-    dashboard: 'Dashboard',
+    // Main menu items
+    serviceHub: 'Service Hub',
+    sprintCenter: 'Sprint Center',
+    mail: 'Mail',
+    portalsBuilder: 'Portals Builder',
+    assetsData: 'Assets & Data',
+    tableaux: 'Dashboards',
     configuration: 'Configuration',
-    configurationItems: 'Configuration Items',
-    entities: 'Entities',
-    locations: 'Locations',
-    groups: 'Groups',
-    persons: 'Persons',
-    ciTypes: 'CI Types',
-    tickets: 'Tickets',
+    admin: 'Administration',
+    
+    // Service Hub items
     incidents: 'Incidents',
     problems: 'Problems',
+    tasks: 'Tasks',
     changes: 'Changes',
+    knowledge: 'Knowledge Base',
+    
+    // Sprint Center items
+    sprintTasks: 'Tasks',
+    userStories: 'User Stories',
+    projects: 'Projects',
+    sprints: 'Sprints',
+    epics: 'Epics',
+    defects: 'Defects',
+    
+    // Portals Builder items
+    portals: 'Portals',
+    
+    // Assets & Data items
+    allConfigurationItems: 'All Configuration Items',
+    applications: 'Applications',
+    virtualClient: 'Virtual Client',
+    hardware: 'Hardware',
+    workstation: 'Workstation',
+    server: 'Server',
+    storage: 'Storage',
+    rack: 'Rack',
+    ups: 'UPS',
+    firewall: 'Firewall',
+    switch: 'Switch',
+    router: 'Router',
+    routingRule: 'Routing Rule',
+    networkPrinter: 'Network Printer',
+    zoneCluster: 'Zone Cluster',
+    virtualRackBilling: 'Virtual Rack Billing',
+    farm: 'Farm',
+    databaseCatalog: 'Database Catalog',
+    databaseInstance: 'Database Instance',
+    contract: 'Contract',
+    softwareLicense: 'Software License',
+    cloudService: 'Cloud Service',
+    
+    // Configuration items
+    ciTypes: 'CI Types',
+    changeSetup: 'Change Setup',
+    changeQuestions: 'Change Questions',
+    changeOptions: 'Change Options',
+    problemCategories: 'Problem Categories',
+    incidentSetup: 'Incident Setup',
+    symptoms: 'Symptoms',
+    knowledgeSetup: 'Knowledge Setup',
+    defectSetup: 'Defect Setup',
+    projectSetup: 'Project Setup',
+    entitySetup: 'Entity Setup',
+    contactTypes: 'Contact Types',
+    entities: 'Entities',
+    locations: 'Locations',
+    persons: 'Persons',
+    groups: 'Groups',
+    
+    // Admin items
+    languages: 'Languages',
+    metadata: 'Metadata',
+    audit: 'Audit',
+    
+    // Section headers
+    sections: {
+      applications: 'Applications',
+      hardware: 'Hardware',
+      network: 'Network',
+      virtualization: 'Virtualization',
+      database: 'Database',
+      contracts: 'Contracts',
+      cloud: 'Cloud',
+      serviceManagement: 'Service Management',
+      agileBacklog: 'Agile Backlog',
+      foundations: 'Foundations'
+    },
+    
+    // Legacy (keep for compatibility)
+    dashboard: 'Dashboard',
+    configurationItems: 'Configuration Items',
+    tickets: 'Tickets',
     services: 'Services',
     serviceCatalog: 'Service Catalog',
     serviceOfferings: 'Service Offerings',
-    admin: 'Administration',
     ticketTypes: 'Ticket Types',
-    ticketStatus: 'Ticket Status',
-    symptoms: 'Symptoms',
-    languages: 'Languages',
-    metadata: 'Metadata',
-    audit: 'Audit'
+    ticketStatus: 'Ticket Status'
   },
   auth: {
     loginTitle: 'Sign In',
