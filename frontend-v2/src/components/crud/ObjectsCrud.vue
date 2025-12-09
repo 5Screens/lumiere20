@@ -20,7 +20,7 @@
     
       <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
       <!-- Toolbar -->
-      <Toolbar class="mb-4">
+      <Toolbar class="mb-4" :pt="{ root: { class: 'p-2' } }">
         <template #start>
           <ButtonGroup>
             <Button 

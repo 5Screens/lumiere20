@@ -25,7 +25,7 @@
       <!-- Tabs -->
       <Tabs v-model:value="activeTab" class="flex-1 flex flex-col min-h-0">
         <TabList class="shrink-0 px-4">
-          <Tab value="general">
+          <Tab value="general" :pt="{ root: { class: 'pl-0' } }">
             <i class="pi pi-file-edit mr-2" />
             {{ $t('common.generalInfo') }}
           </Tab>
@@ -36,7 +36,7 @@
           <!-- Future tabs can be added here -->
         </TabList>
         
-        <TabPanels class="flex-1 min-h-0 overflow-hidden">
+        <TabPanels class="flex-1 min-h-0 overflow-hidden" :pt="{ root: { class: 'p-0' } }">
           <!-- General Info Tab -->
           <TabPanel value="general" class="h-full overflow-auto">
             <ObjectGeneralInfo 

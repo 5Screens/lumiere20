@@ -49,7 +49,7 @@
         </draggable>
       </TabList>
 
-      <TabPanels class="flex-1 min-h-0 overflow-hidden">
+      <TabPanels class="flex-1 min-h-0 overflow-hidden" :pt="{ root: { class: 'p-0' } }">
         <TabPanel 
           v-for="tab in tabsStore.parentTabs" 
           :key="tab.id_tab"
@@ -108,9 +108,9 @@
                 </draggable>
               </TabList>
 
-              <TabPanels class="flex-1 min-h-0 overflow-hidden">
+              <TabPanels class="flex-1 min-h-0 overflow-hidden" :pt="{ root: { class: 'p-1' } }">
                 <!-- List panel -->
-                <TabPanel :value="'list-' + tab.id_tab" class="h-full overflow-auto p-4">
+                <TabPanel :value="'list-' + tab.id_tab" class="h-full overflow-auto p-0">
                   <component 
                     v-if="tab.component"
                     :is="getComponent(tab.component)"
@@ -124,7 +124,7 @@
                   v-for="childTab in getChildTabs(tab.id_tab)" 
                   :key="childTab.id_tab"
                   :value="childTab.id_tab"
-                  class="h-full overflow-auto p-4"
+                  class="h-full overflow-auto p-0"
                 >
                   <component 
                     v-if="childTab.component"
@@ -140,7 +140,7 @@
             </Tabs>
 
             <!-- Simple content for components without child tabs -->
-            <div v-else class="h-full overflow-auto p-4">
+            <div v-else class="h-full overflow-auto p-0">
               <component 
                 v-if="tab.component"
                 :is="getComponent(tab.component)"
