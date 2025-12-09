@@ -281,6 +281,11 @@ const menuItems = computed(() => [
         icon: 'pi pi-cog',
         items: [
           {
+            label: t('menu.ciCategories') || 'CI Categories',
+            icon: 'pi pi-folder',
+            command: () => openTab('ci-categories', 'CI Categories', 'menu.ciCategories', 'pi pi-folder', 'ci_categories', 'ObjectsCrud')
+          },
+          {
             label: t('menu.ciTypes') || 'CI Types',
             icon: 'pi pi-tags',
             command: () => openTab('ci-types', 'CI Types', 'menu.ciTypes', 'pi pi-tags', 'ci_types', 'ObjectsCrud')

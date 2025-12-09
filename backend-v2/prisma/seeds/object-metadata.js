@@ -173,7 +173,7 @@ async function seedObjectMetadata() {
       { field_name: 'code', label_key: 'ciTypes.code', field_type: 'text', is_required: true, min_width: '10rem', display_order: 1 },
       { field_name: 'label', label_key: 'ciTypes.label', field_type: 'text', is_required: true, is_translatable: true, min_width: '14rem', display_order: 2 },
       { field_name: 'description', label_key: 'ciTypes.description', field_type: 'textarea', is_translatable: true, min_width: '20rem', display_order: 3 },
-      { field_name: 'rel_category_uuid', label_key: 'ciTypes.category', field_type: 'relation', relation_object: 'ci_categories', relation_display: 'label', min_width: '10rem', display_order: 4 },
+      { field_name: 'rel_category_uuid', label_key: 'ciTypes.category', field_type: 'ci_category', min_width: '10rem', display_order: 4 },
       { field_name: 'icon', label_key: 'ciTypes.icon', field_type: 'icon_picker', min_width: '8rem', display_order: 5 },
       { field_name: 'color', label_key: 'ciTypes.tagStyle', field_type: 'tag_style', min_width: '8rem', display_order: 6 },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '6rem', display_order: 7 },

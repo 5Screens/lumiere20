@@ -255,6 +255,14 @@
               </div>
               <span v-else>-</span>
             </template>
+            <!-- CI Category display -->
+            <template v-else-if="col.field_type === 'ci_category'">
+              <div v-if="data[col.field_name]" class="flex items-center gap-2">
+                <i :class="`pi ${getCategoryIcon(data[col.field_name])}`" />
+                <span>{{ getCategoryLabel(data[col.field_name]) }}</span>
+              </div>
+              <span v-else>-</span>
+            </template>
             <!-- Default text - with translation support -->
             <template v-else>
               {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (data[col.field_name] ?? '-') }}
@@ -346,6 +354,28 @@
                       {{ data[field] }}
                     </Tag>
                     <span v-else class="text-surface-400">{{ $t('common.selectTagStyle') }}</span>
+                  </div>
+                  <i class="pi pi-pencil text-surface-400 ml-2" />
+                </template>
+              </Button>
+            </template>
+            <!-- CI Category editor -->
+            <template v-else-if="col.field_type === 'ci_category'">
+              <Button
+                type="button"
+                severity="secondary"
+                outlined
+                size="small"
+                class="w-full justify-between"
+                @click="openInlinePicker('ci_category', data, field)"
+              >
+                <template #default>
+                  <div class="flex items-center gap-2">
+                    <template v-if="data[field]">
+                      <i :class="`pi ${getCategoryIcon(data[field])}`" />
+                      <span class="text-sm">{{ getCategoryLabel(data[field]) }}</span>
+                    </template>
+                    <span v-else class="text-surface-400">{{ $t('ciCategories.selectCategory') }}</span>
                   </div>
                   <i class="pi pi-pencil text-surface-400 ml-2" />
                 </template>
@@ -612,6 +642,47 @@
       </template>
     </Dialog>
 
+    <!-- Inline CI Category Picker Dialog -->
+    <Dialog
+      v-model:visible="inlineCiCategoryDialog"
+      modal
+      :header="$t('ciCategories.selectCategory')"
+      :style="{ width: '90vw', maxWidth: '600px', height: 'auto' }"
+      :draggable="false"
+    >
+      <!-- Loading state -->
+      <div v-if="ciCategoriesLoading" class="flex justify-center py-8">
+        <i class="pi pi-spin pi-spinner text-2xl" />
+      </div>
+
+      <!-- Categories grid -->
+      <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <button
+          v-for="category in ciCategories"
+          :key="category.uuid"
+          type="button"
+          class="category-item p-4 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-2"
+          :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === category.uuid }"
+          @click="inlinePickerValue = category.uuid"
+        >
+          <i :class="`pi ${category.icon || 'pi-folder'} text-2xl`" />
+          <span class="text-sm font-medium text-center">{{ category.label }}</span>
+          <i 
+            v-if="inlinePickerValue === category.uuid" 
+            class="pi pi-check text-primary-500"
+          />
+        </button>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
+          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
+          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Inline Translatable Field Dialog -->
     <Dialog
       v-model:visible="inlineTranslatableDialog"
@@ -828,6 +899,7 @@ const pendingCiType = ref(null)
 const inlineIconDialog = ref(false)
 const inlineTagStyleDialog = ref(false)
 const inlineTranslatableDialog = ref(false)
+const inlineCiCategoryDialog = ref(false)
 const inlinePickerData = ref(null) // The row data being edited
 const inlinePickerField = ref(null) // The field name being edited
 const inlinePickerFieldMeta = ref(null) // The field metadata (for translatable)
@@ -835,6 +907,10 @@ const inlinePickerValue = ref(null) // The temporary selected value
 const inlinePickerSaving = ref(false)
 const iconSearchQuery = ref('')
 const tagStyleOptions = getTagStyleOptions()
+
+// CI Categories for selector
+const ciCategories = ref([])
+const ciCategoriesLoading = ref(false)
 
 // Translatable field support
 const inlineTranslations = ref({}) // Temporary translations { fr: '...', en: '...' }
@@ -1028,6 +1104,29 @@ const inlineTranslatableTitle = computed(() => {
 // Methods
 
 // Inline picker methods
+const loadCiCategories = async () => {
+  if (ciCategories.value.length > 0) return
+  ciCategoriesLoading.value = true
+  try {
+    const response = await api.get('/ci_categories')
+    ciCategories.value = response.data
+  } catch (error) {
+    console.error('Failed to load CI categories:', error)
+  } finally {
+    ciCategoriesLoading.value = false
+  }
+}
+
+const getCategoryLabel = (uuid) => {
+  const category = ciCategories.value.find(c => c.uuid === uuid)
+  return category?.label || '-'
+}
+
+const getCategoryIcon = (uuid) => {
+  const category = ciCategories.value.find(c => c.uuid === uuid)
+  return category?.icon || 'pi-folder'
+}
+
 const openInlinePicker = (type, data, field, colMeta = null) => {
   inlinePickerData.value = data
   inlinePickerField.value = field
@@ -1039,6 +1138,9 @@ const openInlinePicker = (type, data, field, colMeta = null) => {
     inlineIconDialog.value = true
   } else if (type === 'tag_style') {
     inlineTagStyleDialog.value = true
+  } else if (type === 'ci_category') {
+    loadCiCategories()
+    inlineCiCategoryDialog.value = true
   } else if (type === 'translatable') {
     // Initialize translations from data._translations
     inlineTranslations.value = {}
@@ -1062,6 +1164,7 @@ const cancelInlinePicker = () => {
   inlineIconDialog.value = false
   inlineTagStyleDialog.value = false
   inlineTranslatableDialog.value = false
+  inlineCiCategoryDialog.value = false
   inlinePickerData.value = null
   inlinePickerField.value = null
   inlinePickerFieldMeta.value = null
@@ -1674,6 +1777,11 @@ watch(filters, () => {
 onMounted(async () => {
   // Load active languages for translatable fields
   loadActiveLanguages()
+  
+  // Load CI categories if needed for ci_types object type
+  if (props.objectType === 'ci_types') {
+    loadCiCategories()
+  }
   
   await loadMetadata()
   if (serviceAvailable.value) {

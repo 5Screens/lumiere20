@@ -53,6 +53,7 @@ export default {
     cloudService: 'Cloud Service',
     
     // Configuration items
+    ciCategories: 'CI Categories',
     ciTypes: 'CI Types',
     changeSetup: 'Change Setup',
     changeQuestions: 'Change Questions',
@@ -360,6 +361,7 @@ export default {
     label: 'Label',
     icon: 'Icon',
     displayOrder: 'Display Order',
+    selectCategory: 'Select a category',
     messages: {
       created: 'CI category created successfully',
       updated: 'CI category updated successfully',

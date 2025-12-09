@@ -53,6 +53,7 @@ export default {
     cloudService: 'Service cloud',
     
     // Configuration items
+    ciCategories: 'Catégories de CI',
     ciTypes: 'Types de CI',
     changeSetup: 'Configuration des changements',
     changeQuestions: 'Questions de changement',
@@ -360,6 +361,7 @@ export default {
     label: 'Libellé',
     icon: 'Icône',
     displayOrder: 'Ordre d\'affichage',
+    selectCategory: 'Sélectionner une catégorie',
     messages: {
       created: 'Catégorie de CI créée avec succès',
       updated: 'Catégorie de CI mise à jour avec succès',
