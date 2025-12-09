@@ -377,6 +377,7 @@ const search = async (searchParams = {}, locale = 'en') => {
     const baseWhere = buildPrismaWhereFromFilters(filters, {
       globalSearchFields: ['code'],  // Only non-translatable fields
       booleanColumns: ['is_active'],
+      uuidColumns: ['rel_category_uuid'],  // UUID columns use equals, not contains
     });
 
     let where = baseWhere;
@@ -412,6 +413,7 @@ const search = async (searchParams = {}, locale = 'en') => {
         where = buildPrismaWhereFromFilters(filters, {
           globalSearchFields: ['code', 'label', 'description'],
           booleanColumns: ['is_active'],
+          uuidColumns: ['rel_category_uuid'],
         });
       }
     }

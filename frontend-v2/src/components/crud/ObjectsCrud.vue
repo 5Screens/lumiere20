@@ -444,6 +444,24 @@
                 showClear
               />
             </template>
+            <!-- CI Category filter -->
+            <template v-else-if="col.field_type === 'ci_category'">
+              <Select 
+                v-model="filterModel.value" 
+                :options="ciCategories" 
+                optionLabel="label" 
+                optionValue="uuid" 
+                showClear
+                :placeholder="$t('ciCategories.selectCategory')"
+              >
+                <template #option="slotProps">
+                  <div class="flex items-center gap-2">
+                    <i :class="`pi ${slotProps.option.icon || 'pi-folder'}`" />
+                    <span>{{ slotProps.option.label }}</span>
+                  </div>
+                </template>
+              </Select>
+            </template>
             <!-- Default text filter -->
             <template v-else>
               <InputText v-model="filterModel.value" type="text" :placeholder="$t('common.search')" />
@@ -942,8 +960,9 @@ const initFilters = () => {
   for (const col of tableColumns.value) {
     if (col.is_filterable) {
       const matchMode = getDefaultMatchMode(col)
+      const useOrOperator = col.field_type === 'select' || col.field_type === 'ci_category'
       baseFilters[col.field_name] = {
-        operator: col.field_type === 'select' ? FilterOperator.OR : FilterOperator.AND,
+        operator: useOrOperator ? FilterOperator.OR : FilterOperator.AND,
         constraints: [{ value: null, matchMode }]
       }
     }
@@ -955,6 +974,7 @@ const initFilters = () => {
 const getDefaultMatchMode = (col) => {
   switch (col.field_type) {
     case 'select':
+    case 'ci_category':
       return FilterMatchMode.EQUALS
     case 'date':
     case 'datetime':
