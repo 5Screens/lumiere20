@@ -86,7 +86,8 @@ export default {
       cloud: 'Cloud',
       serviceManagement: 'Gestion des services',
       agileBacklog: 'Backlog Agile',
-      foundations: 'Fondations'
+      foundations: 'Fondations',
+      others: 'Autres'
     },
     
     // Legacy (keep for compatibility)
@@ -341,6 +342,7 @@ export default {
     color: 'Couleur',
     tagStyle: 'Style du tag',
     displayOrder: 'Ordre d\'affichage',
+    category: 'Catégorie',
     tabs: {
       general: 'Général',
       extendedFields: 'Champs étendus'
@@ -350,6 +352,18 @@ export default {
       updated: 'Type de CI mis à jour avec succès',
       deleted: 'Type de CI supprimé avec succès',
       deletedMultiple: '{count} types de CI supprimés avec succès'
+    }
+  },
+  ciCategories: {
+    title: 'Catégories de CI',
+    code: 'Code',
+    label: 'Libellé',
+    icon: 'Icône',
+    displayOrder: 'Ordre d\'affichage',
+    messages: {
+      created: 'Catégorie de CI créée avec succès',
+      updated: 'Catégorie de CI mise à jour avec succès',
+      deleted: 'Catégorie de CI supprimée avec succès'
     }
   },
   ciTypeFields: {

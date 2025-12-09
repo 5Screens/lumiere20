@@ -46,11 +46,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTabsStore } from '@/stores/tabsStore'
 import PanelMenu from 'primevue/panelmenu'
 import Button from 'primevue/button'
+import api from '@/services/api'
 
 const props = defineProps({
   collapsed: {
@@ -61,8 +62,41 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle-collapse'])
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const tabsStore = useTabsStore()
+
+// Dynamic CI categories and types
+const ciCategories = ref([])
+const uncategorizedCiTypes = ref([])
+const isLoadingCategories = ref(false)
+
+/**
+ * Load CI categories with their CI types from API
+ */
+const loadCiCategories = async () => {
+  isLoadingCategories.value = true
+  try {
+    const [categoriesResponse, uncategorizedResponse] = await Promise.all([
+      api.get('/ci_categories/with-ci-types'),
+      api.get('/ci_categories/uncategorized')
+    ])
+    ciCategories.value = categoriesResponse.data
+    uncategorizedCiTypes.value = uncategorizedResponse.data
+  } catch (error) {
+    console.error('Failed to load CI categories:', error)
+  } finally {
+    isLoadingCategories.value = false
+  }
+}
+
+// Load categories on mount and when locale changes
+onMounted(() => {
+  loadCiCategories()
+})
+
+watch(locale, () => {
+  loadCiCategories()
+})
 
 /**
  * Opens a tab for the given object type
@@ -76,6 +110,64 @@ const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud
     objectType,
     component
   })
+}
+
+/**
+ * Build the Assets & Data menu dynamically from CI categories
+ */
+const buildAssetsDataMenu = () => {
+  const items = []
+  
+  // 1. All Configuration Items (always first, static)
+  items.push({
+    label: t('menu.allConfigurationItems') || 'All Configuration Items',
+    icon: 'pi pi-box',
+    command: () => openTab('configuration-items', 'All Configuration Items', 'menu.allConfigurationItems', 'pi pi-box', 'configuration_items', 'ObjectsCrud')
+  })
+  
+  // 2. Dynamic categories with their CI types
+  for (const category of ciCategories.value) {
+    if (category.ci_types && category.ci_types.length > 0) {
+      items.push({
+        label: category.label,
+        icon: `pi ${category.icon || 'pi-folder'}`,
+        items: category.ci_types.map(ciType => ({
+          label: ciType.label,
+          icon: `pi ${ciType.icon || 'pi-box'}`,
+          command: () => openTab(
+            `ci-${ciType.code.toLowerCase()}`,
+            ciType.label,
+            null, // No i18n key, using dynamic label
+            `pi ${ciType.icon || 'pi-box'}`,
+            `ci_${ciType.code}`, // objectType for filtering
+            'ObjectsCrud'
+          )
+        }))
+      })
+    }
+  }
+  
+  // 3. Others section for uncategorized CI types
+  if (uncategorizedCiTypes.value.length > 0) {
+    items.push({
+      label: t('menu.sections.others') || 'Others',
+      icon: 'pi pi-ellipsis-h',
+      items: uncategorizedCiTypes.value.map(ciType => ({
+        label: ciType.label,
+        icon: `pi ${ciType.icon || 'pi-box'}`,
+        command: () => openTab(
+          `ci-${ciType.code.toLowerCase()}`,
+          ciType.label,
+          null,
+          `pi ${ciType.icon || 'pi-box'}`,
+          `ci_${ciType.code}`,
+          'ObjectsCrud'
+        )
+      }))
+    })
+  }
+  
+  return items
 }
 
 const menuItems = computed(() => [
@@ -166,172 +258,11 @@ const menuItems = computed(() => [
       }
     ]
   },
-  // 5. Assets & Data
+  // 5. Assets & Data (dynamic from CI categories)
   {
     label: t('menu.assetsData') || 'Assets & Data',
     icon: 'pi pi-database',
-    items: [
-      // All Configuration Items (no section)
-      {
-        label: t('menu.allConfigurationItems') || 'All Configuration Items',
-        icon: 'pi pi-box',
-        command: () => openTab('configuration-items', 'All Configuration Items', 'menu.allConfigurationItems', 'pi pi-box', 'configuration_items', 'ObjectsCrud')
-      },
-      // Section: Applications (collapsible)
-      {
-        label: t('menu.sections.applications') || 'Applications',
-        icon: 'pi pi-th-large',
-        items: [
-          {
-            label: t('menu.applications') || 'Applications',
-            icon: 'pi pi-th-large',
-            command: () => openTab('applications', 'Applications', 'menu.applications', 'pi pi-th-large', 'applications')
-          },
-          {
-            label: t('menu.virtualClient') || 'Virtual Client',
-            icon: 'pi pi-desktop',
-            command: () => openTab('virtual-client', 'Virtual Client', 'menu.virtualClient', 'pi pi-desktop', 'virtual_client')
-          }
-        ]
-      },
-      // Section: Hardware (collapsible)
-      {
-        label: t('menu.sections.hardware') || 'Hardware',
-        icon: 'pi pi-microchip',
-        items: [
-          {
-            label: t('menu.hardware') || 'Hardware',
-            icon: 'pi pi-microchip',
-            command: () => openTab('hardware', 'Hardware', 'menu.hardware', 'pi pi-microchip', 'hardware')
-          },
-          {
-            label: t('menu.workstation') || 'Workstation',
-            icon: 'pi pi-desktop',
-            command: () => openTab('workstation', 'Workstation', 'menu.workstation', 'pi pi-desktop', 'workstation')
-          },
-          {
-            label: t('menu.server') || 'Server',
-            icon: 'pi pi-server',
-            command: () => openTab('server', 'Server', 'menu.server', 'pi pi-server', 'server')
-          },
-          {
-            label: t('menu.storage') || 'Storage',
-            icon: 'pi pi-database',
-            command: () => openTab('storage', 'Storage', 'menu.storage', 'pi pi-database', 'storage')
-          },
-          {
-            label: t('menu.rack') || 'Rack',
-            icon: 'pi pi-objects-column',
-            command: () => openTab('rack', 'Rack', 'menu.rack', 'pi pi-objects-column', 'rack')
-          },
-          {
-            label: t('menu.ups') || 'UPS',
-            icon: 'pi pi-bolt',
-            command: () => openTab('ups', 'UPS', 'menu.ups', 'pi pi-bolt', 'ups')
-          }
-        ]
-      },
-      // Section: Network (collapsible)
-      {
-        label: t('menu.sections.network') || 'Network',
-        icon: 'pi pi-sitemap',
-        items: [
-          {
-            label: t('menu.firewall') || 'Firewall',
-            icon: 'pi pi-shield',
-            command: () => openTab('firewall', 'Firewall', 'menu.firewall', 'pi pi-shield', 'firewall')
-          },
-          {
-            label: t('menu.switch') || 'Switch',
-            icon: 'pi pi-sitemap',
-            command: () => openTab('switch', 'Switch', 'menu.switch', 'pi pi-sitemap', 'switch')
-          },
-          {
-            label: t('menu.router') || 'Router',
-            icon: 'pi pi-wifi',
-            command: () => openTab('router', 'Router', 'menu.router', 'pi pi-wifi', 'router')
-          },
-          {
-            label: t('menu.routingRule') || 'Routing Rule',
-            icon: 'pi pi-directions',
-            command: () => openTab('routing-rule', 'Routing Rule', 'menu.routingRule', 'pi pi-directions', 'routing_rule')
-          },
-          {
-            label: t('menu.networkPrinter') || 'Network Printer',
-            icon: 'pi pi-print',
-            command: () => openTab('network-printer', 'Network Printer', 'menu.networkPrinter', 'pi pi-print', 'network_printer')
-          },
-          {
-            label: t('menu.zoneCluster') || 'Zone Cluster',
-            icon: 'pi pi-share-alt',
-            command: () => openTab('zone-cluster', 'Zone Cluster', 'menu.zoneCluster', 'pi pi-share-alt', 'zone_cluster')
-          }
-        ]
-      },
-      // Section: Virtualization (collapsible)
-      {
-        label: t('menu.sections.virtualization') || 'Virtualization',
-        icon: 'pi pi-server',
-        items: [
-          {
-            label: t('menu.virtualRackBilling') || 'Virtual Rack Billing',
-            icon: 'pi pi-dollar',
-            command: () => openTab('virtual-rack-billing', 'Virtual Rack Billing', 'menu.virtualRackBilling', 'pi pi-dollar', 'virtual_rack_billing')
-          },
-          {
-            label: t('menu.farm') || 'Farm',
-            icon: 'pi pi-server',
-            command: () => openTab('farm', 'Farm', 'menu.farm', 'pi pi-server', 'farm')
-          }
-        ]
-      },
-      // Section: Database (collapsible)
-      {
-        label: t('menu.sections.database') || 'Database',
-        icon: 'pi pi-database',
-        items: [
-          {
-            label: t('menu.databaseCatalog') || 'Database Catalog',
-            icon: 'pi pi-database',
-            command: () => openTab('database-catalog', 'Database Catalog', 'menu.databaseCatalog', 'pi pi-database', 'database_catalog')
-          },
-          {
-            label: t('menu.databaseInstance') || 'Database Instance',
-            icon: 'pi pi-database',
-            command: () => openTab('database-instance', 'Database Instance', 'menu.databaseInstance', 'pi pi-database', 'database_instance')
-          }
-        ]
-      },
-      // Section: Contracts (collapsible)
-      {
-        label: t('menu.sections.contracts') || 'Contracts',
-        icon: 'pi pi-file',
-        items: [
-          {
-            label: t('menu.contract') || 'Contract',
-            icon: 'pi pi-file',
-            command: () => openTab('contract', 'Contract', 'menu.contract', 'pi pi-file', 'contract')
-          },
-          {
-            label: t('menu.softwareLicense') || 'Software License',
-            icon: 'pi pi-key',
-            command: () => openTab('software-license', 'Software License', 'menu.softwareLicense', 'pi pi-key', 'software_license')
-          }
-        ]
-      },
-      // Section: Cloud (collapsible)
-      {
-        label: t('menu.sections.cloud') || 'Cloud',
-        icon: 'pi pi-cloud',
-        items: [
-          {
-            label: t('menu.cloudService') || 'Cloud Service',
-            icon: 'pi pi-cloud',
-            command: () => openTab('cloud-service', 'Cloud Service', 'menu.cloudService', 'pi pi-cloud', 'cloud_service')
-          }
-        ]
-      }
-    ]
+    items: buildAssetsDataMenu()
   },
   // 6. Tableaux (empty)
   {

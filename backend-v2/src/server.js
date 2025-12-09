@@ -28,6 +28,7 @@ const personsRoutes = require('./api/v1/persons/routes');
 const metadataRoutes = require('./api/v1/metadata/routes');
 const ciTypesRoutes = require('./api/v1/ci_types/routes');
 const ciTypeFieldsRoutes = require('./api/v1/ci_type_fields/routes');
+const ciCategoriesRoutes = require('./api/v1/ci_categories/routes');
 const languagesRoutes = require('./api/v1/languages/routes');
 const auditRoutes = require('./api/v1/audit/routes');
 
@@ -40,6 +41,7 @@ app.use('/api/v1/persons', personsRoutes);
 app.use('/api/v1/metadata', metadataRoutes);
 app.use('/api/v1/ci_types', ciTypesRoutes);
 app.use('/api/v1/ci_type_fields', ciTypeFieldsRoutes);
+app.use('/api/v1/ci_categories', ciCategoriesRoutes);
 app.use('/api/v1/languages', languagesRoutes);
 app.use('/api/v1/audit', auditRoutes);
 

@@ -7,6 +7,7 @@
 const { prisma } = require('../client');
 
 const seedMap = {
+  'ci-categories': () => require('./ci-categories').seedCiCategories(),
   'ci-type-fields': () => require('./ci-type-fields').seedCiTypeFields(),
   'ci-types': () => require('./ci-types').seedCiTypes(),
   'object-metadata': () => require('./object-metadata').seedObjectMetadata(),

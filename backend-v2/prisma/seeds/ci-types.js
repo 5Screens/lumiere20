@@ -1,6 +1,6 @@
 /**
  * Seed script for CI Types
- * Run with: npx prisma db seed
+ * Run with: node prisma/seeds/run-single.js ci-types
  */
 
 const { prisma } = require('../client');
@@ -8,7 +8,16 @@ const { prisma } = require('../client');
 async function seedCiTypes() {
   console.log('Seeding CI types...');
 
+  // First, get all categories to map them
+  const categories = await prisma.ci_categories.findMany();
+  const categoryMap = {};
+  for (const cat of categories) {
+    categoryMap[cat.code] = cat.uuid;
+  }
+  console.log(`  Found ${categories.length} categories`);
+
   // CI Types with default labels (English as fallback)
+  // category_code maps to ci_categories.code (null = no category = "Others" in menu)
   const ciTypes = [
     {
       code: 'UPS',
@@ -17,6 +26,7 @@ async function seedCiTypes() {
       icon: 'pi-bolt',
       color: 'yellow',
       display_order: 1,
+      category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Onduleur (UPS)', description: 'Alimentation sans interruption' },
         en: { label: 'UPS', description: 'Uninterruptible Power Supply' },
@@ -31,7 +41,8 @@ async function seedCiTypes() {
       description: 'Software application',
       icon: 'pi-desktop',
       color: 'blue',
-      display_order: 2,
+      display_order: 1,
+      category_code: 'APPLICATIONS',
       translations: {
         fr: { label: 'Application', description: 'Application logicielle' },
         en: { label: 'Application', description: 'Software application' },
@@ -46,7 +57,8 @@ async function seedCiTypes() {
       description: 'Physical or virtual server',
       icon: 'pi-server',
       color: 'green',
-      display_order: 3,
+      display_order: 2,
+      category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Serveur', description: 'Serveur physique ou virtuel' },
         en: { label: 'Server', description: 'Physical or virtual server' },
@@ -61,7 +73,8 @@ async function seedCiTypes() {
       description: 'Network router for traffic routing between networks',
       icon: 'pi-sitemap',
       color: 'purple',
-      display_order: 4,
+      display_order: 1,
+      category_code: 'NETWORK',
       translations: {
         fr: { label: 'Routeur', description: 'Routeur réseau pour le routage du trafic entre réseaux' },
         en: { label: 'Router', description: 'Network router for traffic routing between networks' },
@@ -76,7 +89,8 @@ async function seedCiTypes() {
       description: 'Network switch for local network connectivity',
       icon: 'pi-share-alt',
       color: 'violet',
-      display_order: 5,
+      display_order: 2,
+      category_code: 'NETWORK',
       translations: {
         fr: { label: 'Switch', description: 'Commutateur réseau pour la connectivité locale' },
         en: { label: 'Switch', description: 'Network switch for local network connectivity' },
@@ -91,7 +105,8 @@ async function seedCiTypes() {
       description: 'Network security firewall',
       icon: 'pi-shield',
       color: 'red',
-      display_order: 6,
+      display_order: 3,
+      category_code: 'NETWORK',
       translations: {
         fr: { label: 'Pare-feu', description: 'Pare-feu de sécurité réseau' },
         en: { label: 'Firewall', description: 'Network security firewall' },
@@ -106,7 +121,8 @@ async function seedCiTypes() {
       description: 'Wireless access point for WiFi connectivity',
       icon: 'pi-wifi',
       color: 'sky',
-      display_order: 7,
+      display_order: 4,
+      category_code: 'NETWORK',
       translations: {
         fr: { label: 'Point d\'accès', description: 'Point d\'accès sans fil pour la connectivité WiFi' },
         en: { label: 'Access Point', description: 'Wireless access point for WiFi connectivity' },
@@ -121,7 +137,8 @@ async function seedCiTypes() {
       description: 'Load balancer for traffic distribution',
       icon: 'pi-arrows-h',
       color: 'amber',
-      display_order: 8,
+      display_order: 5,
+      category_code: 'NETWORK',
       translations: {
         fr: { label: 'Répartiteur de charge', description: 'Répartiteur de charge pour la distribution du trafic' },
         en: { label: 'Load Balancer', description: 'Load balancer for traffic distribution' },
@@ -136,7 +153,8 @@ async function seedCiTypes() {
       description: 'SAN, NAS, storage arrays',
       icon: 'pi-database',
       color: 'orange',
-      display_order: 9,
+      display_order: 3,
+      category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Stockage', description: 'SAN, NAS, baies de stockage' },
         en: { label: 'Storage', description: 'SAN, NAS, storage arrays' },
@@ -151,7 +169,8 @@ async function seedCiTypes() {
       description: 'Desktop or laptop computer',
       icon: 'pi-desktop',
       color: 'cyan',
-      display_order: 10,
+      display_order: 4,
+      category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Poste de travail', description: 'Ordinateur de bureau ou portable' },
         en: { label: 'Workstation', description: 'Desktop or laptop computer' },
@@ -166,7 +185,8 @@ async function seedCiTypes() {
       description: 'Printer or multifunction device',
       icon: 'pi-print',
       color: 'gray',
-      display_order: 11,
+      display_order: 5,
+      category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Imprimante', description: 'Imprimante ou multifonction' },
         en: { label: 'Printer', description: 'Printer or multifunction device' },
@@ -181,7 +201,8 @@ async function seedCiTypes() {
       description: 'Smartphone, tablet',
       icon: 'pi-mobile',
       color: 'teal',
-      display_order: 12,
+      display_order: 6,
+      category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Appareil mobile', description: 'Smartphone, tablette' },
         en: { label: 'Mobile Device', description: 'Smartphone, tablet' },
@@ -196,7 +217,8 @@ async function seedCiTypes() {
       description: 'Database instance',
       icon: 'pi-database',
       color: 'indigo',
-      display_order: 13,
+      display_order: 1,
+      category_code: 'DATABASE',
       translations: {
         fr: { label: 'Base de données', description: 'Instance de base de données' },
         en: { label: 'Database', description: 'Database instance' },
@@ -206,12 +228,77 @@ async function seedCiTypes() {
       }
     },
     {
+      code: 'VIRTUAL_MACHINE',
+      label: 'Virtual Machine',
+      description: 'Virtual machine instance',
+      icon: 'pi-server',
+      color: 'violet',
+      display_order: 1,
+      category_code: 'VIRTUALIZATION',
+      translations: {
+        fr: { label: 'Machine virtuelle', description: 'Instance de machine virtuelle' },
+        en: { label: 'Virtual Machine', description: 'Virtual machine instance' },
+        es: { label: 'Máquina virtual', description: 'Instancia de máquina virtual' },
+        pt: { label: 'Máquina virtual', description: 'Instância de máquina virtual' },
+        de: { label: 'Virtuelle Maschine', description: 'Virtuelle Maschineninstanz' }
+      }
+    },
+    {
+      code: 'CLOUD_SERVICE',
+      label: 'Cloud Service',
+      description: 'Cloud-based service',
+      icon: 'pi-cloud',
+      color: 'sky',
+      display_order: 1,
+      category_code: 'CLOUD',
+      translations: {
+        fr: { label: 'Service Cloud', description: 'Service basé sur le cloud' },
+        en: { label: 'Cloud Service', description: 'Cloud-based service' },
+        es: { label: 'Servicio en la nube', description: 'Servicio basado en la nube' },
+        pt: { label: 'Serviço em nuvem', description: 'Serviço baseado em nuvem' },
+        de: { label: 'Cloud-Dienst', description: 'Cloud-basierter Dienst' }
+      }
+    },
+    {
+      code: 'CONTRACT',
+      label: 'Contract',
+      description: 'Service or support contract',
+      icon: 'pi-file',
+      color: 'amber',
+      display_order: 1,
+      category_code: 'CONTRACTS',
+      translations: {
+        fr: { label: 'Contrat', description: 'Contrat de service ou de support' },
+        en: { label: 'Contract', description: 'Service or support contract' },
+        es: { label: 'Contrato', description: 'Contrato de servicio o soporte' },
+        pt: { label: 'Contrato', description: 'Contrato de serviço ou suporte' },
+        de: { label: 'Vertrag', description: 'Service- oder Supportvertrag' }
+      }
+    },
+    {
+      code: 'LICENSE',
+      label: 'Software License',
+      description: 'Software license',
+      icon: 'pi-key',
+      color: 'green',
+      display_order: 2,
+      category_code: 'CONTRACTS',
+      translations: {
+        fr: { label: 'Licence logicielle', description: 'Licence de logiciel' },
+        en: { label: 'Software License', description: 'Software license' },
+        es: { label: 'Licencia de software', description: 'Licencia de software' },
+        pt: { label: 'Licença de software', description: 'Licença de software' },
+        de: { label: 'Softwarelizenz', description: 'Softwarelizenz' }
+      }
+    },
+    {
       code: 'GENERIC',
       label: 'Generic',
       description: 'Generic configuration item',
       icon: 'pi-box',
       color: 'gray',
       display_order: 99,
+      category_code: null, // No category = will appear in "Others"
       translations: {
         fr: { label: 'Générique', description: 'Élément de configuration générique' },
         en: { label: 'Generic', description: 'Generic configuration item' },
@@ -223,7 +310,10 @@ async function seedCiTypes() {
   ];
 
   for (const ciType of ciTypes) {
-    const { translations, ...ciTypeData } = ciType;
+    const { translations, category_code, ...ciTypeData } = ciType;
+    
+    // Get category UUID if category_code is provided
+    const rel_category_uuid = category_code ? categoryMap[category_code] : null;
     
     // Upsert CI type
     const createdCiType = await prisma.ci_types.upsert({
@@ -233,11 +323,15 @@ async function seedCiTypes() {
         description: ciTypeData.description,
         icon: ciTypeData.icon,
         color: ciTypeData.color,
-        display_order: ciTypeData.display_order
+        display_order: ciTypeData.display_order,
+        rel_category_uuid
       },
-      create: ciTypeData
+      create: {
+        ...ciTypeData,
+        rel_category_uuid
+      }
     });
-    console.log(`  - CI type '${ciType.code}' created/updated`);
+    console.log(`  - CI type '${ciType.code}' created/updated (category: ${category_code || 'none'})`);
     
     // Upsert translations for each locale using translated_fields table
     for (const [locale, trans] of Object.entries(translations)) {

@@ -86,7 +86,8 @@ export default {
       cloud: 'Cloud',
       serviceManagement: 'Service Management',
       agileBacklog: 'Agile Backlog',
-      foundations: 'Foundations'
+      foundations: 'Foundations',
+      others: 'Others'
     },
     
     // Legacy (keep for compatibility)
@@ -341,6 +342,7 @@ export default {
     color: 'Color',
     tagStyle: 'Tag Style',
     displayOrder: 'Display Order',
+    category: 'Category',
     tabs: {
       general: 'General',
       extendedFields: 'Extended Fields'
@@ -350,6 +352,18 @@ export default {
       updated: 'CI type updated successfully',
       deleted: 'CI type deleted successfully',
       deletedMultiple: '{count} CI types deleted successfully'
+    }
+  },
+  ciCategories: {
+    title: 'CI Categories',
+    code: 'Code',
+    label: 'Label',
+    icon: 'Icon',
+    displayOrder: 'Display Order',
+    messages: {
+      created: 'CI category created successfully',
+      updated: 'CI category updated successfully',
+      deleted: 'CI category deleted successfully'
     }
   },
   ciTypeFields: {
