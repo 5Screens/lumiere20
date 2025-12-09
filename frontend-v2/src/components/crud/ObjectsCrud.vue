@@ -794,6 +794,7 @@ import { getService, hasService } from '@/services'
 import metadataService from '@/services/metadataService'
 import ciTypeFieldsService from '@/services/ciTypeFieldsService'
 import ciTypesService from '@/services/ciTypesService'
+import api from '@/services/api'
 import { useTabsStore } from '@/stores/tabsStore'
 
 // PrimeVue components
@@ -1105,13 +1106,21 @@ const inlineTranslatableTitle = computed(() => {
 
 // Inline picker methods
 const loadCiCategories = async () => {
-  if (ciCategories.value.length > 0) return
+  console.log('[CiCategories] loadCiCategories called, current length:', ciCategories.value.length)
+  if (ciCategories.value.length > 0) {
+    console.log('[CiCategories] Already loaded, skipping')
+    return
+  }
   ciCategoriesLoading.value = true
   try {
+    console.log('[CiCategories] Fetching from API...')
     const response = await api.get('/ci_categories')
+    console.log('[CiCategories] API response:', response)
+    console.log('[CiCategories] Response data:', response.data)
     ciCategories.value = response.data
+    console.log('[CiCategories] Loaded categories:', ciCategories.value.length)
   } catch (error) {
-    console.error('Failed to load CI categories:', error)
+    console.error('[CiCategories] Failed to load CI categories:', error)
   } finally {
     ciCategoriesLoading.value = false
   }
@@ -1780,7 +1789,7 @@ onMounted(async () => {
   
   // Load CI categories if needed for ci_types object type
   if (props.objectType === 'ci_types') {
-    loadCiCategories()
+    await loadCiCategories()
   }
   
   await loadMetadata()
