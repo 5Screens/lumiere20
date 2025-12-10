@@ -77,10 +77,18 @@ const transformWithTranslations = (item, translations = [], locale = null) => {
  * @param {Object} translations - Object { fieldName: { locale: value } }
  */
 const saveTranslations = async (entityUuid, translations) => {
+  logger.info(`[CONFIGURATION_ITEMS] saveTranslations called for ${entityUuid}`);
+  logger.info(`[CONFIGURATION_ITEMS] translations received: ${JSON.stringify(translations)}`);
+  
   for (const [fieldName, locales] of Object.entries(translations)) {
-    if (!TRANSLATABLE_FIELDS.includes(fieldName)) continue;
+    if (!TRANSLATABLE_FIELDS.includes(fieldName)) {
+      logger.info(`[CONFIGURATION_ITEMS] Skipping non-translatable field: ${fieldName}`);
+      continue;
+    }
     
     for (const [locale, value] of Object.entries(locales)) {
+      logger.info(`[CONFIGURATION_ITEMS] Processing translation: field=${fieldName}, locale=${locale}, value=${value}`);
+      
       if (value !== null && value !== undefined && value !== '') {
         await prisma.translated_fields.upsert({
           where: {
@@ -100,6 +108,9 @@ const saveTranslations = async (entityUuid, translations) => {
             value
           }
         });
+        logger.info(`[CONFIGURATION_ITEMS] Saved translation for ${fieldName}/${locale}`);
+      } else {
+        logger.info(`[CONFIGURATION_ITEMS] Skipping empty value for ${fieldName}/${locale}`);
       }
     }
   }

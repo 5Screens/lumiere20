@@ -23,13 +23,17 @@ export const useTabsStore = defineStore('tabs', {
      * @param {Object} tab - Tab data to open
      */
     openTab(tab) {
-      console.log('[TabsStore] Opening tab:', tab)
+      console.log('[TabsStore] ========== OPEN TAB ==========')
+      console.log('[TabsStore] Opening tab:', JSON.stringify(tab, null, 2))
+      console.log('[TabsStore] Current tabs:', this.tabs.map(t => ({ id: t.id, id_tab: t.id_tab, parentId: t.parentId, objectType: t.objectType })))
+      console.log('[TabsStore] Current activeTabId:', this.activeTabId)
+      console.log('[TabsStore] Current activeChildTabId:', this.activeChildTabId)
       
       // Check if tab with same id already exists
       if (tab.id) {
         const existingTab = this.tabs.find(t => t.id === tab.id)
         if (existingTab) {
-          console.log('[TabsStore] Tab already exists, activating:', existingTab)
+          console.log('[TabsStore] Tab already exists with same id, activating:', existingTab.id_tab)
           this.activateTab(existingTab.id_tab)
           return
         }
@@ -43,7 +47,7 @@ export const useTabsStore = defineStore('tabs', {
           t.parentId === tab.parentId
         )
         if (existingTab) {
-          console.log('[TabsStore] Tab with same objectId exists, activating:', existingTab)
+          console.log('[TabsStore] Tab with same objectId exists, activating:', existingTab.id_tab)
           this.activateTab(existingTab.id_tab)
           return
         }

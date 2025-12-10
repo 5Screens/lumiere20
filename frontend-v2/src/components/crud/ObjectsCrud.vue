@@ -209,7 +209,12 @@
           <template #body="{ data }">
             <!-- Boolean -->
             <template v-if="col.field_type === 'boolean'">
-              <i :class="data[col.field_name] ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
+              <template v-if="col.is_extended">
+                <i :class="data.extended_core_fields?.[col.field_name] ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
+              </template>
+              <template v-else>
+                <i :class="data[col.field_name] ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
+              </template>
             </template>
             <!-- Select with Tag and color -->
             <template v-else-if="col.field_type === 'select'">
@@ -325,6 +330,29 @@
                   fluid 
                 />
               </template>
+              <!-- Date editor for extended fields -->
+              <template v-else-if="col.field_type === 'date'">
+                <DatePicker 
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
+                  dateFormat="dd/mm/yy" 
+                  showButtonBar 
+                  autofocus 
+                  fluid 
+                />
+              </template>
+              <!-- Datetime editor for extended fields -->
+              <template v-else-if="col.field_type === 'datetime'">
+                <DatePicker 
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
+                  dateFormat="dd/mm/yy" 
+                  showTime 
+                  showButtonBar 
+                  autofocus 
+                  fluid 
+                />
+              </template>
               <!-- Default text editor for extended fields -->
               <template v-else>
                 <InputText 
@@ -382,6 +410,14 @@
               <!-- Number editor -->
               <template v-else-if="col.field_type === 'number'">
                 <InputNumber v-model="data[field]" autofocus fluid />
+              </template>
+              <!-- Date editor -->
+              <template v-else-if="col.field_type === 'date'">
+                <DatePicker v-model="data[field]" dateFormat="dd/mm/yy" showButtonBar autofocus fluid />
+              </template>
+              <!-- Datetime editor -->
+              <template v-else-if="col.field_type === 'datetime'">
+                <DatePicker v-model="data[field]" dateFormat="dd/mm/yy" showTime showButtonBar autofocus fluid />
               </template>
               <!-- Icon picker editor -->
               <template v-else-if="col.field_type === 'icon_picker'">
@@ -1478,12 +1514,22 @@ const rowActionsMenuItems = computed(() => [
   }
 ])
 
+// Track original values for extended fields to detect changes
+const extendedFieldOriginalValues = ref({})
+
 // Set extended field value locally (without saving to backend)
 const setExtendedFieldValue = (data, fieldName, value) => {
   // Ensure extended_core_fields exists
   if (!data.extended_core_fields) {
     data.extended_core_fields = {}
   }
+  
+  // Store original value on first edit (before any change)
+  const key = `${data.uuid}-${fieldName}`
+  if (!(key in extendedFieldOriginalValues.value)) {
+    extendedFieldOriginalValues.value[key] = data.extended_core_fields[fieldName]
+  }
+  
   // Update the field value locally
   data.extended_core_fields[fieldName] = value
 }
@@ -1491,6 +1537,20 @@ const setExtendedFieldValue = (data, fieldName, value) => {
 // Save extended field to backend (called on blur for text/number fields)
 const saveExtendedField = async (data, fieldName) => {
   if (!data.extended_core_fields) return
+  
+  // Check if value actually changed
+  const key = `${data.uuid}-${fieldName}`
+  const originalValue = extendedFieldOriginalValues.value[key]
+  const currentValue = data.extended_core_fields[fieldName]
+  
+  // Clear the tracked original value
+  delete extendedFieldOriginalValues.value[key]
+  
+  // Don't save if value hasn't changed
+  if (originalValue === currentValue) {
+    console.log('[ObjectsCrud] saveExtendedField - No change detected, skipping save')
+    return
+  }
   
   try {
     await service.value.update(data.uuid, {
@@ -1710,13 +1770,19 @@ const openCreateDialog = async () => {
   if (isConfigurationItems.value) {
     defaults.extended_core_fields = {}
     
+    console.log('[ObjectsCrud] openCreateDialog - ciTypeUuid:', props.ciTypeUuid)
+    console.log('[ObjectsCrud] openCreateDialog - ciTypes.value:', ciTypes.value.map(t => ({ uuid: t.uuid, code: t.code })))
+    
     // If ciTypeUuid is set, find the corresponding code
     if (props.ciTypeUuid && ciTypes.value.length > 0) {
       const matchingType = ciTypes.value.find(t => t.uuid === props.ciTypeUuid)
+      console.log('[ObjectsCrud] openCreateDialog - matchingType:', matchingType)
       defaults.ci_type = matchingType?.code || 'GENERIC'
     } else {
       defaults.ci_type = 'GENERIC' // Default type
     }
+    
+    console.log('[ObjectsCrud] openCreateDialog - defaults.ci_type:', defaults.ci_type)
   }
   
   editItem.value = defaults
@@ -1760,8 +1826,16 @@ const openEditInTab = (data) => {
   const nameField = formFields.value.find(f => f.is_required) || formFields.value[0]
   const displayName = data[nameField?.field_name] || data.uuid?.substring(0, 8)
   
-  // Find the parent tab id_tab
-  const parentTab = tabsStore.tabs.find(t => t.id === `${props.objectType}s` || t.objectType === props.objectType)
+  // Use props.tabId directly - it's the id_tab of the current parent tab
+  // This ensures CI items open in the correct parent tab (e.g., application CI opens in application tab)
+  const parentTabId = props.tabId
+  
+  console.log('[ObjectsCrud] openEditInTab - data:', data.uuid, 'parentTabId:', parentTabId, 'objectType:', props.objectType, 'ciTypeUuid:', props.ciTypeUuid)
+  
+  if (!parentTabId) {
+    console.error('[ObjectsCrud] openEditInTab - No parent tab ID available!')
+    return
+  }
   
   tabsStore.openTab({
     id: `${props.objectType}-edit-${data.uuid}`,
@@ -1770,7 +1844,7 @@ const openEditInTab = (data) => {
     component: 'ObjectViewInTab',
     objectType: props.objectType,
     objectId: data.uuid,
-    parentId: parentTab?.id_tab || props.tabId,
+    parentId: parentTabId,
     mode: 'edit'
   })
 }
