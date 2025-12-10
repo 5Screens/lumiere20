@@ -13,15 +13,12 @@ const {
  */
 const search = async (searchParams = {}) => {
   try {
-    const { filters = {}, sortField = 'name', sortOrder = 1, page = 1, limit = 50 } = searchParams;
+    const { filters = {}, sortField = 'name', sortOrder = 1, page = 1, limit = 50, ciTypeUuid = null } = searchParams;
 
-    logger.info('[CONFIGURATION_ITEMS] Searching with PrimeVue filters', {
-      filters,
-      sortField,
-      sortOrder,
-      page,
-      limit,
-    });
+    logger.info('[CONFIGURATION_ITEMS] ========== SEARCH START ==========' );
+    logger.info(`[CONFIGURATION_ITEMS] Raw searchParams: ${JSON.stringify(searchParams)}`);
+    logger.info(`[CONFIGURATION_ITEMS] ciTypeUuid value: ${ciTypeUuid}`);
+    logger.info(`[CONFIGURATION_ITEMS] ciTypeUuid type: ${typeof ciTypeUuid}`);
 
     const skip = (page - 1) * limit;
 
@@ -31,8 +28,37 @@ const search = async (searchParams = {}) => {
       dateColumns: ['created_at', 'updated_at'],
     });
 
+    logger.info(`[CONFIGURATION_ITEMS] Initial where clause: ${JSON.stringify(where)}`);
+
+    // If ciTypeUuid is provided, filter by CI type code
+    if (ciTypeUuid) {
+      logger.info('[CONFIGURATION_ITEMS] ciTypeUuid is truthy, looking up ci_type...');
+      const ciType = await prisma.ci_types.findUnique({
+        where: { uuid: ciTypeUuid },
+        select: { code: true },
+      });
+      logger.info(`[CONFIGURATION_ITEMS] Found ciType: ${JSON.stringify(ciType)}`);
+      
+      if (ciType) {
+        // Add ci_type filter to where clause
+        if (where.AND) {
+          where.AND.push({ ci_type: ciType.code });
+        } else {
+          where.AND = [{ ci_type: ciType.code }];
+        }
+        logger.info(`[CONFIGURATION_ITEMS] Added filter for ci_type: ${ciType.code}`);
+      } else {
+        logger.warn(`[CONFIGURATION_ITEMS] ciType not found for UUID: ${ciTypeUuid}`);
+      }
+    } else {
+      logger.info('[CONFIGURATION_ITEMS] No ciTypeUuid provided, no type filter applied');
+    }
+
+    logger.info(`[CONFIGURATION_ITEMS] Final where clause: ${JSON.stringify(where)}`);
+
     // Count total
     const total = await prisma.configuration_items.count({ where });
+    logger.info(`[CONFIGURATION_ITEMS] Total count: ${total}`);
 
     // Fetch data
     const items = await prisma.configuration_items.findMany({

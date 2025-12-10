@@ -7,6 +7,10 @@ const logger = require('../../../config/logger');
  */
 const search = async (req, res, next) => {
   try {
+    logger.info('[CONTROLLER] req.body keys:', Object.keys(req.body));
+    logger.info('[CONTROLLER] Full req.body:', JSON.stringify(req.body));
+    logger.info('[CONTROLLER] ciTypeUuid in body?:', 'ciTypeUuid' in req.body);
+    logger.info('[CONTROLLER] req.body.ciTypeUuid:', req.body.ciTypeUuid);
     const result = await service.search(req.body);
     res.json(result);
   } catch (error) {

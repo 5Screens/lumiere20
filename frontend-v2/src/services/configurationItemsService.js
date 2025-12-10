@@ -9,7 +9,11 @@ export default {
    * @returns {Promise<Object>} - Search results
    */
   async search(params = {}) {
-    const response = await api.post(`${ENDPOINT}/search`, params)
+    // Deep clone to avoid Proxy serialization issues
+    const payload = JSON.parse(JSON.stringify(params))
+    console.log('[configurationItemsService] search payload:', payload)
+    console.log('[configurationItemsService] payload.ciTypeUuid:', payload.ciTypeUuid)
+    const response = await api.post(`${ENDPOINT}/search`, payload)
     return response.data
   },
 

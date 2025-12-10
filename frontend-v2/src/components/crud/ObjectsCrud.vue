@@ -195,7 +195,7 @@
         </Column>
 
         <!-- Dynamic columns from metadata -->
-        <template v-for="col in tableColumns" :key="col.field_name">
+        <template v-for="col in filteredTableColumns" :key="col.field_name">
         <Column 
           v-if="isColumnVisible(col.field_name)"
           :field="col.field_name" 
@@ -860,6 +860,10 @@ const props = defineProps({
   tabId: {
     type: String,
     default: null
+  },
+  ciTypeUuid: {
+    type: String,
+    default: null
   }
 })
 
@@ -996,9 +1000,20 @@ const menuModel = ref([
   { label: t('common.delete'), icon: 'pi pi-trash', command: () => confirmDeleteSelected() }
 ])
 
+// Columns to hide when ciTypeUuid is set (filtered view for configuration_items)
+const hiddenColumnsForCiType = ['ci_type']
+
+// Filtered table columns (excludes hidden columns when ciTypeUuid is set)
+const filteredTableColumns = computed(() => {
+  if (!props.ciTypeUuid) {
+    return tableColumns.value
+  }
+  return tableColumns.value.filter(col => !hiddenColumnsForCiType.includes(col.field_name))
+})
+
 // Column toggle - built from metadata
 const toggleableColumns = computed(() => {
-  return tableColumns.value.map(col => ({
+  return filteredTableColumns.value.map(col => ({
     field: col.field_name,
     header: t(col.label_key)
   }))
@@ -1007,6 +1022,10 @@ const toggleableColumns = computed(() => {
 const selectedColumns = ref([])
 
 const isColumnVisible = (field) => {
+  // Always hide certain columns when ciTypeUuid is set
+  if (props.ciTypeUuid && hiddenColumnsForCiType.includes(field)) {
+    return false
+  }
   return selectedColumns.value.some(col => col.field === field)
 }
 
@@ -1300,13 +1319,25 @@ const loadItems = async (pageNum = null) => {
   try {
     loading.value = true
     const page = typeof pageNum === 'number' ? pageNum : currentPage.value
-    const result = await service.value.search({
+    const searchParams = {
       filters: filters.value,
       sortField: sortField.value,
       sortOrder: sortOrder.value,
       page,
       limit: pageSize
-    })
+    }
+    
+    // Add ciTypeUuid filter if provided (for CI type-specific views)
+    if (props.ciTypeUuid) {
+      searchParams.ciTypeUuid = props.ciTypeUuid
+    }
+    
+    console.log('[ObjectsCrud] loadItems called')
+    console.log('[ObjectsCrud] props.objectType:', props.objectType)
+    console.log('[ObjectsCrud] props.ciTypeUuid:', props.ciTypeUuid)
+    console.log('[ObjectsCrud] searchParams:', JSON.stringify(searchParams, null, 2))
+    
+    const result = await service.value.search(searchParams)
     items.value = result.data || []
     totalRecords.value = result.total || 0
     if (typeof pageNum === 'number') currentPage.value = pageNum
@@ -1550,7 +1581,14 @@ const openCreateDialog = async () => {
   // Initialize extended_core_fields for configuration_items
   if (isConfigurationItems.value) {
     defaults.extended_core_fields = {}
-    defaults.ci_type = 'GENERIC' // Default type
+    
+    // If ciTypeUuid is set, find the corresponding code
+    if (props.ciTypeUuid && ciTypes.value.length > 0) {
+      const matchingType = ciTypes.value.find(t => t.uuid === props.ciTypeUuid)
+      defaults.ci_type = matchingType?.code || 'GENERIC'
+    } else {
+      defaults.ci_type = 'GENERIC' // Default type
+    }
   }
   
   editItem.value = defaults

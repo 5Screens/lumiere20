@@ -101,14 +101,15 @@ watch(locale, () => {
 /**
  * Opens a tab for the given object type
  */
-const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud') => {
+const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud', ciTypeUuid = null) => {
   tabsStore.openTab({
     id,
     label,
     labelKey,
     icon,
     objectType,
-    component
+    component,
+    ciTypeUuid
   })
 }
 
@@ -135,12 +136,13 @@ const buildAssetsDataMenu = () => {
           label: ciType.label,
           icon: `pi ${ciType.icon || 'pi-box'}`,
           command: () => openTab(
-            `ci-${ciType.code.toLowerCase()}`,
+            `ci-type-${ciType.code.toLowerCase()}`,
             ciType.label,
             null, // No i18n key, using dynamic label
             `pi ${ciType.icon || 'pi-box'}`,
-            `ci_${ciType.code}`, // objectType for filtering
-            'ObjectsCrud'
+            'configuration_items', // Always use configuration_items
+            'ObjectsCrud',
+            ciType.uuid // Pass ciTypeUuid for filtering
           )
         }))
       })
@@ -156,12 +158,13 @@ const buildAssetsDataMenu = () => {
         label: ciType.label,
         icon: `pi ${ciType.icon || 'pi-box'}`,
         command: () => openTab(
-          `ci-${ciType.code.toLowerCase()}`,
+          `ci-type-${ciType.code.toLowerCase()}`,
           ciType.label,
           null,
           `pi ${ciType.icon || 'pi-box'}`,
-          `ci_${ciType.code}`,
-          'ObjectsCrud'
+          'configuration_items',
+          'ObjectsCrud',
+          ciType.uuid
         )
       }))
     })

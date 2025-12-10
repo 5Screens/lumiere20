@@ -116,6 +116,7 @@
                     :is="getComponent(tab.component)"
                     :tabId="tab.id_tab"
                     :objectType="tab.objectType"
+                    :ciTypeUuid="tab.ciTypeUuid"
                   />
                 </TabPanel>
 
@@ -146,6 +147,7 @@
                 :is="getComponent(tab.component)"
                 :tabId="tab.id_tab"
                 :objectType="tab.objectType"
+                :ciTypeUuid="tab.ciTypeUuid"
               />
               <div v-else class="text-surface-500">
                 {{ $t('tabs.noContent') }}

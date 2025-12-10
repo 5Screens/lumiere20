@@ -70,12 +70,14 @@ const sortSchema = z.object({
 });
 
 // PrimeVue filter schema
+// Extended with ciTypeUuid so configuration_items search can be scoped by CI type
 const primeVueFilterSchema = z.object({
   filters: z.record(z.any()).optional().default({}),
   sortField: z.string().optional().default('created_at'),
   sortOrder: z.coerce.number().int().optional().default(1),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().max(100).optional().default(50),
+  ciTypeUuid: z.string().uuid().optional().nullable(),
 });
 
 module.exports = {
