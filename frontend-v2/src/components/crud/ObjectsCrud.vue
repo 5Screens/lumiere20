@@ -1851,9 +1851,6 @@ onMounted(async () => {
   }
   
   await loadMetadata()
-  if (serviceAvailable.value) {
-    await loadItems(1)
-  }
 })
 </script>
 
