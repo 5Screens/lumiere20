@@ -198,6 +198,7 @@
         <template v-for="col in filteredTableColumns" :key="col.field_name">
         <Column 
           v-if="isColumnVisible(col.field_name)"
+          :columnKey="col.field_name"
           :field="col.is_extended ? undefined : col.field_name" 
           :header="col.is_extended ? col.label : $t(col.label_key)" 
           :sortable="col.is_sortable"
@@ -212,20 +213,35 @@
             </template>
             <!-- Select with Tag and color -->
             <template v-else-if="col.field_type === 'select'">
-              <Tag 
-                :value="formatCellValue(data[col.field_name], col)"
-                :style="getTagStyle(getOptionByValue(col, data[col.field_name])?.color)"
-              >
-                <template #default>
-                  <div class="flex items-center gap-2">
-                    <i 
-                      v-if="getOptionByValue(col, data[col.field_name])?.icon" 
-                      :class="['pi', getOptionByValue(col, data[col.field_name])?.icon]" 
-                    />
-                    <span>{{ formatCellValue(data[col.field_name], col) }}</span>
-                  </div>
-                </template>
-              </Tag>
+              <template v-if="col.is_extended">
+                <!-- Extended field select -->
+                <Tag 
+                  v-if="data.extended_core_fields?.[col.field_name]"
+                  :value="getExtendedSelectLabel(col, data.extended_core_fields[col.field_name])"
+                >
+                  <template #default>
+                    <span>{{ getExtendedSelectLabel(col, data.extended_core_fields[col.field_name]) }}</span>
+                  </template>
+                </Tag>
+                <span v-else>-</span>
+              </template>
+              <template v-else>
+                <!-- Regular field select -->
+                <Tag 
+                  :value="formatCellValue(data[col.field_name], col)"
+                  :style="getTagStyle(getOptionByValue(col, data[col.field_name])?.color)"
+                >
+                  <template #default>
+                    <div class="flex items-center gap-2">
+                      <i 
+                        v-if="getOptionByValue(col, data[col.field_name])?.icon" 
+                        :class="['pi', getOptionByValue(col, data[col.field_name])?.icon]" 
+                      />
+                      <span>{{ formatCellValue(data[col.field_name], col) }}</span>
+                    </div>
+                  </template>
+                </Tag>
+              </template>
             </template>
             <!-- Date/Datetime -->
             <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
@@ -303,7 +319,8 @@
               <template v-else-if="col.field_type === 'number'">
                 <InputNumber 
                   :modelValue="data.extended_core_fields?.[col.field_name]"
-                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
+                  @update:modelValue="val => setExtendedFieldValue(data, col.field_name, val)"
+                  @blur="saveExtendedField(data, col.field_name)"
                   autofocus 
                   fluid 
                 />
@@ -312,7 +329,8 @@
               <template v-else>
                 <InputText 
                   :modelValue="data.extended_core_fields?.[col.field_name]"
-                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
+                  @update:modelValue="val => setExtendedFieldValue(data, col.field_name, val)"
+                  @blur="saveExtendedField(data, col.field_name)"
                   autofocus 
                   fluid 
                 />
@@ -1460,17 +1478,20 @@ const rowActionsMenuItems = computed(() => [
   }
 ])
 
-// Update extended field value and save to backend
-const updateExtendedField = async (data, fieldName, value) => {
+// Set extended field value locally (without saving to backend)
+const setExtendedFieldValue = (data, fieldName, value) => {
   // Ensure extended_core_fields exists
   if (!data.extended_core_fields) {
     data.extended_core_fields = {}
   }
-  
   // Update the field value locally
   data.extended_core_fields[fieldName] = value
+}
+
+// Save extended field to backend (called on blur for text/number fields)
+const saveExtendedField = async (data, fieldName) => {
+  if (!data.extended_core_fields) return
   
-  // Save to backend
   try {
     await service.value.update(data.uuid, {
       extended_core_fields: data.extended_core_fields
@@ -1480,6 +1501,12 @@ const updateExtendedField = async (data, fieldName, value) => {
     console.error('Failed to update extended field:', error)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to update field', life: 3000 })
   }
+}
+
+// Update extended field value and save immediately (for select/boolean fields)
+const updateExtendedField = async (data, fieldName, value) => {
+  setExtendedFieldValue(data, fieldName, value)
+  await saveExtendedField(data, fieldName)
 }
 
 // Toggle row actions menu
@@ -1637,8 +1664,8 @@ const getExtendedFieldValue = (fieldName) => {
   return editItem.value.extended_core_fields?.[fieldName] ?? null
 }
 
-// Set extended field value in extended_core_fields
-const setExtendedFieldValue = (fieldName, value) => {
+// Set extended field value in editItem.extended_core_fields (for form editing)
+const setEditItemExtendedField = (fieldName, value) => {
   if (!editItem.value.extended_core_fields) {
     editItem.value.extended_core_fields = {}
   }
@@ -1874,6 +1901,15 @@ const onStateRestore = (event) => {
 const getOptionByValue = (field, value) => {
   const options = getFieldOptions(field)
   return options.find(o => o.value === value)
+}
+
+// Get label for extended field select value
+const getExtendedSelectLabel = (col, value) => {
+  if (!value) return '-'
+  // col.options contains the parsed options array from ci_type_fields
+  const options = col.options || []
+  const option = options.find(o => o.value === value)
+  return option?.label || value
 }
 
 // Get translated value for a translatable field

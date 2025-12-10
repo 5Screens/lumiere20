@@ -12,7 +12,9 @@ export const useTabsStore = defineStore('tabs', {
     // Active parent tab ID
     activeTabId: null,
     // Active child tab ID
-    activeChildTabId: null
+    activeChildTabId: null,
+    // Last active child tab per parent (to restore when switching back)
+    lastActiveChildByParent: {}
   }),
   
   actions: {
@@ -93,9 +95,10 @@ export const useTabsStore = defineStore('tabs', {
       const isChildTab = !!tabToClose.parentId
       const parentId = tabToClose.parentId
       
-      // If parent tab, close children first
+      // If parent tab, close children first and clean up lastActiveChildByParent
       if (!isChildTab) {
         this.tabs = this.tabs.filter(t => t.parentId !== id_tab)
+        delete this.lastActiveChildByParent[id_tab]
       }
       
       // Remove the tab
@@ -105,15 +108,22 @@ export const useTabsStore = defineStore('tabs', {
       
       // Handle activation of next tab
       if (isChildTab) {
+        // Clean up lastActiveChildByParent if this was the last active child
+        if (this.lastActiveChildByParent[parentId] === id_tab) {
+          delete this.lastActiveChildByParent[parentId]
+        }
+        
         if (this.activeChildTabId === id_tab) {
           const siblingTabs = this.tabs.filter(t => t.parentId === parentId)
           
           if (siblingTabs.length > 0) {
             const prevChildTab = siblingTabs[siblingTabs.length - 1]
             this.activeChildTabId = prevChildTab.id_tab
+            this.lastActiveChildByParent[parentId] = prevChildTab.id_tab
             this.tabs.forEach(t => t.isActive = (t.id_tab === prevChildTab.id_tab))
           } else {
             this.activeChildTabId = null
+            delete this.lastActiveChildByParent[parentId]
             this.tabs.forEach(t => t.isActive = (t.id_tab === parentId))
           }
         }
@@ -166,13 +176,30 @@ export const useTabsStore = defineStore('tabs', {
       const tab = this.tabs.find(t => t.id_tab === id_tab && !t.parentId)
       if (!tab) return false
       
+      // Save current child tab for current parent before switching
+      if (this.activeTabId && this.activeChildTabId) {
+        this.lastActiveChildByParent[this.activeTabId] = this.activeChildTabId
+      }
+      
       if (this.activeTabId === id_tab && !this.activeChildTabId && tab.isActive) {
         return true // Already active
       }
       
-      this.tabs.forEach(t => t.isActive = (t.id_tab === id_tab))
-      this.activeTabId = id_tab
-      this.activeChildTabId = null
+      // Restore last active child tab for this parent if exists
+      const lastChildId = this.lastActiveChildByParent[id_tab]
+      const lastChildTab = lastChildId ? this.tabs.find(t => t.id_tab === lastChildId) : null
+      
+      if (lastChildTab) {
+        // Restore to last active child tab
+        this.tabs.forEach(t => t.isActive = (t.id_tab === lastChildId))
+        this.activeTabId = id_tab
+        this.activeChildTabId = lastChildId
+      } else {
+        // No child tab to restore, show list
+        this.tabs.forEach(t => t.isActive = (t.id_tab === id_tab))
+        this.activeTabId = id_tab
+        this.activeChildTabId = null
+      }
       
       return false
     },
@@ -284,8 +311,8 @@ export const useTabsStore = defineStore('tabs', {
   },
 
   persist: {
-    key: 'tabs-store-v2',
+    key: 'tabs-store-v3',
     storage: localStorage,
-    paths: ['tabs', 'activeTabId', 'activeChildTabId']
+    paths: ['tabs', 'activeTabId', 'activeChildTabId', 'lastActiveChildByParent']
   }
 })

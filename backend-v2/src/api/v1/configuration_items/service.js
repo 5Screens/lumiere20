@@ -6,6 +6,105 @@ const {
   buildPaginationResponse,
 } = require('../../../utils/primeVueFilters');
 
+// Entity type for translations table
+const ENTITY_TYPE = 'configuration_items';
+// Translatable fields for configuration_items
+const TRANSLATABLE_FIELDS = ['name', 'description'];
+
+/**
+ * Fetch translations for configuration items from translated_fields table
+ * @param {string[]} uuids - Array of item UUIDs
+ * @param {string} locale - Locale filter (optional)
+ * @returns {Promise<Object>} Translations grouped by entity_uuid
+ */
+const fetchTranslations = async (uuids, locale = null) => {
+  if (!uuids || uuids.length === 0) return {};
+  
+  const where = {
+    entity_type: ENTITY_TYPE,
+    entity_uuid: { in: uuids }
+  };
+  if (locale) {
+    where.locale = locale;
+  }
+  
+  const translations = await prisma.translated_fields.findMany({ where });
+  
+  // Group by entity_uuid
+  const grouped = {};
+  for (const t of translations) {
+    if (!grouped[t.entity_uuid]) {
+      grouped[t.entity_uuid] = [];
+    }
+    grouped[t.entity_uuid].push(t);
+  }
+  return grouped;
+};
+
+/**
+ * Transform item with translations applied
+ * @param {Object} item - Configuration item object
+ * @param {Array} translations - Array of translation records
+ * @param {string} locale - Target locale
+ * @returns {Object} Item with translated fields
+ */
+const transformWithTranslations = (item, translations = [], locale = null) => {
+  const result = { ...item };
+  
+  if (translations.length > 0 && locale) {
+    for (const t of translations) {
+      if (t.locale === locale && TRANSLATABLE_FIELDS.includes(t.field_name)) {
+        result[t.field_name] = t.value;
+      }
+    }
+  }
+  
+  // Include all translations for editing purposes
+  result._translations = {};
+  for (const t of translations) {
+    if (!result._translations[t.field_name]) {
+      result._translations[t.field_name] = {};
+    }
+    result._translations[t.field_name][t.locale] = t.value;
+  }
+  
+  return result;
+};
+
+/**
+ * Save translations for a configuration item using translated_fields table
+ * @param {string} entityUuid - Item UUID
+ * @param {Object} translations - Object { fieldName: { locale: value } }
+ */
+const saveTranslations = async (entityUuid, translations) => {
+  for (const [fieldName, locales] of Object.entries(translations)) {
+    if (!TRANSLATABLE_FIELDS.includes(fieldName)) continue;
+    
+    for (const [locale, value] of Object.entries(locales)) {
+      if (value !== null && value !== undefined && value !== '') {
+        await prisma.translated_fields.upsert({
+          where: {
+            entity_type_entity_uuid_field_name_locale: {
+              entity_type: ENTITY_TYPE,
+              entity_uuid: entityUuid,
+              field_name: fieldName,
+              locale
+            }
+          },
+          update: { value },
+          create: {
+            entity_type: ENTITY_TYPE,
+            entity_uuid: entityUuid,
+            field_name: fieldName,
+            locale,
+            value
+          }
+        });
+      }
+    }
+  }
+};
+
 /**
  * Search configuration items with PrimeVue filters
  * @param {Object} searchParams - Search parameters
@@ -68,10 +167,19 @@ const search = async (searchParams = {}) => {
       take: limit,
     });
 
+    // Fetch translations for all items
+    const uuids = items.map(item => item.uuid);
+    const translationsMap = await fetchTranslations(uuids, null);
+    
+    // Transform items with translations
+    const transformedItems = items.map(item => 
+      transformWithTranslations(item, translationsMap[item.uuid] || [], null)
+    );
+
     logger.info(`[CONFIGURATION_ITEMS] Found ${items.length} items (total: ${total})`);
 
     return {
-      data: items,
+      data: transformedItems,
       total,
       pagination: buildPaginationResponse(page, limit, total),
     };
@@ -140,22 +248,29 @@ const getById = async (uuid) => {
 };
 
 /**
- * Create new configuration item
- * @param {Object} data - Configuration item data
+ * Create new configuration item with translations
+ * @param {Object} data - Configuration item data including _translations
  * @returns {Promise<Object>} - Created item
  */
 const create = async (data) => {
   try {
-    logger.info('[CONFIGURATION_ITEMS] Creating item:', data.name);
+    const { _translations, ...itemData } = data;
+    
+    logger.info('[CONFIGURATION_ITEMS] Creating item:', itemData.name);
 
     const item = await prisma.configuration_items.create({
       data: {
-        name: data.name,
-        description: data.description || null,
-        ci_type: data.ci_type || 'GENERIC',
-        extended_core_fields: data.extended_core_fields || {},
+        name: itemData.name,
+        description: itemData.description || null,
+        ci_type: itemData.ci_type || 'GENERIC',
+        extended_core_fields: itemData.extended_core_fields || {},
       },
     });
+
+    // Save translations if provided
+    if (_translations) {
+      await saveTranslations(item.uuid, _translations);
+    }
 
     logger.info(`[CONFIGURATION_ITEMS] Created item: ${item.uuid}`);
     return item;
@@ -166,26 +281,33 @@ const create = async (data) => {
 };
 
 /**
- * Update configuration item
+ * Update configuration item with translations
  * @param {string} uuid - Configuration item UUID
- * @param {Object} data - Update data
+ * @param {Object} data - Update data including _translations
  * @returns {Promise<Object|null>} - Updated item or null
  */
 const update = async (uuid, data) => {
   try {
+    const { _translations, ...itemData } = data;
+    
     logger.info(`[CONFIGURATION_ITEMS] Updating item: ${uuid}`);
 
     const updateData = {};
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined) updateData.description = data.description;
-    if (data.ci_type !== undefined) updateData.ci_type = data.ci_type;
-    if (data.extended_core_fields !== undefined)
-      updateData.extended_core_fields = data.extended_core_fields;
+    if (itemData.name !== undefined) updateData.name = itemData.name;
+    if (itemData.description !== undefined) updateData.description = itemData.description;
+    if (itemData.ci_type !== undefined) updateData.ci_type = itemData.ci_type;
+    if (itemData.extended_core_fields !== undefined)
+      updateData.extended_core_fields = itemData.extended_core_fields;
 
     const item = await prisma.configuration_items.update({
       where: { uuid },
       data: updateData,
     });
+
+    // Save translations if provided
+    if (_translations) {
+      await saveTranslations(uuid, _translations);
+    }
 
     logger.info(`[CONFIGURATION_ITEMS] Updated item: ${uuid}`);
     return item;
