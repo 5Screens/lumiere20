@@ -198,8 +198,8 @@
         <template v-for="col in filteredTableColumns" :key="col.field_name">
         <Column 
           v-if="isColumnVisible(col.field_name)"
-          :field="col.field_name" 
-          :header="$t(col.label_key)" 
+          :field="col.is_extended ? undefined : col.field_name" 
+          :header="col.is_extended ? col.label : $t(col.label_key)" 
           :sortable="col.is_sortable"
           :dataType="col.data_type === 'date' ? 'date' : undefined"
           :style="col.min_width ? `min-width: ${col.min_width}` : undefined"
@@ -265,143 +265,193 @@
             </template>
             <!-- Default text - with translation support -->
             <template v-else>
-              {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (data[col.field_name] ?? '-') }}
+              <!-- Extended fields: read from extended_core_fields -->
+              <template v-if="col.is_extended">
+                {{ getExtendedCellValue(data, col) }}
+              </template>
+              <!-- Regular fields -->
+              <template v-else>
+                {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (data[col.field_name] ?? '-') }}
+              </template>
             </template>
           </template>
           
           <!-- Editor template (only for editable fields) -->
           <template v-if="col.is_editable" #editor="{ data, field }">
-            <!-- Select editor -->
-            <template v-if="col.field_type === 'select'">
-              <Select 
-                v-model="data[field]" 
-                :options="getFieldOptions(col)" 
-                optionLabel="label" 
-                optionValue="value" 
-                autofocus 
-                fluid 
-              >
-                <template #value="slotProps">
-                  <div 
-                    v-if="slotProps.value" 
-                    class="flex items-center gap-2 px-2 py-1 rounded"
-                    :style="getTagStyle(getOptionByValue(col, slotProps.value)?.color)"
-                  >
-                    <i 
-                      v-if="getOptionByValue(col, slotProps.value)?.icon" 
-                      :class="['pi', getOptionByValue(col, slotProps.value)?.icon]" 
-                    />
-                    <span>{{ getOptionByValue(col, slotProps.value)?.label }}</span>
-                  </div>
-                </template>
-                <template #option="slotProps">
-                  <div 
-                    class="flex items-center gap-2 px-2 py-1 rounded"
-                    :style="getTagStyle(slotProps.option.color)"
-                  >
-                    <i 
-                      v-if="slotProps.option.icon" 
-                      :class="['pi', slotProps.option.icon]" 
-                    />
-                    <span>{{ slotProps.option.label }}</span>
-                  </div>
-                </template>
-              </Select>
+            <!-- ========== EXTENDED FIELDS ========== -->
+            <template v-if="col.is_extended">
+              <!-- Select editor for extended fields -->
+              <template v-if="col.field_type === 'select'">
+                <Select 
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
+                  :options="col.options || []" 
+                  optionLabel="label" 
+                  optionValue="value" 
+                  autofocus 
+                  fluid 
+                />
+              </template>
+              <!-- Boolean editor for extended fields -->
+              <template v-else-if="col.field_type === 'boolean'">
+                <ToggleSwitch 
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
+                />
+              </template>
+              <!-- Number editor for extended fields -->
+              <template v-else-if="col.field_type === 'number'">
+                <InputNumber 
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
+                  autofocus 
+                  fluid 
+                />
+              </template>
+              <!-- Default text editor for extended fields -->
+              <template v-else>
+                <InputText 
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
+                  autofocus 
+                  fluid 
+                />
+              </template>
             </template>
-            <!-- Boolean editor -->
-            <template v-else-if="col.field_type === 'boolean'">
-              <ToggleSwitch v-model="data[field]" />
-            </template>
-            <!-- Number editor -->
-            <template v-else-if="col.field_type === 'number'">
-              <InputNumber v-model="data[field]" autofocus fluid />
-            </template>
-            <!-- Icon picker editor -->
-            <template v-else-if="col.field_type === 'icon_picker'">
-              <Button
-                type="button"
-                severity="secondary"
-                outlined
-                size="small"
-                class="w-full justify-between"
-                @click="openInlinePicker('icon', data, field)"
-              >
-                <template #default>
-                  <div class="flex items-center gap-2">
-                    <template v-if="data[field]">
-                      <i :class="`pi ${data[field]}`" />
-                      <span class="text-sm">{{ data[field] }}</span>
-                    </template>
-                    <span v-else class="text-surface-400">{{ $t('common.selectIcon') }}</span>
-                  </div>
-                  <i class="pi pi-pencil text-surface-400 ml-2" />
-                </template>
-              </Button>
-            </template>
-            <!-- Tag style editor -->
-            <template v-else-if="col.field_type === 'tag_style'">
-              <Button
-                type="button"
-                severity="secondary"
-                outlined
-                size="small"
-                class="w-full justify-between"
-                @click="openInlinePicker('tag_style', data, field)"
-              >
-                <template #default>
-                  <div class="flex items-center gap-2">
-                    <Tag v-if="data[field]" :style="getTagStyle(data[field])" class="text-sm">
-                      {{ data[field] }}
-                    </Tag>
-                    <span v-else class="text-surface-400">{{ $t('common.selectTagStyle') }}</span>
-                  </div>
-                  <i class="pi pi-pencil text-surface-400 ml-2" />
-                </template>
-              </Button>
-            </template>
-            <!-- CI Category editor -->
-            <template v-else-if="col.field_type === 'ci_category'">
-              <Button
-                type="button"
-                severity="secondary"
-                outlined
-                size="small"
-                class="w-full justify-between"
-                @click="openInlinePicker('ci_category', data, field)"
-              >
-                <template #default>
-                  <div class="flex items-center gap-2">
-                    <template v-if="data[field]">
-                      <i :class="`pi ${getCategoryIcon(data[field])}`" />
-                      <span class="text-sm">{{ getCategoryLabel(data[field]) }}</span>
-                    </template>
-                    <span v-else class="text-surface-400">{{ $t('ciCategories.selectCategory') }}</span>
-                  </div>
-                  <i class="pi pi-pencil text-surface-400 ml-2" />
-                </template>
-              </Button>
-            </template>
-            <!-- Translatable field editor -->
-            <template v-else-if="col.is_translatable">
-              <Button
-                type="button"
-                severity="secondary"
-                outlined
-                size="small"
-                class="w-full justify-between"
-                @click="openInlinePicker('translatable', data, field, col)"
-              >
-                <template #default>
-                  <span class="truncate text-left flex-1">
-                    {{ getTranslatedValue(data, field) }}
-                  </span>
-                  <i class="pi pi-pencil text-surface-400 ml-2" />
-                </template>
-              </Button>
-            </template>
-            <!-- Default text editor -->
+            <!-- ========== REGULAR FIELDS ========== -->
             <template v-else>
-              <InputText v-model="data[field]" autofocus fluid />
+              <!-- Select editor -->
+              <template v-if="col.field_type === 'select'">
+                <Select 
+                  v-model="data[field]" 
+                  :options="getFieldOptions(col)" 
+                  optionLabel="label" 
+                  optionValue="value" 
+                  autofocus 
+                  fluid 
+                >
+                  <template #value="slotProps">
+                    <div 
+                      v-if="slotProps.value" 
+                      class="flex items-center gap-2 px-2 py-1 rounded"
+                      :style="getTagStyle(getOptionByValue(col, slotProps.value)?.color)"
+                    >
+                      <i 
+                        v-if="getOptionByValue(col, slotProps.value)?.icon" 
+                        :class="['pi', getOptionByValue(col, slotProps.value)?.icon]" 
+                      />
+                      <span>{{ getOptionByValue(col, slotProps.value)?.label }}</span>
+                    </div>
+                  </template>
+                  <template #option="slotProps">
+                    <div 
+                      class="flex items-center gap-2 px-2 py-1 rounded"
+                      :style="getTagStyle(slotProps.option.color)"
+                    >
+                      <i 
+                        v-if="slotProps.option.icon" 
+                        :class="['pi', slotProps.option.icon]" 
+                      />
+                      <span>{{ slotProps.option.label }}</span>
+                    </div>
+                  </template>
+                </Select>
+              </template>
+              <!-- Boolean editor -->
+              <template v-else-if="col.field_type === 'boolean'">
+                <ToggleSwitch v-model="data[field]" />
+              </template>
+              <!-- Number editor -->
+              <template v-else-if="col.field_type === 'number'">
+                <InputNumber v-model="data[field]" autofocus fluid />
+              </template>
+              <!-- Icon picker editor -->
+              <template v-else-if="col.field_type === 'icon_picker'">
+                <Button
+                  type="button"
+                  severity="secondary"
+                  outlined
+                  size="small"
+                  class="w-full justify-between"
+                  @click="openInlinePicker('icon', data, field)"
+                >
+                  <template #default>
+                    <div class="flex items-center gap-2">
+                      <template v-if="data[field]">
+                        <i :class="`pi ${data[field]}`" />
+                        <span class="text-sm">{{ data[field] }}</span>
+                      </template>
+                      <span v-else class="text-surface-400">{{ $t('common.selectIcon') }}</span>
+                    </div>
+                    <i class="pi pi-pencil text-surface-400 ml-2" />
+                  </template>
+                </Button>
+              </template>
+              <!-- Tag style editor -->
+              <template v-else-if="col.field_type === 'tag_style'">
+                <Button
+                  type="button"
+                  severity="secondary"
+                  outlined
+                  size="small"
+                  class="w-full justify-between"
+                  @click="openInlinePicker('tag_style', data, field)"
+                >
+                  <template #default>
+                    <div class="flex items-center gap-2">
+                      <Tag v-if="data[field]" :style="getTagStyle(data[field])" class="text-sm">
+                        {{ data[field] }}
+                      </Tag>
+                      <span v-else class="text-surface-400">{{ $t('common.selectTagStyle') }}</span>
+                    </div>
+                    <i class="pi pi-pencil text-surface-400 ml-2" />
+                  </template>
+                </Button>
+              </template>
+              <!-- CI Category editor -->
+              <template v-else-if="col.field_type === 'ci_category'">
+                <Button
+                  type="button"
+                  severity="secondary"
+                  outlined
+                  size="small"
+                  class="w-full justify-between"
+                  @click="openInlinePicker('ci_category', data, field)"
+                >
+                  <template #default>
+                    <div class="flex items-center gap-2">
+                      <template v-if="data[field]">
+                        <i :class="`pi ${getCategoryIcon(data[field])}`" />
+                        <span class="text-sm">{{ getCategoryLabel(data[field]) }}</span>
+                      </template>
+                      <span v-else class="text-surface-400">{{ $t('ciCategories.selectCategory') }}</span>
+                    </div>
+                    <i class="pi pi-pencil text-surface-400 ml-2" />
+                  </template>
+                </Button>
+              </template>
+              <!-- Translatable field editor -->
+              <template v-else-if="col.is_translatable">
+                <Button
+                  type="button"
+                  severity="secondary"
+                  outlined
+                  size="small"
+                  class="w-full justify-between"
+                  @click="openInlinePicker('translatable', data, field, col)"
+                >
+                  <template #default>
+                    <span class="truncate text-left flex-1">
+                      {{ getTranslatedValue(data, field) }}
+                    </span>
+                    <i class="pi pi-pencil text-surface-400 ml-2" />
+                  </template>
+                </Button>
+              </template>
+              <!-- Default text editor -->
+              <template v-else>
+                <InputText v-model="data[field]" autofocus fluid />
+              </template>
             </template>
           </template>
           
@@ -913,6 +963,10 @@ const editItem = ref({})
 // Extended fields for configuration_items
 const extendedFields = ref([])
 const extendedFieldsLoading = ref(false)
+
+// CI Type fields (dynamic columns for filtered CI views)
+const ciTypeFields = ref([])
+const ciTypeFieldsLoading = ref(false)
 const ciTypes = ref([])
 const ciTypesLoaded = ref(false)
 const changeTypeDialog = ref(false)
@@ -1003,19 +1057,44 @@ const menuModel = ref([
 // Columns to hide when ciTypeUuid is set (filtered view for configuration_items)
 const hiddenColumnsForCiType = ['ci_type']
 
-// Filtered table columns (excludes hidden columns when ciTypeUuid is set)
+// Filtered table columns (excludes hidden columns when ciTypeUuid is set, adds extended fields)
 const filteredTableColumns = computed(() => {
-  if (!props.ciTypeUuid) {
-    return tableColumns.value
+  // Base columns from configuration_items metadata
+  let columns = tableColumns.value
+  
+  if (props.ciTypeUuid) {
+    // Filter out hidden columns (like ci_type)
+    columns = columns.filter(col => !hiddenColumnsForCiType.includes(col.field_name))
+    
+    // Add extended columns from ci_type_fields (show_in_table = true)
+    const extendedColumns = ciTypeFields.value
+      .filter(f => f.show_in_table)
+      .map(f => ({
+        field_name: f.field_name,
+        label_key: null, // No i18n key, use dynamic label
+        label: f.label, // Dynamic label from ci_type_fields
+        field_type: f.field_type,
+        data_type: f.data_type,
+        is_sortable: false, // Extended fields are not sortable for now
+        is_editable: !f.is_readonly, // Enable inline editing if not readonly
+        default_visible: true,
+        is_extended: true, // Flag to identify extended fields
+        options_source: f.options_source,
+        options: f.options, // Parsed options for select fields
+        unit: f.unit
+      }))
+    
+    columns = [...columns, ...extendedColumns]
   }
-  return tableColumns.value.filter(col => !hiddenColumnsForCiType.includes(col.field_name))
+  
+  return columns
 })
 
 // Column toggle - built from metadata
 const toggleableColumns = computed(() => {
   return filteredTableColumns.value.map(col => ({
     field: col.field_name,
-    header: t(col.label_key)
+    header: col.is_extended ? col.label : t(col.label_key)
   }))
 })
 
@@ -1380,6 +1459,28 @@ const rowActionsMenuItems = computed(() => [
     command: () => openResetPasswordDialog()
   }
 ])
+
+// Update extended field value and save to backend
+const updateExtendedField = async (data, fieldName, value) => {
+  // Ensure extended_core_fields exists
+  if (!data.extended_core_fields) {
+    data.extended_core_fields = {}
+  }
+  
+  // Update the field value locally
+  data.extended_core_fields[fieldName] = value
+  
+  // Save to backend
+  try {
+    await service.value.update(data.uuid, {
+      extended_core_fields: data.extended_core_fields
+    })
+    toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 2000 })
+  } catch (error) {
+    console.error('Failed to update extended field:', error)
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to update field', life: 3000 })
+  }
+}
 
 // Toggle row actions menu
 const toggleRowActionsMenu = (event, data) => {
@@ -1793,6 +1894,48 @@ const getTranslatedValue = (data, fieldName) => {
 
 // Note: getTagStyle and getColorValue are now imported from @/utils/tagStyles
 
+// Get value from extended_core_fields for table display
+const getExtendedCellValue = (data, col) => {
+  if (!data || !data.extended_core_fields) return '-'
+  
+  const value = data.extended_core_fields[col.field_name]
+  if (value === null || value === undefined || value === '') return '-'
+  
+  // Format based on field type
+  switch (col.field_type) {
+    case 'number':
+      // Add unit if defined
+      return col.unit ? `${value} ${col.unit}` : value
+    case 'boolean':
+      return value ? t('common.yes') : t('common.no')
+    case 'date':
+    case 'datetime':
+      return formatDate(value)
+    default:
+      return value
+  }
+}
+
+// Load CI type fields for extended columns
+const loadCiTypeFields = async () => {
+  if (!props.ciTypeUuid) {
+    ciTypeFields.value = []
+    return
+  }
+  
+  try {
+    ciTypeFieldsLoading.value = true
+    const fields = await ciTypeFieldsService.getByTypeUuid(props.ciTypeUuid)
+    ciTypeFields.value = fields || []
+    console.log(`[ObjectsCrud] Loaded ${ciTypeFields.value.length} CI type fields for type ${props.ciTypeUuid}`)
+  } catch (error) {
+    console.error('Failed to load CI type fields:', error)
+    ciTypeFields.value = []
+  } finally {
+    ciTypeFieldsLoading.value = false
+  }
+}
+
 // Load metadata for this object type
 const loadMetadata = async () => {
   try {
@@ -1817,10 +1960,21 @@ const loadMetadata = async () => {
       // Initialize filters based on columns
       filters.value = initFilters()
       
-      // Initialize selected columns (visible by default)
-      selectedColumns.value = tableColumns.value
+      // Load CI type fields if ciTypeUuid is set (for extended columns)
+      if (props.ciTypeUuid && isConfigurationItems.value) {
+        await loadCiTypeFields()
+      }
+      
+      // Initialize selected columns (visible by default, including extended fields)
+      const baseColumns = tableColumns.value
         .filter(col => col.default_visible)
         .map(col => ({ field: col.field_name, header: t(col.label_key) }))
+      
+      const extendedCols = ciTypeFields.value
+        .filter(f => f.show_in_table)
+        .map(f => ({ field: f.field_name, header: f.label }))
+      
+      selectedColumns.value = [...baseColumns, ...extendedCols]
     }
   } catch (error) {
     console.error('Failed to load metadata:', error)
