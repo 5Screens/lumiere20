@@ -539,8 +539,11 @@ async function seedCiTypeFields() {
       const englishLabel = translations?.en || field.label || field.field_name;
       
       // Create/update the field with English label as default
+      // Default values: show_in_table and show_in_form are true unless explicitly set to false
       const fieldData = {
-        ...field,
+        show_in_table: true,
+        show_in_form: true,
+        ...field,  // Explicit field values override defaults
         label: englishLabel,
         ci_type_uuid: ciTypeUuid
       };
