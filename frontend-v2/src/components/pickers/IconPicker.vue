@@ -34,9 +34,9 @@
             v-for="icon in filteredIcons"
             :key="icon"
             type="button"
-            class="icon-item p-3 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
-            :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': localValue === icon }"
-            @click="localValue = icon"
+            class="icon-item p-3 rounded-lg border-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
+            :class="localValue === icon ? 'bg-primary-100 dark:bg-primary-900/40 border-primary-500 ring-2 ring-primary-500/30' : 'border-surface-200 dark:border-surface-700'"
+            @click="selectIcon(icon)"
           >
             <i :class="`pi ${icon} text-xl`" />
             <span class="text-xs text-surface-500 truncate w-full text-center">{{ icon.replace('pi-', '') }}</span>
@@ -56,9 +56,9 @@
               v-for="icon in category.icons"
               :key="icon"
               type="button"
-              class="icon-item p-3 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
-              :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': localValue === icon }"
-              @click="localValue = icon"
+              class="icon-item p-3 rounded-lg border-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
+              :class="localValue === icon ? 'bg-primary-100 dark:bg-primary-900/40 border-primary-500 ring-2 ring-primary-500/30' : 'border-surface-200 dark:border-surface-700'"
+              @click="selectIcon(icon)"
             >
               <i :class="`pi ${icon} text-xl`" />
               <span class="text-xs text-surface-500 truncate w-full text-center">{{ icon.replace('pi-', '') }}</span>
@@ -120,6 +120,13 @@ const visible = computed({
 })
 
 const filteredIcons = computed(() => searchIcons(searchQuery.value))
+
+const selectIcon = (icon) => {
+  console.log('[IconPicker] selectIcon called with:', icon)
+  console.log('[IconPicker] localValue before:', localValue.value)
+  localValue.value = icon
+  console.log('[IconPicker] localValue after:', localValue.value)
+}
 
 // Sync local value with prop when dialog opens
 watch(() => props.show, (newVal) => {
