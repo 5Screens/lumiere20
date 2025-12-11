@@ -13,8 +13,8 @@
         v-for="option in options"
         :key="option.value"
         type="button"
-        class="select-item p-4 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-2"
-        :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': localValue === option.value }"
+        class="select-item p-4 rounded-lg border-2 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-700 transition-all cursor-pointer flex flex-col items-center gap-2"
+        :class="localValue === option.value ? 'bg-green-100 dark:bg-green-900/40 border-green-500 ring-2 ring-green-500/30' : 'border-surface-200 dark:border-surface-700'"
         @click="localValue = option.value"
       >
         <div 
@@ -24,10 +24,6 @@
           <i v-if="option.icon" :class="['pi', option.icon]" />
           <span class="text-sm font-medium">{{ option.label }}</span>
         </div>
-        <i 
-          v-if="localValue === option.value" 
-          class="pi pi-check text-primary-500"
-        />
       </button>
     </div>
 

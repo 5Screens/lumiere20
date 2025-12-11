@@ -18,16 +18,12 @@
         v-for="category in categories"
         :key="category.uuid"
         type="button"
-        class="category-item p-4 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-2"
-        :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': localValue === category.uuid }"
+        class="category-item p-4 rounded-lg border-2 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-700 transition-all cursor-pointer flex flex-col items-center gap-2"
+        :class="localValue === category.uuid ? 'bg-green-100 dark:bg-green-900/40 border-green-500 ring-2 ring-green-500/30' : 'border-surface-200 dark:border-surface-700'"
         @click="localValue = category.uuid"
       >
         <i :class="`pi ${category.icon || 'pi-folder'} text-2xl`" />
         <span class="text-sm font-medium text-center">{{ category.label }}</span>
-        <i 
-          v-if="localValue === category.uuid" 
-          class="pi pi-check text-primary-500"
-        />
       </button>
     </div>
 
