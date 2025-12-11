@@ -331,15 +331,21 @@
                   <span v-if="data.extended_core_fields?.[col.field_name]" class="text-sm">{{ formatDate(data.extended_core_fields?.[col.field_name], true) }}</span>
                 </InlinePickerButton>
               </template>
+              <!-- Textarea editor for extended fields -->
+              <template v-else-if="col.field_type === 'textarea'">
+                <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('textarea', data, col.field_name, col, true)">
+                  <span v-if="data.extended_core_fields?.[col.field_name]" class="text-sm truncate max-w-xs">
+                    {{ data.extended_core_fields?.[col.field_name] }}
+                  </span>
+                </InlinePickerButton>
+              </template>
               <!-- Default text editor for extended fields -->
               <template v-else>
-                <InputText 
-                  :modelValue="data.extended_core_fields?.[col.field_name]"
-                  @update:modelValue="val => setExtendedFieldValue(data, col.field_name, val)"
-                  @blur="saveExtendedField(data, col.field_name)"
-                  autofocus 
-                  fluid 
-                />
+                <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('text', data, col.field_name, col, true)">
+                  <span v-if="data.extended_core_fields?.[col.field_name]" class="text-sm">
+                    {{ data.extended_core_fields?.[col.field_name] }}
+                  </span>
+                </InlinePickerButton>
               </template>
             </template>
             <!-- ========== REGULAR FIELDS ========== -->
@@ -415,9 +421,17 @@
                   <span class="truncate text-left">{{ getTranslatedValue(data, field) }}</span>
                 </InlinePickerButton>
               </template>
+              <!-- Textarea editor (non-translatable) -->
+              <template v-else-if="col.field_type === 'textarea'">
+                <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('textarea', data, field, col)">
+                  <span v-if="data[field]" class="text-sm truncate max-w-xs">{{ data[field] }}</span>
+                </InlinePickerButton>
+              </template>
               <!-- Default text editor -->
               <template v-else>
-                <InputText v-model="data[field]" autofocus fluid />
+                <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('text', data, field, col)">
+                  <span v-if="data[field]" class="text-sm">{{ data[field] }}</span>
+                </InlinePickerButton>
               </template>
             </template>
           </template>
@@ -864,6 +878,59 @@
       </template>
     </Dialog>
 
+    <!-- Inline Text Picker Dialog -->
+    <Dialog
+      v-model:visible="inlineTextDialog"
+      modal
+      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.enterValue'))"
+      :style="{ width: '500px' }"
+      :draggable="false"
+    >
+      <div class="flex flex-col gap-4">
+        <InputText 
+          v-model="inlinePickerValue" 
+          :placeholder="$t('common.enterValue')"
+          class="w-full"
+          autofocus
+        />
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
+          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
+          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Inline Textarea Picker Dialog -->
+    <Dialog
+      v-model:visible="inlineTextareaDialog"
+      modal
+      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.enterValue'))"
+      :style="{ width: '600px' }"
+      :draggable="false"
+    >
+      <div class="flex flex-col gap-4">
+        <Textarea 
+          v-model="inlinePickerValue" 
+          :placeholder="$t('common.enterValue')"
+          rows="6"
+          class="w-full"
+          autofocus
+        />
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
+          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
+          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Row Actions Menu (for persons) -->
     <Menu 
       v-if="isPersons"
@@ -1046,6 +1113,8 @@ const inlineCiCategoryDialog = ref(false)
 const inlineSelectDialog = ref(false)
 const inlineNumberDialog = ref(false)
 const inlineDateDialog = ref(false)
+const inlineTextDialog = ref(false)
+const inlineTextareaDialog = ref(false)
 const inlinePickerData = ref(null) // The row data being edited
 const inlinePickerField = ref(null) // The field name being edited
 const inlinePickerFieldMeta = ref(null) // The field metadata (for translatable/select/etc)
@@ -1368,6 +1437,10 @@ const openInlinePicker = (type, data, field, colMeta = null, isExtended = false)
       inlinePickerValue.value = new Date(inlinePickerValue.value)
     }
     inlineDateDialog.value = true
+  } else if (type === 'text') {
+    inlineTextDialog.value = true
+  } else if (type === 'textarea') {
+    inlineTextareaDialog.value = true
   } else if (type === 'translatable') {
     // Initialize translations from data._translations
     inlineTranslations.value = {}
@@ -1395,6 +1468,8 @@ const cancelInlinePicker = () => {
   inlineSelectDialog.value = false
   inlineNumberDialog.value = false
   inlineDateDialog.value = false
+  inlineTextDialog.value = false
+  inlineTextareaDialog.value = false
   inlinePickerData.value = null
   inlinePickerField.value = null
   inlinePickerFieldMeta.value = null
