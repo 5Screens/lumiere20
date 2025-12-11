@@ -179,9 +179,6 @@
         </Column>
       </DataTable>
     </div>
-
-    <!-- Toast -->
-    <Toast position="bottom-right" />
   </div>
 </template>
 
@@ -198,7 +195,6 @@ import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Tag from 'primevue/tag'
-import Toast from 'primevue/toast'
 import Select from 'primevue/select'
 import auditService from '@/services/auditService'
 

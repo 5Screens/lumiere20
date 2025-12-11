@@ -978,9 +978,6 @@
         <Button :label="$t('common.save')" icon="pi pi-check" @click="handleResetPassword" :loading="resetPasswordSaving" />
       </template>
     </Dialog>
-
-    <!-- Toast -->
-    <Toast position="bottom-right" />
     </template>
   </div>
 </template>
@@ -1011,7 +1008,6 @@ import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import Toast from 'primevue/toast'
 import ContextMenu from 'primevue/contextmenu'
 import DatePicker from 'primevue/datepicker'
 import Popover from 'primevue/popover'

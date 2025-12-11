@@ -253,7 +253,6 @@
 
     <!-- Delete confirmation -->
     <ConfirmDialog />
-    <Toast position="bottom-right" />
   </div>
 </template>
 
@@ -278,7 +277,6 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import ConfirmDialog from 'primevue/confirmdialog'
-import Toast from 'primevue/toast'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
 
 const props = defineProps({

@@ -128,9 +128,6 @@
         :disabled="!hasChanges"
       />
     </div>
-
-    <!-- Toast -->
-    <Toast position="bottom-right" />
   </div>
 </template>
 
@@ -148,7 +145,6 @@ import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Message from 'primevue/message'
-import Toast from 'primevue/toast'
 
 const props = defineProps({
   tabId: {

@@ -67,9 +67,6 @@
         <p>{{ $t('common.notFound') }}</p>
       </div>
     </div>
-
-    <!-- Toast -->
-    <Toast position="bottom-right" />
   </div>
 </template>
 
@@ -90,7 +87,6 @@ import Tab from 'primevue/tab'
 import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import ProgressSpinner from 'primevue/progressspinner'
-import Toast from 'primevue/toast'
 
 // Custom components
 import ObjectGeneralInfo from './ObjectGeneralInfo.vue'

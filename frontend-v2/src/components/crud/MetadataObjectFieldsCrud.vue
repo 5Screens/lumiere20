@@ -432,9 +432,6 @@
         </div>
       </div>
     </Dialog>
-
-    <!-- Toast -->
-    <Toast position="bottom-right" />
   </div>
 </template>
 
@@ -455,7 +452,6 @@ import Textarea from 'primevue/textarea'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Tag from 'primevue/tag'
-import Toast from 'primevue/toast'
 import Message from 'primevue/message'
 import Tabs from 'primevue/tabs'
 import TabList from 'primevue/tablist'
