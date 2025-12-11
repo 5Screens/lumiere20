@@ -163,6 +163,8 @@ export default {
     notFound: 'Élément non trouvé',
     translate: 'Traduire',
     select: 'Sélectionner...',
+    enterValue: 'Entrer une valeur',
+    selectDate: 'Sélectionner une date',
     generalInfo: 'Informations générales',
     extendedInfo: 'Informations étendues',
     field: 'Champ',

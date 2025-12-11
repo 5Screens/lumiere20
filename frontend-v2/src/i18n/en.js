@@ -163,6 +163,8 @@ export default {
     notFound: 'Item not found',
     translate: 'Translate',
     select: 'Select...',
+    enterValue: 'Enter a value',
+    selectDate: 'Select a date',
     generalInfo: 'General Information',
     extendedInfo: 'Extended Information',
     field: 'Field',

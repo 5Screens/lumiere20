@@ -298,15 +298,11 @@
             <template v-if="col.is_extended">
               <!-- Select editor for extended fields -->
               <template v-if="col.field_type === 'select'">
-                <Select 
-                  :modelValue="data.extended_core_fields?.[col.field_name]"
-                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
-                  :options="col.options || []" 
-                  optionLabel="label" 
-                  optionValue="value" 
-                  autofocus 
-                  fluid 
-                />
+                <InlinePickerButton :placeholder="$t('common.select')" @click="openInlinePicker('select', data, col.field_name, col, true)">
+                  <template v-if="data.extended_core_fields?.[col.field_name]">
+                    <span class="text-sm">{{ getExtendedSelectLabel(col, data.extended_core_fields?.[col.field_name]) }}</span>
+                  </template>
+                </InlinePickerButton>
               </template>
               <!-- Boolean editor for extended fields -->
               <template v-else-if="col.field_type === 'boolean'">
@@ -317,36 +313,23 @@
               </template>
               <!-- Number editor for extended fields -->
               <template v-else-if="col.field_type === 'number'">
-                <InputNumber 
-                  :modelValue="data.extended_core_fields?.[col.field_name]"
-                  @update:modelValue="val => setExtendedFieldValue(data, col.field_name, val)"
-                  @blur="saveExtendedField(data, col.field_name)"
-                  autofocus 
-                  fluid 
-                />
+                <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('number', data, col.field_name, col, true)">
+                  <span v-if="data.extended_core_fields?.[col.field_name] !== null && data.extended_core_fields?.[col.field_name] !== undefined" class="text-sm">
+                    {{ data.extended_core_fields?.[col.field_name] }}{{ col.unit ? ` ${col.unit}` : '' }}
+                  </span>
+                </InlinePickerButton>
               </template>
               <!-- Date editor for extended fields -->
               <template v-else-if="col.field_type === 'date'">
-                <DatePicker 
-                  :modelValue="data.extended_core_fields?.[col.field_name]"
-                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
-                  dateFormat="dd/mm/yy" 
-                  showButtonBar 
-                  autofocus 
-                  fluid 
-                />
+                <InlinePickerButton :placeholder="$t('common.selectDate')" @click="openInlinePicker('date', data, col.field_name, col, true)">
+                  <span v-if="data.extended_core_fields?.[col.field_name]" class="text-sm">{{ formatDate(data.extended_core_fields?.[col.field_name]) }}</span>
+                </InlinePickerButton>
               </template>
               <!-- Datetime editor for extended fields -->
               <template v-else-if="col.field_type === 'datetime'">
-                <DatePicker 
-                  :modelValue="data.extended_core_fields?.[col.field_name]"
-                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
-                  dateFormat="dd/mm/yy" 
-                  showTime 
-                  showButtonBar 
-                  autofocus 
-                  fluid 
-                />
+                <InlinePickerButton :placeholder="$t('common.selectDate')" @click="openInlinePicker('datetime', data, col.field_name, col, true)">
+                  <span v-if="data.extended_core_fields?.[col.field_name]" class="text-sm">{{ formatDate(data.extended_core_fields?.[col.field_name]) }}</span>
+                </InlinePickerButton>
               </template>
               <!-- Default text editor for extended fields -->
               <template v-else>
@@ -363,40 +346,20 @@
             <template v-else>
               <!-- Select editor -->
               <template v-if="col.field_type === 'select'">
-                <Select 
-                  v-model="data[field]" 
-                  :options="getFieldOptions(col)" 
-                  optionLabel="label" 
-                  optionValue="value" 
-                  autofocus 
-                  fluid 
-                >
-                  <template #value="slotProps">
-                    <div 
-                      v-if="slotProps.value" 
-                      class="flex items-center gap-2 px-2 py-1 rounded"
-                      :style="getTagStyle(getOptionByValue(col, slotProps.value)?.color)"
-                    >
-                      <i 
-                        v-if="getOptionByValue(col, slotProps.value)?.icon" 
-                        :class="['pi', getOptionByValue(col, slotProps.value)?.icon]" 
-                      />
-                      <span>{{ getOptionByValue(col, slotProps.value)?.label }}</span>
-                    </div>
-                  </template>
-                  <template #option="slotProps">
+                <InlinePickerButton :placeholder="$t('common.select')" @click="openInlinePicker('select', data, field, col)">
+                  <template v-if="data[field]">
                     <div 
                       class="flex items-center gap-2 px-2 py-1 rounded"
-                      :style="getTagStyle(slotProps.option.color)"
+                      :style="getTagStyle(getOptionByValue(col, data[field])?.color)"
                     >
                       <i 
-                        v-if="slotProps.option.icon" 
-                        :class="['pi', slotProps.option.icon]" 
+                        v-if="getOptionByValue(col, data[field])?.icon" 
+                        :class="['pi', getOptionByValue(col, data[field])?.icon]" 
                       />
-                      <span>{{ slotProps.option.label }}</span>
+                      <span class="text-sm">{{ getOptionByValue(col, data[field])?.label }}</span>
                     </div>
                   </template>
-                </Select>
+                </InlinePickerButton>
               </template>
               <!-- Boolean editor -->
               <template v-else-if="col.field_type === 'boolean'">
@@ -404,15 +367,21 @@
               </template>
               <!-- Number editor -->
               <template v-else-if="col.field_type === 'number'">
-                <InputNumber v-model="data[field]" autofocus fluid />
+                <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('number', data, field, col)">
+                  <span v-if="data[field] !== null && data[field] !== undefined" class="text-sm">{{ data[field] }}</span>
+                </InlinePickerButton>
               </template>
               <!-- Date editor -->
               <template v-else-if="col.field_type === 'date'">
-                <DatePicker v-model="data[field]" dateFormat="dd/mm/yy" showButtonBar autofocus fluid />
+                <InlinePickerButton :placeholder="$t('common.selectDate')" @click="openInlinePicker('date', data, field, col)">
+                  <span v-if="data[field]" class="text-sm">{{ formatDate(data[field]) }}</span>
+                </InlinePickerButton>
               </template>
               <!-- Datetime editor -->
               <template v-else-if="col.field_type === 'datetime'">
-                <DatePicker v-model="data[field]" dateFormat="dd/mm/yy" showTime showButtonBar autofocus fluid />
+                <InlinePickerButton :placeholder="$t('common.selectDate')" @click="openInlinePicker('datetime', data, field, col)">
+                  <span v-if="data[field]" class="text-sm">{{ formatDate(data[field]) }}</span>
+                </InlinePickerButton>
               </template>
               <!-- Icon picker editor -->
               <template v-else-if="col.field_type === 'icon_picker'">
@@ -797,6 +766,104 @@
       </template>
     </Dialog>
 
+    <!-- Inline Select Picker Dialog -->
+    <Dialog
+      v-model:visible="inlineSelectDialog"
+      modal
+      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.select'))"
+      :style="{ width: '90vw', maxWidth: '600px', height: 'auto' }"
+      :draggable="false"
+    >
+      <!-- Options grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <button
+          v-for="option in inlineSelectOptions"
+          :key="option.value"
+          type="button"
+          class="select-item p-4 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-2"
+          :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === option.value }"
+          @click="inlinePickerValue = option.value"
+        >
+          <div 
+            class="flex items-center gap-2 px-3 py-2 rounded"
+            :style="getTagStyle(option.color)"
+          >
+            <i v-if="option.icon" :class="['pi', option.icon]" />
+            <span class="text-sm font-medium">{{ option.label }}</span>
+          </div>
+          <i 
+            v-if="inlinePickerValue === option.value" 
+            class="pi pi-check text-primary-500"
+          />
+        </button>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
+          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
+          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Inline Number Picker Dialog -->
+    <Dialog
+      v-model:visible="inlineNumberDialog"
+      modal
+      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.enterValue'))"
+      :style="{ width: '400px' }"
+      :draggable="false"
+    >
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center gap-2">
+          <InputNumber 
+            v-model="inlinePickerValue" 
+            :placeholder="$t('common.enterValue')"
+            class="flex-1"
+            autofocus
+          />
+          <span v-if="inlinePickerFieldMeta?.unit" class="text-surface-500">{{ inlinePickerFieldMeta.unit }}</span>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
+          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
+          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Inline Date/Datetime Picker Dialog -->
+    <Dialog
+      v-model:visible="inlineDateDialog"
+      modal
+      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.selectDate'))"
+      :style="{ width: '400px' }"
+      :draggable="false"
+    >
+      <div class="flex flex-col gap-4">
+        <DatePicker 
+          v-model="inlinePickerValue" 
+          :showTime="inlinePickerFieldMeta?.field_type === 'datetime'"
+          dateFormat="dd/mm/yy"
+          showButtonBar
+          inline
+          class="w-full"
+        />
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
+          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
+          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Row Actions Menu (for persons) -->
     <Menu 
       v-if="isPersons"
@@ -976,11 +1043,15 @@ const inlineIconDialog = ref(false)
 const inlineTagStyleDialog = ref(false)
 const inlineTranslatableDialog = ref(false)
 const inlineCiCategoryDialog = ref(false)
+const inlineSelectDialog = ref(false)
+const inlineNumberDialog = ref(false)
+const inlineDateDialog = ref(false)
 const inlinePickerData = ref(null) // The row data being edited
 const inlinePickerField = ref(null) // The field name being edited
-const inlinePickerFieldMeta = ref(null) // The field metadata (for translatable)
+const inlinePickerFieldMeta = ref(null) // The field metadata (for translatable/select/etc)
 const inlinePickerValue = ref(null) // The temporary selected value
 const inlinePickerSaving = ref(false)
+const inlinePickerIsExtended = ref(false) // Flag to track if editing extended field
 const iconSearchQuery = ref('')
 const tagStyleOptions = getTagStyleOptions()
 
@@ -1219,6 +1290,19 @@ const inlineTranslatableTitle = computed(() => {
   return t('common.translate')
 })
 
+// Options for inline select picker
+const inlineSelectOptions = computed(() => {
+  if (!inlinePickerFieldMeta.value) return []
+  
+  // For extended fields, options are directly in col.options
+  if (inlinePickerIsExtended.value) {
+    return inlinePickerFieldMeta.value.options || []
+  }
+  
+  // For regular fields, get from fieldOptions cache
+  return getFieldOptions(inlinePickerFieldMeta.value)
+})
+
 // Methods
 
 // Inline picker methods
@@ -1253,11 +1337,18 @@ const getCategoryIcon = (uuid) => {
   return category?.icon || 'pi-folder'
 }
 
-const openInlinePicker = (type, data, field, colMeta = null) => {
+const openInlinePicker = (type, data, field, colMeta = null, isExtended = false) => {
   inlinePickerData.value = data
   inlinePickerField.value = field
   inlinePickerFieldMeta.value = colMeta
-  inlinePickerValue.value = data[field]
+  inlinePickerIsExtended.value = isExtended
+  
+  // Get current value based on whether it's an extended field or not
+  if (isExtended) {
+    inlinePickerValue.value = data.extended_core_fields?.[field] ?? null
+  } else {
+    inlinePickerValue.value = data[field]
+  }
   
   if (type === 'icon') {
     iconSearchQuery.value = ''
@@ -1267,6 +1358,12 @@ const openInlinePicker = (type, data, field, colMeta = null) => {
   } else if (type === 'ci_category') {
     loadCiCategories()
     inlineCiCategoryDialog.value = true
+  } else if (type === 'select') {
+    inlineSelectDialog.value = true
+  } else if (type === 'number') {
+    inlineNumberDialog.value = true
+  } else if (type === 'date' || type === 'datetime') {
+    inlineDateDialog.value = true
   } else if (type === 'translatable') {
     // Initialize translations from data._translations
     inlineTranslations.value = {}
@@ -1291,10 +1388,14 @@ const cancelInlinePicker = () => {
   inlineTagStyleDialog.value = false
   inlineTranslatableDialog.value = false
   inlineCiCategoryDialog.value = false
+  inlineSelectDialog.value = false
+  inlineNumberDialog.value = false
+  inlineDateDialog.value = false
   inlinePickerData.value = null
   inlinePickerField.value = null
   inlinePickerFieldMeta.value = null
   inlinePickerValue.value = null
+  inlinePickerIsExtended.value = false
 }
 
 const confirmInlinePicker = async () => {
@@ -1303,7 +1404,12 @@ const confirmInlinePicker = async () => {
   const data = inlinePickerData.value
   const field = inlinePickerField.value
   const newValue = inlinePickerValue.value
-  const oldValue = data[field]
+  const isExtended = inlinePickerIsExtended.value
+  
+  // Get old value based on field type
+  const oldValue = isExtended 
+    ? data.extended_core_fields?.[field] 
+    : data[field]
   
   // Skip if no change
   if (oldValue === newValue) {
@@ -1314,12 +1420,32 @@ const confirmInlinePicker = async () => {
   try {
     inlinePickerSaving.value = true
     const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'
-    await service.value.update(data.uuid, { [field]: newValue })
     
-    // Update local data reactively by finding and updating the item in the array
-    const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
-    if (itemIndex !== -1) {
-      items.value[itemIndex] = { ...items.value[itemIndex], [field]: newValue }
+    if (isExtended) {
+      // Update extended field
+      const updatedExtendedFields = {
+        ...data.extended_core_fields,
+        [field]: newValue
+      }
+      await service.value.update(data.uuid, { extended_core_fields: updatedExtendedFields })
+      
+      // Update local data reactively
+      const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
+      if (itemIndex !== -1) {
+        items.value[itemIndex] = { 
+          ...items.value[itemIndex], 
+          extended_core_fields: updatedExtendedFields 
+        }
+      }
+    } else {
+      // Update regular field
+      await service.value.update(data.uuid, { [field]: newValue })
+      
+      // Update local data reactively
+      const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
+      if (itemIndex !== -1) {
+        items.value[itemIndex] = { ...items.value[itemIndex], [field]: newValue }
+      }
     }
     
     toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
