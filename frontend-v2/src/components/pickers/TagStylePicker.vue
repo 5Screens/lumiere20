@@ -3,11 +3,11 @@
     v-model:visible="visible"
     modal
     :header="$t('common.selectTagStyle')"
-    :style="{ width: '90vw', maxWidth: '900px', height: '80vh' }"
+    :style="{ width: '90vw', maxWidth: '900px' }"
     :draggable="false"
     @hide="onCancel"
   >
-    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 overflow-auto" style="max-height: calc(80vh - 120px);">
+    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 overflow-auto" style="max-height: 60vh;">
       <button
         v-for="option in tagStyleOptions"
         :key="option.value"
