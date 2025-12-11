@@ -12,12 +12,11 @@
         v-for="option in tagStyleOptions"
         :key="option.value"
         type="button"
-        class="style-item p-4 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-2"
-        :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': localValue === option.value }"
+        class="style-item p-4 rounded-lg border-2 hover:border-green-300 dark:hover:border-green-700 transition-all cursor-pointer flex flex-col items-center gap-2"
+        :class="localValue === option.value ? 'border-green-500 ring-2 ring-green-500/30' : 'border-surface-200 dark:border-surface-700'"
         @click="localValue = option.value"
       >
         <Tag :style="option.style" class="text-sm px-4 py-2">{{ option.label }}</Tag>
-        <i v-if="localValue === option.value" class="pi pi-check text-primary-500" />
       </button>
     </div>
 
