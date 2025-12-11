@@ -23,9 +23,6 @@ router.get('/uncategorized', controller.getUncategorizedCiTypes);
 // GET /api/v1/ci_categories/options - Get CI categories as select options
 router.get('/options', controller.getOptions);
 
-// GET /api/v1/ci_categories/code/:code - Get CI category by code
-router.get('/code/:code', controller.getByCode);
-
 // GET /api/v1/ci_categories/:uuid - Get CI category by UUID
 router.get('/:uuid', controller.getByUuid);
 

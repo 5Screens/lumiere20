@@ -20,15 +20,6 @@ router.get('/', controller.getAll);
 // GET /api/v1/ci_types/options - Get CI types as select options
 router.get('/options', controller.getOptions);
 
-// GET /api/v1/ci_types/code/:code/fields - Get extended fields for a CI type by code
-router.get('/code/:code/fields', controller.getFields);
-
-// GET /api/v1/ci_types/code/:code/with-fields - Get CI type with fields included by code
-router.get('/code/:code/with-fields', controller.getByCodeWithFields);
-
-// GET /api/v1/ci_types/code/:code - Get CI type by code
-router.get('/code/:code', controller.getByCode);
-
 // GET /api/v1/ci_types/:uuid - Get CI type by UUID
 router.get('/:uuid', controller.getByUuid);
 

@@ -211,23 +211,19 @@ const loadItem = async () => {
   try {
     loading.value = true
     
-    // Use getByCode for ci_types if not UUID, getByUuid for others
-    if (props.objectType === 'ci_types' && !isUuid(props.objectId)) {
-      item.value = await service.value.getByCode(props.objectId)
+    // Load item by UUID
+    if (service.value.getByUuid) {
+      item.value = await service.value.getByUuid(props.objectId)
+    } else if (service.value.get) {
+      item.value = await service.value.get(props.objectId)
     } else {
-      if (service.value.getByUuid) {
-        item.value = await service.value.getByUuid(props.objectId)
-      } else if (service.value.get) {
-        item.value = await service.value.get(props.objectId)
-      } else {
-        // Fallback: search by uuid
-        const result = await service.value.search({ 
-          filters: { uuid: { value: props.objectId, matchMode: 'equals' } },
-          page: 1,
-          limit: 1
-        })
-        item.value = result.data?.[0] || null
-      }
+      // Fallback: search by uuid
+      const result = await service.value.search({ 
+        filters: { uuid: { value: props.objectId, matchMode: 'equals' } },
+        page: 1,
+        limit: 1
+      })
+      item.value = result.data?.[0] || null
     }
     
     // Load extended fields if configuration_items
@@ -259,12 +255,6 @@ const initializeNewItem = () => {
   }
   
   return defaults
-}
-
-// Check if string is UUID
-const isUuid = (str) => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  return uuidRegex.test(str)
 }
 
 // Load extended fields for configuration_items

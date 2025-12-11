@@ -54,32 +54,6 @@ const getOptions = async (req, res) => {
 };
 
 /**
- * Get CI type by code
- */
-const getByCode = async (req, res) => {
-  try {
-    const { code } = req.params;
-    const locale = getLocale(req);
-    const ciType = await service.getByCode(code, locale);
-    
-    if (!ciType) {
-      return res.status(404).json({ 
-        error: 'Not found',
-        message: `CI type '${code}' not found`
-      });
-    }
-    
-    res.json(ciType);
-  } catch (error) {
-    logger.error('Controller error - getByCode CI types:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI type'
-    });
-  }
-};
-
-/**
  * Get CI type by UUID
  */
 const getByUuid = async (req, res) => {
@@ -225,32 +199,6 @@ const getFields = async (req, res) => {
 };
 
 /**
- * Get CI type with fields included
- */
-const getByCodeWithFields = async (req, res) => {
-  try {
-    const { code } = req.params;
-    const locale = getLocale(req);
-    const ciType = await service.getByCodeWithFields(code, locale);
-    
-    if (!ciType) {
-      return res.status(404).json({ 
-        error: 'Not found',
-        message: `CI type '${code}' not found`
-      });
-    }
-    
-    res.json(ciType);
-  } catch (error) {
-    logger.error('Controller error - getByCodeWithFields CI type:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI type with fields'
-    });
-  }
-};
-
-/**
  * Delete multiple CI types
  */
 const removeMany = async (req, res) => {
@@ -279,9 +227,7 @@ const removeMany = async (req, res) => {
 module.exports = {
   getAll,
   getOptions,
-  getByCode,
   getByUuid,
-  getByCodeWithFields,
   getFields,
   create,
   update,

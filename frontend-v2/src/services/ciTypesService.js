@@ -33,15 +33,6 @@ export default {
   },
 
   /**
-   * Get CI type by code
-   * @param {string} code - CI type code
-   */
-  async getByCode(code) {
-    const response = await api.get(`${BASE_URL}/code/${code}`)
-    return response.data
-  },
-
-  /**
    * Get CI type by UUID
    * @param {string} uuid - CI type UUID
    */

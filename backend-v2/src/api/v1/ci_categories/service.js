@@ -203,49 +203,6 @@ const getByUuid = async (uuid, locale = 'en') => {
 };
 
 /**
- * Get CI category by code
- */
-const getByCode = async (code, locale = 'en') => {
-  const category = await prisma.ci_categories.findUnique({
-    where: { code }
-  });
-  
-  if (!category) return null;
-  
-  // Get ALL translations (not just current locale)
-  const translations = await prisma.translated_fields.findMany({
-    where: {
-      entity_type: 'ci_categories',
-      entity_uuid: category.uuid
-    }
-  });
-  
-  // Map translations for current locale display
-  const translationMap = {};
-  // Map all translations for _translations
-  const allTranslationsMap = {};
-  
-  for (const t of translations) {
-    // For current locale display
-    if (t.locale === locale) {
-      translationMap[t.field_name] = t.value;
-    }
-    
-    // For _translations (all locales)
-    if (!allTranslationsMap[t.field_name]) {
-      allTranslationsMap[t.field_name] = {};
-    }
-    allTranslationsMap[t.field_name][t.locale] = t.value;
-  }
-  
-  return {
-    ...category,
-    label: translationMap.label || category.label,
-    _translations: allTranslationsMap
-  };
-};
-
-/**
  * Create a new CI category
  */
 const create = async (data) => {
@@ -418,7 +375,6 @@ module.exports = {
   getUncategorizedCiTypes,
   getAsOptions,
   getByUuid,
-  getByCode,
   create,
   update,
   remove,

@@ -93,32 +93,6 @@ const getOptions = async (req, res) => {
 };
 
 /**
- * Get CI category by code
- */
-const getByCode = async (req, res) => {
-  try {
-    const { code } = req.params;
-    const locale = getLocale(req);
-    const category = await service.getByCode(code, locale);
-    
-    if (!category) {
-      return res.status(404).json({ 
-        error: 'Not found',
-        message: `CI category '${code}' not found`
-      });
-    }
-    
-    res.json(category);
-  } catch (error) {
-    logger.error('Controller error - getByCode CI categories:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI category'
-    });
-  }
-};
-
-/**
  * Get CI category by UUID
  */
 const getByUuid = async (req, res) => {
@@ -244,7 +218,6 @@ module.exports = {
   getAllWithCiTypes,
   getUncategorizedCiTypes,
   getOptions,
-  getByCode,
   getByUuid,
   create,
   update,
