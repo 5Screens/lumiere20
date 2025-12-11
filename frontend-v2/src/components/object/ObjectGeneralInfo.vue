@@ -165,6 +165,15 @@
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly"
         />
+        
+        <!-- CI Category Selector -->
+        <CICategorySelector 
+          v-else-if="field.field_type === 'ci_category'"
+          :id="field.field_name" 
+          :modelValue="modelValue[field.field_name]"
+          @update:modelValue="updateField(field.field_name, $event)"
+          :disabled="field.is_readonly"
+        />
       </div>
     </template>
   </div>
@@ -186,6 +195,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
 import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
+import CICategorySelector from '@/components/form/CICategorySelector.vue'
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'
