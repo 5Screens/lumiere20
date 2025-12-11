@@ -250,7 +250,12 @@
             </template>
             <!-- Date/Datetime -->
             <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
-              {{ formatDate(data[col.field_name]) }}
+              <template v-if="col.is_extended">
+                {{ formatDate(data.extended_core_fields?.[col.field_name]) }}
+              </template>
+              <template v-else>
+                {{ formatDate(data[col.field_name]) }}
+              </template>
             </template>
             <!-- Textarea (truncated) - with translation support -->
             <template v-else-if="col.field_type === 'textarea'">
