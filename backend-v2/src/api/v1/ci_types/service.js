@@ -212,7 +212,8 @@ const create = async (data) => {
         icon: ciTypeData.icon,
         color: ciTypeData.color,
         is_active: ciTypeData.is_active ?? true,
-        display_order: ciTypeData.display_order ?? 0
+        display_order: ciTypeData.display_order ?? 0,
+        rel_category_uuid: ciTypeData.rel_category_uuid
       }
     });
     
@@ -248,7 +249,8 @@ const update = async (uuid, data) => {
         icon: ciTypeData.icon,
         color: ciTypeData.color,
         is_active: ciTypeData.is_active,
-        display_order: ciTypeData.display_order
+        display_order: ciTypeData.display_order,
+        rel_category_uuid: ciTypeData.rel_category_uuid
       }
     });
     
