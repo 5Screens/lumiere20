@@ -110,24 +110,21 @@
               size="small"
             />
             <!-- Date picker -->
-            <DatePicker 
+            <InlinePickerButton 
               v-else-if="data.field_type === 'date'"
-              v-model="data.value" 
-              dateFormat="dd/mm/yy"
-              autofocus
-              fluid
-              size="small"
-            />
+              :placeholder="$t('common.selectDate')" 
+              @click="openDatePicker(data, false)"
+            >
+              <span v-if="data.value" class="text-sm">{{ formatDate(data.value, 'date') }}</span>
+            </InlinePickerButton>
             <!-- Datetime picker -->
-            <DatePicker 
+            <InlinePickerButton 
               v-else-if="data.field_type === 'datetime'"
-              v-model="data.value" 
-              dateFormat="dd/mm/yy"
-              showTime
-              autofocus
-              fluid
-              size="small"
-            />
+              :placeholder="$t('common.selectDate')" 
+              @click="openDatePicker(data, true)"
+            >
+              <span v-if="data.value" class="text-sm">{{ formatDate(data.value, 'datetime') }}</span>
+            </InlinePickerButton>
             <!-- Default fallback -->
             <InputText 
               v-else
@@ -157,11 +154,23 @@
         <p>{{ $t('common.noExtendedInfo') }}</p>
       </div>
     </template>
+
+    <!-- DateTimePicker Dialog -->
+    <DateTimePicker
+      v-model="datePickerValue"
+      :show="datePickerVisible"
+      :loading="datePickerSaving"
+      :title="datePickerTitle"
+      :show-time="datePickerShowTime"
+      @update:show="datePickerVisible = $event"
+      @confirm="confirmDatePicker"
+      @cancel="cancelDatePicker"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 // PrimeVue components
@@ -172,12 +181,13 @@ import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
-import DatePicker from 'primevue/datepicker'
 import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 
 // Custom components
 import CiTypeFieldsEditor from '@/components/object/CiTypeFieldsEditor.vue'
+import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
+import { DateTimePicker } from '@/components/pickers'
 
 // Props
 const props = defineProps({
@@ -207,7 +217,15 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 // Composables
-const { locale } = useI18n()
+const { t, locale } = useI18n()
+
+// DateTimePicker state
+const datePickerVisible = ref(false)
+const datePickerSaving = ref(false)
+const datePickerValue = ref(null)
+const datePickerShowTime = ref(false)
+const datePickerTitle = ref('')
+const datePickerFieldData = ref(null)
 
 // Computed: Transform extended fields into table data
 const extendedFieldsData = computed(() => {
@@ -279,5 +297,54 @@ const getFieldTypeSeverity = (type) => {
     multiselect: 'primary'
   }
   return severities[type] || 'secondary'
+}
+
+// Open DateTimePicker dialog
+const openDatePicker = (data, showTime) => {
+  datePickerFieldData.value = data
+  datePickerShowTime.value = showTime
+  datePickerTitle.value = data.label || t('common.selectDate')
+  
+  // Convert ISO string to Date object if needed
+  if (data.value && typeof data.value === 'string') {
+    datePickerValue.value = new Date(data.value)
+  } else {
+    datePickerValue.value = data.value
+  }
+  
+  datePickerVisible.value = true
+}
+
+// Confirm DateTimePicker selection
+const confirmDatePicker = (newValue) => {
+  if (!datePickerFieldData.value) return
+  
+  const data = datePickerFieldData.value
+  const oldValue = data.value
+  
+  // Skip if no change
+  if (oldValue === newValue) {
+    cancelDatePicker()
+    return
+  }
+  
+  // Update the extended_core_fields in modelValue
+  const currentExtended = props.modelValue?.extended_core_fields || {}
+  emit('update:modelValue', {
+    ...props.modelValue,
+    extended_core_fields: {
+      ...currentExtended,
+      [data.field_name]: newValue
+    }
+  })
+  
+  cancelDatePicker()
+}
+
+// Cancel DateTimePicker
+const cancelDatePicker = () => {
+  datePickerVisible.value = false
+  datePickerFieldData.value = null
+  datePickerValue.value = null
 }
 </script>
