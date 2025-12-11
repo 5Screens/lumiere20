@@ -575,361 +575,100 @@
       </template>
     </Dialog>
 
-    <!-- Inline Icon Picker Dialog -->
-    <Dialog
-      v-model:visible="inlineIconDialog"
-      modal
-      :header="$t('common.selectIcon')"
-      :style="{ width: '90vw', height: '90vh' }"
-      :draggable="false"
-    >
-      <!-- Search bar -->
-      <div class="mb-4 flex gap-2">
-        <IconField class="flex-1">
-          <InputIcon class="pi pi-search" />
-          <InputText
-            v-model="iconSearchQuery"
-            :placeholder="$t('common.searchIcon')"
-            class="w-full"
-          />
-        </IconField>
-        <Button
-          v-if="iconSearchQuery"
-          icon="pi pi-times"
-          severity="secondary"
-          text
-          @click="iconSearchQuery = ''"
-        />
-      </div>
+    <!-- Inline Pickers -->
+    <IconPicker
+      v-model="inlinePickerValue"
+      :show="inlineIconDialog"
+      :loading="inlinePickerSaving"
+      @update:show="inlineIconDialog = $event"
+      @confirm="confirmInlinePicker"
+      @cancel="cancelInlinePicker"
+    />
 
-      <!-- Icons grid -->
-      <div class="overflow-auto" style="height: calc(90vh - 180px);">
-        <template v-if="iconSearchQuery">
-          <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
-            <button
-              v-for="icon in filteredIconsForInline"
-              :key="icon"
-              type="button"
-              class="icon-item p-3 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
-              :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === icon }"
-              @click="inlinePickerValue = icon"
-            >
-              <i :class="`pi ${icon} text-xl`" />
-              <span class="text-xs text-surface-500 truncate w-full text-center">{{ icon.replace('pi-', '') }}</span>
-            </button>
-          </div>
-          <div v-if="filteredIconsForInline.length === 0" class="text-center py-8 text-surface-500">
-            {{ $t('common.noResults') }}
-          </div>
-        </template>
-        <template v-else>
-          <div v-for="(category, key) in iconCategories" :key="key" class="mb-6">
-            <h3 class="text-sm font-semibold text-surface-600 dark:text-surface-300 mb-2 sticky top-0 bg-surface-0 dark:bg-surface-900 py-2 z-10">
-              {{ category.label }}
-            </h3>
-            <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
-              <button
-                v-for="icon in category.icons"
-                :key="icon"
-                type="button"
-                class="icon-item p-3 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
-                :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === icon }"
-                @click="inlinePickerValue = icon"
-              >
-                <i :class="`pi ${icon} text-xl`" />
-                <span class="text-xs text-surface-500 truncate w-full text-center">{{ icon.replace('pi-', '') }}</span>
-              </button>
-            </div>
-          </div>
-        </template>
-      </div>
+    <TagStylePicker
+      v-model="inlinePickerValue"
+      :show="inlineTagStyleDialog"
+      :loading="inlinePickerSaving"
+      @update:show="inlineTagStyleDialog = $event"
+      @confirm="confirmInlinePicker"
+      @cancel="cancelInlinePicker"
+    />
 
-      <template #footer>
-        <div class="flex justify-between items-center w-full">
-          <div class="text-sm text-surface-500">
-            <span v-if="inlinePickerValue">
-              {{ $t('common.selected') }}: <i :class="`pi ${inlinePickerValue} mx-1`" /> {{ inlinePickerValue }}
-            </span>
-          </div>
-          <div class="flex gap-2">
-            <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
-            <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
-            <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
-          </div>
-        </div>
-      </template>
-    </Dialog>
+    <CiCategoryPicker
+      v-model="inlinePickerValue"
+      :show="inlineCiCategoryDialog"
+      :loading="inlinePickerSaving"
+      :categories="ciCategories"
+      :categories-loading="ciCategoriesLoading"
+      @update:show="inlineCiCategoryDialog = $event"
+      @confirm="confirmInlinePicker"
+      @cancel="cancelInlinePicker"
+    />
 
-    <!-- Inline Tag Style Picker Dialog -->
-    <Dialog
-      v-model:visible="inlineTagStyleDialog"
-      modal
-      :header="$t('common.selectTagStyle')"
-      :style="{ width: '90vw', maxWidth: '900px', height: '80vh' }"
-      :draggable="false"
-    >
-      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 overflow-auto" style="max-height: calc(80vh - 120px);">
-        <button
-          v-for="option in tagStyleOptions"
-          :key="option.value"
-          type="button"
-          class="style-item p-4 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-2"
-          :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === option.value }"
-          @click="inlinePickerValue = option.value"
-        >
-          <Tag :style="option.style" class="text-sm px-4 py-2">{{ option.label }}</Tag>
-          <i v-if="inlinePickerValue === option.value" class="pi pi-check text-primary-500" />
-        </button>
-      </div>
+    <SelectPicker
+      v-model="inlinePickerValue"
+      :show="inlineSelectDialog"
+      :loading="inlinePickerSaving"
+      :options="inlineSelectOptions"
+      :title="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.select'))"
+      @update:show="inlineSelectDialog = $event"
+      @confirm="confirmInlinePicker"
+      @cancel="cancelInlinePicker"
+    />
 
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
-          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
-          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
-        </div>
-      </template>
-    </Dialog>
+    <NumberPicker
+      v-model="inlinePickerValue"
+      :show="inlineNumberDialog"
+      :loading="inlinePickerSaving"
+      :title="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.enterValue'))"
+      :unit="inlinePickerFieldMeta?.unit"
+      @update:show="inlineNumberDialog = $event"
+      @confirm="confirmInlinePicker"
+      @cancel="cancelInlinePicker"
+    />
 
-    <!-- Inline CI Category Picker Dialog -->
-    <Dialog
-      v-model:visible="inlineCiCategoryDialog"
-      modal
-      :header="$t('ciCategories.selectCategory')"
-      :style="{ width: '90vw', maxWidth: '600px', height: 'auto' }"
-      :draggable="false"
-    >
-      <!-- Loading state -->
-      <div v-if="ciCategoriesLoading" class="flex justify-center py-8">
-        <i class="pi pi-spin pi-spinner text-2xl" />
-      </div>
+    <DateTimePicker
+      v-model="inlinePickerValue"
+      :show="inlineDateDialog"
+      :loading="inlinePickerSaving"
+      :title="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.selectDate'))"
+      :show-time="inlinePickerFieldMeta?.field_type === 'datetime'"
+      @update:show="inlineDateDialog = $event"
+      @confirm="confirmInlinePicker"
+      @cancel="cancelInlinePicker"
+    />
 
-      <!-- Categories grid -->
-      <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <button
-          v-for="category in ciCategories"
-          :key="category.uuid"
-          type="button"
-          class="category-item p-4 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-2"
-          :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === category.uuid }"
-          @click="inlinePickerValue = category.uuid"
-        >
-          <i :class="`pi ${category.icon || 'pi-folder'} text-2xl`" />
-          <span class="text-sm font-medium text-center">{{ category.label }}</span>
-          <i 
-            v-if="inlinePickerValue === category.uuid" 
-            class="pi pi-check text-primary-500"
-          />
-        </button>
-      </div>
+    <TextPicker
+      v-model="inlinePickerValue"
+      :show="inlineTextDialog"
+      :loading="inlinePickerSaving"
+      :title="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.enterValue'))"
+      @update:show="inlineTextDialog = $event"
+      @confirm="confirmInlinePicker"
+      @cancel="cancelInlinePicker"
+    />
 
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
-          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
-          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
-        </div>
-      </template>
-    </Dialog>
+    <TextareaPicker
+      v-model="inlinePickerValue"
+      :show="inlineTextareaDialog"
+      :loading="inlinePickerSaving"
+      :title="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.enterValue'))"
+      @update:show="inlineTextareaDialog = $event"
+      @confirm="confirmInlinePicker"
+      @cancel="cancelInlinePicker"
+    />
 
-    <!-- Inline Translatable Field Dialog -->
-    <Dialog
-      v-model:visible="inlineTranslatableDialog"
-      modal
-      :header="inlineTranslatableTitle"
-      :style="{ width: '500px' }"
-      :draggable="false"
-    >
-      <div class="flex flex-col gap-4">
-        <!-- One field per language -->
-        <div 
-          v-for="lang in availableLanguages" 
-          :key="lang.code"
-          class="flex flex-col gap-2"
-        >
-          <label :for="`trans-inline-${lang.code}`" class="flex items-center gap-2 font-medium">
-            <span class="text-xl" :title="lang.name">{{ lang.flag }}</span>
-            <span>{{ lang.name }}</span>
-          </label>
-          
-          <!-- Textarea for textarea fields -->
-          <Textarea
-            v-if="inlinePickerFieldMeta?.field_type === 'textarea'"
-            :id="`trans-inline-${lang.code}`"
-            v-model="inlineTranslations[lang.code]"
-            rows="3"
-            class="w-full"
-            :placeholder="`${lang.name}...`"
-          />
-          <!-- InputText for text fields -->
-          <InputText
-            v-else
-            :id="`trans-inline-${lang.code}`"
-            v-model="inlineTranslations[lang.code]"
-            class="w-full"
-            :placeholder="`${lang.name}...`"
-          />
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
-          <Button :label="$t('common.confirm')" @click="confirmInlineTranslatable" :loading="inlinePickerSaving" />
-        </div>
-      </template>
-    </Dialog>
-
-    <!-- Inline Select Picker Dialog -->
-    <Dialog
-      v-model:visible="inlineSelectDialog"
-      modal
-      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.select'))"
-      :style="{ width: '90vw', maxWidth: '600px', height: 'auto' }"
-      :draggable="false"
-    >
-      <!-- Options grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <button
-          v-for="option in inlineSelectOptions"
-          :key="option.value"
-          type="button"
-          class="select-item p-4 rounded-lg border border-surface-200 dark:border-surface-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-2"
-          :class="{ 'bg-primary-100 dark:bg-primary-900/40 border-primary-500': inlinePickerValue === option.value }"
-          @click="inlinePickerValue = option.value"
-        >
-          <div 
-            class="flex items-center gap-2 px-3 py-2 rounded"
-            :style="getTagStyle(option.color)"
-          >
-            <i v-if="option.icon" :class="['pi', option.icon]" />
-            <span class="text-sm font-medium">{{ option.label }}</span>
-          </div>
-          <i 
-            v-if="inlinePickerValue === option.value" 
-            class="pi pi-check text-primary-500"
-          />
-        </button>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
-          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
-          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
-        </div>
-      </template>
-    </Dialog>
-
-    <!-- Inline Number Picker Dialog -->
-    <Dialog
-      v-model:visible="inlineNumberDialog"
-      modal
-      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.enterValue'))"
-      :style="{ width: '400px' }"
-      :draggable="false"
-    >
-      <div class="flex flex-col gap-4">
-        <div class="flex items-center gap-2">
-          <InputNumber 
-            v-model="inlinePickerValue" 
-            :placeholder="$t('common.enterValue')"
-            class="flex-1"
-            autofocus
-          />
-          <span v-if="inlinePickerFieldMeta?.unit" class="text-surface-500">{{ inlinePickerFieldMeta.unit }}</span>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
-          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
-          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
-        </div>
-      </template>
-    </Dialog>
-
-    <!-- Inline Date/Datetime Picker Dialog -->
-    <Dialog
-      v-model:visible="inlineDateDialog"
-      modal
-      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.selectDate'))"
-      :style="{ width: '400px' }"
-      :draggable="false"
-    >
-      <div class="flex flex-col gap-4">
-        <DatePicker 
-          v-model="inlinePickerValue" 
-          :showTime="inlinePickerFieldMeta?.field_type === 'datetime'"
-          dateFormat="dd/mm/yy"
-          showButtonBar
-          inline
-          class="w-full"
-        />
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
-          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
-          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
-        </div>
-      </template>
-    </Dialog>
-
-    <!-- Inline Text Picker Dialog -->
-    <Dialog
-      v-model:visible="inlineTextDialog"
-      modal
-      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.enterValue'))"
-      :style="{ width: '500px' }"
-      :draggable="false"
-    >
-      <div class="flex flex-col gap-4">
-        <InputText 
-          v-model="inlinePickerValue" 
-          :placeholder="$t('common.enterValue')"
-          class="w-full"
-          autofocus
-        />
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
-          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
-          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
-        </div>
-      </template>
-    </Dialog>
-
-    <!-- Inline Textarea Picker Dialog -->
-    <Dialog
-      v-model:visible="inlineTextareaDialog"
-      modal
-      :header="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.enterValue'))"
-      :style="{ width: '600px' }"
-      :draggable="false"
-    >
-      <div class="flex flex-col gap-4">
-        <Textarea 
-          v-model="inlinePickerValue" 
-          :placeholder="$t('common.enterValue')"
-          rows="6"
-          class="w-full"
-          autofocus
-        />
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button :label="$t('common.clear')" severity="secondary" text @click="inlinePickerValue = null" />
-          <Button :label="$t('common.cancel')" severity="secondary" @click="cancelInlinePicker" />
-          <Button :label="$t('common.confirm')" @click="confirmInlinePicker" :loading="inlinePickerSaving" />
-        </div>
-      </template>
-    </Dialog>
+    <TranslatablePicker
+      v-model="inlineTranslations"
+      :show="inlineTranslatableDialog"
+      :loading="inlinePickerSaving"
+      :title="inlineTranslatableTitle"
+      :languages="availableLanguages"
+      :field-type="inlinePickerFieldMeta?.field_type"
+      @update:show="inlineTranslatableDialog = $event"
+      @confirm="confirmInlineTranslatable"
+      @cancel="cancelInlinePicker"
+    />
 
     <!-- Row Actions Menu (for persons) -->
     <Menu 
@@ -1025,9 +764,21 @@ import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import ObjectViewInDrawer from '@/components/object/ObjectViewInDrawer.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 
+// Pickers
+import {
+  IconPicker,
+  TagStylePicker,
+  SelectPicker,
+  CiCategoryPicker,
+  NumberPicker,
+  DateTimePicker,
+  TextPicker,
+  TextareaPicker,
+  TranslatablePicker
+} from '@/components/pickers'
+
 // Utils
-import { getTagStyle, getColorValue, getTagStyleOptions } from '@/utils/tagStyles'
-import { iconCategories, searchIcons } from '@/utils/primeIcons'
+import { getTagStyle, getColorValue } from '@/utils/tagStyles'
 import languagesService from '@/services/languagesService'
 
 // Props
@@ -1117,8 +868,6 @@ const inlinePickerFieldMeta = ref(null) // The field metadata (for translatable/
 const inlinePickerValue = ref(null) // The temporary selected value
 const inlinePickerSaving = ref(false)
 const inlinePickerIsExtended = ref(false) // Flag to track if editing extended field
-const iconSearchQuery = ref('')
-const tagStyleOptions = getTagStyleOptions()
 
 // CI Categories for selector
 const ciCategories = ref([])
@@ -1342,10 +1091,6 @@ const paginationTemplate = computed(() => {
   return templates[locale.value] || templates.en
 })
 
-// Filtered icons for inline picker
-const filteredIconsForInline = computed(() => {
-  return searchIcons(iconSearchQuery.value)
-})
 
 // Title for translatable dialog
 const inlineTranslatableTitle = computed(() => {
