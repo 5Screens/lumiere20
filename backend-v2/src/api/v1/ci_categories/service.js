@@ -17,28 +17,42 @@ const getAll = async ({ activeOnly = true, locale = 'en' } = {}) => {
     orderBy: { display_order: 'asc' }
   });
   
-  // Get translations for all categories
+  // Get ALL translations for all categories (not just current locale)
   const categoryUuids = categories.map(c => c.uuid);
   const translations = await prisma.translated_fields.findMany({
     where: {
       entity_type: 'ci_categories',
-      entity_uuid: { in: categoryUuids },
-      locale
+      entity_uuid: { in: categoryUuids }
     }
   });
   
-  // Map translations to categories
+  // Map translations to categories - grouped by uuid, then by field_name, then by locale
   const translationMap = {};
+  const allTranslationsMap = {};
+  
   for (const t of translations) {
-    if (!translationMap[t.entity_uuid]) {
-      translationMap[t.entity_uuid] = {};
+    // For current locale display
+    if (t.locale === locale) {
+      if (!translationMap[t.entity_uuid]) {
+        translationMap[t.entity_uuid] = {};
+      }
+      translationMap[t.entity_uuid][t.field_name] = t.value;
     }
-    translationMap[t.entity_uuid][t.field_name] = t.value;
+    
+    // For _translations (all locales)
+    if (!allTranslationsMap[t.entity_uuid]) {
+      allTranslationsMap[t.entity_uuid] = {};
+    }
+    if (!allTranslationsMap[t.entity_uuid][t.field_name]) {
+      allTranslationsMap[t.entity_uuid][t.field_name] = {};
+    }
+    allTranslationsMap[t.entity_uuid][t.field_name][t.locale] = t.value;
   }
   
   return categories.map(cat => ({
     ...cat,
-    label: translationMap[cat.uuid]?.label || cat.label
+    label: translationMap[cat.uuid]?.label || cat.label,
+    _translations: allTranslationsMap[cat.uuid] || {}
   }));
 };
 
@@ -331,27 +345,42 @@ const search = async (filters, locale = 'en') => {
     prisma.ci_categories.count({ where })
   ]);
   
-  // Get translations
+  // Get ALL translations (not just current locale)
   const categoryUuids = categories.map(c => c.uuid);
   const translations = await prisma.translated_fields.findMany({
     where: {
       entity_type: 'ci_categories',
-      entity_uuid: { in: categoryUuids },
-      locale
+      entity_uuid: { in: categoryUuids }
     }
   });
   
+  // Map translations - grouped by uuid, then by field_name, then by locale
   const translationMap = {};
+  const allTranslationsMap = {};
+  
   for (const t of translations) {
-    if (!translationMap[t.entity_uuid]) {
-      translationMap[t.entity_uuid] = {};
+    // For current locale display
+    if (t.locale === locale) {
+      if (!translationMap[t.entity_uuid]) {
+        translationMap[t.entity_uuid] = {};
+      }
+      translationMap[t.entity_uuid][t.field_name] = t.value;
     }
-    translationMap[t.entity_uuid][t.field_name] = t.value;
+    
+    // For _translations (all locales)
+    if (!allTranslationsMap[t.entity_uuid]) {
+      allTranslationsMap[t.entity_uuid] = {};
+    }
+    if (!allTranslationsMap[t.entity_uuid][t.field_name]) {
+      allTranslationsMap[t.entity_uuid][t.field_name] = {};
+    }
+    allTranslationsMap[t.entity_uuid][t.field_name][t.locale] = t.value;
   }
   
   const data = categories.map(cat => ({
     ...cat,
-    label: translationMap[cat.uuid]?.label || cat.label
+    label: translationMap[cat.uuid]?.label || cat.label,
+    _translations: allTranslationsMap[cat.uuid] || {}
   }));
   
   return { data, total };
