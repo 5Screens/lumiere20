@@ -96,7 +96,7 @@ import { iconCategories, searchIcons } from '@/utils/primeIcons'
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: [String, Number],
     default: null
   },
   show: {

@@ -44,7 +44,7 @@ import Button from 'primevue/button'
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: [String, Number],
     default: null
   },
   show: {
