@@ -65,6 +65,7 @@
         v-model:sortField="sortField"
         v-model:sortOrder="sortOrder"
         :value="items"
+        :size="tableSize"
         dataKey="uuid"
         :paginator="true"
         :rows="pageSize"
@@ -780,6 +781,7 @@ import {
 // Utils
 import { getTagStyle, getColorValue } from '@/utils/tagStyles'
 import languagesService from '@/services/languagesService'
+import { useResponsiveSize } from '@/composables'
 
 // Props
 const props = defineProps({
@@ -814,6 +816,7 @@ const fieldOptions = ref({}) // Cache for field options (including API-loaded on
 // Composables
 const toast = useToast()
 const { t, locale } = useI18n()
+const { tableSize, isMobile } = useResponsiveSize()
 
 // Refs
 const dt = ref()
