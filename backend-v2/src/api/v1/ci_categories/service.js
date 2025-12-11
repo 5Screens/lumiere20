@@ -209,25 +209,29 @@ const getByCode = async (code, locale = 'en') => {
  * Create a new CI category
  */
 const create = async (data) => {
-  const { translations, ...categoryData } = data;
+  const { _translations, ...categoryData } = data;
   
   const category = await prisma.ci_categories.create({
     data: categoryData
   });
   
-  // Create translations if provided
-  if (translations) {
-    for (const [locale, trans] of Object.entries(translations)) {
-      if (trans.label) {
-        await prisma.translated_fields.create({
-          data: {
-            entity_type: 'ci_categories',
-            entity_uuid: category.uuid,
-            field_name: 'label',
-            locale,
-            value: trans.label
-          }
-        });
+  // Create translations if provided (format: { fieldName: { locale: value } })
+  if (_translations) {
+    for (const [fieldName, locales] of Object.entries(_translations)) {
+      if (fieldName !== 'label') continue; // ci_categories only has label as translatable
+      
+      for (const [locale, value] of Object.entries(locales)) {
+        if (value !== null && value !== undefined && value !== '') {
+          await prisma.translated_fields.create({
+            data: {
+              entity_type: 'ci_categories',
+              entity_uuid: category.uuid,
+              field_name: fieldName,
+              locale,
+              value
+            }
+          });
+        }
       }
     }
   }
@@ -240,35 +244,39 @@ const create = async (data) => {
  * Update a CI category
  */
 const update = async (uuid, data) => {
-  const { translations, ...categoryData } = data;
+  const { _translations, ...categoryData } = data;
   
   const category = await prisma.ci_categories.update({
     where: { uuid },
     data: categoryData
   });
   
-  // Update translations if provided
-  if (translations) {
-    for (const [locale, trans] of Object.entries(translations)) {
-      if (trans.label) {
-        await prisma.translated_fields.upsert({
-          where: {
-            entity_type_entity_uuid_field_name_locale: {
+  // Update translations if provided (format: { fieldName: { locale: value } })
+  if (_translations) {
+    for (const [fieldName, locales] of Object.entries(_translations)) {
+      if (fieldName !== 'label') continue; // ci_categories only has label as translatable
+      
+      for (const [locale, value] of Object.entries(locales)) {
+        if (value !== null && value !== undefined && value !== '') {
+          await prisma.translated_fields.upsert({
+            where: {
+              entity_type_entity_uuid_field_name_locale: {
+                entity_type: 'ci_categories',
+                entity_uuid: uuid,
+                field_name: fieldName,
+                locale
+              }
+            },
+            update: { value },
+            create: {
               entity_type: 'ci_categories',
               entity_uuid: uuid,
-              field_name: 'label',
-              locale
+              field_name: fieldName,
+              locale,
+              value
             }
-          },
-          update: { value: trans.label },
-          create: {
-            entity_type: 'ci_categories',
-            entity_uuid: uuid,
-            field_name: 'label',
-            locale,
-            value: trans.label
-          }
-        });
+          });
+        }
       }
     }
   }
