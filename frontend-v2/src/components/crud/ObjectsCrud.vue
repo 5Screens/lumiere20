@@ -1363,6 +1363,10 @@ const openInlinePicker = (type, data, field, colMeta = null, isExtended = false)
   } else if (type === 'number') {
     inlineNumberDialog.value = true
   } else if (type === 'date' || type === 'datetime') {
+    // Convert ISO string to Date object for DatePicker
+    if (inlinePickerValue.value && typeof inlinePickerValue.value === 'string') {
+      inlinePickerValue.value = new Date(inlinePickerValue.value)
+    }
     inlineDateDialog.value = true
   } else if (type === 'translatable') {
     // Initialize translations from data._translations
