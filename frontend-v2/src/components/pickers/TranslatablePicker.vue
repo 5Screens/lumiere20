@@ -15,7 +15,7 @@
         class="flex flex-col gap-2"
       >
         <label :for="`trans-${lang.code}`" class="flex items-center gap-2 font-medium">
-          <span class="text-xl" :title="lang.name">{{ lang.flag }}</span>
+          <span :class="`fi fi-${lang.flag_code || lang.code}`" :title="lang.name"></span>
           <span>{{ lang.name }}</span>
         </label>
         

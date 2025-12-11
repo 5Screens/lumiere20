@@ -44,6 +44,7 @@ export async function getActiveLanguagesWithFlags() {
       code: lang.code,
       name: lang.name,
       name_en: lang.name_en,
+      flag_code: lang.flag_code,
       flag: getFlagEmoji(lang.flag_code)
     }))
   } catch (error) {
