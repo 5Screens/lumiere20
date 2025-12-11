@@ -34,8 +34,8 @@
             v-for="icon in filteredIcons"
             :key="icon"
             type="button"
-            class="icon-item p-3 rounded-lg border-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
-            :class="localValue === icon ? 'bg-primary-100 dark:bg-primary-900/40 border-primary-500 ring-2 ring-primary-500/30' : 'border-surface-200 dark:border-surface-700'"
+            class="icon-item p-3 rounded-lg border-2 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-700 transition-all cursor-pointer flex flex-col items-center gap-1"
+            :class="localValue === icon ? 'bg-green-100 dark:bg-green-900/40 border-green-500 ring-2 ring-green-500/30' : 'border-surface-200 dark:border-surface-700'"
             @click="selectIcon(icon)"
           >
             <i :class="`pi ${icon} text-xl`" />
@@ -56,8 +56,8 @@
               v-for="icon in category.icons"
               :key="icon"
               type="button"
-              class="icon-item p-3 rounded-lg border-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer flex flex-col items-center gap-1"
-              :class="localValue === icon ? 'bg-primary-100 dark:bg-primary-900/40 border-primary-500 ring-2 ring-primary-500/30' : 'border-surface-200 dark:border-surface-700'"
+              class="icon-item p-3 rounded-lg border-2 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-700 transition-all cursor-pointer flex flex-col items-center gap-1"
+              :class="localValue === icon ? 'bg-green-100 dark:bg-green-900/40 border-green-500 ring-2 ring-green-500/30' : 'border-surface-200 dark:border-surface-700'"
               @click="selectIcon(icon)"
             >
               <i :class="`pi ${icon} text-xl`" />
