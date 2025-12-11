@@ -209,23 +209,18 @@
           <template #body="{ data }">
             <!-- Boolean -->
             <template v-if="col.field_type === 'boolean'">
-              <template v-if="col.is_extended">
-                <i :class="data.extended_core_fields?.[col.field_name] ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
-              </template>
-              <template v-else>
-                <i :class="data[col.field_name] ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
-              </template>
+              <i :class="getFieldValue(data, col) ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
             </template>
             <!-- Select with Tag and color -->
             <template v-else-if="col.field_type === 'select'">
               <template v-if="col.is_extended">
                 <!-- Extended field select -->
                 <Tag 
-                  v-if="data.extended_core_fields?.[col.field_name]"
-                  :value="getExtendedSelectLabel(col, data.extended_core_fields[col.field_name])"
+                  v-if="getFieldValue(data, col)"
+                  :value="getExtendedSelectLabel(col, getFieldValue(data, col))"
                 >
                   <template #default>
-                    <span>{{ getExtendedSelectLabel(col, data.extended_core_fields[col.field_name]) }}</span>
+                    <span>{{ getExtendedSelectLabel(col, getFieldValue(data, col)) }}</span>
                   </template>
                 </Tag>
                 <span v-else>-</span>
@@ -233,71 +228,66 @@
               <template v-else>
                 <!-- Regular field select -->
                 <Tag 
-                  :value="formatCellValue(data[col.field_name], col)"
-                  :style="getTagStyle(getOptionByValue(col, data[col.field_name])?.color)"
+                  v-if="getFieldValue(data, col)"
+                  :value="formatCellValue(getFieldValue(data, col), col)"
+                  :style="getTagStyle(getOptionByValue(col, getFieldValue(data, col))?.color)"
                 >
                   <template #default>
                     <div class="flex items-center gap-2">
                       <i 
-                        v-if="getOptionByValue(col, data[col.field_name])?.icon" 
-                        :class="['pi', getOptionByValue(col, data[col.field_name])?.icon]" 
+                        v-if="getOptionByValue(col, getFieldValue(data, col))?.icon" 
+                        :class="['pi', getOptionByValue(col, getFieldValue(data, col))?.icon]" 
                       />
-                      <span>{{ formatCellValue(data[col.field_name], col) }}</span>
+                      <span>{{ formatCellValue(getFieldValue(data, col), col) }}</span>
                     </div>
                   </template>
                 </Tag>
+                <span v-else>-</span>
               </template>
             </template>
             <!-- Date/Datetime -->
             <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
-              <template v-if="col.is_extended">
-                {{ formatDate(data.extended_core_fields?.[col.field_name]) }}
-              </template>
-              <template v-else>
-                {{ formatDate(data[col.field_name]) }}
-              </template>
+              {{ formatDate(getFieldValue(data, col)) }}
             </template>
             <!-- Textarea (truncated) - with translation support -->
             <template v-else-if="col.field_type === 'textarea'">
               <span class="block max-w-xs truncate">
-                {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (data[col.field_name] || '-') }}
+                {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (getFieldValue(data, col) || '-') }}
               </span>
             </template>
             <!-- Tag Style display -->
             <template v-else-if="col.field_type === 'tag_style'">
               <Tag 
-                v-if="data[col.field_name]"
-                :style="getTagStyle(data[col.field_name])"
+                v-if="getFieldValue(data, col)"
+                :style="getTagStyle(getFieldValue(data, col))"
               >
-                {{ data[col.field_name] }}
+                {{ getFieldValue(data, col) }}
               </Tag>
               <span v-else>-</span>
             </template>
             <!-- Icon display -->
             <template v-else-if="col.field_type === 'icon_picker'">
-              <div v-if="data[col.field_name]" class="flex items-center gap-2">
-                <i :class="`pi ${data[col.field_name]}`" />
-                <span class="text-sm text-surface-500">{{ data[col.field_name] }}</span>
+              <div v-if="getFieldValue(data, col)" class="flex items-center gap-2">
+                <i :class="`pi ${getFieldValue(data, col)}`" />
+                <span class="text-sm text-surface-500">{{ getFieldValue(data, col) }}</span>
               </div>
               <span v-else>-</span>
             </template>
             <!-- CI Category display -->
             <template v-else-if="col.field_type === 'ci_category'">
-              <div v-if="data[col.field_name]" class="flex items-center gap-2">
-                <i :class="`pi ${getCategoryIcon(data[col.field_name])}`" />
-                <span>{{ getCategoryLabel(data[col.field_name]) }}</span>
+              <div v-if="getFieldValue(data, col)" class="flex items-center gap-2">
+                <i :class="`pi ${getCategoryIcon(getFieldValue(data, col))}`" />
+                <span>{{ getCategoryLabel(getFieldValue(data, col)) }}</span>
               </div>
               <span v-else>-</span>
             </template>
             <!-- Default text - with translation support -->
             <template v-else>
-              <!-- Extended fields: read from extended_core_fields -->
               <template v-if="col.is_extended">
                 {{ getExtendedCellValue(data, col) }}
               </template>
-              <!-- Regular fields -->
               <template v-else>
-                {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (data[col.field_name] ?? '-') }}
+                {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (getFieldValue(data, col) ?? '-') }}
               </template>
             </template>
           </template>
@@ -426,86 +416,35 @@
               </template>
               <!-- Icon picker editor -->
               <template v-else-if="col.field_type === 'icon_picker'">
-                <Button
-                  type="button"
-                  severity="secondary"
-                  outlined
-                  size="small"
-                  class="w-full justify-between"
-                  @click="openInlinePicker('icon', data, field)"
-                >
-                  <template #default>
-                    <div class="flex items-center gap-2">
-                      <template v-if="data[field]">
-                        <i :class="`pi ${data[field]}`" />
-                        <span class="text-sm">{{ data[field] }}</span>
-                      </template>
-                      <span v-else class="text-surface-400">{{ $t('common.selectIcon') }}</span>
-                    </div>
-                    <i class="pi pi-pencil text-surface-400 ml-2" />
+                <InlinePickerButton :placeholder="$t('common.selectIcon')" @click="openInlinePicker('icon', data, field)">
+                  <template v-if="data[field]">
+                    <i :class="`pi ${data[field]}`" />
+                    <span class="text-sm">{{ data[field] }}</span>
                   </template>
-                </Button>
+                </InlinePickerButton>
               </template>
               <!-- Tag style editor -->
               <template v-else-if="col.field_type === 'tag_style'">
-                <Button
-                  type="button"
-                  severity="secondary"
-                  outlined
-                  size="small"
-                  class="w-full justify-between"
-                  @click="openInlinePicker('tag_style', data, field)"
-                >
-                  <template #default>
-                    <div class="flex items-center gap-2">
-                      <Tag v-if="data[field]" :style="getTagStyle(data[field])" class="text-sm">
-                        {{ data[field] }}
-                      </Tag>
-                      <span v-else class="text-surface-400">{{ $t('common.selectTagStyle') }}</span>
-                    </div>
-                    <i class="pi pi-pencil text-surface-400 ml-2" />
-                  </template>
-                </Button>
+                <InlinePickerButton :placeholder="$t('common.selectTagStyle')" @click="openInlinePicker('tag_style', data, field)">
+                  <Tag v-if="data[field]" :style="getTagStyle(data[field])" class="text-sm">
+                    {{ data[field] }}
+                  </Tag>
+                </InlinePickerButton>
               </template>
               <!-- CI Category editor -->
               <template v-else-if="col.field_type === 'ci_category'">
-                <Button
-                  type="button"
-                  severity="secondary"
-                  outlined
-                  size="small"
-                  class="w-full justify-between"
-                  @click="openInlinePicker('ci_category', data, field)"
-                >
-                  <template #default>
-                    <div class="flex items-center gap-2">
-                      <template v-if="data[field]">
-                        <i :class="`pi ${getCategoryIcon(data[field])}`" />
-                        <span class="text-sm">{{ getCategoryLabel(data[field]) }}</span>
-                      </template>
-                      <span v-else class="text-surface-400">{{ $t('ciCategories.selectCategory') }}</span>
-                    </div>
-                    <i class="pi pi-pencil text-surface-400 ml-2" />
+                <InlinePickerButton :placeholder="$t('ciCategories.selectCategory')" @click="openInlinePicker('ci_category', data, field)">
+                  <template v-if="data[field]">
+                    <i :class="`pi ${getCategoryIcon(data[field])}`" />
+                    <span class="text-sm">{{ getCategoryLabel(data[field]) }}</span>
                   </template>
-                </Button>
+                </InlinePickerButton>
               </template>
               <!-- Translatable field editor -->
               <template v-else-if="col.is_translatable">
-                <Button
-                  type="button"
-                  severity="secondary"
-                  outlined
-                  size="small"
-                  class="w-full justify-between"
-                  @click="openInlinePicker('translatable', data, field, col)"
-                >
-                  <template #default>
-                    <span class="truncate text-left flex-1">
-                      {{ getTranslatedValue(data, field) }}
-                    </span>
-                    <i class="pi pi-pencil text-surface-400 ml-2" />
-                  </template>
-                </Button>
+                <InlinePickerButton @click="openInlinePicker('translatable', data, field, col)">
+                  <span class="truncate text-left">{{ getTranslatedValue(data, field) }}</span>
+                </InlinePickerButton>
               </template>
               <!-- Default text editor -->
               <template v-else>
@@ -954,6 +893,7 @@ import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
 import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import ObjectViewInDrawer from '@/components/object/ObjectViewInDrawer.vue'
+import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 
 // Utils
 import { getTagStyle, getColorValue, getTagStyleOptions } from '@/utils/tagStyles'
@@ -2008,6 +1948,15 @@ const getTranslatedValue = (data, fieldName) => {
 }
 
 // Note: getTagStyle and getColorValue are now imported from @/utils/tagStyles
+
+// Helper to get field value (handles both regular and extended fields)
+const getFieldValue = (data, col) => {
+  if (!data) return null
+  if (col.is_extended) {
+    return data.extended_core_fields?.[col.field_name] ?? null
+  }
+  return data[col.field_name] ?? null
+}
 
 // Get value from extended_core_fields for table display
 const getExtendedCellValue = (data, col) => {
