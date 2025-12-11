@@ -37,7 +37,7 @@ import InputNumber from 'primevue/inputnumber'
 
 const props = defineProps({
   modelValue: {
-    type: Number,
+    type: [Number, String],
     default: null
   },
   show: {

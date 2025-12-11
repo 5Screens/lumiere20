@@ -36,7 +36,7 @@ import DatePicker from 'primevue/datepicker'
 
 const props = defineProps({
   modelValue: {
-    type: [Date, String],
+    type: [Date, String, Number],
     default: null
   },
   show: {

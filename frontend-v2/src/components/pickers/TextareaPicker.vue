@@ -35,7 +35,7 @@ import Textarea from 'primevue/textarea'
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: [String, Number],
     default: null
   },
   show: {

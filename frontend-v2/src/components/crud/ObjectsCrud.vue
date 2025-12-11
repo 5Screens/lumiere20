@@ -1161,7 +1161,6 @@ const openInlinePicker = (type, data, field, colMeta = null, isExtended = false)
   }
   
   if (type === 'icon') {
-    iconSearchQuery.value = ''
     inlineIconDialog.value = true
   } else if (type === 'tag_style') {
     inlineTagStyleDialog.value = true
