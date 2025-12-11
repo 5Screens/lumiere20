@@ -247,7 +247,7 @@
             </template>
             <!-- Date/Datetime -->
             <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
-              {{ formatDate(getFieldValue(data, col)) }}
+              {{ formatDate(getFieldValue(data, col), col.field_type === 'datetime') }}
             </template>
             <!-- Textarea (truncated) - with translation support -->
             <template v-else-if="col.field_type === 'textarea'">
@@ -328,7 +328,7 @@
               <!-- Datetime editor for extended fields -->
               <template v-else-if="col.field_type === 'datetime'">
                 <InlinePickerButton :placeholder="$t('common.selectDate')" @click="openInlinePicker('datetime', data, col.field_name, col, true)">
-                  <span v-if="data.extended_core_fields?.[col.field_name]" class="text-sm">{{ formatDate(data.extended_core_fields?.[col.field_name]) }}</span>
+                  <span v-if="data.extended_core_fields?.[col.field_name]" class="text-sm">{{ formatDate(data.extended_core_fields?.[col.field_name], true) }}</span>
                 </InlinePickerButton>
               </template>
               <!-- Default text editor for extended fields -->
@@ -380,7 +380,7 @@
               <!-- Datetime editor -->
               <template v-else-if="col.field_type === 'datetime'">
                 <InlinePickerButton :placeholder="$t('common.selectDate')" @click="openInlinePicker('datetime', data, field, col)">
-                  <span v-if="data[field]" class="text-sm">{{ formatDate(data[field]) }}</span>
+                  <span v-if="data[field]" class="text-sm">{{ formatDate(data[field], true) }}</span>
                 </InlinePickerButton>
               </template>
               <!-- Icon picker editor -->
@@ -2013,10 +2013,13 @@ const exportCSV = () => {
   dt.value.exportCSV()
 }
 
-const formatDate = (dateString) => {
+const formatDate = (dateString, showTime = false) => {
   if (!dateString) return '-'
   const date = new Date(dateString)
-  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+  if (showTime) {
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+  }
+  return date.toLocaleDateString()
 }
 
 // Format cell value based on field type
@@ -2025,6 +2028,7 @@ const formatCellValue = (value, field) => {
   
   switch (field.field_type) {
     case 'datetime':
+      return formatDate(value, true)
     case 'date':
       return formatDate(value)
     case 'boolean':
@@ -2103,8 +2107,9 @@ const getExtendedCellValue = (data, col) => {
     case 'boolean':
       return value ? t('common.yes') : t('common.no')
     case 'date':
-    case 'datetime':
       return formatDate(value)
+    case 'datetime':
+      return formatDate(value, true)
     default:
       return value
   }
