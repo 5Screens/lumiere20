@@ -169,23 +169,36 @@ const getByUuid = async (uuid, locale = 'en') => {
   
   if (!category) return null;
   
-  // Get translations
+  // Get ALL translations (not just current locale)
   const translations = await prisma.translated_fields.findMany({
     where: {
       entity_type: 'ci_categories',
-      entity_uuid: uuid,
-      locale
+      entity_uuid: uuid
     }
   });
   
+  // Map translations for current locale display
   const translationMap = {};
+  // Map all translations for _translations
+  const allTranslationsMap = {};
+  
   for (const t of translations) {
-    translationMap[t.field_name] = t.value;
+    // For current locale display
+    if (t.locale === locale) {
+      translationMap[t.field_name] = t.value;
+    }
+    
+    // For _translations (all locales)
+    if (!allTranslationsMap[t.field_name]) {
+      allTranslationsMap[t.field_name] = {};
+    }
+    allTranslationsMap[t.field_name][t.locale] = t.value;
   }
   
   return {
     ...category,
-    label: translationMap.label || category.label
+    label: translationMap.label || category.label,
+    _translations: allTranslationsMap
   };
 };
 
@@ -199,23 +212,36 @@ const getByCode = async (code, locale = 'en') => {
   
   if (!category) return null;
   
-  // Get translations
+  // Get ALL translations (not just current locale)
   const translations = await prisma.translated_fields.findMany({
     where: {
       entity_type: 'ci_categories',
-      entity_uuid: category.uuid,
-      locale
+      entity_uuid: category.uuid
     }
   });
   
+  // Map translations for current locale display
   const translationMap = {};
+  // Map all translations for _translations
+  const allTranslationsMap = {};
+  
   for (const t of translations) {
-    translationMap[t.field_name] = t.value;
+    // For current locale display
+    if (t.locale === locale) {
+      translationMap[t.field_name] = t.value;
+    }
+    
+    // For _translations (all locales)
+    if (!allTranslationsMap[t.field_name]) {
+      allTranslationsMap[t.field_name] = {};
+    }
+    allTranslationsMap[t.field_name][t.locale] = t.value;
   }
   
   return {
     ...category,
-    label: translationMap.label || category.label
+    label: translationMap.label || category.label,
+    _translations: allTranslationsMap
   };
 };
 

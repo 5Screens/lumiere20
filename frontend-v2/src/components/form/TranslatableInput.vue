@@ -17,60 +17,17 @@
       </template>
     </Button>
 
-    <!-- Dialog for editing translations -->
-    <Dialog
-      v-model:visible="dialogVisible"
-      modal
-      :header="dialogTitle"
-      :style="{ width: '500px' }"
-      :draggable="false"
-    >
-      <div class="flex flex-col gap-4">
-        <!-- One field per language -->
-        <div 
-          v-for="lang in availableLanguages" 
-          :key="lang.code"
-          class="flex flex-col gap-2"
-        >
-          <label :for="`trans-${lang.code}`" class="flex items-center gap-2 font-medium">
-            <span class="flag-circle" :title="lang.name">{{ lang.flag }}</span>
-            <span>{{ lang.name }}</span>
-          </label>
-          
-          <!-- Textarea for multiline -->
-          <Textarea
-            v-if="multiline"
-            :id="`trans-${lang.code}`"
-            v-model="tempTranslations[lang.code]"
-            rows="3"
-            class="w-full"
-            :placeholder="`${lang.name}...`"
-          />
-          <!-- InputText for single line -->
-          <InputText
-            v-else
-            :id="`trans-${lang.code}`"
-            v-model="tempTranslations[lang.code]"
-            class="w-full"
-            :placeholder="`${lang.name}...`"
-          />
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button 
-            :label="$t('common.cancel')" 
-            severity="secondary" 
-            @click="cancelDialog" 
-          />
-          <Button 
-            :label="$t('common.confirm')" 
-            @click="confirmDialog" 
-          />
-        </div>
-      </template>
-    </Dialog>
+    <!-- Use TranslatablePicker for editing translations -->
+    <TranslatablePicker
+      v-model="tempTranslations"
+      :show="dialogVisible"
+      :title="dialogTitle"
+      :languages="availableLanguages"
+      :field-type="multiline ? 'textarea' : 'text'"
+      @update:show="dialogVisible = $event"
+      @confirm="confirmDialog"
+      @cancel="dialogVisible = false"
+    />
   </div>
 </template>
 
@@ -78,9 +35,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
-import InputText from 'primevue/inputtext'
-import Textarea from 'primevue/textarea'
+import { TranslatablePicker } from '@/components/pickers'
 import languagesService from '@/services/languagesService'
 
 const props = defineProps({
@@ -177,16 +132,11 @@ const openDialog = () => {
   dialogVisible.value = true
 }
 
-// Cancel and close dialog
-const cancelDialog = () => {
-  dialogVisible.value = false
-}
-
 // Confirm and emit changes
-const confirmDialog = () => {
+const confirmDialog = (translations) => {
   // Build clean translations object (remove empty values)
   const cleanTranslations = {}
-  for (const [code, value] of Object.entries(tempTranslations.value)) {
+  for (const [code, value] of Object.entries(translations)) {
     if (value && value.trim()) {
       cleanTranslations[code] = value.trim()
     }
