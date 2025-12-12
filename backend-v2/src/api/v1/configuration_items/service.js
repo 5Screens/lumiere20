@@ -234,7 +234,7 @@ const getAll = async (options = {}) => {
 };
 
 /**
- * Get configuration item by UUID
+ * Get configuration item by UUID with translations
  * @param {string} uuid - Configuration item UUID
  * @returns {Promise<Object|null>} - Configuration item or null
  */
@@ -251,7 +251,27 @@ const getById = async (uuid) => {
       return null;
     }
 
-    return item;
+    // Get ALL translations for this item
+    const translations = await prisma.translated_fields.findMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        entity_uuid: uuid
+      }
+    });
+
+    // Build _translations object: { fieldName: { locale: value } }
+    const allTranslationsMap = {};
+    for (const t of translations) {
+      if (!allTranslationsMap[t.field_name]) {
+        allTranslationsMap[t.field_name] = {};
+      }
+      allTranslationsMap[t.field_name][t.locale] = t.value;
+    }
+
+    return {
+      ...item,
+      _translations: allTranslationsMap
+    };
   } catch (error) {
     logger.error('[CONFIGURATION_ITEMS] Error getting by ID:', error);
     throw error;

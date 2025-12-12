@@ -214,6 +214,8 @@ const loadItem = async () => {
     // Load item by UUID
     if (service.value.getByUuid) {
       item.value = await service.value.getByUuid(props.objectId)
+      console.log('[ObjectViewInTab] loadItem - item loaded:', JSON.stringify(item.value, null, 2))
+      console.log('[ObjectViewInTab] loadItem - _translations:', JSON.stringify(item.value?._translations, null, 2))
     } else if (service.value.get) {
       item.value = await service.value.get(props.objectId)
     } else {

@@ -116,6 +116,10 @@ const displayValue = computed(() => {
 
 // Open dialog and initialize temp values
 const openDialog = () => {
+  // DEBUG: Log received translations
+  console.log('[TranslatableInput] openDialog - props.translations:', JSON.stringify(props.translations))
+  console.log('[TranslatableInput] openDialog - props.modelValue:', props.modelValue)
+  
   // Initialize temp translations from props
   tempTranslations.value = {}
   
