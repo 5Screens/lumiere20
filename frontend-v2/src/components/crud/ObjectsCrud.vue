@@ -521,6 +521,7 @@
         :extended-fields-loading="extendedFieldsLoading"
         :refreshing-field="refreshingField"
         :mode="dialogMode"
+        :forced-ci-type-uuid="ciTypeUuid"
         @ci-type-change="handleCiTypeChange"
         @refresh-options="refreshFieldOptions"
       />
@@ -798,6 +799,8 @@ const props = defineProps({
     default: null
   }
 })
+
+console.log('[ObjectsCrud] Component mounted with props:', { objectType: props.objectType, tabId: props.tabId, ciTypeUuid: props.ciTypeUuid })
 
 // Stores
 const tabsStore = useTabsStore()
@@ -1527,9 +1530,11 @@ const handleResetPassword = async () => {
 
 // Load CI types for the select dropdown
 const loadCiTypes = async () => {
+  console.log('[ObjectsCrud] loadCiTypes called, ciTypesLoaded:', ciTypesLoaded.value, 'isConfigurationItems:', isConfigurationItems.value)
   if (ciTypesLoaded.value || !isConfigurationItems.value) return
   try {
     const data = await ciTypesService.getAll()
+    console.log('[ObjectsCrud] loadCiTypes - raw data from API:', data)
     ciTypes.value = data.map(ct => ({
       value: ct.code,
       label: ct._translations?.label?.[locale.value] || ct.label,
@@ -1537,6 +1542,7 @@ const loadCiTypes = async () => {
       icon: ct.icon,
       color: ct.color
     }))
+    console.log('[ObjectsCrud] loadCiTypes - mapped ciTypes:', ciTypes.value)
     ciTypesLoaded.value = true
   } catch (error) {
     console.error('Failed to load CI types:', error)
@@ -1660,19 +1666,20 @@ const openCreateDialog = async () => {
   if (isConfigurationItems.value) {
     defaults.extended_core_fields = {}
     
-    console.log('[ObjectsCrud] openCreateDialog - ciTypeUuid:', props.ciTypeUuid)
-    console.log('[ObjectsCrud] openCreateDialog - ciTypes.value:', ciTypes.value.map(t => ({ uuid: t.uuid, code: t.code })))
+    console.log('[ObjectsCrud] openCreateDialog - props.ciTypeUuid:', props.ciTypeUuid)
+    console.log('[ObjectsCrud] openCreateDialog - ciTypes.value:', JSON.stringify(ciTypes.value, null, 2))
     
     // If ciTypeUuid is set, find the corresponding code
     if (props.ciTypeUuid && ciTypes.value.length > 0) {
       const matchingType = ciTypes.value.find(t => t.uuid === props.ciTypeUuid)
-      console.log('[ObjectsCrud] openCreateDialog - matchingType:', matchingType)
-      defaults.ci_type = matchingType?.code || 'GENERIC'
+      console.log('[ObjectsCrud] openCreateDialog - matchingType found:', matchingType)
+      // Use 'value' property which contains the code
+      defaults.ci_type = matchingType?.value || 'GENERIC'
     } else {
       defaults.ci_type = 'GENERIC' // Default type
     }
     
-    console.log('[ObjectsCrud] openCreateDialog - defaults.ci_type:', defaults.ci_type)
+    console.log('[ObjectsCrud] openCreateDialog - defaults.ci_type set to:', defaults.ci_type)
   }
   
   editItem.value = defaults

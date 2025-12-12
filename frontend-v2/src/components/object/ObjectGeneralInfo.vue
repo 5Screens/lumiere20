@@ -85,7 +85,7 @@
           :options="getFieldOptions(field)" 
           optionLabel="label" 
           optionValue="value" 
-          :disabled="field.is_readonly"
+          :disabled="field.is_readonly || isFieldDisabled(field)"
           fluid
         >
           <template #value="slotProps">
@@ -221,6 +221,11 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  // Forced CI type UUID (disables ci_type field when set)
+  forcedCiTypeUuid: {
+    type: String,
+    default: null
   }
 })
 
@@ -261,5 +266,14 @@ const getFieldOptions = (field) => {
 const getOptionByValue = (field, value) => {
   const options = getFieldOptions(field)
   return options.find(o => o.value === value)
+}
+
+// Check if a field should be disabled (e.g., ci_type when forcedCiTypeUuid is set)
+const isFieldDisabled = (field) => {
+  // Disable ci_type field when forcedCiTypeUuid is set
+  if (field.field_name === 'ci_type' && props.forcedCiTypeUuid) {
+    return true
+  }
+  return false
 }
 </script>

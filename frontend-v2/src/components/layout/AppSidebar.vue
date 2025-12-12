@@ -102,6 +102,7 @@ watch(locale, () => {
  * Opens a tab for the given object type
  */
 const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud', ciTypeUuid = null) => {
+  console.log('[AppSidebar] openTab called:', { id, label, objectType, component, ciTypeUuid })
   tabsStore.openTab({
     id,
     label,

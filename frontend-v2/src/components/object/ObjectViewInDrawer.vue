@@ -22,6 +22,7 @@
             :formFields="formFields"
             :fieldOptions="fieldOptions"
             :loading="false"
+            :forced-ci-type-uuid="forcedCiTypeUuid"
           />
         </TabPanel>
 
@@ -100,6 +101,11 @@ const props = defineProps({
   mode: {
     type: String,
     default: 'create'
+  },
+  // Forced CI type UUID (when creating from a filtered tab)
+  forcedCiTypeUuid: {
+    type: String,
+    default: null
   }
 })
 
