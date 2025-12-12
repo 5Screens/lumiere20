@@ -204,7 +204,7 @@
           :header="col.is_extended ? col.label : $t(col.label_key)" 
           :sortable="col.is_sortable"
           :dataType="col.data_type === 'date' ? 'date' : undefined"
-          :style="col.min_width ? `min-width: ${col.min_width}` : undefined"
+          :style="`min-width: ${col.min_width || '10rem'}`"
         >
           <!-- Body template based on field type -->
           <template #body="{ data }">
