@@ -137,7 +137,6 @@ const changeLanguage = (code) => {
   locale.value = code
   localStorage.setItem('locale', code)
   metadataService.clearCache()
-  router.go(0)
 }
 
 // Search
