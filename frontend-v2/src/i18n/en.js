@@ -231,7 +231,9 @@ export default {
     extendedFields: 'Extended Fields',
     changeTypeTitle: 'Change Type',
     changeTypeWarning: 'Warning: CI type change',
-    changeTypeDescription: 'The current extended field values will be lost because the new type has different fields. Do you want to continue?'
+    changeTypeDescription: 'The current extended field values will be lost because the new type has different fields. Do you want to continue?',
+    noExtendedFields: 'No extended fields available',
+    selectCiTypeHint: 'Select a CI type to display extended fields'
   },
   entities: {
     title: 'Entities',

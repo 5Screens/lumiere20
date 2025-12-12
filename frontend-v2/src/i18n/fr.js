@@ -231,7 +231,9 @@ export default {
     extendedFields: 'Champs étendus',
     changeTypeTitle: 'Changement de type',
     changeTypeWarning: 'Attention : changement de type de CI',
-    changeTypeDescription: 'Les valeurs des champs étendus actuels seront perdues car le nouveau type a des champs différents. Voulez-vous continuer ?'
+    changeTypeDescription: 'Les valeurs des champs étendus actuels seront perdues car le nouveau type a des champs différents. Voulez-vous continuer ?',
+    noExtendedFields: 'Aucun champ étendu disponible',
+    selectCiTypeHint: 'Sélectionnez un type de CI pour afficher les champs étendus'
   },
   entities: {
     title: 'Entités',
