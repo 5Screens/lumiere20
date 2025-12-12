@@ -85,6 +85,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'update:show', 'confirm', 'cancel'])
 
 const localTranslations = ref({})
+const initialTranslations = ref({})
 
 const visible = computed({
   get: () => props.show,
@@ -95,10 +96,19 @@ const visible = computed({
 watch(() => props.show, (newVal) => {
   if (newVal) {
     localTranslations.value = { ...props.modelValue }
+    initialTranslations.value = { ...props.modelValue }
   }
 })
 
 const onConfirm = () => {
+  // Skip if no change (deep compare translations object)
+  const hasChanged = Object.keys({ ...localTranslations.value, ...initialTranslations.value }).some(
+    key => localTranslations.value[key] !== initialTranslations.value[key]
+  )
+  if (!hasChanged) {
+    visible.value = false
+    return
+  }
   emit('update:modelValue', { ...localTranslations.value })
   emit('confirm', { ...localTranslations.value })
 }

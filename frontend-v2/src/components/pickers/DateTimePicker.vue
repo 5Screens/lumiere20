@@ -60,6 +60,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'update:show', 'confirm', 'cancel'])
 
 const localValue = ref(null)
+const initialValue = ref(null)
 
 const visible = computed({
   get: () => props.show,
@@ -72,13 +73,22 @@ watch(() => props.show, (newVal) => {
     // Convert ISO string to Date object if needed
     if (props.modelValue && typeof props.modelValue === 'string') {
       localValue.value = new Date(props.modelValue)
+      initialValue.value = new Date(props.modelValue)
     } else {
       localValue.value = props.modelValue
+      initialValue.value = props.modelValue
     }
   }
 })
 
 const onConfirm = () => {
+  // Skip if no change (compare timestamps for Date objects)
+  const localTime = localValue.value?.getTime?.() ?? localValue.value
+  const initialTime = initialValue.value?.getTime?.() ?? initialValue.value
+  if (localTime === initialTime) {
+    visible.value = false
+    return
+  }
   emit('update:modelValue', localValue.value)
   emit('confirm', localValue.value)
 }

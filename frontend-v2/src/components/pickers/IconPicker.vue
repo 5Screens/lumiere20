@@ -113,6 +113,7 @@ const emit = defineEmits(['update:modelValue', 'update:show', 'confirm', 'cancel
 
 const searchQuery = ref('')
 const localValue = ref(null)
+const initialValue = ref(null)
 
 const visible = computed({
   get: () => props.show,
@@ -122,21 +123,24 @@ const visible = computed({
 const filteredIcons = computed(() => searchIcons(searchQuery.value))
 
 const selectIcon = (icon) => {
-  console.log('[IconPicker] selectIcon called with:', icon)
-  console.log('[IconPicker] localValue before:', localValue.value)
   localValue.value = icon
-  console.log('[IconPicker] localValue after:', localValue.value)
 }
 
 // Sync local value with prop when dialog opens
 watch(() => props.show, (newVal) => {
   if (newVal) {
     localValue.value = props.modelValue
+    initialValue.value = props.modelValue
     searchQuery.value = ''
   }
 })
 
 const onConfirm = () => {
+  // Skip if no change
+  if (localValue.value === initialValue.value) {
+    visible.value = false
+    return
+  }
   emit('update:modelValue', localValue.value)
   emit('confirm', localValue.value)
 }

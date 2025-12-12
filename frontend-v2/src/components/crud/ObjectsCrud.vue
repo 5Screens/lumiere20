@@ -1231,17 +1231,6 @@ const confirmInlinePicker = async () => {
   const newValue = inlinePickerValue.value
   const isExtended = inlinePickerIsExtended.value
   
-  // Get old value based on field type
-  const oldValue = isExtended 
-    ? data.extended_core_fields?.[field] 
-    : data[field]
-  
-  // Skip if no change
-  if (oldValue === newValue) {
-    cancelInlinePicker()
-    return
-  }
-  
   try {
     inlinePickerSaving.value = true
     const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'

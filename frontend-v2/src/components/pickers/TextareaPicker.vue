@@ -55,6 +55,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'update:show', 'confirm', 'cancel'])
 
 const localValue = ref(null)
+const initialValue = ref(null)
 
 const visible = computed({
   get: () => props.show,
@@ -65,10 +66,16 @@ const visible = computed({
 watch(() => props.show, (newVal) => {
   if (newVal) {
     localValue.value = props.modelValue
+    initialValue.value = props.modelValue
   }
 })
 
 const onConfirm = () => {
+  // Skip if no change
+  if (localValue.value === initialValue.value) {
+    visible.value = false
+    return
+  }
   emit('update:modelValue', localValue.value)
   emit('confirm', localValue.value)
 }
