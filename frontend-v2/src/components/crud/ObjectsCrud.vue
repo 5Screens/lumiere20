@@ -1358,11 +1358,6 @@ const loadItems = async (pageNum = null) => {
       searchParams.ciTypeUuid = props.ciTypeUuid
     }
     
-    console.log('[ObjectsCrud] loadItems called')
-    console.log('[ObjectsCrud] props.objectType:', props.objectType)
-    console.log('[ObjectsCrud] props.ciTypeUuid:', props.ciTypeUuid)
-    console.log('[ObjectsCrud] searchParams:', JSON.stringify(searchParams, null, 2))
-    
     const result = await service.value.search(searchParams)
     items.value = result.data || []
     totalRecords.value = result.total || 0
@@ -1774,17 +1769,10 @@ const saveItem = async () => {
     saving.value = true
     const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'
     
-    // DEBUG: Log the data being sent
-    console.log('[ObjectsCrud] saveItem - dialogMode:', dialogMode.value)
-    console.log('[ObjectsCrud] saveItem - editItem.value:', JSON.stringify(editItem.value, null, 2))
-    console.log('[ObjectsCrud] saveItem - _translations:', JSON.stringify(editItem.value._translations, null, 2))
-    
     if (dialogMode.value === 'create') {
-      console.log('[ObjectsCrud] saveItem - Calling service.create with:', JSON.stringify(editItem.value, null, 2))
       await service.value.create(editItem.value)
       toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.created`), life: 3000 })
     } else {
-      console.log('[ObjectsCrud] saveItem - Calling service.update with:', JSON.stringify(editItem.value, null, 2))
       await service.value.update(editItem.value.uuid, editItem.value)
       toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
     }
@@ -1981,9 +1969,6 @@ const loadMetadata = async () => {
       // Separate table columns and form fields
       tableColumns.value = objectTypeMetadata.value.fields.filter(f => f.show_in_table)
       formFields.value = objectTypeMetadata.value.fields.filter(f => f.show_in_form)
-      
-      // DEBUG: Log form fields to check is_translatable
-      console.log('[ObjectsCrud] formFields loaded:', formFields.value.map(f => ({ field_name: f.field_name, is_translatable: f.is_translatable })))
       
       // Load options for all select fields (including API endpoints)
       const allFields = objectTypeMetadata.value.fields
