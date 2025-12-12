@@ -1647,7 +1647,9 @@ const openCreateDialog = async () => {
   }
   
   // Initialize with default values from form fields
-  const defaults = {}
+  const defaults = {
+    _translations: {} // Initialize translations object for translatable fields
+  }
   for (const field of formFields.value) {
     if (field.field_type === 'boolean') {
       defaults[field.field_name] = false
@@ -1696,6 +1698,11 @@ const openEditDialog = async (data) => {
   }
   
   editItem.value = { ...data }
+  
+  // Ensure _translations exists for translatable fields
+  if (!editItem.value._translations) {
+    editItem.value._translations = {}
+  }
   
   // Ensure extended_core_fields exists
   if (isConfigurationItems.value && !editItem.value.extended_core_fields) {
@@ -1766,16 +1773,25 @@ const saveItem = async () => {
   try {
     saving.value = true
     const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'
+    
+    // DEBUG: Log the data being sent
+    console.log('[ObjectsCrud] saveItem - dialogMode:', dialogMode.value)
+    console.log('[ObjectsCrud] saveItem - editItem.value:', JSON.stringify(editItem.value, null, 2))
+    console.log('[ObjectsCrud] saveItem - _translations:', JSON.stringify(editItem.value._translations, null, 2))
+    
     if (dialogMode.value === 'create') {
+      console.log('[ObjectsCrud] saveItem - Calling service.create with:', JSON.stringify(editItem.value, null, 2))
       await service.value.create(editItem.value)
       toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.created`), life: 3000 })
     } else {
+      console.log('[ObjectsCrud] saveItem - Calling service.update with:', JSON.stringify(editItem.value, null, 2))
       await service.value.update(editItem.value.uuid, editItem.value)
       toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
     }
     itemDialog.value = false
     await loadItems()
   } catch (error) {
+    console.error('[ObjectsCrud] saveItem - Error:', error)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to save item', life: 3000 })
   } finally {
     saving.value = false
@@ -1965,6 +1981,9 @@ const loadMetadata = async () => {
       // Separate table columns and form fields
       tableColumns.value = objectTypeMetadata.value.fields.filter(f => f.show_in_table)
       formFields.value = objectTypeMetadata.value.fields.filter(f => f.show_in_form)
+      
+      // DEBUG: Log form fields to check is_translatable
+      console.log('[ObjectsCrud] formFields loaded:', formFields.value.map(f => ({ field_name: f.field_name, is_translatable: f.is_translatable })))
       
       // Load options for all select fields (including API endpoints)
       const allFields = objectTypeMetadata.value.fields

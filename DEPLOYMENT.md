@@ -377,20 +377,17 @@ docker compose up -d
 
 ### Rebuild après modification du code
 
-```bash
-# Backend
+# 1A Backend
 docker compose build backend --no-cache && docker compose up -d backend
 
-# Frontend
+# 1B Frontend
 docker compose build frontend --no-cache && docker compose up -d frontend
 
-# Tout reconstruire (après un nouvel upload)
+# 1CTout reconstruire (après un nouvel upload)
 docker compose down
 docker compose build --no-cache
 docker compose up -d
-```
 
----
 
 ## Résolution de problèmes
 

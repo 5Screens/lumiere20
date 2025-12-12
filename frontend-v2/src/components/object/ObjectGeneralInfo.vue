@@ -229,24 +229,30 @@ const emit = defineEmits(['update:modelValue'])
 
 // Methods
 
-// Update a field value
+// Update a field value (preserves _translations explicitly)
 const updateField = (fieldName, value) => {
+  console.log('[ObjectGeneralInfo] updateField called:', fieldName, value)
+  const currentTranslations = props.modelValue._translations || {}
   emit('update:modelValue', {
     ...props.modelValue,
+    _translations: currentTranslations, // Explicitly preserve translations
     [fieldName]: value
   })
 }
 
 // Update translations for a translatable field
 const updateTranslations = (fieldName, translations) => {
+  console.log('[ObjectGeneralInfo] updateTranslations called:', fieldName, translations)
   const currentTranslations = props.modelValue._translations || {}
-  emit('update:modelValue', {
+  const newModelValue = {
     ...props.modelValue,
     _translations: {
       ...currentTranslations,
       [fieldName]: translations
     }
-  })
+  }
+  console.log('[ObjectGeneralInfo] emitting update:modelValue with:', JSON.stringify(newModelValue, null, 2))
+  emit('update:modelValue', newModelValue)
 }
 
 // Get options for select fields (from cache)

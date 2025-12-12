@@ -142,14 +142,21 @@ const confirmDialog = (translations) => {
     }
   }
   
-  // Emit translations update
-  emit('update:translations', cleanTranslations)
-  
-  // Also update modelValue with current locale value or first available
+  // Calculate the new main value (current locale or first available)
   const newValue = cleanTranslations[locale.value] 
     || Object.values(cleanTranslations)[0] 
     || ''
-  emit('update:modelValue', newValue)
+  
+  // IMPORTANT: Emit translations FIRST, then modelValue
+  // The parent component (ObjectGeneralInfo) will handle both updates
+  // We emit translations first so it's set before updateField is called
+  emit('update:translations', cleanTranslations)
+  
+  // Use nextTick to ensure translations are processed before updating modelValue
+  // This prevents the race condition where updateField overwrites _translations
+  setTimeout(() => {
+    emit('update:modelValue', newValue)
+  }, 0)
   
   dialogVisible.value = false
 }
