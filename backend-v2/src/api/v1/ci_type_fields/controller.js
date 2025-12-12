@@ -17,7 +17,7 @@ const getLocale = (req) => {
 /**
  * Get all fields for a CI type
  */
-const getByTypeUuid = async (req, res) => {
+const getByTypeUuid = async (req, res, next) => {
   try {
     const { ciTypeUuid } = req.params;
     const locale = getLocale(req);
@@ -25,17 +25,14 @@ const getByTypeUuid = async (req, res) => {
     res.json(fields);
   } catch (error) {
     logger.error('Controller error - getByTypeUuid:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI type fields'
-    });
+    next(error);
   }
 };
 
 /**
  * Get a single field by UUID
  */
-const getByUuid = async (req, res) => {
+const getByUuid = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const locale = getLocale(req);
@@ -44,48 +41,34 @@ const getByUuid = async (req, res) => {
     if (!field) {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'Field not found'
+        message: `Field with UUID '${uuid}' not found`
       });
     }
     
     res.json(field);
   } catch (error) {
     logger.error('Controller error - getByUuid:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch field'
-    });
+    next(error);
   }
 };
 
 /**
  * Create a new field
  */
-const create = async (req, res) => {
+const create = async (req, res, next) => {
   try {
     const field = await service.create(req.body);
     res.status(201).json(field);
   } catch (error) {
     logger.error('Controller error - create field:', error);
-    
-    if (error.code === 'P2002') {
-      return res.status(409).json({ 
-        error: 'Conflict',
-        message: 'A field with this name already exists for this CI type'
-      });
-    }
-    
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to create field'
-    });
+    next(error);
   }
 };
 
 /**
  * Update a field
  */
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const field = await service.update(uuid, req.body);
@@ -96,21 +79,18 @@ const update = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'Field not found'
+        message: `Field with UUID '${uuid}' not found`
       });
     }
     
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to update field'
-    });
+    next(error);
   }
 };
 
 /**
  * Delete a field
  */
-const remove = async (req, res) => {
+const remove = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     await service.remove(uuid);
@@ -121,21 +101,18 @@ const remove = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'Field not found'
+        message: `Field with UUID '${uuid}' not found`
       });
     }
     
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to delete field'
-    });
+    next(error);
   }
 };
 
 /**
  * Delete multiple fields
  */
-const removeMany = async (req, res) => {
+const removeMany = async (req, res, next) => {
   try {
     const { uuids } = req.body;
     
@@ -150,17 +127,14 @@ const removeMany = async (req, res) => {
     res.json({ deleted: count });
   } catch (error) {
     logger.error('Controller error - delete many fields:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to delete fields'
-    });
+    next(error);
   }
 };
 
 /**
  * Reorder fields
  */
-const reorder = async (req, res) => {
+const reorder = async (req, res, next) => {
   try {
     const { ciTypeUuid } = req.params;
     const { orderedUuids } = req.body;
@@ -176,17 +150,14 @@ const reorder = async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     logger.error('Controller error - reorder fields:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to reorder fields'
-    });
+    next(error);
   }
 };
 
 /**
  * Toggle field visibility
  */
-const toggleVisibility = async (req, res) => {
+const toggleVisibility = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const { property } = req.body;
@@ -202,10 +173,7 @@ const toggleVisibility = async (req, res) => {
     res.json(field);
   } catch (error) {
     logger.error('Controller error - toggle visibility:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to toggle field visibility'
-    });
+    next(error);
   }
 };
 

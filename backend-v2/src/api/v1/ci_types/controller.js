@@ -18,7 +18,7 @@ const getLocale = (req) => {
 /**
  * Get all CI types
  */
-const getAll = async (req, res) => {
+const getAll = async (req, res, next) => {
   try {
     const activeOnly = req.query.active !== 'false';
     const locale = getLocale(req);
@@ -28,17 +28,14 @@ const getAll = async (req, res) => {
     res.json(ciTypes);
   } catch (error) {
     logger.error('Controller error - getAll CI types:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI types'
-    });
+    next(error);
   }
 };
 
 /**
  * Get CI types as select options
  */
-const getOptions = async (req, res) => {
+const getOptions = async (req, res, next) => {
   try {
     const locale = getLocale(req);
     const options = await service.getAsOptions(locale);
@@ -46,17 +43,14 @@ const getOptions = async (req, res) => {
     res.json(options);
   } catch (error) {
     logger.error('Controller error - getOptions CI types:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI type options'
-    });
+    next(error);
   }
 };
 
 /**
  * Get CI type by UUID
  */
-const getByUuid = async (req, res) => {
+const getByUuid = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const locale = getLocale(req);
@@ -72,42 +66,28 @@ const getByUuid = async (req, res) => {
     res.json(ciType);
   } catch (error) {
     logger.error('Controller error - getByUuid CI types:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI type'
-    });
+    next(error);
   }
 };
 
 /**
  * Create a new CI type
  */
-const create = async (req, res) => {
+const create = async (req, res, next) => {
   try {
     const ciType = await service.create(req.body);
     
     res.status(201).json(ciType);
   } catch (error) {
     logger.error('Controller error - create CI type:', error);
-    
-    if (error.code === 'P2002') {
-      return res.status(409).json({ 
-        error: 'Conflict',
-        message: 'A CI type with this code already exists'
-      });
-    }
-    
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to create CI type'
-    });
+    next(error);
   }
 };
 
 /**
  * Update a CI type
  */
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const ciType = await service.update(uuid, req.body);
@@ -119,21 +99,18 @@ const update = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'CI type not found'
+        message: `CI type with UUID '${uuid}' not found`
       });
     }
     
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to update CI type'
-    });
+    next(error);
   }
 };
 
 /**
  * Delete a CI type
  */
-const remove = async (req, res) => {
+const remove = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     await service.remove(uuid);
@@ -145,21 +122,18 @@ const remove = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'CI type not found'
+        message: `CI type with UUID '${uuid}' not found`
       });
     }
     
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to delete CI type'
-    });
+    next(error);
   }
 };
 
 /**
  * Search CI types with PrimeVue filters
  */
-const search = async (req, res) => {
+const search = async (req, res, next) => {
   try {
     const locale = getLocale(req);
     const result = await service.search(req.body, locale);
@@ -167,17 +141,14 @@ const search = async (req, res) => {
     res.json(result);
   } catch (error) {
     logger.error('Controller error - search CI types:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to search CI types'
-    });
+    next(error);
   }
 };
 
 /**
  * Get extended fields for a CI type by code
  */
-const getFields = async (req, res) => {
+const getFields = async (req, res, next) => {
   try {
     const { code } = req.params;
     const fields = await service.getFieldsByCode(code);
@@ -191,17 +162,14 @@ const getFields = async (req, res) => {
     res.json(parsedFields);
   } catch (error) {
     logger.error('Controller error - getFields CI type:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI type fields'
-    });
+    next(error);
   }
 };
 
 /**
  * Delete multiple CI types
  */
-const removeMany = async (req, res) => {
+const removeMany = async (req, res, next) => {
   try {
     const { uuids } = req.body;
     
@@ -217,10 +185,7 @@ const removeMany = async (req, res) => {
     res.json({ deleted: count });
   } catch (error) {
     logger.error('Controller error - delete many CI types:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to delete CI types'
-    });
+    next(error);
   }
 };
 

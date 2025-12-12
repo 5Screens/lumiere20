@@ -17,7 +17,7 @@ const getLocale = (req) => {
 /**
  * Get all CI categories
  */
-const getAll = async (req, res) => {
+const getAll = async (req, res, next) => {
   try {
     const activeOnly = req.query.active !== 'false';
     const locale = getLocale(req);
@@ -27,17 +27,14 @@ const getAll = async (req, res) => {
     res.json(categories);
   } catch (error) {
     logger.error('Controller error - getAll CI categories:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI categories'
-    });
+    next(error);
   }
 };
 
 /**
  * Get all CI categories with their CI types (for menu building)
  */
-const getAllWithCiTypes = async (req, res) => {
+const getAllWithCiTypes = async (req, res, next) => {
   try {
     const activeOnly = req.query.active !== 'false';
     const locale = getLocale(req);
@@ -47,17 +44,14 @@ const getAllWithCiTypes = async (req, res) => {
     res.json(categories);
   } catch (error) {
     logger.error('Controller error - getAllWithCiTypes CI categories:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI categories with CI types'
-    });
+    next(error);
   }
 };
 
 /**
  * Get CI types without category (for "Others" menu)
  */
-const getUncategorizedCiTypes = async (req, res) => {
+const getUncategorizedCiTypes = async (req, res, next) => {
   try {
     const activeOnly = req.query.active !== 'false';
     const locale = getLocale(req);
@@ -67,17 +61,14 @@ const getUncategorizedCiTypes = async (req, res) => {
     res.json(ciTypes);
   } catch (error) {
     logger.error('Controller error - getUncategorizedCiTypes:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch uncategorized CI types'
-    });
+    next(error);
   }
 };
 
 /**
  * Get CI categories as select options
  */
-const getOptions = async (req, res) => {
+const getOptions = async (req, res, next) => {
   try {
     const locale = getLocale(req);
     const options = await service.getAsOptions(locale);
@@ -85,17 +76,14 @@ const getOptions = async (req, res) => {
     res.json(options);
   } catch (error) {
     logger.error('Controller error - getOptions CI categories:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI category options'
-    });
+    next(error);
   }
 };
 
 /**
  * Get CI category by UUID
  */
-const getByUuid = async (req, res) => {
+const getByUuid = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const locale = getLocale(req);
@@ -111,10 +99,7 @@ const getByUuid = async (req, res) => {
     res.json(category);
   } catch (error) {
     logger.error('Controller error - getByUuid CI categories:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch CI category'
-    });
+    next(error);
   }
 };
 
@@ -135,7 +120,7 @@ const create = async (req, res, next) => {
 /**
  * Update a CI category
  */
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const category = await service.update(uuid, req.body);
@@ -147,21 +132,18 @@ const update = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'CI category not found'
+        message: `CI category with UUID '${uuid}' not found`
       });
     }
     
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to update CI category'
-    });
+    next(error);
   }
 };
 
 /**
  * Delete a CI category
  */
-const remove = async (req, res) => {
+const remove = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     await service.remove(uuid);
@@ -173,21 +155,18 @@ const remove = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'CI category not found'
+        message: `CI category with UUID '${uuid}' not found`
       });
     }
     
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to delete CI category'
-    });
+    next(error);
   }
 };
 
 /**
  * Search CI categories with PrimeVue filters
  */
-const search = async (req, res) => {
+const search = async (req, res, next) => {
   try {
     const locale = getLocale(req);
     const result = await service.search(req.body, locale);
@@ -195,10 +174,7 @@ const search = async (req, res) => {
     res.json(result);
   } catch (error) {
     logger.error('Controller error - search CI categories:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to search CI categories'
-    });
+    next(error);
   }
 };
 

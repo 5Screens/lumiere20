@@ -9,7 +9,7 @@ const logger = require('../../../config/logger');
 /**
  * Get all languages
  */
-const getAll = async (req, res) => {
+const getAll = async (req, res, next) => {
   try {
     const activeOnly = req.query.active === 'true';
     const languages = await service.getAll({ activeOnly });
@@ -17,34 +17,28 @@ const getAll = async (req, res) => {
     res.json(languages);
   } catch (error) {
     logger.error('Controller error - getAll languages:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch languages'
-    });
+    next(error);
   }
 };
 
 /**
  * Get active languages only (for frontend language selector)
  */
-const getActive = async (req, res) => {
+const getActive = async (req, res, next) => {
   try {
     const languages = await service.getActive();
     
     res.json(languages);
   } catch (error) {
     logger.error('Controller error - getActive languages:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch active languages'
-    });
+    next(error);
   }
 };
 
 /**
  * Get language by code
  */
-const getByCode = async (req, res) => {
+const getByCode = async (req, res, next) => {
   try {
     const { code } = req.params;
     const language = await service.getByCode(code);
@@ -59,17 +53,14 @@ const getByCode = async (req, res) => {
     res.json(language);
   } catch (error) {
     logger.error('Controller error - getByCode languages:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch language'
-    });
+    next(error);
   }
 };
 
 /**
  * Get language by UUID
  */
-const getByUuid = async (req, res) => {
+const getByUuid = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const language = await service.getByUuid(uuid);
@@ -84,42 +75,28 @@ const getByUuid = async (req, res) => {
     res.json(language);
   } catch (error) {
     logger.error('Controller error - getByUuid languages:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to fetch language'
-    });
+    next(error);
   }
 };
 
 /**
  * Create a new language
  */
-const create = async (req, res) => {
+const create = async (req, res, next) => {
   try {
     const language = await service.create(req.body);
     
     res.status(201).json(language);
   } catch (error) {
     logger.error('Controller error - create language:', error);
-    
-    if (error.code === 'P2002') {
-      return res.status(409).json({ 
-        error: 'Conflict',
-        message: 'A language with this code already exists'
-      });
-    }
-    
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to create language'
-    });
+    next(error);
   }
 };
 
 /**
  * Update a language
  */
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const language = await service.update(uuid, req.body);
@@ -131,21 +108,18 @@ const update = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'Language not found'
+        message: `Language with UUID '${uuid}' not found`
       });
     }
     
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to update language'
-    });
+    next(error);
   }
 };
 
 /**
  * Toggle language active status
  */
-const toggleActive = async (req, res) => {
+const toggleActive = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const { is_active } = req.body;
@@ -166,21 +140,18 @@ const toggleActive = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'Language not found'
+        message: `Language with UUID '${uuid}' not found`
       });
     }
     
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to toggle language status'
-    });
+    next(error);
   }
 };
 
 /**
  * Bulk update active status for multiple languages
  */
-const bulkToggleActive = async (req, res) => {
+const bulkToggleActive = async (req, res, next) => {
   try {
     const { updates } = req.body;
     
@@ -206,17 +177,14 @@ const bulkToggleActive = async (req, res) => {
     res.json({ updated: count });
   } catch (error) {
     logger.error('Controller error - bulkToggleActive languages:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to bulk update languages'
-    });
+    next(error);
   }
 };
 
 /**
  * Delete a language
  */
-const remove = async (req, res) => {
+const remove = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     await service.remove(uuid);
@@ -228,14 +196,11 @@ const remove = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ 
         error: 'Not found',
-        message: 'Language not found'
+        message: `Language with UUID '${uuid}' not found`
       });
     }
     
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to delete language'
-    });
+    next(error);
   }
 };
 
