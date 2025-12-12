@@ -173,7 +173,9 @@ export default {
     saveFirst: 'Save first to access this section',
     noExtendedInfo: 'No extended information available',
     new: 'New',
-    created: 'Created successfully'
+    created: 'Created successfully',
+    copy: 'Copy',
+    copied: 'Copied'
   },
   tabs: {
     backToList: 'Back to list',

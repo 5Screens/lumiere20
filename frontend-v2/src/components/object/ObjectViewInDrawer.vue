@@ -1,5 +1,8 @@
 <template>
   <div class="flex flex-col h-full" style="min-height: 400px;">
+    <!-- UUID Display (only in edit mode) -->
+    <UuidDisplay v-if="mode === 'edit'" :uuid="modelValue?.uuid" />
+    
     <!-- Tabs -->
     <Tabs v-model:value="activeTab" class="flex-1 flex flex-col min-h-0">
       <TabList class="shrink-0">
@@ -54,6 +57,7 @@ import TabPanel from 'primevue/tabpanel'
 // Custom components
 import ObjectGeneralInfo from './ObjectGeneralInfo.vue'
 import ObjectExtendedInfo from './ObjectExtendedInfo.vue'
+import UuidDisplay from '@/components/form/UuidDisplay.vue'
 
 // Props
 const props = defineProps({

@@ -22,6 +22,9 @@
         </div>
       </div>
 
+      <!-- UUID Display (only in edit mode) -->
+      <UuidDisplay v-if="mode === 'edit'" :uuid="item?.uuid" />
+
       <!-- Tabs -->
       <Tabs v-model:value="activeTab" class="flex-1 flex flex-col min-h-0">
         <TabList class="shrink-0 px-4">
@@ -91,6 +94,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 // Custom components
 import ObjectGeneralInfo from './ObjectGeneralInfo.vue'
 import ObjectExtendedInfo from './ObjectExtendedInfo.vue'
+import UuidDisplay from '@/components/form/UuidDisplay.vue'
 
 // Props
 const props = defineProps({
