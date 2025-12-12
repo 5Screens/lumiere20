@@ -238,7 +238,7 @@ const getAll = async (options = {}) => {
  * @param {string} uuid - Configuration item UUID
  * @returns {Promise<Object|null>} - Configuration item or null
  */
-const getById = async (uuid) => {
+const getByUuid = async (uuid) => {
   try {
     logger.info(`[CONFIGURATION_ITEMS] Getting item: ${uuid}`);
 
@@ -401,7 +401,7 @@ const removeMany = async (uuids) => {
 module.exports = {
   search,
   getAll,
-  getById,
+  getByUuid,
   create,
   update,
   remove,

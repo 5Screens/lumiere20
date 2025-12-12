@@ -6,7 +6,7 @@ const { validate, primeVueFilterSchema } = require('../../../middleware/validate
 // Routes
 router.post('/search', validate(primeVueFilterSchema), controller.search);
 router.get('/', controller.getAll);
-router.get('/:uuid', controller.getById);
+router.get('/:uuid', controller.getByUuid);
 router.post('/', controller.create);
 router.put('/:uuid', controller.update);
 router.delete('/:uuid', controller.remove);

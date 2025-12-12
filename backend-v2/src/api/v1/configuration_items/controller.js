@@ -41,10 +41,10 @@ const getAll = async (req, res, next) => {
  * Get configuration item by UUID
  * GET /api/v1/configuration_items/:uuid
  */
-const getById = async (req, res, next) => {
+const getByUuid = async (req, res, next) => {
   try {
     const { uuid } = req.params;
-    const item = await service.getById(uuid);
+    const item = await service.getByUuid(uuid);
 
     if (!item) {
       return res.status(404).json({
@@ -141,7 +141,7 @@ const removeMany = async (req, res, next) => {
 module.exports = {
   search,
   getAll,
-  getById,
+  getByUuid,
   create,
   update,
   remove,
