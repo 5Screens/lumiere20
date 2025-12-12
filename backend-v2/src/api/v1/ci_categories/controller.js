@@ -121,25 +121,14 @@ const getByUuid = async (req, res) => {
 /**
  * Create a new CI category
  */
-const create = async (req, res) => {
+const create = async (req, res, next) => {
   try {
     const category = await service.create(req.body);
     
     res.status(201).json(category);
   } catch (error) {
     logger.error('Controller error - create CI category:', error);
-    
-    if (error.code === 'P2002') {
-      return res.status(409).json({ 
-        error: 'Conflict',
-        message: 'A CI category with this code already exists'
-      });
-    }
-    
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: 'Failed to create CI category'
-    });
+    next(error);
   }
 };
 

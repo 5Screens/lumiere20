@@ -1780,7 +1780,8 @@ const saveItem = async () => {
     await loadItems()
   } catch (error) {
     console.error('[ObjectsCrud] saveItem - Error:', error)
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to save item', life: 3000 })
+    const errorMessage = error.response?.data?.message || 'Failed to save item'
+    toast.add({ severity: 'error', summary: 'Error', detail: errorMessage, life: 5000 })
   } finally {
     saving.value = false
   }

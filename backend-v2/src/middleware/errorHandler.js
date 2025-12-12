@@ -25,9 +25,36 @@ const errorHandler = (err, req, res, next) => {
           error: 'Foreign key constraint failed',
           message: 'Referenced record does not exist',
         });
+      case 'P2011':
+        return res.status(400).json({
+          error: 'Null constraint violation',
+          message: `Required field is missing: ${err.meta?.constraint || 'unknown'}`,
+          field: err.meta?.constraint,
+        });
+      case 'P2012':
+        return res.status(400).json({
+          error: 'Missing required value',
+          message: `A required value is missing: ${err.meta?.path || 'unknown'}`,
+          field: err.meta?.path,
+        });
       default:
         break;
     }
+  }
+
+  // Prisma validation errors (client-side validation before query)
+  if (err.name === 'PrismaClientValidationError') {
+    // Extract field name from error message like "Argument `display_order` must not be null"
+    const fieldMatch = err.message.match(/Argument `(\w+)` must not be null/);
+    const field = fieldMatch ? fieldMatch[1] : null;
+    
+    return res.status(400).json({
+      error: 'Validation error',
+      message: field 
+        ? `Required field is missing: ${field}` 
+        : 'A required field is missing or invalid',
+      field: field,
+    });
   }
 
   // Zod validation errors
