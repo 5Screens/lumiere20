@@ -1,0 +1,115 @@
+<template>
+  <div class="status-panel p-4">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold">{{ $t('workflow.status') }}</h3>
+    </div>
+    
+    <p class="text-sm text-surface-500 mb-4">{{ $t('workflow.statusDescription') }}</p>
+    
+    <!-- Name -->
+    <div class="field mb-4">
+      <div class="flex items-center justify-between mb-1">
+        <label class="text-sm font-medium">{{ $t('common.name') }}</label>
+        <Button icon="pi pi-pencil" text size="small" @click="editName = true" />
+      </div>
+      <div v-if="!editName" class="text-surface-700 dark:text-surface-200">{{ status?.name }}</div>
+      <InputText v-else v-model="localName" class="w-full" @blur="saveName" @keyup.enter="saveName" />
+    </div>
+    
+    <!-- Category -->
+    <div class="field mb-4">
+      <div class="flex items-center justify-between mb-1">
+        <label class="text-sm font-medium">{{ $t('workflow.category') }}</label>
+        <Button icon="pi pi-pencil" text size="small" @click="editCategory = true" />
+      </div>
+      <div v-if="!editCategory" class="flex items-center gap-2">
+        <span class="w-4 h-4 rounded" :style="{ background: status?.category?.color }" />
+        <span>{{ status?.category?.label }}</span>
+      </div>
+      <Select v-else v-model="localCategory" :options="categories" optionLabel="label" optionValue="uuid" class="w-full" @change="saveCategory" />
+    </div>
+    
+    <!-- Transitions -->
+    <div class="field mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <label class="text-sm font-medium">{{ $t('workflow.transitions') }}</label>
+        <Button icon="pi pi-plus" text size="small" @click="$emit('add-transition')" />
+      </div>
+      
+      <div class="flex items-center gap-2 mb-3">
+        <Checkbox v-model="localAllowAllInbound" binary @change="saveAllowAllInbound" />
+        <span class="text-sm">{{ $t('workflow.allowAllInbound') }}</span>
+      </div>
+      
+      <div class="space-y-2">
+        <div v-for="t in transitions" :key="t.uuid" class="p-2 bg-surface-100 dark:bg-surface-700 rounded">
+          <div class="font-medium text-sm mb-1">{{ t.name }}</div>
+          <div class="flex flex-wrap gap-1">
+            <Tag v-for="s in t.sources" :key="s.uuid" :value="s.from_status.name" size="small" />
+            <i class="pi pi-arrow-right text-xs mx-1" />
+            <Tag :value="t.to_status.name" severity="success" size="small" />
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Delete -->
+    <Button :label="$t('workflow.deleteStatus')" icon="pi pi-trash" severity="danger" outlined class="w-full" @click="confirmDelete" />
+  </div>
+</template>
+
+<script setup>
+import { ref, watch } from 'vue'
+import { useConfirm } from 'primevue/useconfirm'
+import { useI18n } from 'vue-i18n'
+
+const props = defineProps({
+  status: Object,
+  categories: Array,
+  transitions: Array
+})
+
+const emit = defineEmits(['update', 'delete', 'add-transition'])
+const confirm = useConfirm()
+const { t } = useI18n()
+
+const editName = ref(false)
+const editCategory = ref(false)
+const localName = ref('')
+const localCategory = ref('')
+const localAllowAllInbound = ref(false)
+
+watch(() => props.status, (s) => {
+  if (s) {
+    localName.value = s.name
+    localCategory.value = s.rel_category_uuid
+    localAllowAllInbound.value = s.allow_all_inbound
+  }
+}, { immediate: true })
+
+const saveName = () => {
+  editName.value = false
+  if (localName.value !== props.status?.name) {
+    emit('update', { ...props.status, name: localName.value })
+  }
+}
+
+const saveCategory = () => {
+  editCategory.value = false
+  emit('update', { ...props.status, rel_category_uuid: localCategory.value })
+}
+
+const saveAllowAllInbound = () => {
+  emit('update', { ...props.status, allow_all_inbound: localAllowAllInbound.value })
+}
+
+const confirmDelete = () => {
+  confirm.require({
+    message: t('workflow.confirmDeleteStatus'),
+    header: t('common.confirm'),
+    icon: 'pi pi-exclamation-triangle',
+    acceptClass: 'p-button-danger',
+    accept: () => emit('delete', props.status?.uuid)
+  })
+}
+</script>

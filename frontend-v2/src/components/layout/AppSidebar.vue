@@ -348,6 +348,23 @@ const menuItems = computed(() => [
           }
         ]
       },
+      // Section: Workflow
+      {
+        label: 'Workflow',
+        icon: 'pi pi-sitemap',
+        items: [
+          {
+            label: t('workflow.statusCategories') || 'Status Categories',
+            icon: 'pi pi-palette',
+            command: () => openTab('workflow-status-categories', 'Status Categories', 'workflow.statusCategories', 'pi pi-palette', 'workflow_status_categories', 'WorkflowStatusCategoriesCrud')
+          },
+          {
+            label: t('workflow.manageWorkflows') || 'Manage Workflows',
+            icon: 'pi pi-sitemap',
+            command: () => openTab('workflows', 'Workflows', 'workflow.manageWorkflows', 'pi pi-sitemap', 'workflows', 'WorkflowsList')
+          }
+        ]
+      },
       // Section: Foundations (collapsible)
       {
         label: t('menu.sections.foundations') || 'Foundations',

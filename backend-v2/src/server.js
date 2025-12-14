@@ -31,6 +31,8 @@ const ciTypeFieldsRoutes = require('./api/v1/ci_type_fields/routes');
 const ciCategoriesRoutes = require('./api/v1/ci_categories/routes');
 const languagesRoutes = require('./api/v1/languages/routes');
 const auditRoutes = require('./api/v1/audit/routes');
+const workflowStatusCategoriesRoutes = require('./api/v1/workflow_status_categories/routes');
+const workflowsRoutes = require('./api/v1/workflows/routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
@@ -44,6 +46,8 @@ app.use('/api/v1/ci_type_fields', ciTypeFieldsRoutes);
 app.use('/api/v1/ci_categories', ciCategoriesRoutes);
 app.use('/api/v1/languages', languagesRoutes);
 app.use('/api/v1/audit', auditRoutes);
+app.use('/api/v1/workflow-status-categories', workflowStatusCategoriesRoutes);
+app.use('/api/v1/workflows', workflowsRoutes);
 
 // Health check
 app.get('/', (req, res) => {

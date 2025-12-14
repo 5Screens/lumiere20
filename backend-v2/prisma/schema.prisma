@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["data", "core", "configuration", "translations", "audit"]
+  schemas  = ["data", "core", "configuration", "translations", "audit", "workflow"]
 }
 
 // ============================================
@@ -606,6 +606,115 @@ model object_fields {
   @@index([object_type_uuid, display_order])
   @@schema("configuration")
   @@map("object_fields")
+}
+
+// ============================================
+// SCHEMA: workflow
+// ============================================
+
+// Workflow status categories (Backlog, In Progress, On Hold, Done)
+model workflow_status_categories {
+  uuid          String   @id @default(uuid()) @db.Uuid
+  code          String   @unique @db.VarChar(50)  // BACKLOG, IN_PROGRESS, ON_HOLD, DONE
+  color         String   @db.VarChar(20)          // Hex color code
+  display_order Int      @default(0)
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  statuses workflow_statuses[]
+
+  @@schema("workflow")
+  @@map("workflow_status_categories")
+}
+
+// Workflows - define lifecycle for entity types
+model workflows {
+  uuid                  String   @id @default(uuid()) @db.Uuid
+  name                  String   @db.VarChar(255)
+  description           String?  @db.Text
+  entity_type           String   @db.VarChar(100)  // 'ci_types', 'ticket_types', 'persons', 'locations', etc.
+  rel_entity_type_uuid  String?  @db.Uuid          // Optional: UUID of specific type (e.g., ci_type "SERVER")
+  is_active             Boolean  @default(true)
+  created_at            DateTime @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  statuses    workflow_statuses[]
+  transitions workflow_transitions[]
+
+  @@index([entity_type])
+  @@index([rel_entity_type_uuid])
+  @@schema("workflow")
+  @@map("workflows")
+}
+
+// Workflow statuses - states in a workflow
+model workflow_statuses {
+  uuid              String   @id @default(uuid()) @db.Uuid
+  rel_workflow_uuid String   @db.Uuid
+  name              String   @db.VarChar(60)       // Max 60 characters as per spec
+  rel_category_uuid String   @db.Uuid
+  allow_all_inbound Boolean  @default(true)        // "Accessible depuis n'importe quel état"
+  is_initial        Boolean  @default(false)       // Initial state of the workflow
+  position_x        Float    @default(0)           // X coordinate on canvas
+  position_y        Float    @default(0)           // Y coordinate on canvas
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  workflow  workflows                   @relation(fields: [rel_workflow_uuid], references: [uuid], onDelete: Cascade)
+  category  workflow_status_categories  @relation(fields: [rel_category_uuid], references: [uuid], onDelete: Restrict)
+  
+  // Reverse relations
+  transitions_to   workflow_transitions[]        @relation("TransitionTo")
+  transition_sources workflow_transition_sources[]
+
+  @@index([rel_workflow_uuid])
+  @@index([rel_category_uuid])
+  @@schema("workflow")
+  @@map("workflow_statuses")
+}
+
+// Workflow transitions - connections between statuses
+model workflow_transitions {
+  uuid              String   @id @default(uuid()) @db.Uuid
+  rel_workflow_uuid String   @db.Uuid
+  name              String   @db.VarChar(255)      // Transition label (e.g., "Start work", "Cancel")
+  rel_to_status_uuid String  @db.Uuid              // Destination status (unique)
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  workflow  workflows          @relation(fields: [rel_workflow_uuid], references: [uuid], onDelete: Cascade)
+  to_status workflow_statuses  @relation("TransitionTo", fields: [rel_to_status_uuid], references: [uuid], onDelete: Cascade)
+  
+  // Reverse relations
+  sources workflow_transition_sources[]
+
+  @@index([rel_workflow_uuid])
+  @@index([rel_to_status_uuid])
+  @@schema("workflow")
+  @@map("workflow_transitions")
+}
+
+// Workflow transition sources - multiple source statuses per transition
+model workflow_transition_sources {
+  uuid                 String   @id @default(uuid()) @db.Uuid
+  rel_transition_uuid  String   @db.Uuid
+  rel_from_status_uuid String   @db.Uuid
+  created_at           DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  transition  workflow_transitions @relation(fields: [rel_transition_uuid], references: [uuid], onDelete: Cascade)
+  from_status workflow_statuses    @relation(fields: [rel_from_status_uuid], references: [uuid], onDelete: Cascade)
+
+  @@unique([rel_transition_uuid, rel_from_status_uuid])
+  @@index([rel_transition_uuid])
+  @@index([rel_from_status_uuid])
+  @@schema("workflow")
+  @@map("workflow_transition_sources")
 }
 
 // ============================================

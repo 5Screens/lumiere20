@@ -182,6 +182,8 @@ const componentRegistry = {
   MetadataObjectTypesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/MetadataObjectTypesCrud.vue'))),
   MetadataObjectFieldsCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/MetadataObjectFieldsCrud.vue'))),
   AuditView: markRaw(defineAsyncComponent(() => import('@/components/crud/AuditView.vue'))),
+  WorkflowsList: markRaw(defineAsyncComponent(() => import('@/components/workflow/WorkflowsList.vue'))),
+  WorkflowStatusCategoriesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/WorkflowStatusCategoriesCrud.vue'))),
 }
 
 // Components that support child tabs
