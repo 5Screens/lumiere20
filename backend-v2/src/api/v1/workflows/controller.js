@@ -141,6 +141,29 @@ const remove = async (req, res, next) => {
 };
 
 /**
+ * Save all workflow changes (statuses and transitions)
+ */
+const saveAll = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const locale = getLocale(req);
+    const workflow = await service.saveAll(uuid, req.body, locale);
+    res.json(workflow);
+  } catch (error) {
+    logger.error('[WORKFLOWS CONTROLLER] Error in saveAll:', error);
+    
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        error: 'Not found',
+        message: `Workflow with UUID '${req.params.uuid}' not found`
+      });
+    }
+    
+    next(error);
+  }
+};
+
+/**
  * Search workflows with PrimeVue filters
  */
 const search = async (req, res, next) => {
@@ -322,6 +345,7 @@ module.exports = {
   update,
   remove,
   duplicateWorkflow,
+  saveAll,
   search,
   
   // Statuses

@@ -33,6 +33,9 @@ router.delete('/:uuid', controller.remove);
 // POST /api/v1/workflows/:uuid/duplicate - Duplicate workflow
 router.post('/:uuid/duplicate', controller.duplicateWorkflow);
 
+// PUT /api/v1/workflows/:uuid/save-all - Save all workflow changes
+router.put('/:uuid/save-all', controller.saveAll);
+
 // ============================================
 // WORKFLOW STATUSES
 // ============================================

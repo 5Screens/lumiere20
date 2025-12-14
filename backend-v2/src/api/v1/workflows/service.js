@@ -486,6 +486,178 @@ const remove = async (uuid) => {
 };
 
 /**
+ * Save all workflow changes (statuses and transitions) in a single transaction
+ */
+const saveAll = async (uuid, data, locale = 'en') => {
+  const { name, description, entity_type, is_active, statuses, transitions } = data;
+  
+  // Get current workflow state
+  const currentWorkflow = await prisma.workflows.findUnique({
+    where: { uuid },
+    include: {
+      statuses: true,
+      transitions: {
+        include: { sources: true }
+      }
+    }
+  });
+  
+  if (!currentWorkflow) {
+    const error = new Error('Workflow not found');
+    error.code = 'P2025';
+    throw error;
+  }
+  
+  // Map temp UUIDs to real UUIDs for new statuses
+  const statusUuidMap = {};
+  
+  await prisma.$transaction(async (tx) => {
+    // Update workflow properties
+    await tx.workflows.update({
+      where: { uuid },
+      data: { name, description, entity_type, is_active }
+    });
+    
+    // Get current status UUIDs
+    const currentStatusUuids = currentWorkflow.statuses.map(s => s.uuid);
+    const newStatusUuids = statuses.filter(s => s.uuid).map(s => s.uuid);
+    
+    // Delete removed statuses
+    const statusesToDelete = currentStatusUuids.filter(id => !newStatusUuids.includes(id));
+    if (statusesToDelete.length > 0) {
+      // Delete translations for removed statuses
+      await tx.translated_fields.deleteMany({
+        where: {
+          entity_type: 'workflow_statuses',
+          entity_uuid: { in: statusesToDelete }
+        }
+      });
+      
+      await tx.workflow_statuses.deleteMany({
+        where: { uuid: { in: statusesToDelete } }
+      });
+    }
+    
+    // Create or update statuses
+    for (const status of statuses) {
+      if (!status.uuid) {
+        // New status
+        const newStatus = await tx.workflow_statuses.create({
+          data: {
+            rel_workflow_uuid: uuid,
+            name: status.name,
+            rel_category_uuid: status.rel_category_uuid,
+            allow_all_inbound: status.allow_all_inbound || false,
+            is_initial: status.is_initial || false,
+            position_x: status.position_x || 0,
+            position_y: status.position_y || 0
+          }
+        });
+        // Map temp UUID to real UUID
+        if (status.tempUuid) {
+          statusUuidMap[status.tempUuid] = newStatus.uuid;
+        }
+      } else {
+        // Update existing status
+        await tx.workflow_statuses.update({
+          where: { uuid: status.uuid },
+          data: {
+            name: status.name,
+            rel_category_uuid: status.rel_category_uuid,
+            allow_all_inbound: status.allow_all_inbound || false,
+            is_initial: status.is_initial || false,
+            position_x: status.position_x || 0,
+            position_y: status.position_y || 0
+          }
+        });
+        statusUuidMap[status.uuid] = status.uuid;
+      }
+    }
+    
+    // Get current transition UUIDs
+    const currentTransitionUuids = currentWorkflow.transitions.map(t => t.uuid);
+    const newTransitionUuids = transitions.filter(t => t.uuid).map(t => t.uuid);
+    
+    // Delete removed transitions
+    const transitionsToDelete = currentTransitionUuids.filter(id => !newTransitionUuids.includes(id));
+    if (transitionsToDelete.length > 0) {
+      // Delete translations for removed transitions
+      await tx.translated_fields.deleteMany({
+        where: {
+          entity_type: 'workflow_transitions',
+          entity_uuid: { in: transitionsToDelete }
+        }
+      });
+      
+      // Delete transition sources first
+      await tx.workflow_transition_sources.deleteMany({
+        where: { rel_transition_uuid: { in: transitionsToDelete } }
+      });
+      
+      await tx.workflow_transitions.deleteMany({
+        where: { uuid: { in: transitionsToDelete } }
+      });
+    }
+    
+    // Create or update transitions
+    for (const transition of transitions) {
+      // Resolve status UUIDs (may be temp UUIDs for new statuses)
+      const toStatusUuid = statusUuidMap[transition.to_status_uuid] || transition.to_status_uuid;
+      const sourceStatusUuids = transition.source_status_uuids.map(id => statusUuidMap[id] || id);
+      
+      if (!transition.uuid) {
+        // New transition
+        const newTransition = await tx.workflow_transitions.create({
+          data: {
+            rel_workflow_uuid: uuid,
+            name: transition.name,
+            rel_to_status_uuid: toStatusUuid
+          }
+        });
+        
+        // Create sources
+        for (const sourceUuid of sourceStatusUuids) {
+          await tx.workflow_transition_sources.create({
+            data: {
+              rel_transition_uuid: newTransition.uuid,
+              rel_from_status_uuid: sourceUuid
+            }
+          });
+        }
+      } else {
+        // Update existing transition
+        await tx.workflow_transitions.update({
+          where: { uuid: transition.uuid },
+          data: {
+            name: transition.name,
+            rel_to_status_uuid: toStatusUuid
+          }
+        });
+        
+        // Delete old sources and recreate
+        await tx.workflow_transition_sources.deleteMany({
+          where: { rel_transition_uuid: transition.uuid }
+        });
+        
+        for (const sourceUuid of sourceStatusUuids) {
+          await tx.workflow_transition_sources.create({
+            data: {
+              rel_transition_uuid: transition.uuid,
+              rel_from_status_uuid: sourceUuid
+            }
+          });
+        }
+      }
+    }
+  });
+  
+  logger.info(`[WORKFLOWS] Saved all changes for workflow: ${name} (${uuid})`);
+  
+  // Return updated workflow
+  return getByUuid(uuid, locale);
+};
+
+/**
  * Search workflows with PrimeVue filters
  */
 const search = async (filters, locale = 'en') => {
@@ -909,6 +1081,7 @@ module.exports = {
   update,
   remove,
   duplicate,
+  saveAll,
   search,
   
   // Statuses

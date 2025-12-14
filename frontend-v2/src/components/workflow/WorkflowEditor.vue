@@ -31,6 +31,7 @@
           size="small"
           @click="saveWorkflow"
           :loading="saving"
+          :disabled="!isDirty"
         />
         <Button
           :label="$t('common.close')"
@@ -38,7 +39,7 @@
           severity="secondary"
           size="small"
           text
-          @click="$emit('close')"
+          @click="handleClose"
         />
       </div>
     </div>
@@ -166,9 +167,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useConfirm } from 'primevue/useconfirm'
+import { storeToRefs } from 'pinia'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
@@ -177,6 +179,8 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/controls/dist/style.css'
 import '@vue-flow/minimap/dist/style.css'
+
+import { useWorkflowEditorStore } from '@/stores/workflowEditorStore'
 
 import StatusNode from './nodes/StatusNode.vue'
 import TransitionEdge from './edges/TransitionEdge.vue'
@@ -200,17 +204,18 @@ const emit = defineEmits(['close', 'saved'])
 const { t, locale } = useI18n()
 const confirm = useConfirm()
 
+// Store
+const store = useWorkflowEditorStore()
+const { workflow, statusCategories, saving, isDirty } = storeToRefs(store)
+
 // Vue Flow hooks for handling changes with confirmation
 const { onNodesChange, onEdgesChange, applyNodeChanges, applyEdgeChanges } = useVueFlow()
 
-// State
-const workflow = ref(null)
-const statusCategories = ref([])
+// Local UI state
 const nodes = ref([])
 const edges = ref([])
 const selectedElement = ref(null)
 const panelOpen = ref(false)
-const saving = ref(false)
 const showAddStatusDialog = ref(false)
 const showAddTransitionDialog = ref(false)
 const preSelectedTransitionSource = ref(null)
@@ -229,38 +234,12 @@ const selectedTransition = computed(() => {
 
 // Methods
 const loadWorkflow = async () => {
-  if (!props.workflowUuid) {
-    // New workflow - initialize with default structure
-    workflow.value = {
-      name: '',
-      description: '',
-      entity_type: '',
-      statuses: [],
-      transitions: []
-    }
-    return
-  }
-  
-  try {
-    const response = await fetch(`/api/v1/workflows/${props.workflowUuid}?locale=${locale.value}`)
-    if (response.ok) {
-      workflow.value = await response.json()
-      buildFlowFromWorkflow()
-    }
-  } catch (error) {
-    console.error('Error loading workflow:', error)
-  }
+  await store.loadWorkflow(props.workflowUuid, locale.value)
+  buildFlowFromWorkflow()
 }
 
 const loadStatusCategories = async () => {
-  try {
-    const response = await fetch(`/api/v1/workflow-status-categories?locale=${locale.value}`)
-    if (response.ok) {
-      statusCategories.value = await response.json()
-    }
-  } catch (error) {
-    console.error('Error loading status categories:', error)
-  }
+  await store.loadStatusCategories(locale.value)
 }
 
 const buildFlowFromWorkflow = () => {
@@ -354,143 +333,70 @@ const getStatusTransitions = (statusUuid) => {
   )
 }
 
-const addStatus = async (statusData) => {
-  try {
-    const response = await fetch(`/api/v1/workflows/${props.workflowUuid}/statuses`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...statusData,
-        position_x: 100 + (workflow.value?.statuses?.length || 0) * 200,
-        position_y: 100
-      })
-    })
-    
-    if (response.ok) {
-      await loadWorkflow()
-      showAddStatusDialog.value = false
-    }
-  } catch (error) {
-    console.error('Error adding status:', error)
-  }
+const addStatus = (statusData) => {
+  store.addStatus(statusData)
+  buildFlowFromWorkflow()
+  showAddStatusDialog.value = false
 }
 
-const updateStatus = async (statusData) => {
-  try {
-    const response = await fetch(`/api/v1/workflows/${props.workflowUuid}/statuses/${statusData.uuid}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(statusData)
-    })
-    
-    if (response.ok) {
-      await loadWorkflow()
-    }
-  } catch (error) {
-    console.error('Error updating status:', error)
-  }
+const updateStatus = (statusData) => {
+  store.updateStatus(statusData)
+  buildFlowFromWorkflow()
 }
 
-const updateStatusPosition = async (statusUuid, x, y) => {
-  try {
-    await fetch(`/api/v1/workflows/${props.workflowUuid}/statuses/${statusUuid}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ position_x: x, position_y: y })
-    })
-  } catch (error) {
-    console.error('Error updating status position:', error)
-  }
+const updateStatusPosition = (statusUuid, x, y) => {
+  store.updateStatusPosition(statusUuid, x, y)
 }
 
-const deleteStatus = async (statusUuid) => {
-  try {
-    const response = await fetch(`/api/v1/workflows/${props.workflowUuid}/statuses/${statusUuid}`, {
-      method: 'DELETE'
-    })
-    
-    if (response.ok) {
-      selectedElement.value = null
-      panelOpen.value = false
-      await loadWorkflow()
-    }
-  } catch (error) {
-    console.error('Error deleting status:', error)
-  }
+const deleteStatus = (statusUuid) => {
+  store.deleteStatus(statusUuid)
+  selectedElement.value = null
+  panelOpen.value = false
+  buildFlowFromWorkflow()
 }
 
-const addTransition = async (transitionData) => {
-  try {
-    const response = await fetch(`/api/v1/workflows/${props.workflowUuid}/transitions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(transitionData)
-    })
-    
-    if (response.ok) {
-      await loadWorkflow()
-      showAddTransitionDialog.value = false
-      preSelectedTransitionSource.value = null
-      preSelectedTransitionTarget.value = null
-    }
-  } catch (error) {
-    console.error('Error adding transition:', error)
-  }
+const addTransition = (transitionData) => {
+  store.addTransition(transitionData)
+  buildFlowFromWorkflow()
+  showAddTransitionDialog.value = false
+  preSelectedTransitionSource.value = null
+  preSelectedTransitionTarget.value = null
 }
 
-const updateTransition = async (transitionData) => {
-  try {
-    const response = await fetch(`/api/v1/workflows/${props.workflowUuid}/transitions/${transitionData.uuid}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(transitionData)
-    })
-    
-    if (response.ok) {
-      await loadWorkflow()
-    }
-  } catch (error) {
-    console.error('Error updating transition:', error)
-  }
+const updateTransition = (transitionData) => {
+  store.updateTransition(transitionData)
+  buildFlowFromWorkflow()
 }
 
-const deleteTransition = async (transitionUuid) => {
-  try {
-    const response = await fetch(`/api/v1/workflows/${props.workflowUuid}/transitions/${transitionUuid}`, {
-      method: 'DELETE'
-    })
-    
-    if (response.ok) {
-      selectedElement.value = null
-      panelOpen.value = false
-      await loadWorkflow()
-    }
-  } catch (error) {
-    console.error('Error deleting transition:', error)
-  }
+const deleteTransition = (transitionUuid) => {
+  store.deleteTransition(transitionUuid)
+  selectedElement.value = null
+  panelOpen.value = false
+  buildFlowFromWorkflow()
 }
 
 const saveWorkflow = async () => {
-  saving.value = true
-  try {
-    const response = await fetch(`/api/v1/workflows/${props.workflowUuid}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: workflow.value.name,
-        description: workflow.value.description,
-        entity_type: workflow.value.entity_type,
-        is_active: workflow.value.is_active
-      })
+  const success = await store.saveWorkflow()
+  if (success) {
+    buildFlowFromWorkflow()
+    emit('saved')
+  }
+}
+
+// Handle close with unsaved changes warning
+const handleClose = () => {
+  if (isDirty.value) {
+    confirm.require({
+      message: t('workflow.unsavedChangesWarning'),
+      header: t('common.confirm'),
+      icon: 'pi pi-exclamation-triangle',
+      acceptClass: 'p-button-danger',
+      acceptLabel: t('workflow.closeWithoutSaving'),
+      rejectLabel: t('common.cancel'),
+      accept: () => emit('close')
     })
-    
-    if (response.ok) {
-      emit('saved')
-    }
-  } catch (error) {
-    console.error('Error saving workflow:', error)
-  } finally {
-    saving.value = false
+  } else {
+    emit('close')
   }
 }
 
@@ -564,10 +470,19 @@ onMounted(async () => {
   ])
 })
 
+onUnmounted(() => {
+  store.clear()
+})
+
 // Watch for workflow UUID changes
 watch(() => props.workflowUuid, () => {
   loadWorkflow()
 })
+
+// Watch for workflow changes to rebuild flow
+watch(() => workflow.value?.statuses, () => {
+  buildFlowFromWorkflow()
+}, { deep: true })
 </script>
 
 <style scoped>

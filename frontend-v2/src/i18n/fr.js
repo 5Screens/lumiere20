@@ -591,7 +591,9 @@ export default {
     transitionCount: 'Transitions',
     duplicated: 'Workflow dupliqué avec succès',
     confirmDeleteStatus: 'Êtes-vous sûr de vouloir supprimer cet état ?',
-    confirmDeleteTransition: 'Êtes-vous sûr de vouloir supprimer cette transition ?'
+    confirmDeleteTransition: 'Êtes-vous sûr de vouloir supprimer cette transition ?',
+    unsavedChangesWarning: 'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir fermer sans enregistrer ?',
+    closeWithoutSaving: 'Fermer sans enregistrer'
   },
   audit: {
     title: 'Journal d\'audit',

@@ -589,7 +589,9 @@ export default {
     transitionCount: 'Transitions',
     duplicated: 'Workflow duplicated successfully',
     confirmDeleteStatus: 'Are you sure you want to delete this status?',
-    confirmDeleteTransition: 'Are you sure you want to delete this transition?'
+    confirmDeleteTransition: 'Are you sure you want to delete this transition?',
+    unsavedChangesWarning: 'You have unsaved changes. Are you sure you want to close without saving?',
+    closeWithoutSaving: 'Close without saving'
   },
   audit: {
     title: 'Audit Log',
