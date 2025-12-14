@@ -29,7 +29,6 @@
       :loading="loading"
       :paginator="true"
       :rows="10"
-      :globalFilter="globalFilter"
       dataKey="uuid"
       stripedRows
       class="flex-1"
@@ -122,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
@@ -171,7 +170,14 @@ const entityTypes = [
 const loadWorkflows = async () => {
   loading.value = true
   try {
-    const response = await fetch(`/api/v1/workflows?locale=${locale.value}&active=false`)
+    const params = new URLSearchParams({
+      locale: locale.value,
+      active: 'false'
+    })
+    if (globalFilter.value?.trim()) {
+      params.append('search', globalFilter.value.trim())
+    }
+    const response = await fetch(`/api/v1/workflows?${params}`)
     if (response.ok) {
       workflows.value = await response.json()
     }
@@ -181,6 +187,15 @@ const loadWorkflows = async () => {
     loading.value = false
   }
 }
+
+// Debounce search
+let searchTimeout = null
+watch(globalFilter, () => {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    loadWorkflows()
+  }, 300)
+})
 
 const createWorkflow = () => {
   editingWorkflow.value = null

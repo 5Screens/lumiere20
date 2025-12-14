@@ -26,8 +26,9 @@ const getAll = async (req, res, next) => {
     const activeOnly = req.query.active !== 'false';
     const locale = getLocale(req);
     const entityType = req.query.entity_type || null;
+    const search = req.query.search || null;
     
-    const workflows = await service.getAll({ activeOnly, locale, entityType });
+    const workflows = await service.getAll({ activeOnly, locale, entityType, search });
     res.json(workflows);
   } catch (error) {
     logger.error('[WORKFLOWS CONTROLLER] Error in getAll:', error);

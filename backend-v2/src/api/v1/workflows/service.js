@@ -11,10 +11,16 @@ const ENTITY_TYPE = 'workflows';
 /**
  * Get all workflows with translations
  */
-const getAll = async ({ activeOnly = true, locale = 'en', entityType = null } = {}) => {
+const getAll = async ({ activeOnly = true, locale = 'en', entityType = null, search = null } = {}) => {
   const where = {
     ...(activeOnly ? { is_active: true } : {}),
-    ...(entityType ? { entity_type: entityType } : {})
+    ...(entityType ? { entity_type: entityType } : {}),
+    ...(search ? {
+      OR: [
+        { name: { contains: search, mode: 'insensitive' } },
+        { entity_type: { contains: search, mode: 'insensitive' } }
+      ]
+    } : {})
   };
   
   const workflows = await prisma.workflows.findMany({
