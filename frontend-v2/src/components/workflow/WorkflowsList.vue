@@ -28,7 +28,25 @@
     >
       <Column field="name" :header="$t('common.name')" sortable>
         <template #body="{ data }">
-          <span class="font-semibold">{{ data.name }}</span>
+          <div v-if="editingName === data.uuid" class="flex items-center gap-2">
+            <InputText 
+              v-model="editingNameValue" 
+              class="w-full" 
+              size="small"
+              @keyup.enter="saveWorkflowName(data)"
+              @keyup.escape="cancelEditName"
+              @blur="saveWorkflowName(data)"
+              autofocus
+            />
+          </div>
+          <span 
+            v-else 
+            class="font-semibold cursor-pointer hover:text-primary-500 transition-colors"
+            @click="startEditName(data)"
+            :title="$t('common.clickToEdit')"
+          >
+            {{ data.name }}
+          </span>
         </template>
       </Column>
       <Column field="entity_type" :header="$t('workflow.entityType')" sortable />
@@ -125,6 +143,8 @@ const showDialog = ref(false)
 const showEditor = ref(false)
 const editingWorkflow = ref(null)
 const saving = ref(false)
+const editingName = ref(null)
+const editingNameValue = ref('')
 
 const formData = ref({
   name: '',
@@ -225,6 +245,41 @@ const deleteWorkflow = async (workflow) => {
 const onWorkflowSaved = () => {
   loadWorkflows()
   toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
+}
+
+const startEditName = (workflow) => {
+  editingName.value = workflow.uuid
+  editingNameValue.value = workflow.name
+}
+
+const cancelEditName = () => {
+  editingName.value = null
+  editingNameValue.value = ''
+}
+
+const saveWorkflowName = async (workflow) => {
+  if (!editingNameValue.value.trim() || editingNameValue.value === workflow.name) {
+    cancelEditName()
+    return
+  }
+  
+  try {
+    const response = await fetch(`/api/v1/workflows/${workflow.uuid}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editingNameValue.value.trim() })
+    })
+    
+    if (response.ok) {
+      workflow.name = editingNameValue.value.trim()
+      toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
+    }
+  } catch (error) {
+    console.error('Error updating workflow name:', error)
+    toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
+  } finally {
+    cancelEditName()
+  }
 }
 
 onMounted(() => {
