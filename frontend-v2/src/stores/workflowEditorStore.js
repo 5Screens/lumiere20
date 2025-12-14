@@ -122,8 +122,12 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
 
   // Transition actions (local only)
   const addTransition = (transitionData) => {
-    const toStatus = workflow.value.statuses.find(s => s.uuid === transitionData.to_status_uuid)
-    const sources = transitionData.source_status_uuids.map(uuid => {
+    // Support both formats: sources (from dialog) and source_status_uuids (from API)
+    const sourceUuids = transitionData.sources || transitionData.source_status_uuids || []
+    const toStatusUuid = transitionData.rel_to_status_uuid || transitionData.to_status_uuid
+    
+    const toStatus = workflow.value.statuses.find(s => s.uuid === toStatusUuid)
+    const sources = sourceUuids.map(uuid => {
       const fromStatus = workflow.value.statuses.find(s => s.uuid === uuid)
       return {
         uuid: uuidv4(),
@@ -136,7 +140,7 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
     const newTransition = {
       uuid: uuidv4(),
       name: transitionData.name,
-      rel_to_status_uuid: transitionData.to_status_uuid,
+      rel_to_status_uuid: toStatusUuid,
       to_status: toStatus,
       sources,
       _isNew: true
