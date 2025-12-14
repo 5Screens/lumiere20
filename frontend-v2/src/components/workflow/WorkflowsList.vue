@@ -76,12 +76,20 @@
     </Dialog>
 
     <!-- Editor Dialog (full screen) -->
-    <Dialog v-model:visible="showEditor" :header="editingWorkflow?.name" modal maximizable :style="{ width: '95vw', height: '90vh' }">
+    <Dialog 
+      v-model:visible="showEditor" 
+      :header="editingWorkflow?.name" 
+      modal 
+      maximizable 
+      :style="{ width: '95vw', height: '90vh' }"
+      :pt="{ content: { style: 'height: calc(90vh - 6rem); padding: 0;' } }"
+    >
       <WorkflowEditor 
         v-if="showEditor && editingWorkflow"
         :workflow-uuid="editingWorkflow.uuid" 
         @close="showEditor = false"
         @saved="onWorkflowSaved"
+        class="h-full"
       />
     </Dialog>
   </div>

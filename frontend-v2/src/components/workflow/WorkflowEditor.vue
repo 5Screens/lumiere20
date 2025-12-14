@@ -46,7 +46,7 @@
     <!-- Main content -->
     <div class="flex-1 flex min-h-0">
       <!-- Canvas (Zone A) -->
-      <div class="flex-1 relative" ref="canvasContainer">
+      <div class="flex-1 relative min-h-[400px]" ref="canvasContainer">
         <VueFlow
           v-model:nodes="nodes"
           v-model:edges="edges"
