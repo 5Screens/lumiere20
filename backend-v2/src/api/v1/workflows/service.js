@@ -433,7 +433,16 @@ const createStatus = async (workflowUuid, data) => {
  * Update a workflow status
  */
 const updateStatus = async (uuid, data) => {
-  const { _translations, ...statusData } = data;
+  const { _translations, ...rawData } = data;
+  
+  // Filter only allowed fields for update
+  const allowedFields = ['name', 'rel_category_uuid', 'allow_all_inbound', 'is_initial', 'position_x', 'position_y'];
+  const statusData = {};
+  for (const field of allowedFields) {
+    if (rawData[field] !== undefined) {
+      statusData[field] = rawData[field];
+    }
+  }
   
   const status = await prisma.workflow_statuses.update({
     where: { uuid },
