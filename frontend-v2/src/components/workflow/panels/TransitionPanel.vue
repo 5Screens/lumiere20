@@ -63,6 +63,12 @@ import { ref, watch } from 'vue'
 import { useConfirm } from 'primevue/useconfirm'
 import { useI18n } from 'vue-i18n'
 
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import MultiSelect from 'primevue/multiselect'
+import Select from 'primevue/select'
+import Divider from 'primevue/divider'
+
 const props = defineProps({
   transition: Object,
   statuses: Array

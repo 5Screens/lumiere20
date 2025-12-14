@@ -182,6 +182,9 @@ import TransitionPanel from './panels/TransitionPanel.vue'
 import AddStatusDialog from './dialogs/AddStatusDialog.vue'
 import AddTransitionDialog from './dialogs/AddTransitionDialog.vue'
 
+import Button from 'primevue/button'
+import Divider from 'primevue/divider'
+
 const props = defineProps({
   workflowUuid: {
     type: String,

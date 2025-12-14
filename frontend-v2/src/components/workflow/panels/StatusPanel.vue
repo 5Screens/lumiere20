@@ -63,6 +63,14 @@ import { ref, watch } from 'vue'
 import { useConfirm } from 'primevue/useconfirm'
 import { useI18n } from 'vue-i18n'
 
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import ToggleSwitch from 'primevue/toggleswitch'
+import Checkbox from 'primevue/checkbox'
+import Tag from 'primevue/tag'
+import Divider from 'primevue/divider'
+
 const props = defineProps({
   status: Object,
   categories: Array,

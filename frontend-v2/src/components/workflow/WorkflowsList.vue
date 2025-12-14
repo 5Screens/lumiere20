@@ -94,6 +94,18 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import WorkflowEditor from './WorkflowEditor.vue'
 
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Button from 'primevue/button'
+import Toolbar from 'primevue/toolbar'
+import Tag from 'primevue/tag'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import ToggleSwitch from 'primevue/toggleswitch'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+
 const { t, locale } = useI18n()
 const confirm = useConfirm()
 const toast = useToast()
