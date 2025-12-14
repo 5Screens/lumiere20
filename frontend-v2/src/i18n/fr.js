@@ -131,6 +131,7 @@ export default {
     duplicate: 'Dupliquer',
     create: 'Créer',
     search: 'Rechercher',
+    close:'Fermer',
     columns: 'Colonnes',
     loading: 'Chargement...',
     noData: 'Aucune donnée',
@@ -548,12 +549,13 @@ export default {
     }
   },
   workflow: {
+    name: 'Nom',
     title: 'Workflows',
     newWorkflow: 'Nouveau workflow',
     addStatus: 'Ajouter un statut',
     addTransition: 'Ajouter une transition',
     status: 'État',
-    statusDescription: 'Les états indiquent les étapes de votre processus de travail.',
+    statusDescription: 'Un statut est une étiquette normalisée qui permet de suivre la progression ou l’état d’un objet tout au long de son cycle de vie.',
     transition: 'Transition',
     transitionDescription: 'Les transitions relient les états en tant qu\'actions qui permettent de faire avancer les tâches.',
     category: 'Catégorie',

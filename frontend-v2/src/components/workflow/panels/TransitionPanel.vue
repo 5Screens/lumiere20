@@ -8,7 +8,7 @@
     
     <!-- Name -->
     <div class="field mb-4">
-      <label class="text-sm font-medium block mb-1">{{ $t('common.name') }}</label>
+      <label class="text-sm font-medium block mb-1">{{ $t('workflow.name') }}</label>
       <InputText v-model="localName" class="w-full" @blur="saveName" />
     </div>
     

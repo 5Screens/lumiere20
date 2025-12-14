@@ -553,7 +553,7 @@ export default {
     addStatus: 'Add Status',
     addTransition: 'Add Transition',
     status: 'Status',
-    statusDescription: 'Statuses indicate the stages of your working process.',
+    statusDescription: 'A status is a standardized label that allows tracking the progress or state of an object throughout its lifecycle.',
     transition: 'Transition',
     transitionDescription: 'Transitions connect states as actions that allow tasks to move forward.',
     category: 'Category',

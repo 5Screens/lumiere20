@@ -51,7 +51,7 @@
     
     <!-- Name -->
     <div class="field mb-4">
-      <label class="text-sm font-medium block mb-1">{{ $t('common.name') }}</label>
+      <label class="text-sm font-medium block mb-1">{{ $t('workflow.name') }}</label>
       <InputText v-model="name" class="w-full" :placeholder="$t('workflow.transitionNamePlaceholder')" />
       <small class="text-surface-500">{{ $t('workflow.transitionNameHint') }}</small>
     </div>

@@ -33,7 +33,7 @@
       stripedRows
       class="flex-1"
     >
-      <Column field="name" :header="$t('common.name')" sortable>
+      <Column field="name" :header="$t('workflow.name')" sortable>
         <template #body="{ data }">
           <div v-if="editingName === data.uuid" class="flex items-center gap-2">
             <InputText 
@@ -72,6 +72,16 @@
           <ToggleSwitch v-model="data.is_active" @change="toggleWorkflowActive(data)" />
         </template>
       </Column>
+      <Column field="created_at" :header="$t('common.createdAt')" sortable style="width: 140px">
+        <template #body="{ data }">
+          <span class="text-sm text-surface-500">{{ formatDate(data.created_at) }}</span>
+        </template>
+      </Column>
+      <Column field="updated_at" :header="$t('common.updatedAt')" sortable style="width: 140px">
+        <template #body="{ data }">
+          <span class="text-sm text-surface-500">{{ formatDate(data.updated_at) }}</span>
+        </template>
+      </Column>
       <Column :header="$t('common.actions')" style="width: 160px">
         <template #body="{ data }">
           <Button icon="pi pi-pencil" text size="small" @click="editWorkflow(data)" :title="$t('common.edit')" />
@@ -84,7 +94,7 @@
     <!-- Create/Edit Dialog -->
     <Dialog v-model:visible="showDialog" :header="editingWorkflow ? $t('common.edit') : $t('workflow.createWorkflow')" modal :style="{ width: '500px' }">
       <div class="field mb-4">
-        <label class="block mb-1 font-medium">{{ $t('common.name') }}</label>
+        <label class="block mb-1 font-medium">{{ $t('workflow.name') }}</label>
         <InputText v-model="formData.name" class="w-full" />
       </div>
       <div class="field mb-4">
@@ -143,6 +153,18 @@ import InputIcon from 'primevue/inputicon'
 const { t, locale } = useI18n()
 const confirm = useConfirm()
 const toast = useToast()
+
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleDateString(locale.value, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
 const workflows = ref([])
 const loading = ref(false)

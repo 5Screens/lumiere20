@@ -9,7 +9,7 @@
     <!-- Name -->
     <div class="field mb-4">
       <div class="flex items-center justify-between mb-1">
-        <label class="text-sm font-medium">{{ $t('common.name') }}</label>
+        <label class="text-sm font-medium">{{ $t('workflow.name') }}</label>
         <Button icon="pi pi-pencil" text size="small" @click="editName = true" />
       </div>
       <div v-if="!editName" class="text-surface-700 dark:text-surface-200">{{ status?.name }}</div>
