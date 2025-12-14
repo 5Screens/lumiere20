@@ -31,6 +31,17 @@
 
     <!-- Right: Actions -->
     <div class="flex items-center gap-2">
+      <!-- Debug: Responsive mode indicator -->
+      <div 
+        class="flex items-center gap-1 px-2 py-1 rounded text-white text-xs font-mono"
+        :class="responsiveMode.color"
+        v-tooltip.bottom="'Debug: Screen size'"
+      >
+        <i class="pi" :class="responsiveMode.icon"></i>
+        <span>{{ responsiveMode.label }}</span>
+        <span class="opacity-75">{{ windowWidth }}px</span>
+      </div>
+
       <!-- Language selector -->
       <Button 
         severity="secondary" 
@@ -85,6 +96,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/authStore'
+import { useResponsiveSize } from '@/composables/useResponsiveSize'
 import languagesService from '@/services/languagesService'
 import metadataService from '@/services/metadataService'
 import Button from 'primevue/button'
@@ -97,6 +109,13 @@ import Avatar from 'primevue/avatar'
 const emit = defineEmits(['toggle-sidebar', 'open-profile'])
 
 const router = useRouter()
+const { windowWidth, isMobile, isTablet, isDesktop } = useResponsiveSize()
+
+const responsiveMode = computed(() => {
+  if (isMobile.value) return { label: 'Mobile', icon: 'pi-mobile', color: 'bg-orange-500' }
+  if (isTablet.value) return { label: 'Tablet', icon: 'pi-tablet', color: 'bg-blue-500' }
+  return { label: 'Desktop', icon: 'pi-desktop', color: 'bg-green-500' }
+})
 const { t, locale } = useI18n()
 const authStore = useAuthStore()
 
