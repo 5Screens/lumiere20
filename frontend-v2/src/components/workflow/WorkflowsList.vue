@@ -1,6 +1,6 @@
 <template>
   <div class="workflows-list h-full flex flex-col">
-    <Toolbar class="mb-4">
+    <Toolbar class="mb-4 mt-2 mx-2">
       <template #start>
         <Button 
           :label="$t('workflow.createWorkflow')" 
