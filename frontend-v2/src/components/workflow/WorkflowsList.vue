@@ -7,6 +7,14 @@
           icon="pi pi-plus" 
           @click="createWorkflow" 
         />
+        <Button 
+          icon="pi pi-refresh" 
+          severity="secondary"
+          text
+          @click="loadWorkflows"
+          :loading="loading"
+          class="ml-2"
+        />
       </template>
       <template #end>
         <IconField>

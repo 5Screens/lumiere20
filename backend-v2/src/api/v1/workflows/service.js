@@ -19,7 +19,15 @@ const getAll = async ({ activeOnly = true, locale = 'en', entityType = null } = 
   
   const workflows = await prisma.workflows.findMany({
     where,
-    orderBy: { name: 'asc' }
+    orderBy: { name: 'asc' },
+    include: {
+      _count: {
+        select: {
+          statuses: true,
+          transitions: true
+        }
+      }
+    }
   });
   
   // Get translations
@@ -56,7 +64,9 @@ const getAll = async ({ activeOnly = true, locale = 'en', entityType = null } = 
     ...wf,
     name: translationMap[wf.uuid]?.name || wf.name,
     description: translationMap[wf.uuid]?.description || wf.description,
-    _translations: allTranslationsMap[wf.uuid] || {}
+    _translations: allTranslationsMap[wf.uuid] || {},
+    statusCount: wf._count.statuses,
+    transitionCount: wf._count.transitions
   }));
 };
 
