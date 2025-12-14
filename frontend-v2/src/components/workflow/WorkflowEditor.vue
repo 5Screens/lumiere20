@@ -55,6 +55,7 @@
           :max-zoom="2"
           :snap-to-grid="true"
           :snap-grid="[20, 20]"
+          :apply-default="false"
           fit-view-on-init
           @node-click="onNodeClick"
           @edge-click="onEdgeClick"
@@ -160,13 +161,15 @@
       :pre-selected-target="preSelectedTransitionTarget"
       @add="addTransition"
     />
-  </div>
+
+    </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { VueFlow } from '@vue-flow/core'
+import { useConfirm } from 'primevue/useconfirm'
+import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
@@ -195,6 +198,10 @@ const props = defineProps({
 const emit = defineEmits(['close', 'saved'])
 
 const { t, locale } = useI18n()
+const confirm = useConfirm()
+
+// Vue Flow hooks for handling changes with confirmation
+const { onNodesChange, onEdgesChange, applyNodeChanges, applyEdgeChanges } = useVueFlow()
 
 // State
 const workflow = ref(null)
@@ -486,6 +493,68 @@ const saveWorkflow = async () => {
     saving.value = false
   }
 }
+
+// Handle node changes with confirmation for deletions
+onNodesChange((changes) => {
+  const nextChanges = []
+  
+  for (const change of changes) {
+    if (change.type === 'remove') {
+      // Find the status UUID from the node id
+      const node = nodes.value.find(n => n.id === change.id)
+      if (node) {
+        const statusUuid = node.data?.uuid
+        if (statusUuid) {
+          // Show confirmation using PrimeVue ConfirmDialog
+          confirm.require({
+            message: t('workflow.confirmDeleteStatus'),
+            header: t('common.confirm'),
+            icon: 'pi pi-exclamation-triangle',
+            acceptClass: 'p-button-danger',
+            accept: () => deleteStatus(statusUuid)
+          })
+          // Don't apply the change - deletion handled by API
+          return
+        }
+      }
+    } else {
+      nextChanges.push(change)
+    }
+  }
+  
+  applyNodeChanges(nextChanges)
+})
+
+// Handle edge changes with confirmation for deletions
+onEdgesChange((changes) => {
+  const nextChanges = []
+  
+  for (const change of changes) {
+    if (change.type === 'remove') {
+      // Find the transition UUID from the edge id
+      const edge = edges.value.find(e => e.id === change.id)
+      if (edge) {
+        const transitionUuid = edge.data?.uuid
+        if (transitionUuid) {
+          // Show confirmation using PrimeVue ConfirmDialog
+          confirm.require({
+            message: t('workflow.confirmDeleteTransition'),
+            header: t('common.confirm'),
+            icon: 'pi pi-exclamation-triangle',
+            acceptClass: 'p-button-danger',
+            accept: () => deleteTransition(transitionUuid)
+          })
+          // Don't apply the change - deletion handled by API
+          return
+        }
+      }
+    } else {
+      nextChanges.push(change)
+    }
+  }
+  
+  applyEdgeChanges(nextChanges)
+})
 
 // Lifecycle
 onMounted(async () => {

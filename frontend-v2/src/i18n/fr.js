@@ -589,7 +589,9 @@ export default {
     entityType: 'Type d\'entité',
     statusCount: 'Statuts',
     transitionCount: 'Transitions',
-    duplicated: 'Workflow dupliqué avec succès'
+    duplicated: 'Workflow dupliqué avec succès',
+    confirmDeleteStatus: 'Êtes-vous sûr de vouloir supprimer cet état ?',
+    confirmDeleteTransition: 'Êtes-vous sûr de vouloir supprimer cette transition ?'
   },
   audit: {
     title: 'Journal d\'audit',

@@ -587,7 +587,9 @@ export default {
     entityType: 'Entity Type',
     statusCount: 'Statuses',
     transitionCount: 'Transitions',
-    duplicated: 'Workflow duplicated successfully'
+    duplicated: 'Workflow duplicated successfully',
+    confirmDeleteStatus: 'Are you sure you want to delete this status?',
+    confirmDeleteTransition: 'Are you sure you want to delete this transition?'
   },
   audit: {
     title: 'Audit Log',
