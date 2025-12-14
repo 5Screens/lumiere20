@@ -6,6 +6,15 @@ const logger = require('./logger');
 // Prisma 7 requires an adapter for database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  // Keep connections alive to prevent idle timeout issues
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
+  // Close idle connections after 30 seconds
+  idleTimeoutMillis: 30000,
+  // Maximum number of connections in the pool
+  max: 20,
+  // Connection timeout
+  connectionTimeoutMillis: 5000,
 });
 
 const adapter = new PrismaPg(pool);
