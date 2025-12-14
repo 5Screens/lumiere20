@@ -181,18 +181,22 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
           statuses: workflow.value.statuses.map(s => ({
             uuid: s._isNew ? null : s.uuid,
             tempUuid: s._isNew ? s.uuid : null,
+            _isNew: s._isNew,
             name: s.name,
             rel_category_uuid: s.rel_category_uuid,
             allow_all_inbound: s.allow_all_inbound,
             is_initial: s.is_initial,
             position_x: s.position_x,
-            position_y: s.position_y
+            position_y: s.position_y,
+            _translations: s._translations
           })),
           transitions: workflow.value.transitions.map(t => ({
             uuid: t._isNew ? null : t.uuid,
+            _isNew: t._isNew,
             name: t.name,
             to_status_uuid: t._isNew ? t.rel_to_status_uuid : (t.to_status?.uuid || t.rel_to_status_uuid),
-            source_status_uuids: t.sources.map(s => s._isNew ? s.rel_from_status_uuid : (s.from_status?.uuid || s.rel_from_status_uuid))
+            source_status_uuids: t.sources.map(s => s._isNew ? s.rel_from_status_uuid : (s.from_status?.uuid || s.rel_from_status_uuid)),
+            _translations: t._translations
           }))
         })
       })

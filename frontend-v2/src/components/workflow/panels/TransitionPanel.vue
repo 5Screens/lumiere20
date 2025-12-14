@@ -9,7 +9,13 @@
     <!-- Name -->
     <div class="field mb-4">
       <label class="text-sm font-medium block mb-1">{{ $t('workflow.name') }}</label>
-      <InputText v-model="localName" class="w-full" @blur="saveName" />
+      <TranslatableInput
+        v-model="localName"
+        :translations="transition?._translations?.name || {}"
+        :field-label="$t('workflow.name')"
+        class="w-full"
+        @update:translations="saveNameTranslations"
+      />
     </div>
     
     <!-- Path -->
@@ -68,6 +74,7 @@ import InputText from 'primevue/inputtext'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import Divider from 'primevue/divider'
+import TranslatableInput from '@/components/form/TranslatableInput.vue'
 
 const props = defineProps({
   transition: Object,
@@ -79,21 +86,29 @@ const confirm = useConfirm()
 const { t } = useI18n()
 
 const localName = ref('')
+const localNameTranslations = ref({})
 const localSources = ref([])
 const localTarget = ref('')
 
 watch(() => props.transition, (tr) => {
   if (tr) {
     localName.value = tr.name
+    localNameTranslations.value = tr._translations?.name || {}
     localSources.value = tr.sources?.map(s => s.from_status.uuid) || []
     localTarget.value = tr.to_status?.uuid || ''
   }
 }, { immediate: true })
 
-const saveName = () => {
-  if (localName.value !== props.transition?.name) {
-    emit('update', { uuid: props.transition.uuid, name: localName.value })
-  }
+const saveNameTranslations = (translations) => {
+  localNameTranslations.value = translations
+  emit('update', { 
+    uuid: props.transition.uuid, 
+    name: localName.value,
+    _translations: { 
+      ...props.transition?._translations,
+      name: translations 
+    }
+  })
 }
 
 const saveSources = () => {

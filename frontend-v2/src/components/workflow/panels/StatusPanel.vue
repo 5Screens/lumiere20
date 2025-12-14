@@ -8,12 +8,14 @@
     
     <!-- Name -->
     <div class="field mb-4">
-      <div class="flex items-center justify-between mb-1">
-        <label class="text-sm font-medium">{{ $t('workflow.name') }}</label>
-        <Button icon="pi pi-pencil" text size="small" @click="editName = true" />
-      </div>
-      <div v-if="!editName" class="text-surface-700 dark:text-surface-200">{{ status?.name }}</div>
-      <InputText v-else v-model="localName" class="w-full" @blur="saveName" @keyup.enter="saveName" />
+      <label class="text-sm font-medium block mb-1">{{ $t('workflow.name') }}</label>
+      <TranslatableInput
+        v-model="localName"
+        :translations="status?._translations?.name || {}"
+        :field-label="$t('workflow.name')"
+        class="w-full"
+        @update:translations="saveNameTranslations"
+      />
     </div>
     
     <!-- Category -->
@@ -70,6 +72,7 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import Checkbox from 'primevue/checkbox'
 import Tag from 'primevue/tag'
 import Divider from 'primevue/divider'
+import TranslatableInput from '@/components/form/TranslatableInput.vue'
 
 const props = defineProps({
   status: Object,
@@ -81,25 +84,31 @@ const emit = defineEmits(['update', 'delete', 'add-transition'])
 const confirm = useConfirm()
 const { t } = useI18n()
 
-const editName = ref(false)
 const editCategory = ref(false)
 const localName = ref('')
+const localNameTranslations = ref({})
 const localCategory = ref('')
 const localAllowAllInbound = ref(false)
 
 watch(() => props.status, (s) => {
   if (s) {
     localName.value = s.name
+    localNameTranslations.value = s._translations?.name || {}
     localCategory.value = s.rel_category_uuid
     localAllowAllInbound.value = s.allow_all_inbound
   }
 }, { immediate: true })
 
-const saveName = () => {
-  editName.value = false
-  if (localName.value !== props.status?.name) {
-    emit('update', { ...props.status, name: localName.value })
-  }
+const saveNameTranslations = (translations) => {
+  localNameTranslations.value = translations
+  emit('update', { 
+    ...props.status, 
+    name: localName.value,
+    _translations: { 
+      ...props.status?._translations,
+      name: translations 
+    }
+  })
 }
 
 const saveCategory = () => {

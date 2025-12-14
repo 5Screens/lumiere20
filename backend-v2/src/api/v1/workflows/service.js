@@ -540,7 +540,9 @@ const saveAll = async (uuid, data, locale = 'en') => {
     
     // Create or update statuses
     for (const status of statuses) {
-      if (!status.uuid) {
+      let statusUuid;
+      
+      if (!status.uuid || status._isNew) {
         // New status
         const newStatus = await tx.workflow_statuses.create({
           data: {
@@ -553,9 +555,10 @@ const saveAll = async (uuid, data, locale = 'en') => {
             position_y: status.position_y || 0
           }
         });
+        statusUuid = newStatus.uuid;
         // Map temp UUID to real UUID
-        if (status.tempUuid) {
-          statusUuidMap[status.tempUuid] = newStatus.uuid;
+        if (status.uuid) {
+          statusUuidMap[status.uuid] = newStatus.uuid;
         }
       } else {
         // Update existing status
@@ -570,7 +573,35 @@ const saveAll = async (uuid, data, locale = 'en') => {
             position_y: status.position_y || 0
           }
         });
+        statusUuid = status.uuid;
         statusUuidMap[status.uuid] = status.uuid;
+      }
+      
+      // Save translations for status name
+      if (status._translations?.name) {
+        // Delete existing translations for this status
+        await tx.translated_fields.deleteMany({
+          where: {
+            entity_type: 'workflow_statuses',
+            entity_uuid: statusUuid,
+            field_name: 'name'
+          }
+        });
+        
+        // Create new translations
+        for (const [langCode, value] of Object.entries(status._translations.name)) {
+          if (value && value.trim()) {
+            await tx.translated_fields.create({
+              data: {
+                entity_type: 'workflow_statuses',
+                entity_uuid: statusUuid,
+                field_name: 'name',
+                locale: langCode,
+                value: value.trim()
+              }
+            });
+          }
+        }
       }
     }
     
@@ -602,10 +633,12 @@ const saveAll = async (uuid, data, locale = 'en') => {
     // Create or update transitions
     for (const transition of transitions) {
       // Resolve status UUIDs (may be temp UUIDs for new statuses)
-      const toStatusUuid = statusUuidMap[transition.to_status_uuid] || transition.to_status_uuid;
-      const sourceStatusUuids = transition.source_status_uuids.map(id => statusUuidMap[id] || id);
+      const toStatusUuid = statusUuidMap[transition.to_status_uuid] || transition.to_status_uuid || transition.rel_to_status_uuid;
+      const sourceStatusUuids = (transition.source_status_uuids || []).map(id => statusUuidMap[id] || id);
       
-      if (!transition.uuid) {
+      let transitionUuid;
+      
+      if (!transition.uuid || transition._isNew) {
         // New transition
         const newTransition = await tx.workflow_transitions.create({
           data: {
@@ -614,6 +647,7 @@ const saveAll = async (uuid, data, locale = 'en') => {
             rel_to_status_uuid: toStatusUuid
           }
         });
+        transitionUuid = newTransition.uuid;
         
         // Create sources
         for (const sourceUuid of sourceStatusUuids) {
@@ -633,6 +667,7 @@ const saveAll = async (uuid, data, locale = 'en') => {
             rel_to_status_uuid: toStatusUuid
           }
         });
+        transitionUuid = transition.uuid;
         
         // Delete old sources and recreate
         await tx.workflow_transition_sources.deleteMany({
@@ -646,6 +681,33 @@ const saveAll = async (uuid, data, locale = 'en') => {
               rel_from_status_uuid: sourceUuid
             }
           });
+        }
+      }
+      
+      // Save translations for transition name
+      if (transition._translations?.name) {
+        // Delete existing translations for this transition
+        await tx.translated_fields.deleteMany({
+          where: {
+            entity_type: 'workflow_transitions',
+            entity_uuid: transitionUuid,
+            field_name: 'name'
+          }
+        });
+        
+        // Create new translations
+        for (const [langCode, value] of Object.entries(transition._translations.name)) {
+          if (value && value.trim()) {
+            await tx.translated_fields.create({
+              data: {
+                entity_type: 'workflow_transitions',
+                entity_uuid: transitionUuid,
+                field_name: 'name',
+                locale: langCode,
+                value: value.trim()
+              }
+            });
+          }
         }
       }
     }
