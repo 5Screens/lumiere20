@@ -2,12 +2,10 @@
   <div class="workflow-editor h-full flex flex-col">
     <!-- Header (Zone C) -->
     <div class="workflow-header flex items-center justify-between px-4 py-3 border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800">
-      <div class="flex items-center gap-4">
-        <h2 class="text-lg font-semibold text-surface-700 dark:text-surface-200">
-          {{ workflow?.name || $t('workflow.newWorkflow') }}
-        </h2>
-      </div>
+      <!-- Left spacer for balance -->
+      <div class="flex-1"></div>
       
+      <!-- Center: Add buttons -->
       <div class="flex items-center gap-2">
         <Button
           :label="$t('workflow.addStatus')"
@@ -23,7 +21,10 @@
           size="small"
           @click="showAddTransitionDialog = true"
         />
-        <Divider layout="vertical" class="mx-2" />
+      </div>
+      
+      <!-- Right: Save/Close buttons -->
+      <div class="flex-1 flex items-center justify-end gap-2">
         <Button
           :label="$t('common.save')"
           icon="pi pi-save"
