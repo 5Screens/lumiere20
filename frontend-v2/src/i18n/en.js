@@ -128,6 +128,7 @@ export default {
     cancel: 'Cancel',
     delete: 'Delete',
     edit: 'Edit',
+    duplicate: 'Duplicate',
     create: 'Create',
     search: 'Search',
     columns: 'Columns',
@@ -585,7 +586,8 @@ export default {
     statusCategories: 'Status Categories',
     entityType: 'Entity Type',
     statusCount: 'Statuses',
-    transitionCount: 'Transitions'
+    transitionCount: 'Transitions',
+    duplicated: 'Workflow duplicated successfully'
   },
   audit: {
     title: 'Audit Log',

@@ -30,6 +30,9 @@ router.put('/:uuid', controller.update);
 // DELETE /api/v1/workflows/:uuid - Delete workflow
 router.delete('/:uuid', controller.remove);
 
+// POST /api/v1/workflows/:uuid/duplicate - Duplicate workflow
+router.post('/:uuid/duplicate', controller.duplicateWorkflow);
+
 // ============================================
 // WORKFLOW STATUSES
 // ============================================

@@ -96,6 +96,29 @@ const update = async (req, res, next) => {
 };
 
 /**
+ * Duplicate a workflow
+ */
+const duplicateWorkflow = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const locale = getLocale(req);
+    const workflow = await service.duplicate(uuid, locale);
+    res.status(201).json(workflow);
+  } catch (error) {
+    logger.error('[WORKFLOWS CONTROLLER] Error in duplicate:', error);
+    
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        error: 'Not found',
+        message: `Workflow with UUID '${req.params.uuid}' not found`
+      });
+    }
+    
+    next(error);
+  }
+};
+
+/**
  * Delete a workflow
  */
 const remove = async (req, res, next) => {
@@ -298,6 +321,7 @@ module.exports = {
   create,
   update,
   remove,
+  duplicateWorkflow,
   search,
   
   // Statuses

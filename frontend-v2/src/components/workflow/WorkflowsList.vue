@@ -72,10 +72,11 @@
           <ToggleSwitch v-model="data.is_active" @change="toggleWorkflowActive(data)" />
         </template>
       </Column>
-      <Column :header="$t('common.actions')" style="width: 120px">
+      <Column :header="$t('common.actions')" style="width: 160px">
         <template #body="{ data }">
-          <Button icon="pi pi-pencil" text size="small" @click="editWorkflow(data)" />
-          <Button icon="pi pi-trash" text size="small" severity="danger" @click="confirmDelete(data)" />
+          <Button icon="pi pi-pencil" text size="small" @click="editWorkflow(data)" :title="$t('common.edit')" />
+          <Button icon="pi pi-copy" text size="small" @click="duplicateWorkflow(data)" :title="$t('common.duplicate')" />
+          <Button icon="pi pi-trash" text size="small" severity="danger" @click="confirmDelete(data)" :title="$t('common.delete')" />
         </template>
       </Column>
     </DataTable>
@@ -322,6 +323,26 @@ const toggleWorkflowActive = async (workflow) => {
   } catch (error) {
     console.error('Error updating workflow active status:', error)
     workflow.is_active = !workflow.is_active
+    toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
+  }
+}
+
+const duplicateWorkflow = async (workflow) => {
+  try {
+    const response = await fetch(`/api/v1/workflows/${workflow.uuid}/duplicate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    
+    if (response.ok) {
+      const newWorkflow = await response.json()
+      workflows.value.unshift(newWorkflow)
+      toast.add({ severity: 'success', summary: t('common.success'), detail: t('workflow.duplicated'), life: 3000 })
+    } else {
+      toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
+    }
+  } catch (error) {
+    console.error('Error duplicating workflow:', error)
     toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
   }
 }

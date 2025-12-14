@@ -300,6 +300,150 @@ const update = async (uuid, data) => {
 };
 
 /**
+ * Duplicate a workflow with all its statuses and transitions
+ */
+const duplicate = async (uuid, locale = 'en') => {
+  // Get original workflow with all details
+  const original = await prisma.workflows.findUnique({
+    where: { uuid },
+    include: {
+      statuses: {
+        include: {
+          category: true
+        }
+      },
+      transitions: {
+        include: {
+          sources: true
+        }
+      }
+    }
+  });
+  
+  if (!original) {
+    const error = new Error('Workflow not found');
+    error.code = 'P2025';
+    throw error;
+  }
+  
+  // Get translations for original workflow and its statuses/transitions
+  const statusUuids = original.statuses.map(s => s.uuid);
+  const transitionUuids = original.transitions.map(t => t.uuid);
+  
+  const translations = await prisma.translated_fields.findMany({
+    where: {
+      OR: [
+        { entity_type: ENTITY_TYPE, entity_uuid: uuid },
+        { entity_type: 'workflow_statuses', entity_uuid: { in: statusUuids } },
+        { entity_type: 'workflow_transitions', entity_uuid: { in: transitionUuids } }
+      ]
+    }
+  });
+  
+  // Create new workflow
+  const newWorkflow = await prisma.workflows.create({
+    data: {
+      name: `${original.name} (copy)`,
+      description: original.description,
+      entity_type: original.entity_type,
+      is_active: false // Start as inactive
+    }
+  });
+  
+  // Copy workflow translations
+  const workflowTranslations = translations.filter(t => t.entity_type === ENTITY_TYPE && t.entity_uuid === uuid);
+  for (const t of workflowTranslations) {
+    await prisma.translated_fields.create({
+      data: {
+        entity_type: ENTITY_TYPE,
+        entity_uuid: newWorkflow.uuid,
+        field_name: t.field_name,
+        locale: t.locale,
+        value: t.field_name === 'name' ? `${t.value} (copy)` : t.value
+      }
+    });
+  }
+  
+  // Map old status UUIDs to new ones
+  const statusUuidMap = {};
+  
+  // Create new statuses
+  for (const status of original.statuses) {
+    const newStatus = await prisma.workflow_statuses.create({
+      data: {
+        rel_workflow_uuid: newWorkflow.uuid,
+        name: status.name,
+        rel_category_uuid: status.rel_category_uuid,
+        allow_all_inbound: status.allow_all_inbound,
+        is_initial: status.is_initial,
+        position_x: status.position_x,
+        position_y: status.position_y
+      }
+    });
+    
+    statusUuidMap[status.uuid] = newStatus.uuid;
+    
+    // Copy status translations
+    const statusTranslations = translations.filter(t => t.entity_type === 'workflow_statuses' && t.entity_uuid === status.uuid);
+    for (const t of statusTranslations) {
+      await prisma.translated_fields.create({
+        data: {
+          entity_type: 'workflow_statuses',
+          entity_uuid: newStatus.uuid,
+          field_name: t.field_name,
+          locale: t.locale,
+          value: t.value
+        }
+      });
+    }
+  }
+  
+  // Create new transitions with mapped status UUIDs
+  for (const transition of original.transitions) {
+    const newTransition = await prisma.workflow_transitions.create({
+      data: {
+        rel_workflow_uuid: newWorkflow.uuid,
+        name: transition.name,
+        rel_to_status_uuid: statusUuidMap[transition.rel_to_status_uuid]
+      }
+    });
+    
+    // Copy transition sources with mapped UUIDs
+    for (const source of transition.sources) {
+      await prisma.workflow_transition_sources.create({
+        data: {
+          rel_transition_uuid: newTransition.uuid,
+          rel_from_status_uuid: statusUuidMap[source.rel_from_status_uuid]
+        }
+      });
+    }
+    
+    // Copy transition translations
+    const transitionTranslations = translations.filter(t => t.entity_type === 'workflow_transitions' && t.entity_uuid === transition.uuid);
+    for (const t of transitionTranslations) {
+      await prisma.translated_fields.create({
+        data: {
+          entity_type: 'workflow_transitions',
+          entity_uuid: newTransition.uuid,
+          field_name: t.field_name,
+          locale: t.locale,
+          value: t.value
+        }
+      });
+    }
+  }
+  
+  logger.info(`[WORKFLOWS] Duplicated workflow: ${original.name} -> ${newWorkflow.name} (${newWorkflow.uuid})`);
+  
+  // Return the new workflow with counts
+  return {
+    ...newWorkflow,
+    statusCount: original.statuses.length,
+    transitionCount: original.transitions.length
+  };
+};
+
+/**
  * Delete a workflow (cascades to statuses and transitions)
  */
 const remove = async (uuid) => {
@@ -764,6 +908,7 @@ module.exports = {
   create,
   update,
   remove,
+  duplicate,
   search,
   
   // Statuses

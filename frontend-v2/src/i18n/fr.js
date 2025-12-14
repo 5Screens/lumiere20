@@ -128,6 +128,7 @@ export default {
     cancel: 'Annuler',
     delete: 'Supprimer',
     edit: 'Modifier',
+    duplicate: 'Dupliquer',
     create: 'Créer',
     search: 'Rechercher',
     columns: 'Colonnes',
@@ -585,7 +586,8 @@ export default {
     statusCategories: 'Catégories de statuts',
     entityType: 'Type d\'entité',
     statusCount: 'Statuts',
-    transitionCount: 'Transitions'
+    transitionCount: 'Transitions',
+    duplicated: 'Workflow dupliqué avec succès'
   },
   audit: {
     title: 'Journal d\'audit',
