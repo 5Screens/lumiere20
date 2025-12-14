@@ -70,7 +70,7 @@
       </Column>
       <Column field="is_active" :header="$t('common.isActive')" sortable style="width: 80px">
         <template #body="{ data }">
-          <i :class="data.is_active ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
+          <ToggleSwitch v-model="data.is_active" @change="toggleWorkflowActive(data)" />
         </template>
       </Column>
       <Column :header="$t('common.actions')" style="width: 120px">
@@ -171,7 +171,7 @@ const entityTypes = [
 const loadWorkflows = async () => {
   loading.value = true
   try {
-    const response = await fetch(`/api/v1/workflows?locale=${locale.value}`)
+    const response = await fetch(`/api/v1/workflows?locale=${locale.value}&active=false`)
     if (response.ok) {
       workflows.value = await response.json()
     }
@@ -287,6 +287,27 @@ const saveWorkflowName = async (workflow) => {
     toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
   } finally {
     cancelEditName()
+  }
+}
+
+const toggleWorkflowActive = async (workflow) => {
+  try {
+    const response = await fetch(`/api/v1/workflows/${workflow.uuid}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_active: workflow.is_active })
+    })
+    
+    if (response.ok) {
+      toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
+    } else {
+      workflow.is_active = !workflow.is_active
+      toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
+    }
+  } catch (error) {
+    console.error('Error updating workflow active status:', error)
+    workflow.is_active = !workflow.is_active
+    toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
   }
 }
 
