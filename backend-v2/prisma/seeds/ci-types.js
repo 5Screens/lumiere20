@@ -18,6 +18,7 @@ async function seedCiTypes() {
 
   // CI Types with default labels (English as fallback)
   // category_code maps to ci_categories.code (null = no category = "Others" in menu)
+  // has_model: true = physical CI that can reference a model, false = model CI or CI without model
   const ciTypes = [
     {
       code: 'UPS',
@@ -26,6 +27,7 @@ async function seedCiTypes() {
       icon: 'pi-bolt',
       color: 'yellow',
       display_order: 1,
+      has_model: true,
       category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Onduleur (UPS)', description: 'Alimentation sans interruption' },
@@ -42,6 +44,7 @@ async function seedCiTypes() {
       icon: 'pi-desktop',
       color: 'blue',
       display_order: 1,
+      has_model: true,
       category_code: 'APPLICATIONS',
       translations: {
         fr: { label: 'Application', description: 'Application logicielle' },
@@ -54,17 +57,35 @@ async function seedCiTypes() {
     {
       code: 'SERVER',
       label: 'Server',
-      description: 'Physical or virtual server',
+      description: 'Physical server instance',
       icon: 'pi-server',
       color: 'green',
       display_order: 2,
+      has_model: true,
       category_code: 'HARDWARE',
       translations: {
-        fr: { label: 'Serveur', description: 'Serveur physique ou virtuel' },
-        en: { label: 'Server', description: 'Physical or virtual server' },
-        es: { label: 'Servidor', description: 'Servidor físico o virtual' },
-        pt: { label: 'Servidor', description: 'Servidor físico ou virtual' },
-        de: { label: 'Server', description: 'Physischer oder virtueller Server' }
+        fr: { label: 'Serveur', description: 'Instance de serveur physique' },
+        en: { label: 'Server', description: 'Physical server instance' },
+        es: { label: 'Servidor', description: 'Instancia de servidor físico' },
+        pt: { label: 'Servidor', description: 'Instância de servidor físico' },
+        de: { label: 'Server', description: 'Physische Serverinstanz' }
+      }
+    },
+    {
+      code: 'MODEL_SERVER',
+      label: 'Server Model',
+      description: 'Server hardware model template',
+      icon: 'pi-server',
+      color: 'green',
+      display_order: 1,
+      has_model: false,
+      category_code: 'MODELS',
+      translations: {
+        fr: { label: 'Modèle de serveur', description: 'Modèle de matériel serveur' },
+        en: { label: 'Server Model', description: 'Server hardware model template' },
+        es: { label: 'Modelo de servidor', description: 'Plantilla de modelo de hardware de servidor' },
+        pt: { label: 'Modelo de servidor', description: 'Modelo de hardware de servidor' },
+        de: { label: 'Servermodell', description: 'Server-Hardware-Modellvorlage' }
       }
     },
     {
@@ -74,6 +95,7 @@ async function seedCiTypes() {
       icon: 'pi-sitemap',
       color: 'purple',
       display_order: 1,
+      has_model: true,
       category_code: 'NETWORK',
       translations: {
         fr: { label: 'Routeur', description: 'Routeur réseau pour le routage du trafic entre réseaux' },
@@ -90,6 +112,7 @@ async function seedCiTypes() {
       icon: 'pi-share-alt',
       color: 'violet',
       display_order: 2,
+      has_model: true,
       category_code: 'NETWORK',
       translations: {
         fr: { label: 'Switch', description: 'Commutateur réseau pour la connectivité locale' },
@@ -106,6 +129,7 @@ async function seedCiTypes() {
       icon: 'pi-shield',
       color: 'red',
       display_order: 3,
+      has_model: true,
       category_code: 'NETWORK',
       translations: {
         fr: { label: 'Pare-feu', description: 'Pare-feu de sécurité réseau' },
@@ -122,6 +146,7 @@ async function seedCiTypes() {
       icon: 'pi-wifi',
       color: 'sky',
       display_order: 4,
+      has_model: true,
       category_code: 'NETWORK',
       translations: {
         fr: { label: 'Point d\'accès', description: 'Point d\'accès sans fil pour la connectivité WiFi' },
@@ -138,6 +163,7 @@ async function seedCiTypes() {
       icon: 'pi-arrows-h',
       color: 'amber',
       display_order: 5,
+      has_model: true,
       category_code: 'NETWORK',
       translations: {
         fr: { label: 'Répartiteur de charge', description: 'Répartiteur de charge pour la distribution du trafic' },
@@ -154,6 +180,7 @@ async function seedCiTypes() {
       icon: 'pi-database',
       color: 'orange',
       display_order: 3,
+      has_model: true,
       category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Stockage', description: 'SAN, NAS, baies de stockage' },
@@ -170,6 +197,7 @@ async function seedCiTypes() {
       icon: 'pi-desktop',
       color: 'cyan',
       display_order: 4,
+      has_model: true,
       category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Poste de travail', description: 'Ordinateur de bureau ou portable' },
@@ -186,6 +214,7 @@ async function seedCiTypes() {
       icon: 'pi-print',
       color: 'gray',
       display_order: 5,
+      has_model: true,
       category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Imprimante', description: 'Imprimante ou multifonction' },
@@ -202,6 +231,7 @@ async function seedCiTypes() {
       icon: 'pi-mobile',
       color: 'teal',
       display_order: 6,
+      has_model: true,
       category_code: 'HARDWARE',
       translations: {
         fr: { label: 'Appareil mobile', description: 'Smartphone, tablette' },
@@ -218,6 +248,7 @@ async function seedCiTypes() {
       icon: 'pi-database',
       color: 'indigo',
       display_order: 1,
+      has_model: true,
       category_code: 'DATABASE',
       translations: {
         fr: { label: 'Base de données', description: 'Instance de base de données' },
@@ -234,6 +265,7 @@ async function seedCiTypes() {
       icon: 'pi-server',
       color: 'violet',
       display_order: 1,
+      has_model: true,
       category_code: 'VIRTUALIZATION',
       translations: {
         fr: { label: 'Machine virtuelle', description: 'Instance de machine virtuelle' },
@@ -250,6 +282,7 @@ async function seedCiTypes() {
       icon: 'pi-cloud',
       color: 'sky',
       display_order: 1,
+      has_model: false,
       category_code: 'CLOUD',
       translations: {
         fr: { label: 'Service Cloud', description: 'Service basé sur le cloud' },
@@ -266,6 +299,7 @@ async function seedCiTypes() {
       icon: 'pi-file',
       color: 'amber',
       display_order: 1,
+      has_model: false,
       category_code: 'CONTRACTS',
       translations: {
         fr: { label: 'Contrat', description: 'Contrat de service ou de support' },
@@ -282,6 +316,7 @@ async function seedCiTypes() {
       icon: 'pi-key',
       color: 'green',
       display_order: 2,
+      has_model: false,
       category_code: 'CONTRACTS',
       translations: {
         fr: { label: 'Licence logicielle', description: 'Licence de logiciel' },
@@ -298,6 +333,7 @@ async function seedCiTypes() {
       icon: 'pi-box',
       color: 'gray',
       display_order: 99,
+      has_model: false,
       category_code: null, // No category = will appear in "Others"
       translations: {
         fr: { label: 'Générique', description: 'Élément de configuration générique' },
@@ -310,7 +346,7 @@ async function seedCiTypes() {
   ];
 
   for (const ciType of ciTypes) {
-    const { translations, category_code, ...ciTypeData } = ciType;
+    const { translations, category_code, has_model, ...ciTypeData } = ciType;
     
     // Get category UUID if category_code is provided
     const rel_category_uuid = category_code ? categoryMap[category_code] : null;
@@ -324,10 +360,12 @@ async function seedCiTypes() {
         icon: ciTypeData.icon,
         color: ciTypeData.color,
         display_order: ciTypeData.display_order,
+        has_model: has_model !== undefined ? has_model : true,
         rel_category_uuid
       },
       create: {
         ...ciTypeData,
+        has_model: has_model !== undefined ? has_model : true,
         rel_category_uuid
       }
     });

@@ -294,6 +294,7 @@ const create = async (data) => {
         name: itemData.name,
         description: itemData.description || null,
         ci_type: itemData.ci_type || 'GENERIC',
+        rel_model_uuid: itemData.rel_model_uuid || null,
         extended_core_fields: itemData.extended_core_fields || {},
       },
     });
@@ -327,6 +328,7 @@ const update = async (uuid, data) => {
     if (itemData.name !== undefined) updateData.name = itemData.name;
     if (itemData.description !== undefined) updateData.description = itemData.description;
     if (itemData.ci_type !== undefined) updateData.ci_type = itemData.ci_type;
+    if (itemData.rel_model_uuid !== undefined) updateData.rel_model_uuid = itemData.rel_model_uuid;
     if (itemData.extended_core_fields !== undefined)
       updateData.extended_core_fields = itemData.extended_core_fields;
 
@@ -398,6 +400,58 @@ const removeMany = async (uuids) => {
   }
 };
 
+/**
+ * Get models for a specific CI type
+ * Maps physical CI type to its corresponding model type (e.g., SERVER -> MODEL_SERVER)
+ * @param {string} ciTypeCode - Physical CI type code (e.g., 'SERVER')
+ * @param {string} locale - Locale for translations
+ * @returns {Promise<Array>} - Array of model CIs
+ */
+const getModelsForType = async (ciTypeCode, locale = 'en') => {
+  try {
+    // Map physical CI type to model type
+    const modelTypeCode = `MODEL_${ciTypeCode}`;
+    
+    logger.info(`[CONFIGURATION_ITEMS] Getting models for type: ${ciTypeCode} -> ${modelTypeCode}`);
+
+    // Find all CIs of the model type
+    const items = await prisma.configuration_items.findMany({
+      where: { ci_type: modelTypeCode },
+      orderBy: { name: 'asc' },
+    });
+
+    if (items.length === 0) {
+      logger.info(`[CONFIGURATION_ITEMS] No models found for type: ${modelTypeCode}`);
+      return [];
+    }
+
+    // Fetch translations for all items
+    const uuids = items.map(item => item.uuid);
+    const translationsMap = await fetchTranslations(uuids, locale);
+    
+    // Transform items with translations
+    const transformedItems = items.map(item => {
+      const translations = translationsMap[item.uuid] || [];
+      const result = { ...item };
+      
+      // Apply locale-specific translation
+      for (const t of translations) {
+        if (t.locale === locale && TRANSLATABLE_FIELDS.includes(t.field_name)) {
+          result[t.field_name] = t.value;
+        }
+      }
+      
+      return result;
+    });
+
+    logger.info(`[CONFIGURATION_ITEMS] Found ${transformedItems.length} models for type: ${modelTypeCode}`);
+    return transformedItems;
+  } catch (error) {
+    logger.error('[CONFIGURATION_ITEMS] Error getting models for type:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   search,
   getAll,
@@ -406,4 +460,5 @@ module.exports = {
   update,
   remove,
   removeMany,
+  getModelsForType,
 };

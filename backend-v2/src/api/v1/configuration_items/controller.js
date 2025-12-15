@@ -138,6 +138,22 @@ const removeMany = async (req, res, next) => {
   }
 };
 
+/**
+ * Get models for a specific CI type
+ * GET /api/v1/configuration_items/models/:ciTypeCode
+ */
+const getModelsForType = async (req, res, next) => {
+  try {
+    const { ciTypeCode } = req.params;
+    const locale = req.query.locale || req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+    
+    const models = await service.getModelsForType(ciTypeCode, locale);
+    res.json(models);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   search,
   getAll,
@@ -146,4 +162,5 @@ module.exports = {
   update,
   remove,
   removeMany,
+  getModelsForType,
 };

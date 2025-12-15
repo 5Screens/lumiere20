@@ -174,6 +174,16 @@
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly"
         />
+        
+        <!-- CI Model Selector -->
+        <CiModelSelector 
+          v-else-if="field.field_type === 'ci_model'"
+          :id="field.field_name" 
+          :modelValue="modelValue[field.field_name]"
+          :ciTypeCode="modelValue.ci_type"
+          @update:modelValue="updateField(field.field_name, $event)"
+          :disabled="field.is_readonly"
+        />
       </div>
     </template>
   </div>
@@ -196,6 +206,7 @@ import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
 import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import CICategorySelector from '@/components/form/CICategorySelector.vue'
+import CiModelSelector from '@/components/form/CiModelSelector.vue'
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'

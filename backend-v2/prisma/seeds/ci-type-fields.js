@@ -8,14 +8,55 @@ const { prisma } = require('../client');
 
 // Translations dictionary for field labels { field_name: { en: '...', fr: '...' } }
 const fieldTranslations = {
+  // Common fields
   ip_address: { en: 'IP Address', fr: 'Adresse IP' },
   mac_address: { en: 'MAC Address', fr: 'Adresse MAC' },
   firmware_version: { en: 'Firmware Version', fr: 'Version firmware' },
-  manufacturer: { en: 'Manufacturer', fr: 'Fabricant' },
-  model: { en: 'Model', fr: 'Modèle' },
   serial_number: { en: 'Serial Number', fr: 'Numéro de série' },
   purchase_date: { en: 'Purchase Date', fr: "Date d'achat" },
   warranty_expiry: { en: 'Warranty Expiry', fr: 'Fin de garantie' },
+  notes: { en: 'Notes', fr: 'Notes' },
+  asset_tag: { en: 'Asset Tag', fr: "Numéro d'inventaire" },
+  
+  // MODEL fields (logical/template CI)
+  manufacturer: { en: 'Manufacturer', fr: 'Fabricant' },
+  manufacturer_reference: { en: 'Manufacturer Reference', fr: 'Référence fabricant' },
+  product_family: { en: 'Product Family', fr: 'Famille' },
+  form_factor: { en: 'Form Factor', fr: 'Facteur de forme' },
+  cpu_type: { en: 'CPU Type', fr: 'Type de processeur' },
+  standard_ram_gb: { en: 'Standard RAM (GB)', fr: 'RAM standard (Go)' },
+  max_ram_gb: { en: 'Max RAM (GB)', fr: 'RAM max (Go)' },
+  planned_storage: { en: 'Planned Storage', fr: 'Stockage prévu' },
+  os_compatibility: { en: 'OS Compatibility', fr: 'Compatibilité OS' },
+  introduction_date: { en: 'Introduction Date', fr: "Date d'introduction" },
+  model_status: { en: 'Model Status', fr: 'Statut du modèle' },
+  documentation_url: { en: 'Documentation URL', fr: 'Documentation technique' },
+  expected_lifecycle_years: { en: 'Expected Lifecycle (years)', fr: 'Cycle de vie prévu (années)' },
+  estimated_unit_cost: { en: 'Estimated Unit Cost', fr: 'Coût unitaire estimé' },
+  compatible_services: { en: 'Compatible Services', fr: 'Services compatibles' },
+  in_it_catalog: { en: 'In IT Catalog', fr: 'Catalogue IT interne' },
+  replaced_by: { en: 'Replaced By', fr: 'Remplacé par' },
+  
+  // Physical CI fields (instance)
+  hostname: { en: 'Hostname', fr: "Nom d'hôte" },
+  ram_installed_gb: { en: 'Installed RAM (GB)', fr: 'RAM installée (Go)' },
+  installed_storage: { en: 'Installed Storage', fr: 'Disques installés' },
+  os: { en: 'Operating System', fr: "Système d'exploitation" },
+  os_version: { en: 'OS Version', fr: 'Version OS' },
+  commissioning_date: { en: 'Commissioning Date', fr: 'Date de mise en service' },
+  ci_status: { en: 'CI Status', fr: 'Statut du CI' },
+  location: { en: 'Location', fr: 'Localisation' },
+  location_datacenter: { en: 'Datacenter', fr: 'Datacenter' },
+  location_rack: { en: 'Rack Location', fr: 'Emplacement rack' },
+  location_rack_unit: { en: 'Rack Unit', fr: 'Unité rack' },
+  estimated_end_of_life: { en: 'Estimated End of Life', fr: 'Durée de vie estimée' },
+  accounting_value: { en: 'Accounting Value', fr: 'Valeur comptable' },
+  depreciated_value: { en: 'Depreciated Value', fr: 'Valeur amortie' },
+  hosted_services: { en: 'Hosted Services', fr: 'Services hébergés' },
+  cmdb_reference: { en: 'CMDB Reference', fr: 'Référence CMDB' },
+  environment: { en: 'Environment', fr: 'Environnement' },
+  
+  // UPS fields
   power_capacity_va: { en: 'Power Capacity (VA)', fr: 'Capacité (VA)' },
   power_capacity_watts: { en: 'Power Capacity (W)', fr: 'Capacité (W)' },
   battery_count: { en: 'Battery Count', fr: 'Nombre de batteries' },
@@ -24,29 +65,19 @@ const fieldTranslations = {
   next_battery_change: { en: 'Next Battery Change', fr: 'Prochain changement batterie' },
   input_voltage: { en: 'Input Voltage', fr: 'Tension entrée' },
   output_voltage: { en: 'Output Voltage', fr: 'Tension sortie' },
-  location_rack: { en: 'Rack Location', fr: 'Emplacement rack' },
+  
+  // Application fields
   version: { en: 'Version', fr: 'Version' },
   vendor: { en: 'Vendor', fr: 'Éditeur' },
   license_type: { en: 'License Type', fr: 'Type de licence' },
   license_count: { en: 'License Count', fr: 'Nombre de licences' },
   license_expiry: { en: 'License Expiry', fr: 'Expiration licence' },
-  environment: { en: 'Environment', fr: 'Environnement' },
   url: { en: 'URL', fr: 'URL' },
-  documentation_url: { en: 'Documentation URL', fr: 'URL documentation' },
   support_contact: { en: 'Support Contact', fr: 'Contact support' },
   business_owner: { en: 'Business Owner', fr: 'Responsable métier' },
   technical_owner: { en: 'Technical Owner', fr: 'Responsable technique' },
-  hostname: { en: 'Hostname', fr: "Nom d'hôte" },
-  os: { en: 'Operating System', fr: "Système d'exploitation" },
-  os_version: { en: 'OS Version', fr: 'Version OS' },
-  is_virtual: { en: 'Virtual', fr: 'Virtuel' },
-  hypervisor: { en: 'Hypervisor', fr: 'Hyperviseur' },
-  cpu_count: { en: 'CPU Count', fr: 'Nombre de CPU' },
-  cpu_cores: { en: 'CPU Cores', fr: 'Cœurs CPU' },
-  ram_gb: { en: 'RAM (GB)', fr: 'RAM (Go)' },
-  storage_gb: { en: 'Storage (GB)', fr: 'Stockage (Go)' },
-  location_datacenter: { en: 'Datacenter', fr: 'Datacenter' },
-  location_rack_unit: { en: 'Rack Unit', fr: 'Unité rack' },
+  
+  // Network fields
   routing_protocols: { en: 'Routing Protocols', fr: 'Protocoles de routage' },
   wan_interfaces: { en: 'WAN Interfaces', fr: 'Interfaces WAN' },
   lan_interfaces: { en: 'LAN Interfaces', fr: 'Interfaces LAN' },
@@ -78,6 +109,8 @@ const fieldTranslations = {
   algorithm: { en: 'Algorithm', fr: 'Algorithme' },
   ssl_offload: { en: 'SSL Offload', fr: 'Déchargement SSL' },
   health_check_enabled: { en: 'Health Check Enabled', fr: 'Health check activé' },
+  
+  // Storage fields
   storage_type: { en: 'Storage Type', fr: 'Type de stockage' },
   total_capacity_tb: { en: 'Total Capacity (TB)', fr: 'Capacité totale (To)' },
   used_capacity_tb: { en: 'Used Capacity (TB)', fr: 'Capacité utilisée (To)' },
@@ -85,10 +118,15 @@ const fieldTranslations = {
   disk_type: { en: 'Disk Type', fr: 'Type de disque' },
   disk_count: { en: 'Disk Count', fr: 'Nombre de disques' },
   protocols: { en: 'Protocols', fr: 'Protocoles' },
+  
+  // Workstation/Device fields
   device_type: { en: 'Device Type', fr: 'Type de périphérique' },
   cpu: { en: 'CPU', fr: 'CPU' },
+  ram_gb: { en: 'RAM (GB)', fr: 'RAM (Go)' },
+  storage_gb: { en: 'Storage (GB)', fr: 'Stockage (Go)' },
   assigned_user: { en: 'Assigned User', fr: 'Utilisateur assigné' },
-  asset_tag: { en: 'Asset Tag', fr: "Numéro d'inventaire" },
+  
+  // Printer fields
   printer_type: { en: 'Printer Type', fr: "Type d'imprimante" },
   color_capable: { en: 'Color Capable', fr: 'Impression couleur' },
   duplex_capable: { en: 'Duplex Capable', fr: 'Recto-verso' },
@@ -97,9 +135,13 @@ const fieldTranslations = {
   paper_sizes: { en: 'Paper Sizes', fr: 'Formats papier' },
   scan_capable: { en: 'Scan Capable', fr: 'Scanner' },
   fax_capable: { en: 'Fax Capable', fr: 'Fax' },
+  
+  // Mobile device fields
   imei: { en: 'IMEI', fr: 'IMEI' },
   phone_number: { en: 'Phone Number', fr: 'Numéro de téléphone' },
   mdm_enrolled: { en: 'MDM Enrolled', fr: 'Inscrit MDM' },
+  
+  // Database fields
   db_engine: { en: 'Database Engine', fr: 'Moteur de base de données' },
   port: { en: 'Port', fr: 'Port' },
   database_name: { en: 'Database Name', fr: 'Nom de la base' },
@@ -109,7 +151,12 @@ const fieldTranslations = {
   backup_enabled: { en: 'Backup Enabled', fr: 'Sauvegarde activée' },
   backup_frequency: { en: 'Backup Frequency', fr: 'Fréquence de sauvegarde' },
   ssl_enabled: { en: 'SSL Enabled', fr: 'SSL activé' },
-  notes: { en: 'Notes', fr: 'Notes' },
+  
+  // Virtual machine fields
+  is_virtual: { en: 'Virtual', fr: 'Virtuel' },
+  hypervisor: { en: 'Hypervisor', fr: 'Hyperviseur' },
+  cpu_count: { en: 'CPU Count', fr: 'Nombre de CPU' },
+  cpu_cores: { en: 'CPU Cores', fr: 'Cœurs CPU' },
 };
 
 // Common fields shared across multiple CI types
@@ -168,12 +215,18 @@ const fieldsByCiType = {
     { field_name: 'technical_owner', label: 'technicalOwner', field_type: 'text', display_order: 11 },
   ],
 
-  // SERVER - Physical or Virtual Server
+  // SERVER - Physical Server Instance (real CI)
+  // Fields specific to a physical server instance, not the model specifications
   SERVER: [
     { field_name: 'hostname', label: 'hostname', field_type: 'text', display_order: 1, is_required: true, show_in_table: true },
-    { field_name: 'ip_address', label: 'ipAddress', field_type: 'text', display_order: 2, show_in_table: true },
-    { field_name: 'os', label: 'os', field_type: 'select', display_order: 3, show_in_table: true, options_source: JSON.stringify([
-      { label: 'Windows Server', value: 'WINDOWS_SERVER' },
+    { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 2, show_in_table: true },
+    { field_name: 'ip_address', label: 'ipAddress', field_type: 'text', display_order: 3, show_in_table: true, pattern: '^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$' },
+    { field_name: 'mac_address', label: 'macAddress', field_type: 'text', display_order: 4, pattern: '^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$' },
+    { field_name: 'ram_installed_gb', label: 'ramInstalledGb', field_type: 'number', data_type: 'number', display_order: 5, unit: 'GB', min_value: 1 },
+    { field_name: 'installed_storage', label: 'installedStorage', field_type: 'text', display_order: 6 },
+    { field_name: 'os', label: 'os', field_type: 'select', display_order: 7, show_in_table: true, options_source: JSON.stringify([
+      { label: 'Windows Server 2022', value: 'WINDOWS_SERVER_2022' },
+      { label: 'Windows Server 2019', value: 'WINDOWS_SERVER_2019' },
       { label: 'Linux (RHEL)', value: 'LINUX_RHEL' },
       { label: 'Linux (Ubuntu)', value: 'LINUX_UBUNTU' },
       { label: 'Linux (Debian)', value: 'LINUX_DEBIAN' },
@@ -181,20 +234,14 @@ const fieldsByCiType = {
       { label: 'VMware ESXi', value: 'VMWARE_ESXI' },
       { label: 'Other', value: 'OTHER' }
     ])},
-    { field_name: 'os_version', label: 'osVersion', field_type: 'text', display_order: 4 },
-    { field_name: 'is_virtual', label: 'isVirtual', field_type: 'boolean', data_type: 'boolean', display_order: 5, default_value: 'false' },
-    { field_name: 'hypervisor', label: 'hypervisor', field_type: 'select', display_order: 6, options_source: JSON.stringify([
-      { label: 'VMware vSphere', value: 'VMWARE' },
-      { label: 'Microsoft Hyper-V', value: 'HYPERV' },
-      { label: 'KVM', value: 'KVM' },
-      { label: 'Xen', value: 'XEN' },
-      { label: 'Proxmox', value: 'PROXMOX' },
-      { label: 'None (Physical)', value: 'NONE' }
+    { field_name: 'os_version', label: 'osVersion', field_type: 'text', display_order: 8 },
+    { field_name: 'commissioning_date', label: 'commissioningDate', field_type: 'date', data_type: 'date', display_order: 9 },
+    { field_name: 'ci_status', label: 'ciStatus', field_type: 'select', display_order: 10, show_in_table: true, options_source: JSON.stringify([
+      { label: 'In Service', value: 'IN_SERVICE' },
+      { label: 'In Maintenance', value: 'IN_MAINTENANCE' },
+      { label: 'Out of Service', value: 'OUT_OF_SERVICE' },
+      { label: 'Decommissioned', value: 'DECOMMISSIONED' }
     ])},
-    { field_name: 'cpu_count', label: 'cpuCount', field_type: 'number', data_type: 'number', display_order: 7, min_value: 1 },
-    { field_name: 'cpu_cores', label: 'cpuCores', field_type: 'number', data_type: 'number', display_order: 8, min_value: 1 },
-    { field_name: 'ram_gb', label: 'ramGb', field_type: 'number', data_type: 'number', display_order: 9, unit: 'GB', min_value: 1 },
-    { field_name: 'storage_gb', label: 'storageGb', field_type: 'number', data_type: 'number', display_order: 10, unit: 'GB', min_value: 0 },
     { field_name: 'environment', label: 'environment', field_type: 'select', display_order: 11, options_source: JSON.stringify([
       { label: 'Production', value: 'PRODUCTION' },
       { label: 'Staging', value: 'STAGING' },
@@ -202,12 +249,60 @@ const fieldsByCiType = {
       { label: 'Test', value: 'TEST' },
       { label: 'DR', value: 'DR' }
     ])},
-    { field_name: 'manufacturer', label: 'manufacturer', field_type: 'text', display_order: 15 },
-    { field_name: 'model', label: 'model', field_type: 'text', display_order: 16 },
-    { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 17 },
-    { field_name: 'location_datacenter', label: 'locationDatacenter', field_type: 'text', display_order: 20 },
-    { field_name: 'location_rack', label: 'locationRack', field_type: 'text', display_order: 21 },
-    { field_name: 'location_rack_unit', label: 'locationRackUnit', field_type: 'text', display_order: 22 },
+    { field_name: 'location_datacenter', label: 'locationDatacenter', field_type: 'text', display_order: 15 },
+    { field_name: 'location_rack', label: 'locationRack', field_type: 'text', display_order: 16 },
+    { field_name: 'location_rack_unit', label: 'locationRackUnit', field_type: 'text', display_order: 17 },
+    { field_name: 'estimated_end_of_life', label: 'estimatedEndOfLife', field_type: 'date', data_type: 'date', display_order: 20 },
+    { field_name: 'accounting_value', label: 'accountingValue', field_type: 'number', data_type: 'number', display_order: 21, unit: '€', min_value: 0 },
+    { field_name: 'depreciated_value', label: 'depreciatedValue', field_type: 'number', data_type: 'number', display_order: 22, unit: '€', min_value: 0 },
+    { field_name: 'hosted_services', label: 'hostedServices', field_type: 'text', display_order: 25 },
+    { field_name: 'cmdb_reference', label: 'cmdbReference', field_type: 'text', display_order: 26 },
+    { field_name: 'asset_tag', label: 'assetTag', field_type: 'text', display_order: 27 },
+    { field_name: 'purchase_date', label: 'purchaseDate', field_type: 'date', data_type: 'date', display_order: 28 },
+    { field_name: 'warranty_expiry', label: 'warrantyExpiry', field_type: 'date', data_type: 'date', display_order: 29 },
+    { field_name: 'notes', label: 'notes', field_type: 'textarea', display_order: 99 },
+  ],
+
+  // MODEL_SERVER - Server Hardware Model (logical/template CI)
+  // Specifications for a server model that can be purchased from a vendor
+  MODEL_SERVER: [
+    { field_name: 'manufacturer', label: 'manufacturer', field_type: 'text', display_order: 1, is_required: true, show_in_table: true },
+    { field_name: 'manufacturer_reference', label: 'manufacturerReference', field_type: 'text', display_order: 2, is_required: true, show_in_table: true },
+    { field_name: 'product_family', label: 'productFamily', field_type: 'select', display_order: 3, show_in_table: true, options_source: JSON.stringify([
+      { label: 'Rack Server', value: 'RACK' },
+      { label: 'Tower Server', value: 'TOWER' },
+      { label: 'Blade Server', value: 'BLADE' },
+      { label: 'Modular Server', value: 'MODULAR' }
+    ])},
+    { field_name: 'form_factor', label: 'formFactor', field_type: 'select', display_order: 4, options_source: JSON.stringify([
+      { label: '1U', value: '1U' },
+      { label: '2U', value: '2U' },
+      { label: '4U', value: '4U' },
+      { label: 'Blade', value: 'BLADE' },
+      { label: 'Tower', value: 'TOWER' }
+    ])},
+    { field_name: 'cpu_type', label: 'cpuType', field_type: 'text', display_order: 5 },
+    { field_name: 'standard_ram_gb', label: 'standardRamGb', field_type: 'number', data_type: 'number', display_order: 6, unit: 'GB', min_value: 0 },
+    { field_name: 'max_ram_gb', label: 'maxRamGb', field_type: 'number', data_type: 'number', display_order: 7, unit: 'GB', min_value: 0 },
+    { field_name: 'planned_storage', label: 'plannedStorage', field_type: 'text', display_order: 8 },
+    { field_name: 'os_compatibility', label: 'osCompatibility', field_type: 'multiselect', data_type: 'array', display_order: 9, options_source: JSON.stringify([
+      { label: 'Windows', value: 'WINDOWS' },
+      { label: 'Linux', value: 'LINUX' },
+      { label: 'VMware', value: 'VMWARE' }
+    ])},
+    { field_name: 'introduction_date', label: 'introductionDate', field_type: 'date', data_type: 'date', display_order: 10 },
+    { field_name: 'model_status', label: 'modelStatus', field_type: 'select', display_order: 11, show_in_table: true, options_source: JSON.stringify([
+      { label: 'Available', value: 'AVAILABLE' },
+      { label: 'End of Sale', value: 'END_OF_SALE' },
+      { label: 'Obsolete', value: 'OBSOLETE' }
+    ])},
+    { field_name: 'documentation_url', label: 'documentationUrl', field_type: 'text', display_order: 12 },
+    { field_name: 'expected_lifecycle_years', label: 'expectedLifecycleYears', field_type: 'number', data_type: 'number', display_order: 13, unit: 'years', min_value: 1 },
+    { field_name: 'estimated_unit_cost', label: 'estimatedUnitCost', field_type: 'number', data_type: 'number', display_order: 14, unit: '€', min_value: 0 },
+    { field_name: 'compatible_services', label: 'compatibleServices', field_type: 'text', display_order: 15 },
+    { field_name: 'in_it_catalog', label: 'inItCatalog', field_type: 'boolean', data_type: 'boolean', display_order: 16, default_value: 'true' },
+    { field_name: 'replaced_by', label: 'replacedBy', field_type: 'text', display_order: 17 },
+    { field_name: 'notes', label: 'notes', field_type: 'textarea', display_order: 99 },
   ],
 
   // ROUTER

@@ -71,7 +71,8 @@ async function seedObjectMetadata() {
     configuration_items: [
       { field_name: 'name', label_key: 'configurationItems.name', field_type: 'text', is_required: true, is_translatable: true, min_width: '16rem', display_order: 1 },
       { field_name: 'ci_type', label_key: 'configurationItems.ciType', field_type: 'select', min_width: '10rem', display_order: 2, options_source: '/ci_types/options' },
-      { field_name: 'description', label_key: 'configurationItems.description', field_type: 'textarea', is_translatable: true, min_width: '20rem', display_order: 3 },
+      { field_name: 'rel_model_uuid', label_key: 'configurationItems.model', field_type: 'ci_model', min_width: '14rem', display_order: 3, show_in_table: false },
+      { field_name: 'description', label_key: 'configurationItems.description', field_type: 'textarea', is_translatable: true, min_width: '20rem', display_order: 4 },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10 },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11 },
     ],

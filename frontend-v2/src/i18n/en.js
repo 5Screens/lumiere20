@@ -176,7 +176,9 @@ export default {
     new: 'New',
     created: 'Created successfully',
     copy: 'Copy',
-    copied: 'Copied'
+    copied: 'Copied',
+    selectModel: 'Select a model',
+    noModelsAvailable: 'No models available for this type'
   },
   tabs: {
     backToList: 'Back to list',
@@ -205,6 +207,7 @@ export default {
     name: 'Name',
     description: 'Description',
     ciType: 'Type',
+    model: 'Model',
     createdAt: 'Created at',
     updatedAt: 'Updated at',
     actions: {

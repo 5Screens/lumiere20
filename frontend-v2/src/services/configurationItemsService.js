@@ -75,5 +75,18 @@ export default {
   async deleteMany(uuids) {
     const response = await api.post(`${ENDPOINT}/delete-many`, { uuids })
     return response.data
+  },
+
+  /**
+   * Get models for a specific CI type
+   * @param {string} ciTypeCode - CI type code (e.g., 'SERVER')
+   * @param {string} locale - Locale for translations
+   * @returns {Promise<Array>} - Array of model CIs
+   */
+  async getModelsForType(ciTypeCode, locale = 'en') {
+    const response = await api.get(`${ENDPOINT}/models/${ciTypeCode}`, {
+      params: { locale }
+    })
+    return response.data
   }
 }

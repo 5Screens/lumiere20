@@ -10,6 +10,7 @@ const seedMap = {
   'ci-categories': () => require('./ci-categories').seedCiCategories(),
   'ci-type-fields': () => require('./ci-type-fields').seedCiTypeFields(),
   'ci-types': () => require('./ci-types').seedCiTypes(),
+  'ci': () => require('./ci').seedConfigurationItems(),
   'object-metadata': () => require('./object-metadata').seedObjectMetadata(),
   'languages': () => require('./languages.seed').seedLanguages(prisma),
   'default-admin': () => require('./default-admin.seed').seedDefaultAdmin(),

@@ -19,12 +19,15 @@ model configuration_items {
   name                 String    @db.VarChar(255)
   description          String?   @db.Text
   ci_type              String    @default("GENERIC") @db.VarChar(50)
+  rel_model_uuid       String?   @db.Uuid          // Reference to the model CI (for physical CIs)
   extended_core_fields Json?     @db.JsonB
   created_at           DateTime  @default(now()) @db.Timestamptz(6)
   updated_at           DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
 
   // Relations
-  tickets tickets[]
+  model                configuration_items?  @relation("CiModel", fields: [rel_model_uuid], references: [uuid])
+  instances            configuration_items[] @relation("CiModel")
+  tickets              tickets[]
 
   @@index([ci_type])
   @@schema("data")
@@ -119,6 +122,7 @@ model ci_types {
   color           String?  @db.VarChar(20)
   is_active       Boolean  @default(true)
   display_order   Int      @default(0)
+  has_model       Boolean  @default(true)    // If true, CIs of this type can have a model reference
   rel_category_uuid String? @db.Uuid          // Relation to category (will be required after migration)
   created_at      DateTime @default(now()) @db.Timestamptz(6)
   updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)

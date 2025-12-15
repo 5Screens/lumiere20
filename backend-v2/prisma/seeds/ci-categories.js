@@ -100,6 +100,19 @@ async function seedCiCategories() {
         pt: { label: 'Nuvem' },
         de: { label: 'Cloud' }
       }
+    },
+    {
+      code: 'MODELS',
+      label: 'Models',
+      icon: 'pi-box',
+      display_order: 8,
+      translations: {
+        fr: { label: 'Modèles' },
+        en: { label: 'Models' },
+        es: { label: 'Modelos' },
+        pt: { label: 'Modelos' },
+        de: { label: 'Modelle' }
+      }
     }
   ];
 
