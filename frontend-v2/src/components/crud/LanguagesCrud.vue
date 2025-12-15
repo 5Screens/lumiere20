@@ -1,7 +1,7 @@
 <template>
   <div class="h-full flex flex-col overflow-hidden">
     <!-- Toolbar -->
-    <Toolbar class="mb-4">
+    <Toolbar class="mb-4 mt-2 mx-2">
       <template #start>
         <div class="flex items-center gap-2">
           <i class="pi pi-globe text-2xl text-primary-500" />
@@ -34,6 +34,7 @@
       dataKey="uuid"
       scrollable
       scrollHeight="flex"
+      stripedRows
       class="flex-1"
       :pt="{
         table: { class: 'min-w-full' }

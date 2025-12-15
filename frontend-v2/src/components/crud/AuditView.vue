@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col overflow-hidden">
     <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
       <!-- Toolbar -->
-      <Toolbar class="mb-4">
+      <Toolbar class="mb-4 mt-2 mx-2">
         <template #start>
           <span class="text-xl font-semibold">{{ $t('audit.title') }}</span>
         </template>
