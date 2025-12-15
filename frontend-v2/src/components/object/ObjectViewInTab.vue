@@ -235,6 +235,8 @@ const loadItem = async () => {
     // Load extended fields if configuration_items
     if (props.objectType === 'configuration_items' && item.value?.ci_type) {
       await loadExtendedFields(item.value.ci_type)
+      // Update form fields based on has_model
+      updateFormFieldsForCiType(item.value.ci_type)
     }
   } catch (error) {
     console.error('Failed to load item:', error)
@@ -261,6 +263,27 @@ const initializeNewItem = () => {
   }
   
   return defaults
+}
+
+// Update form fields visibility based on CI type's has_model property
+const updateFormFieldsForCiType = (ciTypeCode) => {
+  if (props.objectType !== 'configuration_items') return
+  
+  const ciType = ciTypes.value.find(ct => ct.code === ciTypeCode)
+  const hasModel = ciType?.has_model === true
+  
+  // Filter rel_model_uuid field based on has_model
+  if (objectTypeMetadata.value?.fields) {
+    formFields.value = objectTypeMetadata.value.fields
+      .filter(f => f.show_in_form)
+      .filter(f => {
+        // Hide rel_model_uuid if CI type doesn't have has_model
+        if (f.field_name === 'rel_model_uuid') {
+          return hasModel
+        }
+        return true
+      })
+  }
 }
 
 // Load extended fields for configuration_items
@@ -338,6 +361,8 @@ const saveItem = async () => {
 watch(() => item.value?.ci_type, async (newCiType, oldCiType) => {
   if (newCiType && newCiType !== oldCiType && props.objectType === 'configuration_items') {
     await loadExtendedFields(newCiType)
+    // Update form fields based on has_model
+    updateFormFieldsForCiType(newCiType)
   }
 })
 
