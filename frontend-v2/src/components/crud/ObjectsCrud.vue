@@ -1526,10 +1526,12 @@ const loadCiTypes = async () => {
     console.log('[ObjectsCrud] loadCiTypes - raw data from API:', data)
     ciTypes.value = data.map(ct => ({
       value: ct.code,
+      code: ct.code,
       label: ct._translations?.label?.[locale.value] || ct.label,
       uuid: ct.uuid,
       icon: ct.icon,
-      color: ct.color
+      color: ct.color,
+      has_model: ct.has_model
     }))
     console.log('[ObjectsCrud] loadCiTypes - mapped ciTypes:', ciTypes.value)
     ciTypesLoaded.value = true
