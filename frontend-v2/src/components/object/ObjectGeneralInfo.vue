@@ -8,7 +8,7 @@
     <!-- Form fields -->
     <template v-else>
       <div 
-        v-for="field in formFields" 
+        v-for="field in filteredFormFields" 
         :key="field.field_name" 
         class="flex flex-col gap-2"
       >
@@ -237,6 +237,11 @@ const props = defineProps({
   forcedCiTypeUuid: {
     type: String,
     default: null
+  },
+  // CI types list (for has_model filtering)
+  ciTypes: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -287,4 +292,19 @@ const isFieldDisabled = (field) => {
   }
   return false
 }
+
+// Filter form fields based on CI type's has_model property
+const filteredFormFields = computed(() => {
+  // Check if current CI type has has_model enabled
+  const currentCiType = props.ciTypes.find(ct => ct.code === props.modelValue?.ci_type)
+  const hasModel = currentCiType?.has_model === true
+  
+  return props.formFields.filter(field => {
+    // Hide rel_model_uuid if CI type doesn't have has_model
+    if (field.field_name === 'rel_model_uuid') {
+      return hasModel
+    }
+    return true
+  })
+})
 </script>

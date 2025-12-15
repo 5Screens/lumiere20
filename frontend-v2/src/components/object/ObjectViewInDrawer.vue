@@ -26,6 +26,7 @@
             :fieldOptions="fieldOptions"
             :loading="false"
             :forced-ci-type-uuid="forcedCiTypeUuid"
+            :ciTypes="ciTypes"
           />
         </TabPanel>
 
