@@ -197,35 +197,11 @@
       <!-- Status selector for configuration_items -->
       <div v-if="showStatusSelector" class="flex flex-col gap-2">
         <label class="font-semibold">{{ $t('common.status') }}</label>
-        <div v-if="!modelValue.status && availableTransitions.length === 0" class="text-surface-400 italic">
-          {{ $t('workflow.noWorkflow') }}
-        </div>
-        <div v-else class="flex flex-col gap-2">
-          <!-- Current status display -->
-          <div class="flex items-center gap-2">
-            <Tag 
-              v-if="modelValue.status"
-              :value="currentStatusLabel"
-              :style="{ backgroundColor: modelValue.status.category?.color || '#6b7280', color: 'white' }"
-            />
-            <span v-else class="text-surface-400 italic">{{ $t('workflow.noWorkflow') }}</span>
-          </div>
-          <!-- Available transitions -->
-          <div v-if="availableTransitions.length > 0" class="flex flex-col gap-1 mt-2">
-            <label class="text-sm text-surface-500">{{ $t('workflow.transitionTo') }}</label>
-            <div class="flex flex-wrap gap-2">
-              <Button 
-                v-for="transition in availableTransitions" 
-                :key="transition.uuid"
-                :label="`${transition.name} → ${transition.to_status_name}`"
-                size="small"
-                severity="secondary"
-                outlined
-                @click="applyTransition(transition)"
-              />
-            </div>
-          </div>
-        </div>
+        <StatusPicker 
+          :currentStatus="modelValue.status"
+          :availableTransitions="availableTransitions"
+          @transition="applyTransition"
+        />
       </div>
     </template>
   </div>
@@ -243,8 +219,6 @@ import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import DatePicker from 'primevue/datepicker'
 import ProgressSpinner from 'primevue/progressspinner'
-import Tag from 'primevue/tag'
-import Button from 'primevue/button'
 
 const { locale } = useI18n()
 
@@ -255,6 +229,7 @@ import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import CICategorySelector from '@/components/form/CICategorySelector.vue'
 import CiModelSelector from '@/components/form/CiModelSelector.vue'
 import CiTypeTargetSelector from '@/components/form/CiTypeTargetSelector.vue'
+import StatusPicker from '@/components/form/StatusPicker.vue'
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'
@@ -310,17 +285,6 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['update:modelValue', 'apply-transition'])
-
-// Computed for current status label
-const currentStatusLabel = computed(() => {
-  if (!props.modelValue?.status) return ''
-  const status = props.modelValue.status
-  // Use translated name if available
-  if (status._translations?.name?.[locale.value]) {
-    return status._translations.name[locale.value]
-  }
-  return status.name || ''
-})
 
 // Apply a transition (change status)
 const applyTransition = (transition) => {
