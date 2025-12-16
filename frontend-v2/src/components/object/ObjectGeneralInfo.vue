@@ -252,6 +252,11 @@ const props = defineProps({
   ciTypes: {
     type: Array,
     default: () => []
+  },
+  // CI categories list (for is_model_for filtering)
+  ciCategories: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -305,19 +310,23 @@ const isFieldDisabled = (field) => {
 
 // Filter form fields based on CI type properties
 const filteredFormFields = computed(() => {
-  // Find current CI type with its category
+  // For configuration_items: check CI type's has_model property
   const currentCiType = props.ciTypes.find(ct => ct.code === props.modelValue?.ci_type)
   const hasModel = currentCiType?.has_model === true
-  const isModelCategory = currentCiType?.categoryCode === 'MODELS'
+  
+  // For ci_types: check if selected category is MODELS
+  const selectedCategoryUuid = props.modelValue?.rel_category_uuid
+  const selectedCategory = props.ciCategories.find(cat => cat.uuid === selectedCategoryUuid)
+  const isModelsCategorySelected = selectedCategory?.code === 'MODELS'
   
   return props.formFields.filter(field => {
-    // Hide rel_model_uuid if CI type doesn't have has_model
+    // Hide rel_model_uuid if CI type doesn't have has_model (for configuration_items)
     if (field.field_name === 'rel_model_uuid') {
       return hasModel
     }
-    // Show is_model_for_ci_type_uuid only if CI type's category is MODELS
+    // Show is_model_for_ci_type_uuid only if category is MODELS (for ci_types)
     if (field.field_name === 'is_model_for_ci_type_uuid') {
-      return isModelCategory
+      return isModelsCategorySelected
     }
     return true
   })

@@ -27,6 +27,7 @@
             :loading="false"
             :forced-ci-type-uuid="forcedCiTypeUuid"
             :ciTypes="ciTypes"
+            :ciCategories="ciCategories"
           />
         </TabPanel>
 
@@ -84,6 +85,11 @@ const props = defineProps({
   },
   // CI types for configuration_items (kept for compatibility)
   ciTypes: {
+    type: Array,
+    default: () => []
+  },
+  // CI categories for ci_types
+  ciCategories: {
     type: Array,
     default: () => []
   },

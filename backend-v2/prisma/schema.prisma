@@ -15,24 +15,21 @@ datasource db {
 // ============================================
 
 model configuration_items {
-  uuid                       String    @id @default(uuid()) @db.Uuid
-  name                       String    @db.VarChar(255)
-  description                String?   @db.Text
-  ci_type                    String    @default("GENERIC") @db.VarChar(50)
-  rel_model_uuid             String?   @db.Uuid          // Reference to the model CI (for physical CIs)
-  is_model_for_ci_type_uuid  String?   @db.Uuid          // For model CIs: the CI type this model is for
-  extended_core_fields       Json?     @db.JsonB
-  created_at                 DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at                 DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  uuid                 String    @id @default(uuid()) @db.Uuid
+  name                 String    @db.VarChar(255)
+  description          String?   @db.Text
+  ci_type              String    @default("GENERIC") @db.VarChar(50)
+  rel_model_uuid       String?   @db.Uuid          // Reference to the model CI (for physical CIs)
+  extended_core_fields Json?     @db.JsonB
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
 
   // Relations
   model                configuration_items?  @relation("CiModel", fields: [rel_model_uuid], references: [uuid])
   instances            configuration_items[] @relation("CiModel")
-  is_model_for_ci_type ci_types?             @relation(fields: [is_model_for_ci_type_uuid], references: [uuid])
   tickets              tickets[]
 
   @@index([ci_type])
-  @@index([is_model_for_ci_type_uuid])
   @@schema("data")
   @@map("configuration_items")
 }
@@ -117,25 +114,28 @@ model ci_categories {
 
 // CI Types - Types of Configuration Items
 model ci_types {
-  uuid            String   @id @default(uuid()) @db.Uuid
-  code            String   @unique @db.VarChar(50)
-  label           String   @db.VarChar(255)  // Default label (fallback if no translation)
-  description     String?  @db.Text          // Default description (fallback if no translation)
-  icon            String?  @db.VarChar(50)
-  color           String?  @db.VarChar(20)
-  is_active       Boolean  @default(true)
-  display_order   Int      @default(0)
-  has_model       Boolean  @default(true)    // If true, CIs of this type can have a model reference
-  rel_category_uuid String? @db.Uuid          // Relation to category (will be required after migration)
-  created_at      DateTime @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  uuid                      String   @id @default(uuid()) @db.Uuid
+  code                      String   @unique @db.VarChar(50)
+  label                     String   @db.VarChar(255)  // Default label (fallback if no translation)
+  description               String?  @db.Text          // Default description (fallback if no translation)
+  icon                      String?  @db.VarChar(50)
+  color                     String?  @db.VarChar(20)
+  is_active                 Boolean  @default(true)
+  display_order             Int      @default(0)
+  has_model                 Boolean  @default(true)    // If true, CIs of this type can have a model reference
+  is_model_for_ci_type_uuid String?  @db.Uuid          // For model types: the CI type this is a model for
+  rel_category_uuid         String?  @db.Uuid          // Relation to category (will be required after migration)
+  created_at                DateTime @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
   // Relations
-  category        ci_categories? @relation(fields: [rel_category_uuid], references: [uuid])
-  fields          ci_type_fields[]
-  model_cis       configuration_items[]  // CIs that are models for this type
+  category             ci_categories? @relation(fields: [rel_category_uuid], references: [uuid])
+  fields               ci_type_fields[]
+  is_model_for_ci_type ci_types?      @relation("CiTypeModel", fields: [is_model_for_ci_type_uuid], references: [uuid])
+  model_types          ci_types[]     @relation("CiTypeModel")  // Types that are models for this type
 
   @@index([rel_category_uuid])
+  @@index([is_model_for_ci_type_uuid])
   @@schema("configuration")
   @@map("ci_types")
 }

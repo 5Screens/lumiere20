@@ -517,6 +517,7 @@
         :object-type="objectType"
         :field-options="fieldOptions"
         :ci-types="ciTypes"
+        :ci-categories="ciCategories"
         :extended-fields="extendedFields"
         :extended-fields-loading="extendedFieldsLoading"
         :refreshing-field="refreshingField"

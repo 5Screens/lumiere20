@@ -80,6 +80,7 @@ async function seedCiTypes() {
       display_order: 1,
       has_model: false,
       category_code: 'MODELS',
+      is_model_for_ci_type_code: 'SERVER',  // This model type is for SERVER CIs
       translations: {
         fr: { label: 'Modèle de serveur', description: 'Modèle de matériel serveur' },
         en: { label: 'Server Model', description: 'Server hardware model template' },
@@ -345,13 +346,15 @@ async function seedCiTypes() {
     }
   ];
 
+  // First pass: create all CI types without is_model_for_ci_type_uuid
+  const createdTypes = {};
   for (const ciType of ciTypes) {
-    const { translations, category_code, has_model, ...ciTypeData } = ciType;
+    const { translations, category_code, has_model, is_model_for_ci_type_code, ...ciTypeData } = ciType;
     
     // Get category UUID if category_code is provided
     const rel_category_uuid = category_code ? categoryMap[category_code] : null;
     
-    // Upsert CI type
+    // Upsert CI type (without is_model_for_ci_type_uuid for now)
     const createdCiType = await prisma.ci_types.upsert({
       where: { code: ciType.code },
       update: {
@@ -369,6 +372,7 @@ async function seedCiTypes() {
         rel_category_uuid
       }
     });
+    createdTypes[ciType.code] = { uuid: createdCiType.uuid, is_model_for_ci_type_code };
     console.log(`  - CI type '${ciType.code}' created/updated (category: ${category_code || 'none'})`);
     
     // Upsert translations for each locale using translated_fields table
@@ -416,6 +420,21 @@ async function seedCiTypes() {
       }
     }
     console.log(`    - Translations added for ${Object.keys(translations).length} locales`);
+  }
+
+  // Second pass: update is_model_for_ci_type_uuid for model types
+  console.log('  Updating is_model_for_ci_type_uuid references...');
+  for (const [code, data] of Object.entries(createdTypes)) {
+    if (data.is_model_for_ci_type_code) {
+      const targetType = createdTypes[data.is_model_for_ci_type_code];
+      if (targetType) {
+        await prisma.ci_types.update({
+          where: { uuid: data.uuid },
+          data: { is_model_for_ci_type_uuid: targetType.uuid }
+        });
+        console.log(`    - ${code} -> is model for ${data.is_model_for_ci_type_code}`);
+      }
+    }
   }
 
   console.log('CI types seeding completed!');

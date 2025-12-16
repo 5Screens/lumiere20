@@ -295,7 +295,6 @@ const create = async (data) => {
         description: itemData.description || null,
         ci_type: itemData.ci_type || 'GENERIC',
         rel_model_uuid: itemData.rel_model_uuid || null,
-        is_model_for_ci_type_uuid: itemData.is_model_for_ci_type_uuid || null,
         extended_core_fields: itemData.extended_core_fields || {},
       },
     });
@@ -330,7 +329,6 @@ const update = async (uuid, data) => {
     if (itemData.description !== undefined) updateData.description = itemData.description;
     if (itemData.ci_type !== undefined) updateData.ci_type = itemData.ci_type;
     if (itemData.rel_model_uuid !== undefined) updateData.rel_model_uuid = itemData.rel_model_uuid;
-    if (itemData.is_model_for_ci_type_uuid !== undefined) updateData.is_model_for_ci_type_uuid = itemData.is_model_for_ci_type_uuid;
     if (itemData.extended_core_fields !== undefined)
       updateData.extended_core_fields = itemData.extended_core_fields;
 
@@ -404,7 +402,7 @@ const removeMany = async (uuids) => {
 
 /**
  * Get models for a specific CI type
- * Finds CIs that have is_model_for_ci_type_uuid pointing to the given CI type
+ * Finds CIs whose ci_type has is_model_for_ci_type_uuid pointing to the given CI type
  * @param {string} ciTypeCode - Physical CI type code (e.g., 'SERVER')
  * @param {string} locale - Locale for translations
  * @returns {Promise<Array>} - Array of model CIs
@@ -414,23 +412,36 @@ const getModelsForType = async (ciTypeCode, locale = 'en') => {
     logger.info(`[CONFIGURATION_ITEMS] Getting models for CI type: ${ciTypeCode}`);
 
     // First, find the CI type UUID from the code
-    const ciType = await prisma.ci_types.findUnique({
+    const targetCiType = await prisma.ci_types.findUnique({
       where: { code: ciTypeCode },
     });
 
-    if (!ciType) {
+    if (!targetCiType) {
       logger.warn(`[CONFIGURATION_ITEMS] CI type not found: ${ciTypeCode}`);
       return [];
     }
 
-    // Find all CIs that are models for this CI type
+    // Find all CI types that are models for this target CI type
+    const modelTypes = await prisma.ci_types.findMany({
+      where: { is_model_for_ci_type_uuid: targetCiType.uuid },
+    });
+
+    if (modelTypes.length === 0) {
+      logger.info(`[CONFIGURATION_ITEMS] No model types found for CI type: ${ciTypeCode}`);
+      return [];
+    }
+
+    // Get all model type codes
+    const modelTypeCodes = modelTypes.map(mt => mt.code);
+
+    // Find all CIs of these model types
     const items = await prisma.configuration_items.findMany({
-      where: { is_model_for_ci_type_uuid: ciType.uuid },
+      where: { ci_type: { in: modelTypeCodes } },
       orderBy: { name: 'asc' },
     });
 
     if (items.length === 0) {
-      logger.info(`[CONFIGURATION_ITEMS] No models found for CI type: ${ciTypeCode}`);
+      logger.info(`[CONFIGURATION_ITEMS] No model CIs found for CI type: ${ciTypeCode}`);
       return [];
     }
 

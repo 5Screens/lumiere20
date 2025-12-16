@@ -355,6 +355,7 @@ export default {
     tagStyle: 'Tag Style',
     displayOrder: 'Display Order',
     category: 'Category',
+    isModelFor: 'Model for type',
     tabs: {
       general: 'General',
       extendedFields: 'Extended Fields'

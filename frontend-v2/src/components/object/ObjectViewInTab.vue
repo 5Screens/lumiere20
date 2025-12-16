@@ -48,6 +48,7 @@
               :fieldOptions="fieldOptions"
               :loading="metadataLoading"
               :ciTypes="ciTypes"
+              :ciCategories="ciCategories"
             />
           </TabPanel>
 
@@ -82,6 +83,7 @@ import { getService } from '@/services'
 import metadataService from '@/services/metadataService'
 import ciTypeFieldsService from '@/services/ciTypeFieldsService'
 import ciTypesService from '@/services/ciTypesService'
+import api from '@/services/api'
 
 // PrimeVue components
 import Button from 'primevue/button'
@@ -143,6 +145,7 @@ const objectTypeMetadata = ref(null)
 const extendedFields = ref([])
 const extendedFieldsLoading = ref(false)
 const ciTypes = ref([])
+const ciCategories = ref([])
 
 // Computed
 const hasExtendedInfo = computed(() => {
@@ -199,8 +202,43 @@ const loadMetadata = async () => {
   }
 }
 
+// Load CI types for configuration_items and ci_types
+const loadCiTypes = async () => {
+  if (!['configuration_items', 'ci_types'].includes(props.objectType)) return
+  if (ciTypes.value.length > 0) return
+  
+  try {
+    const types = await ciTypesService.getAll()
+    ciTypes.value = types.map(ct => ({
+      ...ct,
+      code: ct.code,
+      has_model: ct.has_model,
+      categoryCode: ct.category?.code || null
+    }))
+  } catch (error) {
+    console.error('Failed to load CI types:', error)
+  }
+}
+
+// Load CI categories for ci_types
+const loadCiCategories = async () => {
+  if (props.objectType !== 'ci_types') return
+  if (ciCategories.value.length > 0) return
+  
+  try {
+    const response = await api.get('/ci_categories')
+    ciCategories.value = response.data
+  } catch (error) {
+    console.error('Failed to load CI categories:', error)
+  }
+}
+
 // Load item
 const loadItem = async () => {
+  // Load CI types and categories first
+  await loadCiTypes()
+  await loadCiCategories()
+  
   if (props.mode === 'create') {
     // Initialize new item with defaults
     item.value = initializeNewItem()
@@ -277,7 +315,13 @@ const loadExtendedFields = async (ciTypeCode) => {
     // First get CI type UUID from code
     if (ciTypes.value.length === 0) {
       const types = await ciTypesService.getAll()
-      ciTypes.value = types
+      // Map to include categoryCode for ObjectGeneralInfo filtering
+      ciTypes.value = types.map(ct => ({
+        ...ct,
+        code: ct.code,
+        has_model: ct.has_model,
+        categoryCode: ct.category?.code || null
+      }))
     }
     
     const ciType = ciTypes.value.find(ct => ct.code === ciTypeCode)

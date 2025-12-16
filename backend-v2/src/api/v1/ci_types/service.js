@@ -193,6 +193,8 @@ const create = async (data) => {
         color: ciTypeData.color,
         is_active: ciTypeData.is_active ?? true,
         display_order: ciTypeData.display_order ?? 0,
+        has_model: ciTypeData.has_model ?? true,
+        is_model_for_ci_type_uuid: ciTypeData.is_model_for_ci_type_uuid || null,
         rel_category_uuid: ciTypeData.rel_category_uuid
       }
     });
@@ -220,18 +222,21 @@ const update = async (uuid, data) => {
   try {
     const { _translations, ...ciTypeData } = data;
     
+    const updateData = {};
+    if (ciTypeData.code !== undefined) updateData.code = ciTypeData.code;
+    if (ciTypeData.label !== undefined) updateData.label = ciTypeData.label;
+    if (ciTypeData.description !== undefined) updateData.description = ciTypeData.description;
+    if (ciTypeData.icon !== undefined) updateData.icon = ciTypeData.icon;
+    if (ciTypeData.color !== undefined) updateData.color = ciTypeData.color;
+    if (ciTypeData.is_active !== undefined) updateData.is_active = ciTypeData.is_active;
+    if (ciTypeData.display_order !== undefined) updateData.display_order = ciTypeData.display_order;
+    if (ciTypeData.has_model !== undefined) updateData.has_model = ciTypeData.has_model;
+    if (ciTypeData.is_model_for_ci_type_uuid !== undefined) updateData.is_model_for_ci_type_uuid = ciTypeData.is_model_for_ci_type_uuid;
+    if (ciTypeData.rel_category_uuid !== undefined) updateData.rel_category_uuid = ciTypeData.rel_category_uuid;
+    
     const ciType = await prisma.ci_types.update({
       where: { uuid },
-      data: {
-        code: ciTypeData.code,
-        label: ciTypeData.label,
-        description: ciTypeData.description,
-        icon: ciTypeData.icon,
-        color: ciTypeData.color,
-        is_active: ciTypeData.is_active,
-        display_order: ciTypeData.display_order,
-        rel_category_uuid: ciTypeData.rel_category_uuid
-      }
+      data: updateData
     });
     
     // Update translations if provided
