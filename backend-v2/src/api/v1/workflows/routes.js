@@ -9,6 +9,18 @@ const controller = require('./controller');
 const { validate, primeVueFilterSchema } = require('../../../middleware/validate');
 
 // ============================================
+// ENTITY-BASED WORKFLOW LOOKUP (uses workflow_entity_config)
+// Must be defined BEFORE :uuid routes to avoid conflicts
+// ============================================
+
+// GET /api/v1/workflows/entity/:entityType/:entityUuid - Get workflow for a specific entity instance
+router.get('/entity/:entityType/:entityUuid', controller.getWorkflowForEntity);
+
+// GET /api/v1/workflows/entity/:entityType/:entityUuid/available-statuses - Get available statuses for entity
+// Query param: currentStatusUuid (optional)
+router.get('/entity/:entityType/:entityUuid/available-statuses', controller.getAvailableStatusesForEntity);
+
+// ============================================
 // WORKFLOWS
 // ============================================
 

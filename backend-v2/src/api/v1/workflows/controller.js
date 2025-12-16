@@ -337,6 +337,55 @@ const getAvailableStatuses = async (req, res, next) => {
   }
 };
 
+/**
+ * Get workflow for a specific entity instance
+ * Uses workflow_entity_config to determine the appropriate workflow
+ */
+const getWorkflowForEntity = async (req, res, next) => {
+  try {
+    const { entityType, entityUuid } = req.params;
+    const locale = getLocale(req);
+    
+    const workflow = await service.getWorkflowForEntity(entityType, entityUuid, locale);
+    
+    if (!workflow) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: `No workflow found for entity type '${entityType}' and entity '${entityUuid}'`
+      });
+    }
+    
+    res.json(workflow);
+  } catch (error) {
+    logger.error('[WORKFLOWS CONTROLLER] Error in getWorkflowForEntity:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get available statuses for a specific entity instance
+ * Uses workflow_entity_config to determine the workflow and available transitions
+ */
+const getAvailableStatusesForEntity = async (req, res, next) => {
+  try {
+    const { entityType, entityUuid } = req.params;
+    const { currentStatusUuid } = req.query;
+    const locale = getLocale(req);
+    
+    const statuses = await service.getAvailableStatusesForEntity(
+      entityType, 
+      entityUuid, 
+      currentStatusUuid || null, 
+      locale
+    );
+    
+    res.json(statuses);
+  } catch (error) {
+    logger.error('[WORKFLOWS CONTROLLER] Error in getAvailableStatusesForEntity:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   // Workflows
   getAll,
@@ -359,5 +408,7 @@ module.exports = {
   removeTransition,
   
   // Available statuses
-  getAvailableStatuses
+  getAvailableStatuses,
+  getWorkflowForEntity,
+  getAvailableStatusesForEntity
 };

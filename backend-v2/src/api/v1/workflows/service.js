@@ -1046,6 +1046,124 @@ const removeTransition = async (uuid) => {
 // ============================================
 
 /**
+ * Get the workflow for a specific entity instance using workflow_entity_config mapping
+ * @param {string} entityType - The entity type (e.g., 'configuration_items', 'tickets', 'persons')
+ * @param {string} entityUuid - The UUID of the entity instance
+ * @param {string} locale - Locale for translations
+ * @returns {Object|null} The workflow with statuses and transitions, or null if not found
+ */
+const getWorkflowForEntity = async (entityType, entityUuid, locale = 'en') => {
+  // Get the entity config to know how to find the subtype
+  const entityConfig = await prisma.workflow_entity_config.findUnique({
+    where: { entity_type: entityType }
+  });
+  
+  if (!entityConfig) {
+    logger.warn(`[WORKFLOWS] No workflow entity config found for entity type: ${entityType}`);
+    return null;
+  }
+  
+  let subtypeUuid = null;
+  let subtypeCode = null;
+  
+  // Get the entity to find its subtype value
+  try {
+    const entity = await prisma[entityType].findUnique({
+      where: { uuid: entityUuid },
+      select: { [entityConfig.subtype_field]: true }
+    });
+    
+    if (!entity) {
+      logger.warn(`[WORKFLOWS] Entity not found: ${entityType}/${entityUuid}`);
+      return null;
+    }
+    
+    subtypeCode = entity[entityConfig.subtype_field];
+    
+    // If there's a subtype table, resolve the UUID
+    if (entityConfig.subtype_table && entityConfig.subtype_code_field) {
+      const subtypeRecord = await prisma[entityConfig.subtype_table].findFirst({
+        where: { [entityConfig.subtype_code_field]: subtypeCode }
+      });
+      
+      if (subtypeRecord) {
+        subtypeUuid = subtypeRecord[entityConfig.subtype_uuid_field || 'uuid'];
+      }
+    }
+  } catch (error) {
+    logger.error(`[WORKFLOWS] Error getting entity subtype:`, error);
+    return null;
+  }
+  
+  // Find the workflow for this entity type and subtype
+  // First try to find a specific workflow for this subtype
+  let workflow = null;
+  
+  if (subtypeUuid) {
+    workflow = await prisma.workflows.findFirst({
+      where: {
+        entity_type: entityType,
+        rel_entity_type_uuid: subtypeUuid,
+        is_active: true
+      }
+    });
+  }
+  
+  // If no specific workflow found, try to find a generic one for the entity type
+  if (!workflow) {
+    workflow = await prisma.workflows.findFirst({
+      where: {
+        entity_type: entityType,
+        rel_entity_type_uuid: null,
+        is_active: true
+      }
+    });
+  }
+  
+  if (!workflow) {
+    logger.info(`[WORKFLOWS] No workflow found for ${entityType}/${subtypeCode || 'generic'}`);
+    return null;
+  }
+  
+  // Return full workflow details
+  return getByUuid(workflow.uuid, locale);
+};
+
+/**
+ * Get available statuses for a specific entity instance
+ * Uses workflow_entity_config to determine the workflow and current status
+ * @param {string} entityType - The entity type (e.g., 'configuration_items', 'tickets', 'persons')
+ * @param {string} entityUuid - The UUID of the entity instance
+ * @param {string} currentStatusUuid - The current status UUID of the entity (optional, will be fetched if not provided)
+ * @param {string} locale - Locale for translations
+ * @returns {Array} List of available statuses with transition info
+ */
+const getAvailableStatusesForEntity = async (entityType, entityUuid, currentStatusUuid = null, locale = 'en') => {
+  const workflow = await getWorkflowForEntity(entityType, entityUuid, locale);
+  
+  if (!workflow) {
+    return [];
+  }
+  
+  // If no current status provided, return all statuses (for new entities)
+  if (!currentStatusUuid) {
+    // Return initial statuses or all statuses with allow_all_inbound
+    return workflow.statuses
+      .filter(s => s.is_initial || s.allow_all_inbound)
+      .map(s => ({
+        uuid: s.uuid,
+        name: s.name,
+        category: s.category,
+        transitionName: null,
+        isInitial: s.is_initial
+      }));
+  }
+  
+  // Get available statuses based on current status
+  return getAvailableStatuses(workflow.uuid, currentStatusUuid, locale);
+};
+
+/**
  * Get available statuses for an object based on its current status
  */
 const getAvailableStatuses = async (workflowUuid, currentStatusUuid, locale = 'en') => {
@@ -1157,5 +1275,7 @@ module.exports = {
   removeTransition,
   
   // Available statuses
-  getAvailableStatuses
+  getAvailableStatuses,
+  getWorkflowForEntity,
+  getAvailableStatusesForEntity
 };

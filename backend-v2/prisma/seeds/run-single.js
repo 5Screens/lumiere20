@@ -14,6 +14,8 @@ const seedMap = {
   'object-metadata': () => require('./object-metadata').seedObjectMetadata(),
   'languages': () => require('./languages.seed').seedLanguages(prisma),
   'default-admin': () => require('./default-admin.seed').seedDefaultAdmin(),
+  'workflow-status-categories': () => require('./workflow-status-categories.seed').seedWorkflowStatusCategories(prisma),
+  'workflow-entity-config': () => require('./workflow-entity-config.seed').seedWorkflowEntityConfig(prisma),
 };
 
 async function main() {

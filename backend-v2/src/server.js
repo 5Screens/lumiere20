@@ -33,6 +33,7 @@ const languagesRoutes = require('./api/v1/languages/routes');
 const auditRoutes = require('./api/v1/audit/routes');
 const workflowStatusCategoriesRoutes = require('./api/v1/workflow_status_categories/routes');
 const workflowsRoutes = require('./api/v1/workflows/routes');
+const workflowEntityConfigRoutes = require('./api/v1/workflow_entity_config/routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
@@ -48,6 +49,7 @@ app.use('/api/v1/languages', languagesRoutes);
 app.use('/api/v1/audit', auditRoutes);
 app.use('/api/v1/workflow-status-categories', workflowStatusCategoriesRoutes);
 app.use('/api/v1/workflows', workflowsRoutes);
+app.use('/api/v1/workflow-entity-config', workflowEntityConfigRoutes);
 
 // Health check
 app.get('/', (req, res) => {

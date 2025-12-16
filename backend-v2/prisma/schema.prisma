@@ -725,6 +725,26 @@ model workflow_transition_sources {
   @@map("workflow_transition_sources")
 }
 
+// Workflow entity configuration - defines how workflows map to entity subtypes
+// This table allows the system to know which field determines the subtype for each entity type
+model workflow_entity_config {
+  uuid               String   @id @default(uuid()) @db.Uuid
+  entity_type        String   @unique @db.VarChar(100)  // 'configuration_items', 'tickets', 'persons', 'locations'
+  subtype_field      String   @db.VarChar(100)          // Field in the entity that determines subtype: 'ci_type', 'ticket_type_code', 'role'
+  subtype_table      String?  @db.VarChar(100)          // Prisma table name for subtypes: 'ci_types', 'ticket_types', null (if enum)
+  subtype_uuid_field String?  @db.VarChar(100)          // UUID field in subtype table: 'uuid'
+  subtype_code_field String?  @db.VarChar(100)          // Code field in subtype table: 'code' (used to link entity to subtype)
+  subtype_label_field String? @db.VarChar(100)          // Label field in subtype table: 'label', 'code'
+  subtype_options    Json?    @db.JsonB                 // Static options if no table: ['admin', 'user', 'manager']
+  description        String?  @db.Text
+  is_active          Boolean  @default(true)
+  created_at         DateTime @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@schema("workflow")
+  @@map("workflow_entity_config")
+}
+
 // ============================================
 // SCHEMA: audit
 // ============================================
