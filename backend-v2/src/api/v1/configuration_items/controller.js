@@ -44,7 +44,8 @@ const getAll = async (req, res, next) => {
 const getByUuid = async (req, res, next) => {
   try {
     const { uuid } = req.params;
-    const item = await service.getByUuid(uuid);
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+    const item = await service.getByUuid(uuid, locale);
 
     if (!item) {
       return res.status(404).json({

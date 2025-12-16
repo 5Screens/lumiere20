@@ -18,6 +18,14 @@
       />
     </div>
     
+    <!-- Initial Status -->
+    <div class="field mb-4">
+      <div class="flex items-center gap-2">
+        <Checkbox v-model="localIsInitial" binary @change="saveIsInitial" />
+        <span class="text-sm">{{ $t('workflow.initialStatus') }}</span>
+      </div>
+    </div>
+    
     <!-- Category -->
     <div class="field mb-4">
       <div class="flex items-center justify-between mb-1">
@@ -89,6 +97,7 @@ const localName = ref('')
 const localNameTranslations = ref({})
 const localCategory = ref('')
 const localAllowAllInbound = ref(false)
+const localIsInitial = ref(false)
 
 watch(() => props.status, (s) => {
   if (s) {
@@ -96,6 +105,7 @@ watch(() => props.status, (s) => {
     localNameTranslations.value = s._translations?.name || {}
     localCategory.value = s.rel_category_uuid
     localAllowAllInbound.value = s.allow_all_inbound
+    localIsInitial.value = s.is_initial || false
   }
 }, { immediate: true })
 
@@ -118,6 +128,10 @@ const saveCategory = () => {
 
 const saveAllowAllInbound = () => {
   emit('update', { ...props.status, allow_all_inbound: localAllowAllInbound.value })
+}
+
+const saveIsInitial = () => {
+  emit('update', { ...props.status, is_initial: localIsInitial.value })
 }
 
 const confirmDelete = () => {

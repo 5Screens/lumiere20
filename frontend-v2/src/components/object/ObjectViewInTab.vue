@@ -49,6 +49,9 @@
               :loading="metadataLoading"
               :ciTypes="ciTypes"
               :ciCategories="ciCategories"
+              :showStatusSelector="isConfigurationItems && mode === 'edit'"
+              :availableTransitions="availableTransitions"
+              @apply-transition="applyTransition"
             />
           </TabPanel>
 
@@ -146,6 +149,12 @@ const extendedFields = ref([])
 const extendedFieldsLoading = ref(false)
 const ciTypes = ref([])
 const ciCategories = ref([])
+
+// Status and transitions (for configuration_items)
+const availableTransitions = ref([])
+
+// Check if current object type is configuration_items
+const isConfigurationItems = computed(() => props.objectType === 'configuration_items')
 
 // Computed
 const hasExtendedInfo = computed(() => {
@@ -385,6 +394,56 @@ watch(() => item.value?.ci_type, async (newCiType, oldCiType) => {
     await loadExtendedFields(newCiType)
   }
 })
+
+// Load available transitions for current status
+const loadAvailableTransitions = async () => {
+  if (!isConfigurationItems.value || !item.value?.uuid) {
+    availableTransitions.value = []
+    return
+  }
+  
+  try {
+    const response = await api.get(`/workflows/entity/configuration_items/${item.value.uuid}/available-statuses`)
+    availableTransitions.value = response.data || []
+  } catch (error) {
+    console.error('Failed to load available transitions:', error)
+    availableTransitions.value = []
+  }
+}
+
+// Apply a transition (change status)
+const applyTransition = async (transition) => {
+  if (!item.value || !service.value) return
+  
+  try {
+    saving.value = true
+    
+    // Update the item with new status
+    await service.value.update(item.value.uuid, {
+      rel_status_uuid: transition.to_status_uuid
+    })
+    
+    // Reload the item to get updated status
+    await loadItem()
+    
+    // Reload available transitions
+    await loadAvailableTransitions()
+    
+    toast.add({ severity: 'success', summary: 'Success', detail: t('common.saved'), life: 3000 })
+  } catch (error) {
+    console.error('Failed to apply transition:', error)
+    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to apply transition', life: 3000 })
+  } finally {
+    saving.value = false
+  }
+}
+
+// Watch for item changes to load transitions
+watch(() => item.value?.rel_status_uuid, async () => {
+  if (isConfigurationItems.value && props.mode === 'edit') {
+    await loadAvailableTransitions()
+  }
+}, { immediate: true })
 
 // Lifecycle
 onMounted(async () => {

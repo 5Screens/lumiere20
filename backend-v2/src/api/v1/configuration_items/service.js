@@ -170,22 +170,53 @@ const search = async (searchParams = {}) => {
     const total = await prisma.configuration_items.count({ where });
     logger.info(`[CONFIGURATION_ITEMS] Total count: ${total}`);
 
-    // Fetch data
+    // Fetch data with status included
     const items = await prisma.configuration_items.findMany({
       where,
       orderBy: buildPrismaOrderBy(sortField, sortOrder),
       skip,
       take: limit,
+      include: {
+        status: {
+          include: {
+            category: true
+          }
+        }
+      }
     });
 
     // Fetch translations for all items
     const uuids = items.map(item => item.uuid);
     const translationsMap = await fetchTranslations(uuids, null);
     
+    // Fetch status translations
+    const statusUuids = items.filter(i => i.status).map(i => i.status.uuid);
+    const statusTranslationsMap = {};
+    if (statusUuids.length > 0) {
+      const statusTranslations = await prisma.translated_fields.findMany({
+        where: {
+          entity_type: 'workflow_statuses',
+          entity_uuid: { in: statusUuids },
+          field_name: 'name'
+        }
+      });
+      for (const t of statusTranslations) {
+        if (!statusTranslationsMap[t.entity_uuid]) {
+          statusTranslationsMap[t.entity_uuid] = {};
+        }
+        statusTranslationsMap[t.entity_uuid][t.locale] = t.value;
+      }
+    }
+    
     // Transform items with translations
-    const transformedItems = items.map(item => 
-      transformWithTranslations(item, translationsMap[item.uuid] || [], null)
-    );
+    const transformedItems = items.map(item => {
+      const transformed = transformWithTranslations(item, translationsMap[item.uuid] || [], null);
+      // Add status translations
+      if (transformed.status && statusTranslationsMap[transformed.status.uuid]) {
+        transformed.status._translations = { name: statusTranslationsMap[transformed.status.uuid] };
+      }
+      return transformed;
+    });
 
     logger.info(`[CONFIGURATION_ITEMS] Found ${items.length} items (total: ${total})`);
 
@@ -238,12 +269,19 @@ const getAll = async (options = {}) => {
  * @param {string} uuid - Configuration item UUID
  * @returns {Promise<Object|null>} - Configuration item or null
  */
-const getByUuid = async (uuid) => {
+const getByUuid = async (uuid, locale = 'en') => {
   try {
     logger.info(`[CONFIGURATION_ITEMS] Getting item: ${uuid}`);
 
     const item = await prisma.configuration_items.findUnique({
       where: { uuid },
+      include: {
+        status: {
+          include: {
+            category: true
+          }
+        }
+      }
     });
 
     if (!item) {
@@ -268,13 +306,94 @@ const getByUuid = async (uuid) => {
       allTranslationsMap[t.field_name][t.locale] = t.value;
     }
 
+    // Get status name translation if status exists
+    let statusWithTranslation = null;
+    if (item.status) {
+      const statusTranslations = await prisma.translated_fields.findMany({
+        where: {
+          entity_type: 'workflow_statuses',
+          entity_uuid: item.status.uuid,
+          field_name: 'name',
+          locale
+        }
+      });
+      statusWithTranslation = {
+        ...item.status,
+        name: statusTranslations[0]?.value || item.status.name
+      };
+    }
+
     return {
       ...item,
+      status: statusWithTranslation,
       _translations: allTranslationsMap
     };
   } catch (error) {
     logger.error('[CONFIGURATION_ITEMS] Error getting by ID:', error);
     throw error;
+  }
+};
+
+/**
+ * Get initial status UUID for a CI type from workflow
+ * @param {string} ciTypeCode - CI type code (e.g., 'SERVER')
+ * @returns {Promise<string|null>} - Initial status UUID or null
+ */
+const getInitialStatusForCiType = async (ciTypeCode) => {
+  try {
+    // Get CI type UUID from code
+    const ciType = await prisma.ci_types.findUnique({
+      where: { code: ciTypeCode },
+      select: { uuid: true }
+    });
+    
+    if (!ciType) {
+      logger.info(`[CONFIGURATION_ITEMS] No CI type found for code: ${ciTypeCode}`);
+      return null;
+    }
+    
+    // Try to find a specific workflow for this CI type
+    let workflow = await prisma.workflows.findFirst({
+      where: {
+        entity_type: 'configuration_items',
+        rel_entity_type_uuid: ciType.uuid,
+        is_active: true
+      },
+      include: {
+        statuses: {
+          where: { is_initial: true },
+          take: 1
+        }
+      }
+    });
+    
+    // If no specific workflow, try generic workflow for configuration_items
+    if (!workflow) {
+      workflow = await prisma.workflows.findFirst({
+        where: {
+          entity_type: 'configuration_items',
+          rel_entity_type_uuid: null,
+          is_active: true
+        },
+        include: {
+          statuses: {
+            where: { is_initial: true },
+            take: 1
+          }
+        }
+      });
+    }
+    
+    if (workflow && workflow.statuses.length > 0) {
+      logger.info(`[CONFIGURATION_ITEMS] Found initial status: ${workflow.statuses[0].uuid} for CI type: ${ciTypeCode}`);
+      return workflow.statuses[0].uuid;
+    }
+    
+    logger.info(`[CONFIGURATION_ITEMS] No initial status found for CI type: ${ciTypeCode}`);
+    return null;
+  } catch (error) {
+    logger.error('[CONFIGURATION_ITEMS] Error getting initial status:', error);
+    return null;
   }
 };
 
@@ -289,12 +408,19 @@ const create = async (data) => {
     
     logger.info('[CONFIGURATION_ITEMS] Creating item:', itemData.name);
 
+    // Get initial status from workflow if not provided
+    let statusUuid = itemData.rel_status_uuid || null;
+    if (!statusUuid && itemData.ci_type) {
+      statusUuid = await getInitialStatusForCiType(itemData.ci_type);
+    }
+
     const item = await prisma.configuration_items.create({
       data: {
         name: itemData.name,
         description: itemData.description || null,
         ci_type: itemData.ci_type || 'GENERIC',
         rel_model_uuid: itemData.rel_model_uuid || null,
+        rel_status_uuid: statusUuid,
         extended_core_fields: itemData.extended_core_fields || {},
       },
     });
@@ -304,7 +430,7 @@ const create = async (data) => {
       await saveTranslations(item.uuid, _translations);
     }
 
-    logger.info(`[CONFIGURATION_ITEMS] Created item: ${item.uuid}`);
+    logger.info(`[CONFIGURATION_ITEMS] Created item: ${item.uuid} with status: ${statusUuid}`);
     return item;
   } catch (error) {
     logger.error('[CONFIGURATION_ITEMS] Error creating:', error);
@@ -329,6 +455,7 @@ const update = async (uuid, data) => {
     if (itemData.description !== undefined) updateData.description = itemData.description;
     if (itemData.ci_type !== undefined) updateData.ci_type = itemData.ci_type;
     if (itemData.rel_model_uuid !== undefined) updateData.rel_model_uuid = itemData.rel_model_uuid;
+    if (itemData.rel_status_uuid !== undefined) updateData.rel_status_uuid = itemData.rel_status_uuid;
     if (itemData.extended_core_fields !== undefined)
       updateData.extended_core_fields = itemData.extended_core_fields;
 

@@ -28,6 +28,9 @@
             :forced-ci-type-uuid="forcedCiTypeUuid"
             :ciTypes="ciTypes"
             :ciCategories="ciCategories"
+            :showStatusSelector="isConfigurationItems && mode === 'edit'"
+            :availableTransitions="availableTransitions"
+            @apply-transition="$emit('apply-transition', $event)"
           />
         </TabPanel>
 
@@ -117,6 +120,11 @@ const props = defineProps({
   forcedCiTypeUuid: {
     type: String,
     default: null
+  },
+  // Available transitions for current status
+  availableTransitions: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -124,7 +132,8 @@ const props = defineProps({
 const emit = defineEmits([
   'update:modelValue',
   'ci-type-change',
-  'refresh-options'
+  'refresh-options',
+  'apply-transition'
 ])
 
 // State
@@ -135,4 +144,7 @@ const hasExtendedInfo = computed(() => {
   // Show extended tab for ci_types and configuration_items
   return ['ci_types', 'configuration_items'].includes(props.objectType)
 })
+
+// Check if current object type is configuration_items
+const isConfigurationItems = computed(() => props.objectType === 'configuration_items')
 </script>

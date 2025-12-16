@@ -82,6 +82,14 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
       if (statusData.rel_category_uuid) {
         statusData.category = statusCategories.value.find(c => c.uuid === statusData.rel_category_uuid)
       }
+      // If setting this status as initial, unset all other statuses
+      if (statusData.is_initial) {
+        workflow.value.statuses.forEach(s => {
+          if (s.uuid !== statusData.uuid) {
+            s.is_initial = false
+          }
+        })
+      }
       workflow.value.statuses[index] = { ...workflow.value.statuses[index], ...statusData }
       isDirty.value = true
     }

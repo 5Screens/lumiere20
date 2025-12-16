@@ -195,6 +195,24 @@
           </template>
         </Column>
 
+        <!-- Status column (only for configuration_items) -->
+        <Column 
+          v-if="isConfigurationItems"
+          field="status"
+          :header="$t('common.status')"
+          style="min-width: 10rem"
+          :sortable="false"
+        >
+          <template #body="{ data }">
+            <Tag 
+              v-if="data.status"
+              :value="getStatusLabel(data.status)"
+              :style="{ backgroundColor: data.status.category?.color || '#6b7280', color: 'white' }"
+            />
+            <span v-else class="text-surface-400 italic text-sm">{{ $t('workflow.noWorkflow') }}</span>
+          </template>
+        </Column>
+
         <!-- Dynamic columns from metadata -->
         <template v-for="col in filteredTableColumns" :key="col.field_name">
         <Column 
@@ -1913,6 +1931,16 @@ const getFieldValue = (data, col) => {
     return data.extended_core_fields?.[col.field_name] ?? null
   }
   return data[col.field_name] ?? null
+}
+
+// Helper to get status label with translation
+const getStatusLabel = (status) => {
+  if (!status) return ''
+  // Use translated name if available for current locale
+  if (status._translations?.name?.[locale.value]) {
+    return status._translations.name[locale.value]
+  }
+  return status.name || ''
 }
 
 // Get value from extended_core_fields for table display
