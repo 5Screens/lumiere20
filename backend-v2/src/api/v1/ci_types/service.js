@@ -57,6 +57,9 @@ const getAll = async ({ activeOnly = true, locale = null } = {}) => {
     
     const ciTypes = await prisma.ci_types.findMany({
       where,
+      include: {
+        category: true
+      },
       orderBy: [
         { display_order: 'asc' },
         { label: 'asc' }

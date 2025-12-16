@@ -208,6 +208,7 @@ export default {
     description: 'Description',
     ciType: 'Type',
     model: 'Model',
+    isModelFor: 'Model for type',
     createdAt: 'Created at',
     updatedAt: 'Updated at',
     actions: {

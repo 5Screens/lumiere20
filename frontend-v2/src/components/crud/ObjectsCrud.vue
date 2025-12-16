@@ -1531,7 +1531,8 @@ const loadCiTypes = async () => {
       uuid: ct.uuid,
       icon: ct.icon,
       color: ct.color,
-      has_model: ct.has_model
+      has_model: ct.has_model,
+      categoryCode: ct.category?.code || null
     }))
     console.log('[ObjectsCrud] loadCiTypes - mapped ciTypes:', ciTypes.value)
     ciTypesLoaded.value = true

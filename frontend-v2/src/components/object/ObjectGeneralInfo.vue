@@ -184,6 +184,15 @@
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly"
         />
+        
+        <!-- CI Type Target Selector (for model CIs to select which type they are model for) -->
+        <CiTypeTargetSelector 
+          v-else-if="field.field_type === 'ci_type_target'"
+          :id="field.field_name" 
+          :modelValue="modelValue[field.field_name]"
+          @update:modelValue="updateField(field.field_name, $event)"
+          :disabled="field.is_readonly"
+        />
       </div>
     </template>
   </div>
@@ -207,6 +216,7 @@ import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import CICategorySelector from '@/components/form/CICategorySelector.vue'
 import CiModelSelector from '@/components/form/CiModelSelector.vue'
+import CiTypeTargetSelector from '@/components/form/CiTypeTargetSelector.vue'
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'
@@ -293,16 +303,21 @@ const isFieldDisabled = (field) => {
   return false
 }
 
-// Filter form fields based on CI type's has_model property
+// Filter form fields based on CI type properties
 const filteredFormFields = computed(() => {
-  // Check if current CI type has has_model enabled
+  // Find current CI type with its category
   const currentCiType = props.ciTypes.find(ct => ct.code === props.modelValue?.ci_type)
   const hasModel = currentCiType?.has_model === true
+  const isModelCategory = currentCiType?.categoryCode === 'MODELS'
   
   return props.formFields.filter(field => {
     // Hide rel_model_uuid if CI type doesn't have has_model
     if (field.field_name === 'rel_model_uuid') {
       return hasModel
+    }
+    // Show is_model_for_ci_type_uuid only if CI type's category is MODELS
+    if (field.field_name === 'is_model_for_ci_type_uuid') {
+      return isModelCategory
     }
     return true
   })

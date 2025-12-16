@@ -209,6 +209,7 @@ export default {
     description: 'Description',
     ciType: 'Type',
     model: 'Modèle',
+    isModelFor: 'Modèle pour le type',
     createdAt: 'Créé le',
     updatedAt: 'Modifié le',
     actions: {

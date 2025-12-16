@@ -10,12 +10,19 @@ async function seedConfigurationItems() {
   console.log('Seeding Configuration Items (Server Models Catalog)...');
 
   // Get CI types to map them
-  const ciTypes = await prisma.ci_types.findMany();
+  const ciTypes = await prisma.ci_types.findMany({
+    include: { category: true }
+  });
   const ciTypeMap = {};
   for (const ct of ciTypes) {
     ciTypeMap[ct.code] = ct.uuid;
   }
   console.log(`  Found ${ciTypes.length} CI types`);
+
+  // Get the SERVER type UUID (the type that MODEL_SERVER models are for)
+  const serverType = ciTypes.find(ct => ct.code === 'SERVER');
+  const serverTypeUuid = serverType?.uuid || null;
+  console.log(`  SERVER type UUID: ${serverTypeUuid}`);
 
   // Server Models Catalog - 10 popular server models
   const serverModels = [
@@ -304,6 +311,11 @@ async function seedConfigurationItems() {
   for (const ci of serverModels) {
     const { translations, ...ciData } = ci;
     
+    // For MODEL_SERVER, set is_model_for_ci_type_uuid to SERVER type
+    if (ci.ci_type === 'MODEL_SERVER' && serverTypeUuid) {
+      ciData.is_model_for_ci_type_uuid = serverTypeUuid;
+    }
+    
     // Upsert CI
     const createdCi = await prisma.configuration_items.upsert({
       where: { 
@@ -314,7 +326,8 @@ async function seedConfigurationItems() {
         name: ciData.name,
         description: ciData.description,
         ci_type: ciData.ci_type,
-        extended_core_fields: ciData.extended_core_fields
+        extended_core_fields: ciData.extended_core_fields,
+        is_model_for_ci_type_uuid: ciData.is_model_for_ci_type_uuid || null
       },
       create: ciData
     });
