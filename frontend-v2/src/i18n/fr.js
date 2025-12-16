@@ -560,7 +560,7 @@ export default {
     addStatus: 'Ajouter un statut',
     addTransition: 'Ajouter une transition',
     status: 'État',
-    statusDescription: 'Un statut est une étiquette normalisée qui permet de suivre la progression ou l’état d’un objet tout au long de son cycle de vie.',
+    statusDescription: 'Un statut est une étiquette normalisée qui permet de suivre la progression ou l\'état d\'un objet tout au long de son cycle de vie.',
     transition: 'Transition',
     transitionDescription: 'Les transitions relient les états en tant qu\'actions qui permettent de faire avancer les tâches.',
     category: 'Catégorie',
@@ -592,13 +592,25 @@ export default {
     createWorkflow: 'Créer un workflow',
     statusCategories: 'Catégories de statuts',
     entityType: 'Type d\'entité',
+    selectEntityType: 'Sélectionner un type d\'entité',
+    subtype: 'Sous-type',
+    selectSubtype: 'Sélectionner un sous-type (optionnel)',
+    allSubtypes: 'Générique',
+    allSubtypesOption: 'Tous les sous-types (workflow générique)',
+    specificSubtype: 'Sous-type spécifique',
     statusCount: 'Statuts',
     transitionCount: 'Transitions',
     duplicated: 'Workflow dupliqué avec succès',
-    confirmDeleteStatus: 'Êtes-vous sûr de vouloir supprimer cet état ?',
-    confirmDeleteTransition: 'Êtes-vous sûr de vouloir supprimer cette transition ?',
     unsavedChangesWarning: 'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir fermer sans enregistrer ?',
-    closeWithoutSaving: 'Fermer sans enregistrer'
+    closeWithoutSaving: 'Fermer sans enregistrer',
+    entityTypes: {
+      configuration_items: 'Éléments de configuration',
+      tickets: 'Tickets',
+      persons: 'Personnes',
+      locations: 'Localisations',
+      entities: 'Entités',
+      services: 'Services'
+    }
   },
   audit: {
     title: 'Journal d\'audit',

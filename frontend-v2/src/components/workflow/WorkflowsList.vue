@@ -99,7 +99,29 @@
       </div>
       <div class="field mb-4">
         <label class="block mb-1 font-medium">{{ $t('workflow.entityType') }}</label>
-        <Select v-model="formData.entity_type" :options="entityTypes" optionLabel="label" optionValue="value" class="w-full" />
+        <Select 
+          v-model="formData.entity_type" 
+          :options="entityTypeConfigs" 
+          optionLabel="label" 
+          optionValue="entity_type" 
+          class="w-full"
+          :placeholder="$t('workflow.selectEntityType')"
+          @change="onEntityTypeChange"
+        />
+      </div>
+      <div class="field mb-4" v-if="subtypeOptions.length > 0">
+        <label class="block mb-1 font-medium">{{ $t('workflow.subtype') }}</label>
+        <Select 
+          v-model="formData.rel_entity_type_uuid" 
+          :options="subtypeOptionsWithAll" 
+          optionLabel="label" 
+          optionValue="value" 
+          optionGroupLabel="group"
+          optionGroupChildren="items"
+          class="w-full"
+          :placeholder="$t('workflow.selectSubtype')"
+          showClear
+        />
       </div>
       <div class="field mb-4">
         <label class="block mb-1 font-medium">{{ $t('common.isActive') }}</label>
@@ -132,7 +154,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
@@ -179,16 +201,66 @@ const editingNameValue = ref('')
 const formData = ref({
   name: '',
   entity_type: '',
+  rel_entity_type_uuid: null,
   is_active: true
 })
 
-const entityTypes = [
-  { label: 'CI Types', value: 'ci_types' },
-  { label: 'Ticket Types', value: 'ticket_types' },
-  { label: 'Persons', value: 'persons' },
-  { label: 'Locations', value: 'locations' },
-  { label: 'Entities', value: 'entities' }
-]
+const entityTypeConfigs = ref([])
+const subtypeOptions = ref([])
+
+const subtypeOptionsWithAll = computed(() => {
+  if (subtypeOptions.value.length === 0) return []
+  
+  return [
+    {
+      group: t('workflow.allSubtypes'),
+      items: [{ value: null, label: t('workflow.allSubtypesOption') }]
+    },
+    {
+      group: t('workflow.specificSubtype'),
+      items: subtypeOptions.value
+    }
+  ]
+})
+
+const loadEntityTypeConfigs = async () => {
+  try {
+    const response = await fetch('/api/v1/workflow-entity-config')
+    if (response.ok) {
+      const configs = await response.json()
+      entityTypeConfigs.value = configs.map(c => ({
+        ...c,
+        label: t(`workflow.entityTypes.${c.entity_type}`, c.entity_type)
+      }))
+    }
+  } catch (error) {
+    console.error('Error loading entity type configs:', error)
+  }
+}
+
+const loadSubtypes = async (entityType) => {
+  if (!entityType) {
+    subtypeOptions.value = []
+    return
+  }
+  
+  try {
+    const response = await fetch(`/api/v1/workflow-entity-config/entity/${entityType}/subtypes?locale=${locale.value}`)
+    if (response.ok) {
+      subtypeOptions.value = await response.json()
+    } else {
+      subtypeOptions.value = []
+    }
+  } catch (error) {
+    console.error('Error loading subtypes:', error)
+    subtypeOptions.value = []
+  }
+}
+
+const onEntityTypeChange = () => {
+  formData.value.rel_entity_type_uuid = null
+  loadSubtypes(formData.value.entity_type)
+}
 
 const loadWorkflows = async () => {
   loading.value = true
@@ -222,7 +294,8 @@ watch(globalFilter, () => {
 
 const createWorkflow = () => {
   editingWorkflow.value = null
-  formData.value = { name: '', entity_type: '', is_active: true }
+  formData.value = { name: '', entity_type: '', rel_entity_type_uuid: null, is_active: true }
+  subtypeOptions.value = []
   showDialog.value = true
 }
 
@@ -371,5 +444,6 @@ const duplicateWorkflow = async (workflow) => {
 
 onMounted(() => {
   loadWorkflows()
+  loadEntityTypeConfigs()
 })
 </script>

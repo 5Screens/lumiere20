@@ -554,6 +554,7 @@ export default {
   },
   workflow: {
     title: 'Workflows',
+    name: 'Name',
     newWorkflow: 'New Workflow',
     addStatus: 'Add Status',
     addTransition: 'Add Transition',
@@ -590,13 +591,25 @@ export default {
     createWorkflow: 'Create Workflow',
     statusCategories: 'Status Categories',
     entityType: 'Entity Type',
+    selectEntityType: 'Select an entity type',
+    subtype: 'Subtype',
+    selectSubtype: 'Select a subtype (optional)',
+    allSubtypes: 'Generic',
+    allSubtypesOption: 'All subtypes (generic workflow)',
+    specificSubtype: 'Specific subtype',
     statusCount: 'Statuses',
     transitionCount: 'Transitions',
     duplicated: 'Workflow duplicated successfully',
-    confirmDeleteStatus: 'Are you sure you want to delete this status?',
-    confirmDeleteTransition: 'Are you sure you want to delete this transition?',
     unsavedChangesWarning: 'You have unsaved changes. Are you sure you want to close without saving?',
-    closeWithoutSaving: 'Close without saving'
+    closeWithoutSaving: 'Close without saving',
+    entityTypes: {
+      configuration_items: 'Configuration Items',
+      tickets: 'Tickets',
+      persons: 'Persons',
+      locations: 'Locations',
+      entities: 'Entities',
+      services: 'Services'
+    }
   },
   audit: {
     title: 'Audit Log',
