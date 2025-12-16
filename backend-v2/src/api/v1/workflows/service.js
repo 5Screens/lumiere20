@@ -1258,6 +1258,7 @@ const getAvailableStatuses = async (workflowUuid, currentStatusUuid, locale = 'e
   for (const transition of transitionsFromCurrent) {
     availableStatusMap.set(transition.to_status.uuid, {
       status: transition.to_status,
+      transitionUuid: transition.uuid,
       transitionName: transition.name
     });
   }
@@ -1266,22 +1267,27 @@ const getAvailableStatuses = async (workflowUuid, currentStatusUuid, locale = 'e
     if (!availableStatusMap.has(status.uuid)) {
       availableStatusMap.set(status.uuid, {
         status,
+        transitionUuid: null,
         transitionName: null // Direct access via allow_all_inbound
       });
     }
   }
   
-  // Get translations
+  // Get translations for statuses, categories, and transitions
   const statusUuids = Array.from(availableStatusMap.keys());
   const categoryUuids = [...new Set(
     Array.from(availableStatusMap.values()).map(v => v.status.rel_category_uuid)
   )];
+  const transitionUuids = Array.from(availableStatusMap.values())
+    .filter(v => v.transitionUuid)
+    .map(v => v.transitionUuid);
   
   const translations = await prisma.translated_fields.findMany({
     where: {
       OR: [
         { entity_type: 'workflow_statuses', entity_uuid: { in: statusUuids }, locale },
-        { entity_type: 'workflow_status_categories', entity_uuid: { in: categoryUuids }, locale }
+        { entity_type: 'workflow_status_categories', entity_uuid: { in: categoryUuids }, locale },
+        { entity_type: 'workflow_transitions', entity_uuid: { in: transitionUuids }, locale }
       ]
     }
   });
@@ -1295,7 +1301,7 @@ const getAvailableStatuses = async (workflowUuid, currentStatusUuid, locale = 'e
   }
   
   // Build result
-  return Array.from(availableStatusMap.values()).map(({ status, transitionName }) => ({
+  return Array.from(availableStatusMap.values()).map(({ status, transitionUuid, transitionName }) => ({
     uuid: status.uuid,
     name: translationMap[status.uuid]?.name || status.name,
     category: {
@@ -1304,7 +1310,7 @@ const getAvailableStatuses = async (workflowUuid, currentStatusUuid, locale = 'e
       color: status.category.color,
       label: translationMap[status.category.uuid]?.label || status.category.code
     },
-    transitionName
+    transitionName: transitionUuid ? (translationMap[transitionUuid]?.name || transitionName) : transitionName
   }));
 };
 
