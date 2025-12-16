@@ -56,7 +56,17 @@
           </span>
         </template>
       </Column>
-      <Column field="entity_type" :header="$t('workflow.entityType')" sortable />
+      <Column field="entity_type" :header="$t('workflow.entityType')" sortable style="width: 160px">
+        <template #body="{ data }">
+          <span>{{ $t(`workflow.entityTypes.${data.entity_type}`, data.entity_type) }}</span>
+        </template>
+      </Column>
+      <Column field="subtypeLabel" :header="$t('workflow.subtype')" sortable style="width: 150px">
+        <template #body="{ data }">
+          <Tag v-if="data.subtypeLabel" :value="data.subtypeLabel" severity="info" />
+          <span v-else class="text-surface-400 italic text-sm">{{ $t('workflow.allSubtypesShort') }}</span>
+        </template>
+      </Column>
       <Column field="statusCount" :header="$t('workflow.statusCount')" sortable style="width: 100px">
         <template #body="{ data }">
           <Tag :value="data.statusCount || 0" severity="info" />

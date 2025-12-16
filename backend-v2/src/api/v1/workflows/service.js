@@ -66,13 +66,56 @@ const getAll = async ({ activeOnly = true, locale = 'en', entityType = null, sea
     allTranslationsMap[t.entity_uuid][t.field_name][t.locale] = t.value;
   }
   
+  // Get subtype labels for workflows that have rel_entity_type_uuid
+  const subtypeUuids = workflows.filter(w => w.rel_entity_type_uuid).map(w => w.rel_entity_type_uuid);
+  const subtypeLabels = {};
+  
+  if (subtypeUuids.length > 0) {
+    // Try to get labels from ci_types (most common case)
+    const ciTypes = await prisma.ci_types.findMany({
+      where: { uuid: { in: subtypeUuids } },
+      select: { uuid: true, label: true, code: true }
+    });
+    
+    for (const ct of ciTypes) {
+      subtypeLabels[ct.uuid] = ct.label || ct.code;
+    }
+    
+    // Try to get labels from ticket_types for remaining
+    const remainingUuids = subtypeUuids.filter(u => !subtypeLabels[u]);
+    if (remainingUuids.length > 0) {
+      const ticketTypes = await prisma.ticket_types.findMany({
+        where: { uuid: { in: remainingUuids } },
+        select: { uuid: true, code: true }
+      });
+      
+      for (const tt of ticketTypes) {
+        subtypeLabels[tt.uuid] = tt.code;
+      }
+    }
+    
+    // Get translations for subtypes
+    const subtypeTranslations = await prisma.translated_fields.findMany({
+      where: {
+        entity_uuid: { in: subtypeUuids },
+        field_name: 'label',
+        locale
+      }
+    });
+    
+    for (const t of subtypeTranslations) {
+      subtypeLabels[t.entity_uuid] = t.value;
+    }
+  }
+  
   return workflows.map(wf => ({
     ...wf,
     name: translationMap[wf.uuid]?.name || wf.name,
     description: translationMap[wf.uuid]?.description || wf.description,
     _translations: allTranslationsMap[wf.uuid] || {},
     statusCount: wf._count.statuses,
-    transitionCount: wf._count.transitions
+    transitionCount: wf._count.transitions,
+    subtypeLabel: wf.rel_entity_type_uuid ? subtypeLabels[wf.rel_entity_type_uuid] || null : null
   }));
 };
 
@@ -556,7 +599,10 @@ const saveAll = async (uuid, data, locale = 'en') => {
           }
         });
         statusUuid = newStatus.uuid;
-        // Map temp UUID to real UUID
+        // Map temp UUID to real UUID (frontend sends tempUuid for new statuses)
+        if (status.tempUuid) {
+          statusUuidMap[status.tempUuid] = newStatus.uuid;
+        }
         if (status.uuid) {
           statusUuidMap[status.uuid] = newStatus.uuid;
         }
@@ -633,8 +679,18 @@ const saveAll = async (uuid, data, locale = 'en') => {
     // Create or update transitions
     for (const transition of transitions) {
       // Resolve status UUIDs (may be temp UUIDs for new statuses)
-      const toStatusUuid = statusUuidMap[transition.to_status_uuid] || transition.to_status_uuid || transition.rel_to_status_uuid;
-      const sourceStatusUuids = (transition.source_status_uuids || []).map(id => statusUuidMap[id] || id);
+      // Check multiple possible field names for the target status
+      const rawToStatusUuid = transition.to_status_uuid || transition.rel_to_status_uuid || transition.to_status?.uuid;
+      const toStatusUuid = statusUuidMap[rawToStatusUuid] || rawToStatusUuid;
+      const sourceStatusUuids = (transition.source_status_uuids || transition.sources?.map(s => s.from_status?.uuid || s.rel_from_status_uuid) || [])
+        .filter(Boolean)
+        .map(id => statusUuidMap[id] || id);
+      
+      // Skip transition if target status is not resolved
+      if (!toStatusUuid) {
+        logger.warn(`[WORKFLOWS SERVICE] Skipping transition "${transition.name}" - no valid target status UUID`);
+        continue;
+      }
       
       let transitionUuid;
       

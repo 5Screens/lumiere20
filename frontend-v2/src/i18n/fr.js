@@ -597,6 +597,7 @@ export default {
     selectSubtype: 'Sélectionner un sous-type (optionnel)',
     allSubtypes: 'Générique',
     allSubtypesOption: 'Tous les sous-types (workflow générique)',
+    allSubtypesShort: 'Tous',
     specificSubtype: 'Sous-type spécifique',
     statusCount: 'Statuts',
     transitionCount: 'Transitions',
