@@ -403,8 +403,23 @@ const loadAvailableTransitions = async () => {
   }
   
   try {
-    const response = await api.get(`/workflows/entity/configuration_items/${item.value.uuid}/available-statuses`)
-    availableTransitions.value = response.data || []
+    // Pass current status UUID as query param to get outgoing transitions
+    const currentStatusUuid = item.value.rel_status_uuid
+    let url = `/workflows/entity/configuration_items/${item.value.uuid}/available-statuses`
+    if (currentStatusUuid) {
+      url += `?currentStatusUuid=${currentStatusUuid}`
+    }
+    const response = await api.get(url)
+    
+    // Transform backend response to match StatusPicker expected format
+    // Backend returns: { uuid, name, category, transitionName }
+    // StatusPicker expects: { to_status_uuid, to_status_name, name (transition), to_status_color }
+    availableTransitions.value = (response.data || []).map(status => ({
+      to_status_uuid: status.uuid,
+      to_status_name: status.name,
+      name: status.transitionName || '',
+      to_status_color: status.category?.color || '#6b7280'
+    }))
   } catch (error) {
     console.error('Failed to load available transitions:', error)
     availableTransitions.value = []

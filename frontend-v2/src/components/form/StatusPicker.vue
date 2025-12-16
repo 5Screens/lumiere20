@@ -38,10 +38,11 @@
       <!-- Option template -->
       <template #option="slotProps">
         <div class="flex items-center justify-between w-full gap-3 py-1">
-          <div class="flex items-center gap-2">
+          <div v-if="slotProps.option.transitionName" class="flex items-center gap-2">
             <span class="text-surface-500">{{ slotProps.option.transitionName }}</span>
             <i class="pi pi-arrow-right text-xs text-surface-400" />
           </div>
+          <i v-else class="pi pi-arrow-right text-xs text-surface-400" />
           <span 
             class="status-badge"
             :style="{ backgroundColor: slotProps.option.color || '#6b7280' }"
