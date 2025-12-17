@@ -81,6 +81,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 import { getService } from '@/services'
+import api from '@/services/api'
 import metadataService from '@/services/metadataService'
 import ciTypeFieldsService from '@/services/ciTypeFieldsService'
 import { useReferenceDataStore } from '@/stores/referenceDataStore'
@@ -147,6 +148,7 @@ const extendedFieldsLoading = ref(false)
 
 // Store for reference data loading
 const referenceDataStore = useReferenceDataStore()
+const ciTypes = computed(() => referenceDataStore.ciTypes)
 
 // Status and transitions (for configuration_items)
 const availableTransitions = ref([])
@@ -299,14 +301,7 @@ const loadExtendedFields = async (ciTypeCode) => {
     
     // First get CI type UUID from code
     if (ciTypes.value.length === 0) {
-      const types = await ciTypesService.getAll()
-      // Map to include categoryCode for ObjectGeneralInfo filtering
-      ciTypes.value = types.map(ct => ({
-        ...ct,
-        code: ct.code,
-        has_model: ct.has_model,
-        categoryCode: ct.category?.code || null
-      }))
+      await referenceDataStore.loadCiTypes()
     }
     
     const ciType = ciTypes.value.find(ct => ct.code === ciTypeCode)
