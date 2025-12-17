@@ -54,7 +54,7 @@
           v-for="tab in tabsStore.parentTabs" 
           :key="tab.id_tab"
           :value="tab.id_tab"
-          class="h-full flex flex-col p-0"
+          :pt="{ root: { class: 'h-full flex flex-col p-0 overflow-hidden' } }"
         >
           <!-- Content with child tabs support -->
           <div class="h-full flex flex-col">
@@ -110,7 +110,7 @@
 
               <TabPanels class="flex-1 min-h-0 overflow-hidden" :pt="{ root: { class: 'p-1' } }">
                 <!-- List panel -->
-                <TabPanel :value="'list-' + tab.id_tab" class="h-full overflow-auto p-0">
+                <TabPanel :value="'list-' + tab.id_tab" :pt="{ root: { class: 'h-full overflow-hidden p-0' } }">
                   <component 
                     v-if="tab.component"
                     :is="getComponent(tab.component)"
@@ -125,7 +125,7 @@
                   v-for="childTab in getChildTabs(tab.id_tab)" 
                   :key="childTab.id_tab"
                   :value="childTab.id_tab"
-                  class="h-full overflow-auto p-0"
+                  :pt="{ root: { class: 'h-full overflow-hidden p-0' } }"
                 >
                   <component 
                     v-if="childTab.component"
@@ -141,7 +141,7 @@
             </Tabs>
 
             <!-- Simple content for components without child tabs -->
-            <div v-else class="h-full overflow-auto p-0">
+            <div v-else class="h-full overflow-hidden p-0">
               <component 
                 v-if="tab.component"
                 :is="getComponent(tab.component)"
