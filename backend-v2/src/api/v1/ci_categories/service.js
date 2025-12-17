@@ -305,8 +305,18 @@ const remove = async (uuid) => {
 /**
  * Search CI categories with PrimeVue filters
  */
-const search = async (filters, locale = 'en') => {
-  const { first = 0, rows = 10, sortField = 'display_order', sortOrder = 1, globalFilter } = filters;
+const search = async (searchParams = {}, locale = 'en') => {
+  const { 
+    filters = {},
+    page = 1, 
+    limit = 50, 
+    sortField = 'display_order', 
+    sortOrder = 1
+  } = searchParams;
+  
+  const { globalFilter } = filters;
+  const skip = (page - 1) * limit;
+  const take = limit;
   
   let where = {};
   
@@ -321,8 +331,8 @@ const search = async (filters, locale = 'en') => {
   const [categories, total] = await Promise.all([
     prisma.ci_categories.findMany({
       where,
-      skip: first,
-      take: rows,
+      skip,
+      take,
       orderBy: { [sortField]: sortOrder === 1 ? 'asc' : 'desc' }
     }),
     prisma.ci_categories.count({ where })
