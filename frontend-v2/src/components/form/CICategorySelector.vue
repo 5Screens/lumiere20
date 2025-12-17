@@ -78,7 +78,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import api from '@/services/api'
+import { useReferenceDataStore } from '@/stores/referenceDataStore'
 
 const props = defineProps({
   modelValue: {
@@ -94,24 +94,12 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const { locale } = useI18n()
+const referenceDataStore = useReferenceDataStore()
 const dialogVisible = ref(false)
-const categories = ref([])
-const isLoading = ref(false)
 
-/**
- * Load categories from API
- */
-const loadCategories = async () => {
-  isLoading.value = true
-  try {
-    const response = await api.get('/ci_categories')
-    categories.value = response.data
-  } catch (error) {
-    console.error('Failed to load CI categories:', error)
-  } finally {
-    isLoading.value = false
-  }
-}
+// Use store data
+const categories = computed(() => referenceDataStore.ciCategories)
+const isLoading = computed(() => referenceDataStore.loading.ciCategories)
 
 /**
  * Find selected category object from UUID
@@ -121,10 +109,8 @@ const selectedCategory = computed(() => {
   return categories.value.find(c => c.uuid === props.modelValue) || null
 })
 
-const openDialog = () => {
-  if (categories.value.length === 0) {
-    loadCategories()
-  }
+const openDialog = async () => {
+  await referenceDataStore.loadCiCategories()
   dialogVisible.value = true
 }
 
@@ -139,17 +125,15 @@ const clearSelection = () => {
 }
 
 // Load categories on mount to display selected value
-onMounted(() => {
+onMounted(async () => {
   if (props.modelValue) {
-    loadCategories()
+    await referenceDataStore.loadCiCategories()
   }
 })
 
-// Reload when locale changes
+// Reload when locale changes (force reload to get new translations)
 watch(locale, () => {
-  if (categories.value.length > 0) {
-    loadCategories()
-  }
+  referenceDataStore.loadCiCategories(true)
 })
 </script>
 

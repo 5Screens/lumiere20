@@ -33,7 +33,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Select from 'primevue/select'
-import ciTypesService from '@/services/ciTypesService'
+import { useReferenceDataStore } from '@/stores/referenceDataStore'
 
 const props = defineProps({
   modelValue: {
@@ -49,9 +49,12 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const { locale } = useI18n()
+const referenceDataStore = useReferenceDataStore()
 const localValue = ref(null)
-const loading = ref(false)
-const ciTypes = ref([])
+
+// Use store data
+const loading = computed(() => referenceDataStore.loading.ciTypes)
+const ciTypes = computed(() => referenceDataStore.ciTypes)
 
 /**
  * Filter CI types to exclude those with MODELS category
@@ -67,35 +70,13 @@ const getSelectedType = computed(() => {
   return filteredCiTypes.value.find(ct => ct.uuid === localValue.value)
 })
 
-/**
- * Load all CI types
- */
-const loadCiTypes = async () => {
-  try {
-    loading.value = true
-    const data = await ciTypesService.getAll()
-    ciTypes.value = data.map(ct => ({
-      uuid: ct.uuid,
-      code: ct.code,
-      label: ct._translations?.label?.[locale.value] || ct.label,
-      icon: ct.icon,
-      categoryCode: ct.category?.code || null
-    }))
-  } catch (error) {
-    console.error('Failed to load CI types:', error)
-    ciTypes.value = []
-  } finally {
-    loading.value = false
-  }
-}
-
 const onChange = () => {
   emit('update:modelValue', localValue.value)
 }
 
 // Initialize
 onMounted(async () => {
-  await loadCiTypes()
+  await referenceDataStore.loadCiTypes()
   localValue.value = props.modelValue
 })
 
@@ -104,8 +85,8 @@ watch(() => props.modelValue, (newVal) => {
   localValue.value = newVal
 })
 
-// Reload labels when locale changes
+// Reload labels when locale changes (force reload to get new translations)
 watch(locale, () => {
-  loadCiTypes()
+  referenceDataStore.loadCiTypes(true)
 })
 </script>

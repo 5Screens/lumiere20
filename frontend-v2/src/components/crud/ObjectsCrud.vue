@@ -534,8 +534,6 @@
         :form-fields="formFields"
         :object-type="objectType"
         :field-options="fieldOptions"
-        :ci-types="ciTypes"
-        :ci-categories="ciCategories"
         :extended-fields="extendedFields"
         :extended-fields-loading="extendedFieldsLoading"
         :refreshing-field="refreshingField"
@@ -750,9 +748,9 @@ import { useI18n } from 'vue-i18n'
 import { getService, hasService } from '@/services'
 import metadataService from '@/services/metadataService'
 import ciTypeFieldsService from '@/services/ciTypeFieldsService'
-import ciTypesService from '@/services/ciTypesService'
 import api from '@/services/api'
 import { useTabsStore } from '@/stores/tabsStore'
+import { useReferenceDataStore } from '@/stores/referenceDataStore'
 
 // PrimeVue components
 import DataTable from 'primevue/datatable'
@@ -823,6 +821,7 @@ console.log('[ObjectsCrud] Component mounted with props:', { objectType: props.o
 
 // Stores
 const tabsStore = useTabsStore()
+const referenceDataStore = useReferenceDataStore()
 
 // Get service for this object type
 const service = computed(() => getService(props.objectType))
@@ -872,9 +871,12 @@ const extendedFieldsLoading = ref(false)
 // CI Type fields (dynamic columns for filtered CI views)
 const ciTypeFields = ref([])
 const ciTypeFieldsLoading = ref(false)
-const ciTypes = ref([])
-const ciTypesLoaded = ref(false)
 const changeTypeDialog = ref(false)
+
+// Use store for reference data
+const ciTypes = computed(() => referenceDataStore.ciTypes)
+const ciCategories = computed(() => referenceDataStore.ciCategories)
+const ciCategoriesLoading = computed(() => referenceDataStore.loading.ciCategories)
 const pendingCiType = ref(null)
 
 // Inline picker dialogs
@@ -893,10 +895,6 @@ const inlinePickerFieldMeta = ref(null) // The field metadata (for translatable/
 const inlinePickerValue = ref(null) // The temporary selected value
 const inlinePickerSaving = ref(false)
 const inlinePickerIsExtended = ref(false) // Flag to track if editing extended field
-
-// CI Categories for selector
-const ciCategories = ref([])
-const ciCategoriesLoading = ref(false)
 
 // Translatable field support
 const inlineTranslations = ref({}) // Temporary translations { fr: '...', en: '...' }
@@ -1140,27 +1138,8 @@ const inlineSelectOptions = computed(() => {
 
 // Methods
 
-// Inline picker methods
-const loadCiCategories = async () => {
-  console.log('[CiCategories] loadCiCategories called, current length:', ciCategories.value.length)
-  if (ciCategories.value.length > 0) {
-    console.log('[CiCategories] Already loaded, skipping')
-    return
-  }
-  ciCategoriesLoading.value = true
-  try {
-    console.log('[CiCategories] Fetching from API...')
-    const response = await api.get('/ci_categories')
-    console.log('[CiCategories] API response:', response)
-    console.log('[CiCategories] Response data:', response.data)
-    ciCategories.value = response.data
-    console.log('[CiCategories] Loaded categories:', ciCategories.value.length)
-  } catch (error) {
-    console.error('[CiCategories] Failed to load CI categories:', error)
-  } finally {
-    ciCategoriesLoading.value = false
-  }
-}
+// Inline picker methods - use store for loading
+const loadCiCategories = () => referenceDataStore.loadCiCategories()
 
 const getCategoryLabel = (uuid) => {
   const category = ciCategories.value.find(c => c.uuid === uuid)
@@ -1282,6 +1261,14 @@ const confirmInlinePicker = async () => {
     }
     
     toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
+    
+    // Invalidate store cache for reference data
+    if (props.objectType === 'ci_categories') {
+      referenceDataStore.invalidateCiCategories()
+    } else if (props.objectType === 'ci_types') {
+      referenceDataStore.invalidateCiTypes()
+    }
+    
     cancelInlinePicker()
   } catch (error) {
     console.error('Failed to update item:', error)
@@ -1338,6 +1325,14 @@ const confirmInlineTranslatable = async () => {
     }
     
     toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
+    
+    // Invalidate store cache for reference data
+    if (props.objectType === 'ci_categories') {
+      referenceDataStore.invalidateCiCategories()
+    } else if (props.objectType === 'ci_types') {
+      referenceDataStore.invalidateCiTypes()
+    }
+    
     cancelInlinePicker()
   } catch (error) {
     console.error('Failed to update translations:', error)
@@ -1536,33 +1531,12 @@ const handleResetPassword = async () => {
   }
 }
 
-// Load CI types for the select dropdown
-const loadCiTypes = async () => {
-  console.log('[ObjectsCrud] loadCiTypes called, ciTypesLoaded:', ciTypesLoaded.value, 'isConfigurationItems:', isConfigurationItems.value)
-  if (ciTypesLoaded.value || !isConfigurationItems.value) return
-  try {
-    const data = await ciTypesService.getAll()
-    console.log('[ObjectsCrud] loadCiTypes - raw data from API:', data)
-    ciTypes.value = data.map(ct => ({
-      value: ct.code,
-      code: ct.code,
-      label: ct._translations?.label?.[locale.value] || ct.label,
-      uuid: ct.uuid,
-      icon: ct.icon,
-      color: ct.color,
-      has_model: ct.has_model,
-      categoryCode: ct.category?.code || null
-    }))
-    console.log('[ObjectsCrud] loadCiTypes - mapped ciTypes:', ciTypes.value)
-    ciTypesLoaded.value = true
-  } catch (error) {
-    console.error('Failed to load CI types:', error)
-  }
-}
+// Load CI types from store
+const loadCiTypes = () => referenceDataStore.loadCiTypes()
 
 // Get CI type UUID from code
 const getCiTypeUuid = (code) => {
-  const ciType = ciTypes.value.find(ct => ct.value === code)
+  const ciType = ciTypes.value.find(ct => ct.code === code)
   return ciType?.uuid
 }
 
@@ -1794,6 +1768,14 @@ const saveItem = async () => {
       await service.value.update(editItem.value.uuid, editItem.value)
       toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
     }
+    
+    // Invalidate store cache for reference data
+    if (props.objectType === 'ci_categories') {
+      referenceDataStore.invalidateCiCategories()
+    } else if (props.objectType === 'ci_types') {
+      referenceDataStore.invalidateCiTypes()
+    }
+    
     itemDialog.value = false
     await loadItems()
   } catch (error) {
@@ -1821,6 +1803,14 @@ const deleteSelectedItems = async () => {
       detail: t(`${labelKey}.messages.deletedMultiple`, { count: uuids.length }), 
       life: 3000 
     })
+    
+    // Invalidate store cache for reference data
+    if (props.objectType === 'ci_categories') {
+      referenceDataStore.invalidateCiCategories()
+    } else if (props.objectType === 'ci_types') {
+      referenceDataStore.invalidateCiTypes()
+    }
+    
     deleteDialog.value = false
     selectedItems.value = []
     await loadItems()
@@ -1840,6 +1830,13 @@ const onCellEditComplete = async (event) => {
     await service.value.update(data.uuid, { [field]: newValue })
     data[field] = newValue
     toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
+    
+    // Invalidate store cache for reference data
+    if (props.objectType === 'ci_categories') {
+      referenceDataStore.invalidateCiCategories()
+    } else if (props.objectType === 'ci_types') {
+      referenceDataStore.invalidateCiTypes()
+    }
   } catch (error) {
     event.preventDefault()
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to update item', life: 3000 })

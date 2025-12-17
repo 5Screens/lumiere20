@@ -26,8 +26,6 @@
             :fieldOptions="fieldOptions"
             :loading="false"
             :forced-ci-type-uuid="forcedCiTypeUuid"
-            :ciTypes="ciTypes"
-            :ciCategories="ciCategories"
             :showStatusSelector="isConfigurationItems && mode === 'edit'"
             :availableTransitions="availableTransitions"
             @apply-transition="$emit('apply-transition', $event)"
@@ -50,7 +48,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useReferenceDataStore } from '@/stores/referenceDataStore'
 
 // PrimeVue components
 import Tabs from 'primevue/tabs'
@@ -63,6 +62,9 @@ import TabPanel from 'primevue/tabpanel'
 import ObjectGeneralInfo from './ObjectGeneralInfo.vue'
 import ObjectExtendedInfo from './ObjectExtendedInfo.vue'
 import UuidDisplay from '@/components/form/UuidDisplay.vue'
+
+// Store
+const referenceDataStore = useReferenceDataStore()
 
 // Props
 const props = defineProps({
@@ -85,16 +87,6 @@ const props = defineProps({
   fieldOptions: {
     type: Object,
     default: () => ({})
-  },
-  // CI types for configuration_items (kept for compatibility)
-  ciTypes: {
-    type: Array,
-    default: () => []
-  },
-  // CI categories for ci_types
-  ciCategories: {
-    type: Array,
-    default: () => []
   },
   // Extended fields for configuration_items
   extendedFields: {
@@ -147,4 +139,18 @@ const hasExtendedInfo = computed(() => {
 
 // Check if current object type is configuration_items
 const isConfigurationItems = computed(() => props.objectType === 'configuration_items')
+
+// Use store for reference data (autonomous, not dependent on parent)
+const ciTypes = computed(() => referenceDataStore.ciTypes)
+const ciCategories = computed(() => referenceDataStore.ciCategories)
+
+// Load reference data on mount
+onMounted(async () => {
+  if (['configuration_items', 'ci_types'].includes(props.objectType)) {
+    await referenceDataStore.loadCiTypes()
+  }
+  if (props.objectType === 'ci_types') {
+    await referenceDataStore.loadCiCategories()
+  }
+})
 </script>

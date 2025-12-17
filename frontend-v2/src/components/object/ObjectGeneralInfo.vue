@@ -210,6 +210,7 @@
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useReferenceDataStore } from '@/stores/referenceDataStore'
 
 // PrimeVue components
 import InputText from 'primevue/inputtext'
@@ -221,6 +222,7 @@ import DatePicker from 'primevue/datepicker'
 import ProgressSpinner from 'primevue/progressspinner'
 
 const { locale } = useI18n()
+const referenceDataStore = useReferenceDataStore()
 
 // Custom form components
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
@@ -260,16 +262,6 @@ const props = defineProps({
   forcedCiTypeUuid: {
     type: String,
     default: null
-  },
-  // CI types list (for has_model filtering)
-  ciTypes: {
-    type: Array,
-    default: () => []
-  },
-  // CI categories list (for is_model_for filtering)
-  ciCategories: {
-    type: Array,
-    default: () => []
   },
   // Show status selector (for configuration_items)
   showStatusSelector: {
@@ -336,15 +328,19 @@ const isFieldDisabled = (field) => {
   return false
 }
 
+// Use store for reference data (autonomous)
+const ciTypes = computed(() => referenceDataStore.ciTypes)
+const ciCategories = computed(() => referenceDataStore.ciCategories)
+
 // Filter form fields based on CI type properties
 const filteredFormFields = computed(() => {
   // For configuration_items: check CI type's has_model property
-  const currentCiType = props.ciTypes.find(ct => ct.code === props.modelValue?.ci_type)
+  const currentCiType = ciTypes.value.find(ct => ct.code === props.modelValue?.ci_type)
   const hasModel = currentCiType?.has_model === true
   
   // For ci_types: check if selected category is MODELS
   const selectedCategoryUuid = props.modelValue?.rel_category_uuid
-  const selectedCategory = props.ciCategories.find(cat => cat.uuid === selectedCategoryUuid)
+  const selectedCategory = ciCategories.value.find(cat => cat.uuid === selectedCategoryUuid)
   const isModelsCategorySelected = selectedCategory?.code === 'MODELS'
   
   return props.formFields.filter(field => {
