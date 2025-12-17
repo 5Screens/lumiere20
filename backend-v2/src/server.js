@@ -4,6 +4,18 @@ const cors = require('cors');
 const logger = require('./config/logger');
 const errorHandler = require('./middleware/errorHandler');
 
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error(`Uncaught Exception: ${error.message}`, { stack: error.stack });
+  // Give time to log before exit
+  setTimeout(() => process.exit(1), 1000);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error(`Unhandled Rejection at: ${promise}, reason: ${reason}`);
+});
+
 const app = express();
 const port = process.env.PORT || 3001;
 
