@@ -1663,8 +1663,8 @@ const openCreateDialog = async () => {
     if (props.ciTypeUuid && ciTypes.value.length > 0) {
       const matchingType = ciTypes.value.find(t => t.uuid === props.ciTypeUuid)
       console.log('[ObjectsCrud] openCreateDialog - matchingType found:', matchingType)
-      // Use 'value' property which contains the code
-      defaults.ci_type = matchingType?.value || 'GENERIC'
+      // Use 'code' property
+      defaults.ci_type = matchingType?.code || 'GENERIC'
     } else {
       defaults.ci_type = 'GENERIC' // Default type
     }
