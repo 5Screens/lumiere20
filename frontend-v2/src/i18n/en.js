@@ -178,7 +178,13 @@ export default {
     copy: 'Copy',
     copied: 'Copied',
     selectModel: 'Select a model',
-    noModelsAvailable: 'No models available for this type'
+    noModelsAvailable: 'No models available for this type',
+    selectPerson: 'Select a person',
+    searchPerson: 'Search by name or email...',
+    selectConfigurationItem: 'Select a configuration item',
+    searchConfigurationItem: 'Search by name...',
+    typeToSearch: 'Type to search...',
+    noResults: 'No results found'
   },
   tabs: {
     backToList: 'Back to list',
@@ -630,6 +636,22 @@ export default {
       Obj_CREATED: 'Created',
       Field_UPDATED: 'Updated',
       Obj_DELETED: 'Deleted'
+    }
+  },
+  tasks: {
+    title: 'Tasks',
+    description: 'Description',
+    ticketType: 'Ticket Type',
+    writer: 'Writer',
+    requestedBy: 'Requested By',
+    requestedFor: 'Requested For',
+    configurationItem: 'Configuration Item',
+    closedAt: 'Closed At',
+    messages: {
+      created: 'Task created successfully',
+      updated: 'Task updated successfully',
+      deleted: 'Task deleted successfully',
+      deletedMultiple: '{count} tasks deleted successfully'
     }
   }
 }

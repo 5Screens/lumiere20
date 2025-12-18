@@ -193,6 +193,24 @@
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly"
         />
+        
+        <!-- Person Selector -->
+        <PersonSelector 
+          v-else-if="field.field_type === 'person'"
+          :id="field.field_name" 
+          :modelValue="modelValue[field.field_name]"
+          @update:modelValue="updateField(field.field_name, $event)"
+          :disabled="field.is_readonly"
+        />
+        
+        <!-- Configuration Item Selector -->
+        <ConfigurationItemSelector 
+          v-else-if="field.field_type === 'configuration_item'"
+          :id="field.field_name" 
+          :modelValue="modelValue[field.field_name]"
+          @update:modelValue="updateField(field.field_name, $event)"
+          :disabled="field.is_readonly"
+        />
       </div>
       <!-- Status selector for configuration_items -->
       <div v-if="showStatusSelector" class="flex flex-col gap-2">
@@ -232,6 +250,8 @@ import CICategorySelector from '@/components/form/CICategorySelector.vue'
 import CiModelSelector from '@/components/form/CiModelSelector.vue'
 import CiTypeTargetSelector from '@/components/form/CiTypeTargetSelector.vue'
 import StatusPicker from '@/components/form/StatusPicker.vue'
+import PersonSelector from '@/components/form/PersonSelector.vue'
+import ConfigurationItemSelector from '@/components/form/ConfigurationItemSelector.vue'
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'

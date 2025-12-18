@@ -179,7 +179,13 @@ export default {
     copy: 'Copier',
     copied: 'Copié',
     selectModel: 'Sélectionner un modèle',
-    noModelsAvailable: 'Aucun modèle disponible pour ce type'
+    noModelsAvailable: 'Aucun modèle disponible pour ce type',
+    selectPerson: 'Sélectionner une personne',
+    searchPerson: 'Rechercher par nom ou email...',
+    selectConfigurationItem: 'Sélectionner un élément de configuration',
+    searchConfigurationItem: 'Rechercher par nom...',
+    typeToSearch: 'Tapez pour rechercher...',
+    noResults: 'Aucun résultat trouvé'
   },
   tabs: {
     backToList: 'Retour à la liste',
@@ -631,6 +637,22 @@ export default {
       Obj_CREATED: 'Création',
       Field_UPDATED: 'Modification',
       Obj_DELETED: 'Suppression'
+    }
+  },
+  tasks: {
+    title: 'Tâches',
+    description: 'Description',
+    ticketType: 'Type de ticket',
+    writer: 'Rédacteur',
+    requestedBy: 'Demandé par',
+    requestedFor: 'Demandé pour',
+    configurationItem: 'Élément de configuration',
+    closedAt: 'Clôturé le',
+    messages: {
+      created: 'Tâche créée avec succès',
+      updated: 'Tâche mise à jour avec succès',
+      deleted: 'Tâche supprimée avec succès',
+      deletedMultiple: '{count} tâches supprimées avec succès'
     }
   }
 }
