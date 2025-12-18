@@ -228,6 +228,18 @@ const search = async (searchParams = {}, locale = 'en') => {
         status: {
           include: { category: true },
         },
+        writer: {
+          select: { uuid: true, first_name: true, last_name: true, email: true }
+        },
+        requested_by: {
+          select: { uuid: true, first_name: true, last_name: true, email: true }
+        },
+        requested_for: {
+          select: { uuid: true, first_name: true, last_name: true, email: true }
+        },
+        configuration_item: {
+          select: { uuid: true, name: true }
+        },
       },
     });
 
@@ -350,10 +362,10 @@ const create = async (data) => {
       requested_for_uuid: rawData.requested_for_uuid || null,
       writer_uuid: rawData.writer_uuid,
       ticket_type_code: TICKET_TYPE_CODE,
-      ticket_status_code: rawData.ticket_status_code || 'OBSOLETE',
       rel_status_uuid: statusUuid,
       extended_core_fields: rawData.extended_core_fields || {},
       closed_at: rawData.closed_at || null,
+      watchers: rawData.watchers || null,
     },
   });
 
@@ -380,10 +392,10 @@ const update = async (uuid, data) => {
     if (rawData.requested_by_uuid !== undefined) updateData.requested_by_uuid = rawData.requested_by_uuid;
     if (rawData.requested_for_uuid !== undefined) updateData.requested_for_uuid = rawData.requested_for_uuid;
     if (rawData.writer_uuid !== undefined) updateData.writer_uuid = rawData.writer_uuid;
-    if (rawData.ticket_status_code !== undefined) updateData.ticket_status_code = rawData.ticket_status_code;
     if (rawData.rel_status_uuid !== undefined) updateData.rel_status_uuid = rawData.rel_status_uuid;
     if (rawData.extended_core_fields !== undefined) updateData.extended_core_fields = rawData.extended_core_fields;
     if (rawData.closed_at !== undefined) updateData.closed_at = rawData.closed_at;
+    if (rawData.watchers !== undefined) updateData.watchers = rawData.watchers;
 
     const item = await prisma.tickets.update({
       where: { uuid },

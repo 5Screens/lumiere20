@@ -231,6 +231,7 @@
         >
           <!-- Body template based on field type -->
           <template #body="{ data }">
+            <div :class="{ 'opacity-50 cursor-not-allowed': !col.is_editable }">
             <!-- Boolean -->
             <template v-if="col.field_type === 'boolean'">
               <i :class="getFieldValue(data, col) ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
@@ -305,6 +306,13 @@
               </div>
               <span v-else>-</span>
             </template>
+            <!-- Person display -->
+            <template v-else-if="col.field_type === 'person'">
+              <span v-if="getPersonDisplay(data, col.field_name)">
+                {{ getPersonDisplay(data, col.field_name) }}
+              </span>
+              <span v-else>-</span>
+            </template>
             <!-- Default text - with translation support -->
             <template v-else>
               <template v-if="col.is_extended">
@@ -314,6 +322,7 @@
                 {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (getFieldValue(data, col) ?? '-') }}
               </template>
             </template>
+            </div>
           </template>
           
           <!-- Editor template (only for editable fields) -->
@@ -450,6 +459,29 @@
                 <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('textarea', data, field, col)">
                   <span v-if="data[field]" class="text-sm truncate max-w-xs">{{ stripHtml(data[field]) }}</span>
                 </InlinePickerButton>
+              </template>
+              <!-- Person editor -->
+              <template v-else-if="col.field_type === 'person'">
+                <AutoComplete
+                  :modelValue="getPersonObject(data, field)"
+                  @update:modelValue="val => updatePersonField(data, field, val)"
+                  :suggestions="personSuggestions"
+                  @complete="searchPersons"
+                  optionLabel="fullName"
+                  :placeholder="$t('persons.searchPlaceholder')"
+                  :minLength="0"
+                  forceSelection
+                  dropdown
+                  class="w-full"
+                >
+                  <template #option="slotProps">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-user" />
+                      <span>{{ slotProps.option.fullName }}</span>
+                      <span class="text-surface-400 text-sm">({{ slotProps.option.email }})</span>
+                    </div>
+                  </template>
+                </AutoComplete>
               </template>
               <!-- Default text editor -->
               <template v-else>
@@ -756,6 +788,7 @@ import ciTypeFieldsService from '@/services/ciTypeFieldsService'
 import api from '@/services/api'
 import { useTabsStore } from '@/stores/tabsStore'
 import { useReferenceDataStore } from '@/stores/referenceDataStore'
+import { useAuthStore } from '@/stores/authStore'
 
 // PrimeVue components
 import DataTable from 'primevue/datatable'
@@ -780,6 +813,7 @@ import MultiSelect from 'primevue/multiselect'
 import Menu from 'primevue/menu'
 import Password from 'primevue/password'
 import Drawer from 'primevue/drawer'
+import AutoComplete from 'primevue/autocomplete'
 
 // Custom form components
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
@@ -827,6 +861,7 @@ console.log('[ObjectsCrud] Component mounted with props:', { objectType: props.o
 // Stores
 const tabsStore = useTabsStore()
 const referenceDataStore = useReferenceDataStore()
+const authStore = useAuthStore()
 
 // Get service for this object type
 const service = computed(() => getService(props.objectType))
@@ -900,6 +935,10 @@ const inlinePickerFieldMeta = ref(null) // The field metadata (for translatable/
 const inlinePickerValue = ref(null) // The temporary selected value
 const inlinePickerSaving = ref(false)
 const inlinePickerIsExtended = ref(false) // Flag to track if editing extended field
+
+// Person autocomplete
+const personSuggestions = ref([])
+const personsCache = ref({}) // Cache person data by UUID
 
 // Translatable field support
 const inlineTranslations = ref({}) // Temporary translations { fr: '...', en: '...' }
@@ -1169,6 +1208,108 @@ const getCategoryLabel = (uuid) => {
 const getCategoryIcon = (uuid) => {
   const category = ciCategories.value.find(c => c.uuid === uuid)
   return category?.icon || 'pi-folder'
+}
+
+// Person display and autocomplete functions
+const getPersonDisplay = (data, fieldName) => {
+  // Check if we have the person data in the row (populated by backend)
+  const personField = fieldName.replace('_uuid', '')
+  if (data[personField] && typeof data[personField] === 'object') {
+    return `${data[personField].first_name} ${data[personField].last_name}`
+  }
+  // Check cache
+  const uuid = data[fieldName]
+  if (uuid && personsCache.value[uuid]) {
+    return personsCache.value[uuid].fullName
+  }
+  return null
+}
+
+const getPersonObject = (data, fieldName) => {
+  const personField = fieldName.replace('_uuid', '')
+  if (data[personField] && typeof data[personField] === 'object') {
+    return {
+      uuid: data[personField].uuid,
+      first_name: data[personField].first_name,
+      last_name: data[personField].last_name,
+      email: data[personField].email,
+      fullName: `${data[personField].first_name} ${data[personField].last_name}`
+    }
+  }
+  const uuid = data[fieldName]
+  if (uuid && personsCache.value[uuid]) {
+    return personsCache.value[uuid]
+  }
+  return null
+}
+
+const searchPersons = async (event) => {
+  try {
+    const query = event.query || ''
+    const filters = {}
+    
+    // Only add globalFilter if there's a query
+    if (query.trim()) {
+      filters.globalFilter = { value: query, matchMode: 'contains' }
+    }
+    
+    const response = await api.post('/persons/search', {
+      filters,
+      page: 1,
+      limit: 20,
+      sortField: 'last_name',
+      sortOrder: 1
+    })
+    personSuggestions.value = (response.data.data || []).map(p => ({
+      uuid: p.uuid,
+      first_name: p.first_name,
+      last_name: p.last_name,
+      email: p.email,
+      fullName: `${p.first_name} ${p.last_name}`
+    }))
+    // Cache the results
+    for (const p of personSuggestions.value) {
+      personsCache.value[p.uuid] = p
+    }
+  } catch (error) {
+    console.error('Error searching persons:', error)
+    personSuggestions.value = []
+  }
+}
+
+const updatePersonField = async (data, fieldName, selectedPerson) => {
+  if (!selectedPerson || !selectedPerson.uuid) {
+    return
+  }
+  
+  try {
+    const updateData = { [fieldName]: selectedPerson.uuid }
+    await service.update(data.uuid, updateData)
+    
+    // Update local data
+    data[fieldName] = selectedPerson.uuid
+    // Also update the person object for display
+    const personField = fieldName.replace('_uuid', '')
+    data[personField] = selectedPerson
+    
+    // Cache the person
+    personsCache.value[selectedPerson.uuid] = selectedPerson
+    
+    toast.add({
+      severity: 'success',
+      summary: t('common.success'),
+      detail: t('common.saved'),
+      life: 3000
+    })
+  } catch (error) {
+    console.error('Error updating person field:', error)
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: t('common.saveFailed'),
+      life: 5000
+    })
+  }
 }
 
 const openInlinePicker = (type, data, field, colMeta = null, isExtended = false) => {
@@ -1687,6 +1828,11 @@ const openCreateDialog = async () => {
     }
     
     console.log('[ObjectsCrud] openCreateDialog - defaults.ci_type set to:', defaults.ci_type)
+  }
+  
+  // Pre-fill writer_uuid with current user for tasks
+  if (props.objectType === 'tasks' && authStore.personUuid) {
+    defaults.writer_uuid = authStore.personUuid
   }
   
   editItem.value = defaults

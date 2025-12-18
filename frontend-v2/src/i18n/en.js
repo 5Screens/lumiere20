@@ -185,7 +185,16 @@ export default {
     selectConfigurationItem: 'Select a configuration item',
     searchConfigurationItem: 'Search by name...',
     typeToSearch: 'Type to search...',
-    noResults: 'No results found'
+    noResults: 'No results found',
+    pending: 'Pending',
+    attachments: 'Attachments',
+    dragDropFiles: 'Drag and drop files here to upload',
+    filesUploaded: 'Files uploaded successfully',
+    uploadFailed: 'Upload failed',
+    downloadFailed: 'Download failed',
+    deleteFailed: 'Delete failed',
+    deleted: 'Deleted successfully',
+    saveFailed: 'Save failed'
   },
   tabs: {
     backToList: 'Back to list',
@@ -643,10 +652,13 @@ export default {
     title: 'Tasks',
     description: 'Description',
     ticketType: 'Ticket Type',
+    status: 'Status',
     writer: 'Writer',
     requestedBy: 'Requested By',
     requestedFor: 'Requested For',
     configurationItem: 'Configuration Item',
+    watchers: 'Watchers',
+    attachments: 'Attachments',
     closedAt: 'Closed At',
     messages: {
       created: 'Task created successfully',

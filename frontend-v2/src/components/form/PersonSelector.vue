@@ -10,6 +10,7 @@
       dataKey="uuid"
       dropdown
       forceSelection
+      :multiple="multiple"
       class="w-full"
       @complete="onSearch"
       @item-select="onSelect"
@@ -39,10 +40,14 @@ const MIN_SEARCH_LENGTH = 2
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: [String, Array],
     default: null
   },
   disabled: {
+    type: Boolean,
+    default: false
+  },
+  multiple: {
     type: Boolean,
     default: false
   }
@@ -94,33 +99,52 @@ const onSearch = async (event) => {
 
 // Handle selection
 const onSelect = (event) => {
-  const person = event.value
-  emit('update:modelValue', person?.uuid || null)
+  if (props.multiple) {
+    // In multiple mode, selectedPerson is an array
+    const uuids = (selectedPerson.value || []).map(p => p.uuid)
+    emit('update:modelValue', uuids)
+  } else {
+    const person = event.value
+    emit('update:modelValue', person?.uuid || null)
+  }
 }
 
 // Handle clear
 const onClear = () => {
-  emit('update:modelValue', null)
+  emit('update:modelValue', props.multiple ? [] : null)
 }
 
 // Load person details for display when modelValue is set
 const loadSelectedPerson = async () => {
-  if (!props.modelValue) {
-    selectedPerson.value = null
+  if (!props.modelValue || (Array.isArray(props.modelValue) && props.modelValue.length === 0)) {
+    selectedPerson.value = props.multiple ? [] : null
     return
   }
   
   try {
-    const person = await personsService.getByUuid(props.modelValue)
-    if (person) {
-      selectedPerson.value = {
-        ...person,
-        display_name: `${person.first_name} ${person.last_name}`
+    if (props.multiple && Array.isArray(props.modelValue)) {
+      // Load multiple persons
+      const persons = await Promise.all(
+        props.modelValue.map(uuid => personsService.getByUuid(uuid))
+      )
+      selectedPerson.value = persons
+        .filter(p => p)
+        .map(p => ({
+          ...p,
+          display_name: `${p.first_name} ${p.last_name}`
+        }))
+    } else {
+      const person = await personsService.getByUuid(props.modelValue)
+      if (person) {
+        selectedPerson.value = {
+          ...person,
+          display_name: `${person.first_name} ${person.last_name}`
+        }
       }
     }
   } catch (error) {
     console.error('Failed to load person:', error)
-    selectedPerson.value = null
+    selectedPerson.value = props.multiple ? [] : null
   }
 }
 

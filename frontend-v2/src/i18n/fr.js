@@ -186,7 +186,16 @@ export default {
     selectConfigurationItem: 'Sélectionner un élément de configuration',
     searchConfigurationItem: 'Rechercher par nom...',
     typeToSearch: 'Tapez pour rechercher...',
-    noResults: 'Aucun résultat trouvé'
+    noResults: 'Aucun résultat trouvé',
+    pending: 'En attente',
+    attachments: 'Pièces jointes',
+    dragDropFiles: 'Glissez-déposez des fichiers ici pour les télécharger',
+    filesUploaded: 'Fichiers téléchargés avec succès',
+    uploadFailed: 'Échec du téléchargement',
+    downloadFailed: 'Échec du téléchargement',
+    deleteFailed: 'Échec de la suppression',
+    deleted: 'Supprimé avec succès',
+    saveFailed: 'Échec de l\'enregistrement'
   },
   tabs: {
     backToList: 'Retour à la liste',
@@ -644,10 +653,13 @@ export default {
     title: 'Tâches',
     description: 'Description',
     ticketType: 'Type de ticket',
+    status: 'Statut',
     writer: 'Rédacteur',
     requestedBy: 'Demandé par',
     requestedFor: 'Demandé pour',
     configurationItem: 'Élément de configuration',
+    watchers: 'Observateurs',
+    attachments: 'Pièces jointes',
     closedAt: 'Clôturé le',
     messages: {
       created: 'Tâche créée avec succès',

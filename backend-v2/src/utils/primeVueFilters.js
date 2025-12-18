@@ -106,17 +106,18 @@ const buildPrismaWhereFromFilters = (filters = {}, options = {}) => {
 
   const andConditions = [];
 
-  // Handle global search filter
-  if (filters.global && filters.global.value) {
+  // Handle global search filter (supports both 'global' and 'globalFilter' keys)
+  const globalFilter = filters.global || filters.globalFilter;
+  if (globalFilter && globalFilter.value) {
     const globalConditions = globalSearchFields.map((field) => ({
-      [field]: { contains: filters.global.value, mode: 'insensitive' },
+      [field]: { contains: globalFilter.value, mode: 'insensitive' },
     }));
     andConditions.push({ OR: globalConditions });
   }
 
   // Process each column filter
   Object.keys(filters).forEach((fieldName) => {
-    if (fieldName === 'global') return;
+    if (fieldName === 'global' || fieldName === 'globalFilter') return;
 
     const filter = filters[fieldName];
 

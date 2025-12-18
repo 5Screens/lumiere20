@@ -14,6 +14,17 @@ export const useAuthStore = defineStore('auth', () => {
     if (!user.value) return ''
     return `${user.value.first_name} ${user.value.last_name}`
   })
+  const personUuid = computed(() => user.value?.uuid || null)
+  const currentPerson = computed(() => {
+    if (!user.value) return null
+    return {
+      uuid: user.value.uuid,
+      first_name: user.value.first_name,
+      last_name: user.value.last_name,
+      email: user.value.email,
+      fullName: `${user.value.first_name} ${user.value.last_name}`
+    }
+  })
 
   // Actions
   const login = async (credentials) => {
@@ -104,6 +115,8 @@ export const useAuthStore = defineStore('auth', () => {
     // Getters
     isAuthenticated,
     fullName,
+    personUuid,
+    currentPerson,
     // Actions
     login,
     register,

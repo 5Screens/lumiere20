@@ -360,6 +360,7 @@ model persons {
   rel_persons_entities     rel_persons_entities[]
   audit_changes            audit_changes[] @relation("AuditUser")
   rel_tickets_groups_persons rel_tickets_groups_persons[]
+  attachments_uploaded     attachments[]
 
   @@schema("configuration")
   @@map("persons")
@@ -468,9 +469,9 @@ model tickets {
   requested_for_uuid      String?   @db.Uuid
   writer_uuid             String    @db.Uuid
   ticket_type_code        String    @db.VarChar(50)
-  ticket_status_code      String    @db.VarChar(50)
-  rel_status_uuid          String?   @db.Uuid
-  extended_core_fields     Json?     @db.JsonB
+  rel_status_uuid         String?   @db.Uuid
+  watchers                Json?     @db.JsonB
+  extended_core_fields    Json?     @db.JsonB
   created_at              DateTime  @default(now()) @db.Timestamptz(6)
   updated_at              DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
   closed_at               DateTime? @db.Timestamptz(6)
@@ -487,9 +488,31 @@ model tickets {
   parent_relations   rel_parent_child_tickets[] @relation("TicketParent")
   child_relations    rel_parent_child_tickets[] @relation("TicketChild")
   rel_tickets_groups_persons rel_tickets_groups_persons[]
+  attachments        attachments[]
 
   @@schema("core")
   @@map("tickets")
+}
+
+model attachments {
+  uuid              String    @id @default(uuid()) @db.Uuid
+  entity_type       String    @db.VarChar(50)
+  entity_uuid       String    @db.Uuid
+  file_name         String    @db.VarChar(255)
+  original_name     String    @db.VarChar(255)
+  mime_type         String    @db.VarChar(100)
+  file_size         Int
+  file_path         String    @db.VarChar(500)
+  uploaded_by_uuid  String    @db.Uuid
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  uploaded_by       persons   @relation(fields: [uploaded_by_uuid], references: [uuid], onDelete: Restrict)
+  ticket            tickets?  @relation(fields: [entity_uuid], references: [uuid], onDelete: Cascade, map: "attachments_ticket_fkey")
+
+  @@index([entity_type, entity_uuid])
+  @@schema("core")
+  @@map("attachments")
 }
 
 model rel_parent_child_tickets {

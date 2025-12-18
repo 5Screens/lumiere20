@@ -199,7 +199,7 @@
           :id="field.field_name" 
           :modelValue="modelValue[field.field_name]"
           @update:modelValue="updateField(field.field_name, $event)"
-          :disabled="field.is_readonly"
+          :disabled="field.is_readonly || field.is_editable === false"
         />
         
         <!-- Configuration Item Selector -->
@@ -209,6 +209,34 @@
           :modelValue="modelValue[field.field_name]"
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly"
+        />
+        
+        <!-- Workflow Status (uses StatusPicker) -->
+        <StatusPicker 
+          v-else-if="field.field_type === 'workflow_status'"
+          :currentStatus="modelValue.status"
+          :availableTransitions="availableTransitions"
+          :disabled="field.is_readonly"
+          @transition="applyTransition"
+        />
+        
+        <!-- Person Multiple (watchers) -->
+        <PersonSelector 
+          v-else-if="field.field_type === 'person_multiple'"
+          :id="field.field_name" 
+          :modelValue="modelValue[field.field_name]"
+          @update:modelValue="updateField(field.field_name, $event)"
+          :disabled="field.is_readonly"
+          :multiple="true"
+        />
+        
+        <!-- Attachments -->
+        <AttachmentsPicker 
+          v-else-if="field.field_type === 'attachments'"
+          :entityType="objectType"
+          :entityUuid="modelValue.uuid"
+          :disabled="field.is_readonly"
+          @update="onAttachmentsUpdate"
         />
       </div>
       <!-- Status selector for configuration_items -->
@@ -251,6 +279,7 @@ import CiTypeTargetSelector from '@/components/form/CiTypeTargetSelector.vue'
 import StatusPicker from '@/components/form/StatusPicker.vue'
 import PersonSelector from '@/components/form/PersonSelector.vue'
 import ConfigurationItemSelector from '@/components/form/ConfigurationItemSelector.vue'
+import AttachmentsPicker from '@/components/form/AttachmentsPicker.vue'
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'
@@ -298,6 +327,11 @@ const props = defineProps({
   availableTransitions: {
     type: Array,
     default: () => []
+  },
+  // Object type (for attachments)
+  objectType: {
+    type: String,
+    default: null
   }
 })
 
@@ -307,6 +341,12 @@ const emit = defineEmits(['update:modelValue', 'apply-transition'])
 // Apply a transition (change status)
 const applyTransition = (transition) => {
   emit('apply-transition', transition)
+}
+
+// Handle attachments update
+const onAttachmentsUpdate = (attachments) => {
+  // Attachments are managed separately, just emit for parent awareness
+  emit('update:modelValue', { ...props.modelValue, attachments })
 }
 
 // Methods
