@@ -68,22 +68,20 @@ const getInitials = (person) => {
 // Search persons via API
 const onSearch = async (event) => {
   const query = event.query?.trim() || ''
-  
-  if (query.length < MIN_SEARCH_LENGTH) {
-    suggestions.value = []
-    return
-  }
 
   try {
+    // Build filters - only add globalFilter if query is not empty
+    const filters = {}
+    if (query.length >= MIN_SEARCH_LENGTH) {
+      filters.global = { value: query, matchMode: 'contains' }
+    }
+    
     const result = await personsService.search({
-      filters: {
-        global: { value: query, matchMode: 'contains' }
-      },
+      filters,
       page: 1,
-      limit: 50,
+      limit: 20,
       sortField: 'last_name',
-      sortOrder: 1,
-      globalSearchFields: ['first_name', 'last_name', 'email']
+      sortOrder: 1
     })
     
     // Add display_name for optionLabel
