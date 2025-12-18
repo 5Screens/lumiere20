@@ -57,6 +57,12 @@
             <template v-else-if="data.field_type === 'date' || data.field_type === 'datetime'">
               {{ formatDate(data.value, data.field_type) }}
             </template>
+            <!-- Textarea display (strip HTML) -->
+            <template v-else-if="data.field_type === 'textarea'">
+              <span :class="{ 'text-surface-400': !data.value }">
+                {{ stripHtml(data.value) }}
+              </span>
+            </template>
             <!-- Default text display -->
             <template v-else>
               <span :class="{ 'text-surface-400': !data.value }">
@@ -75,13 +81,11 @@
               fluid
               size="small"
             />
-            <!-- Textarea -->
-            <Textarea 
+            <!-- Textarea (rich text editor) -->
+            <Editor 
               v-else-if="data.field_type === 'textarea'"
               v-model="data.value" 
-              autofocus 
-              rows="2"
-              fluid
+              editorStyle="height: 150px"
             />
             <!-- Number input -->
             <InputNumber 
@@ -178,7 +182,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
-import Textarea from 'primevue/textarea'
+import Editor from 'primevue/editor'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Tag from 'primevue/tag'
@@ -218,6 +222,14 @@ const emit = defineEmits(['update:modelValue'])
 
 // Composables
 const { t, locale } = useI18n()
+
+// Strip HTML tags and return plain text (for displaying rich text in table cells)
+const stripHtml = (html) => {
+  if (!html) return '-'
+  const tmp = document.createElement('div')
+  tmp.innerHTML = html
+  return tmp.textContent || tmp.innerText || '-'
+}
 
 // DateTimePicker state
 const datePickerVisible = ref(false)

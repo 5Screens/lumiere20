@@ -273,10 +273,10 @@
             <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
               {{ formatDate(getFieldValue(data, col), col.field_type === 'datetime') }}
             </template>
-            <!-- Textarea (truncated) - with translation support -->
+            <!-- Textarea (truncated) - with translation support, strip HTML for display -->
             <template v-else-if="col.field_type === 'textarea'">
               <span class="block max-w-xs truncate">
-                {{ col.is_translatable ? getTranslatedValue(data, col.field_name) : (getFieldValue(data, col) || '-') }}
+                {{ stripHtml(col.is_translatable ? getTranslatedValue(data, col.field_name) : getFieldValue(data, col)) }}
               </span>
             </template>
             <!-- Tag Style display -->
@@ -359,7 +359,7 @@
               <template v-else-if="col.field_type === 'textarea'">
                 <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('textarea', data, col.field_name, col, true)">
                   <span v-if="data.extended_core_fields?.[col.field_name]" class="text-sm truncate max-w-xs">
-                    {{ data.extended_core_fields?.[col.field_name] }}
+                    {{ stripHtml(data.extended_core_fields?.[col.field_name]) }}
                   </span>
                 </InlinePickerButton>
               </template>
@@ -448,7 +448,7 @@
               <!-- Textarea editor (non-translatable) -->
               <template v-else-if="col.field_type === 'textarea'">
                 <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('textarea', data, field, col)">
-                  <span v-if="data[field]" class="text-sm truncate max-w-xs">{{ data[field] }}</span>
+                  <span v-if="data[field]" class="text-sm truncate max-w-xs">{{ stripHtml(data[field]) }}</span>
                 </InlinePickerButton>
               </template>
               <!-- Default text editor -->
@@ -1880,6 +1880,14 @@ const formatDate = (dateString, showTime = false) => {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
   }
   return date.toLocaleDateString()
+}
+
+// Strip HTML tags and return plain text (for displaying rich text in table cells)
+const stripHtml = (html) => {
+  if (!html) return '-'
+  const tmp = document.createElement('div')
+  tmp.innerHTML = html
+  return tmp.textContent || tmp.innerText || '-'
 }
 
 // Format cell value based on field type

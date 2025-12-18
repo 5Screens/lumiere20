@@ -53,15 +53,14 @@
           @update:translations="updateTranslations(field.field_name, $event)"
         />
         
-        <!-- Textarea -->
-        <Textarea 
+        <!-- Textarea (rich text editor) -->
+        <Editor 
           v-else-if="field.field_type === 'textarea'"
           :id="field.field_name" 
           :modelValue="modelValue[field.field_name]"
           @update:modelValue="updateField(field.field_name, $event)"
-          :disabled="field.is_readonly"
-          rows="3" 
-          fluid 
+          :readonly="field.is_readonly"
+          editorStyle="height: 200px"
         />
         
         <!-- Number input -->
@@ -233,7 +232,7 @@ import { useReferenceDataStore } from '@/stores/referenceDataStore'
 // PrimeVue components
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
-import Textarea from 'primevue/textarea'
+import Editor from 'primevue/editor'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import DatePicker from 'primevue/datepicker'

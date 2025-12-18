@@ -3,17 +3,14 @@
     v-model:visible="visible"
     modal
     :header="title"
-    :style="{ width: '600px' }"
+    :style="{ width: '800px' }"
     :draggable="false"
     @hide="onCancel"
   >
     <div class="flex flex-col gap-4">
-      <Textarea 
+      <Editor 
         v-model="localValue" 
-        :placeholder="$t('common.enterValue')"
-        rows="6"
-        class="w-full"
-        autofocus
+        editorStyle="height: 320px"
       />
     </div>
 
@@ -31,7 +28,7 @@
 import { ref, computed, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
-import Textarea from 'primevue/textarea'
+import Editor from 'primevue/editor'
 
 const props = defineProps({
   modelValue: {
