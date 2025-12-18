@@ -78,6 +78,7 @@ const primeVueFilterSchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().max(100).optional().default(50),
   ciTypeUuid: z.string().uuid().optional().nullable(),
+  globalSearchFields: z.array(z.string()).optional().nullable(),
 });
 
 module.exports = {

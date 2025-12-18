@@ -64,6 +64,14 @@ async function seedObjectMetadata() {
       default_sort_field: 'display_order',
       default_sort_order: 1,
     },
+    {
+      code: 'tasks',
+      label_key: 'tasks.title',
+      icon: 'pi-check-square',
+      api_endpoint: '/api/v1/tasks',
+      default_sort_field: 'updated_at',
+      default_sort_order: -1,
+    },
   ];
 
   // Define fields for each object type
@@ -189,6 +197,18 @@ async function seedObjectMetadata() {
       { field_name: 'icon', label_key: 'ciCategories.icon', field_type: 'icon_picker', min_width: '8rem', display_order: 3 },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '6rem', display_order: 4 },
       { field_name: 'display_order', label_key: 'ciCategories.displayOrder', field_type: 'number', data_type: 'number', min_width: '8rem', display_order: 5 },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10 },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11 },
+    ],
+    tasks: [
+      { field_name: 'title', label_key: 'tasks.title', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1 },
+      { field_name: 'description', label_key: 'tasks.description', field_type: 'textarea', min_width: '20rem', display_order: 2 },
+      { field_name: 'ticket_type_code', label_key: 'tasks.ticketType', field_type: 'text', is_editable: false, show_in_table: false, show_in_form: false, display_order: 3 },
+      { field_name: 'writer_uuid', label_key: 'tasks.writer', field_type: 'relation', relation_object: 'persons', relation_display: 'last_name', is_required: true, min_width: '12rem', display_order: 4 },
+      { field_name: 'requested_by_uuid', label_key: 'tasks.requestedBy', field_type: 'relation', relation_object: 'persons', relation_display: 'last_name', min_width: '12rem', display_order: 5, show_in_table: false },
+      { field_name: 'requested_for_uuid', label_key: 'tasks.requestedFor', field_type: 'relation', relation_object: 'persons', relation_display: 'last_name', min_width: '12rem', display_order: 6, show_in_table: false },
+      { field_name: 'configuration_item_uuid', label_key: 'tasks.configurationItem', field_type: 'relation', relation_object: 'configuration_items', relation_display: 'name', min_width: '14rem', display_order: 7, show_in_table: false },
+      { field_name: 'closed_at', label_key: 'tasks.closedAt', field_type: 'datetime', data_type: 'date', min_width: '12rem', display_order: 8, default_visible: false },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10 },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11 },
     ],

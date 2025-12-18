@@ -80,7 +80,7 @@
         filterDisplay="menu"
         scrollable
         scrollHeight="flex"
-        :globalFilterFields="['name', 'description']"
+        :globalFilterFields="globalFilterFields"
         resizableColumns
         columnResizeMode="expand"
         reorderableColumns
@@ -1111,6 +1111,21 @@ const hasActiveFilters = computed(() => {
   return false
 })
 
+const globalFilterFields = computed(() => {
+  const columns = filteredTableColumns.value || []
+
+  const fields = columns
+    .filter(col => col?.is_filterable)
+    .filter(col => ['text', 'textarea'].includes(col.field_type))
+    .filter(col => !col.is_extended)
+    .map(col => col.field_name)
+    .filter(Boolean)
+
+  if (fields.length > 0) return fields
+
+  return ['name', 'description']
+})
+
 const paginationTemplate = computed(() => {
   const templates = {
     fr: 'Affichage de {first} à {last} sur {totalRecords} éléments',
@@ -1363,6 +1378,8 @@ const loadItems = async (pageNum = null) => {
       page,
       limit: pageSize
     }
+
+    searchParams.globalSearchFields = globalFilterFields.value
     
     // Add ciTypeUuid filter if provided (for CI type-specific views)
     if (props.ciTypeUuid) {

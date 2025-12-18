@@ -8,6 +8,7 @@ import groupsService from './groupsService'
 import personsService from './personsService'
 import ciTypesService from './ciTypesService'
 import ciCategoriesService from './ciCategoriesService'
+import tasksService from './tasksService'
 
 // Service registry mapping objectType to service
 const services = {
@@ -18,6 +19,7 @@ const services = {
   persons: personsService,
   ci_types: ciTypesService,
   ci_categories: ciCategoriesService,
+  tasks: tasksService,
 }
 
 /**
