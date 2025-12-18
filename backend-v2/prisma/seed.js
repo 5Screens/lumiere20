@@ -17,6 +17,7 @@ const { seedDefaultAdmin } = require('./seeds/default-admin.seed');
 const { seedWorkflowStatusCategories } = require('./seeds/workflow-status-categories.seed');
 const { seedWorkflowEntityConfig } = require('./seeds/workflow-entity-config.seed');
 const { seedTicketTypes } = require('./seeds/ticket-types.seed');
+const { seedTaskWorkflow } = require('./seeds/task-workflow.seed');
 
 async function main() {
   console.log('========================================');
@@ -69,8 +70,13 @@ async function main() {
     await seedWorkflowEntityConfig(prisma);
     console.log('');
 
-    // 10. Default Admin (last, after all dependencies)
-    console.log('[10/10] Seeding default admin...');
+    // 10. Task Workflow (statuses and transitions for TASK tickets)
+    console.log('[10/11] Seeding task workflow...');
+    await seedTaskWorkflow(prisma);
+    console.log('');
+
+    // 11. Default Admin (last, after all dependencies)
+    console.log('[11/11] Seeding default admin...');
     await seedDefaultAdmin();
     console.log('');
 

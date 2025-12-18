@@ -16,6 +16,8 @@ const seedMap = {
   'default-admin': () => require('./default-admin.seed').seedDefaultAdmin(),
   'workflow-status-categories': () => require('./workflow-status-categories.seed').seedWorkflowStatusCategories(prisma),
   'workflow-entity-config': () => require('./workflow-entity-config.seed').seedWorkflowEntityConfig(prisma),
+  'ticket-types': () => require('./ticket-types.seed').seedTicketTypes(prisma),
+  'task-workflow': () => require('./task-workflow.seed').seedTaskWorkflow(prisma),
 };
 
 async function main() {

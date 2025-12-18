@@ -55,6 +55,7 @@ export default {
     // Configuration items
     ciCategories: 'CI Categories',
     ciTypes: 'CI Types',
+    ticketTypes: 'Ticket Types',
     changeSetup: 'Change Setup',
     changeQuestions: 'Change Questions',
     changeOptions: 'Change Options',
@@ -652,6 +653,17 @@ export default {
       updated: 'Task updated successfully',
       deleted: 'Task deleted successfully',
       deletedMultiple: '{count} tasks deleted successfully'
+    }
+  },
+  ticketTypes: {
+    title: 'Ticket Types',
+    code: 'Code',
+    label: 'Label',
+    messages: {
+      created: 'Ticket type created successfully',
+      updated: 'Ticket type updated successfully',
+      deleted: 'Ticket type deleted successfully',
+      deletedMultiple: '{count} ticket types deleted successfully'
     }
   }
 }

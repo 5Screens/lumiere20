@@ -55,6 +55,7 @@ export default {
     // Configuration items
     ciCategories: 'Catégories de CI',
     ciTypes: 'Types de CI',
+    ticketTypes: 'Types de ticket',
     changeSetup: 'Configuration des changements',
     changeQuestions: 'Questions de changement',
     changeOptions: 'Options de changement',
@@ -653,6 +654,17 @@ export default {
       updated: 'Tâche mise à jour avec succès',
       deleted: 'Tâche supprimée avec succès',
       deletedMultiple: '{count} tâches supprimées avec succès'
+    }
+  },
+  ticketTypes: {
+    title: 'Types de ticket',
+    code: 'Code',
+    label: 'Libellé',
+    messages: {
+      created: 'Type de ticket créé avec succès',
+      updated: 'Type de ticket mis à jour avec succès',
+      deleted: 'Type de ticket supprimé avec succès',
+      deletedMultiple: '{count} types de ticket supprimés avec succès'
     }
   }
 }

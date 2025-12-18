@@ -72,6 +72,14 @@ async function seedObjectMetadata() {
       default_sort_field: 'updated_at',
       default_sort_order: -1,
     },
+    {
+      code: 'ticket_types',
+      label_key: 'ticketTypes.title',
+      icon: 'pi-ticket',
+      api_endpoint: '/api/v1/ticket-types',
+      default_sort_field: 'code',
+      default_sort_order: 1,
+    },
   ];
 
   // Define fields for each object type
@@ -209,6 +217,13 @@ async function seedObjectMetadata() {
       { field_name: 'requested_for_uuid', label_key: 'tasks.requestedFor', field_type: 'person', min_width: '12rem', display_order: 6, show_in_table: false },
       { field_name: 'configuration_item_uuid', label_key: 'tasks.configurationItem', field_type: 'configuration_item', min_width: '14rem', display_order: 7, show_in_table: false },
       { field_name: 'closed_at', label_key: 'tasks.closedAt', field_type: 'datetime', data_type: 'date', min_width: '12rem', display_order: 8, default_visible: false },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10 },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11 },
+    ],
+    ticket_types: [
+      { field_name: 'code', label_key: 'ticketTypes.code', field_type: 'text', is_required: true, min_width: '10rem', display_order: 1 },
+      { field_name: 'label', label_key: 'ticketTypes.label', field_type: 'text', is_required: true, is_translatable: true, min_width: '14rem', display_order: 2 },
+      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '6rem', display_order: 3 },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10 },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11 },
     ],

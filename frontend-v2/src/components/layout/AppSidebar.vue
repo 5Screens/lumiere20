@@ -399,6 +399,11 @@ const menuItems = computed(() => [
             label: t('menu.groups') || 'Groups',
             icon: 'pi pi-users',
             command: () => openTab('groups', 'Groups', 'menu.groups', 'pi pi-users', 'groups')
+          },
+          {
+            label: t('menu.ticketTypes') || 'Ticket Types',
+            icon: 'pi pi-ticket',
+            command: () => openTab('ticket-types', 'Ticket Types', 'menu.ticketTypes', 'pi pi-ticket', 'ticket_types')
           }
         ]
       }

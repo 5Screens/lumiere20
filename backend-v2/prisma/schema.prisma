@@ -193,6 +193,8 @@ model ci_type_fields {
 model ticket_types {
   uuid       String   @id @default(uuid()) @db.Uuid
   code       String   @unique @db.VarChar(50)
+  label      String   @db.VarChar(100)
+  is_active  Boolean  @default(true)
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
