@@ -49,6 +49,7 @@
               :loading="metadataLoading"
               :showStatusSelector="isConfigurationItems && mode === 'edit'"
               :availableTransitions="availableTransitions"
+              :objectType="objectType"
               @apply-transition="applyTransition"
             />
           </TabPanel>
@@ -327,6 +328,9 @@ const loadExtendedFields = async (ciTypeCode) => {
 // Save item
 const saveItem = async () => {
   if (!item.value || !service.value) return
+  
+  console.log('[ObjectViewInTab] saveItem - item.value:', JSON.stringify(item.value, null, 2))
+  console.log('[ObjectViewInTab] saveItem - watchers:', item.value.watchers)
   
   // Validate required fields
   const requiredFields = formFields.value.filter(f => f.is_required)

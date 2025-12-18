@@ -381,6 +381,8 @@ const update = async (uuid, data) => {
     const { _translations, ...rawData } = data;
     void _translations;
 
+    logger.info(`[TASKS] Update called with data: ${JSON.stringify(rawData)}`);
+
     const assignment = normalizeAssignedFields(rawData);
 
     const updateData = {};

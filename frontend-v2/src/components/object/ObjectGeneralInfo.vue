@@ -353,6 +353,7 @@ const onAttachmentsUpdate = (attachments) => {
 
 // Update a field value (preserves _translations explicitly)
 const updateField = (fieldName, value) => {
+  console.log('[ObjectGeneralInfo] updateField called:', fieldName, value)
   const currentTranslations = props.modelValue._translations || {}
   emit('update:modelValue', {
     ...props.modelValue,

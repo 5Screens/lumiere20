@@ -105,17 +105,6 @@ const getById = async (uuid) => {
       last_login: true,
       created_at: true,
       updated_at: true,
-      // Relations
-      ref_entity: true,
-      ref_location: true,
-      ref_approving_manager: {
-        select: {
-          uuid: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-        },
-      },
     },
   });
 };
