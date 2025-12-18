@@ -129,7 +129,7 @@
         <DatePicker 
           v-else-if="field.field_type === 'date'"
           :id="field.field_name" 
-          :modelValue="modelValue[field.field_name]"
+          :modelValue="toDate(modelValue[field.field_name])"
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly"
           dateFormat="dd/mm/yy"
@@ -140,7 +140,7 @@
         <DatePicker 
           v-else-if="field.field_type === 'datetime'"
           :id="field.field_name" 
-          :modelValue="modelValue[field.field_name]"
+          :modelValue="toDate(modelValue[field.field_name])"
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly"
           dateFormat="dd/mm/yy"
@@ -255,6 +255,13 @@ import ConfigurationItemSelector from '@/components/form/ConfigurationItemSelect
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'
+
+// Convert ISO string or Date to Date object for DatePicker
+const toDate = (value) => {
+  if (!value) return null
+  if (value instanceof Date) return value
+  return new Date(value)
+}
 
 // Props
 const props = defineProps({
