@@ -21,7 +21,7 @@ const entityConfigs = [
     subtype_table: 'ticket_types',
     subtype_uuid_field: 'uuid',
     subtype_code_field: 'code',
-    subtype_label_field: 'code',
+    subtype_label_field: 'label',
     subtype_options: null,
     description: 'Tickets use ticket_type_code field linked to ticket_types table',
     is_active: true
