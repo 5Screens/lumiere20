@@ -104,6 +104,10 @@ const isOrphan = computed(() => {
   letter-spacing: 0.5px;
 }
 
+ [data-theme="dark"] .node-label {
+   color: var(--p-surface-0);
+ }
+
 .initial-indicator {
   position: absolute;
   left: -24px;
@@ -141,10 +145,19 @@ const isOrphan = computed(() => {
   white-space: nowrap;
 }
 
+ [data-theme="dark"] .allow-all-chip {
+   background: var(--p-surface-700);
+   color: var(--p-surface-0);
+ }
+
 .allow-all-arrow {
   color: var(--p-surface-400);
   font-size: 12px;
 }
+
+ [data-theme="dark"] .allow-all-arrow {
+   color: var(--p-surface-500);
+ }
 
 /* Handles */
 .handle {
@@ -155,6 +168,11 @@ const isOrphan = computed(() => {
   opacity: 0;
   transition: opacity 0.2s ease;
 }
+
+ [data-theme="dark"] .handle {
+   background: var(--p-surface-500);
+   border-color: var(--p-surface-900);
+ }
 
 .status-node:hover .handle {
   opacity: 1;

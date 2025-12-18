@@ -491,32 +491,79 @@ watch(() => workflow.value?.statuses, () => {
   background: var(--p-surface-0);
 }
 
-:deep(.vue-flow) {
+ .workflow-header {
+   background: var(--p-surface-50);
+ }
+
+ [data-theme="dark"] .workflow-header {
+   background: var(--p-surface-900) !important;
+ }
+
+.vue-flow {
   background: var(--p-surface-100);
 }
 
-:deep(.vue-flow__minimap) {
+[data-theme="dark"] .vue-flow {
+  background: var(--p-surface-900) !important;
+}
+
+[data-theme="dark"] .vue-flow__background {
+  background-color: var(--p-surface-900) !important;
+}
+
+[data-theme="dark"] .vue-flow__background-pattern {
+  color: var(--p-surface-700) !important;
+}
+
+.vue-flow__minimap {
   background: var(--p-surface-50);
   border: 1px solid var(--p-surface-200);
   border-radius: 8px;
 }
 
-:deep(.vue-flow__controls) {
+[data-theme="dark"] .vue-flow__minimap {
+  background: var(--p-surface-800) !important;
+  border-color: var(--p-surface-700) !important;
+}
+
+.vue-flow__controls {
   background: var(--p-surface-50);
   border: 1px solid var(--p-surface-200);
   border-radius: 8px;
 }
 
-:deep(.vue-flow__controls-button) {
+[data-theme="dark"] .vue-flow__controls {
+  background: var(--p-surface-800) !important;
+  border-color: var(--p-surface-700) !important;
+}
+
+.vue-flow__controls-button {
   background: var(--p-surface-0);
   border: none;
 }
 
-:deep(.vue-flow__controls-button:hover) {
+[data-theme="dark"] .vue-flow__controls-button {
+  background: var(--p-surface-900) !important;
+  color: var(--p-surface-0) !important;
+}
+
+.vue-flow__controls-button:hover {
   background: var(--p-surface-100);
+}
+
+[data-theme="dark"] .vue-flow__controls-button:hover {
+  background: var(--p-surface-700) !important;
 }
 
 .side-panel {
   overflow: hidden;
 }
+
+ .side-panel {
+   background: var(--p-surface-50);
+ }
+
+ [data-theme="dark"] .side-panel {
+   background: var(--p-surface-900) !important;
+ }
 </style>

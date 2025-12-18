@@ -4,6 +4,8 @@
 /* CSS Layer order for PrimeVue integration */
 @layer theme, base, primevue, components, utilities;
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* Custom theme variables */
 @theme {
   --color-primary: var(--p-primary-500);

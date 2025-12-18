@@ -1,10 +1,10 @@
 <template>
-  <div class="transition-panel p-4">
+  <div class="transition-panel p-4 text-surface-900 dark:text-surface-0">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold">{{ $t('workflow.transition') }}</h3>
     </div>
     
-    <p class="text-sm text-surface-500 mb-4">{{ $t('workflow.transitionDescription') }}</p>
+    <p class="text-sm text-surface-500 dark:text-surface-400 mb-4">{{ $t('workflow.transitionDescription') }}</p>
     
     <!-- Name -->
     <div class="field mb-4">
@@ -24,7 +24,7 @@
       
       <!-- From states -->
       <div class="mb-2">
-        <label class="text-xs text-surface-500 block mb-1">{{ $t('workflow.fromState') }}</label>
+        <label class="text-xs text-surface-500 dark:text-surface-400 block mb-1">{{ $t('workflow.fromState') }}</label>
         <MultiSelect 
           v-model="localSources" 
           :options="statuses" 
@@ -39,7 +39,7 @@
       
       <!-- To state -->
       <div>
-        <label class="text-xs text-surface-500 block mb-1">{{ $t('workflow.toState') }}</label>
+        <label class="text-xs text-surface-500 dark:text-surface-400 block mb-1">{{ $t('workflow.toState') }}</label>
         <Select 
           v-model="localTarget" 
           :options="statuses" 

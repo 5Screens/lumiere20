@@ -1,10 +1,10 @@
 <template>
-  <div class="status-panel p-4">
+  <div class="status-panel p-4 text-surface-900 dark:text-surface-0">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold">{{ $t('workflow.status') }}</h3>
     </div>
     
-    <p class="text-sm text-surface-500 mb-4">{{ $t('workflow.statusDescription') }}</p>
+    <p class="text-sm text-surface-500 dark:text-surface-400 mb-4">{{ $t('workflow.statusDescription') }}</p>
     
     <!-- Name -->
     <div class="field mb-4">
