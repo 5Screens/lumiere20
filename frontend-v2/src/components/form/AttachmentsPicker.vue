@@ -1,6 +1,7 @@
 <template>
   <div class="attachments-picker">
     <FileUpload 
+      ref="fileUploadRef"
       name="files[]" 
       :url="uploadUrl"
       :multiple="true" 
@@ -109,6 +110,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update', 'error'])
 
+const fileUploadRef = ref(null)
 const existingAttachments = ref([])
 const uploading = ref(false)
 const uploadProgress = ref(0)
@@ -164,7 +166,9 @@ const customUploader = async (event) => {
     emit('update', existingAttachments.value)
 
     // Clear the file list
-    event.options.clear()
+    if (fileUploadRef.value) {
+      fileUploadRef.value.clear()
+    }
   } catch (error) {
     console.error('Upload failed:', error)
     toast.add({

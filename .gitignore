@@ -25,3 +25,6 @@ Thumbs.db
 /build/
 /dist/
 portal-runner/.vite/
+
+# Uploads
+uploads/

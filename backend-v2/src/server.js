@@ -48,6 +48,7 @@ const workflowsRoutes = require('./api/v1/workflows/routes');
 const workflowEntityConfigRoutes = require('./api/v1/workflow_entity_config/routes');
 const tasksRoutes = require('./api/v1/tasks/routes');
 const ticketTypesRoutes = require('./api/v1/ticket_types/routes');
+const attachmentsRoutes = require('./api/v1/attachments/routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
@@ -66,6 +67,7 @@ app.use('/api/v1/workflows', workflowsRoutes);
 app.use('/api/v1/workflow-entity-config', workflowEntityConfigRoutes);
 app.use('/api/v1/tasks', tasksRoutes);
 app.use('/api/v1/ticket-types', ticketTypesRoutes);
+app.use('/api/v1/attachments', attachmentsRoutes);
 
 // Health check
 app.get('/', (req, res) => {
