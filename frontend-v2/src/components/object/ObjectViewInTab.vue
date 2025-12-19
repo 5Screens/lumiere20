@@ -43,6 +43,7 @@
           <!-- General Info Tab -->
           <TabPanel value="general" class="h-full overflow-auto">
             <ObjectGeneralInfo 
+              ref="generalInfoRef"
               v-model="item"
               :formFields="formFields"
               :fieldOptions="fieldOptions"
@@ -136,6 +137,9 @@ const loading = ref(true)
 const saving = ref(false)
 const item = ref(null)
 const activeTab = ref('general')
+
+// Refs to child components
+const generalInfoRef = ref(null)
 
 // Metadata
 const metadataLoading = ref(true)
@@ -352,6 +356,11 @@ const saveItem = async () => {
     } else {
       await service.value.update(item.value.uuid, item.value)
       toast.add({ severity: 'success', summary: 'Success', detail: t('common.saved'), life: 3000 })
+    }
+    
+    // Upload pending attachments after saving the item
+    if (generalInfoRef.value) {
+      await generalInfoRef.value.uploadPendingAttachments()
     }
     
     emit('saved', item.value)

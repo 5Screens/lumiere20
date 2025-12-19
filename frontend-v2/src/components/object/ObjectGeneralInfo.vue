@@ -232,6 +232,7 @@
         
         <!-- Attachments -->
         <AttachmentsPicker 
+          :ref="(el) => { if (el) attachmentsPickerRef = el }"
           v-else-if="field.field_type === 'attachments'"
           :entityType="objectType"
           :entityUuid="modelValue.uuid"
@@ -343,11 +344,27 @@ const applyTransition = (transition) => {
   emit('apply-transition', transition)
 }
 
+// Ref to AttachmentsPicker (using function ref pattern for v-for)
+let attachmentsPickerRef = null
+
 // Handle attachments update
 const onAttachmentsUpdate = (attachments) => {
   // Attachments are managed separately, just emit for parent awareness
   emit('update:modelValue', { ...props.modelValue, attachments })
 }
+
+// Upload pending attachments (called from parent on save)
+const uploadPendingAttachments = async () => {
+  if (attachmentsPickerRef && attachmentsPickerRef.uploadPendingFiles) {
+    return await attachmentsPickerRef.uploadPendingFiles()
+  }
+  return true
+}
+
+// Expose methods for parent component
+defineExpose({
+  uploadPendingAttachments
+})
 
 // Methods
 

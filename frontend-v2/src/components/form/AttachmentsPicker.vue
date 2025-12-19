@@ -274,6 +274,70 @@ const getFileIcon = (mimeType) => {
   return 'pi pi-file text-surface-400'
 }
 
+// Upload pending files programmatically (called from parent on save)
+const uploadPendingFiles = async () => {
+  if (!fileUploadRef.value) return false
+  
+  // Get pending files from FileUpload component
+  const files = fileUploadRef.value.files
+  if (!files || files.length === 0) return true // No pending files, success
+  
+  uploading.value = true
+  uploadProgress.value = 0
+
+  try {
+    const formData = new FormData()
+    for (const file of files) {
+      formData.append('files', file)
+    }
+
+    await api.post(
+      `/attachments/${props.entityType}/${props.entityUuid}`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        }
+      }
+    )
+
+    // Reload attachments
+    await loadAttachments()
+    emit('update', existingAttachments.value)
+
+    // Clear the file list
+    fileUploadRef.value.clear()
+    return true
+  } catch (error) {
+    console.error('Upload failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: t('common.uploadFailed'),
+      life: 5000
+    })
+    emit('error', error)
+    return false
+  } finally {
+    uploading.value = false
+    uploadProgress.value = 0
+  }
+}
+
+// Check if there are pending files
+const hasPendingFiles = () => {
+  if (!fileUploadRef.value) return false
+  const files = fileUploadRef.value.files
+  return files && files.length > 0
+}
+
+// Expose methods for parent component
+defineExpose({
+  uploadPendingFiles,
+  hasPendingFiles
+})
+
 onMounted(() => {
   if (props.entityUuid) {
     loadAttachments()
