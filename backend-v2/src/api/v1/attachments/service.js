@@ -3,8 +3,8 @@ const logger = require('../../../config/logger');
 const path = require('path');
 const fs = require('fs').promises;
 
-// Upload directory
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+// Upload directory (resolve to absolute path)
+const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
 
 /**
  * Get all attachments for an entity
@@ -90,16 +90,24 @@ const remove = async (uuid) => {
  * Get file path for download
  */
 const getFilePath = async (uuid) => {
+  logger.info(`[ATTACHMENTS] getFilePath called with uuid: ${uuid}`);
+  
   const attachment = await prisma.attachments.findUnique({
     where: { uuid },
   });
   
+  logger.info(`[ATTACHMENTS] Attachment found: ${JSON.stringify(attachment)}`);
+  
   if (!attachment) {
+    logger.warn(`[ATTACHMENTS] Attachment not found for uuid: ${uuid}`);
     return null;
   }
   
+  const filePath = path.join(UPLOAD_DIR, attachment.file_path);
+  logger.info(`[ATTACHMENTS] File path: ${filePath}`);
+  
   return {
-    path: path.join(UPLOAD_DIR, attachment.file_path),
+    path: filePath,
     originalName: attachment.original_name,
     mimeType: attachment.mime_type,
   };

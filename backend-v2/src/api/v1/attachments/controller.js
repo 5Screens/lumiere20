@@ -83,9 +83,15 @@ const download = async (req, res, next) => {
       });
     }
     
+    logger.info(`[ATTACHMENTS] Download file: ${fileInfo.path}`);
+    
+    // Use path.resolve to ensure absolute path
+    const absolutePath = require('path').resolve(fileInfo.path);
+    logger.info(`[ATTACHMENTS] Absolute path: ${absolutePath}`);
+    
     res.setHeader('Content-Type', fileInfo.mimeType);
     res.setHeader('Content-Disposition', `attachment; filename="${fileInfo.originalName}"`);
-    res.sendFile(fileInfo.path);
+    res.sendFile(absolutePath);
   } catch (error) {
     logger.error('[ATTACHMENTS CONTROLLER] Error in download:', error);
     next(error);
