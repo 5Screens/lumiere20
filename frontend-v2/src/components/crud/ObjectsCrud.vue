@@ -306,6 +306,15 @@
               </div>
               <span v-else>-</span>
             </template>
+            <!-- Workflow Status display -->
+            <template v-else-if="col.field_type === 'workflow_status'">
+              <Tag 
+                v-if="data.status"
+                :value="getStatusLabel(data.status)"
+                :style="{ backgroundColor: data.status.category?.color || '#6b7280', color: 'white' }"
+              />
+              <span v-else class="text-surface-400 italic text-sm">{{ $t('workflow.noWorkflow') }}</span>
+            </template>
             <!-- Person display -->
             <template v-else-if="col.field_type === 'person'">
               <span v-if="getPersonDisplay(data, col.field_name)">
