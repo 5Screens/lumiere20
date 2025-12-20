@@ -135,6 +135,7 @@ export default {
     close:'Fermer',
     columns: 'Colonnes',
     loading: 'Chargement...',
+    scrollForMore: 'Défiler pour plus de résultats',
     noData: 'Aucune donnée',
     confirm: 'Confirmer',
     confirmDelete: 'Êtes-vous sûr de vouloir supprimer cet élément ?',

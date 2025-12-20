@@ -134,6 +134,7 @@ export default {
     search: 'Search',
     columns: 'Columns',
     loading: 'Loading...',
+    scrollForMore: 'Scroll for more results',
     noData: 'No data',
     confirm: 'Confirm',
     confirmDelete: 'Are you sure you want to delete this item?',

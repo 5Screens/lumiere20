@@ -1,6 +1,7 @@
 <template>
   <div class="person-selector">
     <AutoComplete
+      ref="autocompleteRef"
       v-model="selectedPerson"
       :suggestions="suggestions"
       :placeholder="$t('common.searchPerson')"
@@ -11,13 +12,17 @@
       dropdown
       forceSelection
       :multiple="multiple"
+      :loading="loading"
       class="w-full"
       @complete="onSearch"
       @item-select="onSelect"
       @clear="onClear"
     >
-      <template #option="{ option }">
-        <div class="flex items-center gap-3 py-1">
+      <template #option="{ option, index }">
+        <div 
+          class="flex items-center gap-3 py-1"
+          :ref="el => { if (index === suggestions.length - 3) loadMoreTriggerRef = el }"
+        >
           <div class="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-400 text-sm font-semibold shrink-0">
             {{ getInitials(option) }}
           </div>
@@ -27,16 +32,24 @@
           </div>
         </div>
       </template>
+      <template #footer v-if="hasMoreData">
+        <div ref="footerSentinelRef" class="p-2 text-center text-sm text-surface-500">
+          <i v-if="loading" class="pi pi-spin pi-spinner mr-2"></i>
+          <span v-if="loading">{{ $t('common.loading') }}</span>
+          <span v-else>{{ $t('common.scrollForMore') }}</span>
+        </div>
+      </template>
     </AutoComplete>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import AutoComplete from 'primevue/autocomplete'
 import personsService from '@/services/personsService'
 
 const MIN_SEARCH_LENGTH = 2
+const PAGE_SIZE = 20
 
 const props = defineProps({
   modelValue: {
@@ -55,8 +68,19 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const autocompleteRef = ref(null)
 const selectedPerson = ref(null)
 const suggestions = ref([])
+const loading = ref(false)
+const currentQuery = ref('')
+const currentPage = ref(1)
+const totalRecords = ref(0)
+const hasMoreData = computed(() => suggestions.value.length < totalRecords.value)
+
+// Refs for IntersectionObserver
+const footerSentinelRef = ref(null)
+const loadMoreTriggerRef = ref(null)
+let intersectionObserver = null
 
 // Get initials for avatar
 const getInitials = (person) => {
@@ -65,10 +89,80 @@ const getInitials = (person) => {
   return (first + last).toUpperCase()
 }
 
-// Search persons via API
+// Setup IntersectionObserver for lazy loading
+const setupObserver = () => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
+  }
+  
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && hasMoreData.value && !loading.value) {
+          loadMorePersons()
+        }
+      })
+    },
+    { threshold: 0.1 }
+  )
+}
+
+// Watch for footer sentinel to observe
+watch(footerSentinelRef, (newRef) => {
+  if (newRef && intersectionObserver) {
+    intersectionObserver.observe(newRef)
+  }
+})
+
+// Watch for trigger element (3rd from last item)
+watch(loadMoreTriggerRef, (newRef) => {
+  if (newRef && intersectionObserver) {
+    intersectionObserver.observe(newRef)
+  }
+})
+
+// Load more persons (next page)
+const loadMorePersons = async () => {
+  if (loading.value || !hasMoreData.value) return
+  
+  loading.value = true
+  try {
+    const filters = {}
+    if (currentQuery.value.length >= MIN_SEARCH_LENGTH) {
+      filters.global = { value: currentQuery.value, matchMode: 'contains' }
+    }
+    
+    const nextPage = currentPage.value + 1
+    const result = await personsService.search({
+      filters,
+      page: nextPage,
+      limit: PAGE_SIZE,
+      sortField: 'last_name',
+      sortOrder: 1
+    })
+    
+    if (result.data && result.data.length > 0) {
+      const newPersons = result.data.map(p => ({
+        ...p,
+        display_name: `${p.first_name} ${p.last_name}`
+      }))
+      suggestions.value = [...suggestions.value, ...newPersons]
+      currentPage.value = nextPage
+    }
+  } catch (error) {
+    console.error('Failed to load more persons:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Search persons via API (initial search)
 const onSearch = async (event) => {
   const query = event.query?.trim() || ''
+  currentQuery.value = query
+  currentPage.value = 1
 
+  loading.value = true
   try {
     // Build filters - only add globalFilter if query is not empty
     const filters = {}
@@ -79,10 +173,12 @@ const onSearch = async (event) => {
     const result = await personsService.search({
       filters,
       page: 1,
-      limit: 20,
+      limit: PAGE_SIZE,
       sortField: 'last_name',
       sortOrder: 1
     })
+    
+    totalRecords.value = result.total || 0
     
     // Add display_name for optionLabel
     suggestions.value = (result.data || []).map(p => ({
@@ -92,6 +188,9 @@ const onSearch = async (event) => {
   } catch (error) {
     console.error('Failed to search persons:', error)
     suggestions.value = []
+    totalRecords.value = 0
+  } finally {
+    loading.value = false
   }
 }
 
@@ -146,10 +245,19 @@ const loadSelectedPerson = async () => {
   }
 }
 
-// Load selected person on mount
+// Load selected person on mount and setup observer
 onMounted(() => {
+  setupObserver()
   if (props.modelValue) {
     loadSelectedPerson()
+  }
+})
+
+// Cleanup observer on unmount
+onUnmounted(() => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
+    intersectionObserver = null
   }
 })
 
