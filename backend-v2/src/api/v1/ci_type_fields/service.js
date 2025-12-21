@@ -47,9 +47,20 @@ const fetchTranslations = async (uuids, locale = null) => {
  * @returns {Object} Field with translated fields
  */
 const transformWithTranslations = (field, translations = [], locale = null) => {
+  // Parse options_source - can be JSON array or API endpoint URL
+  let options = null;
+  if (field.options_source) {
+    try {
+      options = JSON.parse(field.options_source);
+    } catch {
+      // Not JSON - might be an API endpoint URL, keep as string
+      options = field.options_source;
+    }
+  }
+  
   const result = {
     ...field,
-    options: field.options_source ? JSON.parse(field.options_source) : null
+    options
   };
   
   if (translations.length > 0 && locale) {
