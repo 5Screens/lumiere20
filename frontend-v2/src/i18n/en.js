@@ -183,6 +183,8 @@ export default {
     noModelsAvailable: 'No models available for this type',
     selectPerson: 'Select a person',
     searchPerson: 'Search by name or email...',
+    selectGroup: 'Select a group',
+    searchGroup: 'Search for a group...',
     selectConfigurationItem: 'Select a configuration item',
     searchConfigurationItem: 'Search by name...',
     typeToSearch: 'Type to search...',

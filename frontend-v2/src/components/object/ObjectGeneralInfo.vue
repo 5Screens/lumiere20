@@ -202,6 +202,15 @@
           :disabled="field.is_readonly || field.is_editable === false"
         />
         
+        <!-- Group Selector -->
+        <GroupSelector 
+          v-else-if="field.field_type === 'group'"
+          :id="field.field_name" 
+          :modelValue="modelValue[field.field_name]"
+          @update:modelValue="updateField(field.field_name, $event)"
+          :disabled="field.is_readonly || field.is_editable === false"
+        />
+        
         <!-- Configuration Item Selector -->
         <ConfigurationItemSelector 
           v-else-if="field.field_type === 'configuration_item'"
@@ -270,6 +279,7 @@ import CiModelSelector from '@/components/form/CiModelSelector.vue'
 import CiTypeTargetSelector from '@/components/form/CiTypeTargetSelector.vue'
 import StatusPicker from '@/components/form/StatusPicker.vue'
 import PersonSelector from '@/components/form/PersonSelector.vue'
+import GroupSelector from '@/components/form/GroupSelector.vue'
 import ConfigurationItemSelector from '@/components/form/ConfigurationItemSelector.vue'
 import AttachmentsPicker from '@/components/form/AttachmentsPicker.vue'
 

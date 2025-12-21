@@ -184,6 +184,8 @@ export default {
     noModelsAvailable: 'Aucun modèle disponible pour ce type',
     selectPerson: 'Sélectionner une personne',
     searchPerson: 'Rechercher par nom ou email...',
+    selectGroup: 'Sélectionner un groupe',
+    searchGroup: 'Rechercher un groupe...',
     selectConfigurationItem: 'Sélectionner un élément de configuration',
     searchConfigurationItem: 'Rechercher par nom...',
     typeToSearch: 'Tapez pour rechercher...',
