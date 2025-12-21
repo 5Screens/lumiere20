@@ -9,6 +9,12 @@ const ticketTypes = [
   { code: 'PROBLEM', label: 'Problem' },
   { code: 'CHANGE', label: 'Change' },
   { code: 'SERVICE_REQUEST', label: 'Service Request' },
+  { code: 'KNOWLEDGE', label: 'Knowledge Article' },
+  { code: 'USER_STORY', label: 'User Story' },
+  { code: 'SPRINT', label: 'Sprint' },
+  { code: 'EPIC', label: 'Epic' },
+  { code: 'DEFECT', label: 'Defect' },
+  { code: 'PROJECT', label: 'Project' },
 ];
 
 // Translations for ticket type labels
@@ -48,6 +54,48 @@ const translations = [
   { code: 'SERVICE_REQUEST', locale: 'pt', value: 'Solicitação de serviço' },
   { code: 'SERVICE_REQUEST', locale: 'de', value: 'Serviceanfrage' },
   { code: 'SERVICE_REQUEST', locale: 'it', value: 'Richiesta di servizio' },
+  // KNOWLEDGE
+  { code: 'KNOWLEDGE', locale: 'fr', value: 'Article de connaissance' },
+  { code: 'KNOWLEDGE', locale: 'en', value: 'Knowledge Article' },
+  { code: 'KNOWLEDGE', locale: 'es', value: 'Artículo de conocimiento' },
+  { code: 'KNOWLEDGE', locale: 'pt', value: 'Artigo de conhecimento' },
+  { code: 'KNOWLEDGE', locale: 'de', value: 'Wissensartikel' },
+  { code: 'KNOWLEDGE', locale: 'it', value: 'Articolo di conoscenza' },
+  // USER_STORY
+  { code: 'USER_STORY', locale: 'fr', value: 'User Story' },
+  { code: 'USER_STORY', locale: 'en', value: 'User Story' },
+  { code: 'USER_STORY', locale: 'es', value: 'Historia de usuario' },
+  { code: 'USER_STORY', locale: 'pt', value: 'História de usuário' },
+  { code: 'USER_STORY', locale: 'de', value: 'User Story' },
+  { code: 'USER_STORY', locale: 'it', value: 'User Story' },
+  // SPRINT
+  { code: 'SPRINT', locale: 'fr', value: 'Sprint' },
+  { code: 'SPRINT', locale: 'en', value: 'Sprint' },
+  { code: 'SPRINT', locale: 'es', value: 'Sprint' },
+  { code: 'SPRINT', locale: 'pt', value: 'Sprint' },
+  { code: 'SPRINT', locale: 'de', value: 'Sprint' },
+  { code: 'SPRINT', locale: 'it', value: 'Sprint' },
+  // EPIC
+  { code: 'EPIC', locale: 'fr', value: 'Epic' },
+  { code: 'EPIC', locale: 'en', value: 'Epic' },
+  { code: 'EPIC', locale: 'es', value: 'Épica' },
+  { code: 'EPIC', locale: 'pt', value: 'Épico' },
+  { code: 'EPIC', locale: 'de', value: 'Epic' },
+  { code: 'EPIC', locale: 'it', value: 'Epic' },
+  // DEFECT
+  { code: 'DEFECT', locale: 'fr', value: 'Défaut' },
+  { code: 'DEFECT', locale: 'en', value: 'Defect' },
+  { code: 'DEFECT', locale: 'es', value: 'Defecto' },
+  { code: 'DEFECT', locale: 'pt', value: 'Defeito' },
+  { code: 'DEFECT', locale: 'de', value: 'Fehler' },
+  { code: 'DEFECT', locale: 'it', value: 'Difetto' },
+  // PROJECT
+  { code: 'PROJECT', locale: 'fr', value: 'Projet' },
+  { code: 'PROJECT', locale: 'en', value: 'Project' },
+  { code: 'PROJECT', locale: 'es', value: 'Proyecto' },
+  { code: 'PROJECT', locale: 'pt', value: 'Projeto' },
+  { code: 'PROJECT', locale: 'de', value: 'Projekt' },
+  { code: 'PROJECT', locale: 'it', value: 'Progetto' },
 ];
 
 async function seedTicketTypes(prisma) {
