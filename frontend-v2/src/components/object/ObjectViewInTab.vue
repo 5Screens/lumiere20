@@ -173,8 +173,8 @@ const hasWorkflowStatus = computed(() => {
 
 // Computed
 const hasExtendedInfo = computed(() => {
-  // Show extended tab for ci_types and configuration_items
-  return ['ci_types', 'configuration_items'].includes(props.objectType)
+  // Show extended tab for ci_types, ticket_types, tickets and configuration_items
+  return ['ci_types', 'ticket_types', 'tickets', 'configuration_items'].includes(props.objectType)
 })
 
 // Methods

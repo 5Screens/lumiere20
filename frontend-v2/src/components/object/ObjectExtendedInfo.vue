@@ -7,10 +7,11 @@
 
     <!-- CI Types: Full CRUD of field definitions -->
     <template v-else-if="objectType === 'ci_types'">
-      <CiTypeFieldsEditor 
+      <ExtendedFieldsEditor 
         v-if="modelValue?.uuid"
-        :ciTypeUuid="modelValue.uuid"
-        :ciTypeCode="modelValue.code"
+        entityType="ci_types"
+        :parentUuid="modelValue.uuid"
+        :parentCode="modelValue.code"
       />
       <div v-else class="text-center py-8 text-surface-500">
         <i class="pi pi-info-circle text-2xl mb-2" />
@@ -18,8 +19,22 @@
       </div>
     </template>
 
-    <!-- Configuration Items: Key/Value table of extended fields -->
-    <template v-else-if="objectType === 'configuration_items' && extendedFields.length > 0">
+    <!-- Ticket Types: Full CRUD of field definitions -->
+    <template v-else-if="objectType === 'ticket_types'">
+      <ExtendedFieldsEditor 
+        v-if="modelValue?.uuid"
+        entityType="ticket_types"
+        :parentUuid="modelValue.uuid"
+        :parentCode="modelValue.code"
+      />
+      <div v-else class="text-center py-8 text-surface-500">
+        <i class="pi pi-info-circle text-2xl mb-2" />
+        <p>{{ $t('common.saveFirst') }}</p>
+      </div>
+    </template>
+
+    <!-- Configuration Items & Tickets: Key/Value table of extended fields -->
+    <template v-else-if="['configuration_items', 'tickets'].includes(objectType) && extendedFields.length > 0">
       <DataTable 
         :value="extendedFieldsData" 
         dataKey="field_name"
@@ -142,12 +157,21 @@
       </DataTable>
     </template>
 
-    <!-- No extended fields -->
+    <!-- No extended fields for configuration_items -->
     <template v-else-if="objectType === 'configuration_items'">
       <div class="text-center py-8 text-surface-500 bg-surface-50 dark:bg-surface-800 rounded-lg">
         <i class="pi pi-inbox text-4xl mb-2" />
         <p>{{ $t('configurationItems.noExtendedFields') }}</p>
         <p class="text-sm mt-2">{{ $t('configurationItems.selectCiTypeHint') }}</p>
+      </div>
+    </template>
+
+    <!-- No extended fields for tickets -->
+    <template v-else-if="objectType === 'tickets'">
+      <div class="text-center py-8 text-surface-500 bg-surface-50 dark:bg-surface-800 rounded-lg">
+        <i class="pi pi-inbox text-4xl mb-2" />
+        <p>{{ $t('tickets.noExtendedFields') }}</p>
+        <p class="text-sm mt-2">{{ $t('tickets.selectTicketTypeHint') }}</p>
       </div>
     </template>
 
@@ -189,7 +213,7 @@ import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 
 // Custom components
-import CiTypeFieldsEditor from '@/components/object/CiTypeFieldsEditor.vue'
+import ExtendedFieldsEditor from '@/components/object/ExtendedFieldsEditor.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import { DateTimePicker } from '@/components/pickers'
 
