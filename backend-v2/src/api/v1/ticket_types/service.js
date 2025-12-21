@@ -301,6 +301,38 @@ const search = async (searchParams) => {
   };
 };
 
+/**
+ * Get ticket types as options for select fields
+ * Returns simplified format: { value, label }
+ */
+const getOptions = async ({ locale = 'en' } = {}) => {
+  const ticketTypes = await prisma.ticket_types.findMany({
+    where: { is_active: true },
+    orderBy: { code: 'asc' }
+  });
+  
+  // Get translations for current locale
+  const uuids = ticketTypes.map(t => t.uuid);
+  const translations = await prisma.translated_fields.findMany({
+    where: {
+      entity_type: ENTITY_TYPE,
+      entity_uuid: { in: uuids },
+      field_name: 'label',
+      locale
+    }
+  });
+  
+  const translationMap = {};
+  for (const t of translations) {
+    translationMap[t.entity_uuid] = t.value;
+  }
+  
+  return ticketTypes.map(tt => ({
+    value: tt.code,
+    label: translationMap[tt.uuid] || tt.label
+  }));
+};
+
 module.exports = {
   getAll,
   getByUuid,
@@ -308,5 +340,6 @@ module.exports = {
   create,
   update,
   remove,
-  search
+  search,
+  getOptions
 };

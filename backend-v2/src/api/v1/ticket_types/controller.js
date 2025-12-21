@@ -156,11 +156,26 @@ const search = async (req, res, next) => {
   }
 };
 
+/**
+ * Get ticket types as options for select fields
+ */
+const getOptions = async (req, res, next) => {
+  try {
+    const locale = getLocale(req);
+    const options = await service.getOptions({ locale });
+    res.json(options);
+  } catch (error) {
+    logger.error('[TICKET_TYPES CONTROLLER] Error in getOptions:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   getAll,
   getByUuid,
   create,
   update,
   remove,
-  search
+  search,
+  getOptions
 };

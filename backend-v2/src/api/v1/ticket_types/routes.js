@@ -10,6 +10,9 @@ const controller = require('./controller');
 // GET /api/v1/ticket-types - Get all ticket types
 router.get('/', controller.getAll);
 
+// GET /api/v1/ticket-types/options - Get options for select fields (MUST be before /:uuid)
+router.get('/options', controller.getOptions);
+
 // POST /api/v1/ticket-types/search - Search with pagination
 router.post('/search', controller.search);
 

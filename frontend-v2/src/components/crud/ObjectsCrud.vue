@@ -1507,8 +1507,20 @@ const loadItems = async (pageNum = null) => {
   try {
     loading.value = true
     const page = typeof pageNum === 'number' ? pageNum : currentPage.value
+    
+    // Create a shallow copy of filters to avoid mutating the reactive object
+    const filtersCopy = { ...filters.value }
+    
+    // Add ticket_type_code filter if provided (for ticket type-specific views)
+    if (props.ticketTypeCode) {
+      filtersCopy.ticket_type_code = {
+        value: props.ticketTypeCode,
+        matchMode: 'equals'
+      }
+    }
+    
     const searchParams = {
-      filters: filters.value,
+      filters: filtersCopy,
       sortField: sortField.value,
       sortOrder: sortOrder.value,
       page,
@@ -1520,17 +1532,6 @@ const loadItems = async (pageNum = null) => {
     // Add ciTypeUuid filter if provided (for CI type-specific views)
     if (props.ciTypeUuid) {
       searchParams.ciTypeUuid = props.ciTypeUuid
-    }
-    
-    // Add ticket_type_code filter if provided (for ticket type-specific views)
-    if (props.ticketTypeCode) {
-      if (!searchParams.filters) {
-        searchParams.filters = {}
-      }
-      searchParams.filters.ticket_type_code = {
-        value: props.ticketTypeCode,
-        matchMode: 'equals'
-      }
     }
     
     const result = await service.value.search(searchParams)
