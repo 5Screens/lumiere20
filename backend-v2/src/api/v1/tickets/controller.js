@@ -16,7 +16,8 @@ const getTicketTypeCode = (req) => {
 const search = async (req, res, next) => {
   try {
     const locale = getLocale(req);
-    const ticketTypeCode = getTicketTypeCode(req);
+    // ticketTypeCode can come from query params, route params, or request body
+    const ticketTypeCode = getTicketTypeCode(req) || req.body.ticketTypeCode || null;
     const result = await service.search(req.body, locale, ticketTypeCode);
     res.json(result);
   } catch (error) {
