@@ -32,7 +32,7 @@
             <Button 
               icon="pi pi-refresh" 
               severity="secondary" 
-              @click="loadFields" 
+              @click="refreshFields" 
               :loading="loading"
               v-tooltip.bottom="$t('common.refresh')"
             />
@@ -527,20 +527,25 @@ const sampleData = computed(() => {
 })
 
 // Methods
-const loadFields = async () => {
+const loadFields = async (forceRefresh = false) => {
+  console.log('[MetadataObjectFieldsCrud] loadFields called, forceRefresh:', forceRefresh, 'objectType:', props.objectType)
   try {
     loading.value = true
     
-    // If we have objectTypeData with fields, use it
-    if (props.objectTypeData?.fields) {
+    // If we have objectTypeData with fields and not forcing refresh, use it
+    if (!forceRefresh && props.objectTypeData?.fields) {
+      console.log('[MetadataObjectFieldsCrud] Using props.objectTypeData.fields:', props.objectTypeData.fields.length, 'fields')
       fields.value = props.objectTypeData.fields
     } else {
       // Otherwise load from API
+      console.log('[MetadataObjectFieldsCrud] Loading from API for objectType:', props.objectType)
       const objectType = await metadataService.getObjectType(props.objectType, false)
+      console.log('[MetadataObjectFieldsCrud] API response:', objectType)
       fields.value = objectType?.fields || []
+      console.log('[MetadataObjectFieldsCrud] Loaded', fields.value.length, 'fields')
     }
   } catch (error) {
-    console.error('Failed to load fields:', error)
+    console.error('[MetadataObjectFieldsCrud] Failed to load fields:', error)
     toast.add({ 
       severity: 'error', 
       summary: t('common.error'), 
@@ -550,6 +555,12 @@ const loadFields = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Refresh handler for button click - always force refresh from API
+const refreshFields = () => {
+  console.log('[MetadataObjectFieldsCrud] Refresh button clicked')
+  loadFields(true)
 }
 
 const getFieldTypeSeverity = (fieldType) => {
