@@ -781,6 +781,7 @@ import { useI18n } from 'vue-i18n'
 import { getService, hasService } from '@/services'
 import metadataService from '@/services/metadataService'
 import ciTypeFieldsService from '@/services/ciTypeFieldsService'
+import ticketTypeFieldsService from '@/services/ticketTypeFieldsService'
 import api from '@/services/api'
 import { useTabsStore } from '@/stores/tabsStore'
 import { useReferenceDataStore } from '@/stores/referenceDataStore'
@@ -913,6 +914,10 @@ const ciTypeFields = ref([])
 const ciTypeFieldsLoading = ref(false)
 const changeTypeDialog = ref(false)
 
+// Ticket Type fields (dynamic columns for filtered ticket views)
+const ticketTypeFields = ref([])
+const ticketTypeFieldsLoading = ref(false)
+
 // Use store for reference data
 const ciTypes = computed(() => referenceDataStore.ciTypes)
 const ciCategories = computed(() => referenceDataStore.ciCategories)
@@ -1008,33 +1013,51 @@ const menuModel = ref([
 // Columns to hide when ciTypeUuid is set (filtered view for configuration_items)
 const hiddenColumnsForCiType = ['ci_type']
 
-// Filtered table columns (excludes hidden columns when ciTypeUuid is set, adds extended fields)
+// Columns to hide when ticketTypeCode is set (filtered view for tickets)
+const hiddenColumnsForTicketType = ['ticket_type_code']
+
+// Helper to map type fields to extended columns (DRY)
+const mapTypeFieldsToColumns = (fields) => {
+  return fields
+    .filter(f => f.show_in_table)
+    .map(f => ({
+      field_name: f.field_name,
+      label_key: null, // No i18n key, use dynamic label
+      label: f.label, // Dynamic label from type_fields
+      field_type: f.field_type,
+      data_type: f.data_type,
+      is_sortable: false, // Extended fields are not sortable for now
+      is_editable: !f.is_readonly, // Enable inline editing if not readonly
+      default_visible: true,
+      is_extended: true, // Flag to identify extended fields
+      options_source: f.options_source,
+      options: f.options, // Parsed options for select fields
+      unit: f.unit
+    }))
+}
+
+// Filtered table columns (excludes hidden columns when type filter is set, adds extended fields)
 const filteredTableColumns = computed(() => {
-  // Base columns from configuration_items metadata
+  // Base columns from metadata
   let columns = tableColumns.value
   
+  // Configuration Items: filter by ciTypeUuid
   if (props.ciTypeUuid) {
     // Filter out hidden columns (like ci_type)
     columns = columns.filter(col => !hiddenColumnsForCiType.includes(col.field_name))
     
     // Add extended columns from ci_type_fields (show_in_table = true)
-    const extendedColumns = ciTypeFields.value
-      .filter(f => f.show_in_table)
-      .map(f => ({
-        field_name: f.field_name,
-        label_key: null, // No i18n key, use dynamic label
-        label: f.label, // Dynamic label from ci_type_fields
-        field_type: f.field_type,
-        data_type: f.data_type,
-        is_sortable: false, // Extended fields are not sortable for now
-        is_editable: !f.is_readonly, // Enable inline editing if not readonly
-        default_visible: true,
-        is_extended: true, // Flag to identify extended fields
-        options_source: f.options_source,
-        options: f.options, // Parsed options for select fields
-        unit: f.unit
-      }))
+    const extendedColumns = mapTypeFieldsToColumns(ciTypeFields.value)
+    columns = [...columns, ...extendedColumns]
+  }
+  
+  // Tickets: filter by ticketTypeCode
+  if (props.ticketTypeCode) {
+    // Filter out hidden columns (like ticket_type_code)
+    columns = columns.filter(col => !hiddenColumnsForTicketType.includes(col.field_name))
     
+    // Add extended columns from ticket_type_fields (show_in_table = true)
+    const extendedColumns = mapTypeFieldsToColumns(ticketTypeFields.value)
     columns = [...columns, ...extendedColumns]
   }
   
@@ -1568,6 +1591,9 @@ const clearFilters = () => {
 
 // Check if current object type is configuration_items
 const isConfigurationItems = computed(() => props.objectType === 'configuration_items')
+
+// Check if current object type is tickets
+const isTickets = computed(() => props.objectType === 'tickets')
 
 // Check if current object type is persons (for row actions menu)
 const isPersons = computed(() => props.objectType === 'persons')
@@ -2175,6 +2201,36 @@ const loadCiTypeFields = async () => {
   }
 }
 
+// Load ticket type fields for extended columns
+const loadTicketTypeFields = async () => {
+  if (!props.ticketTypeCode) {
+    ticketTypeFields.value = []
+    return
+  }
+  
+  try {
+    ticketTypeFieldsLoading.value = true
+    // First get the ticket type UUID from the code
+    const ticketTypesResponse = await api.get('/ticket-types')
+    const ticketType = ticketTypesResponse.data?.find(t => t.code === props.ticketTypeCode)
+    
+    if (!ticketType) {
+      console.warn(`[ObjectsCrud] Ticket type not found for code: ${props.ticketTypeCode}`)
+      ticketTypeFields.value = []
+      return
+    }
+    
+    const fields = await ticketTypeFieldsService.getByTypeUuid(ticketType.uuid)
+    ticketTypeFields.value = fields || []
+    console.log(`[ObjectsCrud] Loaded ${ticketTypeFields.value.length} ticket type fields for type ${props.ticketTypeCode}`)
+  } catch (error) {
+    console.error('Failed to load ticket type fields:', error)
+    ticketTypeFields.value = []
+  } finally {
+    ticketTypeFieldsLoading.value = false
+  }
+}
+
 // Load metadata for this object type
 const loadMetadata = async () => {
   try {
@@ -2204,16 +2260,27 @@ const loadMetadata = async () => {
         await loadCiTypeFields()
       }
       
+      // Load ticket type fields if ticketTypeCode is set (for extended columns)
+      if (props.ticketTypeCode && isTickets.value) {
+        await loadTicketTypeFields()
+      }
+      
       // Initialize selected columns (visible by default, including extended fields)
       const baseColumns = tableColumns.value
         .filter(col => col.default_visible)
         .map(col => ({ field: col.field_name, header: t(col.label_key) }))
       
-      const extendedCols = ciTypeFields.value
+      // Extended columns from CI type fields
+      const ciExtendedCols = ciTypeFields.value
         .filter(f => f.show_in_table)
         .map(f => ({ field: f.field_name, header: f.label }))
       
-      selectedColumns.value = [...baseColumns, ...extendedCols]
+      // Extended columns from ticket type fields
+      const ticketExtendedCols = ticketTypeFields.value
+        .filter(f => f.show_in_table)
+        .map(f => ({ field: f.field_name, header: f.label }))
+      
+      selectedColumns.value = [...baseColumns, ...ciExtendedCols, ...ticketExtendedCols]
     }
   } catch (error) {
     console.error('Failed to load metadata:', error)
