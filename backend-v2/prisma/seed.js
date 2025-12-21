@@ -19,6 +19,8 @@ const { seedWorkflowEntityConfig } = require('./seeds/workflow-entity-config.see
 const { seedTicketTypes } = require('./seeds/ticket-types.seed');
 const { seedTicketTypeFields } = require('./seeds/ticket-type-fields.seed');
 const { seedTaskWorkflow } = require('./seeds/task-workflow.seed');
+const { seedItsmWorkflows } = require('./seeds/itsm-workflows.seed');
+const { seedAgileWorkflows } = require('./seeds/agile-workflows.seed');
 
 async function main() {
   console.log('========================================');
@@ -77,12 +79,22 @@ async function main() {
     console.log('');
 
     // 11. Task Workflow (statuses and transitions for TASK tickets)
-    console.log('[11/12] Seeding task workflow...');
+    console.log('[11/14] Seeding task workflow...');
     await seedTaskWorkflow(prisma);
     console.log('');
 
-    // 12. Default Admin (last, after all dependencies)
-    console.log('[12/12] Seeding default admin...');
+    // 12. ITSM Workflows (Incident, Problem, Change, Knowledge)
+    console.log('[12/14] Seeding ITSM workflows...');
+    await seedItsmWorkflows(prisma);
+    console.log('');
+
+    // 13. Agile Workflows (User Story, Project, Sprint, Epic, Defect)
+    console.log('[13/14] Seeding Agile workflows...');
+    await seedAgileWorkflows(prisma);
+    console.log('');
+
+    // 14. Default Admin (last, after all dependencies)
+    console.log('[14/14] Seeding default admin...');
     await seedDefaultAdmin();
     console.log('');
 

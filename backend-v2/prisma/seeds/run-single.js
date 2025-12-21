@@ -19,6 +19,8 @@ const seedMap = {
   'ticket-types': () => require('./ticket-types.seed').seedTicketTypes(prisma),
   'ticket-type-fields': () => require('./ticket-type-fields.seed').seedTicketTypeFields(),
   'task-workflow': () => require('./task-workflow.seed').seedTaskWorkflow(prisma),
+  'itsm-workflows': () => require('./itsm-workflows.seed').seedItsmWorkflows(prisma),
+  'agile-workflows': () => require('./agile-workflows.seed').seedAgileWorkflows(prisma),
   'uat': () => require('./uat.seed').seedUat(prisma),
 };
 
