@@ -85,6 +85,7 @@ import { getService } from '@/services'
 import api from '@/services/api'
 import metadataService from '@/services/metadataService'
 import ciTypeFieldsService from '@/services/ciTypeFieldsService'
+import ticketTypeFieldsService from '@/services/ticketTypeFieldsService'
 import { useReferenceDataStore } from '@/stores/referenceDataStore'
 
 // PrimeVue components
@@ -279,6 +280,11 @@ const loadItem = async () => {
     if (props.objectType === 'configuration_items' && item.value?.ci_type) {
       await loadExtendedFields(item.value.ci_type)
     }
+    
+    // Load extended fields if tickets
+    if (props.objectType === 'tickets' && item.value?.ticket_type_code) {
+      await loadExtendedFieldsForTickets(item.value.ticket_type_code)
+    }
   } catch (error) {
     console.error('Failed to load item:', error)
     toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load item', life: 3000 })
@@ -298,8 +304,8 @@ const initializeNewItem = () => {
     }
   }
   
-  // Initialize extended_core_fields for configuration_items
-  if (props.objectType === 'configuration_items') {
+  // Initialize extended_core_fields for configuration_items and tickets
+  if (props.objectType === 'configuration_items' || props.objectType === 'tickets') {
     defaults.extended_core_fields = {}
   }
   
@@ -335,6 +341,40 @@ const loadExtendedFields = async (ciTypeCode) => {
     }))
   } catch (error) {
     console.error('Failed to load extended fields:', error)
+    extendedFields.value = []
+  } finally {
+    extendedFieldsLoading.value = false
+  }
+}
+
+// Load extended fields for tickets
+const loadExtendedFieldsForTickets = async (ticketTypeCode) => {
+  if (!ticketTypeCode || props.objectType !== 'tickets') {
+    extendedFields.value = []
+    return
+  }
+  
+  try {
+    extendedFieldsLoading.value = true
+    
+    // Get ticket type UUID from code
+    const ticketTypesResponse = await api.get('/ticket-types')
+    const ticketType = ticketTypesResponse.data?.find(t => t.code === ticketTypeCode)
+    
+    if (!ticketType) {
+      console.warn(`[ObjectViewInTab] Ticket type not found for code: ${ticketTypeCode}`)
+      extendedFields.value = []
+      return
+    }
+    
+    // Load fields for this ticket type
+    const fields = await ticketTypeFieldsService.getByTypeUuid(ticketType.uuid)
+    extendedFields.value = fields.filter(f => f.show_in_form).map(f => ({
+      ...f,
+      label: f._translations?.label?.[locale.value] || f.label
+    }))
+  } catch (error) {
+    console.error('Failed to load extended fields for tickets:', error)
     extendedFields.value = []
   } finally {
     extendedFieldsLoading.value = false
@@ -388,6 +428,13 @@ const saveItem = async () => {
 watch(() => item.value?.ci_type, async (newCiType, oldCiType) => {
   if (newCiType && newCiType !== oldCiType && props.objectType === 'configuration_items') {
     await loadExtendedFields(newCiType)
+  }
+})
+
+// Watch for ticket_type_code changes to reload extended fields
+watch(() => item.value?.ticket_type_code, async (newTicketType, oldTicketType) => {
+  if (newTicketType && newTicketType !== oldTicketType && props.objectType === 'tickets') {
+    await loadExtendedFieldsForTickets(newTicketType)
   }
 })
 
