@@ -1014,7 +1014,8 @@ const menuModel = ref([
 const hiddenColumnsForCiType = ['ci_type']
 
 // Columns to hide when ticketTypeCode is set (filtered view for tickets)
-const hiddenColumnsForTicketType = ['ticket_type_code']
+// Note: ticket_type_code is now always visible
+const hiddenColumnsForTicketType = []
 
 // Helper to map type fields to extended columns (DRY)
 const mapTypeFieldsToColumns = (fields) => {
