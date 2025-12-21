@@ -17,6 +17,7 @@ const seedMap = {
   'workflow-status-categories': () => require('./workflow-status-categories.seed').seedWorkflowStatusCategories(prisma),
   'workflow-entity-config': () => require('./workflow-entity-config.seed').seedWorkflowEntityConfig(prisma),
   'ticket-types': () => require('./ticket-types.seed').seedTicketTypes(prisma),
+  'ticket-type-fields': () => require('./ticket-type-fields.seed').seedTicketTypeFields(),
   'task-workflow': () => require('./task-workflow.seed').seedTaskWorkflow(prisma),
   'uat': () => require('./uat.seed').seedUat(prisma),
 };

@@ -47,6 +47,7 @@ const workflowStatusCategoriesRoutes = require('./api/v1/workflow_status_categor
 const workflowsRoutes = require('./api/v1/workflows/routes');
 const workflowEntityConfigRoutes = require('./api/v1/workflow_entity_config/routes');
 const tasksRoutes = require('./api/v1/tasks/routes');
+const ticketsRoutes = require('./api/v1/tickets/routes');
 const ticketTypesRoutes = require('./api/v1/ticket_types/routes');
 const attachmentsRoutes = require('./api/v1/attachments/routes');
 
@@ -66,6 +67,7 @@ app.use('/api/v1/workflow-status-categories', workflowStatusCategoriesRoutes);
 app.use('/api/v1/workflows', workflowsRoutes);
 app.use('/api/v1/workflow-entity-config', workflowEntityConfigRoutes);
 app.use('/api/v1/tasks', tasksRoutes);
+app.use('/api/v1/tickets', ticketsRoutes);
 app.use('/api/v1/ticket-types', ticketTypesRoutes);
 app.use('/api/v1/attachments', attachmentsRoutes);
 

@@ -17,6 +17,7 @@ const { seedDefaultAdmin } = require('./seeds/default-admin.seed');
 const { seedWorkflowStatusCategories } = require('./seeds/workflow-status-categories.seed');
 const { seedWorkflowEntityConfig } = require('./seeds/workflow-entity-config.seed');
 const { seedTicketTypes } = require('./seeds/ticket-types.seed');
+const { seedTicketTypeFields } = require('./seeds/ticket-type-fields.seed');
 const { seedTaskWorkflow } = require('./seeds/task-workflow.seed');
 
 async function main() {
@@ -56,27 +57,32 @@ async function main() {
     console.log('');
 
     // 7. Ticket Types (required before tickets)
-    console.log('[7/10] Seeding ticket types...');
+    console.log('[7/12] Seeding ticket types...');
     await seedTicketTypes(prisma);
     console.log('');
 
-    // 8. Workflow Status Categories
-    console.log('[8/10] Seeding workflow status categories...');
+    // 8. Ticket Type Fields (extended fields per ticket type)
+    console.log('[8/12] Seeding ticket type fields...');
+    await seedTicketTypeFields();
+    console.log('');
+
+    // 9. Workflow Status Categories
+    console.log('[9/12] Seeding workflow status categories...');
     await seedWorkflowStatusCategories(prisma);
     console.log('');
 
-    // 9. Workflow Entity Config
-    console.log('[9/10] Seeding workflow entity config...');
+    // 10. Workflow Entity Config
+    console.log('[10/12] Seeding workflow entity config...');
     await seedWorkflowEntityConfig(prisma);
     console.log('');
 
-    // 10. Task Workflow (statuses and transitions for TASK tickets)
-    console.log('[10/11] Seeding task workflow...');
+    // 11. Task Workflow (statuses and transitions for TASK tickets)
+    console.log('[11/12] Seeding task workflow...');
     await seedTaskWorkflow(prisma);
     console.log('');
 
-    // 11. Default Admin (last, after all dependencies)
-    console.log('[11/11] Seeding default admin...');
+    // 12. Default Admin (last, after all dependencies)
+    console.log('[12/12] Seeding default admin...');
     await seedDefaultAdmin();
     console.log('');
 

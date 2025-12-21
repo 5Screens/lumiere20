@@ -240,15 +240,6 @@
           @update="onAttachmentsUpdate"
         />
       </div>
-      <!-- Status selector for configuration_items -->
-      <div v-if="showStatusSelector" class="flex flex-col gap-2">
-        <label class="font-semibold">{{ $t('common.status') }}</label>
-        <StatusPicker 
-          :currentStatus="modelValue.status"
-          :availableTransitions="availableTransitions"
-          @transition="applyTransition"
-        />
-      </div>
     </template>
   </div>
 </template>
@@ -318,11 +309,6 @@ const props = defineProps({
   forcedCiTypeUuid: {
     type: String,
     default: null
-  },
-  // Show status selector (for configuration_items)
-  showStatusSelector: {
-    type: Boolean,
-    default: false
   },
   // Available transitions for current status
   availableTransitions: {

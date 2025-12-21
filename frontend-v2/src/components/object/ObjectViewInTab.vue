@@ -48,7 +48,6 @@
               :formFields="formFields"
               :fieldOptions="fieldOptions"
               :loading="metadataLoading"
-              :showStatusSelector="isConfigurationItems && mode === 'edit'"
               :availableTransitions="availableTransitions"
               :objectType="objectType"
               @apply-transition="applyTransition"
@@ -161,6 +160,17 @@ const availableTransitions = ref([])
 // Check if current object type is configuration_items
 const isConfigurationItems = computed(() => props.objectType === 'configuration_items')
 
+// Check if object type has a workflow_status field (supports workflows)
+const hasWorkflowStatus = computed(() => {
+  const result = formFields.value.some(f => f.field_type === 'workflow_status')
+  console.log('[ObjectViewInTab] hasWorkflowStatus computed:', {
+    result,
+    objectType: props.objectType,
+    formFieldsCount: formFields.value.length
+  })
+  return result
+})
+
 // Computed
 const hasExtendedInfo = computed(() => {
   // Show extended tab for ci_types and configuration_items
@@ -188,8 +198,10 @@ const loadMetadata = async () => {
     metadataLoading.value = true
     objectTypeMetadata.value = await metadataService.getObjectType(props.objectType)
     
+    console.log('[ObjectViewInTab] loadMetadata - objectTypeMetadata:', objectTypeMetadata.value)
     if (objectTypeMetadata.value) {
       formFields.value = objectTypeMetadata.value.fields.filter(f => f.show_in_form)
+      console.log('[ObjectViewInTab] loadMetadata - formFields set:', formFields.value.map(f => ({ name: f.field_name, type: f.field_type })))
       
       // Load options for select fields
       const selectFields = formFields.value.filter(f => f.field_type === 'select' && f.options_source)
@@ -381,7 +393,16 @@ watch(() => item.value?.ci_type, async (newCiType, oldCiType) => {
 
 // Load available transitions for current status
 const loadAvailableTransitions = async () => {
-  if (!isConfigurationItems.value || !item.value?.uuid) {
+  console.log('[ObjectViewInTab] loadAvailableTransitions called:', {
+    hasWorkflowStatus: hasWorkflowStatus.value,
+    itemUuid: item.value?.uuid,
+    objectType: props.objectType,
+    rel_status_uuid: item.value?.rel_status_uuid
+  })
+  
+  // Support any object type with workflow_status field
+  if (!hasWorkflowStatus.value || !item.value?.uuid) {
+    console.log('[ObjectViewInTab] loadAvailableTransitions - skipping (no workflow_status or no uuid)')
     availableTransitions.value = []
     return
   }
@@ -389,11 +410,13 @@ const loadAvailableTransitions = async () => {
   try {
     // Pass current status UUID as query param to get outgoing transitions
     const currentStatusUuid = item.value.rel_status_uuid
-    let url = `/workflows/entity/configuration_items/${item.value.uuid}/available-statuses`
+    let url = `/workflows/entity/${props.objectType}/${item.value.uuid}/available-statuses`
     if (currentStatusUuid) {
       url += `?currentStatusUuid=${currentStatusUuid}`
     }
+    console.log('[ObjectViewInTab] loadAvailableTransitions - calling API:', url)
     const response = await api.get(url)
+    console.log('[ObjectViewInTab] loadAvailableTransitions - API response:', response.data)
     
     // Transform backend response to match StatusPicker expected format
     // Backend returns: { uuid, name, category, transitionName }
@@ -437,16 +460,33 @@ const applyTransition = async (transition) => {
   }
 }
 
-// Watch for item changes to load transitions
+// Watch for item changes to load transitions (for any object with workflow_status)
 watch(() => item.value?.rel_status_uuid, async () => {
-  if (isConfigurationItems.value && props.mode === 'edit') {
+  console.log('[ObjectViewInTab] Watch rel_status_uuid triggered:', {
+    rel_status_uuid: item.value?.rel_status_uuid,
+    hasWorkflowStatus: hasWorkflowStatus.value,
+    mode: props.mode,
+    objectType: props.objectType,
+    formFieldsCount: formFields.value.length,
+    formFieldTypes: formFields.value.map(f => ({ name: f.field_name, type: f.field_type }))
+  })
+  if (hasWorkflowStatus.value && props.mode === 'edit') {
     await loadAvailableTransitions()
   }
 }, { immediate: true })
 
 // Lifecycle
 onMounted(async () => {
+  console.log('[ObjectViewInTab] onMounted - starting, objectType:', props.objectType, 'mode:', props.mode)
   await loadMetadata()
+  console.log('[ObjectViewInTab] onMounted - metadata loaded, hasWorkflowStatus:', hasWorkflowStatus.value)
   await loadItem()
+  console.log('[ObjectViewInTab] onMounted - item loaded, item.uuid:', item.value?.uuid, 'rel_status_uuid:', item.value?.rel_status_uuid)
+  
+  // Load transitions after both metadata and item are loaded
+  if (hasWorkflowStatus.value && props.mode === 'edit' && item.value?.uuid) {
+    console.log('[ObjectViewInTab] onMounted - calling loadAvailableTransitions')
+    await loadAvailableTransitions()
+  }
 })
 </script>

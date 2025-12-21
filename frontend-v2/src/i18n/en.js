@@ -668,6 +668,26 @@ export default {
       deletedMultiple: '{count} tasks deleted successfully'
     }
   },
+  tickets: {
+    title: 'Tickets',
+    description: 'Description',
+    ticketType: 'Ticket Type',
+    writer: 'Writer',
+    requestedBy: 'Requested By',
+    requestedFor: 'Requested For',
+    configurationItem: 'Configuration Item',
+    assignedGroup: 'Assigned Group',
+    assignedPerson: 'Assigned Person',
+    watchers: 'Watchers',
+    attachments: 'Attachments',
+    closedAt: 'Closed At',
+    messages: {
+      created: 'Ticket created successfully',
+      updated: 'Ticket updated successfully',
+      deleted: 'Ticket deleted successfully',
+      deletedMultiple: '{count} tickets deleted successfully'
+    }
+  },
   ticketTypes: {
     title: 'Ticket Types',
     code: 'Code',

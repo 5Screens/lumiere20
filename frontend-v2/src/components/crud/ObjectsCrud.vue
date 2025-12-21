@@ -200,24 +200,6 @@
           </template>
         </Column>
 
-        <!-- Status column (only for configuration_items) -->
-        <Column 
-          v-if="isConfigurationItems"
-          field="status"
-          :header="$t('common.status')"
-          style="min-width: 10rem"
-          :sortable="false"
-        >
-          <template #body="{ data }">
-            <Tag 
-              v-if="data.status"
-              :value="getStatusLabel(data.status)"
-              :style="{ backgroundColor: data.status.category?.color || '#6b7280', color: 'white' }"
-            />
-            <span v-else class="text-surface-400 italic text-sm">{{ $t('workflow.noWorkflow') }}</span>
-          </template>
-        </Column>
-
         <!-- Dynamic columns from metadata -->
         <template v-for="col in filteredTableColumns" :key="col.field_name">
         <Column 
@@ -862,10 +844,14 @@ const props = defineProps({
   ciTypeUuid: {
     type: String,
     default: null
+  },
+  ticketTypeCode: {
+    type: String,
+    default: null
   }
 })
 
-console.log('[ObjectsCrud] Component mounted with props:', { objectType: props.objectType, tabId: props.tabId, ciTypeUuid: props.ciTypeUuid })
+console.log('[ObjectsCrud] Component mounted with props:', { objectType: props.objectType, tabId: props.tabId, ciTypeUuid: props.ciTypeUuid, ticketTypeCode: props.ticketTypeCode })
 
 // Stores
 const tabsStore = useTabsStore()
@@ -1536,6 +1522,17 @@ const loadItems = async (pageNum = null) => {
       searchParams.ciTypeUuid = props.ciTypeUuid
     }
     
+    // Add ticket_type_code filter if provided (for ticket type-specific views)
+    if (props.ticketTypeCode) {
+      if (!searchParams.filters) {
+        searchParams.filters = {}
+      }
+      searchParams.filters.ticket_type_code = {
+        value: props.ticketTypeCode,
+        matchMode: 'equals'
+      }
+    }
+    
     const result = await service.value.search(searchParams)
     items.value = result.data || []
     totalRecords.value = result.total || 0
@@ -1839,9 +1836,15 @@ const openCreateDialog = async () => {
     console.log('[ObjectsCrud] openCreateDialog - defaults.ci_type set to:', defaults.ci_type)
   }
   
-  // Pre-fill writer_uuid with current user for tasks
-  if (props.objectType === 'tasks' && authStore.personUuid) {
-    defaults.writer_uuid = authStore.personUuid
+  // Pre-fill writer_uuid and ticket_type_code for tickets
+  if (props.objectType === 'tickets') {
+    if (authStore.personUuid) {
+      defaults.writer_uuid = authStore.personUuid
+    }
+    // Set ticket_type_code from prop if provided (for filtered views)
+    if (props.ticketTypeCode) {
+      defaults.ticket_type_code = props.ticketTypeCode
+    }
   }
   
   editItem.value = defaults

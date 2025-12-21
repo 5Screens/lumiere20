@@ -101,8 +101,8 @@ watch(locale, () => {
 /**
  * Opens a tab for the given object type
  */
-const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud', ciTypeUuid = null) => {
-  console.log('[AppSidebar] openTab called:', { id, label, objectType, component, ciTypeUuid })
+const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud', ciTypeUuid = null, ticketTypeCode = null) => {
+  console.log('[AppSidebar] openTab called:', { id, label, objectType, component, ciTypeUuid, ticketTypeCode })
   tabsStore.openTab({
     id,
     label,
@@ -110,7 +110,8 @@ const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud
     icon,
     objectType,
     component,
-    ciTypeUuid
+    ciTypeUuid,
+    ticketTypeCode
   })
 }
 
@@ -183,17 +184,17 @@ const menuItems = computed(() => [
       {
         label: t('menu.incidents') || 'Incidents',
         icon: 'pi pi-exclamation-triangle',
-        command: () => openTab('incidents', 'Incidents', 'menu.incidents', 'pi pi-exclamation-triangle', 'incidents')
+        command: () => openTab('incidents', 'Incidents', 'menu.incidents', 'pi pi-exclamation-triangle', 'tickets', 'ObjectsCrud', null, 'INCIDENT')
       },
       {
         label: t('menu.problems') || 'Problems',
         icon: 'pi pi-question-circle',
-        command: () => openTab('problems', 'Problems', 'menu.problems', 'pi pi-question-circle', 'problems')
+        command: () => openTab('problems', 'Problems', 'menu.problems', 'pi pi-question-circle', 'tickets', 'ObjectsCrud', null, 'PROBLEM')
       },
       {
         label: t('menu.tasks') || 'Tasks',
         icon: 'pi pi-check-square',
-        command: () => openTab('tasks', 'Tasks', 'menu.tasks', 'pi pi-check-square', 'tasks')
+        command: () => openTab('tasks', 'Tasks', 'menu.tasks', 'pi pi-check-square', 'tickets', 'ObjectsCrud', null, 'TASK')
       },
       {
         label: t('menu.changes') || 'Changes',
@@ -225,7 +226,7 @@ const menuItems = computed(() => [
       {
         label: t('menu.projects') || 'Projects',
         icon: 'pi pi-folder',
-        command: () => openTab('projects', 'Projects', 'menu.projects', 'pi pi-folder', 'projects')
+        command: () => openTab('projects', 'Projects', 'menu.projects', 'pi pi-folder', 'tickets', 'ObjectsCrud', null, 'PROJECT')
       },
       {
         label: t('menu.sprints') || 'Sprints',
