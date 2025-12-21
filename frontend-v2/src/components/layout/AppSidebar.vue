@@ -199,12 +199,12 @@ const menuItems = computed(() => [
       {
         label: t('menu.changes') || 'Changes',
         icon: 'pi pi-sync',
-        command: () => openTab('changes', 'Changes', 'menu.changes', 'pi pi-sync', 'changes')
+        command: () => openTab('changes', 'Changes', 'menu.changes', 'pi pi-sync', 'tickets', 'ObjectsCrud', null, 'CHANGE')
       },
       {
         label: t('menu.knowledge') || 'Knowledge',
         icon: 'pi pi-book',
-        command: () => openTab('knowledge', 'Knowledge', 'menu.knowledge', 'pi pi-book', 'knowledge')
+        command: () => openTab('knowledge', 'Knowledge', 'menu.knowledge', 'pi pi-book', 'tickets', 'ObjectsCrud', null, 'KNOWLEDGE')
       }
     ]
   },
@@ -216,12 +216,12 @@ const menuItems = computed(() => [
       {
         label: t('menu.sprintTasks') || 'Tasks',
         icon: 'pi pi-check-square',
-        command: () => openTab('sprint-tasks', 'Tasks', 'menu.sprintTasks', 'pi pi-check-square', 'sprint_tasks')
+        command: () => openTab('sprint-tasks', 'Tasks', 'menu.sprintTasks', 'pi pi-check-square', 'tickets', 'ObjectsCrud', null, 'TASK')
       },
       {
         label: t('menu.userStories') || 'User Stories',
         icon: 'pi pi-file',
-        command: () => openTab('user-stories', 'User Stories', 'menu.userStories', 'pi pi-file', 'user_stories')
+        command: () => openTab('user-stories', 'User Stories', 'menu.userStories', 'pi pi-file', 'tickets', 'ObjectsCrud', null, 'USER_STORY')
       },
       {
         label: t('menu.projects') || 'Projects',
@@ -231,17 +231,17 @@ const menuItems = computed(() => [
       {
         label: t('menu.sprints') || 'Sprints',
         icon: 'pi pi-bolt',
-        command: () => openTab('sprints', 'Sprints', 'menu.sprints', 'pi pi-bolt', 'sprints')
+        command: () => openTab('sprints', 'Sprints', 'menu.sprints', 'pi pi-bolt', 'tickets', 'ObjectsCrud', null, 'SPRINT')
       },
       {
         label: t('menu.epics') || 'Epics',
         icon: 'pi pi-bookmark',
-        command: () => openTab('epics', 'Epics', 'menu.epics', 'pi pi-bookmark', 'epics')
+        command: () => openTab('epics', 'Epics', 'menu.epics', 'pi pi-bookmark', 'tickets', 'ObjectsCrud', null, 'EPIC')
       },
       {
         label: t('menu.defects') || 'Defects',
         icon: 'pi pi-exclamation-circle',
-        command: () => openTab('defects', 'Defects', 'menu.defects', 'pi pi-exclamation-circle', 'defects')
+        command: () => openTab('defects', 'Defects', 'menu.defects', 'pi pi-exclamation-circle', 'tickets', 'ObjectsCrud', null, 'DEFECT')
       }
     ]
   },
