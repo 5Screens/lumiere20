@@ -214,8 +214,13 @@
           <!-- Body template based on field type -->
           <template #body="{ data }">
             <div :class="{ 'opacity-50 cursor-not-allowed': !col.is_editable }">
+            <!-- Ticket type display (uses translated label from relation) - MUST be before select -->
+            <template v-if="col.field_name === 'ticket_type_code'">
+              <span v-if="data.ticket_type?.label">{{ data.ticket_type.label }}</span>
+              <span v-else>{{ data.ticket_type_code || '-' }}</span>
+            </template>
             <!-- Boolean -->
-            <template v-if="col.field_type === 'boolean'">
+            <template v-else-if="col.field_type === 'boolean'">
               <i :class="getFieldValue(data, col) ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
             </template>
             <!-- Select with Tag and color -->
@@ -1529,6 +1534,10 @@ const loadItems = async (pageNum = null) => {
     }
     
     const result = await service.value.search(searchParams)
+    console.log('[ObjectsCrud] loadItems - raw result:', result)
+    if (result.data?.length > 0) {
+      console.log('[ObjectsCrud] loadItems - first item ticket_type:', result.data[0].ticket_type)
+    }
     items.value = result.data || []
     totalRecords.value = result.total || 0
     if (typeof pageNum === 'number') currentPage.value = pageNum

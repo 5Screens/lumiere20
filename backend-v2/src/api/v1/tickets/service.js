@@ -305,6 +305,32 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       }
     }
 
+    // Get ticket type translations
+    const ticketTypeUuids = items.filter(i => i.ticket_type).map(i => i.ticket_type.uuid);
+    const ticketTypeTranslationsMap = {};
+
+    logger.info(`[TICKETS] ticketTypeUuids: ${JSON.stringify(ticketTypeUuids)}`);
+    logger.info(`[TICKETS] locale for translation: ${locale}`);
+
+    if (ticketTypeUuids.length > 0) {
+      const ticketTypeTranslations = await prisma.translated_fields.findMany({
+        where: {
+          entity_type: 'ticket_types',
+          entity_uuid: { in: ticketTypeUuids },
+          field_name: 'label',
+        },
+      });
+
+      logger.info(`[TICKETS] ticketTypeTranslations found: ${JSON.stringify(ticketTypeTranslations)}`);
+
+      for (const t of ticketTypeTranslations) {
+        if (!ticketTypeTranslationsMap[t.entity_uuid]) ticketTypeTranslationsMap[t.entity_uuid] = {};
+        ticketTypeTranslationsMap[t.entity_uuid][t.locale] = t.value;
+      }
+
+      logger.info(`[TICKETS] ticketTypeTranslationsMap: ${JSON.stringify(ticketTypeTranslationsMap)}`);
+    }
+
     const transformed = items.map(item => {
       const next = { ...item };
       if (next.status && statusTranslationsMap[next.status.uuid]) {
@@ -313,6 +339,20 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
           name: statusTranslationsMap[next.status.uuid]?.[locale] || next.status.name,
           _translations: { name: statusTranslationsMap[next.status.uuid] },
         };
+      }
+      if (next.ticket_type) {
+        const ttUuid = next.ticket_type.uuid;
+        const ttTranslations = ticketTypeTranslationsMap[ttUuid];
+        logger.info(`[TICKETS] Transforming ticket_type: uuid=${ttUuid}, translations=${JSON.stringify(ttTranslations)}, locale=${locale}`);
+        if (ttTranslations) {
+          const translatedLabel = ttTranslations[locale] || next.ticket_type.label;
+          logger.info(`[TICKETS] Setting ticket_type.label to: ${translatedLabel}`);
+          next.ticket_type = {
+            ...next.ticket_type,
+            label: translatedLabel,
+            _translations: { label: ttTranslations },
+          };
+        }
       }
       return next;
     });
