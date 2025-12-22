@@ -65,7 +65,7 @@ export default {
     knowledgeSetup: 'Configuration base de connaissances',
     defectSetup: 'Configuration des défauts',
     projectSetup: 'Configuration des projets',
-    entitySetup: 'Configuration des entités',
+    entitySetup: 'Gestion des entités',
     contactTypes: 'Types de contact',
     entities: 'Entités',
     locations: 'Localisations',
