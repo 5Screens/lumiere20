@@ -70,7 +70,7 @@ const sortSchema = z.object({
 });
 
 // PrimeVue filter schema
-// Extended with ciTypeUuid and ticketTypeCode for scoped searches
+// Extended with ciTypeUuid, ticketTypeCode, and objectSetupType for scoped searches
 const primeVueFilterSchema = z.object({
   filters: z.record(z.any()).optional().default({}),
   sortField: z.string().optional().default('created_at'),
@@ -79,6 +79,7 @@ const primeVueFilterSchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional().default(50),
   ciTypeUuid: z.string().uuid().optional().nullable(),
   ticketTypeCode: z.string().optional().nullable(),
+  objectSetupType: z.string().optional().nullable(),
   globalSearchFields: z.array(z.string()).optional().nullable(),
 });
 

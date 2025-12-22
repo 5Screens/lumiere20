@@ -256,7 +256,8 @@ const search = async (searchParams = {}, locale = 'en') => {
     page = 1, 
     limit = 50, 
     sortField = 'display_order', 
-    sortOrder = 1
+    sortOrder = 1,
+    objectSetupType = null
   } = searchParams;
   
   const { globalFilter, object_type, metadata } = filters;
@@ -265,8 +266,12 @@ const search = async (searchParams = {}, locale = 'en') => {
   
   let where = {};
   
-  // Filter by object_type if provided (for filtered views like entity_setup)
-  if (object_type?.value) {
+  // Filter by objectSetupType if provided as top-level param (for filtered views like entity_setup)
+  if (objectSetupType) {
+    where.object_type = objectSetupType;
+  }
+  // Or filter by object_type from filters (for manual filtering)
+  else if (object_type?.value) {
     where.object_type = object_type.value;
   }
   

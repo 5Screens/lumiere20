@@ -1563,8 +1563,7 @@ const loadItems = async (pageNum = null) => {
     
     // Add objectSetupType filter if provided (for object_setup filtered views like entity_setup)
     if (props.objectSetupType) {
-      searchParams.filters = searchParams.filters || {}
-      searchParams.filters.object_type = { value: props.objectSetupType }
+      searchParams.objectSetupType = props.objectSetupType
     }
     
     const result = await service.value.search(searchParams)
