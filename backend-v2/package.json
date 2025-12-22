@@ -14,7 +14,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "db:size": "node prisma/scripts/db-size.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.1.0",
