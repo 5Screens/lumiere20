@@ -29,7 +29,6 @@ const fieldTranslations = {
   planned_storage: { en: 'Planned Storage', fr: 'Stockage prévu' },
   os_compatibility: { en: 'OS Compatibility', fr: 'Compatibilité OS' },
   introduction_date: { en: 'Introduction Date', fr: "Date d'introduction" },
-  model_status: { en: 'Model Status', fr: 'Statut du modèle' },
   documentation_url: { en: 'Documentation URL', fr: 'Documentation technique' },
   expected_lifecycle_years: { en: 'Expected Lifecycle (years)', fr: 'Cycle de vie prévu (années)' },
   estimated_unit_cost: { en: 'Estimated Unit Cost', fr: 'Coût unitaire estimé' },
@@ -291,12 +290,7 @@ const fieldsByCiType = {
       { label: 'VMware', value: 'VMWARE' }
     ])},
     { field_name: 'introduction_date', label: 'introductionDate', field_type: 'date', data_type: 'date', display_order: 10 },
-    { field_name: 'model_status', label: 'modelStatus', field_type: 'select', display_order: 11, show_in_table: true, options_source: JSON.stringify([
-      { label: 'Available', value: 'AVAILABLE' },
-      { label: 'End of Sale', value: 'END_OF_SALE' },
-      { label: 'Obsolete', value: 'OBSOLETE' }
-    ])},
-    { field_name: 'documentation_url', label: 'documentationUrl', field_type: 'text', display_order: 12 },
+    { field_name: 'documentation_url', label: 'documentationUrl', field_type: 'text', display_order: 11 },
     { field_name: 'expected_lifecycle_years', label: 'expectedLifecycleYears', field_type: 'number', data_type: 'number', display_order: 13, unit: 'years', min_value: 1 },
     { field_name: 'estimated_unit_cost', label: 'estimatedUnitCost', field_type: 'number', data_type: 'number', display_order: 14, unit: '€', min_value: 0 },
     { field_name: 'compatible_services', label: 'compatibleServices', field_type: 'text', display_order: 15 },
