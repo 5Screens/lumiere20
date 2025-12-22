@@ -422,18 +422,15 @@ async function seedCiTypes() {
     console.log(`    - Translations added for ${Object.keys(translations).length} locales`);
   }
 
-  // Second pass: update is_model_for_ci_type_uuid for model types
-  console.log('  Updating is_model_for_ci_type_uuid references...');
+  // Second pass: update is_model_for_ci_type_code for model types
+  console.log('  Updating is_model_for_ci_type_code references...');
   for (const [code, data] of Object.entries(createdTypes)) {
     if (data.is_model_for_ci_type_code) {
-      const targetType = createdTypes[data.is_model_for_ci_type_code];
-      if (targetType) {
-        await prisma.ci_types.update({
-          where: { uuid: data.uuid },
-          data: { is_model_for_ci_type_uuid: targetType.uuid }
-        });
-        console.log(`    - ${code} -> is model for ${data.is_model_for_ci_type_code}`);
-      }
+      await prisma.ci_types.update({
+        where: { uuid: data.uuid },
+        data: { is_model_for_ci_type_code: data.is_model_for_ci_type_code }
+      });
+      console.log(`    - ${code} -> is model for ${data.is_model_for_ci_type_code}`);
     }
   }
 

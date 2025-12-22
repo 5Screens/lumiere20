@@ -126,7 +126,7 @@ model ci_types {
   is_active                 Boolean  @default(true)
   display_order             Int      @default(0)
   has_model                 Boolean  @default(true)    // If true, CIs of this type can have a model reference
-  is_model_for_ci_type_uuid String?  @db.Uuid          // For model types: the CI type this is a model for
+  is_model_for_ci_type_code String?  @db.VarChar(50)   // For model types: the CI type code this is a model for
   rel_category_uuid         String?  @db.Uuid          // Relation to category (will be required after migration)
   created_at                DateTime @default(now()) @db.Timestamptz(6)
   updated_at                DateTime @default(now()) @updatedAt @db.Timestamptz(6)
@@ -134,11 +134,9 @@ model ci_types {
   // Relations
   category             ci_categories? @relation(fields: [rel_category_uuid], references: [uuid])
   fields               ci_type_fields[]
-  is_model_for_ci_type ci_types?      @relation("CiTypeModel", fields: [is_model_for_ci_type_uuid], references: [uuid])
-  model_types          ci_types[]     @relation("CiTypeModel")  // Types that are models for this type
 
   @@index([rel_category_uuid])
-  @@index([is_model_for_ci_type_uuid])
+  @@index([is_model_for_ci_type_code])
   @@schema("configuration")
   @@map("ci_types")
 }

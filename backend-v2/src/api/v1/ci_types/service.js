@@ -194,7 +194,7 @@ const create = async (data) => {
         is_active: ciTypeData.is_active ?? true,
         display_order: ciTypeData.display_order ?? 0,
         has_model: ciTypeData.has_model ?? true,
-        is_model_for_ci_type_uuid: ciTypeData.is_model_for_ci_type_uuid || null,
+        is_model_for_ci_type_code: ciTypeData.is_model_for_ci_type_code || null,
         rel_category_uuid: ciTypeData.rel_category_uuid
       }
     });
@@ -231,7 +231,7 @@ const update = async (uuid, data) => {
     if (ciTypeData.is_active !== undefined) updateData.is_active = ciTypeData.is_active;
     if (ciTypeData.display_order !== undefined) updateData.display_order = ciTypeData.display_order;
     if (ciTypeData.has_model !== undefined) updateData.has_model = ciTypeData.has_model;
-    if (ciTypeData.is_model_for_ci_type_uuid !== undefined) updateData.is_model_for_ci_type_uuid = ciTypeData.is_model_for_ci_type_uuid;
+    if (ciTypeData.is_model_for_ci_type_code !== undefined) updateData.is_model_for_ci_type_code = ciTypeData.is_model_for_ci_type_code;
     if (ciTypeData.rel_category_uuid !== undefined) updateData.rel_category_uuid = ciTypeData.rel_category_uuid;
     
     const ciType = await prisma.ci_types.update({
