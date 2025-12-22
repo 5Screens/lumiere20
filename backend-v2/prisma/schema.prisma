@@ -702,7 +702,7 @@ model object_fields {
   pattern           String?  @db.VarChar(255)          // Regex pattern for validation
   
   // Select/Relation options
-  options_source    String?  @db.VarChar(255)          // For select: static options JSON or API endpoint
+  options_source    String?  @db.Text                  // For select: static options JSON or API endpoint
   relation_object   String?  @db.VarChar(100)          // For relation: target object type code
   relation_display  String?  @db.VarChar(100)          // For relation: field to display (e.g., 'name')
   
@@ -719,6 +719,30 @@ model object_fields {
   @@index([object_type_uuid, display_order])
   @@schema("configuration")
   @@map("object_fields")
+}
+
+// Object Setup - Generic configuration for business objects metadata
+// Replaces: entity_setup_codes, incident_setup_codes, problem_categories, defect_setup_codes, project_setup_codes, knowledge_setup_codes
+model object_setup {
+  uuid          String   @id @default(uuid()) @db.Uuid
+  object_type   String   @db.VarChar(50)   // 'entity', 'incident', 'problem', 'defect', 'project', 'knowledge', 'change', 'person', 'contact'
+  metadata      String   @db.VarChar(50)   // 'CATEGORY', 'URGENCY', 'IMPACT', 'SEVERITY', 'VISIBILITY', 'CAUSE_CODE', 'RESOLUTION_CODE', etc.
+  code          String   @db.VarChar(50)   // 'COMPANY', 'CRITICAL', 'BLOCKER', etc. (also used as fallback label)
+  value         Int?                       // Optional numeric value (for priority levels, ordering)
+  icon          String?  @db.VarChar(50)   // PrimeVue icon class (e.g., 'pi-building', 'pi-exclamation-triangle')
+  color         String?  @db.VarChar(50)   // Tag style / color (e.g., 'success', 'danger', '#FF5733')
+  font_weight   String?  @db.VarChar(20)   // 'normal', 'bold', 'semibold'
+  font_style    String?  @db.VarChar(20)   // 'normal', 'italic'
+  display_order Int      @default(0)
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@unique([object_type, metadata, code])
+  @@index([object_type, metadata])
+  @@index([object_type])
+  @@schema("configuration")
+  @@map("object_setup")
 }
 
 // ============================================

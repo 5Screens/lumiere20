@@ -118,6 +118,7 @@
                     :objectType="tab.objectType"
                     :ciTypeUuid="tab.ciTypeUuid"
                     :ticketTypeCode="tab.ticketTypeCode"
+                    :objectSetupType="tab.objectSetupType"
                   />
                 </TabPanel>
 
@@ -150,6 +151,7 @@
                 :objectType="tab.objectType"
                 :ciTypeUuid="tab.ciTypeUuid"
                 :ticketTypeCode="tab.ticketTypeCode"
+                :objectSetupType="tab.objectSetupType"
               />
               <div v-else class="text-surface-500">
                 {{ $t('tabs.noContent') }}

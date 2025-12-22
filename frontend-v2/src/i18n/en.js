@@ -735,5 +735,24 @@ export default {
       deleted: 'Ticket type deleted successfully',
       deletedMultiple: '{count} ticket types deleted successfully'
     }
+  },
+  objectSetup: {
+    title: 'Object Setup',
+    objectType: 'Object Type',
+    metadata: 'Metadata',
+    code: 'Code',
+    label: 'Label',
+    value: 'Value',
+    icon: 'Icon',
+    color: 'Color',
+    fontWeight: 'Font Weight',
+    fontStyle: 'Font Style',
+    displayOrder: 'Display Order',
+    messages: {
+      created: 'Setup created successfully',
+      updated: 'Setup updated successfully',
+      deleted: 'Setup deleted successfully',
+      deletedMultiple: '{count} setups deleted successfully'
+    }
   }
 }

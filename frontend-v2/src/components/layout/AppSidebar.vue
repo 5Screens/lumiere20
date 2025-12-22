@@ -101,8 +101,8 @@ watch(locale, () => {
 /**
  * Opens a tab for the given object type
  */
-const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud', ciTypeUuid = null, ticketTypeCode = null) => {
-  console.log('[AppSidebar] openTab called:', { id, label, objectType, component, ciTypeUuid, ticketTypeCode })
+const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud', ciTypeUuid = null, ticketTypeCode = null, objectSetupType = null) => {
+  console.log('[AppSidebar] openTab called:', { id, label, objectType, component, ciTypeUuid, ticketTypeCode, objectSetupType })
   tabsStore.openTab({
     id,
     label,
@@ -111,7 +111,8 @@ const openTab = (id, label, labelKey, icon, objectType, component = 'ObjectsCrud
     objectType,
     component,
     ciTypeUuid,
-    ticketTypeCode
+    ticketTypeCode,
+    objectSetupType
   })
 }
 
@@ -373,13 +374,13 @@ const menuItems = computed(() => [
         items: [
           {
             label: t('menu.entitySetup') || 'Entity Setup',
-            icon: 'pi pi-cog',
-            command: () => openTab('entity-setup', 'Entity Setup', 'menu.entitySetup', 'pi pi-cog', 'entity_setup')
+            icon: 'pi pi-sliders-h',
+            command: () => openTab('entity-setup', 'Entity Setup', 'menu.entitySetup', 'pi pi-sliders-h', 'object_setup', 'ObjectsCrud', null, null, 'entity')
           },
           {
             label: t('menu.contactTypes') || 'Contact Types',
             icon: 'pi pi-phone',
-            command: () => openTab('contact-types', 'Contact Types', 'menu.contactTypes', 'pi pi-phone', 'contact_types')
+            command: () => openTab('contact-types', 'Contact Types', 'menu.contactTypes', 'pi pi-phone', 'object_setup', 'ObjectsCrud', null, null, 'contact')
           },
           {
             label: t('menu.entities') || 'Entities',

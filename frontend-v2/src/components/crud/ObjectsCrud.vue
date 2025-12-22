@@ -854,10 +854,14 @@ const props = defineProps({
   ticketTypeCode: {
     type: String,
     default: null
+  },
+  objectSetupType: {
+    type: String,
+    default: null
   }
 })
 
-console.log('[ObjectsCrud] Component mounted with props:', { objectType: props.objectType, tabId: props.tabId, ciTypeUuid: props.ciTypeUuid, ticketTypeCode: props.ticketTypeCode })
+console.log('[ObjectsCrud] Component mounted with props:', { objectType: props.objectType, tabId: props.tabId, ciTypeUuid: props.ciTypeUuid, ticketTypeCode: props.ticketTypeCode, objectSetupType: props.objectSetupType })
 
 // Stores
 const tabsStore = useTabsStore()
@@ -1555,6 +1559,12 @@ const loadItems = async (pageNum = null) => {
     // Add ticketTypeCode filter if provided (for ticket type-specific views)
     if (props.ticketTypeCode) {
       searchParams.ticketTypeCode = props.ticketTypeCode
+    }
+    
+    // Add objectSetupType filter if provided (for object_setup filtered views like entity_setup)
+    if (props.objectSetupType) {
+      searchParams.filters = searchParams.filters || {}
+      searchParams.filters.object_type = { value: props.objectSetupType }
     }
     
     const result = await service.value.search(searchParams)

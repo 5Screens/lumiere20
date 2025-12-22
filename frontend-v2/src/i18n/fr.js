@@ -736,5 +736,24 @@ export default {
       deleted: 'Type de ticket supprimé avec succès',
       deletedMultiple: '{count} types de ticket supprimés avec succès'
     }
+  },
+  objectSetup: {
+    title: 'Configuration des objets',
+    objectType: 'Type d\'objet',
+    metadata: 'Méta-données',
+    code: 'Code',
+    label: 'Libellé',
+    value: 'Valeur',
+    icon: 'Icône',
+    color: 'Couleur',
+    fontWeight: 'Épaisseur police',
+    fontStyle: 'Style police',
+    displayOrder: 'Ordre d\'affichage',
+    messages: {
+      created: 'Configuration créée avec succès',
+      updated: 'Configuration mise à jour avec succès',
+      deleted: 'Configuration supprimée avec succès',
+      deletedMultiple: '{count} configurations supprimées avec succès'
+    }
   }
 }

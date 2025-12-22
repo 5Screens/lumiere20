@@ -21,6 +21,7 @@ const { seedTicketTypeFields } = require('./seeds/ticket-type-fields.seed');
 const { seedTaskWorkflow } = require('./seeds/task-workflow.seed');
 const { seedItsmWorkflows } = require('./seeds/itsm-workflows.seed');
 const { seedAgileWorkflows } = require('./seeds/agile-workflows.seed');
+const { seedObjectSetup } = require('./seeds/object-setup');
 
 async function main() {
   console.log('========================================');
@@ -93,8 +94,13 @@ async function main() {
     await seedAgileWorkflows(prisma);
     console.log('');
 
-    // 14. Default Admin (last, after all dependencies)
-    console.log('[14/14] Seeding default admin...');
+    // 14. Object Setup (business objects metadata configuration)
+    console.log('[14/15] Seeding object setup...');
+    await seedObjectSetup();
+    console.log('');
+
+    // 15. Default Admin (last, after all dependencies)
+    console.log('[15/15] Seeding default admin...');
     await seedDefaultAdmin();
     console.log('');
 
