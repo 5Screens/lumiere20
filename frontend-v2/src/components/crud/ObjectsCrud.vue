@@ -293,14 +293,24 @@
               </div>
               <span v-else>-</span>
             </template>
-            <!-- Workflow Status display -->
+            <!-- Workflow Status display/edit (inline editor with save/cancel buttons) -->
             <template v-else-if="col.field_type === 'workflow_status'">
-              <Tag 
-                v-if="data.status"
-                :value="getStatusLabel(data.status)"
-                :style="{ backgroundColor: data.status.category?.color || '#6b7280', color: 'white' }"
+              <InlineWorkflowStatusEditor
+                v-if="col.is_editable !== false"
+                :modelValue="data.rel_status_uuid"
+                :statusObject="data.status"
+                :entityType="objectType"
+                :entityUuid="data.uuid"
+                @save="(payload) => onWorkflowStatusSave(data, payload)"
               />
-              <span v-else class="text-surface-400 italic text-sm">{{ $t('workflow.noWorkflow') }}</span>
+              <template v-else>
+                <Tag 
+                  v-if="data.status"
+                  :value="getStatusLabel(data.status)"
+                  :style="{ backgroundColor: data.status.category?.color || '#6b7280', color: 'white' }"
+                />
+                <span v-else class="text-surface-400 italic text-sm">{{ $t('workflow.noWorkflow') }}</span>
+              </template>
             </template>
             <!-- Person display/edit (inline editor with save/cancel buttons) -->
             <template v-else-if="col.field_type === 'person'">
@@ -328,8 +338,8 @@
             </div>
           </template>
           
-          <!-- Editor template (only for editable fields, except person fields which are handled in body) -->
-          <template v-if="col.is_editable && col.field_type !== 'person'" #editor="{ data, field }">
+          <!-- Editor template (only for editable fields, except person and workflow_status fields which are handled in body) -->
+          <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status'" #editor="{ data, field }">
             <!-- ========== EXTENDED FIELDS ========== -->
             <template v-if="col.is_extended">
               <!-- Select editor for extended fields -->
@@ -804,6 +814,7 @@ import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import ObjectViewInDrawer from '@/components/object/ObjectViewInDrawer.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import InlinePersonEditor from '@/components/form/InlinePersonEditor.vue'
+import InlineWorkflowStatusEditor from '@/components/form/InlineWorkflowStatusEditor.vue'
 
 // Pickers
 import {
@@ -1290,6 +1301,43 @@ const onPersonSave = async (data, fieldName, payload) => {
     })
   } catch (error) {
     console.error('[ObjectsCrud] Error updating person field:', error)
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: t('common.saveFailed'),
+      life: 5000
+    })
+  }
+}
+
+const onWorkflowStatusSave = async (data, payload) => {
+  try {
+    const { uuid: statusUuid, status } = payload
+    const updateData = { rel_status_uuid: statusUuid }
+    await service.value.update(data.uuid, updateData)
+    
+    // Update local data
+    data.rel_status_uuid = statusUuid
+    data.status = status
+    
+    // Update the item in the items array to ensure reactivity
+    const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
+    if (itemIndex !== -1) {
+      items.value[itemIndex] = { 
+        ...items.value[itemIndex], 
+        rel_status_uuid: statusUuid,
+        status: status
+      }
+    }
+    
+    toast.add({
+      severity: 'success',
+      summary: t('common.success'),
+      detail: t('common.saved'),
+      life: 3000
+    })
+  } catch (error) {
+    console.error('[ObjectsCrud] Error updating workflow status:', error)
     toast.add({
       severity: 'error',
       summary: t('common.error'),
