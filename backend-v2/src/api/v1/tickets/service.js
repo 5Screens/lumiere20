@@ -205,6 +205,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
     const requestedByFilter = filters.requested_by_uuid;
     const requestedForFilter = filters.requested_for_uuid;
     const writerFilter = filters.writer_uuid;
+    const configurationItemFilter = filters.configuration_item_uuid;
 
     const filtersForDb = { ...filters };
     delete filtersForDb.assigned_to_group;
@@ -213,6 +214,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
     delete filtersForDb.requested_by_uuid;
     delete filtersForDb.requested_for_uuid;
     delete filtersForDb.writer_uuid;
+    delete filtersForDb.configuration_item_uuid;
 
     const where = buildPrismaWhereFromFilters(filtersForDb, {
       globalSearchFields: Array.isArray(globalSearchFields) && globalSearchFields.length
@@ -297,7 +299,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
           },
         });
       } else {
-        where.AND.push({ uuid: 'no-match-uuid' });
+        where.AND.push({ uuid: '00000000-0000-0000-0000-000000000000' });
       }
     }
 
@@ -331,7 +333,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
         where.AND.push({ rel_status_uuid: { in: statusUuids } });
       } else {
         // No matching status found, return empty results
-        where.AND.push({ rel_status_uuid: 'no-match-uuid' });
+        where.AND.push({ rel_status_uuid: '00000000-0000-0000-0000-000000000000' });
       }
     }
 
@@ -380,7 +382,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       if (personUuids.length > 0) {
         where.AND.push({ requested_by_uuid: { in: personUuids } });
       } else {
-        where.AND.push({ requested_by_uuid: 'no-match-uuid' });
+        where.AND.push({ requested_by_uuid: '00000000-0000-0000-0000-000000000000' });
       }
     }
 
@@ -391,7 +393,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       if (personUuids.length > 0) {
         where.AND.push({ requested_for_uuid: { in: personUuids } });
       } else {
-        where.AND.push({ requested_for_uuid: 'no-match-uuid' });
+        where.AND.push({ requested_for_uuid: '00000000-0000-0000-0000-000000000000' });
       }
     }
 
@@ -402,7 +404,42 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       if (personUuids.length > 0) {
         where.AND.push({ writer_uuid: { in: personUuids } });
       } else {
-        where.AND.push({ writer_uuid: 'no-match-uuid' });
+        where.AND.push({ writer_uuid: '00000000-0000-0000-0000-000000000000' });
+      }
+    }
+
+    // Handle configuration_item filter (search by CI name)
+    const ciValue = configurationItemFilter?.constraints?.[0]?.value;
+    if (ciValue && typeof ciValue === 'string' && ciValue.trim()) {
+      const trimmed = ciValue.trim();
+      const searchTerms = trimmed.split(/\s+/).filter(term => term.length > 0);
+
+      let matchingCIs;
+      if (searchTerms.length > 1) {
+        // Multiple words: each word must match the name
+        matchingCIs = await prisma.configuration_items.findMany({
+          where: {
+            AND: searchTerms.map(term => ({
+              name: { contains: term, mode: 'insensitive' },
+            })),
+          },
+          select: { uuid: true },
+        });
+      } else {
+        // Single word: match name
+        matchingCIs = await prisma.configuration_items.findMany({
+          where: {
+            name: { contains: searchTerms[0], mode: 'insensitive' },
+          },
+          select: { uuid: true },
+        });
+      }
+
+      const ciUuids = matchingCIs.map(ci => ci.uuid);
+      if (ciUuids.length > 0) {
+        where.AND.push({ configuration_item_uuid: { in: ciUuids } });
+      } else {
+        where.AND.push({ configuration_item_uuid: '00000000-0000-0000-0000-000000000000' });
       }
     }
 

@@ -73,8 +73,8 @@ const sortSchema = z.object({
 // Extended with ciTypeUuid, ticketTypeCode, and objectSetupType for scoped searches
 const primeVueFilterSchema = z.object({
   filters: z.record(z.any()).optional().default({}),
-  sortField: z.string().optional().default('created_at'),
-  sortOrder: z.coerce.number().int().optional().default(1),
+  sortField: z.string().optional().nullable().default('created_at'),
+  sortOrder: z.coerce.number().int().optional().nullable().default(1),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().max(100).optional().default(50),
   ciTypeUuid: z.string().uuid().optional().nullable(),
