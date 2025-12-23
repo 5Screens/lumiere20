@@ -553,52 +553,19 @@
     <!-- Create/Edit Drawer with dynamic fields -->
     <Drawer 
       v-model:visible="itemDialog" 
-      :header="dialogMode === 'create' ? $t('common.create') : $t('common.edit')" 
       position="right"
       class="w-full md:w-[600px]"
+      :showHeader="false"
     >
-      <ObjectViewInDrawer
-        v-model="editItem"
-        :form-fields="formFields"
+      <ObjectView
         :object-type="objectType"
-        :field-options="fieldOptions"
-        :extended-fields="extendedFields"
-        :extended-fields-loading="extendedFieldsLoading"
-        :refreshing-field="refreshingField"
+        :object-id="editItemId"
         :mode="dialogMode"
-        :forced-ci-type-uuid="ciTypeUuid"
-        @ci-type-change="handleCiTypeChange"
-        @refresh-options="refreshFieldOptions"
+        @saved="onDrawerSaved"
+        @close="itemDialog = false"
       />
-      <template #footer>
-        <div class="flex gap-2 justify-end w-full">
-          <Button :label="$t('common.cancel')" icon="pi pi-times" severity="secondary" text @click="itemDialog = false" />
-          <Button :label="$t('common.save')" icon="pi pi-check" @click="saveItem" :loading="saving" />
-        </div>
-      </template>
     </Drawer>
     
-    <!-- CI Type Change Confirmation Dialog -->
-    <Dialog 
-      v-model:visible="changeTypeDialog" 
-      :style="{ width: '450px' }" 
-      :header="$t('configurationItems.changeTypeTitle')" 
-      :modal="true"
-    >
-      <div class="flex items-start gap-4">
-        <i class="pi pi-exclamation-triangle text-4xl text-orange-500" />
-        <div>
-          <p class="font-semibold mb-2">{{ $t('configurationItems.changeTypeWarning') }}</p>
-          <p class="text-sm text-surface-600 dark:text-surface-400">
-            {{ $t('configurationItems.changeTypeDescription') }}
-          </p>
-        </div>
-      </div>
-      <template #footer>
-        <Button :label="$t('common.cancel')" icon="pi pi-times" severity="secondary" text @click="cancelCiTypeChange" />
-        <Button :label="$t('common.confirm')" icon="pi pi-check" severity="warning" @click="confirmCiTypeChange" />
-      </template>
-    </Dialog>
 
     <!-- Delete Confirmation Dialog -->
     <Dialog 
@@ -811,7 +778,7 @@ import AutoComplete from 'primevue/autocomplete'
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
 import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
-import ObjectViewInDrawer from '@/components/object/ObjectViewInDrawer.vue'
+import ObjectView from '@/components/object/ObjectView.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import InlinePersonEditor from '@/components/form/InlinePersonEditor.vue'
 import InlineWorkflowStatusEditor from '@/components/form/InlineWorkflowStatusEditor.vue'
@@ -904,7 +871,7 @@ const sortOrder = ref(-1)
 const itemDialog = ref(false)
 const deleteDialog = ref(false)
 const dialogMode = ref('create')
-const editItem = ref({})
+const editItemId = ref(null) // UUID of item being edited (null for create)
 
 // Extended fields for configuration_items
 const extendedFields = ref([])
@@ -913,7 +880,6 @@ const extendedFieldsLoading = ref(false)
 // CI Type fields (dynamic columns for filtered CI views)
 const ciTypeFields = ref([])
 const ciTypeFieldsLoading = ref(false)
-const changeTypeDialog = ref(false)
 
 // Ticket Type fields (dynamic columns for filtered ticket views)
 const ticketTypeFields = ref([])
@@ -1786,150 +1752,32 @@ const loadExtendedFields = async (ciTypeCode) => {
   }
 }
 
-// Handle CI type change with confirmation
-const handleCiTypeChange = (newValue) => {
-  // If editing and type is changing, show confirmation
-  if (dialogMode.value === 'edit' && editItem.value.ci_type && editItem.value.ci_type !== newValue) {
-    pendingCiType.value = newValue
-    changeTypeDialog.value = true
-  } else {
-    editItem.value.ci_type = newValue
-    loadExtendedFields(newValue)
-  }
-}
-
-// Confirm CI type change
-const confirmCiTypeChange = () => {
-  editItem.value.ci_type = pendingCiType.value
-  // Clear extended fields values when type changes
-  editItem.value.extended_core_fields = {}
-  loadExtendedFields(pendingCiType.value)
-  changeTypeDialog.value = false
-  pendingCiType.value = null
-}
-
-// Cancel CI type change
-const cancelCiTypeChange = () => {
-  changeTypeDialog.value = false
-  pendingCiType.value = null
-}
-
-// Get extended field value from extended_core_fields
-const getExtendedFieldValue = (fieldName) => {
-  return editItem.value.extended_core_fields?.[fieldName] ?? null
-}
-
-// Set extended field value in editItem.extended_core_fields (for form editing)
-const setEditItemExtendedField = (fieldName, value) => {
-  if (!editItem.value.extended_core_fields) {
-    editItem.value.extended_core_fields = {}
-  }
-  editItem.value.extended_core_fields[fieldName] = value
-}
-
-// Get options for extended field
-const getExtendedFieldOptions = (field) => {
-  if (field.options) return field.options
-  if (field.options_source) {
-    try {
-      return JSON.parse(field.options_source)
-    } catch {
-      return []
-    }
-  }
-  return []
-}
 
 // ============================================
 
-const openCreateDialog = async () => {
-  // Load CI types if needed
-  if (isConfigurationItems.value) {
-    await loadCiTypes()
-  }
-  
-  // Initialize with default values from form fields
-  const defaults = {
-    _translations: {} // Initialize translations object for translatable fields
-  }
-  for (const field of formFields.value) {
-    if (field.field_type === 'boolean') {
-      defaults[field.field_name] = false
-    } else if (field.field_type === 'select' && field.options_source) {
-      const options = getFieldOptions(field)
-      defaults[field.field_name] = options.length > 0 ? options[0].value : null
-    } else {
-      defaults[field.field_name] = null
-    }
-  }
-  
-  // Initialize extended_core_fields for configuration_items
-  if (isConfigurationItems.value) {
-    defaults.extended_core_fields = {}
-    
-    console.log('[ObjectsCrud] openCreateDialog - props.ciTypeUuid:', props.ciTypeUuid)
-    console.log('[ObjectsCrud] openCreateDialog - ciTypes.value:', JSON.stringify(ciTypes.value, null, 2))
-    
-    // If ciTypeUuid is set, find the corresponding code
-    if (props.ciTypeUuid && ciTypes.value.length > 0) {
-      const matchingType = ciTypes.value.find(t => t.uuid === props.ciTypeUuid)
-      console.log('[ObjectsCrud] openCreateDialog - matchingType found:', matchingType)
-      // Use 'code' property
-      defaults.ci_type = matchingType?.code || 'GENERIC'
-    } else {
-      defaults.ci_type = 'GENERIC' // Default type
-    }
-    
-    console.log('[ObjectsCrud] openCreateDialog - defaults.ci_type set to:', defaults.ci_type)
-  }
-  
-  // Pre-fill writer_uuid and ticket_type_code for tickets
-  if (props.objectType === 'tickets') {
-    if (authStore.personUuid) {
-      defaults.writer_uuid = authStore.personUuid
-    }
-    // Set ticket_type_code from prop if provided (for filtered views)
-    if (props.ticketTypeCode) {
-      defaults.ticket_type_code = props.ticketTypeCode
-    }
-  }
-  
-  editItem.value = defaults
-  extendedFields.value = [] // Clear extended fields until type is selected
+const openCreateDialog = () => {
+  editItemId.value = null
   dialogMode.value = 'create'
   itemDialog.value = true
-  
-  // Load extended fields for default type
-  if (isConfigurationItems.value && defaults.ci_type) {
-    await loadExtendedFields(defaults.ci_type)
-  }
 }
 
-const openEditDialog = async (data) => {
-  // Load CI types if needed
-  if (isConfigurationItems.value) {
-    await loadCiTypes()
-  }
-  
-  editItem.value = { ...data }
-  
-  // Ensure _translations exists for translatable fields
-  if (!editItem.value._translations) {
-    editItem.value._translations = {}
-  }
-  
-  // Ensure extended_core_fields exists
-  if (isConfigurationItems.value && !editItem.value.extended_core_fields) {
-    editItem.value.extended_core_fields = {}
-  }
-  
+const openEditDialog = (data) => {
+  editItemId.value = data.uuid
   dialogMode.value = 'edit'
   itemDialog.value = true
+}
+
+const onDrawerSaved = async () => {
+  itemDialog.value = false
   
-  // Load extended fields for current type
-  if (isConfigurationItems.value && editItem.value.ci_type) {
-    await loadExtendedFields(editItem.value.ci_type)
+  // Invalidate store cache for reference data
+  if (props.objectType === 'ci_categories') {
+    referenceDataStore.invalidateCiCategories()
+  } else if (props.objectType === 'ci_types') {
+    referenceDataStore.invalidateCiTypes()
   }
+  
+  await loadItems()
 }
 
 // Open edit in child tab (for toolbar Edit button)
@@ -1955,7 +1803,7 @@ const openEditInTab = (data) => {
     id: `${props.objectType}-edit-${data.uuid}`,
     label: `${displayName}`,
     icon: objectTypeMetadata.value?.icon || 'pi pi-file',
-    component: 'ObjectViewInTab',
+    component: 'ObjectView',
     objectType: props.objectType,
     objectId: data.uuid,
     parentId: parentTabId,
@@ -1973,46 +1821,6 @@ const openEditMultiple = () => {
   }
 }
 
-const saveItem = async () => {
-  // Validate required fields
-  const requiredFields = formFields.value.filter(f => f.is_required)
-  for (const field of requiredFields) {
-    const value = editItem.value[field.field_name]
-    if (value === null || value === undefined || value === '') {
-      toast.add({ severity: 'warn', summary: 'Warning', detail: `${t(field.label_key)} is required`, life: 3000 })
-      return
-    }
-  }
-
-  try {
-    saving.value = true
-    const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'
-    
-    if (dialogMode.value === 'create') {
-      await service.value.create(editItem.value)
-      toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.created`), life: 3000 })
-    } else {
-      await service.value.update(editItem.value.uuid, editItem.value)
-      toast.add({ severity: 'success', summary: 'Success', detail: t(`${labelKey}.messages.updated`), life: 3000 })
-    }
-    
-    // Invalidate store cache for reference data
-    if (props.objectType === 'ci_categories') {
-      referenceDataStore.invalidateCiCategories()
-    } else if (props.objectType === 'ci_types') {
-      referenceDataStore.invalidateCiTypes()
-    }
-    
-    itemDialog.value = false
-    await loadItems()
-  } catch (error) {
-    console.error('[ObjectsCrud] saveItem - Error:', error)
-    const errorMessage = error.response?.data?.message || 'Failed to save item'
-    toast.add({ severity: 'error', summary: 'Error', detail: errorMessage, life: 5000 })
-  } finally {
-    saving.value = false
-  }
-}
 
 const confirmDeleteSelected = () => {
   deleteDialog.value = true

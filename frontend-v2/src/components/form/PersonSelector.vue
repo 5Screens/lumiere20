@@ -1,51 +1,86 @@
 <template>
   <div class="person-selector">
-    <AutoComplete
-      ref="autocompleteRef"
-      v-model="selectedPerson"
-      :suggestions="suggestions"
-      :placeholder="$t('common.searchPerson')"
-      :disabled="disabled"
-      :virtualScrollerOptions="{ itemSize: 56 }"
-      optionLabel="display_name"
-      dataKey="uuid"
-      dropdown
-      forceSelection
-      :multiple="multiple"
-      :loading="loading"
-      class="w-full"
-      @complete="onSearch"
-      @item-select="onSelect"
-      @clear="onClear"
+    <div class="flex items-center gap-2">
+      <AutoComplete
+        ref="autocompleteRef"
+        v-model="selectedPerson"
+        :suggestions="suggestions"
+        :placeholder="$t('common.searchPerson')"
+        :disabled="disabled"
+        :virtualScrollerOptions="{ itemSize: 56 }"
+        optionLabel="display_name"
+        dataKey="uuid"
+        dropdown
+        forceSelection
+        :multiple="multiple"
+        :loading="loading"
+        class="flex-1"
+        @complete="onSearch"
+        @item-select="onSelect"
+        @clear="onClear"
+      >
+        <template #option="{ option, index }">
+          <div 
+            class="flex items-center gap-3 py-1"
+            :ref="el => { if (index === suggestions.length - 3) loadMoreTriggerRef = el }"
+          >
+            <div class="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-400 text-sm font-semibold shrink-0">
+              {{ getInitials(option) }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">{{ option.first_name }} {{ option.last_name }}</div>
+              <div class="text-sm text-surface-500 truncate">{{ option.email }}</div>
+            </div>
+          </div>
+        </template>
+        <template #footer v-if="hasMoreData">
+          <div ref="footerSentinelRef" class="p-2 text-center text-sm text-surface-500">
+            <i v-if="loading" class="pi pi-spin pi-spinner mr-2"></i>
+            <span v-if="loading">{{ $t('common.loading') }}</span>
+            <span v-else>{{ $t('common.scrollForMore') }}</span>
+          </div>
+        </template>
+      </AutoComplete>
+      
+      <!-- View person button -->
+      <Button
+        v-if="canViewPerson"
+        icon="pi pi-eye"
+        severity="secondary"
+        text
+        rounded
+        size="small"
+        @click="openPersonDrawer"
+        v-tooltip.top="$t('common.view')"
+        :pt="{ root: { class: 'shrink-0' } }"
+      />
+    </div>
+    
+    <!-- Person View Drawer -->
+    <Drawer
+      v-model:visible="personDrawerVisible"
+      position="right"
+      class="w-full md:w-[600px]"
+      :showHeader="false"
     >
-      <template #option="{ option, index }">
-        <div 
-          class="flex items-center gap-3 py-1"
-          :ref="el => { if (index === suggestions.length - 3) loadMoreTriggerRef = el }"
-        >
-          <div class="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-400 text-sm font-semibold shrink-0">
-            {{ getInitials(option) }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="font-medium truncate">{{ option.first_name }} {{ option.last_name }}</div>
-            <div class="text-sm text-surface-500 truncate">{{ option.email }}</div>
-          </div>
-        </div>
-      </template>
-      <template #footer v-if="hasMoreData">
-        <div ref="footerSentinelRef" class="p-2 text-center text-sm text-surface-500">
-          <i v-if="loading" class="pi pi-spin pi-spinner mr-2"></i>
-          <span v-if="loading">{{ $t('common.loading') }}</span>
-          <span v-else>{{ $t('common.scrollForMore') }}</span>
-        </div>
-      </template>
-    </AutoComplete>
+      <ObjectView
+        v-if="personDrawerVisible && viewPersonUuid"
+        objectType="persons"
+        :objectId="viewPersonUuid"
+        mode="edit"
+        @saved="onPersonSaved"
+        @close="personDrawerVisible = false"
+      />
+    </Drawer>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, computed, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import AutoComplete from 'primevue/autocomplete'
+import Button from 'primevue/button'
+import Drawer from 'primevue/drawer'
+import ObjectView from '@/components/object/ObjectView.vue'
 import personsService from '@/services/personsService'
 
 const MIN_SEARCH_LENGTH = 2
@@ -76,6 +111,32 @@ const currentQuery = ref('')
 const currentPage = ref(1)
 const totalRecords = ref(0)
 const hasMoreData = computed(() => suggestions.value.length < totalRecords.value)
+
+// Person drawer state
+const personDrawerVisible = ref(false)
+const viewPersonUuid = ref(null)
+
+// Can view person (single mode with a selected person)
+const canViewPerson = computed(() => {
+  if (props.multiple) {
+    return false // For now, don't show view button in multiple mode
+  }
+  return !!props.modelValue
+})
+
+// Open person drawer
+const openPersonDrawer = () => {
+  if (props.multiple) return
+  viewPersonUuid.value = props.modelValue
+  personDrawerVisible.value = true
+}
+
+// Handle person saved in drawer
+const onPersonSaved = async () => {
+  personDrawerVisible.value = false
+  // Reload the selected person to get updated data
+  await loadSelectedPerson()
+}
 
 // Refs for IntersectionObserver
 const footerSentinelRef = ref(null)
