@@ -310,6 +310,7 @@ export default {
     title: 'Groupes',
     groupName: 'Nom du groupe',
     description: 'Description',
+    searchPlaceholder: 'Rechercher un groupe...',
     supportLevel: 'Niveau de support',
     email: 'Email',
     phone: 'Téléphone',

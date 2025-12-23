@@ -326,6 +326,20 @@
               </span>
               <span v-else>-</span>
             </template>
+            <!-- Group display/edit (inline editor with save/cancel buttons) -->
+            <template v-else-if="col.field_type === 'group'">
+              <InlineGroupEditor
+                v-if="col.is_editable !== false"
+                :modelValue="data[col.field_name]"
+                :groupObject="getGroupObject(data, col.field_name)"
+                :placeholder="$t('groups.searchPlaceholder')"
+                @save="(payload) => onGroupSave(data, col.field_name, payload)"
+              />
+              <span v-else-if="getGroupDisplay(data, col.field_name)">
+                {{ getGroupDisplay(data, col.field_name) }}
+              </span>
+              <span v-else>-</span>
+            </template>
             <!-- Default text - with translation support -->
             <template v-else>
               <template v-if="col.is_extended">
@@ -338,8 +352,8 @@
             </div>
           </template>
           
-          <!-- Editor template (only for editable fields, except person and workflow_status fields which are handled in body) -->
-          <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status'" #editor="{ data, field }">
+          <!-- Editor template (only for editable fields, except person, workflow_status and group fields which are handled in body) -->
+          <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status' && col.field_type !== 'group'" #editor="{ data, field }">
             <!-- ========== EXTENDED FIELDS ========== -->
             <template v-if="col.is_extended">
               <!-- Select editor for extended fields -->
@@ -782,6 +796,7 @@ import ObjectView from '@/components/object/ObjectView.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import InlinePersonEditor from '@/components/form/InlinePersonEditor.vue'
 import InlineWorkflowStatusEditor from '@/components/form/InlineWorkflowStatusEditor.vue'
+import InlineGroupEditor from '@/components/form/InlineGroupEditor.vue'
 
 // Pickers
 import {
@@ -1304,6 +1319,80 @@ const onWorkflowStatusSave = async (data, payload) => {
     })
   } catch (error) {
     console.error('[ObjectsCrud] Error updating workflow status:', error)
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: t('common.saveFailed'),
+      life: 5000
+    })
+  }
+}
+
+// Group display and editor functions
+const getGroupDisplay = (data, fieldName) => {
+  // Check if we have the group data in the row (populated by backend)
+  // Field name is like 'assigned_to_group', group object would be at 'assigned_group' or similar
+  const groupField = fieldName.replace('_to_group', '_group').replace('_group_uuid', '_group')
+  if (data[groupField] && typeof data[groupField] === 'object') {
+    return data[groupField].group_name
+  }
+  // Also check direct field name without transformation
+  if (data[fieldName] && typeof data[fieldName] === 'object') {
+    return data[fieldName].group_name
+  }
+  return null
+}
+
+const getGroupObject = (data, fieldName) => {
+  // Field name is like 'assigned_to_group', group object would be at 'assigned_group' or similar
+  const groupField = fieldName.replace('_to_group', '_group').replace('_group_uuid', '_group')
+  if (data[groupField] && typeof data[groupField] === 'object') {
+    return {
+      uuid: data[groupField].uuid,
+      group_name: data[groupField].group_name,
+      description: data[groupField].description
+    }
+  }
+  // Also check direct field name without transformation
+  if (data[fieldName] && typeof data[fieldName] === 'object') {
+    return {
+      uuid: data[fieldName].uuid,
+      group_name: data[fieldName].group_name,
+      description: data[fieldName].description
+    }
+  }
+  return null
+}
+
+const onGroupSave = async (data, fieldName, payload) => {
+  try {
+    const { uuid: groupUuid, group } = payload
+    const updateData = { [fieldName]: groupUuid }
+    await service.value.update(data.uuid, updateData)
+    
+    // Update local data
+    data[fieldName] = groupUuid
+    const groupField = fieldName.replace('_to_group', '_group').replace('_group_uuid', '_group')
+    data[groupField] = group
+    
+    // Update the item in the items array to ensure reactivity
+    const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
+    if (itemIndex !== -1) {
+      items.value[itemIndex] = { 
+        ...items.value[itemIndex], 
+        [fieldName]: groupUuid,
+        [groupField]: group
+      }
+    }
+    
+    toast.add({
+      severity: 'success',
+      summary: t('common.success'),
+      detail: t('common.saved'),
+      life: 3000
+    })
+  } catch (error) {
+    console.error('[ObjectsCrud] Error updating group field:', error)
     toast.add({
       severity: 'error',
       summary: t('common.error'),
