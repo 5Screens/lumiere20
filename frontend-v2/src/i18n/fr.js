@@ -228,6 +228,7 @@ export default {
     title: 'Éléments de configuration',
     name: 'Nom',
     description: 'Description',
+    searchPlaceholder: 'Rechercher un élément de configuration...',
     ciType: 'Type',
     model: 'Modèle',
     isModelFor: 'Modèle pour le type',

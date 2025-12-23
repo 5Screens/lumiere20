@@ -340,6 +340,20 @@
               </span>
               <span v-else>-</span>
             </template>
+            <!-- Configuration Item display/edit (inline editor with save/cancel buttons) -->
+            <template v-else-if="col.field_type === 'configuration_item'">
+              <InlineConfigurationItemEditor
+                v-if="col.is_editable !== false"
+                :modelValue="data[col.field_name]"
+                :configurationItemObject="getConfigurationItemObject(data, col.field_name)"
+                :placeholder="$t('configurationItems.searchPlaceholder')"
+                @save="(payload) => onConfigurationItemSave(data, col.field_name, payload)"
+              />
+              <span v-else-if="getConfigurationItemDisplay(data, col.field_name)">
+                {{ getConfigurationItemDisplay(data, col.field_name) }}
+              </span>
+              <span v-else>-</span>
+            </template>
             <!-- Default text - with translation support -->
             <template v-else>
               <template v-if="col.is_extended">
@@ -352,8 +366,8 @@
             </div>
           </template>
           
-          <!-- Editor template (only for editable fields, except person, workflow_status and group fields which are handled in body) -->
-          <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status' && col.field_type !== 'group'" #editor="{ data, field }">
+          <!-- Editor template (only for editable fields, except person, workflow_status, group and configuration_item fields which are handled in body) -->
+          <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status' && col.field_type !== 'group' && col.field_type !== 'configuration_item'" #editor="{ data, field }">
             <!-- ========== EXTENDED FIELDS ========== -->
             <template v-if="col.is_extended">
               <!-- Select editor for extended fields -->
@@ -797,6 +811,7 @@ import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import InlinePersonEditor from '@/components/form/InlinePersonEditor.vue'
 import InlineWorkflowStatusEditor from '@/components/form/InlineWorkflowStatusEditor.vue'
 import InlineGroupEditor from '@/components/form/InlineGroupEditor.vue'
+import InlineConfigurationItemEditor from '@/components/form/InlineConfigurationItemEditor.vue'
 
 // Pickers
 import {
@@ -1393,6 +1408,80 @@ const onGroupSave = async (data, fieldName, payload) => {
     })
   } catch (error) {
     console.error('[ObjectsCrud] Error updating group field:', error)
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: t('common.saveFailed'),
+      life: 5000
+    })
+  }
+}
+
+// Configuration Item display and editor functions
+const getConfigurationItemDisplay = (data, fieldName) => {
+  // Check if we have the CI data in the row (populated by backend)
+  // Field name is like 'configuration_item_uuid', CI object would be at 'configuration_item'
+  const ciField = fieldName.replace('_uuid', '')
+  if (data[ciField] && typeof data[ciField] === 'object') {
+    return data[ciField].name
+  }
+  // Also check direct field name without transformation
+  if (data[fieldName] && typeof data[fieldName] === 'object') {
+    return data[fieldName].name
+  }
+  return null
+}
+
+const getConfigurationItemObject = (data, fieldName) => {
+  // Field name is like 'configuration_item_uuid', CI object would be at 'configuration_item'
+  const ciField = fieldName.replace('_uuid', '')
+  if (data[ciField] && typeof data[ciField] === 'object') {
+    return {
+      uuid: data[ciField].uuid,
+      name: data[ciField].name,
+      ci_type: data[ciField].ci_type
+    }
+  }
+  // Also check direct field name without transformation
+  if (data[fieldName] && typeof data[fieldName] === 'object') {
+    return {
+      uuid: data[fieldName].uuid,
+      name: data[fieldName].name,
+      ci_type: data[fieldName].ci_type
+    }
+  }
+  return null
+}
+
+const onConfigurationItemSave = async (data, fieldName, payload) => {
+  try {
+    const { uuid: ciUuid, configurationItem } = payload
+    const updateData = { [fieldName]: ciUuid }
+    await service.value.update(data.uuid, updateData)
+    
+    // Update local data
+    data[fieldName] = ciUuid
+    const ciField = fieldName.replace('_uuid', '')
+    data[ciField] = configurationItem
+    
+    // Update the item in the items array to ensure reactivity
+    const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
+    if (itemIndex !== -1) {
+      items.value[itemIndex] = { 
+        ...items.value[itemIndex], 
+        [fieldName]: ciUuid,
+        [ciField]: configurationItem
+      }
+    }
+    
+    toast.add({
+      severity: 'success',
+      summary: t('common.success'),
+      detail: t('common.saved'),
+      life: 3000
+    })
+  } catch (error) {
+    console.error('[ObjectsCrud] Error updating configuration item field:', error)
     toast.add({
       severity: 'error',
       summary: t('common.error'),
