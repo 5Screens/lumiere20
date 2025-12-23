@@ -143,6 +143,7 @@ export default {
     actions: 'Actions',
     export: 'Exporter',
     refresh: 'Actualiser',
+    view: 'Voir',
     optionsRefreshed: 'Options actualisées',
     success: 'Succès',
     error: 'Erreur',

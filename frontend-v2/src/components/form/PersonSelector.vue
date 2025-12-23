@@ -42,18 +42,24 @@
         </template>
       </AutoComplete>
       
-      <!-- View person button -->
-      <Button
-        v-if="canViewPerson"
-        icon="pi pi-eye"
-        severity="secondary"
-        text
-        rounded
-        size="small"
-        @click="openPersonDrawer"
-        v-tooltip.top="$t('common.view')"
-        :pt="{ root: { class: 'shrink-0' } }"
-      />
+      <!-- View person button with cyberpunk animation -->
+      <div v-if="canViewPerson" class="relative shrink-0 group">
+        <!-- Animated glow using Tailwind -->
+        <span class="absolute inset-0 rounded-full bg-primary-400/30 animate-ping"></span>
+        <Button
+          icon="pi pi-eye"
+          severity="success"
+          text
+          rounded
+          size="small"
+          @click="openPersonDrawer"
+          v-tooltip.top="$t('common.view')"
+          :pt="{ 
+            root: { class: 'relative z-10 hover:scale-110 transition-transform duration-200' },
+            icon: { class: 'text-primary-500 group-hover:text-primary-400 transition-colors' }
+          }"
+        />
+      </div>
     </div>
     
     <!-- Person View Drawer -->
