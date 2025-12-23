@@ -302,9 +302,32 @@
               />
               <span v-else class="text-surface-400 italic text-sm">{{ $t('workflow.noWorkflow') }}</span>
             </template>
-            <!-- Person display -->
+            <!-- Person display/edit (inline AutoComplete, not using cell edit mode) -->
             <template v-else-if="col.field_type === 'person'">
-              <span v-if="getPersonDisplay(data, col.field_name)">
+              <AutoComplete
+                v-if="col.is_editable"
+                :modelValue="getPersonObject(data, col.field_name)"
+                @update:modelValue="val => onPersonModelValueUpdate(data, col.field_name, val)"
+                :suggestions="personSuggestions"
+                @complete="searchPersons"
+                optionLabel="fullName"
+                :placeholder="$t('persons.searchPlaceholder')"
+                :minLength="0"
+                forceSelection
+                dropdown
+                appendTo="body"
+                class="w-full"
+                :pt="{ root: { class: 'w-full' }, input: { class: 'w-full text-sm' } }"
+              >
+                <template #option="slotProps">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-user" />
+                    <span>{{ slotProps.option.fullName }}</span>
+                    <span class="text-surface-400 text-sm">({{ slotProps.option.email }})</span>
+                  </div>
+                </template>
+              </AutoComplete>
+              <span v-else-if="getPersonDisplay(data, col.field_name)">
                 {{ getPersonDisplay(data, col.field_name) }}
               </span>
               <span v-else>-</span>
@@ -321,8 +344,8 @@
             </div>
           </template>
           
-          <!-- Editor template (only for editable fields) -->
-          <template v-if="col.is_editable" #editor="{ data, field }">
+          <!-- Editor template (only for editable fields, except person fields which are handled in body) -->
+          <template v-if="col.is_editable && col.field_type !== 'person'" #editor="{ data, field }">
             <!-- ========== EXTENDED FIELDS ========== -->
             <template v-if="col.is_extended">
               <!-- Select editor for extended fields -->
@@ -456,29 +479,7 @@
                   <span v-if="data[field]" class="text-sm truncate max-w-xs">{{ stripHtml(data[field]) }}</span>
                 </InlinePickerButton>
               </template>
-              <!-- Person editor -->
-              <template v-else-if="col.field_type === 'person'">
-                <AutoComplete
-                  :modelValue="getPersonObject(data, field)"
-                  @update:modelValue="val => updatePersonField(data, field, val)"
-                  :suggestions="personSuggestions"
-                  @complete="searchPersons"
-                  optionLabel="fullName"
-                  :placeholder="$t('persons.searchPlaceholder')"
-                  :minLength="0"
-                  forceSelection
-                  dropdown
-                  class="w-full"
-                >
-                  <template #option="slotProps">
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-user" />
-                      <span>{{ slotProps.option.fullName }}</span>
-                      <span class="text-surface-400 text-sm">({{ slotProps.option.email }})</span>
-                    </div>
-                  </template>
-                </AutoComplete>
-              </template>
+              <!-- Person fields are handled in body template, not here -->
               <!-- Default text editor -->
               <template v-else>
                 <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('text', data, field, col)">
@@ -1276,7 +1277,6 @@ const searchPersons = async (event) => {
     const query = event.query || ''
     const filters = {}
     
-    // Only add globalFilter if there's a query
     if (query.trim()) {
       filters.globalFilter = { value: query, matchMode: 'contains' }
     }
@@ -1300,43 +1300,51 @@ const searchPersons = async (event) => {
       personsCache.value[p.uuid] = p
     }
   } catch (error) {
-    console.error('Error searching persons:', error)
+    console.error('[ObjectsCrud] Error searching persons:', error)
     personSuggestions.value = []
   }
 }
 
-const updatePersonField = async (data, fieldName, selectedPerson) => {
-  if (!selectedPerson || !selectedPerson.uuid) {
-    return
-  }
-  
-  try {
-    const updateData = { [fieldName]: selectedPerson.uuid }
-    await service.update(data.uuid, updateData)
-    
-    // Update local data
-    data[fieldName] = selectedPerson.uuid
-    // Also update the person object for display
-    const personField = fieldName.replace('_uuid', '')
-    data[personField] = selectedPerson
-    
-    // Cache the person
-    personsCache.value[selectedPerson.uuid] = selectedPerson
-    
-    toast.add({
-      severity: 'success',
-      summary: t('common.success'),
-      detail: t('common.saved'),
-      life: 3000
-    })
-  } catch (error) {
-    console.error('Error updating person field:', error)
-    toast.add({
-      severity: 'error',
-      summary: t('common.error'),
-      detail: t('common.saveFailed'),
-      life: 5000
-    })
+const onPersonModelValueUpdate = async (data, fieldName, val) => {
+  // If val is an object with uuid, it means user selected from dropdown
+  if (val && typeof val === 'object' && val.uuid) {
+    try {
+      const updateData = { [fieldName]: val.uuid }
+      await service.value.update(data.uuid, updateData)
+      
+      // Update local data
+      data[fieldName] = val.uuid
+      const personField = fieldName.replace('_uuid', '')
+      data[personField] = val
+      
+      // Update the item in the items array to ensure reactivity
+      const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
+      if (itemIndex !== -1) {
+        items.value[itemIndex] = { 
+          ...items.value[itemIndex], 
+          [fieldName]: val.uuid,
+          [personField]: val
+        }
+      }
+      
+      // Cache the person
+      personsCache.value[val.uuid] = val
+      
+      toast.add({
+        severity: 'success',
+        summary: t('common.success'),
+        detail: t('common.saved'),
+        life: 3000
+      })
+    } catch (error) {
+      console.error('[ObjectsCrud] Error updating person field:', error)
+      toast.add({
+        severity: 'error',
+        summary: t('common.error'),
+        detail: t('common.saveFailed'),
+        life: 5000
+      })
+    }
   }
 }
 
@@ -2043,7 +2051,11 @@ const deleteSelectedItems = async () => {
 
 const onCellEditComplete = async (event) => {
   const { data, newValue, field } = event
-  if (data[field] === newValue) return
+  console.log('[ObjectsCrud] onCellEditComplete called:', { field, newValue, oldValue: data[field], dataUuid: data?.uuid })
+  if (data[field] === newValue) {
+    console.log('[ObjectsCrud] onCellEditComplete: No change detected, returning early')
+    return
+  }
 
   try {
     const labelKey = objectTypeMetadata.value?.label_key?.split('.')[0] || 'common'

@@ -81,7 +81,9 @@ const update = async (req, res, next) => {
   try {
     const { uuid } = req.params;
     const ticketTypeCode = getTicketTypeCode(req);
+    logger.info(`[TICKETS CONTROLLER] update called for uuid: ${uuid}, body: ${JSON.stringify(req.body)}`);
     const item = await service.update(uuid, req.body, ticketTypeCode);
+    logger.info(`[TICKETS CONTROLLER] update result: ${JSON.stringify(item)}`);
 
     if (!item) {
       return res.status(404).json({

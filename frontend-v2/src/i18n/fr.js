@@ -322,6 +322,8 @@ export default {
   },
   persons: {
     title: 'Personnes',
+    noPersonSelected: 'Aucune personne sélectionnée',
+    searchPlaceholder: 'Rechercher par nom ou email...',
     firstName: 'Prénom',
     lastName: 'Nom',
     email: 'Email',
