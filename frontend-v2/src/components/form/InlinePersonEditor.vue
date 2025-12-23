@@ -11,7 +11,7 @@
     </div>
 
     <!-- Edit mode -->
-    <div v-else class="flex items-center gap-2">
+    <div v-else class="flex items-center gap-1">
       <AutoComplete
         ref="autocompleteRef"
         v-model="localValue"
@@ -36,29 +36,32 @@
         </template>
       </AutoComplete>
       
-      <!-- Save button -->
-      <Button
-        icon="pi pi-check"
-        severity="success"
-        size="small"
-        rounded
-        text
-        @click.stop="save"
-        :disabled="saving"
-        v-tooltip.top="$t('common.save')"
-      />
-      
-      <!-- Cancel button -->
-      <Button
-        icon="pi pi-times"
-        severity="secondary"
-        size="small"
-        rounded
-        text
-        @click.stop="cancel"
-        :disabled="saving"
-        v-tooltip.top="$t('common.cancel')"
-      />
+      <!-- Buttons stacked vertically -->
+      <div class="flex flex-col gap-0">
+        <!-- Save button (top) -->
+        <Button
+          icon="pi pi-check"
+          severity="success"
+          size="small"
+          text
+          @click.stop="save"
+          :disabled="saving || !hasChanges"
+          v-tooltip.left="$t('common.save')"
+          :pt="{ root: { class: 'p-1 w-6 h-6' }, icon: { class: 'text-xs' } }"
+        />
+        
+        <!-- Cancel button (bottom) -->
+        <Button
+          icon="pi pi-times"
+          severity="danger"
+          size="small"
+          text
+          @click.stop="cancel"
+          :disabled="saving"
+          v-tooltip.left="$t('common.cancel')"
+          :pt="{ root: { class: 'p-1 w-6 h-6' }, icon: { class: 'text-xs' } }"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -107,6 +110,12 @@ const displayValue = computed(() => {
     return `${props.personObject.first_name} ${props.personObject.last_name}`
   }
   return null
+})
+
+const hasChanges = computed(() => {
+  const currentUuid = localValue.value?.uuid || null
+  const initialUuid = initialValue.value?.uuid || null
+  return currentUuid !== initialUuid
 })
 
 // Methods
