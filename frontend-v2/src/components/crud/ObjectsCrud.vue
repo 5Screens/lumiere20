@@ -1000,7 +1000,7 @@ const menuModel = ref([
 ])
 
 // Columns to hide when ciTypeUuid is set (filtered view for configuration_items)
-const hiddenColumnsForCiType = ['ci_type']
+const hiddenColumnsForCiType = []
 
 // Columns to hide when ticketTypeCode is set (filtered view for tickets)
 // Note: ticket_type_code is now always visible
