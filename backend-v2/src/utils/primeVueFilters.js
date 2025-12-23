@@ -184,8 +184,10 @@ const buildPrismaWhereFromFilters = (filters = {}, options = {}) => {
  * @returns {Object} Prisma orderBy clause
  */
 const buildPrismaOrderBy = (sortField = 'created_at', sortOrder = 1) => {
-  const direction = sortOrder === 1 ? 'asc' : 'desc';
-  return { [sortField]: direction };
+  const field = sortField || 'created_at';
+  const order = sortOrder ?? 1;
+  const direction = order === 1 || order === 'asc' ? 'asc' : 'desc';
+  return { [field]: direction };
 };
 
 /**

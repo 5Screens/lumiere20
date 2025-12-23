@@ -239,17 +239,47 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       return value;
     };
 
-    const assignedToGroup = extractEqualsValue(assignedToGroupFilter);
-    if (assignedToGroup) {
-      where.AND.push({
-        rel_tickets_groups_persons: {
-          some: {
-            type: 'ASSIGNED',
-            ended_at: null,
-            rel_assigned_to_group: assignedToGroup,
+    // Handle assigned_to_group filter with smart text search
+    const assignedToGroupValue = assignedToGroupFilter?.constraints?.[0]?.value;
+    if (assignedToGroupValue && typeof assignedToGroupValue === 'string' && assignedToGroupValue.trim()) {
+      const trimmed = assignedToGroupValue.trim();
+      const searchTerms = trimmed.split(/\s+/).filter(term => term.length > 0);
+
+      let matchingGroups;
+      if (searchTerms.length > 1) {
+        // Multiple words: each word must match the name
+        matchingGroups = await prisma.groups.findMany({
+          where: {
+            AND: searchTerms.map(term => ({
+              group_name: { contains: term, mode: 'insensitive' },
+            })),
           },
-        },
-      });
+          select: { uuid: true },
+        });
+      } else {
+        // Single word: match name
+        matchingGroups = await prisma.groups.findMany({
+          where: {
+            group_name: { contains: searchTerms[0], mode: 'insensitive' },
+          },
+          select: { uuid: true },
+        });
+      }
+
+      const groupUuids = matchingGroups.map(g => g.uuid);
+      if (groupUuids.length > 0) {
+        where.AND.push({
+          rel_tickets_groups_persons: {
+            some: {
+              type: 'ASSIGNED',
+              ended_at: null,
+              rel_assigned_to_group: { in: groupUuids },
+            },
+          },
+        });
+      } else {
+        where.AND.push({ uuid: '00000000-0000-0000-0000-000000000000' });
+      }
     }
 
     // Handle assigned_to_person filter with smart text search
