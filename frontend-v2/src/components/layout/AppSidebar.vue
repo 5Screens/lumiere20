@@ -298,28 +298,18 @@ const menuItems = computed(() => [
           },
           {
             label: t('menu.changeSetup') || 'Change Setup',
-            icon: 'pi pi-cog',
-            command: () => openTab('change-setup', 'Change Setup', 'menu.changeSetup', 'pi pi-cog', 'change_setup')
-          },
-          {
-            label: t('menu.changeQuestions') || 'Change Questions',
-            icon: 'pi pi-question-circle',
-            command: () => openTab('change-questions', 'Change Questions', 'menu.changeQuestions', 'pi pi-question-circle', 'change_questions')
-          },
-          {
-            label: t('menu.changeOptions') || 'Change Options',
-            icon: 'pi pi-sliders-h',
-            command: () => openTab('change-options', 'Change Options', 'menu.changeOptions', 'pi pi-sliders-h', 'change_options')
+            icon: 'pi pi-sync',
+            command: () => openTab('change-setup', 'Change Setup', 'menu.changeSetup', 'pi pi-sync', 'object_setup', 'ObjectsCrud', null, null, 'change')
           },
           {
             label: t('menu.problemCategories') || 'Problem Categories',
-            icon: 'pi pi-tags',
-            command: () => openTab('problem-categories', 'Problem Categories', 'menu.problemCategories', 'pi pi-tags', 'problem_categories')
+            icon: 'pi pi-question-circle',
+            command: () => openTab('problem-setup', 'Problem Setup', 'menu.problemCategories', 'pi pi-question-circle', 'object_setup', 'ObjectsCrud', null, null, 'problem')
           },
           {
             label: t('menu.incidentSetup') || 'Incident Setup',
             icon: 'pi pi-exclamation-triangle',
-            command: () => openTab('incident-setup', 'Incident Setup', 'menu.incidentSetup', 'pi pi-exclamation-triangle', 'incident_setup')
+            command: () => openTab('incident-setup', 'Incident Setup', 'menu.incidentSetup', 'pi pi-exclamation-triangle', 'object_setup', 'ObjectsCrud', null, null, 'incident')
           },
           {
             label: t('menu.symptoms') || 'Symptoms',
@@ -329,7 +319,7 @@ const menuItems = computed(() => [
           {
             label: t('menu.knowledgeSetup') || 'Knowledge Setup',
             icon: 'pi pi-book',
-            command: () => openTab('knowledge-setup', 'Knowledge Setup', 'menu.knowledgeSetup', 'pi pi-book', 'knowledge_setup')
+            command: () => openTab('knowledge-setup', 'Knowledge Setup', 'menu.knowledgeSetup', 'pi pi-book', 'object_setup', 'ObjectsCrud', null, null, 'knowledge')
           }
         ]
       },
@@ -341,12 +331,12 @@ const menuItems = computed(() => [
           {
             label: t('menu.defectSetup') || 'Defect Setup',
             icon: 'pi pi-exclamation-circle',
-            command: () => openTab('defect-setup', 'Defect Setup', 'menu.defectSetup', 'pi pi-exclamation-circle', 'defect_setup')
+            command: () => openTab('defect-setup', 'Defect Setup', 'menu.defectSetup', 'pi pi-exclamation-circle', 'object_setup', 'ObjectsCrud', null, null, 'defect')
           },
           {
             label: t('menu.projectSetup') || 'Project Setup',
             icon: 'pi pi-folder',
-            command: () => openTab('project-setup', 'Project Setup', 'menu.projectSetup', 'pi pi-folder', 'project_setup')
+            command: () => openTab('project-setup', 'Project Setup', 'menu.projectSetup', 'pi pi-folder', 'object_setup', 'ObjectsCrud', null, null, 'project')
           }
         ]
       },
