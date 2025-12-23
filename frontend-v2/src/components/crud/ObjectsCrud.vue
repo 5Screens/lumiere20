@@ -302,31 +302,15 @@
               />
               <span v-else class="text-surface-400 italic text-sm">{{ $t('workflow.noWorkflow') }}</span>
             </template>
-            <!-- Person display/edit (inline AutoComplete, not using cell edit mode) -->
+            <!-- Person display/edit (inline editor with save/cancel buttons) -->
             <template v-else-if="col.field_type === 'person'">
-              <AutoComplete
+              <InlinePersonEditor
                 v-if="col.is_editable"
-                :modelValue="getPersonObject(data, col.field_name)"
-                @update:modelValue="val => onPersonModelValueUpdate(data, col.field_name, val)"
-                :suggestions="personSuggestions"
-                @complete="searchPersons"
-                optionLabel="fullName"
+                :modelValue="data[col.field_name]"
+                :personObject="getPersonObject(data, col.field_name)"
                 :placeholder="$t('persons.searchPlaceholder')"
-                :minLength="0"
-                forceSelection
-                dropdown
-                appendTo="body"
-                class="w-full"
-                :pt="{ root: { class: 'w-full' }, input: { class: 'w-full text-sm' } }"
-              >
-                <template #option="slotProps">
-                  <div class="flex items-center gap-2">
-                    <i class="pi pi-user" />
-                    <span>{{ slotProps.option.fullName }}</span>
-                    <span class="text-surface-400 text-sm">({{ slotProps.option.email }})</span>
-                  </div>
-                </template>
-              </AutoComplete>
+                @save="(payload) => onPersonSave(data, col.field_name, payload)"
+              />
               <span v-else-if="getPersonDisplay(data, col.field_name)">
                 {{ getPersonDisplay(data, col.field_name) }}
               </span>
@@ -819,6 +803,7 @@ import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import ObjectViewInDrawer from '@/components/object/ObjectViewInDrawer.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
+import InlinePersonEditor from '@/components/form/InlinePersonEditor.vue'
 
 // Pickers
 import {
@@ -946,8 +931,7 @@ const inlinePickerValue = ref(null) // The temporary selected value
 const inlinePickerSaving = ref(false)
 const inlinePickerIsExtended = ref(false) // Flag to track if editing extended field
 
-// Person autocomplete
-const personSuggestions = ref([])
+// Person cache
 const personsCache = ref({}) // Cache person data by UUID
 
 // Translatable field support
@@ -1272,79 +1256,46 @@ const getPersonObject = (data, fieldName) => {
   return null
 }
 
-const searchPersons = async (event) => {
+const onPersonSave = async (data, fieldName, payload) => {
   try {
-    const query = event.query || ''
-    const filters = {}
+    const { uuid: personUuid, person } = payload
+    const updateData = { [fieldName]: personUuid }
+    await service.value.update(data.uuid, updateData)
     
-    if (query.trim()) {
-      filters.globalFilter = { value: query, matchMode: 'contains' }
-    }
+    // Update local data
+    data[fieldName] = personUuid
+    const personField = fieldName.replace('_uuid', '')
+    data[personField] = person
     
-    const response = await api.post('/persons/search', {
-      filters,
-      page: 1,
-      limit: 20,
-      sortField: 'last_name',
-      sortOrder: 1
-    })
-    personSuggestions.value = (response.data.data || []).map(p => ({
-      uuid: p.uuid,
-      first_name: p.first_name,
-      last_name: p.last_name,
-      email: p.email,
-      fullName: `${p.first_name} ${p.last_name}`
-    }))
-    // Cache the results
-    for (const p of personSuggestions.value) {
-      personsCache.value[p.uuid] = p
-    }
-  } catch (error) {
-    console.error('[ObjectsCrud] Error searching persons:', error)
-    personSuggestions.value = []
-  }
-}
-
-const onPersonModelValueUpdate = async (data, fieldName, val) => {
-  // If val is an object with uuid, it means user selected from dropdown
-  if (val && typeof val === 'object' && val.uuid) {
-    try {
-      const updateData = { [fieldName]: val.uuid }
-      await service.value.update(data.uuid, updateData)
-      
-      // Update local data
-      data[fieldName] = val.uuid
-      const personField = fieldName.replace('_uuid', '')
-      data[personField] = val
-      
-      // Update the item in the items array to ensure reactivity
-      const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
-      if (itemIndex !== -1) {
-        items.value[itemIndex] = { 
-          ...items.value[itemIndex], 
-          [fieldName]: val.uuid,
-          [personField]: val
-        }
+    // Update the item in the items array to ensure reactivity
+    const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
+    if (itemIndex !== -1) {
+      items.value[itemIndex] = { 
+        ...items.value[itemIndex], 
+        [fieldName]: personUuid,
+        [personField]: person
       }
-      
-      // Cache the person
-      personsCache.value[val.uuid] = val
-      
-      toast.add({
-        severity: 'success',
-        summary: t('common.success'),
-        detail: t('common.saved'),
-        life: 3000
-      })
-    } catch (error) {
-      console.error('[ObjectsCrud] Error updating person field:', error)
-      toast.add({
-        severity: 'error',
-        summary: t('common.error'),
-        detail: t('common.saveFailed'),
-        life: 5000
-      })
     }
+    
+    // Cache the person if selected
+    if (person?.uuid) {
+      personsCache.value[person.uuid] = person
+    }
+    
+    toast.add({
+      severity: 'success',
+      summary: t('common.success'),
+      detail: t('common.saved'),
+      life: 3000
+    })
+  } catch (error) {
+    console.error('[ObjectsCrud] Error updating person field:', error)
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: t('common.saveFailed'),
+      life: 5000
+    })
   }
 }
 

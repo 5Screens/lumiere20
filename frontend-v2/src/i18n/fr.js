@@ -196,7 +196,10 @@ export default {
     downloadFailed: 'Échec du téléchargement',
     deleteFailed: 'Échec de la suppression',
     deleted: 'Supprimé avec succès',
-    saveFailed: 'Échec de l\'enregistrement'
+    saveFailed: 'Échec de l\'enregistrement',
+    unsavedChanges: 'Modifications non enregistrées',
+    unsavedChangesMessage: 'Vous avez des modifications non enregistrées. Que souhaitez-vous faire ?',
+    dontSave: 'Ne pas enregistrer'
   },
   tabs: {
     backToList: 'Retour à la liste',

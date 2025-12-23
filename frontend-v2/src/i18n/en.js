@@ -195,7 +195,10 @@ export default {
     downloadFailed: 'Download failed',
     deleteFailed: 'Delete failed',
     deleted: 'Deleted successfully',
-    saveFailed: 'Save failed'
+    saveFailed: 'Save failed',
+    unsavedChanges: 'Unsaved changes',
+    unsavedChangesMessage: 'You have unsaved changes. What would you like to do?',
+    dontSave: 'Don\'t save'
   },
   tabs: {
     backToList: 'Back to list',
