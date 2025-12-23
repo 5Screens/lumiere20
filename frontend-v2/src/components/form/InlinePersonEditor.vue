@@ -69,7 +69,7 @@
 <script setup>
 import { ref, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import api from '@/services/api'
+import personsService from '@/services/personsService'
 import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
 
@@ -175,10 +175,10 @@ const onSearch = async (event) => {
     const filters = {}
     
     if (query.trim()) {
-      filters.globalFilter = { value: query, matchMode: 'contains' }
+      filters.global = { value: query, matchMode: 'contains' }
     }
     
-    const response = await api.post('/persons/search', {
+    const result = await personsService.search({
       filters,
       page: 1,
       limit: 20,
@@ -186,7 +186,7 @@ const onSearch = async (event) => {
       sortOrder: 1
     })
     
-    suggestions.value = (response.data.data || []).map(p => ({
+    suggestions.value = (result.data || []).map(p => ({
       uuid: p.uuid,
       first_name: p.first_name,
       last_name: p.last_name,
