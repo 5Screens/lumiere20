@@ -201,10 +201,18 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
 
     const assignedToGroupFilter = filters.assigned_to_group;
     const assignedToPersonFilter = filters.assigned_to_person;
+    const statusFilter = filters.rel_status_uuid;
+    const requestedByFilter = filters.requested_by_uuid;
+    const requestedForFilter = filters.requested_for_uuid;
+    const writerFilter = filters.writer_uuid;
 
     const filtersForDb = { ...filters };
     delete filtersForDb.assigned_to_group;
     delete filtersForDb.assigned_to_person;
+    delete filtersForDb.rel_status_uuid;
+    delete filtersForDb.requested_by_uuid;
+    delete filtersForDb.requested_for_uuid;
+    delete filtersForDb.writer_uuid;
 
     const where = buildPrismaWhereFromFilters(filtersForDb, {
       globalSearchFields: Array.isArray(globalSearchFields) && globalSearchFields.length
@@ -242,17 +250,160 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       });
     }
 
-    const assignedToPerson = extractEqualsValue(assignedToPersonFilter);
-    if (assignedToPerson) {
-      where.AND.push({
-        rel_tickets_groups_persons: {
-          some: {
-            type: 'ASSIGNED',
-            ended_at: null,
-            rel_assigned_to_person: assignedToPerson,
+    // Handle assigned_to_person filter with smart text search
+    const assignedToPersonValue = assignedToPersonFilter?.constraints?.[0]?.value;
+    if (assignedToPersonValue && typeof assignedToPersonValue === 'string' && assignedToPersonValue.trim()) {
+      const trimmed = assignedToPersonValue.trim();
+      const searchTerms = trimmed.split(/\s+/).filter(term => term.length > 0);
+
+      let matchingPersons;
+      if (searchTerms.length > 1) {
+        // Multiple words: each word must match at least one field
+        matchingPersons = await prisma.persons.findMany({
+          where: {
+            AND: searchTerms.map(term => ({
+              OR: [
+                { first_name: { contains: term, mode: 'insensitive' } },
+                { last_name: { contains: term, mode: 'insensitive' } },
+                { email: { contains: term, mode: 'insensitive' } },
+              ],
+            })),
           },
-        },
+          select: { uuid: true },
+        });
+      } else {
+        // Single word: match any field
+        matchingPersons = await prisma.persons.findMany({
+          where: {
+            OR: [
+              { first_name: { contains: searchTerms[0], mode: 'insensitive' } },
+              { last_name: { contains: searchTerms[0], mode: 'insensitive' } },
+              { email: { contains: searchTerms[0], mode: 'insensitive' } },
+            ],
+          },
+          select: { uuid: true },
+        });
+      }
+
+      const personUuids = matchingPersons.map(p => p.uuid);
+      if (personUuids.length > 0) {
+        where.AND.push({
+          rel_tickets_groups_persons: {
+            some: {
+              type: 'ASSIGNED',
+              ended_at: null,
+              rel_assigned_to_person: { in: personUuids },
+            },
+          },
+        });
+      } else {
+        where.AND.push({ uuid: 'no-match-uuid' });
+      }
+    }
+
+    // Handle workflow status filter (search by status name, not UUID)
+    const statusSearchValue = statusFilter?.constraints?.[0]?.value;
+    if (statusSearchValue && typeof statusSearchValue === 'string' && statusSearchValue.trim()) {
+      // Find workflow_statuses matching the search text in name
+      const matchingByName = await prisma.workflow_statuses.findMany({
+        where: { name: { contains: statusSearchValue, mode: 'insensitive' } },
+        select: { uuid: true },
       });
+
+      // Find workflow_statuses matching the search text in translations
+      const matchingTranslations = await prisma.translated_fields.findMany({
+        where: {
+          entity_type: 'workflow_statuses',
+          field_name: 'name',
+          value: { contains: statusSearchValue, mode: 'insensitive' },
+        },
+        select: { entity_uuid: true },
+      });
+
+      const statusUuids = [
+        ...new Set([
+          ...matchingByName.map(s => s.uuid),
+          ...matchingTranslations.map(t => t.entity_uuid),
+        ]),
+      ];
+
+      if (statusUuids.length > 0) {
+        where.AND.push({ rel_status_uuid: { in: statusUuids } });
+      } else {
+        // No matching status found, return empty results
+        where.AND.push({ rel_status_uuid: 'no-match-uuid' });
+      }
+    }
+
+    // Helper function to search persons with smart space handling (AND between words)
+    const searchPersonsByText = async (searchValue) => {
+      const trimmed = searchValue.trim();
+      if (!trimmed) return [];
+
+      const searchTerms = trimmed.split(/\s+/).filter(term => term.length > 0);
+
+      if (searchTerms.length > 1) {
+        // Multiple words: each word must match at least one field (first_name, last_name, email)
+        const matchingPersons = await prisma.persons.findMany({
+          where: {
+            AND: searchTerms.map(term => ({
+              OR: [
+                { first_name: { contains: term, mode: 'insensitive' } },
+                { last_name: { contains: term, mode: 'insensitive' } },
+                { email: { contains: term, mode: 'insensitive' } },
+              ],
+            })),
+          },
+          select: { uuid: true },
+        });
+        return matchingPersons.map(p => p.uuid);
+      } else {
+        // Single word: match any field
+        const matchingPersons = await prisma.persons.findMany({
+          where: {
+            OR: [
+              { first_name: { contains: searchTerms[0], mode: 'insensitive' } },
+              { last_name: { contains: searchTerms[0], mode: 'insensitive' } },
+              { email: { contains: searchTerms[0], mode: 'insensitive' } },
+            ],
+          },
+          select: { uuid: true },
+        });
+        return matchingPersons.map(p => p.uuid);
+      }
+    };
+
+    // Handle requested_by filter (search by person name)
+    const requestedByValue = requestedByFilter?.constraints?.[0]?.value;
+    if (requestedByValue && typeof requestedByValue === 'string') {
+      const personUuids = await searchPersonsByText(requestedByValue);
+      if (personUuids.length > 0) {
+        where.AND.push({ requested_by_uuid: { in: personUuids } });
+      } else {
+        where.AND.push({ requested_by_uuid: 'no-match-uuid' });
+      }
+    }
+
+    // Handle requested_for filter (search by person name)
+    const requestedForValue = requestedForFilter?.constraints?.[0]?.value;
+    if (requestedForValue && typeof requestedForValue === 'string') {
+      const personUuids = await searchPersonsByText(requestedForValue);
+      if (personUuids.length > 0) {
+        where.AND.push({ requested_for_uuid: { in: personUuids } });
+      } else {
+        where.AND.push({ requested_for_uuid: 'no-match-uuid' });
+      }
+    }
+
+    // Handle writer filter (search by person name)
+    const writerValue = writerFilter?.constraints?.[0]?.value;
+    if (writerValue && typeof writerValue === 'string') {
+      const personUuids = await searchPersonsByText(writerValue);
+      if (personUuids.length > 0) {
+        where.AND.push({ writer_uuid: { in: personUuids } });
+      } else {
+        where.AND.push({ writer_uuid: 'no-match-uuid' });
+      }
     }
 
     // Clean up empty AND array
