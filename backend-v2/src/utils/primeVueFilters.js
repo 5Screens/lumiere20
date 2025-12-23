@@ -107,12 +107,27 @@ const buildPrismaWhereFromFilters = (filters = {}, options = {}) => {
   const andConditions = [];
 
   // Handle global search filter (supports both 'global' and 'globalFilter' keys)
+  // Smart space handling: split search terms and require ALL words to match (in any field)
   const globalFilter = filters.global || filters.globalFilter;
   if (globalFilter && globalFilter.value) {
-    const globalConditions = globalSearchFields.map((field) => ({
-      [field]: { contains: globalFilter.value, mode: 'insensitive' },
-    }));
-    andConditions.push({ OR: globalConditions });
+    const searchValue = globalFilter.value.trim();
+    const searchTerms = searchValue.split(/\s+/).filter(term => term.length > 0);
+    
+    if (searchTerms.length > 1) {
+      // Multiple words: each word must match at least one field (AND between words)
+      const wordConditions = searchTerms.map(term => ({
+        OR: globalSearchFields.map(field => ({
+          [field]: { contains: term, mode: 'insensitive' },
+        })),
+      }));
+      andConditions.push({ AND: wordConditions });
+    } else if (searchTerms.length === 1) {
+      // Single word: match any field
+      const globalConditions = globalSearchFields.map((field) => ({
+        [field]: { contains: searchTerms[0], mode: 'insensitive' },
+      }));
+      andConditions.push({ OR: globalConditions });
+    }
   }
 
   // Process each column filter
