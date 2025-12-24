@@ -18,8 +18,17 @@ const search = async (req, res, next) => {
     const locale = getLocale(req);
     // ticketTypeCode can come from query params, route params, or request body
     const ticketTypeCode = getTicketTypeCode(req) || req.body.ticketTypeCode || null;
-    logger.info(`[TICKETS CONTROLLER] search called with ticketTypeCode: ${ticketTypeCode}, body.ticketTypeCode: ${req.body.ticketTypeCode}`);
+    
+    // Enhanced logging for debugging
+    logger.info(`[TICKETS CONTROLLER] search called`);
+    logger.info(`[TICKETS CONTROLLER] URL: ${req.originalUrl}`);
+    logger.info(`[TICKETS CONTROLLER] Query params: ${JSON.stringify(req.query)}`);
+    logger.info(`[TICKETS CONTROLLER] Route params: ${JSON.stringify(req.params)}`);
+    logger.info(`[TICKETS CONTROLLER] Body: ${JSON.stringify(req.body, null, 2)}`);
+    logger.info(`[TICKETS CONTROLLER] Resolved ticketTypeCode: ${ticketTypeCode}, locale: ${locale}`);
+    
     const result = await service.search(req.body, locale, ticketTypeCode);
+    logger.info(`[TICKETS CONTROLLER] search result: ${result.total} items found`);
     res.json(result);
   } catch (error) {
     logger.error('[TICKETS CONTROLLER] Error in search:', error);
