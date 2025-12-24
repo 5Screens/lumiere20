@@ -518,65 +518,102 @@
           
           <!-- Filter template (only for filterable fields) -->
           <template v-if="col.is_filterable" #filter="{ filterModel }">
-            <!-- Select filter -->
-            <template v-if="col.field_type === 'select'">
-              <Select 
-                v-model="filterModel.value" 
-                :options="getFieldOptions(col)" 
-                optionLabel="label" 
-                optionValue="value" 
-                showClear
-              >
-                <template #option="slotProps">
-                  <div 
-                    class="flex items-center gap-2 px-2 py-1 rounded"
-                    :style="getTagStyle(slotProps.option.color)"
-                  >
-                    <i 
-                      v-if="slotProps.option.icon" 
-                      :class="['pi', slotProps.option.icon]" 
-                    />
-                    <span>{{ slotProps.option.label }}</span>
-                  </div>
-                </template>
-              </Select>
-            </template>
+            <!-- Select filter (MultiSelect) -->
+            <MultiSelect 
+              v-if="col.field_type === 'select'"
+              v-model="filterModel.value" 
+              :options="getFieldOptions(col)" 
+              optionLabel="label" 
+              optionValue="value" 
+              :placeholder="$t('common.select')"
+              :maxSelectedLabels="1"
+              style="min-width: 12rem"
+            >
+              <template #option="slotProps">
+                <div 
+                  class="flex items-center gap-2 px-2 py-1 rounded"
+                  :style="getTagStyle(slotProps.option.color)"
+                >
+                  <i 
+                    v-if="slotProps.option.icon" 
+                    :class="['pi', slotProps.option.icon]" 
+                  />
+                  <span>{{ slotProps.option.label }}</span>
+                </div>
+              </template>
+            </MultiSelect>
+            <!-- Workflow Status filter (MultiSelect) -->
+            <MultiSelect 
+              v-else-if="col.field_type === 'workflow_status'"
+              v-model="filterModel.value" 
+              :options="workflowStatuses" 
+              optionLabel="name" 
+              optionValue="uuid" 
+              :placeholder="$t('workflow.selectStatus')"
+              :maxSelectedLabels="1"
+              style="min-width: 12rem"
+            >
+              <template #option="slotProps">
+                <Tag 
+                  :value="slotProps.option.name"
+                  :style="{ backgroundColor: slotProps.option.category?.color || '#6b7280', color: 'white' }"
+                />
+              </template>
+            </MultiSelect>
+            <!-- CI Category filter (MultiSelect) -->
+            <MultiSelect 
+              v-else-if="col.field_type === 'ci_category'"
+              v-model="filterModel.value" 
+              :options="ciCategories" 
+              optionLabel="label" 
+              optionValue="uuid" 
+              :placeholder="$t('ciCategories.selectCategory')"
+              :maxSelectedLabels="1"
+              style="min-width: 12rem"
+            >
+              <template #option="slotProps">
+                <div class="flex items-center gap-2">
+                  <i :class="`pi ${slotProps.option.icon || 'pi-folder'}`" />
+                  <span>{{ slotProps.option.label }}</span>
+                </div>
+              </template>
+            </MultiSelect>
+            <!-- Group filter (MultiSelect) -->
+            <MultiSelect 
+              v-else-if="col.field_type === 'group'"
+              v-model="filterModel.value" 
+              :options="groups" 
+              optionLabel="group_name" 
+              optionValue="uuid" 
+              :placeholder="$t('groups.selectGroup')"
+              :maxSelectedLabels="1"
+              style="min-width: 12rem"
+            />
             <!-- Date filter -->
-            <template v-else-if="col.field_type === 'datetime' || col.field_type === 'date'">
-              <DatePicker v-model="filterModel.value" dateFormat="dd/mm/yy" showButtonBar />
-            </template>
-            <!-- Boolean filter -->
-            <template v-else-if="col.field_type === 'boolean'">
-              <Select 
+            <DatePicker 
+              v-else-if="col.field_type === 'datetime' || col.field_type === 'date'"
+              v-model="filterModel.value" 
+              dateFormat="dd/mm/yy" 
+              showButtonBar 
+            />
+            <!-- Boolean filter (Checkbox tri-state) -->
+            <div v-else-if="col.field_type === 'boolean'" class="flex items-center gap-2">
+              <Checkbox 
                 v-model="filterModel.value" 
-                :options="[{ label: $t('common.yes'), value: true }, { label: $t('common.no'), value: false }]" 
-                optionLabel="label" 
-                optionValue="value" 
-                showClear
+                :indeterminate="filterModel.value === null"
+                binary
               />
-            </template>
-            <!-- CI Category filter -->
-            <template v-else-if="col.field_type === 'ci_category'">
-              <Select 
-                v-model="filterModel.value" 
-                :options="ciCategories" 
-                optionLabel="label" 
-                optionValue="uuid" 
-                showClear
-                :placeholder="$t('ciCategories.selectCategory')"
-              >
-                <template #option="slotProps">
-                  <div class="flex items-center gap-2">
-                    <i :class="`pi ${slotProps.option.icon || 'pi-folder'}`" />
-                    <span>{{ slotProps.option.label }}</span>
-                  </div>
-                </template>
-              </Select>
-            </template>
+              <span class="text-sm">
+                {{ filterModel.value === true ? $t('common.yes') : filterModel.value === false ? $t('common.no') : $t('common.all') }}
+              </span>
+            </div>
             <!-- Default text filter -->
-            <template v-else>
-              <InputText v-model="filterModel.value" type="text" :placeholder="$t('common.search')" />
-            </template>
+            <InputText 
+              v-else
+              v-model="filterModel.value" 
+              type="text" 
+              :placeholder="$t('common.search')" 
+            />
           </template>
         </Column>
         </template>
@@ -924,6 +961,14 @@ const ticketTypeFieldsLoading = ref(false)
 const ciTypes = computed(() => referenceDataStore.ciTypes)
 const ciCategories = computed(() => referenceDataStore.ciCategories)
 const ciCategoriesLoading = computed(() => referenceDataStore.loading.ciCategories)
+const workflowStatuses = computed(() => {
+  // Get workflow statuses for the current ticket type
+  if (props.ticketTypeCode) {
+    return referenceDataStore.getWorkflowStatusesByTicketType(props.ticketTypeCode)
+  }
+  return []
+})
+const groups = computed(() => referenceDataStore.groups)
 const pendingCiType = ref(null)
 
 // Inline picker dialogs
@@ -2353,6 +2398,14 @@ onMounted(async () => {
   if (props.objectType === 'ci_types') {
     await loadCiCategories()
   }
+  
+  // Load reference data for filters (cached by the store)
+  // Load workflow statuses only if we have a ticketTypeCode
+  if (props.ticketTypeCode) {
+    referenceDataStore.loadWorkflowStatuses(props.ticketTypeCode)
+  }
+  referenceDataStore.loadGroups()
+  referenceDataStore.loadCiCategories()
   
   await loadMetadata()
 })

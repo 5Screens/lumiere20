@@ -22,6 +22,7 @@ const isValidUuid = (value) => {
 const convertMatchModeToPrisma = (fieldName, matchMode, value, dateColumns = [], uuidColumns = []) => {
   const isDateColumn = dateColumns.includes(fieldName);
   const isUuidColumn = uuidColumns.includes(fieldName);
+  const nullableUuidColumns = new Set(['assigned_group_uuid', 'assigned_person_uuid', 'rel_status_uuid']);
   
   // Parse date value - if it's a date-only string (YYYY-MM-DD), keep it as-is for range queries
   const parseValue = (val) => {
@@ -36,12 +37,43 @@ const convertMatchModeToPrisma = (fieldName, matchMode, value, dateColumns = [],
   
   // UUID columns: only accept valid UUIDs, skip invalid values
   if (isUuidColumn) {
+    if (Array.isArray(value)) {
+      const validUuids = value.filter(isValidUuid);
+      if (!validUuids.length) {
+        return null;
+      }
+
+      const isNot = matchMode === 'notEquals' || matchMode === 'notIn';
+      if (isNot && nullableUuidColumns.has(fieldName)) {
+        return { OR: [{ [fieldName]: { notIn: validUuids } }, { [fieldName]: null }] };
+      }
+      return { [fieldName]: isNot ? { notIn: validUuids } : { in: validUuids } };
+    }
+
     if (!isValidUuid(value)) {
       // Return null to indicate this filter should be skipped
       return null;
     }
-    // UUID columns always use equals
+
+    // UUID columns default to equals
+    if (matchMode === 'notEquals') {
+      return { [fieldName]: { not: value } };
+    }
+
     return { [fieldName]: value };
+  }
+
+  // If value is an array (from MultiSelect), convert to IN/NOT IN depending on matchMode
+  if (Array.isArray(value)) {
+    if (!value.length) {
+      return null;
+    }
+
+    const isNot = matchMode === 'notEquals' || matchMode === 'notIn';
+    if (isNot && nullableUuidColumns.has(fieldName)) {
+      return { OR: [{ [fieldName]: { notIn: value } }, { [fieldName]: null }] };
+    }
+    return { [fieldName]: isNot ? { notIn: value } : { in: value } };
   }
 
   switch (matchMode) {

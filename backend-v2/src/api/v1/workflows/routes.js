@@ -16,6 +16,14 @@ const { validate, primeVueFilterSchema } = require('../../../middleware/validate
 // GET /api/v1/workflows/entity/:entityType/:entityUuid - Get workflow for a specific entity instance
 router.get('/entity/:entityType/:entityUuid', controller.getWorkflowForEntity);
 
+// ============================================
+// STATUSES BY TICKET TYPE (for filter dropdowns)
+// Must be defined BEFORE :uuid routes to avoid conflicts
+// ============================================
+
+// GET /api/v1/workflows/ticket-type/:ticketTypeCode/statuses - Get all statuses for a ticket type
+router.get('/ticket-type/:ticketTypeCode/statuses', controller.getStatusesByTicketType);
+
 // GET /api/v1/workflows/entity/:entityType/:entityUuid/available-statuses - Get available statuses for entity
 // Query param: currentStatusUuid (optional)
 router.get('/entity/:entityType/:entityUuid/available-statuses', controller.getAvailableStatusesForEntity);

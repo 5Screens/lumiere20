@@ -1186,6 +1186,86 @@ const getWorkflowForEntity = async (entityType, entityUuid, locale = 'en') => {
 };
 
 /**
+ * Get all statuses for a ticket type (for filter dropdowns)
+ * @param {string} ticketTypeCode - The ticket type code (e.g., 'TASK', 'INCIDENT', 'PROBLEM')
+ * @param {string} locale - Locale for translations
+ * @returns {Array} List of statuses with category info
+ */
+const getStatusesByTicketType = async (ticketTypeCode, locale = 'en') => {
+  // Find the ticket type UUID
+  const ticketType = await prisma.ticket_types.findFirst({
+    where: { code: ticketTypeCode }
+  });
+
+  if (!ticketType) {
+    logger.warn(`[WORKFLOWS] Ticket type not found: ${ticketTypeCode}`);
+    return [];
+  }
+
+  // Find the workflow for this ticket type
+  // First try specific workflow for this ticket type
+  let workflow = await prisma.workflows.findFirst({
+    where: {
+      entity_type: 'tickets',
+      rel_entity_type_uuid: ticketType.uuid,
+      is_active: true
+    }
+  });
+
+  // If no specific workflow, try generic tickets workflow
+  if (!workflow) {
+    workflow = await prisma.workflows.findFirst({
+      where: {
+        entity_type: 'tickets',
+        rel_entity_type_uuid: null,
+        is_active: true
+      }
+    });
+  }
+
+  if (!workflow) {
+    logger.info(`[WORKFLOWS] No workflow found for ticket type: ${ticketTypeCode}`);
+    return [];
+  }
+
+  // Get all statuses for this workflow with category info
+  const statuses = await prisma.workflow_statuses.findMany({
+    where: { rel_workflow_uuid: workflow.uuid },
+    include: {
+      category: true
+    },
+    orderBy: { position_y: 'asc' }
+  });
+
+  // Get translations for status names
+  const statusUuids = statuses.map(s => s.uuid);
+  const translations = await prisma.translated_fields.findMany({
+    where: {
+      entity_type: 'workflow_statuses',
+      entity_uuid: { in: statusUuids },
+      field_name: 'name',
+      locale
+    }
+  });
+
+  const translationMap = {};
+  translations.forEach(t => {
+    translationMap[t.entity_uuid] = t.value;
+  });
+
+  return statuses.map(status => ({
+    uuid: status.uuid,
+    name: translationMap[status.uuid] || status.name,
+    category: status.category ? {
+      uuid: status.category.uuid,
+      code: status.category.code,
+      name: status.category.name,
+      color: status.category.color
+    } : null
+  }));
+};
+
+/**
  * Get available statuses for a specific entity instance
  * Uses workflow_entity_config to determine the workflow and current status
  * @param {string} entityType - The entity type (e.g., 'configuration_items', 'tickets', 'persons')
@@ -1339,5 +1419,6 @@ module.exports = {
   // Available statuses
   getAvailableStatuses,
   getWorkflowForEntity,
-  getAvailableStatusesForEntity
+  getAvailableStatusesForEntity,
+  getStatusesByTicketType
 };

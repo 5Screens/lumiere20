@@ -386,6 +386,27 @@ const getAvailableStatusesForEntity = async (req, res, next) => {
   }
 };
 
+/**
+ * Get all statuses for a ticket type (for filter dropdowns)
+ */
+const getStatusesByTicketType = async (req, res, next) => {
+  try {
+    const { ticketTypeCode } = req.params;
+    const locale = getLocale(req);
+    
+    logger.info(`[WORKFLOWS CONTROLLER] getStatusesByTicketType called with ticketTypeCode: ${ticketTypeCode}, locale: ${locale}`);
+    
+    const statuses = await service.getStatusesByTicketType(ticketTypeCode, locale);
+    
+    logger.info(`[WORKFLOWS CONTROLLER] getStatusesByTicketType returned ${statuses.length} statuses`);
+    
+    res.json(statuses);
+  } catch (error) {
+    logger.error('[WORKFLOWS CONTROLLER] Error in getStatusesByTicketType:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   // Workflows
   getAll,
@@ -410,5 +431,6 @@ module.exports = {
   // Available statuses
   getAvailableStatuses,
   getWorkflowForEntity,
-  getAvailableStatusesForEntity
+  getAvailableStatusesForEntity,
+  getStatusesByTicketType
 };
