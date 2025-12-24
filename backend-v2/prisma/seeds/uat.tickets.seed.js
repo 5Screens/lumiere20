@@ -231,7 +231,7 @@ const seedUatTickets = async (prisma) => {
 
   console.log(`Using writer: ${writer.uuid}`);
 
-  // Get some persons for requested_by and requested_for
+  // Get some persons for requested_by, requested_for, and assignment
   const persons = await prisma.persons.findMany({
     where: { is_active: true },
     select: { uuid: true },
@@ -241,15 +241,45 @@ const seedUatTickets = async (prisma) => {
   const personUuids = persons.map(p => p.uuid);
   console.log(`Found ${personUuids.length} persons for assignment`);
 
+  // Get groups for assignment
+  const groups = await prisma.groups.findMany({
+    select: { uuid: true },
+    take: 100
+  });
+
+  const groupUuids = groups.map(g => g.uuid);
+  console.log(`Found ${groupUuids.length} groups for assignment`);
+
+  if (groupUuids.length === 0) {
+    console.log('Warning: No groups found. Tickets will be created without group assignment.');
+  }
+
   let totalInserted = 0;
 
   for (const ticketType of ticketTypes) {
     console.log(`\nSeeding tickets for type: ${ticketType.code}`);
     
     const tickets = [];
+    // Half of tickets per type = 25000 (if default 50000)
+    const halfCount = Math.floor(ticketsPerType / 2);
+    
     for (let i = 0; i < ticketsPerType; i++) {
       const requestedByUuid = personUuids[i % personUuids.length];
       const requestedForUuid = personUuids[(i + 1) % personUuids.length];
+      
+      // Determine assignment based on ticket index
+      let assignedGroupUuid = null;
+      let assignedPersonUuid = null;
+      
+      if (groupUuids.length > 0) {
+        // All tickets get a group assignment
+        assignedGroupUuid = groupUuids[i % groupUuids.length];
+        
+        // Second half of tickets (25000) also get a person assignment
+        if (i >= halfCount && personUuids.length > 0) {
+          assignedPersonUuid = personUuids[(i + 2) % personUuids.length];
+        }
+      }
       
       tickets.push({
         title: buildTicketTitle(ticketType.code, i),
@@ -257,7 +287,9 @@ const seedUatTickets = async (prisma) => {
         ticket_type_code: ticketType.code,
         writer_uuid: writer.uuid,
         requested_by_uuid: requestedByUuid,
-        requested_for_uuid: requestedForUuid
+        requested_for_uuid: requestedForUuid,
+        assigned_group_uuid: assignedGroupUuid,
+        assigned_person_uuid: assignedPersonUuid
       });
     }
 
@@ -283,6 +315,8 @@ const seedUatTickets = async (prisma) => {
   }
 
   console.log(`\nUAT Tickets seed completed: total=${totalInserted} tickets across ${ticketTypes.length} types`);
+  console.log(`  - First half: assigned to group only`);
+  console.log(`  - Second half: assigned to group + person`);
 };
 
 module.exports = { seedUatTickets };

@@ -409,7 +409,7 @@ model persons {
   rel_persons_delegates_delegate rel_persons_delegates[] @relation("DelegateDelegate")
   rel_persons_entities     rel_persons_entities[]
   audit_changes            audit_changes[] @relation("AuditUser")
-  rel_tickets_groups_persons rel_tickets_groups_persons[]
+  tickets_assigned       tickets[] @relation("TicketAssignedPerson")
   attachments_uploaded     attachments[]
 
   @@schema("configuration")
@@ -437,7 +437,7 @@ model groups {
   services_cab           services[]  @relation("ServiceCAB")
   locations_field_service locations[] @relation("LocationFieldServiceGroup")
   rel_persons_groups     rel_persons_groups[]
-  rel_tickets_groups_persons rel_tickets_groups_persons[]
+  tickets_assigned       tickets[] @relation("TicketAssignedGroup")
 
   @@schema("configuration")
   @@map("groups")
@@ -520,6 +520,8 @@ model tickets {
   writer_uuid             String    @db.Uuid
   ticket_type_code        String    @db.VarChar(50)
   rel_status_uuid         String?   @db.Uuid
+  assigned_group_uuid     String?   @db.Uuid
+  assigned_person_uuid    String?   @db.Uuid
   watchers                Json?     @db.JsonB
   extended_core_fields    Json?     @db.JsonB
   created_at              DateTime  @default(now()) @db.Timestamptz(6)
@@ -533,11 +535,12 @@ model tickets {
   writer             persons              @relation("TicketWriter", fields: [writer_uuid], references: [uuid], onDelete: Restrict)
   ticket_type        ticket_types         @relation(fields: [ticket_type_code], references: [code], onDelete: Restrict)
   status             workflow_statuses?   @relation(fields: [rel_status_uuid], references: [uuid], onDelete: Restrict)
+  assigned_group     groups?              @relation("TicketAssignedGroup", fields: [assigned_group_uuid], references: [uuid], onDelete: SetNull)
+  assigned_person    persons?             @relation("TicketAssignedPerson", fields: [assigned_person_uuid], references: [uuid], onDelete: SetNull)
   
   // Parent/child relations
   parent_relations   rel_parent_child_tickets[] @relation("TicketParent")
   child_relations    rel_parent_child_tickets[] @relation("TicketChild")
-  rel_tickets_groups_persons rel_tickets_groups_persons[]
   attachments        attachments[]
 
   @@schema("core")
@@ -581,28 +584,6 @@ model rel_parent_child_tickets {
   @@map("rel_parent_child_tickets")
 }
 
-model rel_tickets_groups_persons {
-  uuid                  String    @id @default(uuid()) @db.Uuid
-  rel_ticket            String    @db.Uuid
-  rel_assigned_to_group String?   @db.Uuid
-  rel_assigned_to_person String?  @db.Uuid
-  type                  String    @db.VarChar(20)
-  created_at            DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at            DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
-  ended_at              DateTime? @db.Timestamptz(6)
-
-  ticket           tickets  @relation(fields: [rel_ticket], references: [uuid], onDelete: Cascade)
-  assigned_group   groups?  @relation(fields: [rel_assigned_to_group], references: [uuid], onDelete: Cascade)
-  assigned_person  persons? @relation(fields: [rel_assigned_to_person], references: [uuid], onDelete: SetNull)
-
-  @@index([rel_ticket])
-  @@index([rel_assigned_to_group])
-  @@index([rel_assigned_to_person])
-  @@index([type])
-  @@index([rel_ticket, ended_at])
-  @@schema("core")
-  @@map("rel_tickets_groups_persons")
-}
 
 // ============================================
 // SCHEMA: translations

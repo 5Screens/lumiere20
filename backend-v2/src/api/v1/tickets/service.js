@@ -70,102 +70,6 @@ const getInitialStatusForTicketType = async (ticketTypeCode) => {
 };
 
 /**
- * Normalize assignment fields from request data
- */
-const normalizeAssignedFields = (data = {}) => {
-  return {
-    assigned_to_group: data.assigned_to_group ?? null,
-    assigned_to_person: data.assigned_to_person ?? null,
-  };
-};
-
-/**
- * Attach assignment fields to tickets from rel_tickets_groups_persons
- */
-const attachAssignmentFields = async (tickets) => {
-  const list = Array.isArray(tickets) ? tickets : [tickets];
-  const uuids = list.map(t => t.uuid).filter(Boolean);
-  if (!uuids.length) return tickets;
-
-  const relations = await prisma.rel_tickets_groups_persons.findMany({
-    where: {
-      rel_ticket: { in: uuids },
-      type: 'ASSIGNED',
-      ended_at: null,
-    },
-    select: {
-      rel_ticket: true,
-      rel_assigned_to_group: true,
-      rel_assigned_to_person: true,
-    },
-  });
-
-  const map = new Map();
-  for (const r of relations) {
-    map.set(r.rel_ticket, {
-      assigned_to_group: r.rel_assigned_to_group || null,
-      assigned_to_person: r.rel_assigned_to_person || null,
-    });
-  }
-
-  const mergeOne = (t) => {
-    const extra = map.get(t.uuid) || { assigned_to_group: null, assigned_to_person: null };
-    return { ...t, ...extra };
-  };
-
-  if (Array.isArray(tickets)) return tickets.map(mergeOne);
-  return mergeOne(tickets);
-};
-
-/**
- * Upsert assignment relation for a ticket
- */
-const upsertAssignment = async (ticketUuid, assignedToGroup, assignedToPerson) => {
-  const hasAny = !!(assignedToGroup || assignedToPerson);
-
-  const existing = await prisma.rel_tickets_groups_persons.findFirst({
-    where: {
-      rel_ticket: ticketUuid,
-      type: 'ASSIGNED',
-      ended_at: null,
-    },
-    select: { uuid: true },
-  });
-
-  if (!hasAny) {
-    if (existing) {
-      await prisma.rel_tickets_groups_persons.update({
-        where: { uuid: existing.uuid },
-        data: { ended_at: new Date() },
-      });
-    }
-    return;
-  }
-
-  if (existing) {
-    await prisma.rel_tickets_groups_persons.update({
-      where: { uuid: existing.uuid },
-      data: {
-        rel_assigned_to_group: assignedToGroup,
-        rel_assigned_to_person: assignedToPerson,
-        ended_at: null,
-      },
-    });
-    return;
-  }
-
-  await prisma.rel_tickets_groups_persons.create({
-    data: {
-      rel_ticket: ticketUuid,
-      rel_assigned_to_group: assignedToGroup,
-      rel_assigned_to_person: assignedToPerson,
-      type: 'ASSIGNED',
-      ended_at: null,
-    },
-  });
-};
-
-/**
  * Get extended fields definition for a ticket type
  */
 const getTicketTypeFields = async (ticketTypeCode) => {
@@ -182,6 +86,34 @@ const getTicketTypeFields = async (ticketTypeCode) => {
   
   return ticketType?.fields || [];
 };
+
+/**
+ * Standard include for ticket queries - includes assignment relations directly
+ */
+const getTicketInclude = () => ({
+  status: {
+    include: { category: true },
+  },
+  ticket_type: true,
+  writer: {
+    select: { uuid: true, first_name: true, last_name: true, email: true }
+  },
+  requested_by: {
+    select: { uuid: true, first_name: true, last_name: true, email: true }
+  },
+  requested_for: {
+    select: { uuid: true, first_name: true, last_name: true, email: true }
+  },
+  configuration_item: {
+    select: { uuid: true, name: true }
+  },
+  assigned_group: {
+    select: { uuid: true, group_name: true, description: true }
+  },
+  assigned_person: {
+    select: { uuid: true, first_name: true, last_name: true, email: true }
+  },
+});
 
 /**
  * Search tickets with optional ticket_type_code filter
@@ -232,13 +164,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       where.AND.push({ ticket_type_code: ticketTypeCode });
     }
 
-    const extractEqualsValue = (filterObj) => {
-      const constraint = filterObj?.constraints?.[0];
-      const value = constraint?.value;
-      if (value === null || value === undefined || value === '') return null;
-      return value;
-    };
-
     // Handle assigned_to_group filter with smart text search
     const assignedToGroupValue = assignedToGroupFilter?.constraints?.[0]?.value;
     if (assignedToGroupValue && typeof assignedToGroupValue === 'string' && assignedToGroupValue.trim()) {
@@ -247,7 +172,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
 
       let matchingGroups;
       if (searchTerms.length > 1) {
-        // Multiple words: each word must match the name
         matchingGroups = await prisma.groups.findMany({
           where: {
             AND: searchTerms.map(term => ({
@@ -257,7 +181,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
           select: { uuid: true },
         });
       } else {
-        // Single word: match name
         matchingGroups = await prisma.groups.findMany({
           where: {
             group_name: { contains: searchTerms[0], mode: 'insensitive' },
@@ -268,15 +191,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
 
       const groupUuids = matchingGroups.map(g => g.uuid);
       if (groupUuids.length > 0) {
-        where.AND.push({
-          rel_tickets_groups_persons: {
-            some: {
-              type: 'ASSIGNED',
-              ended_at: null,
-              rel_assigned_to_group: { in: groupUuids },
-            },
-          },
-        });
+        where.AND.push({ assigned_group_uuid: { in: groupUuids } });
       } else {
         where.AND.push({ uuid: '00000000-0000-0000-0000-000000000000' });
       }
@@ -290,7 +205,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
 
       let matchingPersons;
       if (searchTerms.length > 1) {
-        // Multiple words: each word must match at least one field
         matchingPersons = await prisma.persons.findMany({
           where: {
             AND: searchTerms.map(term => ({
@@ -304,7 +218,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
           select: { uuid: true },
         });
       } else {
-        // Single word: match any field
         matchingPersons = await prisma.persons.findMany({
           where: {
             OR: [
@@ -319,15 +232,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
 
       const personUuids = matchingPersons.map(p => p.uuid);
       if (personUuids.length > 0) {
-        where.AND.push({
-          rel_tickets_groups_persons: {
-            some: {
-              type: 'ASSIGNED',
-              ended_at: null,
-              rel_assigned_to_person: { in: personUuids },
-            },
-          },
-        });
+        where.AND.push({ assigned_person_uuid: { in: personUuids } });
       } else {
         where.AND.push({ uuid: '00000000-0000-0000-0000-000000000000' });
       }
@@ -336,13 +241,11 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
     // Handle workflow status filter (search by status name, not UUID)
     const statusSearchValue = statusFilter?.constraints?.[0]?.value;
     if (statusSearchValue && typeof statusSearchValue === 'string' && statusSearchValue.trim()) {
-      // Find workflow_statuses matching the search text in name
       const matchingByName = await prisma.workflow_statuses.findMany({
         where: { name: { contains: statusSearchValue, mode: 'insensitive' } },
         select: { uuid: true },
       });
 
-      // Find workflow_statuses matching the search text in translations
       const matchingTranslations = await prisma.translated_fields.findMany({
         where: {
           entity_type: 'workflow_statuses',
@@ -362,12 +265,11 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       if (statusUuids.length > 0) {
         where.AND.push({ rel_status_uuid: { in: statusUuids } });
       } else {
-        // No matching status found, return empty results
         where.AND.push({ rel_status_uuid: '00000000-0000-0000-0000-000000000000' });
       }
     }
 
-    // Helper function to search persons with smart space handling (AND between words)
+    // Helper function to search persons with smart space handling
     const searchPersonsByText = async (searchValue) => {
       const trimmed = searchValue.trim();
       if (!trimmed) return [];
@@ -375,7 +277,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       const searchTerms = trimmed.split(/\s+/).filter(term => term.length > 0);
 
       if (searchTerms.length > 1) {
-        // Multiple words: each word must match at least one field (first_name, last_name, email)
         const matchingPersons = await prisma.persons.findMany({
           where: {
             AND: searchTerms.map(term => ({
@@ -390,7 +291,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
         });
         return matchingPersons.map(p => p.uuid);
       } else {
-        // Single word: match any field
         const matchingPersons = await prisma.persons.findMany({
           where: {
             OR: [
@@ -405,7 +305,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       }
     };
 
-    // Handle requested_by filter (search by person name)
+    // Handle requested_by filter
     const requestedByValue = requestedByFilter?.constraints?.[0]?.value;
     if (requestedByValue && typeof requestedByValue === 'string') {
       const personUuids = await searchPersonsByText(requestedByValue);
@@ -416,7 +316,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       }
     }
 
-    // Handle requested_for filter (search by person name)
+    // Handle requested_for filter
     const requestedForValue = requestedForFilter?.constraints?.[0]?.value;
     if (requestedForValue && typeof requestedForValue === 'string') {
       const personUuids = await searchPersonsByText(requestedForValue);
@@ -427,7 +327,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       }
     }
 
-    // Handle writer filter (search by person name)
+    // Handle writer filter
     const writerValue = writerFilter?.constraints?.[0]?.value;
     if (writerValue && typeof writerValue === 'string') {
       const personUuids = await searchPersonsByText(writerValue);
@@ -438,7 +338,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       }
     }
 
-    // Handle configuration_item filter (search by CI name)
+    // Handle configuration_item filter
     const ciValue = configurationItemFilter?.constraints?.[0]?.value;
     if (ciValue && typeof ciValue === 'string' && ciValue.trim()) {
       const trimmed = ciValue.trim();
@@ -446,7 +346,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
 
       let matchingCIs;
       if (searchTerms.length > 1) {
-        // Multiple words: each word must match the name
         matchingCIs = await prisma.configuration_items.findMany({
           where: {
             AND: searchTerms.map(term => ({
@@ -456,7 +355,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
           select: { uuid: true },
         });
       } else {
-        // Single word: match name
         matchingCIs = await prisma.configuration_items.findMany({
           where: {
             name: { contains: searchTerms[0], mode: 'insensitive' },
@@ -485,24 +383,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       orderBy: buildPrismaOrderBy(sortField, sortOrder),
       skip,
       take: limit,
-      include: {
-        status: {
-          include: { category: true },
-        },
-        ticket_type: true,
-        writer: {
-          select: { uuid: true, first_name: true, last_name: true, email: true }
-        },
-        requested_by: {
-          select: { uuid: true, first_name: true, last_name: true, email: true }
-        },
-        requested_for: {
-          select: { uuid: true, first_name: true, last_name: true, email: true }
-        },
-        configuration_item: {
-          select: { uuid: true, name: true }
-        },
-      },
+      include: getTicketInclude(),
     });
 
     const statusUuids = items.filter(i => i.status).map(i => i.status.uuid);
@@ -527,9 +408,6 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
     const ticketTypeUuids = items.filter(i => i.ticket_type).map(i => i.ticket_type.uuid);
     const ticketTypeTranslationsMap = {};
 
-    logger.info(`[TICKETS] ticketTypeUuids: ${JSON.stringify(ticketTypeUuids)}`);
-    logger.info(`[TICKETS] locale for translation: ${locale}`);
-
     if (ticketTypeUuids.length > 0) {
       const ticketTypeTranslations = await prisma.translated_fields.findMany({
         where: {
@@ -539,14 +417,10 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
         },
       });
 
-      logger.info(`[TICKETS] ticketTypeTranslations found: ${JSON.stringify(ticketTypeTranslations)}`);
-
       for (const t of ticketTypeTranslations) {
         if (!ticketTypeTranslationsMap[t.entity_uuid]) ticketTypeTranslationsMap[t.entity_uuid] = {};
         ticketTypeTranslationsMap[t.entity_uuid][t.locale] = t.value;
       }
-
-      logger.info(`[TICKETS] ticketTypeTranslationsMap: ${JSON.stringify(ticketTypeTranslationsMap)}`);
     }
 
     const transformed = items.map(item => {
@@ -561,13 +435,10 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       if (next.ticket_type) {
         const ttUuid = next.ticket_type.uuid;
         const ttTranslations = ticketTypeTranslationsMap[ttUuid];
-        logger.info(`[TICKETS] Transforming ticket_type: uuid=${ttUuid}, translations=${JSON.stringify(ttTranslations)}, locale=${locale}`);
         if (ttTranslations) {
-          const translatedLabel = ttTranslations[locale] || next.ticket_type.label;
-          logger.info(`[TICKETS] Setting ticket_type.label to: ${translatedLabel}`);
           next.ticket_type = {
             ...next.ticket_type,
-            label: translatedLabel,
+            label: ttTranslations[locale] || next.ticket_type.label,
             _translations: { label: ttTranslations },
           };
         }
@@ -575,10 +446,8 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       return next;
     });
 
-    const withAssignment = await attachAssignmentFields(transformed);
-
     return {
-      data: withAssignment,
+      data: transformed,
       total,
       pagination: buildPaginationResponse(page, limit, total),
     };
@@ -602,18 +471,13 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'updated_at', sortOrde
       orderBy: buildPrismaOrderBy(sortField, sortOrder),
       skip,
       take: limit,
-      include: {
-        status: { include: { category: true } },
-        ticket_type: true,
-      },
+      include: getTicketInclude(),
     }),
     prisma.tickets.count({ where }),
   ]);
 
-  const withAssignment = await attachAssignmentFields(items);
-
   return {
-    data: withAssignment,
+    data: items,
     total,
     pagination: buildPaginationResponse(page, limit, total),
   };
@@ -630,10 +494,7 @@ const getByUuid = async (uuid, locale = 'en', ticketTypeCode = null) => {
 
   const item = await prisma.tickets.findFirst({
     where,
-    include: {
-      status: { include: { category: true } },
-      ticket_type: true,
-    },
+    include: getTicketInclude(),
   });
 
   if (!item) return null;
@@ -654,7 +515,7 @@ const getByUuid = async (uuid, locale = 'en', ticketTypeCode = null) => {
     };
   }
 
-  return attachAssignmentFields(item);
+  return item;
 };
 
 /**
@@ -664,7 +525,6 @@ const create = async (data, ticketTypeCode = null) => {
   const { _translations, ...rawData } = data;
   void _translations;
 
-  const assignment = normalizeAssignedFields(rawData);
   const typeCode = ticketTypeCode || rawData.ticket_type_code;
 
   if (!typeCode) {
@@ -686,13 +546,13 @@ const create = async (data, ticketTypeCode = null) => {
       writer_uuid: rawData.writer_uuid,
       ticket_type_code: typeCode,
       rel_status_uuid: statusUuid,
+      assigned_group_uuid: rawData.assigned_group_uuid || null,
+      assigned_person_uuid: rawData.assigned_person_uuid || null,
       extended_core_fields: rawData.extended_core_fields || {},
       closed_at: rawData.closed_at || null,
       watchers: rawData.watchers || null,
     },
   });
-
-  await upsertAssignment(created.uuid, assignment.assigned_to_group, assignment.assigned_to_person);
 
   logger.info(`[TICKETS] Created ticket (type=${typeCode}): ${created.uuid}`);
 
@@ -709,8 +569,6 @@ const update = async (uuid, data, ticketTypeCode = null) => {
 
     logger.info(`[TICKETS] Update called for ${uuid} with data: ${JSON.stringify(rawData)}`);
 
-    const assignment = normalizeAssignedFields(rawData);
-
     const updateData = {};
 
     if (rawData.title !== undefined) updateData.title = rawData.title;
@@ -724,18 +582,21 @@ const update = async (uuid, data, ticketTypeCode = null) => {
     if (rawData.extended_core_fields !== undefined) updateData.extended_core_fields = rawData.extended_core_fields;
     if (rawData.closed_at !== undefined) updateData.closed_at = rawData.closed_at;
     if (rawData.watchers !== undefined) updateData.watchers = rawData.watchers;
+    
+    // Handle assignment fields
+    if (rawData.assigned_group_uuid !== undefined) updateData.assigned_group_uuid = rawData.assigned_group_uuid;
+    if (rawData.assigned_person_uuid !== undefined) updateData.assigned_person_uuid = rawData.assigned_person_uuid;
 
     const item = await prisma.tickets.update({
       where: { uuid },
       data: updateData,
+      include: getTicketInclude(),
     });
 
     // Validate ticket type if specified
     if (ticketTypeCode && item.ticket_type_code !== ticketTypeCode) {
       return null;
     }
-
-    await upsertAssignment(item.uuid, assignment.assigned_to_group, assignment.assigned_to_person);
 
     logger.info(`[TICKETS] Updated ticket: ${uuid}`);
 

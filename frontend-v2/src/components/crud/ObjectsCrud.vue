@@ -1344,36 +1344,24 @@ const onWorkflowStatusSave = async (data, payload) => {
 }
 
 // Group display and editor functions
+// Convention: field_name = 'assigned_group_uuid', relation = 'assigned_group'
 const getGroupDisplay = (data, fieldName) => {
-  // Check if we have the group data in the row (populated by backend)
-  // Field name is like 'assigned_to_group', group object would be at 'assigned_group' or similar
-  const groupField = fieldName.replace('_to_group', '_group').replace('_group_uuid', '_group')
-  if (data[groupField] && typeof data[groupField] === 'object') {
-    return data[groupField].group_name
-  }
-  // Also check direct field name without transformation
-  if (data[fieldName] && typeof data[fieldName] === 'object') {
-    return data[fieldName].group_name
+  // Transform: assigned_group_uuid -> assigned_group
+  const relationField = fieldName.replace('_uuid', '')
+  if (data[relationField] && typeof data[relationField] === 'object') {
+    return data[relationField].group_name
   }
   return null
 }
 
 const getGroupObject = (data, fieldName) => {
-  // Field name is like 'assigned_to_group', group object would be at 'assigned_group' or similar
-  const groupField = fieldName.replace('_to_group', '_group').replace('_group_uuid', '_group')
-  if (data[groupField] && typeof data[groupField] === 'object') {
+  // Transform: assigned_group_uuid -> assigned_group
+  const relationField = fieldName.replace('_uuid', '')
+  if (data[relationField] && typeof data[relationField] === 'object') {
     return {
-      uuid: data[groupField].uuid,
-      group_name: data[groupField].group_name,
-      description: data[groupField].description
-    }
-  }
-  // Also check direct field name without transformation
-  if (data[fieldName] && typeof data[fieldName] === 'object') {
-    return {
-      uuid: data[fieldName].uuid,
-      group_name: data[fieldName].group_name,
-      description: data[fieldName].description
+      uuid: data[relationField].uuid,
+      group_name: data[relationField].group_name,
+      description: data[relationField].description
     }
   }
   return null
@@ -1385,10 +1373,10 @@ const onGroupSave = async (data, fieldName, payload) => {
     const updateData = { [fieldName]: groupUuid }
     await service.value.update(data.uuid, updateData)
     
-    // Update local data
+    // Update local data - fieldName is like 'assigned_group_uuid', relation is 'assigned_group'
     data[fieldName] = groupUuid
-    const groupField = fieldName.replace('_to_group', '_group').replace('_group_uuid', '_group')
-    data[groupField] = group
+    const relationField = fieldName.replace('_uuid', '')
+    data[relationField] = group
     
     // Update the item in the items array to ensure reactivity
     const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
@@ -1396,7 +1384,7 @@ const onGroupSave = async (data, fieldName, payload) => {
       items.value[itemIndex] = { 
         ...items.value[itemIndex], 
         [fieldName]: groupUuid,
-        [groupField]: group
+        [relationField]: group
       }
     }
     
