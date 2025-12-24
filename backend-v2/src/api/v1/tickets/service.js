@@ -17,6 +17,7 @@ const PERSON_SORT_FIELDS = {
 // Relation fields that need special sorting by name
 const RELATION_SORT_FIELDS = {
   configuration_item_uuid: { relation: 'configuration_item', field: 'name' },
+  assigned_group_uuid: { relation: 'assigned_group', field: 'group_name' },
 };
 
 /**
