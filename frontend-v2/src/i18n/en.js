@@ -130,6 +130,7 @@ export default {
     duplicate: 'Duplicate',
     create: 'Create',
     search: 'Search',
+    searchIn: 'Search in',
     columns: 'Columns',
     loading: 'Loading...',
     scrollForMore: 'Scroll for more results',

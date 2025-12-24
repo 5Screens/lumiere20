@@ -130,6 +130,7 @@ export default {
     duplicate: 'Dupliquer',
     create: 'Créer',
     search: 'Rechercher',
+    searchIn: 'Recherche dans',
     close:'Fermer',
     columns: 'Colonnes',
     loading: 'Chargement...',

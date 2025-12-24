@@ -102,15 +102,20 @@
         <template #header>
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-2">
-              <IconField>
-                <InputIcon>
-                  <i class="pi pi-search" />
-                </InputIcon>
-                <InputText 
-                  v-model="filters['global'].value" 
-                  :placeholder="$t('common.search')" 
-                />
-              </IconField>
+              <div class="flex flex-col">
+                <IconField>
+                  <InputIcon>
+                    <i class="pi pi-search" />
+                  </InputIcon>
+                  <InputText 
+                    v-model="filters['global'].value" 
+                    :placeholder="$t('common.search')" 
+                  />
+                </IconField>
+                <small class="text-surface-500 dark:text-surface-400 mt-1 text-xs italic">
+                  {{ $t('common.searchIn') }}: {{ globalFilterFieldsLabel }}
+                </small>
+              </div>
               <Button 
                 type="button" 
                 icon="pi pi-filter-slash" 
@@ -1183,6 +1188,19 @@ const globalFilterFields = computed(() => {
   if (fields.length > 0) return fields
 
   return ['name', 'description']
+})
+
+const globalFilterFieldsLabel = computed(() => {
+  const fields = globalFilterFields.value
+  const columns = filteredTableColumns.value || []
+  
+  return fields.map(fieldName => {
+    const col = columns.find(c => c.field_name === fieldName)
+    if (col?.label_key) {
+      return t(col.label_key)
+    }
+    return fieldName
+  }).join(', ')
 })
 
 const paginationTemplate = computed(() => {
