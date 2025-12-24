@@ -6,6 +6,31 @@ const {
   buildPaginationResponse,
 } = require('../../../utils/primeVueFilters');
 
+// Person fields that need special sorting by first_name + last_name
+const PERSON_SORT_FIELDS = {
+  writer_uuid: 'writer',
+  requested_by_uuid: 'requested_by',
+  requested_for_uuid: 'requested_for',
+  assigned_person_uuid: 'assigned_person',
+};
+
+/**
+ * Build orderBy clause for person fields (sort by first_name, last_name)
+ * @param {string} sortField - Field name (e.g., 'writer_uuid')
+ * @param {number} sortOrder - 1 for asc, -1 for desc
+ * @returns {Array} Prisma orderBy array for person relation
+ */
+const buildPersonOrderBy = (sortField, sortOrder) => {
+  const relationName = PERSON_SORT_FIELDS[sortField];
+  if (!relationName) return null;
+  
+  const direction = sortOrder === 1 || sortOrder === 'asc' ? 'asc' : 'desc';
+  return [
+    { [relationName]: { first_name: direction } },
+    { [relationName]: { last_name: direction } },
+  ];
+};
+
 /**
  * Get ticket type UUID from code
  */
@@ -378,9 +403,13 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
 
     const total = await prisma.tickets.count({ where });
 
+    // Build orderBy - use special sorting for person fields
+    const personOrderBy = buildPersonOrderBy(sortField, sortOrder);
+    const orderBy = personOrderBy || buildPrismaOrderBy(sortField, sortOrder);
+
     const items = await prisma.tickets.findMany({
       where,
-      orderBy: buildPrismaOrderBy(sortField, sortOrder),
+      orderBy,
       skip,
       take: limit,
       include: getTicketInclude(),
