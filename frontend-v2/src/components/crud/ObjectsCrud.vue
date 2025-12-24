@@ -1688,6 +1688,37 @@ const confirmInlineTranslatable = async () => {
   }
 }
 
+/**
+ * Convert Date objects in filters to local date strings (YYYY-MM-DD) to avoid timezone issues
+ */
+const normalizeFiltersForApi = (filtersObj) => {
+  const normalized = JSON.parse(JSON.stringify(filtersObj))
+  
+  for (const key in normalized) {
+    const filter = normalized[key]
+    if (filter?.constraints) {
+      for (const constraint of filter.constraints) {
+        if (constraint.value instanceof Date) {
+          // Convert to local date string YYYY-MM-DD
+          const year = constraint.value.getFullYear()
+          const month = String(constraint.value.getMonth() + 1).padStart(2, '0')
+          const day = String(constraint.value.getDate()).padStart(2, '0')
+          constraint.value = `${year}-${month}-${day}`
+        } else if (typeof constraint.value === 'string' && constraint.value.match(/^\d{4}-\d{2}-\d{2}T/)) {
+          // Already an ISO string, extract just the date part in local time
+          const date = new Date(constraint.value)
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, '0')
+          const day = String(date.getDate()).padStart(2, '0')
+          constraint.value = `${year}-${month}-${day}`
+        }
+      }
+    }
+  }
+  
+  return normalized
+}
+
 const loadItems = async (pageNum = null) => {
   if (!service.value) {
     console.warn(`[ObjectsCrud] No service available for objectType: ${props.objectType}`)
@@ -1699,7 +1730,7 @@ const loadItems = async (pageNum = null) => {
     const page = typeof pageNum === 'number' ? pageNum : currentPage.value
     
     const searchParams = {
-      filters: filters.value,
+      filters: normalizeFiltersForApi(filters.value),
       sortField: sortField.value,
       sortOrder: sortOrder.value,
       page,

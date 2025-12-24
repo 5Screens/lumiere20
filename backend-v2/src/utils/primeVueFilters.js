@@ -22,7 +22,17 @@ const isValidUuid = (value) => {
 const convertMatchModeToPrisma = (fieldName, matchMode, value, dateColumns = [], uuidColumns = []) => {
   const isDateColumn = dateColumns.includes(fieldName);
   const isUuidColumn = uuidColumns.includes(fieldName);
-  const parseValue = (val) => (isDateColumn && val ? new Date(val) : val);
+  
+  // Parse date value - if it's a date-only string (YYYY-MM-DD), keep it as-is for range queries
+  const parseValue = (val) => {
+    if (!isDateColumn || !val) return val;
+    return new Date(val);
+  };
+  
+  // Check if value is a date-only string (YYYY-MM-DD format from frontend)
+  const isDateOnlyString = (val) => {
+    return typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val);
+  };
   
   // UUID columns: only accept valid UUIDs, skip invalid values
   if (isUuidColumn) {
@@ -68,9 +78,21 @@ const convertMatchModeToPrisma = (fieldName, matchMode, value, dateColumns = [],
       return { [fieldName]: { gte: parseValue(value) } };
 
     case 'dateIs':
+      // For date-only strings (YYYY-MM-DD), create a range for the entire day
+      if (isDateOnlyString(value)) {
+        const startOfDay = new Date(value + 'T00:00:00.000Z');
+        const endOfDay = new Date(value + 'T23:59:59.999Z');
+        return { [fieldName]: { gte: startOfDay, lte: endOfDay } };
+      }
       return { [fieldName]: parseValue(value) };
 
     case 'dateIsNot':
+      // For date-only strings, exclude the entire day range
+      if (isDateOnlyString(value)) {
+        const startOfDay = new Date(value + 'T00:00:00.000Z');
+        const endOfDay = new Date(value + 'T23:59:59.999Z');
+        return { OR: [{ [fieldName]: { lt: startOfDay } }, { [fieldName]: { gt: endOfDay } }] };
+      }
       return { [fieldName]: { not: parseValue(value) } };
 
     case 'between':
