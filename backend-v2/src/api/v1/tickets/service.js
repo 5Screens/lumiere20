@@ -277,34 +277,55 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       }
     }
 
-    // Handle workflow status filter (search by status name, not UUID)
+    // Handle workflow status filter
     const statusSearchValue = statusFilter?.constraints?.[0]?.value;
-    if (statusSearchValue && typeof statusSearchValue === 'string' && statusSearchValue.trim()) {
-      const matchingByName = await prisma.workflow_statuses.findMany({
-        where: { name: { contains: statusSearchValue, mode: 'insensitive' } },
-        select: { uuid: true },
-      });
+    const statusMatchMode = statusFilter?.constraints?.[0]?.matchMode || 'equals';
+    
+    if (statusSearchValue) {
+      // If value is an array of UUIDs (from MultiSelect), use IN/NOT IN
+      if (Array.isArray(statusSearchValue) && statusSearchValue.length > 0) {
+        const isNot = statusMatchMode === 'notEquals' || statusMatchMode === 'notIn';
+        if (isNot) {
+          // NOT IN: exclude these statuses, include null (unassigned)
+          where.AND.push({
+            OR: [
+              { rel_status_uuid: { notIn: statusSearchValue } },
+              { rel_status_uuid: null }
+            ]
+          });
+        } else {
+          // IN: include only these statuses
+          where.AND.push({ rel_status_uuid: { in: statusSearchValue } });
+        }
+      }
+      // If value is a string, search by status name (legacy text search)
+      else if (typeof statusSearchValue === 'string' && statusSearchValue.trim()) {
+        const matchingByName = await prisma.workflow_statuses.findMany({
+          where: { name: { contains: statusSearchValue, mode: 'insensitive' } },
+          select: { uuid: true },
+        });
 
-      const matchingTranslations = await prisma.translated_fields.findMany({
-        where: {
-          entity_type: 'workflow_statuses',
-          field_name: 'name',
-          value: { contains: statusSearchValue, mode: 'insensitive' },
-        },
-        select: { entity_uuid: true },
-      });
+        const matchingTranslations = await prisma.translated_fields.findMany({
+          where: {
+            entity_type: 'workflow_statuses',
+            field_name: 'name',
+            value: { contains: statusSearchValue, mode: 'insensitive' },
+          },
+          select: { entity_uuid: true },
+        });
 
-      const statusUuids = [
-        ...new Set([
-          ...matchingByName.map(s => s.uuid),
-          ...matchingTranslations.map(t => t.entity_uuid),
-        ]),
-      ];
+        const statusUuids = [
+          ...new Set([
+            ...matchingByName.map(s => s.uuid),
+            ...matchingTranslations.map(t => t.entity_uuid),
+          ]),
+        ];
 
-      if (statusUuids.length > 0) {
-        where.AND.push({ rel_status_uuid: { in: statusUuids } });
-      } else {
-        where.AND.push({ rel_status_uuid: '00000000-0000-0000-0000-000000000000' });
+        if (statusUuids.length > 0) {
+          where.AND.push({ rel_status_uuid: { in: statusUuids } });
+        } else {
+          where.AND.push({ rel_status_uuid: '00000000-0000-0000-0000-000000000000' });
+        }
       }
     }
 
