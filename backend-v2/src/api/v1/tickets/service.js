@@ -14,6 +14,11 @@ const PERSON_SORT_FIELDS = {
   assigned_person_uuid: 'assigned_person',
 };
 
+// Relation fields that need special sorting by name
+const RELATION_SORT_FIELDS = {
+  configuration_item_uuid: { relation: 'configuration_item', field: 'name' },
+};
+
 /**
  * Build orderBy clause for person fields (sort by first_name, last_name)
  * @param {string} sortField - Field name (e.g., 'writer_uuid')
@@ -22,13 +27,21 @@ const PERSON_SORT_FIELDS = {
  */
 const buildPersonOrderBy = (sortField, sortOrder) => {
   const relationName = PERSON_SORT_FIELDS[sortField];
-  if (!relationName) return null;
+  if (relationName) {
+    const direction = sortOrder === 1 || sortOrder === 'asc' ? 'asc' : 'desc';
+    return [
+      { [relationName]: { first_name: direction } },
+      { [relationName]: { last_name: direction } },
+    ];
+  }
   
-  const direction = sortOrder === 1 || sortOrder === 'asc' ? 'asc' : 'desc';
-  return [
-    { [relationName]: { first_name: direction } },
-    { [relationName]: { last_name: direction } },
-  ];
+  const relationConfig = RELATION_SORT_FIELDS[sortField];
+  if (relationConfig) {
+    const direction = sortOrder === 1 || sortOrder === 'asc' ? 'asc' : 'desc';
+    return { [relationConfig.relation]: { [relationConfig.field]: direction } };
+  }
+  
+  return null;
 };
 
 /**
