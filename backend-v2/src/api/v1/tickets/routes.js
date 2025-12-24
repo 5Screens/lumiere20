@@ -16,8 +16,8 @@ const createSchema = z.object({
   watchers: z.array(z.string().uuid()).optional().nullable(),
   extended_core_fields: z.record(z.any()).optional().nullable(),
   closed_at: z.string().optional().nullable(),
-  assigned_to_group: z.string().uuid().optional().nullable(),
-  assigned_to_person: z.string().uuid().optional().nullable(),
+  assigned_group_uuid: z.string().uuid().optional().nullable(),
+  assigned_person_uuid: z.string().uuid().optional().nullable(),
 });
 
 const updateSchema = z.object({
@@ -31,8 +31,8 @@ const updateSchema = z.object({
   watchers: z.array(z.string().uuid()).optional().nullable(),
   extended_core_fields: z.record(z.any()).optional().nullable(),
   closed_at: z.string().optional().nullable(),
-  assigned_to_group: z.string().uuid().optional().nullable(),
-  assigned_to_person: z.string().uuid().optional().nullable(),
+  assigned_group_uuid: z.string().uuid().optional().nullable(),
+  assigned_person_uuid: z.string().uuid().optional().nullable(),
 });
 
 // Generic tickets routes (all types)
