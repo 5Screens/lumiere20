@@ -215,6 +215,10 @@
           :sortable="col.is_sortable"
           :dataType="col.data_type === 'date' ? 'date' : undefined"
           :style="`min-width: ${col.min_width || '10rem'}`"
+          :showFilterOperator="!isSimplifiedFilterType(col.field_type)"
+          :showFilterMatchModes="true"
+          :maxConstraints="isSimplifiedFilterType(col.field_type) ? 1 : 10"
+          :filterMatchModeOptions="getFilterMatchModeOptions(col.field_type)"
         >
           <!-- Body template based on field type -->
           <template #body="{ data }">
@@ -1035,6 +1039,8 @@ const getDefaultMatchMode = (col) => {
   switch (col.field_type) {
     case 'select':
     case 'ci_category':
+    case 'workflow_status':
+    case 'group':
       return FilterMatchMode.EQUALS
     case 'date':
     case 'datetime':
@@ -1137,6 +1143,26 @@ const toggleColumnSelector = (event) => {
 const getFieldOptions = (field) => {
   if (!field.options_source) return []
   return fieldOptions.value[field.field_name] || []
+}
+
+// Types that should have simplified filter UI (no operator, no matchMode dropdown, single constraint)
+const SIMPLIFIED_FILTER_TYPES = ['select', 'workflow_status', 'group', 'ci_category', 'boolean']
+
+const isSimplifiedFilterType = (fieldType) => {
+  return SIMPLIFIED_FILTER_TYPES.includes(fieldType)
+}
+
+// Get filter match mode options based on field type
+const getFilterMatchModeOptions = (fieldType) => {
+  // For simplified types, only allow equals/notEquals
+  if (SIMPLIFIED_FILTER_TYPES.includes(fieldType)) {
+    return [
+      { label: t('primevue.equals'), value: 'equals' },
+      { label: t('primevue.notEquals'), value: 'notEquals' }
+    ]
+  }
+  // For other types, return null to use PrimeVue defaults
+  return null
 }
 
 // Load options for a field (handles both static JSON and API endpoints)
