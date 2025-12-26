@@ -114,7 +114,7 @@
                   text
                   severity="secondary"
                   size="small"
-                  class="hover:!text-primary"
+                  class="hover:!text-inherit"
                   @click="openCreateTab(tab)"
                 />
               </TabList>
