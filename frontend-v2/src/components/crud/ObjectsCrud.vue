@@ -57,6 +57,7 @@
         @rowContextmenu="onRowContextMenu"
         @columnReorder="onColumnReorder"
         @stateRestore="onStateRestore"
+        @row-click="onRowClick"
         removableSort
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
         :currentPageReportTemplate="paginationTemplate"
@@ -125,18 +126,9 @@
           </div>
         </template>
 
-        <!-- Selection column -->
+        <!-- Actions column (desktop only) -->
         <Column 
-          field="_selection"
-          selectionMode="multiple" 
-          style="min-width: 3rem; width: 3rem" 
-          :exportable="false" 
-          :reorderableColumn="false"
-          frozen 
-        />
-        
-        <!-- Actions column -->
-        <Column 
+          v-if="!isMobile"
           field="_actions"
           style="min-width: 3rem; width: 3rem" 
           :exportable="false" 
@@ -2019,6 +2011,12 @@ const openEditDialog = (data) => {
   editItemId.value = data.uuid
   dialogMode.value = 'edit'
   itemDialog.value = true
+}
+
+// Handle row click to open drawer (mobile only - desktop uses pencil button)
+const onRowClick = (event) => {
+  if (!isMobile.value) return
+  openEditDialog(event.data)
 }
 
 const onDrawerSaved = async () => {
