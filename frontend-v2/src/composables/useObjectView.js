@@ -352,6 +352,7 @@ export function useObjectView(options) {
             life: 60000 // Long life, will be closed manually
           })
           uploadStore.startUpload()
+          uploadStore.registerAbortController(null)
           
           // Upload with progress callback
           const uploadResult = await generalInfoRef.value.uploadPendingAttachmentsWithProgress(
@@ -369,6 +370,9 @@ export function useObjectView(options) {
             uploadStore.reset()
             toast.add({ severity: 'error', summary: t('common.error'), detail: t('common.uploadFailed'), life: 5000 })
           }
+
+          // Close upload progress toast group
+          toast.removeGroup('upload-progress')
         }
         
         // Step 3: Close the create tab

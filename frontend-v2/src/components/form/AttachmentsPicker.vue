@@ -339,6 +339,7 @@ const uploadPendingFilesWithProgress = async (entityUuid, onProgress, checkCance
   if (!files || files.length === 0) return { success: true, cancelled: false }
   
   try {
+    const controller = new AbortController()
     const formData = new FormData()
     for (const file of files) {
       formData.append('files', file)
@@ -349,12 +350,20 @@ const uploadPendingFilesWithProgress = async (entityUuid, onProgress, checkCance
       formData,
       {
         headers: { 'Content-Type': 'multipart/form-data' },
+        signal: controller.signal,
         onUploadProgress: (progressEvent) => {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          // Some browsers/servers do not provide total; prefer progress if present.
+          let progress = 0
+          if (typeof progressEvent.progress === 'number') {
+            progress = Math.round(progressEvent.progress * 100)
+          } else if (typeof progressEvent.total === 'number' && progressEvent.total > 0) {
+            progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          }
+          if (Number.isNaN(progress)) progress = 0
           if (onProgress) onProgress(progress)
           // Check if cancelled
           if (checkCancelled && checkCancelled()) {
-            throw new Error('Upload cancelled')
+            controller.abort()
           }
         }
       }
@@ -364,7 +373,7 @@ const uploadPendingFilesWithProgress = async (entityUuid, onProgress, checkCance
     fileUploadRef.value.clear()
     return { success: true, cancelled: false }
   } catch (error) {
-    if (error.message === 'Upload cancelled') {
+    if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
       return { success: false, cancelled: true }
     }
     console.error('Upload failed:', error)

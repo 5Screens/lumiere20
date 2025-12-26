@@ -18,8 +18,8 @@
             <span class="font-bold text-base text-white dark:text-black">{{ message.summary }}</span>
           </div>
           <div class="flex flex-col gap-2">
-            <ProgressBar :value="uploadStore.progress" :showValue="false" :style="{ height: '4px' }" pt:value:class="!bg-primary-50 dark:!bg-primary-900" class="!bg-primary/80"></ProgressBar>
-            <label class="text-sm font-bold text-white dark:text-black">{{ uploadStore.progress }}% {{ $t('common.uploaded') }}</label>
+            <ProgressBar :key="uploadProgress" :value="uploadProgress" :showValue="false" :style="{ height: '4px' }" pt:value:class="!bg-primary-50 dark:!bg-primary-900" class="!bg-primary/80"></ProgressBar>
+            <label class="text-sm font-bold text-white dark:text-black">{{ uploadProgress }}% {{ $t('common.uploaded') }}</label>
           </div>
           <div class="flex gap-4 justify-end">
             <Button :label="$t('common.cancel')" size="small" severity="secondary" @click="cancelUpload(closeCallback)"></Button>
@@ -35,6 +35,7 @@ import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useConnectionStore } from '@/stores/connectionStore'
 import { useUploadStore } from '@/stores/uploadStore'
+import { storeToRefs } from 'pinia'
 import { setConnectionStore } from '@/services/api'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import ConnectionLostOverlay from '@/components/common/ConnectionLostOverlay.vue'
@@ -45,6 +46,8 @@ import Button from 'primevue/button'
 const authStore = useAuthStore()
 const connectionStore = useConnectionStore()
 const uploadStore = useUploadStore()
+
+const { progress: uploadProgress } = storeToRefs(uploadStore)
 
 // Link connection store to API interceptor
 setConnectionStore(connectionStore)
