@@ -108,13 +108,15 @@
                 </draggable>
 
                 <!-- Create button (always at the right) -->
-                <button
-                  class="rounded px-1.5 py-0.5 text-sm transition-all duration-200 hover:bg-surface-200 dark:hover:bg-surface-700 border border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-200 hover:border-surface-400 dark:hover:border-surface-500 flex items-center gap-1"
+                <Button
+                  :label="$t('common.create')"
+                  icon="pi pi-plus"
+                  text
+                  severity="secondary"
+                  size="small"
+                  class="hover:!text-primary"
                   @click="openCreateTab(tab)"
-                >
-                  <i class="pi pi-plus" style="font-size: 0.65rem" />
-                  <span>{{ $t('common.create') }}</span>
-                </button>
+                />
               </TabList>
 
               <TabPanels class="flex-1 min-h-0 overflow-hidden" :pt="{ root: { class: 'p-1' } }">
@@ -187,6 +189,7 @@ import TabList from 'primevue/tablist'
 import Tab from 'primevue/tab'
 import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
+import Button from 'primevue/button'
 
 // Components registry
 const componentRegistry = {
