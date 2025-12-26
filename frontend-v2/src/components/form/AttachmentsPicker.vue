@@ -96,7 +96,7 @@ const props = defineProps({
   },
   entityUuid: {
     type: String,
-    required: true
+    default: null
   },
   disabled: {
     type: Boolean,

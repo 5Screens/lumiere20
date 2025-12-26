@@ -129,6 +129,7 @@ export default {
     edit: 'Edit',
     duplicate: 'Duplicate',
     create: 'Create',
+    new: 'New',
     search: 'Search',
     searchIn: 'Search in',
     columns: 'Columns',

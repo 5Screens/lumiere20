@@ -106,6 +106,15 @@
                     </Tab>
                   </template>
                 </draggable>
+
+                <!-- Create button (always at the right) -->
+                <button
+                  class="rounded px-3 py-1.5 text-sm transition-all duration-200 hover:bg-surface-200 dark:hover:bg-surface-700 border border-dashed border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-200 hover:border-surface-400 dark:hover:border-surface-500 flex items-center gap-1"
+                  @click="openCreateTab(tab)"
+                >
+                  <i class="pi pi-plus" style="font-size: 0.65rem" />
+                  <span>{{ $t('common.create') }}</span>
+                </button>
               </TabList>
 
               <TabPanels class="flex-1 min-h-0 overflow-hidden" :pt="{ root: { class: 'p-1' } }">
@@ -266,6 +275,28 @@ const truncateLabel = (label, maxLength) => {
   if (!label) return t('tabs.untitled')
   if (label.length <= maxLength) return label
   return label.substring(0, maxLength) + '...'
+}
+
+// Open a new create tab for the given parent tab
+const openCreateTab = (parentTab) => {
+  // Get translated label for "New [objectType]"
+  const objectTypeLabel = parentTab.labelKey ? t(parentTab.labelKey) : parentTab.label
+  const newLabel = t('common.new') + ' ' + objectTypeLabel
+  
+  tabsStore.openTab({
+    label: newLabel,
+    icon: 'pi pi-plus',
+    component: 'ObjectView',
+    mode: 'create',
+    objectId: null,
+    objectType: parentTab.objectType,
+    parentId: parentTab.id_tab,
+    // Pass type filters if present
+    objectTypeData: {
+      ciTypeUuid: parentTab.ciTypeUuid,
+      ticketTypeCode: parentTab.ticketTypeCode
+    }
+  })
 }
 </script>
 

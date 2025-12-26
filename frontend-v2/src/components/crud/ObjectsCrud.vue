@@ -19,43 +19,6 @@
       <ContextMenu ref="cm" :model="menuModel" @hide="selectedItem = null" />
     
       <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
-      <!-- Toolbar -->
-      <Toolbar class="mb-4" :pt="{ root: { class: 'p-2' } }">
-        <template #start>
-          <ButtonGroup>
-            <Button 
-              :label="$t('common.create')" 
-              icon="pi pi-plus" 
-              severity="secondary" 
-              @click="openCreateDialog" 
-            />
-            <Button 
-              :label="$t('common.edit')" 
-              icon="pi pi-pencil" 
-              severity="secondary" 
-              @click="openEditMultiple" 
-              :disabled="!selectedItems || selectedItems.length === 0" 
-            />
-            <Button 
-              :label="$t('common.delete')" 
-              icon="pi pi-trash" 
-              severity="secondary" 
-              @click="confirmDeleteSelected" 
-              :disabled="!selectedItems || !selectedItems.length" 
-            />
-          </ButtonGroup>
-        </template>
-
-        <template #end>
-          <Button 
-            :label="$t('common.export')" 
-            icon="pi pi-file-export" 
-            severity="secondary" 
-            @click="exportCSV" 
-          />
-        </template>
-      </Toolbar>
-
       <!-- DataTable -->
       <DataTable
         ref="dt"
@@ -144,6 +107,13 @@
                 severity="secondary" 
                 @click="toggleColumnSelector" 
                 v-tooltip.bottom="$t('common.columns')"
+              />
+              <Button 
+                type="button" 
+                icon="pi pi-file-export" 
+                severity="secondary" 
+                @click="exportCSV" 
+                v-tooltip.bottom="$t('common.export')"
               />
               <Button 
                 icon="pi pi-refresh" 
@@ -826,9 +796,7 @@ import { useAuthStore } from '@/stores/authStore'
 // PrimeVue components
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import Toolbar from 'primevue/toolbar'
 import Button from 'primevue/button'
-import ButtonGroup from 'primevue/buttongroup'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'

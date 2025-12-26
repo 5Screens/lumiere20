@@ -129,6 +129,7 @@ export default {
     edit: 'Modifier',
     duplicate: 'Dupliquer',
     create: 'Créer',
+    new: 'Nouveau',
     search: 'Rechercher',
     searchIn: 'Recherche dans',
     close:'Fermer',
