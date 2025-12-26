@@ -12,13 +12,12 @@
       @error="onError"
       customUpload
       @uploader="customUploader"
-      :pt="{ header: { class: mode === 'create' ? 'hidden' : '' } }"
     >
       <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
         <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
           <div class="flex gap-2">
             <Button @click="chooseCallback()" icon="pi pi-plus" rounded variant="outlined" severity="secondary" size="small" />
-            <Button @click="uploadEvent(uploadCallback)" icon="pi pi-cloud-upload" rounded variant="outlined" severity="success" size="small" :disabled="!files || files.length === 0" />
+            <Button v-if="mode !== 'create'" @click="uploadEvent(uploadCallback)" icon="pi pi-cloud-upload" rounded variant="outlined" severity="success" size="small" :disabled="!files || files.length === 0" />
             <Button @click="clearCallback()" icon="pi pi-times" rounded variant="outlined" severity="danger" size="small" :disabled="!files || files.length === 0" />
           </div>
           <ProgressBar v-if="uploading" :value="uploadProgress" :showValue="false" class="w-40 h-1" />
