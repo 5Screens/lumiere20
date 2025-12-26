@@ -12,6 +12,7 @@
       @error="onError"
       customUpload
       @uploader="customUploader"
+      :pt="{ header: { class: mode === 'create' ? 'hidden' : '' } }"
     >
       <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
         <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
@@ -105,6 +106,10 @@ const props = defineProps({
   maxFileSize: {
     type: Number,
     default: 10000000 // 10MB
+  },
+  mode: {
+    type: String,
+    default: 'edit'
   }
 })
 
@@ -325,6 +330,49 @@ const uploadPendingFiles = async () => {
   }
 }
 
+// Upload pending files with external UUID and progress callback (for create mode)
+// Returns { success: boolean, cancelled: boolean }
+const uploadPendingFilesWithProgress = async (entityUuid, onProgress, checkCancelled) => {
+  if (!fileUploadRef.value) return { success: true, cancelled: false }
+  
+  const files = fileUploadRef.value.files
+  if (!files || files.length === 0) return { success: true, cancelled: false }
+  
+  try {
+    const formData = new FormData()
+    for (const file of files) {
+      formData.append('files', file)
+    }
+
+    await api.post(
+      `/attachments/${props.entityType}/${entityUuid}`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          if (onProgress) onProgress(progress)
+          // Check if cancelled
+          if (checkCancelled && checkCancelled()) {
+            throw new Error('Upload cancelled')
+          }
+        }
+      }
+    )
+
+    // Clear the file list
+    fileUploadRef.value.clear()
+    return { success: true, cancelled: false }
+  } catch (error) {
+    if (error.message === 'Upload cancelled') {
+      return { success: false, cancelled: true }
+    }
+    console.error('Upload failed:', error)
+    emit('error', error)
+    return { success: false, cancelled: false }
+  }
+}
+
 // Check if there are pending files
 const hasPendingFiles = () => {
   if (!fileUploadRef.value) return false
@@ -332,10 +380,19 @@ const hasPendingFiles = () => {
   return files && files.length > 0
 }
 
+// Get pending files count
+const getPendingFilesCount = () => {
+  if (!fileUploadRef.value) return 0
+  const files = fileUploadRef.value.files
+  return files ? files.length : 0
+}
+
 // Expose methods for parent component
 defineExpose({
   uploadPendingFiles,
-  hasPendingFiles
+  uploadPendingFilesWithProgress,
+  hasPendingFiles,
+  getPendingFilesCount
 })
 
 onMounted(() => {

@@ -123,6 +123,10 @@ const props = defineProps({
   ticketTypeCode: {
     type: String,
     default: null
+  },
+  tabId: {
+    type: String,
+    default: null
   }
 })
 
@@ -159,7 +163,7 @@ const {
 
 // Methods
 const onSave = async () => {
-  const success = await saveItem(generalInfoRef)
+  const success = await saveItem(generalInfoRef, props.tabId)
   if (success) {
     emit('saved', item.value)
   }

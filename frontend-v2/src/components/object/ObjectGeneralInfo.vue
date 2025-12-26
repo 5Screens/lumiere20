@@ -246,6 +246,7 @@
           :entityType="objectType"
           :entityUuid="modelValue.uuid"
           :disabled="field.is_readonly"
+          :mode="mode"
           @update="onAttachmentsUpdate"
         />
       </div>
@@ -376,9 +377,36 @@ const uploadPendingAttachments = async () => {
   return true
 }
 
+// Upload pending attachments with external UUID and progress callback (for create mode)
+const uploadPendingAttachmentsWithProgress = async (entityUuid, onProgress, checkCancelled) => {
+  if (attachmentsPickerRef && attachmentsPickerRef.uploadPendingFilesWithProgress) {
+    return await attachmentsPickerRef.uploadPendingFilesWithProgress(entityUuid, onProgress, checkCancelled)
+  }
+  return { success: true, cancelled: false }
+}
+
+// Check if there are pending attachments
+const hasPendingAttachments = () => {
+  if (attachmentsPickerRef && attachmentsPickerRef.hasPendingFiles) {
+    return attachmentsPickerRef.hasPendingFiles()
+  }
+  return false
+}
+
+// Get pending attachments count
+const getPendingAttachmentsCount = () => {
+  if (attachmentsPickerRef && attachmentsPickerRef.getPendingFilesCount) {
+    return attachmentsPickerRef.getPendingFilesCount()
+  }
+  return 0
+}
+
 // Expose methods for parent component
 defineExpose({
-  uploadPendingAttachments
+  uploadPendingAttachments,
+  uploadPendingAttachmentsWithProgress,
+  hasPendingAttachments,
+  getPendingAttachmentsCount
 })
 
 // Methods

@@ -8,6 +8,8 @@ import ciTypeFieldsService from '@/services/ciTypeFieldsService'
 import ticketTypeFieldsService from '@/services/ticketTypeFieldsService'
 import { useReferenceDataStore } from '@/stores/referenceDataStore'
 import { useAuthStore } from '@/stores/authStore'
+import { useUploadStore } from '@/stores/uploadStore'
+import { useTabsStore } from '@/stores/tabsStore'
 
 /**
  * Composable for object view/edit logic
@@ -28,6 +30,8 @@ export function useObjectView(options) {
   const { t, locale } = useI18n()
   const referenceDataStore = useReferenceDataStore()
   const authStore = useAuthStore()
+  const uploadStore = useUploadStore()
+  const tabsStore = useTabsStore()
 
   // Service
   const service = computed(() => getService(objectType.value))
@@ -311,7 +315,8 @@ export function useObjectView(options) {
   }
 
   // Save item
-  const saveItem = async (generalInfoRef = null) => {
+  // tabId is optional, used to close the tab after successful creation
+  const saveItem = async (generalInfoRef = null, tabId = null) => {
     if (!item.value || !service.value) return false
     
     // Validate required fields
@@ -328,23 +333,64 @@ export function useObjectView(options) {
       saving.value = true
       
       if (mode.value === 'create') {
+        // Step 1: Create the entity
         const created = await service.value.create(item.value)
+        const newEntityUuid = created.uuid
         item.value = created
-        toast.add({ severity: 'success', summary: 'Success', detail: t('common.created'), life: 3000 })
+        toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.created'), life: 3000 })
+        
+        // Step 2: Check for pending attachments
+        const hasPendingAttachments = generalInfoRef?.value?.hasPendingAttachments?.() || false
+        
+        if (hasPendingAttachments) {
+          // Show upload toast with progress
+          toast.add({ 
+            severity: 'custom', 
+            summary: t('common.uploadingFiles'), 
+            group: 'upload-progress', 
+            styleClass: 'backdrop-blur-lg rounded-2xl',
+            life: 60000 // Long life, will be closed manually
+          })
+          uploadStore.startUpload()
+          
+          // Upload with progress callback
+          const uploadResult = await generalInfoRef.value.uploadPendingAttachmentsWithProgress(
+            newEntityUuid,
+            (progress) => uploadStore.updateProgress(progress),
+            () => uploadStore.isCancelled
+          )
+          
+          if (uploadResult.cancelled) {
+            toast.add({ severity: 'warn', summary: t('common.warning'), detail: t('common.uploadCancelled'), life: 3000 })
+          } else if (uploadResult.success) {
+            uploadStore.finishUpload()
+            toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.filesUploaded'), life: 3000 })
+          } else {
+            uploadStore.reset()
+            toast.add({ severity: 'error', summary: t('common.error'), detail: t('common.uploadFailed'), life: 5000 })
+          }
+        }
+        
+        // Step 3: Close the create tab
+        if (tabId) {
+          tabsStore.closeTab(tabId)
+        }
+        
       } else {
+        // Edit mode: simple update
         await service.value.update(item.value.uuid, item.value)
-        toast.add({ severity: 'success', summary: 'Success', detail: t('common.saved'), life: 3000 })
-      }
-      
-      // Upload pending attachments after saving the item
-      if (generalInfoRef?.value) {
-        await generalInfoRef.value.uploadPendingAttachments()
+        toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
+        
+        // Upload pending attachments after saving the item (edit mode)
+        if (generalInfoRef?.value?.hasPendingAttachments?.()) {
+          await generalInfoRef.value.uploadPendingAttachments()
+        }
       }
       
       return true
     } catch (error) {
       console.error('Failed to save item:', error)
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to save item', life: 3000 })
+      toast.add({ severity: 'error', summary: t('common.error'), detail: t('common.saveFailed'), life: 3000 })
       return false
     } finally {
       saving.value = false
