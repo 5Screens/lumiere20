@@ -775,5 +775,10 @@ export default {
       deleted: 'Configuration supprimée avec succès',
       deletedMultiple: '{count} configurations supprimées avec succès'
     }
+  },
+  theme: {
+    customize: 'Personnaliser le thème',
+    primaryColors: 'Couleurs primaires',
+    surfaceColors: 'Couleurs de surface'
   }
 }

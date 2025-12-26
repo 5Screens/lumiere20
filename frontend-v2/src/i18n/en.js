@@ -146,6 +146,7 @@ export default {
     actions: 'Actions',
     export: 'Export',
     refresh: 'Refresh',
+    view: 'View',
     optionsRefreshed: 'Options refreshed',
     success: 'Success',
     error: 'Error',
@@ -237,6 +238,7 @@ export default {
     title: 'Configuration Items',
     name: 'Name',
     description: 'Description',
+    searchPlaceholder: 'Search for a configuration item...',
     ciType: 'Type',
     model: 'Model',
     isModelFor: 'Model for type',
@@ -772,5 +774,10 @@ export default {
       deleted: 'Setup deleted successfully',
       deletedMultiple: '{count} setups deleted successfully'
     }
+  },
+  theme: {
+    customize: 'Customize theme',
+    primaryColors: 'Primary Colors',
+    surfaceColors: 'Surface Colors'
   }
 }

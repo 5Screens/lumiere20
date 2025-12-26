@@ -3,7 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import PrimeVue from 'primevue/config'
-import Aura from '@primevue/themes/aura'
+import Noir from '@/presets/Noir'
+import AppState from '@/plugins/appState'
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
 import Tooltip from 'primevue/tooltip'
@@ -66,12 +67,14 @@ const app = createApp(App)
 app.use(router)
 app.use(i18n)
 app.use(pinia)
+app.use(AppState)
 
 // Configure PrimeVue
 app.use(PrimeVue, {
   theme: {
-    preset: Aura,
+    preset: Noir,
     options: {
+      prefix: 'p',
       darkModeSelector: '[data-theme="dark"]',
       cssLayer: {
         name: 'primevue',

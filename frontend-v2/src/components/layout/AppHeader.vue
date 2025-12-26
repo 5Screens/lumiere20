@@ -69,6 +69,9 @@
         v-tooltip.bottom="theme === 'light' ? 'Dark mode' : 'Light mode'"
       />
 
+      <!-- Theme customizer -->
+      <ThemeSwitcher />
+
       <!-- Notifications -->
       <Button 
         icon="pi pi-bell" 
@@ -105,6 +108,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Menu from 'primevue/menu'
 import Avatar from 'primevue/avatar'
+import ThemeSwitcher from '@/components/layout/ThemeSwitcher.vue'
 
 const emit = defineEmits(['toggle-sidebar', 'open-profile'])
 
