@@ -329,6 +329,11 @@ const props = defineProps({
   objectType: {
     type: String,
     default: null
+  },
+  // Mode: 'edit' or 'create'
+  mode: {
+    type: String,
+    default: 'edit'
   }
 })
 
@@ -337,6 +342,20 @@ const emit = defineEmits(['update:modelValue', 'apply-transition'])
 
 // Apply a transition (change status)
 const applyTransition = (transition) => {
+  // In create mode, just update the local status without calling API
+  if (props.mode === 'create') {
+    emit('update:modelValue', { 
+      ...props.modelValue, 
+      rel_status_uuid: transition.to_status_uuid,
+      status: {
+        uuid: transition.to_status_uuid,
+        name: transition.to_status_name,
+        category: { color: transition.to_status_color }
+      }
+    })
+    return
+  }
+  // In edit mode, emit to parent to call API
   emit('apply-transition', transition)
 }
 

@@ -109,7 +109,7 @@
 
                 <!-- Create button (always at the right) -->
                 <button
-                  class="rounded px-3 py-1.5 text-sm transition-all duration-200 hover:bg-surface-200 dark:hover:bg-surface-700 border border-dashed border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-200 hover:border-surface-400 dark:hover:border-surface-500 flex items-center gap-1"
+                  class="rounded px-1.5 py-0.5 text-sm transition-all duration-200 hover:bg-surface-200 dark:hover:bg-surface-700 border border-surface-300 dark:border-surface-600 text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-200 hover:border-surface-400 dark:hover:border-surface-500 flex items-center gap-1"
                   @click="openCreateTab(tab)"
                 >
                   <i class="pi pi-plus" style="font-size: 0.65rem" />
@@ -145,7 +145,8 @@
                     :objectId="childTab.objectId"
                     :tabId="childTab.id_tab"
                     :objectType="childTab.objectType"
-                    :objectTypeData="childTab.objectTypeData"
+                    :ciTypeUuid="childTab.objectTypeData?.ciTypeUuid"
+                    :ticketTypeCode="childTab.objectTypeData?.ticketTypeCode"
                   />
                 </TabPanel>
               </TabPanels>

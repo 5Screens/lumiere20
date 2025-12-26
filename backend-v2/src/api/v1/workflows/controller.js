@@ -407,6 +407,29 @@ const getStatusesByTicketType = async (req, res, next) => {
   }
 };
 
+/**
+ * Get initial statuses for an entity type (for create mode)
+ * Returns statuses with is_initial = true
+ */
+const getInitialStatusesForEntityType = async (req, res, next) => {
+  try {
+    const { entityType } = req.params;
+    const { ticketTypeCode } = req.query;
+    const locale = getLocale(req);
+    
+    logger.info(`[WORKFLOWS CONTROLLER] getInitialStatusesForEntityType called with entityType: ${entityType}, ticketTypeCode: ${ticketTypeCode}, locale: ${locale}`);
+    
+    const statuses = await service.getInitialStatusesForEntityType(entityType, ticketTypeCode, locale);
+    
+    logger.info(`[WORKFLOWS CONTROLLER] getInitialStatusesForEntityType returned ${statuses.length} statuses`);
+    
+    res.json(statuses);
+  } catch (error) {
+    logger.error('[WORKFLOWS CONTROLLER] Error in getInitialStatusesForEntityType:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   // Workflows
   getAll,
@@ -432,5 +455,6 @@ module.exports = {
   getAvailableStatuses,
   getWorkflowForEntity,
   getAvailableStatusesForEntity,
-  getStatusesByTicketType
+  getStatusesByTicketType,
+  getInitialStatusesForEntityType
 };

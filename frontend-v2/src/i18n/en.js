@@ -132,6 +132,7 @@ export default {
     new: 'New',
     search: 'Search',
     searchIn: 'Search in',
+    clickToEdit: 'Click to edit',
     columns: 'Columns',
     loading: 'Loading...',
     scrollForMore: 'Scroll for more results',

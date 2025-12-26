@@ -133,6 +133,7 @@ export default {
     search: 'Rechercher',
     searchIn: 'Recherche dans',
     close:'Fermer',
+    clickToEdit: 'Cliquez pour modifier',
     columns: 'Colonnes',
     loading: 'Chargement...',
     scrollForMore: 'Défiler pour plus de résultats',

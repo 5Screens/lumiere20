@@ -56,6 +56,7 @@
               :loading="metadataLoading"
               :availableTransitions="availableTransitions"
               :objectType="objectType"
+              :mode="mode"
               @apply-transition="applyTransition"
             />
           </TabPanel>
@@ -114,6 +115,14 @@ const props = defineProps({
   mode: {
     type: String,
     default: 'edit' // 'edit' or 'create'
+  },
+  ciTypeUuid: {
+    type: String,
+    default: null
+  },
+  ticketTypeCode: {
+    type: String,
+    default: null
   }
 })
 
@@ -143,7 +152,9 @@ const {
 } = useObjectView({
   objectType: toRef(props, 'objectType'),
   objectId: toRef(props, 'objectId'),
-  mode: toRef(props, 'mode')
+  mode: toRef(props, 'mode'),
+  ciTypeUuid: toRef(props, 'ciTypeUuid'),
+  ticketTypeCode: toRef(props, 'ticketTypeCode')
 })
 
 // Methods

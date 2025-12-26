@@ -1394,6 +1394,112 @@ const getAvailableStatuses = async (workflowUuid, currentStatusUuid, locale = 'e
   }));
 };
 
+/**
+ * Get initial statuses for an entity type (for create mode)
+ * Returns statuses with is_initial = true from the appropriate workflow
+ */
+const getInitialStatusesForEntityType = async (entityType, ticketTypeCode = null, locale = 'en') => {
+  logger.info(`[WORKFLOWS SERVICE] getInitialStatusesForEntityType called with entityType: ${entityType}, ticketTypeCode: ${ticketTypeCode}`);
+  
+  // Find the workflow for this entity type
+  let workflow = null;
+  
+  if (entityType === 'tickets' && ticketTypeCode) {
+    // For tickets, find workflow by ticket type
+    const ticketType = await prisma.ticket_types.findFirst({
+      where: { code: ticketTypeCode }
+    });
+    
+    if (ticketType) {
+      // First try to find a workflow specific to this ticket type
+      workflow = await prisma.workflows.findFirst({
+        where: {
+          entity_type: 'tickets',
+          rel_entity_type_uuid: ticketType.uuid,
+          is_active: true
+        }
+      });
+      
+      // If no specific workflow, try to find a generic tickets workflow
+      if (!workflow) {
+        workflow = await prisma.workflows.findFirst({
+          where: {
+            entity_type: 'tickets',
+            rel_entity_type_uuid: null,
+            is_active: true
+          }
+        });
+      }
+    }
+  } else {
+    // For other entity types, find generic workflow
+    workflow = await prisma.workflows.findFirst({
+      where: {
+        entity_type: entityType,
+        is_active: true
+      }
+    });
+  }
+  
+  if (!workflow) {
+    logger.warn(`[WORKFLOWS SERVICE] No workflow found for entityType: ${entityType}, ticketTypeCode: ${ticketTypeCode}`);
+    return [];
+  }
+  
+  logger.info(`[WORKFLOWS SERVICE] Found workflow: ${workflow.uuid} (${workflow.name})`);
+  
+  // Get initial statuses (is_initial = true)
+  const statuses = await prisma.workflow_statuses.findMany({
+    where: {
+      rel_workflow_uuid: workflow.uuid,
+      is_initial: true
+    },
+    include: {
+      category: true
+    },
+    orderBy: { position_x: 'asc' }
+  });
+  
+  logger.info(`[WORKFLOWS SERVICE] Found ${statuses.length} initial statuses`);
+  
+  if (statuses.length === 0) {
+    return [];
+  }
+  
+  // Get translations
+  const statusUuids = statuses.map(s => s.uuid);
+  const categoryUuids = [...new Set(statuses.map(s => s.rel_category_uuid).filter(Boolean))];
+  
+  const translations = await prisma.translated_fields.findMany({
+    where: {
+      OR: [
+        { entity_type: 'workflow_statuses', entity_uuid: { in: statusUuids }, locale },
+        { entity_type: 'workflow_status_categories', entity_uuid: { in: categoryUuids }, locale }
+      ]
+    }
+  });
+  
+  const translationMap = {};
+  for (const t of translations) {
+    if (!translationMap[t.entity_uuid]) {
+      translationMap[t.entity_uuid] = {};
+    }
+    translationMap[t.entity_uuid][t.field_name] = t.value;
+  }
+  
+  // Build result
+  return statuses.map(status => ({
+    uuid: status.uuid,
+    name: translationMap[status.uuid]?.name || status.name,
+    category: status.category ? {
+      uuid: status.category.uuid,
+      code: status.category.code,
+      color: status.category.color,
+      label: translationMap[status.category.uuid]?.label || status.category.code
+    } : null
+  }));
+};
+
 module.exports = {
   // Workflows
   getAll,
@@ -1420,5 +1526,6 @@ module.exports = {
   getAvailableStatuses,
   getWorkflowForEntity,
   getAvailableStatusesForEntity,
-  getStatusesByTicketType
+  getStatusesByTicketType,
+  getInitialStatusesForEntityType
 };

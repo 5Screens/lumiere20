@@ -7,6 +7,7 @@ import metadataService from '@/services/metadataService'
 import ciTypeFieldsService from '@/services/ciTypeFieldsService'
 import ticketTypeFieldsService from '@/services/ticketTypeFieldsService'
 import { useReferenceDataStore } from '@/stores/referenceDataStore'
+import { useAuthStore } from '@/stores/authStore'
 
 /**
  * Composable for object view/edit logic
@@ -16,14 +17,17 @@ import { useReferenceDataStore } from '@/stores/referenceDataStore'
  * @param {Ref<string>} options.objectType - The object type (e.g., 'persons', 'configuration_items')
  * @param {Ref<string>} options.objectId - The object UUID (null for create mode)
  * @param {Ref<string>} options.mode - 'edit' or 'create'
+ * @param {Ref<string>} options.ciTypeUuid - CI type UUID for create mode (configuration_items)
+ * @param {Ref<string>} options.ticketTypeCode - Ticket type code for create mode (tickets)
  */
 export function useObjectView(options) {
-  const { objectType, objectId, mode } = options
+  const { objectType, objectId, mode, ciTypeUuid, ticketTypeCode } = options
 
   // Composables
   const toast = useToast()
   const { t, locale } = useI18n()
   const referenceDataStore = useReferenceDataStore()
+  const authStore = useAuthStore()
 
   // Service
   const service = computed(() => getService(objectType.value))
@@ -129,7 +133,7 @@ export function useObjectView(options) {
   }
 
   // Initialize new item with default values
-  const initializeNewItem = () => {
+  const initializeNewItem = async () => {
     const defaults = {}
     for (const field of formFields.value) {
       if (field.field_type === 'boolean') {
@@ -144,6 +148,28 @@ export function useObjectView(options) {
       defaults.extended_core_fields = {}
     }
     
+    // Set ticket_type_code if provided (for tickets)
+    if (objectType.value === 'tickets' && ticketTypeCode?.value) {
+      defaults.ticket_type_code = ticketTypeCode.value
+    }
+    
+    // Set ci_type if ciTypeUuid is provided (for configuration_items)
+    if (objectType.value === 'configuration_items' && ciTypeUuid?.value) {
+      // Get CI type code from UUID
+      if (ciTypes.value.length === 0) {
+        await referenceDataStore.loadCiTypes()
+      }
+      const ciType = ciTypes.value.find(ct => ct.uuid === ciTypeUuid.value)
+      if (ciType) {
+        defaults.ci_type = ciType.code
+      }
+    }
+    
+    // Set writer_uuid to current user for tickets
+    if (objectType.value === 'tickets' && authStore.user?.uuid) {
+      defaults.writer_uuid = authStore.user.uuid
+    }
+    
     return defaults
   }
 
@@ -153,7 +179,24 @@ export function useObjectView(options) {
     await loadReferenceData()
     
     if (mode.value === 'create') {
-      item.value = initializeNewItem()
+      item.value = await initializeNewItem()
+      
+      // Load extended fields for create mode
+      if (objectType.value === 'tickets' && ticketTypeCode?.value) {
+        await loadExtendedFieldsForTickets(ticketTypeCode.value)
+      }
+      if (objectType.value === 'configuration_items' && ciTypeUuid?.value) {
+        const ciType = ciTypes.value.find(ct => ct.uuid === ciTypeUuid.value)
+        if (ciType) {
+          await loadExtendedFields(ciType.code)
+        }
+      }
+      
+      // Load initial workflow statuses for create mode
+      if (hasWorkflowStatus.value) {
+        await loadInitialStatuses()
+      }
+      
       loading.value = false
       return
     }
@@ -305,6 +348,39 @@ export function useObjectView(options) {
       return false
     } finally {
       saving.value = false
+    }
+  }
+
+  // Load initial statuses for create mode (statuses with is_initial = true)
+  const loadInitialStatuses = async () => {
+    if (!hasWorkflowStatus.value) {
+      availableTransitions.value = []
+      return
+    }
+    
+    try {
+      // For tickets, get initial statuses based on ticket type
+      if (objectType.value === 'tickets' && ticketTypeCode?.value) {
+        const response = await api.get(`/workflows/entity-type/tickets/initial-statuses?ticketTypeCode=${ticketTypeCode.value}`)
+        availableTransitions.value = (response.data || []).map(status => ({
+          to_status_uuid: status.uuid,
+          to_status_name: status.name,
+          name: '',
+          to_status_color: status.category?.color || '#6b7280'
+        }))
+      } else {
+        // Generic initial statuses for other entity types
+        const response = await api.get(`/workflows/entity-type/${objectType.value}/initial-statuses`)
+        availableTransitions.value = (response.data || []).map(status => ({
+          to_status_uuid: status.uuid,
+          to_status_name: status.name,
+          name: '',
+          to_status_color: status.category?.color || '#6b7280'
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to load initial statuses:', error)
+      availableTransitions.value = []
     }
   }
 

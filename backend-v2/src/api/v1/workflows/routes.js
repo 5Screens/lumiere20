@@ -24,6 +24,10 @@ router.get('/entity/:entityType/:entityUuid', controller.getWorkflowForEntity);
 // GET /api/v1/workflows/ticket-type/:ticketTypeCode/statuses - Get all statuses for a ticket type
 router.get('/ticket-type/:ticketTypeCode/statuses', controller.getStatusesByTicketType);
 
+// GET /api/v1/workflows/entity-type/:entityType/initial-statuses - Get initial statuses for entity type (create mode)
+// Query param: ticketTypeCode (optional, for tickets)
+router.get('/entity-type/:entityType/initial-statuses', controller.getInitialStatusesForEntityType);
+
 // GET /api/v1/workflows/entity/:entityType/:entityUuid/available-statuses - Get available statuses for entity
 // Query param: currentStatusUuid (optional)
 router.get('/entity/:entityType/:entityUuid/available-statuses', controller.getAvailableStatusesForEntity);
