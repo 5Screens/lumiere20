@@ -101,7 +101,7 @@
         <!-- Header with search -->
         <template #header>
           <div class="flex justify-between items-center">
-            <div class="flex items-center gap-2">
+            <div class="flex items-start gap-2">
               <div class="flex flex-col">
                 <IconField>
                   <InputIcon>
