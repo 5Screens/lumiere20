@@ -8,18 +8,26 @@ const logger = require('../../../config/logger');
 const getObjectType = async (req, res, next) => {
   try {
     const { code } = req.params;
+    logger.info(`[Metadata] Getting object type: ${code}`);
+    
     const objectType = await service.getObjectType(code);
 
     if (!objectType) {
+      logger.warn(`[Metadata] Object type not found: ${code}`);
       return res.status(404).json({
         error: 'Not found',
         message: `Object type '${code}' not found`,
       });
     }
 
+    logger.info(`[Metadata] Successfully loaded object type: ${code} with ${objectType.fields?.length || 0} fields`);
     res.json(objectType);
   } catch (error) {
-    logger.error('Error getting object type:', error);
+    logger.error(`[Metadata] Error getting object type '${code}':`, {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
     next(error);
   }
 };

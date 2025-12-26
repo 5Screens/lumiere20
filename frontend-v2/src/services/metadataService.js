@@ -15,12 +15,26 @@ export default {
     const cacheKey = `objectType:${code}`
     
     if (useCache && cache.has(cacheKey)) {
+      console.log(`[MetadataService] Cache hit for objectType: ${code}`)
       return cache.get(cacheKey)
     }
     
-    const response = await api.get(`${BASE_URL}/${code}`)
-    cache.set(cacheKey, response.data)
-    return response.data
+    console.log(`[MetadataService] Fetching objectType: ${code} from API`)
+    try {
+      const response = await api.get(`${BASE_URL}/${code}`)
+      console.log(`[MetadataService] Successfully loaded objectType: ${code}`, response.data ? 'with data' : 'empty')
+      cache.set(cacheKey, response.data)
+      return response.data
+    } catch (error) {
+      console.error(`[MetadataService] Failed to fetch objectType: ${code}`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        url: `${BASE_URL}/${code}`
+      })
+      throw error
+    }
   },
 
   /**

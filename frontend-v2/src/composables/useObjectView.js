@@ -102,8 +102,17 @@ export function useObjectView(options) {
         }))
       }
     } catch (error) {
-      console.error('Failed to load metadata:', error)
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load metadata', life: 3000 })
+      console.error(`[useObjectView] Failed to load metadata for objectType: ${objectType.value}`, {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      })
+      toast.add({ 
+        severity: 'error', 
+        summary: 'Error', 
+        detail: `Failed to load metadata for ${objectType.value}: ${error.response?.data?.message || error.message}`, 
+        life: 5000 
+      })
     } finally {
       metadataLoading.value = false
     }

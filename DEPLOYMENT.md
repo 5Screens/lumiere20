@@ -375,7 +375,7 @@ docker compose down
 docker compose up -d
 ```
 
-### Rebuild après modification du code
+### Rebuild après modification du code --> derniere utilisation le 24/12
 
 # 1A Backend
 docker compose build backend --no-cache && docker compose up -d backend
