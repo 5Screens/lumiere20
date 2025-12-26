@@ -28,3 +28,8 @@ portal-runner/.vite/
 
 # Uploads
 uploads/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
