@@ -35,6 +35,7 @@
         :value="items"
         :size="tableSize"
         dataKey="uuid"
+        :selectionMode="isDesktop ? 'multiple' : null"
         :paginator="true"
         :rows="pageSize"
         :totalRecords="totalRecords"
@@ -100,6 +101,29 @@
                   </div>
                 </template>
               </Popover>
+            </div>
+            <!-- Action button (visible when rows are selected) -->
+            <div v-if="selectedItems?.length > 0" class="flex items-center gap-2">
+              <Button 
+                type="button" 
+                icon="pi pi-bolt" 
+                severity="primary"
+                @click="onBulkAction" 
+                v-tooltip.bottom="$t('common.actions')"
+              />
+              <span class="text-sm text-surface-500 dark:text-surface-400">
+                {{ selectedItems.length }} {{ $t('common.selected') }}
+              </span>
+              <Button 
+                type="button" 
+                icon="pi pi-times" 
+                severity="danger"
+                text
+                rounded
+                size="small"
+                @click="selectedItems = []" 
+                v-tooltip.bottom="$t('common.clearSelection')"
+              />
             </div>
             <div class="flex items-center gap-2">
               <Button 
@@ -884,7 +908,7 @@ const fieldOptions = ref({}) // Cache for field options (including API-loaded on
 // Composables
 const toast = useToast()
 const { t, locale } = useI18n()
-const { tableSize, isMobile } = useResponsiveSize()
+const { tableSize, isMobile, isDesktop } = useResponsiveSize()
 
 // Refs
 const dt = ref()
@@ -2019,6 +2043,16 @@ const openEditDialog = (data) => {
 const onRowClick = (event) => {
   if (!isMobile.value) return
   openEditDialog(event.data)
+}
+
+// Handle bulk action button click
+const onBulkAction = () => {
+  toast.add({
+    severity: 'info',
+    summary: t('common.selection'),
+    detail: t('common.nRowsSelected', { count: selectedItems.value.length }),
+    life: 3000
+  })
 }
 
 const onDrawerSaved = async () => {
