@@ -155,12 +155,22 @@ const onSearch = async (event) => {
       filters.global = { value: query, matchMode: 'contains' }
     }
     
-    const result = await groupsService.search({
+    const searchParams = {
       filters,
       page: 1,
       limit: PAGE_SIZE,
       sortField: 'group_name',
       sortOrder: 1
+    }
+    console.log('[GroupSelector] onSearch - sending:', searchParams)
+    
+    const result = await groupsService.search(searchParams)
+    
+    console.log('[GroupSelector] onSearch - received:', { 
+      total: result.total, 
+      dataLength: result.data?.length,
+      page: result.page,
+      limit: result.limit 
     })
     
     totalRecords.value = result.total || 0
