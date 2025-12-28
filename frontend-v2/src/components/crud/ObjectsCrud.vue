@@ -1018,7 +1018,7 @@ const filters = ref({ global: { value: null, matchMode: FilterMatchMode.CONTAINS
 
 // Context menu
 const menuModel = ref([
-  { label: t('common.edit'), icon: 'pi pi-pencil', command: () => openEditDialog(selectedItem.value) },
+  { label: t('common.edit'), icon: 'pi pi-pencil', command: () => openEditInTab(selectedItem.value) },
   { label: t('common.delete'), icon: 'pi pi-trash', command: () => confirmDeleteSelected() }
 ])
 
