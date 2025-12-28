@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { updatePreset, updateSurfacePalette } from '@primevue/themes'
 import Button from 'primevue/button'
 import { appState } from '@/plugins/appState'
@@ -261,10 +261,20 @@ const togglePanel = () => {
 
 const handleClickOutside = (event) => {
   if (containerRef.value && !containerRef.value.contains(event.target)) {
-    console.log('[ThemeSwitcher] Click outside detected, closing panel')
     panelVisible.value = false
   }
 }
+
+// Add/remove click listener only when panel is open
+watch(panelVisible, (isVisible) => {
+  if (isVisible) {
+    setTimeout(() => {
+      document.addEventListener('click', handleClickOutside)
+    }, 0)
+  } else {
+    document.removeEventListener('click', handleClickOutside)
+  }
+})
 
 const getPresetExtension = (colorName) => {
   const color = primaryColors.find(c => c.name === colorName)
@@ -349,7 +359,6 @@ const initializeTheme = () => {
 let themeObserver = null
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
   initializeTheme()
   
   // Observe theme changes on documentElement
