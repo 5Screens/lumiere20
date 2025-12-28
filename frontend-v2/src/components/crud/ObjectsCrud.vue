@@ -544,13 +544,15 @@
                 </div>
               </template>
             </MultiSelect>
-            <!-- Group filter (MultiSelect) -->
+            <!-- Group filter (MultiSelect with search) -->
             <MultiSelect 
               v-else-if="col.field_type === 'group'"
               v-model="filterModel.value" 
               :options="groups" 
               optionLabel="group_name" 
               optionValue="uuid" 
+              filter
+              :filterPlaceholder="$t('common.search')"
               :placeholder="$t('groups.selectGroup')"
               :maxSelectedLabels="1"
               style="min-width: 12rem"

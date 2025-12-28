@@ -196,7 +196,8 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
 
     loading.value.groups = true
     try {
-      const response = await api.get('/groups')
+      // Load all groups (no pagination limit for reference data)
+      const response = await api.get('/groups', { params: { limit: 1000 } })
       const payload = response?.data
       if (Array.isArray(payload)) {
         groups.value = payload
