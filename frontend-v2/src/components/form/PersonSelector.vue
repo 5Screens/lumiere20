@@ -3,7 +3,8 @@
     <div class="flex items-center gap-2">
       <AutoComplete
         ref="autocompleteRef"
-        v-model="selectedPerson"
+        :modelValue="selectedPerson"
+        @update:modelValue="onAutoCompleteModelUpdate"
         :suggestions="suggestions"
         :placeholder="$t('common.searchPerson')"
         :disabled="disabled"
@@ -18,6 +19,8 @@
         @complete="onSearch"
         @item-select="onSelect"
         @clear="onClear"
+        @blur="onBlur"
+        @hide="onHide"
       >
         <template #option="{ option, index }">
           <div 
@@ -117,6 +120,23 @@ const currentQuery = ref('')
 const currentPage = ref(1)
 const totalRecords = ref(0)
 const hasMoreData = computed(() => suggestions.value.length < totalRecords.value)
+
+const DEBUG = false
+
+// Store saved selections to preserve during search (multiple mode)
+const savedSelections = ref([])
+
+// Flag to ignore reactive side effects while user is typing/searching
+const isSearching = ref(false)
+
+const logDebug = (action, data = {}) => {
+  if (!DEBUG) return
+  try {
+    console.log(`[PersonSelector] ${action}`, data)
+  } catch {
+    console.log(`[PersonSelector] ${action}`)
+  }
+}
 
 // Person drawer state
 const personDrawerVisible = ref(false)
@@ -226,6 +246,19 @@ const loadMorePersons = async () => {
 // Search persons via API (initial search)
 const onSearch = async (event) => {
   const query = event.query?.trim() || ''
+
+  if (props.multiple) {
+    isSearching.value = true
+    const currentSelections = Array.isArray(selectedPerson.value) ? selectedPerson.value : []
+    if (currentSelections.length > 0) {
+      savedSelections.value = [...currentSelections]
+    }
+    logDebug('search-start (multiple)', {
+      query,
+      savedSelectionUuids: savedSelections.value.map(p => p?.uuid).filter(Boolean)
+    })
+  }
+
   currentQuery.value = query
   currentPage.value = 1
 
@@ -264,8 +297,33 @@ const onSearch = async (event) => {
 // Handle selection
 const onSelect = (event) => {
   if (props.multiple) {
-    // In multiple mode, selectedPerson is an array
-    const uuids = (selectedPerson.value || []).map(p => p.uuid)
+    const newlySelected = event?.value
+    const fromAutocomplete = Array.isArray(selectedPerson.value) ? selectedPerson.value : []
+    const preserved = Array.isArray(savedSelections.value) ? savedSelections.value : []
+
+    const byUuid = new Map()
+    for (const p of preserved) {
+      if (p?.uuid) byUuid.set(p.uuid, p)
+    }
+    for (const p of fromAutocomplete) {
+      if (p?.uuid) byUuid.set(p.uuid, p)
+    }
+    if (newlySelected?.uuid) {
+      byUuid.set(newlySelected.uuid, newlySelected)
+    }
+
+    const merged = Array.from(byUuid.values())
+    selectedPerson.value = merged
+    savedSelections.value = merged
+
+    const uuids = merged.map(p => p.uuid)
+    isSearching.value = false
+
+    logDebug('select (multiple)', {
+      newlySelectedUuid: newlySelected?.uuid,
+      mergedUuids: uuids
+    })
+
     emit('update:modelValue', uuids)
   } else {
     const person = event.value
@@ -275,13 +333,75 @@ const onSelect = (event) => {
 
 // Handle clear
 const onClear = () => {
+  if (props.multiple && isSearching.value) {
+    // With forceSelection, PrimeVue may emit clear while typing.
+    // Do not propagate this to parent, otherwise chips disappear.
+    selectedPerson.value = [...savedSelections.value]
+    isSearching.value = false
+    logDebug('clear ignored (multiple, searching)', {
+      restoredUuids: savedSelections.value.map(p => p?.uuid).filter(Boolean)
+    })
+    return
+  }
+
+  isSearching.value = false
+  savedSelections.value = []
   emit('update:modelValue', props.multiple ? [] : null)
+}
+
+const onAutoCompleteModelUpdate = (newValue) => {
+  if (props.multiple) {
+    // PrimeVue can mutate v-model during typing (especially with forceSelection).
+    // We keep it local, but do NOT emit to parent here.
+    if (isSearching.value && Array.isArray(newValue) && newValue.length === 0 && savedSelections.value.length > 0) {
+      // Prevent UI from dropping chips while typing.
+      selectedPerson.value = [...savedSelections.value]
+      logDebug('model-update prevented empty (multiple, searching)', {
+        restoredUuids: savedSelections.value.map(p => p?.uuid).filter(Boolean)
+      })
+      return
+    }
+
+    selectedPerson.value = newValue
+    logDebug('model-update (multiple)', {
+      isSearching: isSearching.value,
+      localUuids: (Array.isArray(newValue) ? newValue : []).map(p => p?.uuid).filter(Boolean)
+    })
+    return
+  }
+
+  selectedPerson.value = newValue
+}
+
+const onBlur = () => {
+  if (!props.multiple) return
+  if (!isSearching.value) return
+
+  // User typed and left without selecting. Restore previous selections.
+  selectedPerson.value = [...savedSelections.value]
+  isSearching.value = false
+  logDebug('blur restore (multiple)', {
+    restoredUuids: savedSelections.value.map(p => p?.uuid).filter(Boolean)
+  })
+}
+
+const onHide = () => {
+  if (!props.multiple) return
+  if (!isSearching.value) return
+
+  // Dropdown closed while typing. Restore previous selections.
+  selectedPerson.value = [...savedSelections.value]
+  isSearching.value = false
+  logDebug('hide restore (multiple)', {
+    restoredUuids: savedSelections.value.map(p => p?.uuid).filter(Boolean)
+  })
 }
 
 // Load person details for display when modelValue is set
 const loadSelectedPerson = async () => {
   if (!props.modelValue || (Array.isArray(props.modelValue) && props.modelValue.length === 0)) {
     selectedPerson.value = props.multiple ? [] : null
+    savedSelections.value = []
     return
   }
   
@@ -291,12 +411,14 @@ const loadSelectedPerson = async () => {
       const persons = await Promise.all(
         props.modelValue.map(uuid => personsService.getByUuid(uuid))
       )
-      selectedPerson.value = persons
+      const loaded = persons
         .filter(p => p)
         .map(p => ({
           ...p,
           display_name: `${p.first_name} ${p.last_name}`
         }))
+      selectedPerson.value = loaded
+      savedSelections.value = loaded
     } else {
       const person = await personsService.getByUuid(props.modelValue)
       if (person) {
@@ -309,6 +431,7 @@ const loadSelectedPerson = async () => {
   } catch (error) {
     console.error('Failed to load person:', error)
     selectedPerson.value = props.multiple ? [] : null
+    savedSelections.value = []
   }
 }
 
@@ -330,6 +453,25 @@ onUnmounted(() => {
 
 // Watch for external changes to modelValue
 watch(() => props.modelValue, (newVal, oldVal) => {
+  if (props.multiple) {
+    if (isSearching.value) {
+      logDebug('modelValue change ignored (multiple, searching)', { newVal, oldVal })
+      return
+    }
+
+    const newUuids = Array.isArray(newVal) ? newVal : []
+    const currentUuids = (Array.isArray(selectedPerson.value) ? selectedPerson.value : [])
+      .map(p => p?.uuid)
+      .filter(Boolean)
+
+    const isDifferent = newUuids.length !== currentUuids.length || newUuids.some(u => !currentUuids.includes(u))
+    if (isDifferent) {
+      logDebug('modelValue changed (multiple) -> reload', { newUuids, currentUuids })
+      loadSelectedPerson()
+    }
+    return
+  }
+
   if (newVal !== oldVal) {
     if (newVal && newVal !== selectedPerson.value?.uuid) {
       loadSelectedPerson()
@@ -337,5 +479,5 @@ watch(() => props.modelValue, (newVal, oldVal) => {
       selectedPerson.value = null
     }
   }
-})
+}, { deep: true })
 </script>
