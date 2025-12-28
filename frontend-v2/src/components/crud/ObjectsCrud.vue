@@ -49,7 +49,7 @@
         columnResizeMode="expand"
         reorderableColumns
         :stateStorage="'local'"
-        :stateKey="`${objectType}-table`"
+        :stateKey="`${objectType}-table-${tabId || 'default'}`"
         editMode="cell"
         @cellEditComplete="onCellEditComplete"
         contextMenu
@@ -798,7 +798,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue' 
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
@@ -2219,7 +2219,7 @@ const onColumnReorder = (event) => {
   console.log('[ObjectsCrud] Column reorder event:', event)
 }
 
-const onStateRestore = (event) => {
+const onStateRestore = async (event) => {
   console.log('[ObjectsCrud] State restored:', event)
 }
 
