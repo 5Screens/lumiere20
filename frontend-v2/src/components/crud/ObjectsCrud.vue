@@ -50,7 +50,7 @@
         reorderableColumns
         :stateStorage="'local'"
         :stateKey="`${objectType}-table-${tabId || 'default'}`"
-        editMode="cell"
+        :editMode="selectionModeActive ? null : 'cell'"
         @cellEditComplete="onCellEditComplete"
         contextMenu
         @page="onPage"
