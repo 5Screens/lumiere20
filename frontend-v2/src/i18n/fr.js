@@ -148,6 +148,7 @@ export default {
     no: 'Non',
     all: 'Tous',
     actions: 'Actions',
+    summary: 'Résumé',
     export: 'Exporter',
     refresh: 'Actualiser',
     view: 'Voir',

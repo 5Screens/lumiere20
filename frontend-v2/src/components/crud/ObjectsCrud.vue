@@ -191,6 +191,22 @@
           </template>
         </Column>
 
+        <!-- Summary column (for tickets and configuration_items) -->
+        <Column 
+          v-if="hasSummaryColumn"
+          field="_summary"
+          :header="$t('common.summary')"
+          style="min-width: 20rem" 
+          :exportable="false" 
+          :reorderableColumn="false"
+          :sortable="false"
+        >
+          <template #body="{ data }">
+            <TicketRowSummary v-if="isTickets" :data="data" />
+            <CiRowSummary v-else-if="isConfigurationItems" :data="data" />
+          </template>
+        </Column>
+
         <!-- Dynamic columns from metadata -->
         <template v-for="col in filteredTableColumns" :key="col.field_name">
         <Column 
@@ -844,6 +860,10 @@ import InlinePersonEditor from '@/components/form/InlinePersonEditor.vue'
 import InlineWorkflowStatusEditor from '@/components/form/InlineWorkflowStatusEditor.vue'
 import InlineGroupEditor from '@/components/form/InlineGroupEditor.vue'
 import InlineConfigurationItemEditor from '@/components/form/InlineConfigurationItemEditor.vue'
+
+// Row summary components
+import TicketRowSummary from '@/components/crud/TicketRowSummary.vue'
+import CiRowSummary from '@/components/crud/CiRowSummary.vue'
 
 // Pickers
 import {
@@ -1852,6 +1872,9 @@ const isTickets = computed(() => props.objectType === 'tickets')
 
 // Check if current object type is persons (for row actions menu)
 const isPersons = computed(() => props.objectType === 'persons')
+
+// Check if current object type has a summary column
+const hasSummaryColumn = computed(() => isTickets.value || isConfigurationItems.value)
 
 // Row actions menu items for persons
 const rowActionsMenuItems = computed(() => [

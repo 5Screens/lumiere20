@@ -147,6 +147,7 @@ export default {
     no: 'No',
     all: 'All',
     actions: 'Actions',
+    summary: 'Summary',
     export: 'Export',
     refresh: 'Refresh',
     view: 'View',
