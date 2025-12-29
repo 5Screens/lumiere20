@@ -150,9 +150,9 @@
           </div>
         </template>
 
-        <!-- Actions column (desktop only) -->
+        <!-- Actions column (desktop only, hidden for objects with summary column) -->
         <Column 
-          v-if="!isMobile"
+          v-if="!isMobile && !hasSummaryColumn"
           field="_actions"
           style="min-width: 3rem; width: 3rem" 
           :exportable="false" 
@@ -191,19 +191,21 @@
           </template>
         </Column>
 
-        <!-- Summary column (for tickets and configuration_items) -->
+        <!-- Summary column (for tickets and configuration_items) - clickable to open drawer -->
         <Column 
           v-if="hasSummaryColumn"
           field="_summary"
           :header="$t('common.summary')"
-          style="min-width: 20rem" 
+          style="min-width: 30rem" 
           :exportable="false" 
           :reorderableColumn="false"
           :sortable="false"
         >
           <template #body="{ data }">
-            <TicketRowSummary v-if="isTickets" :data="data" />
-            <CiRowSummary v-else-if="isConfigurationItems" :data="data" />
+            <div class="cursor-pointer" @click="openEditDialog(data)">
+              <TicketRowSummary v-if="isTickets" :data="data" />
+              <CiRowSummary v-else-if="isConfigurationItems" :data="data" />
+            </div>
           </template>
         </Column>
 

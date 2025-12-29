@@ -196,6 +196,13 @@ export default {
     selectModel: 'Select a model',
     noModelsAvailable: 'No models available for this type',
     selectPerson: 'Select a person',
+    relativeTime: {
+      lessThanMinute: 'Less than a minute ago',
+      minutes: '{count} min ago',
+      hours: '{count} h ago',
+      days: '{count} d ago',
+      months: '{count} months ago'
+    },
     searchPerson: 'Search by name or email...',
     selectGroup: 'Select a group',
     searchGroup: 'Search for a group...',

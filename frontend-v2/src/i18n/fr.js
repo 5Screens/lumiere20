@@ -197,6 +197,13 @@ export default {
     selectModel: 'Sélectionner un modèle',
     noModelsAvailable: 'Aucun modèle disponible pour ce type',
     selectPerson: 'Sélectionner une personne',
+    relativeTime: {
+      lessThanMinute: 'Il y a moins d\'une minute',
+      minutes: 'Il y a {count} min',
+      hours: 'Il y a {count} h',
+      days: 'Il y a {count} j',
+      months: 'Il y a {count} mois'
+    },
     searchPerson: 'Rechercher par nom ou email...',
     selectGroup: 'Sélectionner un groupe',
     searchGroup: 'Rechercher un groupe...',
