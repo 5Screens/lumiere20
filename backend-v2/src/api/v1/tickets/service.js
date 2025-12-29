@@ -171,7 +171,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
     const skip = (page - 1) * limit;
 
     const assignedToGroupFilter = filters.assigned_to_group;
-    const assignedToPersonFilter = filters.assigned_to_person;
+    const assignedPersonUuidFilter = filters.assigned_person_uuid;
     const statusFilter = filters.rel_status_uuid;
     const requestedByFilter = filters.requested_by_uuid;
     const requestedForFilter = filters.requested_for_uuid;
@@ -180,7 +180,7 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
 
     const filtersForDb = { ...filters };
     delete filtersForDb.assigned_to_group;
-    delete filtersForDb.assigned_to_person;
+    delete filtersForDb.assigned_person_uuid;
     delete filtersForDb.rel_status_uuid;
     delete filtersForDb.requested_by_uuid;
     delete filtersForDb.requested_for_uuid;
@@ -236,10 +236,10 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       }
     }
 
-    // Handle assigned_to_person filter with smart text search
-    const assignedToPersonValue = assignedToPersonFilter?.constraints?.[0]?.value;
-    if (assignedToPersonValue && typeof assignedToPersonValue === 'string' && assignedToPersonValue.trim()) {
-      const trimmed = assignedToPersonValue.trim();
+    // Handle assigned_person_uuid filter with smart text search
+    const assignedPersonValue = assignedPersonUuidFilter?.constraints?.[0]?.value;
+    if (assignedPersonValue && typeof assignedPersonValue === 'string' && assignedPersonValue.trim()) {
+      const trimmed = assignedPersonValue.trim();
       const searchTerms = trimmed.split(/\s+/).filter(term => term.length > 0);
 
       let matchingPersons;
