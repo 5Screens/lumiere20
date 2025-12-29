@@ -222,7 +222,10 @@ export default {
     saveFailed: 'Save failed',
     unsavedChanges: 'Unsaved changes',
     unsavedChangesMessage: 'You have unsaved changes. What would you like to do?',
-    dontSave: 'Don\'t save'
+    dontSave: 'Don\'t save',
+    addToFilter: 'Add to filter',
+    filterAdded: 'Filter added',
+    filterAddedDetail: 'The value has been added to the column filter'
   },
   tabs: {
     backToList: 'Back to list',

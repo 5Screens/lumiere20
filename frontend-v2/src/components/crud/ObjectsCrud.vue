@@ -1076,6 +1076,13 @@ const menuModel = ref([
   { label: t('common.delete'), icon: 'pi pi-trash', command: () => confirmDeleteSelected() }
 ])
 
+// Context menu column tracking
+const contextMenuColumn = ref(null)
+
+// Types that support "Add to filter" in context menu
+// Note: person is excluded because there's no MultiSelect filter for persons (uses text filter)
+const FILTERABLE_CONTEXT_TYPES = ['select', 'group']
+
 // Columns to hide when ciTypeUuid is set (filtered view for configuration_items)
 const hiddenColumnsForCiType = []
 
@@ -2230,7 +2237,155 @@ const onCellEditComplete = async (event) => {
 }
 
 const onRowContextMenu = (event) => {
+  // Detect which column was clicked
+  const target = event.originalEvent.target
+  const cell = target.closest('td')
+  
+  // Find the column from the cell
+  let clickedColumn = null
+  if (cell) {
+    const row = cell.closest('tr')
+    if (row) {
+      const cellIndex = Array.from(row.children).indexOf(cell)
+      // Get visible columns in order (accounting for frozen columns like _actions, _rowActions, _summary)
+      const visibleColumns = getVisibleColumnsInOrder()
+      if (cellIndex >= 0 && cellIndex < visibleColumns.length) {
+        clickedColumn = visibleColumns[cellIndex]
+      }
+    }
+  }
+  
+  contextMenuColumn.value = clickedColumn
+  
+  // Build dynamic menu
+  buildContextMenu()
+  
   cm.value.show(event.originalEvent)
+}
+
+// Get visible columns in the order they appear in the table
+const getVisibleColumnsInOrder = () => {
+  const columns = []
+  
+  // Add frozen columns first (in order they appear in template)
+  if (!isMobile.value && !hasSummaryColumn.value) {
+    columns.push({ field_name: '_actions', field_type: 'actions' })
+  }
+  if (isPersons.value) {
+    columns.push({ field_name: '_rowActions', field_type: 'actions' })
+  }
+  if (hasSummaryColumn.value) {
+    columns.push({ field_name: '_summary', field_type: 'summary' })
+  }
+  
+  // Add dynamic columns (only visible ones)
+  for (const col of filteredTableColumns.value) {
+    if (isColumnVisible(col.field_name) && !(isMobile.value && hasSummaryColumn.value)) {
+      columns.push(col)
+    }
+  }
+  
+  return columns
+}
+
+// Build context menu dynamically based on clicked column
+const buildContextMenu = () => {
+  const baseItems = [
+    { label: t('common.edit'), icon: 'pi pi-pencil', command: () => openEditInTab(selectedItem.value) },
+    { label: t('common.delete'), icon: 'pi pi-trash', command: () => confirmDeleteSelected() }
+  ]
+  
+  // Check if we can add "Add to filter" option
+  const col = contextMenuColumn.value
+  if (col && FILTERABLE_CONTEXT_TYPES.includes(col.field_type) && col.is_filterable) {
+    const cellValue = getCellValueForFilter(selectedItem.value, col)
+    if (cellValue !== null && cellValue !== undefined) {
+      baseItems.push({ separator: true })
+      baseItems.push({
+        label: t('common.addToFilter'),
+        icon: 'pi pi-filter',
+        command: () => addValueToFilter(col, cellValue)
+      })
+    }
+  }
+  
+  menuModel.value = baseItems
+}
+
+// Get the value for filter from a cell (UUID for relations, value for select)
+const getCellValueForFilter = (data, col) => {
+  if (!data || !col) return null
+  
+  switch (col.field_type) {
+    case 'select': {
+      // For select, we need the actual value (not the label)
+      const value = col.is_extended 
+        ? data.extended_core_fields?.[col.field_name]
+        : data[col.field_name]
+      return value || null
+    }
+    case 'group': {
+      // For group, we need the UUID
+      const uuid = data[col.field_name]
+      return uuid || null
+    }
+    default:
+      return null
+  }
+}
+
+// Add a value to the column filter (AND constraint)
+const addValueToFilter = (col, value) => {
+  if (!col || value === null || value === undefined) return
+  
+  const fieldName = col.field_name
+  
+  // Initialize filter if not exists
+  if (!filters.value[fieldName]) {
+    const matchMode = getDefaultMatchMode(col)
+    const useOrOperator = col.field_type === 'select' || col.field_type === 'ci_category'
+    filters.value[fieldName] = {
+      operator: useOrOperator ? FilterOperator.OR : FilterOperator.AND,
+      constraints: [{ value: null, matchMode }]
+    }
+  }
+  
+  const filter = filters.value[fieldName]
+  
+  // For select/person/group, the value in filter is an array (MultiSelect)
+  // Find the first constraint or create one
+  if (filter.constraints && filter.constraints.length > 0) {
+    const constraint = filter.constraints[0]
+    
+    // If constraint value is null or empty, initialize it
+    if (!constraint.value) {
+      constraint.value = [value]
+    } else if (Array.isArray(constraint.value)) {
+      // Add to existing array if not already present
+      if (!constraint.value.includes(value)) {
+        constraint.value.push(value)
+      }
+    } else {
+      // Convert to array
+      constraint.value = [constraint.value, value]
+    }
+  } else {
+    // Create new constraint
+    filter.constraints = [{
+      value: [value],
+      matchMode: getDefaultMatchMode(col)
+    }]
+  }
+  
+  // Trigger reload with new filters
+  loadItems(1)
+  
+  toast.add({
+    severity: 'info',
+    summary: t('common.filterAdded'),
+    detail: t('common.filterAddedDetail'),
+    life: 2000
+  })
 }
 
 const exportCSV = () => {

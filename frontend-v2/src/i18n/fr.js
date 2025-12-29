@@ -223,7 +223,10 @@ export default {
     saveFailed: 'Échec de l\'enregistrement',
     unsavedChanges: 'Modifications non enregistrées',
     unsavedChangesMessage: 'Vous avez des modifications non enregistrées. Que souhaitez-vous faire ?',
-    dontSave: 'Ne pas enregistrer'
+    dontSave: 'Ne pas enregistrer',
+    addToFilter: 'Ajouter au filtre',
+    filterAdded: 'Filtre ajouté',
+    filterAddedDetail: 'La valeur a été ajoutée au filtre de la colonne'
   },
   tabs: {
     backToList: 'Retour à la liste',
