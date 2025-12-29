@@ -27,7 +27,7 @@
         v-model:filters="filters"
         v-model:sortField="sortField"
         v-model:sortOrder="sortOrder"
-        class="flex-1 min-h-0"
+        :class="['flex-1 min-h-0', { 'ring-2 ring-primary': selectionModeActive }]"
         :pt="{
           root: { class: 'flex flex-col min-h-0' },
           tableContainer: { class: 'flex-1 min-h-0 overflow-auto' }
@@ -35,7 +35,7 @@
         :value="items"
         :size="tableSize"
         dataKey="uuid"
-        :selectionMode="isDesktop ? 'multiple' : null"
+        :selectionMode="selectionModeActive ? 'multiple' : null"
         :paginator="true"
         :rows="pageSize"
         :totalRecords="totalRecords"
@@ -102,28 +102,30 @@
                 </template>
               </Popover>
             </div>
-            <!-- Action button (visible when rows are selected) -->
-            <div v-if="selectedItems?.length > 0" class="flex items-center gap-2">
+            <!-- Action button (always visible) -->
+            <div class="flex items-center gap-2">
               <Button 
                 type="button" 
                 icon="pi pi-bolt" 
-                severity="primary"
-                @click="onBulkAction" 
-                v-tooltip.bottom="$t('common.actions')"
+                :severity="selectionModeActive ? 'primary' : 'secondary'"
+                @click="onActionButtonClick" 
+                v-tooltip.bottom="selectionModeActive ? $t('common.revertClickActions') : $t('common.actions')"
               />
-              <span class="text-sm text-surface-500 dark:text-surface-400">
-                {{ selectedItems.length }} {{ $t('common.selected') }}
-              </span>
-              <Button 
-                type="button" 
-                icon="pi pi-times" 
-                severity="danger"
-                text
-                rounded
-                size="small"
-                @click="selectedItems = []" 
-                v-tooltip.bottom="$t('common.clearSelection')"
-              />
+              <template v-if="selectionModeActive">
+                <span class="text-sm text-surface-500 dark:text-surface-400">
+                  {{ $t('common.nRowsSelected', { count: selectedItems?.length || 0 }) }}
+                </span>
+                <Button 
+                  type="button" 
+                  icon="pi pi-times" 
+                  severity="danger"
+                  text
+                  rounded
+                  size="small"
+                  @click="exitSelectionMode" 
+                  v-tooltip.bottom="$t('common.clearSelection')"
+                />
+              </template>
             </div>
             <div class="flex items-center gap-2">
               <Button 
@@ -202,7 +204,10 @@
           :sortable="false"
         >
           <template #body="{ data }">
-            <div class="cursor-pointer" @click="openEditDialog(data)">
+            <div 
+              :class="{ 'cursor-pointer': !selectionModeActive }" 
+              @click="!selectionModeActive && openEditDialog(data)"
+            >
               <TicketRowSummary v-if="isTickets" :data="data" />
               <CiRowSummary v-else-if="isConfigurationItems" :data="data" />
             </div>
@@ -939,6 +944,7 @@ const columnTogglePopover = ref()
 const items = ref([])
 const selectedItems = ref([])
 const selectedItem = ref(null)
+const selectionModeActive = ref(false)
 const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
@@ -2064,20 +2070,48 @@ const openEditDialog = (data) => {
   itemDialog.value = true
 }
 
-// Handle row click to open drawer (mobile only - desktop uses pencil button)
+// Handle row click
 const onRowClick = (event) => {
+  // In selection mode: toggle row selection
+  if (selectionModeActive.value) {
+    const item = event.data
+    const index = selectedItems.value.findIndex(i => i.uuid === item.uuid)
+    if (index === -1) {
+      selectedItems.value = [...selectedItems.value, item]
+    } else {
+      selectedItems.value = selectedItems.value.filter(i => i.uuid !== item.uuid)
+    }
+    return
+  }
+  
+  // Normal mode: open drawer on mobile only
   if (!isMobile.value) return
   openEditDialog(event.data)
 }
 
-// Handle bulk action button click
-const onBulkAction = () => {
-  toast.add({
-    severity: 'info',
-    summary: t('common.selection'),
-    detail: t('common.nRowsSelected', { count: selectedItems.value.length }),
-    life: 3000
-  })
+// Handle action button click
+const onActionButtonClick = () => {
+  if (!selectionModeActive.value) {
+    // Not in selection mode: enter selection mode
+    selectionModeActive.value = true
+  } else if (selectedItems.value.length === 0) {
+    // In selection mode but no items selected: exit selection mode
+    selectionModeActive.value = false
+  } else {
+    // Items selected: perform bulk action
+    toast.add({
+      severity: 'info',
+      summary: t('common.selection'),
+      detail: t('common.nRowsSelected', { count: selectedItems.value.length }),
+      life: 3000
+    })
+  }
+}
+
+// Exit selection mode and clear selection
+const exitSelectionMode = () => {
+  selectedItems.value = []
+  selectionModeActive.value = false
 }
 
 const onDrawerSaved = async () => {
