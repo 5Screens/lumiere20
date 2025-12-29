@@ -2422,8 +2422,7 @@ const addValueToFilter = (col, value) => {
     }
   }
   
-  // Trigger reload with new filters
-  loadItems(1)
+  // Note: No need to call loadItems() here - the watcher on filters will trigger it automatically
   
   toast.add({
     severity: 'info',
