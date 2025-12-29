@@ -640,14 +640,18 @@
       v-model:visible="itemDialog" 
       position="right"
       class="w-full md:w-[600px]"
+      :showCloseIcon="false"
       :showHeader="false"
+      :dismissable="!objectViewHasUnsavedChanges"
+      @hide="onDrawerHide"
     >
       <ObjectView
+        ref="objectViewRef"
         :object-type="objectType"
         :object-id="editItemId"
         :mode="dialogMode"
         @saved="onDrawerSaved"
-        @close="itemDialog = false"
+        @close="onDrawerClose"
       />
     </Drawer>
     
@@ -941,6 +945,7 @@ const { tableSize, isMobile, isDesktop } = useResponsiveSize()
 const dt = ref()
 const cm = ref()
 const columnTogglePopover = ref()
+const objectViewRef = ref(null)
 const items = ref([])
 const selectedItems = ref([])
 const selectedItem = ref(null)
@@ -2120,6 +2125,23 @@ const onActionButtonClick = () => {
 const exitSelectionMode = () => {
   selectedItems.value = []
   selectionModeActive.value = false
+}
+
+// Computed: check if ObjectView has unsaved changes
+const objectViewHasUnsavedChanges = computed(() => {
+  if (!objectViewRef.value) return false
+  return objectViewRef.value.hasUnsavedChanges?.()
+})
+
+// Handle drawer hide event (called when drawer is about to close)
+const onDrawerHide = () => {
+  // Reset the ref when drawer closes
+  objectViewRef.value = null
+}
+
+// Handle close request from ObjectView
+const onDrawerClose = () => {
+  itemDialog.value = false
 }
 
 const onDrawerSaved = async () => {

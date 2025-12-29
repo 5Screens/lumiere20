@@ -14,7 +14,11 @@ export const useTabsStore = defineStore('tabs', {
     // Active child tab ID
     activeChildTabId: null,
     // Last active child tab per parent (to restore when switching back)
-    lastActiveChildByParent: {}
+    lastActiveChildByParent: {},
+    // Dirty state per tab (tabs with unsaved changes)
+    dirtyTabs: {},
+    // Pending close request (tab waiting for confirmation)
+    pendingCloseTabId: null
   }),
   
   actions: {
@@ -87,11 +91,69 @@ export const useTabsStore = defineStore('tabs', {
     },
 
     /**
+     * Sets the dirty state for a tab
+     * @param {string} id_tab - Tab ID
+     * @param {boolean} isDirty - Whether the tab has unsaved changes
+     */
+    setTabDirty(id_tab, isDirty) {
+      if (isDirty) {
+        this.dirtyTabs[id_tab] = true
+      } else {
+        delete this.dirtyTabs[id_tab]
+      }
+    },
+
+    /**
+     * Checks if a tab has unsaved changes
+     * @param {string} id_tab - Tab ID
+     * @returns {boolean}
+     */
+    isTabDirty(id_tab) {
+      return !!this.dirtyTabs[id_tab]
+    },
+
+    /**
+     * Requests to close a tab (checks dirty state first)
+     * @param {string} id_tab - Tab ID to close
+     * @returns {boolean} - true if tab can be closed immediately, false if confirmation needed
+     */
+    requestCloseTab(id_tab) {
+      if (this.dirtyTabs[id_tab]) {
+        this.pendingCloseTabId = id_tab
+        return false
+      }
+      this.closeTab(id_tab)
+      return true
+    },
+
+    /**
+     * Confirms closing a pending tab (after user confirmation)
+     */
+    confirmCloseTab() {
+      if (this.pendingCloseTabId) {
+        const tabId = this.pendingCloseTabId
+        this.pendingCloseTabId = null
+        delete this.dirtyTabs[tabId]
+        this.closeTab(tabId)
+      }
+    },
+
+    /**
+     * Cancels closing a pending tab
+     */
+    cancelCloseTab() {
+      this.pendingCloseTabId = null
+    },
+
+    /**
      * Closes a tab and its children
      * @param {string} id_tab - Tab ID to close
      */
     closeTab(id_tab) {
       console.log('[TabsStore] Closing tab:', id_tab)
+      
+      // Clean up dirty state
+      delete this.dirtyTabs[id_tab]
       
       const tabToClose = this.tabs.find(t => t.id_tab === id_tab)
       if (!tabToClose) return
@@ -101,6 +163,10 @@ export const useTabsStore = defineStore('tabs', {
       
       // If parent tab, close children first and clean up lastActiveChildByParent
       if (!isChildTab) {
+        // Clean up dirty state for all children
+        this.tabs.filter(t => t.parentId === id_tab).forEach(t => {
+          delete this.dirtyTabs[t.id_tab]
+        })
         this.tabs = this.tabs.filter(t => t.parentId !== id_tab)
         delete this.lastActiveChildByParent[id_tab]
       }

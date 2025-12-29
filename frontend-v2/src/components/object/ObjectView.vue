@@ -14,17 +14,20 @@
         </h2>
         <div class="flex gap-2">
           <Button 
-            :label="$t('common.cancel')" 
             icon="pi pi-times" 
-            severity="secondary"
+            severity="danger"
             text
+            rounded
             @click="onCancel"
+            v-tooltip.bottom="$t('common.cancel')"
           />
           <Button 
-            :label="$t('common.save')" 
             icon="pi pi-check" 
+            severity="success"
             @click="onSave"
             :loading="saving"
+            :disabled="!isDirty"
+            v-tooltip.bottom="$t('common.save')"
           />
         </div>
       </div>
@@ -81,12 +84,41 @@
         <p>{{ $t('common.notFound') }}</p>
       </div>
     </div>
+
+    <!-- Unsaved changes confirmation dialog -->
+    <Dialog 
+      v-model:visible="confirmDialogVisible" 
+      :header="$t('common.unsavedChanges')" 
+      :modal="true"
+      :style="{ width: '400px' }"
+    >
+      <div class="flex items-center gap-4">
+        <i class="pi pi-exclamation-triangle text-3xl text-orange-500" />
+        <span>{{ $t('common.unsavedChangesMessage') }}</span>
+      </div>
+      <template #footer>
+        <Button 
+          :label="$t('common.no')" 
+          icon="pi pi-times" 
+          severity="secondary" 
+          text 
+          @click="confirmDialogVisible = false" 
+        />
+        <Button 
+          :label="$t('common.yes')" 
+          icon="pi pi-check" 
+          severity="danger" 
+          @click="confirmClose" 
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, toRef, onMounted } from 'vue'
+import { ref, toRef, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { useObjectView } from '@/composables/useObjectView'
+import { useTabsStore } from '@/stores/tabsStore'
 
 // PrimeVue components
 import Button from 'primevue/button'
@@ -96,6 +128,7 @@ import Tab from 'primevue/tab'
 import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import ProgressSpinner from 'primevue/progressspinner'
+import Dialog from 'primevue/dialog'
 
 // Custom components
 import ObjectGeneralInfo from './ObjectGeneralInfo.vue'
@@ -133,9 +166,14 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['saved', 'close'])
 
+// Stores
+const tabsStore = useTabsStore()
+
 // Local state
 const activeTab = ref('general')
 const generalInfoRef = ref(null)
+const confirmDialogVisible = ref(false)
+const originalItemSnapshot = ref(null)
 
 // Use the composable with refs
 const {
@@ -161,20 +199,136 @@ const {
   ticketTypeCode: toRef(props, 'ticketTypeCode')
 })
 
+// Deep clone utility for snapshot
+const deepClone = (obj) => {
+  if (obj === null || typeof obj !== 'object') return obj
+  if (obj instanceof Date) return new Date(obj)
+  if (Array.isArray(obj)) return obj.map(deepClone)
+  const cloned = {}
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      cloned[key] = deepClone(obj[key])
+    }
+  }
+  return cloned
+}
+
+// Deep compare utility
+const deepEqual = (a, b) => {
+  if (a === b) return true
+  if (a === null || b === null) return a === b
+  if (typeof a !== 'object' || typeof b !== 'object') return a === b
+  if (Array.isArray(a) !== Array.isArray(b)) return false
+  
+  const keysA = Object.keys(a)
+  const keysB = Object.keys(b)
+  
+  if (keysA.length !== keysB.length) return false
+  
+  for (const key of keysA) {
+    if (!keysB.includes(key)) return false
+    if (!deepEqual(a[key], b[key])) return false
+  }
+  
+  return true
+}
+
+// Computed: check if item has been modified
+const isDirty = computed(() => {
+  if (!item.value || !originalItemSnapshot.value) {
+    // In create mode, consider dirty if any field has a value
+    if (props.mode === 'create' && item.value) {
+      const hasValue = Object.entries(item.value).some(([key, value]) => {
+        if (key === '_translations' || key === 'extended_core_fields') return false
+        return value !== null && value !== undefined && value !== '' && value !== false
+      })
+      return hasValue
+    }
+    return false
+  }
+  return !deepEqual(item.value, originalItemSnapshot.value)
+})
+
+// Take snapshot when item is loaded
+const takeSnapshot = () => {
+  if (item.value) {
+    originalItemSnapshot.value = deepClone(item.value)
+  }
+}
+
+// Reset dirty state after save
+const resetDirtyState = () => {
+  takeSnapshot()
+}
+
 // Methods
 const onSave = async () => {
   const success = await saveItem(generalInfoRef, props.tabId)
   if (success) {
+    resetDirtyState()
     emit('saved', item.value)
   }
 }
 
 const onCancel = () => {
+  if (isDirty.value) {
+    confirmDialogVisible.value = true
+  } else {
+    emit('close')
+  }
+}
+
+const confirmClose = () => {
+  confirmDialogVisible.value = false
   emit('close')
 }
+
+// Check if there are unsaved changes (exposed for parent)
+const hasUnsavedChanges = () => isDirty.value
+
+// Request close with confirmation if dirty
+const requestClose = () => {
+  if (isDirty.value) {
+    confirmDialogVisible.value = true
+    return false
+  }
+  return true
+}
+
+// Expose methods for parent component
+defineExpose({
+  hasUnsavedChanges,
+  requestClose
+})
+
+// Watch for item changes to take initial snapshot
+watch(() => loading.value, (newLoading, oldLoading) => {
+  if (oldLoading && !newLoading && item.value) {
+    // Item just finished loading, take snapshot
+    takeSnapshot()
+  }
+})
+
+// Sync dirty state with tabsStore for tab-based views
+watch(isDirty, (newDirty) => {
+  if (props.tabId) {
+    tabsStore.setTabDirty(props.tabId, newDirty)
+  }
+})
+
+// Clean up dirty state when component is unmounted
+onBeforeUnmount(() => {
+  if (props.tabId) {
+    tabsStore.setTabDirty(props.tabId, false)
+  }
+})
 
 // Lifecycle
 onMounted(async () => {
   await init()
+  // Take snapshot after init for edit mode
+  if (props.mode === 'edit' && item.value) {
+    takeSnapshot()
+  }
 })
 </script>

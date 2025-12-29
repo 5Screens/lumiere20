@@ -98,7 +98,7 @@
                         <span :title="childTab.label">{{ truncateLabel(childTab.label, 25) }}</span>
                         <button 
                           class="w-3.5 h-3.5 flex items-center justify-center rounded-full hover:bg-surface-300 dark:hover:bg-surface-500 transition-all duration-200 opacity-60 hover:opacity-100"
-                          @click.stop="tabsStore.closeTab(childTab.id_tab)"
+                          @click.stop="requestCloseChildTab(childTab.id_tab)"
                         >
                           <i class="pi pi-times" style="font-size: 0.5rem" />
                         </button>
@@ -173,6 +173,35 @@
         </TabPanel>
       </TabPanels>
     </Tabs>
+
+    <!-- Unsaved changes confirmation dialog -->
+    <Dialog 
+      v-model:visible="showCloseConfirmDialog" 
+      :header="$t('common.unsavedChanges')" 
+      :modal="true"
+      :style="{ width: '400px' }"
+      @hide="onCloseConfirmDialogHide"
+    >
+      <div class="flex items-center gap-4">
+        <i class="pi pi-exclamation-triangle text-3xl text-orange-500" />
+        <span>{{ $t('common.unsavedChangesMessage') }}</span>
+      </div>
+      <template #footer>
+        <Button 
+          :label="$t('common.no')" 
+          icon="pi pi-times" 
+          severity="secondary" 
+          text 
+          @click="cancelCloseTab" 
+        />
+        <Button 
+          :label="$t('common.yes')" 
+          icon="pi pi-check" 
+          severity="danger" 
+          @click="confirmCloseTab" 
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -190,6 +219,7 @@ import Tab from 'primevue/tab'
 import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 
 // Components registry
 const componentRegistry = {
@@ -208,6 +238,29 @@ const componentsWithChildTabs = ['ObjectsCrud', 'MetadataObjectTypesCrud']
 
 const tabsStore = useTabsStore()
 const { t } = useI18n()
+
+// Computed: show close confirmation dialog
+const showCloseConfirmDialog = computed(() => !!tabsStore.pendingCloseTabId)
+
+// Confirm close tab
+const confirmCloseTab = () => {
+  tabsStore.confirmCloseTab()
+}
+
+// Cancel close tab
+const cancelCloseTab = () => {
+  tabsStore.cancelCloseTab()
+}
+
+// Handle dialog hide (when closed via escape or clicking outside)
+const onCloseConfirmDialogHide = () => {
+  tabsStore.cancelCloseTab()
+}
+
+// Request to close a child tab (with dirty check)
+const requestCloseChildTab = (tabId) => {
+  tabsStore.requestCloseTab(tabId)
+}
 
 // Computed: active parent tab value (id_tab)
 const activeParentValue = computed(() => {
