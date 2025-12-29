@@ -196,7 +196,7 @@
           v-if="hasSummaryColumn"
           field="_summary"
           :header="$t('common.summary')"
-          style="min-width: 30rem" 
+          :style="isMobile ? 'width: 100%' : 'min-width: 30rem'" 
           :exportable="false" 
           :reorderableColumn="false"
           :sortable="false"
@@ -209,10 +209,10 @@
           </template>
         </Column>
 
-        <!-- Dynamic columns from metadata -->
+        <!-- Dynamic columns from metadata (hidden on mobile when summary column is present) -->
         <template v-for="col in filteredTableColumns" :key="col.field_name">
         <Column 
-          v-if="isColumnVisible(col.field_name)"
+          v-if="isColumnVisible(col.field_name) && !(isMobile && hasSummaryColumn)"
           :columnKey="col.field_name"
           :field="col.is_extended ? undefined : col.field_name" 
           :header="col.is_extended ? col.label : $t(col.label_key)" 
