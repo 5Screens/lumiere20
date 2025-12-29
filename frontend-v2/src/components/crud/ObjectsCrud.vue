@@ -27,10 +27,10 @@
         v-model:filters="filters"
         v-model:sortField="sortField"
         v-model:sortOrder="sortOrder"
-        :class="['flex-1 min-h-0', { 'ring-2 ring-primary': selectionModeActive }]"
+        class="flex-1 min-h-0"
         :pt="{
           root: { class: 'flex flex-col min-h-0' },
-          tableContainer: { class: 'flex-1 min-h-0 overflow-auto' }
+          tableContainer: { class: ['flex-1 min-h-0 overflow-auto', { 'ring-2 ring-primary rounded': selectionModeActive }] }
         }"
         :value="items"
         :size="tableSize"
