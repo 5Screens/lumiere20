@@ -1080,8 +1080,9 @@ const menuModel = ref([
 const contextMenuColumn = ref(null)
 
 // Types that support "Add to filter" in context menu
-// Note: person is excluded because there's no MultiSelect filter for persons (uses text filter)
-const FILTERABLE_CONTEXT_TYPES = ['select', 'group']
+// - select, group: use MultiSelect filter (add UUID/value to array)
+// - text, textarea, person: use text filter (copy human-readable value)
+const FILTERABLE_CONTEXT_TYPES = ['select', 'group', 'text', 'textarea', 'person']
 
 // Columns to hide when ciTypeUuid is set (filtered view for configuration_items)
 const hiddenColumnsForCiType = []
@@ -2312,7 +2313,9 @@ const buildContextMenu = () => {
   menuModel.value = baseItems
 }
 
-// Get the value for filter from a cell (UUID for relations, value for select)
+// Get the value for filter from a cell
+// - For MultiSelect filters (select, group): returns UUID/value
+// - For text filters (text, textarea, person): returns human-readable value
 const getCellValueForFilter = (data, col) => {
   if (!data || !col) return null
   
@@ -2329,16 +2332,47 @@ const getCellValueForFilter = (data, col) => {
       const uuid = data[col.field_name]
       return uuid || null
     }
+    case 'text': {
+      // For text, return the human-readable value
+      const value = col.is_extended 
+        ? data.extended_core_fields?.[col.field_name]
+        : (col.is_translatable ? getTranslatedValue(data, col.field_name) : data[col.field_name])
+      return value || null
+    }
+    case 'textarea': {
+      // For textarea, return the human-readable value (strip HTML if needed)
+      let value = col.is_extended 
+        ? data.extended_core_fields?.[col.field_name]
+        : (col.is_translatable ? getTranslatedValue(data, col.field_name) : data[col.field_name])
+      // Strip HTML tags for search
+      if (value) {
+        const tmp = document.createElement('div')
+        tmp.innerHTML = value
+        value = tmp.textContent || tmp.innerText || ''
+      }
+      return value || null
+    }
+    case 'person': {
+      // For person, return the display name (not UUID)
+      const display = getPersonDisplay(data, col.field_name)
+      return display || null
+    }
     default:
       return null
   }
 }
 
-// Add a value to the column filter (AND constraint)
+// Check if field type uses text filter (not MultiSelect)
+const isTextFilterType = (fieldType) => {
+  return ['text', 'textarea', 'person'].includes(fieldType)
+}
+
+// Add a value to the column filter
 const addValueToFilter = (col, value) => {
   if (!col || value === null || value === undefined) return
   
   const fieldName = col.field_name
+  const isTextFilter = isTextFilterType(col.field_type)
   
   // Initialize filter if not exists
   if (!filters.value[fieldName]) {
@@ -2352,29 +2386,40 @@ const addValueToFilter = (col, value) => {
   
   const filter = filters.value[fieldName]
   
-  // For select/person/group, the value in filter is an array (MultiSelect)
-  // Find the first constraint or create one
-  if (filter.constraints && filter.constraints.length > 0) {
-    const constraint = filter.constraints[0]
-    
-    // If constraint value is null or empty, initialize it
-    if (!constraint.value) {
-      constraint.value = [value]
-    } else if (Array.isArray(constraint.value)) {
-      // Add to existing array if not already present
-      if (!constraint.value.includes(value)) {
-        constraint.value.push(value)
-      }
+  if (isTextFilter) {
+    // For text filters: set the value directly in the first constraint
+    if (filter.constraints && filter.constraints.length > 0) {
+      filter.constraints[0].value = value
     } else {
-      // Convert to array
-      constraint.value = [constraint.value, value]
+      filter.constraints = [{
+        value: value,
+        matchMode: getDefaultMatchMode(col)
+      }]
     }
   } else {
-    // Create new constraint
-    filter.constraints = [{
-      value: [value],
-      matchMode: getDefaultMatchMode(col)
-    }]
+    // For MultiSelect filters (select, group): add to array
+    if (filter.constraints && filter.constraints.length > 0) {
+      const constraint = filter.constraints[0]
+      
+      // If constraint value is null or empty, initialize it
+      if (!constraint.value) {
+        constraint.value = [value]
+      } else if (Array.isArray(constraint.value)) {
+        // Add to existing array if not already present
+        if (!constraint.value.includes(value)) {
+          constraint.value.push(value)
+        }
+      } else {
+        // Convert to array
+        constraint.value = [constraint.value, value]
+      }
+    } else {
+      // Create new constraint
+      filter.constraints = [{
+        value: [value],
+        matchMode: getDefaultMatchMode(col)
+      }]
+    }
   }
   
   // Trigger reload with new filters
