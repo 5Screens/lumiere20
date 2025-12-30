@@ -20,6 +20,9 @@ router.get('/options', controller.getOptions);
 // GET /api/v1/object-setup/object-types - Get distinct object types
 router.get('/object-types', controller.getObjectTypes);
 
+// GET /api/v1/object-setup/object-types-options - Get distinct object types as select options
+router.get('/object-types-options', controller.getObjectTypesAsOptions);
+
 // GET /api/v1/object-setup/metadata-types - Get distinct metadata types for an object_type
 router.get('/metadata-types', controller.getMetadataTypes);
 

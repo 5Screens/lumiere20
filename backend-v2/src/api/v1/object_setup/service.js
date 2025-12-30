@@ -66,6 +66,23 @@ const getAll = async ({ activeOnly = true, locale = 'en', objectType = null } = 
 };
 
 /**
+ * Get distinct object types from object_setup as select options
+ * This returns the unique object_type values used in object_setup (entity, location, incident, etc.)
+ */
+const getObjectTypesAsOptions = async () => {
+  const records = await prisma.object_setup.findMany({
+    distinct: ['object_type'],
+    select: { object_type: true },
+    orderBy: { object_type: 'asc' }
+  });
+  
+  return records.map(r => ({
+    label: r.object_type.charAt(0).toUpperCase() + r.object_type.slice(1),
+    value: r.object_type
+  }));
+};
+
+/**
  * Get object setup records as select options (for dropdowns)
  */
 const getAsOptions = async ({ locale = 'en', objectType, metadata } = {}) => {
@@ -151,7 +168,7 @@ const getByUuid = async (uuid, locale = 'en') => {
  * Create a new object setup record
  */
 const create = async (data) => {
-  const { _translations, ...recordData } = data;
+  const { _translations, label, ...recordData } = data;
   
   const record = await prisma.object_setup.create({
     data: recordData
@@ -186,7 +203,7 @@ const create = async (data) => {
  * Update an object setup record
  */
 const update = async (uuid, data) => {
-  const { _translations, ...recordData } = data;
+  const { _translations, label, ...recordData } = data;
   
   const record = await prisma.object_setup.update({
     where: { uuid },
@@ -374,6 +391,7 @@ const getMetadataTypes = async (objectType) => {
 module.exports = {
   getAll,
   getAsOptions,
+  getObjectTypesAsOptions,
   getByUuid,
   create,
   update,

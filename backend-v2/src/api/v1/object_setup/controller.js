@@ -50,6 +50,19 @@ const getOptions = async (req, res, next) => {
 };
 
 /**
+ * Get distinct object types as select options (for object_type dropdown in object_setup CRUD)
+ */
+const getObjectTypesAsOptions = async (req, res, next) => {
+  try {
+    const options = await service.getObjectTypesAsOptions();
+    res.json(options);
+  } catch (error) {
+    logger.error('Controller error - getObjectTypesAsOptions:', error);
+    next(error);
+  }
+};
+
+/**
  * Get object setup by UUID
  */
 const getByUuid = async (req, res, next) => {
@@ -193,6 +206,7 @@ const getMetadataTypes = async (req, res, next) => {
 module.exports = {
   getAll,
   getOptions,
+  getObjectTypesAsOptions,
   getByUuid,
   create,
   update,
