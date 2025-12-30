@@ -85,7 +85,7 @@ async function seedTicketTypeFields() {
         is_required: true,
         display_order: 2,
         min_width: '8rem',
-        options_source: '/incident_setup?metadata=IMPACT',
+        options_source: '/object-setup/options?object_type=incident&metadata=IMPACT',
       },
       {
         field_name: 'urgency',
@@ -97,7 +97,7 @@ async function seedTicketTypeFields() {
         is_required: true,
         display_order: 3,
         min_width: '8rem',
-        options_source: '/incident_setup?metadata=URGENCY',
+        options_source: '/object-setup/options?object_type=incident&metadata=URGENCY',
       },
       {
         field_name: 'priority',
@@ -119,7 +119,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 5,
         min_width: '10rem',
-        options_source: '/contact_types',
+        options_source: '/object-setup/options?object_type=contact&metadata=TYPE',
       },
       {
         field_name: 'rel_service',
@@ -164,7 +164,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 11,
         min_width: '10rem',
-        options_source: '/incident_setup?metadata=RESOLUTION_CODE',
+        options_source: '/object-setup/options?object_type=incident&metadata=RESOLUTION_CODE',
       },
       {
         field_name: 'cause_code',
@@ -175,7 +175,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 12,
         min_width: '10rem',
-        options_source: '/incident_setup?metadata=CAUSE_CODE',
+        options_source: '/object-setup/options?object_type=incident&metadata=CAUSE_CODE',
       },
       {
         field_name: 'rel_problem_id',
@@ -305,7 +305,7 @@ async function seedTicketTypeFields() {
         is_required: true,
         display_order: 1,
         min_width: '12rem',
-        options_source: '/problem_categories',
+        options_source: '/object-setup/options?object_type=problem&metadata=CATEGORY',
       },
       {
         field_name: 'impact',
@@ -317,7 +317,7 @@ async function seedTicketTypeFields() {
         is_required: true,
         display_order: 2,
         min_width: '8rem',
-        options_source: '/incident_setup?metadata=IMPACT',
+        options_source: '/object-setup/options?object_type=incident&metadata=IMPACT',
       },
       {
         field_name: 'urgency',
@@ -329,7 +329,7 @@ async function seedTicketTypeFields() {
         is_required: true,
         display_order: 3,
         min_width: '8rem',
-        options_source: '/incident_setup?metadata=URGENCY',
+        options_source: '/object-setup/options?object_type=incident&metadata=URGENCY',
       },
       {
         field_name: 'rel_service',
@@ -507,7 +507,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 6,
         min_width: '10rem',
-        options_source: '/project_setup?metadata=category',
+        options_source: '/object-setup/options?object_type=project&metadata=CATEGORY',
       },
       {
         field_name: 'access_to_groups',
@@ -548,7 +548,7 @@ async function seedTicketTypeFields() {
         is_required: true,
         display_order: 1,
         min_width: '10rem',
-        options_source: '/change_setup?metadata=type',
+        options_source: '/object-setup/options?object_type=change&metadata=TYPE',
       },
       {
         field_name: 'rel_services',
@@ -726,7 +726,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 34,
         min_width: '10rem',
-        options_source: '/change_setup?metadata=justification',
+        options_source: '/object-setup/options?object_type=change&metadata=JUSTIFICATION',
       },
       {
         field_name: 'rel_change_objective',
@@ -737,7 +737,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 35,
         min_width: '10rem',
-        options_source: '/change_setup?metadata=objective',
+        options_source: '/object-setup/options?object_type=change&metadata=OBJECTIVE',
       },
       {
         field_name: 'test_plan',
@@ -799,7 +799,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 51,
         min_width: '10rem',
-        options_source: '/change_setup?metadata=cab_validation_status',
+        options_source: '/object-setup/options?object_type=change&metadata=CAB_VALIDATION_STATUS',
       },
       {
         field_name: 'validated_at',
@@ -865,7 +865,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 71,
         min_width: '10rem',
-        options_source: '/change_setup?metadata=post_implementation_evaluation',
+        options_source: '/object-setup/options?object_type=change&metadata=POST_IMPLEMENTATION_EVALUATION',
       },
       {
         field_name: 'post_change_comment',
@@ -892,7 +892,7 @@ async function seedTicketTypeFields() {
         is_required: true,
         display_order: 1,
         min_width: '10rem',
-        options_source: '/knowledge_setup?metadata=category',
+        options_source: '/object-setup/options?object_type=knowledge&metadata=CATEGORY',
       },
       {
         field_name: 'summary',
@@ -988,7 +988,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 23,
         min_width: '14rem',
-        options_source: '/knowledge_setup?metadata=target_audience',
+        options_source: '/object-setup/options?object_type=knowledge&metadata=TARGET_AUDIENCE',
       },
       {
         field_name: 'business_scope',
@@ -999,7 +999,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 24,
         min_width: '14rem',
-        options_source: '/knowledge_setup?metadata=business_scope',
+        options_source: '/object-setup/options?object_type=knowledge&metadata=BUSINESS_SCOPE',
       },
       {
         field_name: 'rel_lang',
@@ -1023,7 +1023,7 @@ async function seedTicketTypeFields() {
         is_required: true,
         display_order: 31,
         min_width: '10rem',
-        options_source: '/knowledge_setup?metadata=confidentiality_level',
+        options_source: '/object-setup/options?object_type=knowledge&metadata=CONFIDENTIALITY_LEVEL',
       },
       {
         field_name: 'version',
@@ -1312,7 +1312,7 @@ async function seedTicketTypeFields() {
         is_required: true,
         display_order: 2,
         min_width: '8rem',
-        options_source: '/defect_setup?metadata=SEVERITY',
+        options_source: '/object-setup/options?object_type=defect&metadata=SEVERITY',
       },
       {
         field_name: 'impact_area',
@@ -1323,7 +1323,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 3,
         min_width: '10rem',
-        options_source: '/defect_setup?metadata=IMPACT',
+        options_source: '/object-setup/options?object_type=defect&metadata=IMPACT',
       },
       {
         field_name: 'environment',
@@ -1334,7 +1334,7 @@ async function seedTicketTypeFields() {
         show_in_form: true,
         display_order: 4,
         min_width: '10rem',
-        options_source: '/defect_setup?metadata=ENVIRONMENT',
+        options_source: '/object-setup/options?object_type=defect&metadata=ENVIRONMENT',
       },
       {
         field_name: 'epic_id',

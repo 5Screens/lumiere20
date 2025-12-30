@@ -15,17 +15,20 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
   const ciTypes = ref([])
   const workflowStatusesByTicketType = ref({}) // { TASK: [...], INCIDENT: [...], ... }
   const groups = ref([])
+  const objectSetupOptions = ref({}) // { 'incident:URGENCY': [...], 'incident:IMPACT': [...], ... }
   const loading = ref({
     ciCategories: false,
     ciTypes: false,
     workflowStatuses: {}, // { TASK: false, INCIDENT: false, ... }
-    groups: false
+    groups: false,
+    objectSetupOptions: {} // { 'incident:URGENCY': false, ... }
   })
   const loaded = ref({
     ciCategories: false,
     ciTypes: false,
     workflowStatuses: {}, // { TASK: false, INCIDENT: false, ... }
-    groups: false
+    groups: false,
+    objectSetupOptions: {} // { 'incident:URGENCY': false, ... }
   })
 
   // Getters
@@ -252,6 +255,99 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
   }
 
   /**
+   * Load object setup options for a specific object_type and metadata (with cache)
+   * @param {string} objectType - Object type (e.g., 'incident', 'problem', 'change')
+   * @param {string} metadata - Metadata type (e.g., 'URGENCY', 'IMPACT', 'CATEGORY')
+   * @param {boolean} force - Force reload even if already loaded
+   * @returns {Promise<Array>} Options array with { label, value, icon, color }
+   */
+  const loadObjectSetupOptions = async (objectType, metadata, force = false) => {
+    if (!objectType || !metadata) {
+      console.warn('[ReferenceDataStore] loadObjectSetupOptions called without objectType or metadata')
+      return []
+    }
+
+    const cacheKey = `${objectType}:${metadata}`
+
+    if (loaded.value.objectSetupOptions[cacheKey] && !force) {
+      return objectSetupOptions.value[cacheKey] || []
+    }
+
+    if (loading.value.objectSetupOptions[cacheKey]) {
+      return new Promise((resolve) => {
+        const checkLoaded = setInterval(() => {
+          if (!loading.value.objectSetupOptions[cacheKey]) {
+            clearInterval(checkLoaded)
+            resolve(objectSetupOptions.value[cacheKey] || [])
+          }
+        }, 50)
+      })
+    }
+
+    loading.value.objectSetupOptions[cacheKey] = true
+    try {
+      const response = await api.get('/object-setup/options', {
+        params: { object_type: objectType, metadata: metadata }
+      })
+      objectSetupOptions.value[cacheKey] = response.data || []
+      loaded.value.objectSetupOptions[cacheKey] = true
+      return objectSetupOptions.value[cacheKey]
+    } catch (error) {
+      console.error(`[ReferenceDataStore] Failed to load object setup options for ${cacheKey}:`, error)
+      objectSetupOptions.value[cacheKey] = []
+      return []
+    } finally {
+      loading.value.objectSetupOptions[cacheKey] = false
+    }
+  }
+
+  /**
+   * Get cached object setup options (sync, returns empty array if not loaded)
+   * @param {string} objectType - Object type
+   * @param {string} metadata - Metadata type
+   * @returns {Array} Cached options or empty array
+   */
+  const getObjectSetupOptions = (objectType, metadata) => {
+    const cacheKey = `${objectType}:${metadata}`
+    return objectSetupOptions.value[cacheKey] || []
+  }
+
+  /**
+   * Parse options_source endpoint and load options
+   * @param {string} optionsSource - API endpoint like '/object-setup/options?object_type=incident&metadata=URGENCY'
+   * @param {boolean} force - Force reload
+   * @returns {Promise<Array>} Options array
+   */
+  const loadOptionsFromSource = async (optionsSource, force = false) => {
+    if (!optionsSource || typeof optionsSource !== 'string') return []
+    
+    // Parse the endpoint to extract object_type and metadata
+    const match = optionsSource.match(/object-setup\/options\?object_type=([^&]+)&metadata=([^&]+)/)
+    if (match) {
+      const [, objectType, metadata] = match
+      return await loadObjectSetupOptions(objectType, metadata, force)
+    }
+    
+    // Not an object-setup endpoint, return empty (caller should handle other endpoints)
+    return null
+  }
+
+  /**
+   * Invalidate object setup options cache
+   * @param {string} objectType - Optional object type to invalidate
+   * @param {string} metadata - Optional metadata to invalidate
+   */
+  const invalidateObjectSetupOptions = (objectType = null, metadata = null) => {
+    if (objectType && metadata) {
+      const cacheKey = `${objectType}:${metadata}`
+      loaded.value.objectSetupOptions[cacheKey] = false
+    } else {
+      loaded.value.objectSetupOptions = {}
+      objectSetupOptions.value = {}
+    }
+  }
+
+  /**
    * Invalidate all caches
    */
   const invalidateAll = () => {
@@ -278,6 +374,7 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
     ciTypes,
     workflowStatusesByTicketType,
     groups,
+    objectSetupOptions,
     loading,
     loaded,
     // Getters
@@ -288,15 +385,19 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
     getCiTypesByCategory,
     getWorkflowStatusesByTicketType,
     getGroupByUuid,
+    getObjectSetupOptions,
     // Actions
     loadCiCategories,
     loadCiTypes,
     loadWorkflowStatuses,
     loadGroups,
+    loadObjectSetupOptions,
+    loadOptionsFromSource,
     invalidateCiCategories,
     invalidateCiTypes,
     invalidateWorkflowStatuses,
     invalidateGroups,
+    invalidateObjectSetupOptions,
     invalidateAll,
     reloadAll
   }

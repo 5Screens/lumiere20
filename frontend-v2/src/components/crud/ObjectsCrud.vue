@@ -1226,6 +1226,19 @@ const loadAllFieldOptions = async (fields) => {
   await Promise.all(selectFields.map(f => loadFieldOptions(f)))
 }
 
+// Load options for extended fields (ticket_type_fields, ci_type_fields) using the store
+const loadExtendedFieldOptions = async (fields) => {
+  const selectFields = fields.filter(f => f.field_type === 'select' && (f.options_source || f.options))
+  
+  await Promise.all(selectFields.map(async (field) => {
+    const optionsSource = field.options_source || field.options
+    if (typeof optionsSource === 'string' && optionsSource.includes('object-setup/options')) {
+      // Use the store to load and cache options
+      await referenceDataStore.loadOptionsFromSource(optionsSource)
+    }
+  }))
+}
+
 // Check if field options come from API (not static JSON)
 const isApiOptionsSource = (field) => {
   return field.options_source && metadataService.isApiEndpoint(field.options_source)
@@ -2648,8 +2661,29 @@ const getOptionByValue = (field, value) => {
 // Get label for extended field select value
 const getExtendedSelectLabel = (col, value) => {
   if (!value) return '-'
-  // col.options contains the parsed options array from ci_type_fields
-  const options = col.options || []
+  
+  // Try to get options from the store cache first (for object-setup endpoints)
+  let options = []
+  const optionsSource = col.options_source || col.options
+  
+  if (typeof optionsSource === 'string' && optionsSource.includes('object-setup/options')) {
+    // Parse object_type and metadata from the endpoint
+    const match = optionsSource.match(/object_type=([^&]+)&metadata=([^&]+)/)
+    if (match) {
+      const [, objectType, metadata] = match
+      options = referenceDataStore.getObjectSetupOptions(objectType, metadata)
+    }
+  } else if (Array.isArray(col.options)) {
+    options = col.options
+  } else if (typeof optionsSource === 'string') {
+    // Try to parse as JSON
+    try {
+      options = JSON.parse(optionsSource)
+    } catch {
+      options = []
+    }
+  }
+  
   const option = options.find(o => o.value === value)
   return option?.label || value
 }
@@ -2726,6 +2760,9 @@ const loadCiTypeFields = async () => {
     const fields = await ciTypeFieldsService.getByTypeUuid(props.ciTypeUuid)
     ciTypeFields.value = fields || []
     console.log(`[ObjectsCrud] Loaded ${ciTypeFields.value.length} CI type fields for type ${props.ciTypeUuid}`)
+    
+    // Load options for extended select fields from object-setup
+    await loadExtendedFieldOptions(ciTypeFields.value)
   } catch (error) {
     console.error('Failed to load CI type fields:', error)
     ciTypeFields.value = []
@@ -2756,6 +2793,9 @@ const loadTicketTypeFields = async () => {
     const fields = await ticketTypeFieldsService.getByTypeUuid(ticketType.uuid)
     ticketTypeFields.value = fields || []
     console.log(`[ObjectsCrud] Loaded ${ticketTypeFields.value.length} ticket type fields for type ${props.ticketTypeCode}`)
+    
+    // Load options for extended select fields from object-setup
+    await loadExtendedFieldOptions(ticketTypeFields.value)
   } catch (error) {
     console.error('Failed to load ticket type fields:', error)
     ticketTypeFields.value = []

@@ -63,9 +63,12 @@
             <template v-if="data.field_type === 'boolean'">
               <i :class="data.value ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
             </template>
-            <!-- Select display -->
+            <!-- Select display with icon/color -->
             <template v-else-if="data.field_type === 'select'">
-              <Tag v-if="data.value" :value="getSelectLabel(data)" severity="info" />
+              <div v-if="data.value" class="flex items-center gap-2" :style="getTagStyle(getOptionByValue(data, data.value)?.color)">
+                <i v-if="getOptionByValue(data, data.value)?.icon" :class="['pi', getOptionByValue(data, data.value)?.icon]" />
+                <span>{{ getSelectLabel(data) }}</span>
+              </div>
               <span v-else class="text-surface-400">-</span>
             </template>
             <!-- Date display -->
@@ -117,7 +120,7 @@
               v-else-if="data.field_type === 'boolean'"
               v-model="data.value"
             />
-            <!-- Select -->
+            <!-- Select with icon/color templates -->
             <Select 
               v-else-if="data.field_type === 'select'"
               v-model="data.value" 
@@ -127,7 +130,21 @@
               autofocus
               fluid
               size="small"
-            />
+            >
+              <template #value="slotProps">
+                <div v-if="slotProps.value" class="flex items-center gap-2" :style="getTagStyle(getOptionByValue(data, slotProps.value)?.color)">
+                  <i v-if="getOptionByValue(data, slotProps.value)?.icon" :class="['pi', getOptionByValue(data, slotProps.value)?.icon]" />
+                  <span>{{ getOptionByValue(data, slotProps.value)?.label }}</span>
+                </div>
+                <span v-else class="text-surface-400">{{ $t('common.select') }}</span>
+              </template>
+              <template #option="slotProps">
+                <div class="flex items-center gap-2" :style="getTagStyle(slotProps.option.color)">
+                  <i v-if="slotProps.option.icon" :class="['pi', slotProps.option.icon]" />
+                  <span>{{ slotProps.option.label }}</span>
+                </div>
+              </template>
+            </Select>
             <!-- Date picker -->
             <InlinePickerButton 
               v-else-if="data.field_type === 'date'"
@@ -198,8 +215,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import metadataService from '@/services/metadataService'
+
+// Utils
+import { getTagStyle } from '@/utils/tagStyles'
 
 // PrimeVue components
 import DataTable from 'primevue/datatable'
@@ -290,23 +311,70 @@ const onCellEditComplete = (event) => {
   })
 }
 
-// Get select options for a field
-const getFieldSelectOptions = (field) => {
-  if (field.options) return field.options
-  if (field.options_source) {
-    try {
-      return JSON.parse(field.options_source)
-    } catch {
-      return []
+// Cache for dynamically loaded options
+const fieldOptionsCache = ref({})
+
+const getOptionsSource = (field) => {
+  if (!field) return null
+  if (typeof field.options === 'string' && field.options) return field.options
+  if (typeof field.options_source === 'string' && field.options_source) return field.options_source
+  return null
+}
+
+// Load options for all select fields when extendedFields change
+const loadSelectOptions = async () => {
+  const selectFields = props.extendedFields.filter(f => f.field_type === 'select' && (f.options_source || f.options))
+  
+  for (const field of selectFields) {
+    if (fieldOptionsCache.value[field.field_name]) continue // Already loaded
+
+    const optionsSource = getOptionsSource(field)
+    if (!optionsSource) {
+      fieldOptionsCache.value[field.field_name] = []
+      continue
+    }
+
+    if (metadataService.isApiEndpoint(optionsSource)) {
+      try {
+        const options = await metadataService.fetchOptions(optionsSource)
+        fieldOptionsCache.value[field.field_name] = options
+      } catch (error) {
+        console.error(`Failed to load options for field ${field.field_name}:`, error)
+        fieldOptionsCache.value[field.field_name] = []
+      }
+    } else {
+      // Static JSON options
+      try {
+        fieldOptionsCache.value[field.field_name] = JSON.parse(optionsSource)
+      } catch {
+        fieldOptionsCache.value[field.field_name] = []
+      }
     }
   }
-  return []
+}
+
+// Watch for extendedFields changes to load options
+watch(() => props.extendedFields, async (newFields) => {
+  if (newFields && newFields.length > 0) {
+    await loadSelectOptions()
+  }
+}, { immediate: true })
+
+// Get select options for a field (from cache)
+const getFieldSelectOptions = (field) => {
+  if (Array.isArray(field.options)) return field.options
+  return fieldOptionsCache.value[field.field_name] || []
+}
+
+// Get option by value for a field
+const getOptionByValue = (field, value) => {
+  const options = getFieldSelectOptions(field)
+  return options.find(o => o.value === value)
 }
 
 // Get label for select value
 const getSelectLabel = (field) => {
-  const options = getFieldSelectOptions(field)
-  const option = options.find(o => o.value === field.value)
+  const option = getOptionByValue(field, field.value)
   return option?.label || field.value
 }
 
