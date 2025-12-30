@@ -241,40 +241,29 @@
             <template v-else-if="col.field_type === 'boolean'">
               <i :class="getFieldValue(data, col) ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
             </template>
-            <!-- Select with Tag and color -->
+            <!-- Select with inline editor (unified for extended and regular fields) -->
             <template v-else-if="col.field_type === 'select'">
-              <template v-if="col.is_extended">
-                <!-- Extended field select with icon/color -->
+              <!-- Editable: InlineSelectEditor for both extended and regular fields -->
+              <InlineSelectEditor
+                v-if="col.is_editable && !selectionModeActive"
+                :modelValue="col.is_extended ? data.extended_core_fields?.[col.field_name] : data[col.field_name]"
+                :options="col.is_extended ? getExtendedSelectOptions(col) : getFieldOptions(col)"
+                :placeholder="$t('common.select')"
+                @save="val => col.is_extended ? updateExtendedField(data, col.field_name, val) : updateRegularField(data, col.field_name, val)"
+              />
+              <!-- Read-only display -->
+              <template v-else>
                 <div 
                   v-if="getFieldValue(data, col)"
                   class="flex items-center gap-2 px-2 py-1 rounded"
-                  :style="getTagStyle(getExtendedOptionByValue(col, getFieldValue(data, col))?.color)"
+                  :style="getTagStyle(col.is_extended ? getExtendedOptionByValue(col, getFieldValue(data, col))?.color : getOptionByValue(col, getFieldValue(data, col))?.color)"
                 >
                   <i 
-                    v-if="getExtendedOptionByValue(col, getFieldValue(data, col))?.icon" 
-                    :class="['pi', getExtendedOptionByValue(col, getFieldValue(data, col))?.icon]" 
+                    v-if="col.is_extended ? getExtendedOptionByValue(col, getFieldValue(data, col))?.icon : getOptionByValue(col, getFieldValue(data, col))?.icon" 
+                    :class="['pi', col.is_extended ? getExtendedOptionByValue(col, getFieldValue(data, col))?.icon : getOptionByValue(col, getFieldValue(data, col))?.icon]" 
                   />
-                  <span>{{ getExtendedSelectLabel(col, getFieldValue(data, col)) }}</span>
+                  <span>{{ col.is_extended ? getExtendedSelectLabel(col, getFieldValue(data, col)) : formatCellValue(getFieldValue(data, col), col) }}</span>
                 </div>
-                <span v-else>-</span>
-              </template>
-              <template v-else>
-                <!-- Regular field select -->
-                <Tag 
-                  v-if="getFieldValue(data, col)"
-                  :value="formatCellValue(getFieldValue(data, col), col)"
-                  :style="getTagStyle(getOptionByValue(col, getFieldValue(data, col))?.color)"
-                >
-                  <template #default>
-                    <div class="flex items-center gap-2">
-                      <i 
-                        v-if="getOptionByValue(col, getFieldValue(data, col))?.icon" 
-                        :class="['pi', getOptionByValue(col, getFieldValue(data, col))?.icon]" 
-                      />
-                      <span>{{ formatCellValue(getFieldValue(data, col), col) }}</span>
-                    </div>
-                  </template>
-                </Tag>
                 <span v-else>-</span>
               </template>
             </template>
@@ -391,38 +380,12 @@
             </div>
           </template>
           
-          <!-- Editor template (only for editable fields, except person, workflow_status, group and configuration_item fields which are handled in body) -->
-          <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status' && col.field_type !== 'group' && col.field_type !== 'configuration_item'" #editor="{ data, field }">
+          <!-- Editor template (only for editable fields, except person, workflow_status, group, configuration_item, and ALL select fields which are handled in body with InlineSelectEditor) -->
+          <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status' && col.field_type !== 'group' && col.field_type !== 'configuration_item' && col.field_type !== 'select'" #editor="{ data, field }">
             <!-- ========== EXTENDED FIELDS ========== -->
             <template v-if="col.is_extended">
-              <!-- Select editor for extended fields (inline Select like ObjectExtendedInfo) -->
-              <template v-if="col.field_type === 'select'">
-                <Select
-                  :modelValue="data.extended_core_fields?.[col.field_name]"
-                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
-                  :options="getExtendedSelectOptions(col)"
-                  optionLabel="label"
-                  optionValue="value"
-                  fluid
-                  size="small"
-                >
-                  <template #value="slotProps">
-                    <div v-if="slotProps.value" class="flex items-center gap-2" :style="getTagStyle(getExtendedOptionByValue(col, slotProps.value)?.color)">
-                      <i v-if="getExtendedOptionByValue(col, slotProps.value)?.icon" :class="['pi', getExtendedOptionByValue(col, slotProps.value)?.icon]" />
-                      <span>{{ getExtendedOptionByValue(col, slotProps.value)?.label }}</span>
-                    </div>
-                    <span v-else class="text-surface-400">{{ $t('common.select') }}</span>
-                  </template>
-                  <template #option="slotProps">
-                    <div class="flex items-center gap-2" :style="getTagStyle(slotProps.option.color)">
-                      <i v-if="slotProps.option.icon" :class="['pi', slotProps.option.icon]" />
-                      <span>{{ slotProps.option.label }}</span>
-                    </div>
-                  </template>
-                </Select>
-              </template>
               <!-- Boolean editor for extended fields -->
-              <template v-else-if="col.field_type === 'boolean'">
+              <template v-if="col.field_type === 'boolean'">
                 <ToggleSwitch 
                   :modelValue="data.extended_core_fields?.[col.field_name]"
                   @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
@@ -467,25 +430,8 @@
             </template>
             <!-- ========== REGULAR FIELDS ========== -->
             <template v-else>
-              <!-- Select editor -->
-              <template v-if="col.field_type === 'select'">
-                <InlinePickerButton :placeholder="$t('common.select')" @click="openInlinePicker('select', data, field, col)">
-                  <template v-if="data[field]">
-                    <div 
-                      class="flex items-center gap-2 px-2 py-1 rounded"
-                      :style="getTagStyle(getOptionByValue(col, data[field])?.color)"
-                    >
-                      <i 
-                        v-if="getOptionByValue(col, data[field])?.icon" 
-                        :class="['pi', getOptionByValue(col, data[field])?.icon]" 
-                      />
-                      <span class="text-sm">{{ getOptionByValue(col, data[field])?.label }}</span>
-                    </div>
-                  </template>
-                </InlinePickerButton>
-              </template>
               <!-- Boolean editor -->
-              <template v-else-if="col.field_type === 'boolean'">
+              <template v-if="col.field_type === 'boolean'">
                 <ToggleSwitch v-model="data[field]" />
               </template>
               <!-- Number editor -->
@@ -731,16 +677,6 @@
       @cancel="cancelInlinePicker"
     />
 
-    <SelectPicker
-      v-model="inlinePickerValue"
-      :show="inlineSelectDialog"
-      :loading="inlinePickerSaving"
-      :options="inlineSelectOptions"
-      :title="inlinePickerFieldMeta?.label_key ? $t(inlinePickerFieldMeta.label_key) : (inlinePickerFieldMeta?.label || $t('common.select'))"
-      @update:show="inlineSelectDialog = $event"
-      @confirm="confirmInlinePicker"
-      @cancel="cancelInlinePicker"
-    />
 
     <NumberPicker
       v-model="inlinePickerValue"
@@ -892,6 +828,7 @@ import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import ObjectView from '@/components/object/ObjectView.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import InlinePersonEditor from '@/components/form/InlinePersonEditor.vue'
+import InlineSelectEditor from '@/components/form/InlineSelectEditor.vue'
 import InlineWorkflowStatusEditor from '@/components/form/InlineWorkflowStatusEditor.vue'
 import InlineGroupEditor from '@/components/form/InlineGroupEditor.vue'
 import InlineConfigurationItemEditor from '@/components/form/InlineConfigurationItemEditor.vue'
@@ -904,7 +841,6 @@ import CiRowSummary from '@/components/crud/CiRowSummary.vue'
 import {
   IconPicker,
   TagStylePicker,
-  SelectPicker,
   CiCategoryPicker,
   NumberPicker,
   DateTimePicker,
@@ -1023,7 +959,6 @@ const inlineIconDialog = ref(false)
 const inlineTagStyleDialog = ref(false)
 const inlineTranslatableDialog = ref(false)
 const inlineCiCategoryDialog = ref(false)
-const inlineSelectDialog = ref(false)
 const inlineNumberDialog = ref(false)
 const inlineDateDialog = ref(false)
 const inlineTextDialog = ref(false)
@@ -1366,38 +1301,6 @@ const booleanFilterOptions = computed(() => {
   ]
 })
 
-// Options for inline select picker
-const inlineSelectOptions = computed(() => {
-  if (!inlinePickerFieldMeta.value) return []
-  
-  // For extended fields, get options from store cache (same logic as getExtendedSelectLabel)
-  if (inlinePickerIsExtended.value) {
-    const col = inlinePickerFieldMeta.value
-    const optionsSource = col.options_source || col.options
-    
-    if (typeof optionsSource === 'string' && optionsSource.includes('object-setup/options')) {
-      // Parse object_type and metadata from the endpoint
-      const match = optionsSource.match(/object_type=([^&]+)&metadata=([^&]+)/)
-      if (match) {
-        const [, objectType, metadata] = match
-        return referenceDataStore.getObjectSetupOptions(objectType, metadata)
-      }
-    } else if (Array.isArray(col.options)) {
-      return col.options
-    } else if (typeof optionsSource === 'string') {
-      // Try to parse as JSON
-      try {
-        return JSON.parse(optionsSource)
-      } catch {
-        return []
-      }
-    }
-    return []
-  }
-  
-  // For regular fields, get from fieldOptions cache
-  return getFieldOptions(inlinePickerFieldMeta.value)
-})
 
 // Methods
 
@@ -1683,8 +1586,6 @@ const openInlinePicker = (type, data, field, colMeta = null, isExtended = false)
   } else if (type === 'ci_category') {
     loadCiCategories()
     inlineCiCategoryDialog.value = true
-  } else if (type === 'select') {
-    inlineSelectDialog.value = true
   } else if (type === 'number') {
     inlineNumberDialog.value = true
   } else if (type === 'date' || type === 'datetime') {
@@ -1721,7 +1622,6 @@ const cancelInlinePicker = () => {
   inlineTagStyleDialog.value = false
   inlineTranslatableDialog.value = false
   inlineCiCategoryDialog.value = false
-  inlineSelectDialog.value = false
   inlineNumberDialog.value = false
   inlineDateDialog.value = false
   inlineTextDialog.value = false
@@ -2027,6 +1927,32 @@ const saveExtendedField = async (data, fieldName) => {
 const updateExtendedField = async (data, fieldName, value) => {
   setExtendedFieldValue(data, fieldName, value)
   await saveExtendedField(data, fieldName)
+}
+
+// Update regular field value and save immediately (for inline editors like InlineSelectEditor)
+const updateRegularField = async (data, fieldName, value) => {
+  const oldValue = data[fieldName]
+  data[fieldName] = value
+  
+  try {
+    await dataService.value.update(data.uuid, { [fieldName]: value })
+    toast.add({
+      severity: 'success',
+      summary: t('common.success'),
+      detail: t('common.changesSaved'),
+      life: 2000
+    })
+  } catch (error) {
+    // Revert on error
+    data[fieldName] = oldValue
+    console.error(`[ObjectsCrud] Failed to update field ${fieldName}:`, error)
+    toast.add({
+      severity: 'error',
+      summary: t('common.error'),
+      detail: t('common.saveFailed'),
+      life: 3000
+    })
+  }
 }
 
 // Toggle row actions menu
