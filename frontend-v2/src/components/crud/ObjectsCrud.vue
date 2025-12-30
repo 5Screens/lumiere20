@@ -615,17 +615,15 @@
               dateFormat="dd/mm/yy" 
               showButtonBar 
             />
-            <!-- Boolean filter (Checkbox tri-state) -->
-            <div v-else-if="col.field_type === 'boolean'" class="flex items-center gap-2">
-              <Checkbox 
-                v-model="filterModel.value" 
-                :indeterminate="filterModel.value === null"
-                binary
-              />
-              <span class="text-sm">
-                {{ filterModel.value === true ? $t('common.yes') : filterModel.value === false ? $t('common.no') : $t('common.all') }}
-              </span>
-            </div>
+            <!-- Boolean filter (SelectButton with All/Yes/No) -->
+            <SelectButton 
+              v-else-if="col.field_type === 'boolean'"
+              v-model="filterModel.value" 
+              :options="booleanFilterOptions"
+              optionLabel="label"
+              optionValue="value"
+              :allowEmpty="false"
+            />
             <!-- Default text filter -->
             <InputText 
               v-else
@@ -859,6 +857,7 @@ import DatePicker from 'primevue/datepicker'
 import Popover from 'primevue/popover'
 import Checkbox from 'primevue/checkbox'
 import ToggleSwitch from 'primevue/toggleswitch'
+import SelectButton from 'primevue/selectbutton'
 import MultiSelect from 'primevue/multiselect'
 import Menu from 'primevue/menu'
 import Password from 'primevue/password'
@@ -1321,6 +1320,13 @@ const inlineTranslatableTitle = computed(() => {
   }
   return t('common.translate')
 })
+
+// Options for boolean filter (SelectButton)
+const booleanFilterOptions = computed(() => [
+  { label: t('common.all'), value: null },
+  { label: t('common.yes'), value: true },
+  { label: t('common.no'), value: false }
+])
 
 // Options for inline select picker
 const inlineSelectOptions = computed(() => {
