@@ -495,6 +495,7 @@ export default {
     requiredFields: 'Required fields must be filled',
     fieldCreated: 'Field created successfully',
     fieldUpdated: 'Field updated successfully',
+    updateFailed: 'Failed to update field',
     fieldDeleted: 'Field deleted successfully',
     confirmDelete: 'Are you sure you want to delete the field "{name}"?'
   },

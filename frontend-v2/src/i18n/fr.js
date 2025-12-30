@@ -496,6 +496,7 @@ export default {
     requiredFields: 'Les champs obligatoires doivent être remplis',
     fieldCreated: 'Champ créé avec succès',
     fieldUpdated: 'Champ mis à jour avec succès',
+    updateFailed: 'Échec de la mise à jour du champ',
     fieldDeleted: 'Champ supprimé avec succès',
     confirmDelete: 'Êtes-vous sûr de vouloir supprimer le champ "{name}" ?'
   },

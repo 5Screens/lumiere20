@@ -443,9 +443,10 @@ const toggleVisibility = async (field, property) => {
   try {
     await service.value.toggleVisibility(field.uuid, property)
     field[property] = !field[property]
+    toast.add({ severity: 'success', summary: t('common.success'), detail: t('extendedFields.fieldUpdated'), life: 3000 })
   } catch (error) {
     console.error('Failed to toggle visibility:', error)
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to update field', life: 3000 })
+    toast.add({ severity: 'error', summary: t('common.error'), detail: t('extendedFields.updateFailed'), life: 3000 })
   }
 }
 
