@@ -319,6 +319,7 @@
                 :statusObject="data.status"
                 :entityType="objectType"
                 :entityUuid="data.uuid"
+                :disabled="selectionModeActive"
                 @save="(payload) => onWorkflowStatusSave(data, payload)"
               />
               <template v-else>
@@ -337,6 +338,7 @@
                 :modelValue="data[col.field_name]"
                 :personObject="getPersonObject(data, col.field_name)"
                 :placeholder="$t('persons.searchPlaceholder')"
+                :disabled="selectionModeActive"
                 @save="(payload) => onPersonSave(data, col.field_name, payload)"
               />
               <span v-else-if="getPersonDisplay(data, col.field_name)">
@@ -351,6 +353,7 @@
                 :modelValue="data[col.field_name]"
                 :groupObject="getGroupObject(data, col.field_name)"
                 :placeholder="$t('groups.searchPlaceholder')"
+                :disabled="selectionModeActive"
                 @save="(payload) => onGroupSave(data, col.field_name, payload)"
               />
               <span v-else-if="getGroupDisplay(data, col.field_name)">
@@ -365,6 +368,7 @@
                 :modelValue="data[col.field_name]"
                 :configurationItemObject="getConfigurationItemObject(data, col.field_name)"
                 :placeholder="$t('configurationItems.searchPlaceholder')"
+                :disabled="selectionModeActive"
                 @save="(payload) => onConfigurationItemSave(data, col.field_name, payload)"
               />
               <span v-else-if="getConfigurationItemDisplay(data, col.field_name)">
