@@ -221,7 +221,7 @@ export default {
     deleted: 'Deleted successfully',
     saveFailed: 'Save failed',
     unsavedChanges: 'Unsaved changes',
-    unsavedChangesMessage: 'You have unsaved changes. What would you like to do?',
+    unsavedChangesMessage: 'You have unsaved changes. Do you still wish to exit ?',
     dontSave: 'Don\'t save',
     addToFilter: 'Add to filter',
     filterAdded: 'Filter added',

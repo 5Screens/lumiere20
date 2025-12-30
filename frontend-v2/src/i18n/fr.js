@@ -222,7 +222,7 @@ export default {
     deleted: 'Supprimé avec succès',
     saveFailed: 'Échec de l\'enregistrement',
     unsavedChanges: 'Modifications non enregistrées',
-    unsavedChangesMessage: 'Vous avez des modifications non enregistrées. Que souhaitez-vous faire ?',
+    unsavedChangesMessage: 'Vous avez des modifications non enregistrées. Voulez-vous quand même quitter ?',
     dontSave: 'Ne pas enregistrer',
     addToFilter: 'Ajouter au filtre',
     filterAdded: 'Filtre ajouté',
