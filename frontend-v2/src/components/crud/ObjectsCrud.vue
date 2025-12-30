@@ -2332,12 +2332,27 @@ const buildContextMenu = () => {
     { label: t('common.delete'), icon: 'pi pi-trash', command: () => confirmDeleteSelected() }
   ]
   
-  // Check if we can add "Add to filter" option
+  // Check if we can add "Copy" option
   const col = contextMenuColumn.value
+  if (col && col.field_type !== 'actions' && col.field_type !== 'summary') {
+    const displayValue = getCellDisplayValue(selectedItem.value, col)
+    if (displayValue !== null && displayValue !== undefined && displayValue !== '' && displayValue !== '-') {
+      baseItems.push({ separator: true })
+      baseItems.push({
+        label: t('common.copy'),
+        icon: 'pi pi-copy',
+        command: () => copyToClipboard(displayValue)
+      })
+    }
+  }
+  
+  // Check if we can add "Add to filter" option
   if (col && FILTERABLE_CONTEXT_TYPES.includes(col.field_type) && col.is_filterable) {
     const cellValue = getCellValueForFilter(selectedItem.value, col)
     if (cellValue !== null && cellValue !== undefined) {
-      baseItems.push({ separator: true })
+      if (!baseItems.some(item => item.separator)) {
+        baseItems.push({ separator: true })
+      }
       baseItems.push({
         label: t('common.addToFilter'),
         icon: 'pi pi-filter',
@@ -2347,6 +2362,113 @@ const buildContextMenu = () => {
   }
   
   menuModel.value = baseItems
+}
+
+// Get the display value of a cell for copying to clipboard
+const getCellDisplayValue = (data, col) => {
+  if (!data || !col) return null
+  
+  const fieldName = col.field_name
+  
+  // Handle extended fields
+  if (col.is_extended) {
+    const value = data.extended_core_fields?.[fieldName]
+    if (value === null || value === undefined) return null
+    
+    // For select, get the label
+    if (col.field_type === 'select') {
+      return getExtendedSelectLabel(col, value)
+    }
+    // For date/datetime, format it
+    if (col.field_type === 'date' || col.field_type === 'datetime') {
+      return formatDate(value, col.field_type === 'datetime')
+    }
+    // For textarea, strip HTML
+    if (col.field_type === 'textarea') {
+      return stripHtml(value)
+    }
+    // For boolean
+    if (col.field_type === 'boolean') {
+      return value ? t('common.yes') : t('common.no')
+    }
+    return String(value)
+  }
+  
+  // Handle regular fields based on type
+  switch (col.field_type) {
+    case 'boolean': {
+      const value = data[fieldName]
+      return value ? t('common.yes') : t('common.no')
+    }
+    case 'select': {
+      const value = data[fieldName]
+      if (!value) return null
+      const option = getOptionByValue(col, value)
+      return option?.label || formatCellValue(value, col)
+    }
+    case 'datetime':
+    case 'date': {
+      const value = data[fieldName]
+      if (!value) return null
+      return formatDate(value, col.field_type === 'datetime')
+    }
+    case 'textarea': {
+      const value = col.is_translatable ? getTranslatedValue(data, fieldName) : data[fieldName]
+      if (!value) return null
+      return stripHtml(value)
+    }
+    case 'tag_style': {
+      return data[fieldName] || null
+    }
+    case 'icon_picker': {
+      return data[fieldName] || null
+    }
+    case 'ci_category': {
+      const uuid = data[fieldName]
+      if (!uuid) return null
+      return getCategoryLabel(uuid)
+    }
+    case 'workflow_status': {
+      if (!data.status) return null
+      return getStatusLabel(data.status)
+    }
+    case 'person': {
+      return getPersonDisplay(data, fieldName)
+    }
+    case 'group': {
+      return getGroupDisplay(data, fieldName)
+    }
+    case 'configuration_item': {
+      return getConfigurationItemDisplay(data, fieldName)
+    }
+    default: {
+      // Default text handling with translation support
+      const value = col.is_translatable ? getTranslatedValue(data, fieldName) : data[fieldName]
+      return value !== null && value !== undefined ? String(value) : null
+    }
+  }
+}
+
+// Copy a value to the clipboard
+const copyToClipboard = async (value) => {
+  if (!value) return
+  
+  try {
+    await navigator.clipboard.writeText(String(value))
+    toast.add({ 
+      severity: 'success', 
+      summary: t('common.copied'), 
+      life: 2000 
+    })
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error)
+    toast.add({ 
+      severity: 'error', 
+      summary: 'Error', 
+      detail: 'Failed to copy to clipboard', 
+      life: 3000 
+    })
+  }
 }
 
 // Get the value for filter from a cell
