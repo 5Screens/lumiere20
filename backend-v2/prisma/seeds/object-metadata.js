@@ -225,16 +225,7 @@ async function seedObjectMetadata() {
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11 },
     ],
     object_setup: [
-      { field_name: 'object_type', label_key: 'objectSetup.objectType', field_type: 'select', is_required: true, min_width: '10rem', display_order: 1, is_filterable: true, options_source: JSON.stringify([
-        { label: 'Entity', value: 'entity' },
-        { label: 'Incident', value: 'incident' },
-        { label: 'Problem', value: 'problem' },
-        { label: 'Defect', value: 'defect' },
-        { label: 'Project', value: 'project' },
-        { label: 'Knowledge', value: 'knowledge' },
-        { label: 'Change', value: 'change' },
-        { label: 'Contact', value: 'contact' }
-      ])},
+      { field_name: 'object_type', label_key: 'objectSetup.objectType', field_type: 'select', is_required: true, min_width: '10rem', display_order: 1, is_filterable: true, options_source: '/metadata/options' },
       { field_name: 'metadata', label_key: 'objectSetup.metadata', field_type: 'text', is_required: true, min_width: '10rem', display_order: 2 },
       { field_name: 'code', label_key: 'objectSetup.code', field_type: 'text', is_required: true, min_width: '10rem', display_order: 3 },
       { field_name: 'label', label_key: 'objectSetup.label', field_type: 'text', is_translatable: true, min_width: '14rem', display_order: 4 },

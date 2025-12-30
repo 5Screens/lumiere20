@@ -76,9 +76,24 @@ const getFormFields = async (req, res, next) => {
   }
 };
 
+/**
+ * Get object types as select options
+ * GET /api/v1/metadata/options
+ */
+const getAsOptions = async (req, res, next) => {
+  try {
+    const options = await service.getAsOptions();
+    res.json(options);
+  } catch (error) {
+    logger.error('Error getting object types as options:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   getObjectType,
   getAllObjectTypes,
   getTableColumns,
   getFormFields,
+  getAsOptions,
 };

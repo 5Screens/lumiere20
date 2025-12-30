@@ -4,6 +4,7 @@ const controller = require('./controller');
 
 // Routes
 router.get('/', controller.getAllObjectTypes);
+router.get('/options', controller.getAsOptions);
 router.get('/:code', controller.getObjectType);
 router.get('/:code/columns', controller.getTableColumns);
 router.get('/:code/form-fields', controller.getFormFields);

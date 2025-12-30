@@ -74,10 +74,27 @@ const getFormFields = async (objectTypeCode) => {
   return getFields(objectTypeCode, { showInForm: true });
 };
 
+/**
+ * Get object types as select options
+ * @returns {Array} List of options { label, value }
+ */
+const getAsOptions = async () => {
+  const objectTypes = await prisma.object_types.findMany({
+    where: { is_active: true },
+    orderBy: { code: 'asc' },
+  });
+  
+  return objectTypes.map(ot => ({
+    label: ot.label || ot.code,
+    value: ot.code
+  }));
+};
+
 module.exports = {
   getObjectType,
   getAllObjectTypes,
   getFields,
   getTableColumns,
   getFormFields,
+  getAsOptions,
 };
