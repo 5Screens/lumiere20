@@ -244,15 +244,18 @@
             <!-- Select with Tag and color -->
             <template v-else-if="col.field_type === 'select'">
               <template v-if="col.is_extended">
-                <!-- Extended field select -->
-                <Tag 
+                <!-- Extended field select with icon/color -->
+                <div 
                   v-if="getFieldValue(data, col)"
-                  :value="getExtendedSelectLabel(col, getFieldValue(data, col))"
+                  class="flex items-center gap-2 px-2 py-1 rounded"
+                  :style="getTagStyle(getExtendedOptionByValue(col, getFieldValue(data, col))?.color)"
                 >
-                  <template #default>
-                    <span>{{ getExtendedSelectLabel(col, getFieldValue(data, col)) }}</span>
-                  </template>
-                </Tag>
+                  <i 
+                    v-if="getExtendedOptionByValue(col, getFieldValue(data, col))?.icon" 
+                    :class="['pi', getExtendedOptionByValue(col, getFieldValue(data, col))?.icon]" 
+                  />
+                  <span>{{ getExtendedSelectLabel(col, getFieldValue(data, col)) }}</span>
+                </div>
                 <span v-else>-</span>
               </template>
               <template v-else>
@@ -392,13 +395,31 @@
           <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status' && col.field_type !== 'group' && col.field_type !== 'configuration_item'" #editor="{ data, field }">
             <!-- ========== EXTENDED FIELDS ========== -->
             <template v-if="col.is_extended">
-              <!-- Select editor for extended fields -->
+              <!-- Select editor for extended fields (inline Select like ObjectExtendedInfo) -->
               <template v-if="col.field_type === 'select'">
-                <InlinePickerButton :placeholder="$t('common.select')" @click="openInlinePicker('select', data, col.field_name, col, true)">
-                  <template v-if="data.extended_core_fields?.[col.field_name]">
-                    <span class="text-sm">{{ getExtendedSelectLabel(col, data.extended_core_fields?.[col.field_name]) }}</span>
+                <Select
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  @update:modelValue="val => updateExtendedField(data, col.field_name, val)"
+                  :options="getExtendedSelectOptions(col)"
+                  optionLabel="label"
+                  optionValue="value"
+                  fluid
+                  size="small"
+                >
+                  <template #value="slotProps">
+                    <div v-if="slotProps.value" class="flex items-center gap-2" :style="getTagStyle(getExtendedOptionByValue(col, slotProps.value)?.color)">
+                      <i v-if="getExtendedOptionByValue(col, slotProps.value)?.icon" :class="['pi', getExtendedOptionByValue(col, slotProps.value)?.icon]" />
+                      <span>{{ getExtendedOptionByValue(col, slotProps.value)?.label }}</span>
+                    </div>
+                    <span v-else class="text-surface-400">{{ $t('common.select') }}</span>
                   </template>
-                </InlinePickerButton>
+                  <template #option="slotProps">
+                    <div class="flex items-center gap-2" :style="getTagStyle(slotProps.option.color)">
+                      <i v-if="slotProps.option.icon" :class="['pi', slotProps.option.icon]" />
+                      <span>{{ slotProps.option.label }}</span>
+                    </div>
+                  </template>
+                </Select>
               </template>
               <!-- Boolean editor for extended fields -->
               <template v-else-if="col.field_type === 'boolean'">
@@ -1349,9 +1370,29 @@ const booleanFilterOptions = computed(() => {
 const inlineSelectOptions = computed(() => {
   if (!inlinePickerFieldMeta.value) return []
   
-  // For extended fields, options are directly in col.options
+  // For extended fields, get options from store cache (same logic as getExtendedSelectLabel)
   if (inlinePickerIsExtended.value) {
-    return inlinePickerFieldMeta.value.options || []
+    const col = inlinePickerFieldMeta.value
+    const optionsSource = col.options_source || col.options
+    
+    if (typeof optionsSource === 'string' && optionsSource.includes('object-setup/options')) {
+      // Parse object_type and metadata from the endpoint
+      const match = optionsSource.match(/object_type=([^&]+)&metadata=([^&]+)/)
+      if (match) {
+        const [, objectType, metadata] = match
+        return referenceDataStore.getObjectSetupOptions(objectType, metadata)
+      }
+    } else if (Array.isArray(col.options)) {
+      return col.options
+    } else if (typeof optionsSource === 'string') {
+      // Try to parse as JSON
+      try {
+        return JSON.parse(optionsSource)
+      } catch {
+        return []
+      }
+    }
+    return []
   }
   
   // For regular fields, get from fieldOptions cache
@@ -2658,12 +2699,8 @@ const getOptionByValue = (field, value) => {
   return options.find(o => o.value === value)
 }
 
-// Get label for extended field select value
-const getExtendedSelectLabel = (col, value) => {
-  if (!value) return '-'
-  
-  // Try to get options from the store cache first (for object-setup endpoints)
-  let options = []
+// Get options array for extended field select (from store cache or parsed JSON)
+const getExtendedSelectOptions = (col) => {
   const optionsSource = col.options_source || col.options
   
   if (typeof optionsSource === 'string' && optionsSource.includes('object-setup/options')) {
@@ -2671,20 +2708,31 @@ const getExtendedSelectLabel = (col, value) => {
     const match = optionsSource.match(/object_type=([^&]+)&metadata=([^&]+)/)
     if (match) {
       const [, objectType, metadata] = match
-      options = referenceDataStore.getObjectSetupOptions(objectType, metadata)
+      return referenceDataStore.getObjectSetupOptions(objectType, metadata)
     }
   } else if (Array.isArray(col.options)) {
-    options = col.options
+    return col.options
   } else if (typeof optionsSource === 'string') {
     // Try to parse as JSON
     try {
-      options = JSON.parse(optionsSource)
+      return JSON.parse(optionsSource)
     } catch {
-      options = []
+      return []
     }
   }
-  
-  const option = options.find(o => o.value === value)
+  return []
+}
+
+// Get option by value for extended field
+const getExtendedOptionByValue = (col, value) => {
+  const options = getExtendedSelectOptions(col)
+  return options.find(o => o.value === value)
+}
+
+// Get label for extended field select value
+const getExtendedSelectLabel = (col, value) => {
+  if (!value) return '-'
+  const option = getExtendedOptionByValue(col, value)
   return option?.label || value
 }
 
