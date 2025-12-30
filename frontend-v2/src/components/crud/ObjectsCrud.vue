@@ -1935,7 +1935,7 @@ const updateRegularField = async (data, fieldName, value) => {
   data[fieldName] = value
   
   try {
-    await dataService.value.update(data.uuid, { [fieldName]: value })
+    await service.value.update(data.uuid, { [fieldName]: value })
     toast.add({
       severity: 'success',
       summary: t('common.success'),

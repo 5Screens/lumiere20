@@ -104,13 +104,7 @@ async function seedObjectMetadata() {
     entities: [
       { field_name: 'name', label_key: 'entities.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1 },
       { field_name: 'entity_id', label_key: 'entities.entityId', field_type: 'text', is_required: true, min_width: '10rem', display_order: 2 },
-      { field_name: 'entity_type', label_key: 'entities.entityType', field_type: 'select', is_required: true, min_width: '10rem', display_order: 3, options_source: JSON.stringify([
-        { label: 'Company', value: 'COMPANY' },
-        { label: 'Branch', value: 'BRANCH' },
-        { label: 'Department', value: 'DEPARTMENT' },
-        { label: 'Supplier', value: 'SUPPLIER' },
-        { label: 'Customer', value: 'CUSTOMER' }
-      ])},
+      { field_name: 'entity_type', label_key: 'entities.entityType', field_type: 'select', is_required: true, min_width: '10rem', display_order: 3, options_source: '/object-setup/options?object_type=entity&metadata=TYPE' },
       { field_name: 'external_id', label_key: 'entities.externalId', field_type: 'text', min_width: '10rem', display_order: 4, default_visible: false },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '6rem', display_order: 5 },
       { field_name: 'parent_uuid', label_key: 'common.parent', field_type: 'relation', relation_object: 'entities', relation_display: 'name', show_in_table: false, display_order: 6 },

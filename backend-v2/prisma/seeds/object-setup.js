@@ -10,13 +10,13 @@ async function seedObjectSetup() {
 
   const objectSetupData = [
     // ========================================
-    // ENTITY - Categories (from 07_entity_setup.sql)
+    // ENTITY - Types (from 07_entity_setup.sql)
     // ========================================
-    { object_type: 'entity', metadata: 'CATEGORY', code: 'COMPANY', icon: 'pi-building', color: 'info', display_order: 1 },
-    { object_type: 'entity', metadata: 'CATEGORY', code: 'BRANCH', icon: 'pi-sitemap', color: 'success', display_order: 2 },
-    { object_type: 'entity', metadata: 'CATEGORY', code: 'DEPARTMENT', icon: 'pi-users', color: 'warning', display_order: 3 },
-    { object_type: 'entity', metadata: 'CATEGORY', code: 'SUPPLIER', icon: 'pi-truck', color: 'secondary', display_order: 4 },
-    { object_type: 'entity', metadata: 'CATEGORY', code: 'CUSTOMER', icon: 'pi-user', color: 'primary', display_order: 5 },
+    { object_type: 'entity', metadata: 'TYPE', code: 'COMPANY', icon: 'pi-building', color: 'info', display_order: 1 },
+    { object_type: 'entity', metadata: 'TYPE', code: 'BRANCH', icon: 'pi-sitemap', color: 'success', display_order: 2 },
+    { object_type: 'entity', metadata: 'TYPE', code: 'DEPARTMENT', icon: 'pi-users', color: 'warning', display_order: 3 },
+    { object_type: 'entity', metadata: 'TYPE', code: 'SUPPLIER', icon: 'pi-truck', color: 'secondary', display_order: 4 },
+    { object_type: 'entity', metadata: 'TYPE', code: 'CUSTOMER', icon: 'pi-user', color: 'primary', display_order: 5 },
 
     // ========================================
     // INCIDENT - Urgencies (from incident_config.sql)
@@ -237,13 +237,13 @@ async function seedObjectSetupTranslations() {
 
   const translations = {
     // ========================================
-    // ENTITY - Categories
+    // ENTITY - Types
     // ========================================
-    'entity|CATEGORY|COMPANY': { fr: 'Entreprise', en: 'Company', es: 'Empresa', pt: 'Empresa' },
-    'entity|CATEGORY|BRANCH': { fr: 'Succursale', en: 'Branch', es: 'Sucursal', pt: 'Filial' },
-    'entity|CATEGORY|DEPARTMENT': { fr: 'Département', en: 'Department', es: 'Departamento', pt: 'Departamento' },
-    'entity|CATEGORY|SUPPLIER': { fr: 'Fournisseur', en: 'Supplier', es: 'Proveedor', pt: 'Fornecedor' },
-    'entity|CATEGORY|CUSTOMER': { fr: 'Client', en: 'Customer', es: 'Cliente', pt: 'Cliente' },
+    'entity|TYPE|COMPANY': { fr: 'Entreprise', en: 'Company', es: 'Empresa', pt: 'Empresa' },
+    'entity|TYPE|BRANCH': { fr: 'Succursale', en: 'Branch', es: 'Sucursal', pt: 'Filial' },
+    'entity|TYPE|DEPARTMENT': { fr: 'Département', en: 'Department', es: 'Departamento', pt: 'Departamento' },
+    'entity|TYPE|SUPPLIER': { fr: 'Fournisseur', en: 'Supplier', es: 'Proveedor', pt: 'Fornecedor' },
+    'entity|TYPE|CUSTOMER': { fr: 'Client', en: 'Customer', es: 'Cliente', pt: 'Cliente' },
 
     // ========================================
     // INCIDENT - Urgencies
