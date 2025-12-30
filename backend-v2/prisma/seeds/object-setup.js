@@ -19,6 +19,21 @@ async function seedObjectSetup() {
     { object_type: 'entity', metadata: 'TYPE', code: 'CUSTOMER', icon: 'pi-user', color: 'primary', display_order: 5 },
 
     // ========================================
+    // LOCATION - Types
+    // ========================================
+    { object_type: 'location', metadata: 'TYPE', code: 'OFFICE', icon: 'pi-building', color: 'info', display_order: 1 },
+    { object_type: 'location', metadata: 'TYPE', code: 'WAREHOUSE', icon: 'pi-box', color: 'warning', display_order: 2 },
+    { object_type: 'location', metadata: 'TYPE', code: 'DATA_CENTER', icon: 'pi-server', color: 'danger', display_order: 3 },
+    { object_type: 'location', metadata: 'TYPE', code: 'FACTORY', icon: 'pi-cog', color: 'secondary', display_order: 4 },
+    { object_type: 'location', metadata: 'TYPE', code: 'STORE', icon: 'pi-shopping-cart', color: 'success', display_order: 5 },
+
+    // LOCATION - Business Criticality
+    { object_type: 'location', metadata: 'BUSINESS_CRITICALITY', code: 'CRITICAL', icon: 'pi-exclamation-circle', color: 'danger', font_weight: 'bold', display_order: 1 },
+    { object_type: 'location', metadata: 'BUSINESS_CRITICALITY', code: 'HIGH', icon: 'pi-exclamation-triangle', color: 'warning', display_order: 2 },
+    { object_type: 'location', metadata: 'BUSINESS_CRITICALITY', code: 'MEDIUM', icon: 'pi-info-circle', color: 'info', display_order: 3 },
+    { object_type: 'location', metadata: 'BUSINESS_CRITICALITY', code: 'LOW', icon: 'pi-minus-circle', color: 'secondary', display_order: 4 },
+
+    // ========================================
     // INCIDENT - Urgencies (from incident_config.sql)
     // ========================================
     { object_type: 'incident', metadata: 'URGENCY', code: 'CRITICAL', value: 1, icon: 'pi-exclamation-circle', color: 'danger', font_weight: 'bold', display_order: 1 },
@@ -244,6 +259,21 @@ async function seedObjectSetupTranslations() {
     'entity|TYPE|DEPARTMENT': { fr: 'Département', en: 'Department', es: 'Departamento', pt: 'Departamento' },
     'entity|TYPE|SUPPLIER': { fr: 'Fournisseur', en: 'Supplier', es: 'Proveedor', pt: 'Fornecedor' },
     'entity|TYPE|CUSTOMER': { fr: 'Client', en: 'Customer', es: 'Cliente', pt: 'Cliente' },
+
+    // ========================================
+    // LOCATION - Types
+    // ========================================
+    'location|TYPE|OFFICE': { fr: 'Bureau', en: 'Office', es: 'Oficina', pt: 'Escritório' },
+    'location|TYPE|WAREHOUSE': { fr: 'Entrepôt', en: 'Warehouse', es: 'Almacén', pt: 'Armazém' },
+    'location|TYPE|DATA_CENTER': { fr: 'Centre de données', en: 'Data Center', es: 'Centro de datos', pt: 'Centro de dados' },
+    'location|TYPE|FACTORY': { fr: 'Usine', en: 'Factory', es: 'Fábrica', pt: 'Fábrica' },
+    'location|TYPE|STORE': { fr: 'Magasin', en: 'Store', es: 'Tienda', pt: 'Loja' },
+
+    // LOCATION - Business Criticality
+    'location|BUSINESS_CRITICALITY|CRITICAL': { fr: 'Critique', en: 'Critical', es: 'Crítico', pt: 'Crítico' },
+    'location|BUSINESS_CRITICALITY|HIGH': { fr: 'Élevée', en: 'High', es: 'Alta', pt: 'Alta' },
+    'location|BUSINESS_CRITICALITY|MEDIUM': { fr: 'Moyenne', en: 'Medium', es: 'Media', pt: 'Média' },
+    'location|BUSINESS_CRITICALITY|LOW': { fr: 'Faible', en: 'Low', es: 'Baja', pt: 'Baixa' },
 
     // ========================================
     // INCIDENT - Urgencies

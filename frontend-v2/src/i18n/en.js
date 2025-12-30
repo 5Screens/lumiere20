@@ -64,6 +64,7 @@ export default {
     defectSetup: 'Defect management',
     projectSetup: 'Project management',
     entitySetup: 'Entity management',
+    locationSetup: 'Location management',
     contactTypes: 'Contact Types',
     entities: 'Entities',
     locations: 'Locations',

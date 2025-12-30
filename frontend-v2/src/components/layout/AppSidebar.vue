@@ -368,6 +368,11 @@ const menuItems = computed(() => [
             command: () => openTab('entity-setup', 'Entity Setup', 'menu.entitySetup', 'pi pi-sliders-h', 'object_setup', 'ObjectsCrud', null, null, 'entity')
           },
           {
+            label: t('menu.locationSetup') || 'Location Setup',
+            icon: 'pi pi-map-marker',
+            command: () => openTab('location-setup', 'Location Setup', 'menu.locationSetup', 'pi pi-map-marker', 'object_setup', 'ObjectsCrud', null, null, 'location')
+          },
+          {
             label: t('menu.contactTypes') || 'Contact Types',
             icon: 'pi pi-phone',
             command: () => openTab('contact-types', 'Contact Types', 'menu.contactTypes', 'pi pi-phone', 'object_setup', 'ObjectsCrud', null, null, 'contact')

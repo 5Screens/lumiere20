@@ -116,13 +116,7 @@ async function seedObjectMetadata() {
     locations: [
       { field_name: 'name', label_key: 'locations.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1 },
       { field_name: 'site_id', label_key: 'locations.siteId', field_type: 'text', min_width: '10rem', display_order: 2 },
-      { field_name: 'type', label_key: 'locations.type', field_type: 'select', min_width: '10rem', display_order: 3, options_source: JSON.stringify([
-        { label: 'Office', value: 'OFFICE' },
-        { label: 'Warehouse', value: 'WAREHOUSE' },
-        { label: 'Data Center', value: 'DATA_CENTER' },
-        { label: 'Factory', value: 'FACTORY' },
-        { label: 'Store', value: 'STORE' }
-      ])},
+      { field_name: 'type', label_key: 'locations.type', field_type: 'select', min_width: '10rem', display_order: 3, options_source: '/object-setup/options?object_type=location&metadata=TYPE' },
       { field_name: 'city', label_key: 'locations.city', field_type: 'text', min_width: '10rem', display_order: 4 },
       { field_name: 'country', label_key: 'locations.country', field_type: 'text', min_width: '10rem', display_order: 5 },
       { field_name: 'street', label_key: 'locations.street', field_type: 'text', min_width: '16rem', display_order: 6, default_visible: false },
@@ -130,12 +124,7 @@ async function seedObjectMetadata() {
       { field_name: 'state_province', label_key: 'locations.stateProvince', field_type: 'text', min_width: '10rem', display_order: 8, default_visible: false },
       { field_name: 'phone', label_key: 'common.phone', field_type: 'text', min_width: '10rem', display_order: 9, default_visible: false },
       { field_name: 'time_zone', label_key: 'locations.timeZone', field_type: 'text', min_width: '10rem', display_order: 10, default_visible: false },
-      { field_name: 'business_criticality', label_key: 'locations.businessCriticality', field_type: 'select', min_width: '10rem', display_order: 11, default_visible: false, options_source: JSON.stringify([
-        { label: 'Critical', value: 'CRITICAL' },
-        { label: 'High', value: 'HIGH' },
-        { label: 'Medium', value: 'MEDIUM' },
-        { label: 'Low', value: 'LOW' }
-      ])},
+      { field_name: 'business_criticality', label_key: 'locations.businessCriticality', field_type: 'select', min_width: '10rem', display_order: 11, default_visible: false, options_source: '/object-setup/options?object_type=location&metadata=BUSINESS_CRITICALITY' },
       { field_name: 'opening_hours', label_key: 'locations.openingHours', field_type: 'text', min_width: '12rem', display_order: 12, default_visible: false },
       { field_name: 'comments', label_key: 'common.comments', field_type: 'textarea', show_in_table: false, display_order: 13 },
       { field_name: 'parent_uuid', label_key: 'common.parent', field_type: 'relation', relation_object: 'locations', relation_display: 'name', show_in_table: false, display_order: 14 },
