@@ -69,7 +69,8 @@ app.use(i18n)
 app.use(pinia)
 app.use(AppState)
 
-// Configure PrimeVue
+// Configure PrimeVue with current locale
+const currentLocale = localStorage.getItem('locale') || 'fr'
 app.use(PrimeVue, {
   theme: {
     preset: Noir,
@@ -82,7 +83,7 @@ app.use(PrimeVue, {
       }
     }
   },
-  locale: i18n.global.messages.value['fr']?.primevue || {},
+  locale: i18n.global.messages.value[currentLocale]?.primevue || {},
   ripple: true
 })
 

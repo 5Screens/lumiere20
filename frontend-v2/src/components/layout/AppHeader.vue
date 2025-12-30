@@ -98,6 +98,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { usePrimeVue } from 'primevue/config'
 import { useAuthStore } from '@/stores/authStore'
 import { useResponsiveSize } from '@/composables/useResponsiveSize'
 import languagesService from '@/services/languagesService'
@@ -120,7 +121,8 @@ const responsiveMode = computed(() => {
   if (isTablet.value) return { label: 'Tablet', icon: 'pi-tablet', color: 'bg-blue-500' }
   return { label: 'Desktop', icon: 'pi-desktop', color: 'bg-green-500' }
 })
-const { t, locale } = useI18n()
+const { t, locale, messages } = useI18n()
+const primevue = usePrimeVue()
 const authStore = useAuthStore()
 
 // Languages
@@ -160,6 +162,12 @@ const changeLanguage = (code) => {
   locale.value = code
   localStorage.setItem('locale', code)
   metadataService.clearCache()
+  
+  // Update PrimeVue locale dynamically
+  const primeVueLocale = messages.value[code]?.primevue
+  if (primeVueLocale) {
+    primevue.config.locale = primeVueLocale
+  }
 }
 
 // Search

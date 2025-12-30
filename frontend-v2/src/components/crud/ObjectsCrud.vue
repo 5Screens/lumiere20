@@ -1321,12 +1321,16 @@ const inlineTranslatableTitle = computed(() => {
   return t('common.translate')
 })
 
-// Options for boolean filter (SelectButton)
-const booleanFilterOptions = computed(() => [
-  { label: t('common.all'), value: null },
-  { label: t('common.yes'), value: true },
-  { label: t('common.no'), value: false }
-])
+// Options for boolean filter (SelectButton) - reactive to locale changes
+const booleanFilterOptions = computed(() => {
+  // Force reactivity on locale change
+  const _ = locale.value
+  return [
+    { label: t('common.all'), value: null },
+    { label: t('common.yes'), value: true },
+    { label: t('common.no'), value: false }
+  ]
+})
 
 // Options for inline select picker
 const inlineSelectOptions = computed(() => {
