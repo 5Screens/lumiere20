@@ -61,6 +61,20 @@
         </template>
       </Column>
 
+      <!-- Options -->
+      <Column field="options_source" :header="$t('extendedFields.options')" style="min-width: 120px">
+        <template #body="{ data }">
+          <span 
+            v-if="data.options_source" 
+            class="text-xs text-surface-600 dark:text-surface-400 cursor-help truncate max-w-[150px] inline-block"
+            v-tooltip.top="{ value: formatOptionsTooltip(data.options_source), class: 'max-w-md' }"
+          >
+            {{ formatOptionsDisplay(data.options_source) }}
+          </span>
+          <span v-else class="text-surface-300 text-xs">—</span>
+        </template>
+      </Column>
+
       <!-- Show in form -->
       <Column :header="$t('extendedFields.form')" style="width: 70px">
         <template #body="{ data }">
@@ -352,6 +366,52 @@ const loadFields = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Format options for display in table (summary)
+const formatOptionsDisplay = (options) => {
+  if (!options) return ''
+  
+  // If it's a string starting with / or http, it's an API endpoint
+  if (typeof options === 'string') {
+    if (options.startsWith('/') || options.startsWith('http')) {
+      return `API: ${options.split('/').pop() || options}`
+    }
+    // Try to parse as JSON
+    try {
+      const parsed = JSON.parse(options)
+      if (Array.isArray(parsed)) {
+        return `${parsed.length} option${parsed.length > 1 ? 's' : ''}`
+      }
+      return 'JSON'
+    } catch {
+      return options.substring(0, 20) + (options.length > 20 ? '...' : '')
+    }
+  }
+  
+  // If it's already an object/array
+  if (Array.isArray(options)) {
+    return `${options.length} option${options.length > 1 ? 's' : ''}`
+  }
+  
+  return 'JSON'
+}
+
+// Format options for tooltip (full content)
+const formatOptionsTooltip = (options) => {
+  if (!options) return ''
+  
+  if (typeof options === 'string') {
+    // Try to pretty print JSON
+    try {
+      const parsed = JSON.parse(options)
+      return JSON.stringify(parsed, null, 2)
+    } catch {
+      return options
+    }
+  }
+  
+  return JSON.stringify(options, null, 2)
 }
 
 // Get field type severity for Tag
