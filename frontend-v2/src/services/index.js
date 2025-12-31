@@ -12,6 +12,7 @@ import tasksService from './tasksService'
 import ticketsService from './ticketsService'
 import ticketTypesService from './ticketTypesService'
 import objectSetupService from './objectSetupService'
+import symptomsService from './symptomsService'
 
 // Service registry mapping objectType to service
 const services = {
@@ -26,6 +27,7 @@ const services = {
   tickets: ticketsService,
   ticket_types: ticketTypesService,
   object_setup: objectSetupService,
+  symptoms: symptomsService,
 }
 
 /**

@@ -776,6 +776,17 @@ export default {
       deletedMultiple: '{count} ticket types deleted successfully'
     }
   },
+  symptoms: {
+    title: 'Symptoms',
+    code: 'Code',
+    label: 'Label',
+    messages: {
+      created: 'Symptom created successfully',
+      updated: 'Symptom updated successfully',
+      deleted: 'Symptom deleted successfully',
+      deletedMultiple: '{count} symptoms deleted successfully'
+    }
+  },
   objectSetup: {
     title: 'Object Setup',
     objectType: 'Object Type',

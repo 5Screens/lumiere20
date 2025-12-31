@@ -88,6 +88,14 @@ async function seedObjectMetadata() {
       default_sort_field: 'display_order',
       default_sort_order: 1,
     },
+    {
+      code: 'symptoms',
+      label_key: 'symptoms.title',
+      icon: 'pi-exclamation-circle',
+      api_endpoint: '/api/v1/symptoms',
+      default_sort_field: 'code',
+      default_sort_order: 1,
+    },
   ];
 
   // Define fields for each object type
@@ -245,6 +253,13 @@ async function seedObjectMetadata() {
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '12rem', display_order: 11 },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '24rem', display_order: 20 },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '24rem', display_order: 21 },
+    ],
+    symptoms: [
+      { field_name: 'code', label_key: 'symptoms.code', field_type: 'text', is_required: true, min_width: '12rem', display_order: 1 },
+      { field_name: 'label', label_key: 'symptoms.label', field_type: 'text', is_required: true, is_translatable: true, min_width: '20rem', display_order: 2 },
+      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 3 },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10 },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11 },
     ],
   };
 

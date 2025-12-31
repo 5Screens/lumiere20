@@ -35,16 +35,50 @@ const transformWithTranslations = (symptom, translationsMap, locale = 'en') => {
 
 /**
  * Search symptoms with PrimeVue filters
+ * Searches in both base fields and translated fields
  */
 const search = async (params) => {
   const { filters, sortField, sortOrder, page = 1, limit = 25, locale = 'en' } = params;
   
-  const where = buildPrismaWhereFromFilters(filters, { 
-    globalSearchFields: ['code', 'label'],
-    excludeFromGlobal: ['label'] // Label is translated, handle separately
-  });
-  const orderBy = buildPrismaOrderBy(sortField, sortOrder);
   const skip = (page - 1) * limit;
+  const orderBy = buildPrismaOrderBy(sortField, sortOrder);
+  
+  // Extract global filter
+  const globalFilter = filters?.global?.value;
+  
+  // Build base where clause (excluding global search on translated fields)
+  let where = {};
+  
+  // Handle is_active filter
+  if (filters?.is_active?.value !== undefined) {
+    where.is_active = filters.is_active.value;
+  }
+  
+  // If there's a global search, we need to search in translations too
+  if (globalFilter && globalFilter.trim()) {
+    const searchTerm = globalFilter.trim().toLowerCase();
+    
+    // First, find UUIDs of symptoms that match in translated_fields
+    const matchingTranslations = await prisma.translated_fields.findMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        field_name: 'label',
+        value: { contains: searchTerm, mode: 'insensitive' }
+      },
+      select: { entity_uuid: true }
+    });
+    const translatedUuids = [...new Set(matchingTranslations.map(t => t.entity_uuid))];
+    
+    // Search in code, label (base), OR in translated UUIDs
+    where = {
+      ...where,
+      OR: [
+        { code: { contains: searchTerm, mode: 'insensitive' } },
+        { label: { contains: searchTerm, mode: 'insensitive' } },
+        ...(translatedUuids.length > 0 ? [{ uuid: { in: translatedUuids } }] : [])
+      ]
+    };
+  }
 
   const [data, total] = await Promise.all([
     prisma.symptoms.findMany({
