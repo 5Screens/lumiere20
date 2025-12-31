@@ -5,6 +5,7 @@
 
 const { prisma } = require('../../../../prisma/client');
 const logger = require('../../../config/logger');
+const { buildPrismaWhereFromFilters } = require('../../../utils/primeVueFilters');
 
 /**
  * Get all CI categories with translations
@@ -314,19 +315,20 @@ const search = async (searchParams = {}, locale = 'en') => {
     sortOrder = 1
   } = searchParams;
   
-  const { globalFilter } = filters;
+  logger.info(`[ci_categories.search] searchParams: ${JSON.stringify(searchParams)}`);
+  logger.info(`[ci_categories.search] filters: ${JSON.stringify(filters)}`);
+  
   const skip = (page - 1) * limit;
   const take = limit;
   
-  let where = {};
+  // Build where clause using the utility (supports all matchModes: contains, startsWith, endsWith, equals, notEquals, notContains)
+  const where = buildPrismaWhereFromFilters(filters, {
+    globalSearchFields: ['code', 'label'],
+    dateColumns: ['created_at', 'updated_at'],
+    uuidColumns: ['uuid']
+  });
   
-  // Global filter
-  if (globalFilter) {
-    where.OR = [
-      { code: { contains: globalFilter, mode: 'insensitive' } },
-      { label: { contains: globalFilter, mode: 'insensitive' } }
-    ];
-  }
+  logger.info(`[ci_categories.search] where: ${JSON.stringify(where)}`);
   
   const [categories, total] = await Promise.all([
     prisma.ci_categories.findMany({

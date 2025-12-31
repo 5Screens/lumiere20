@@ -5,6 +5,7 @@
 
 const { prisma } = require('../../../../prisma/client');
 const logger = require('../../../config/logger');
+const { buildPrismaWhereFromFilters } = require('../../../utils/primeVueFilters');
 
 const ENTITY_TYPE = 'ticket_types';
 
@@ -213,31 +214,20 @@ const search = async (searchParams) => {
     locale = 'en'
   } = searchParams;
 
+  logger.info(`[ticket_types.search] searchParams: ${JSON.stringify(searchParams)}`);
+  logger.info(`[ticket_types.search] filters: ${JSON.stringify(filters)}`);
+
   const skip = (page - 1) * limit;
   const take = limit;
 
-  // Build where clause
-  const where = {};
-  
-  // Global filter
-  if (filters.globalFilter?.value) {
-    const searchValue = filters.globalFilter.value.toLowerCase();
-    where.OR = [
-      { code: { contains: searchValue, mode: 'insensitive' } },
-      { label: { contains: searchValue, mode: 'insensitive' } }
-    ];
-  }
-  
-  // Column filters
-  if (filters.code?.value) {
-    where.code = { contains: filters.code.value, mode: 'insensitive' };
-  }
-  if (filters.label?.value) {
-    where.label = { contains: filters.label.value, mode: 'insensitive' };
-  }
-  if (filters.is_active?.value !== undefined && filters.is_active?.value !== null) {
-    where.is_active = filters.is_active.value;
-  }
+  // Build where clause using the utility (supports all matchModes: contains, startsWith, endsWith, equals, notEquals, notContains)
+  const where = buildPrismaWhereFromFilters(filters, {
+    globalSearchFields: ['code', 'label'],
+    dateColumns: ['created_at', 'updated_at'],
+    uuidColumns: ['uuid']
+  });
+
+  logger.info(`[ticket_types.search] where: ${JSON.stringify(where)}`);
 
   // Build orderBy
   const orderBy = {};

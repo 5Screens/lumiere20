@@ -5,6 +5,7 @@
 
 const { prisma } = require('../../../../prisma/client');
 const logger = require('../../../config/logger');
+const { buildPrismaWhereFromFilters } = require('../../../utils/primeVueFilters');
 
 const ENTITY_TYPE = 'object_setup';
 
@@ -283,82 +284,88 @@ const search = async (searchParams = {}, locale = 'en') => {
   const skip = (page - 1) * limit;
   const take = limit;
   
-  // Helper to extract filter value from PrimeVue format
-  // PrimeVue sends: { operator: "and", constraints: [{ value: "...", matchMode: "..." }] }
-  // or simple format: { value: "...", matchMode: "..." }
-  const getFilterValue = (filter) => {
+  // Helper to extract filter value and matchMode from PrimeVue format
+  const getFilterInfo = (filter) => {
     if (!filter) return null;
     // Simple format
-    if (filter.value !== undefined && filter.value !== null) return filter.value;
-    // Constraints format - get first non-null constraint value
+    if (filter.value !== undefined && filter.value !== null) {
+      return { value: filter.value, matchMode: filter.matchMode || 'contains' };
+    }
+    // Constraints format - get first non-null constraint
     if (filter.constraints && Array.isArray(filter.constraints)) {
       for (const c of filter.constraints) {
         if (c.value !== undefined && c.value !== null && c.value !== '') {
-          return c.value;
+          return { value: c.value, matchMode: c.matchMode || 'contains' };
         }
       }
     }
     return null;
   };
   
-  let where = {};
+  // Build filters for non-translated fields (exclude label which is translated)
+  const filtersForDb = { ...filters };
+  delete filtersForDb.label; // label is a translated field, handled separately
+  
+  // Build where clause using the utility for standard fields
+  let where = buildPrismaWhereFromFilters(filtersForDb, {
+    globalSearchFields: ['code', 'metadata', 'object_type'],
+    dateColumns: ['created_at', 'updated_at'],
+    uuidColumns: ['uuid']
+  });
   
   // Filter by objectSetupType if provided as top-level param (for filtered views like entity_setup)
   if (objectSetupType) {
-    where.object_type = objectSetupType;
-  }
-  // Or filter by object_type from filters (for manual filtering)
-  else {
-    const objectTypeValue = getFilterValue(filters.object_type);
-    if (objectTypeValue) {
-      where.object_type = objectTypeValue;
-    }
-  }
-  
-  // Filter by metadata if provided (using contains for text search)
-  const metadataValue = getFilterValue(filters.metadata);
-  if (metadataValue) {
-    where.metadata = { contains: metadataValue, mode: 'insensitive' };
-  }
-  
-  // Filter by code if provided
-  const codeValue = getFilterValue(filters.code);
-  if (codeValue) {
-    where.code = { contains: codeValue, mode: 'insensitive' };
+    where = { ...where, object_type: objectSetupType };
   }
   
   // Filter by label (translated field) - search in translated_fields table
-  const labelValue = getFilterValue(filters.label);
-  if (labelValue) {
+  const labelInfo = getFilterInfo(filters.label);
+  if (labelInfo) {
+    // Build the translation search condition based on matchMode
+    let translationWhere = {
+      entity_type: ENTITY_TYPE,
+      field_name: 'label'
+    };
+    
+    switch (labelInfo.matchMode) {
+      case 'startsWith':
+        translationWhere.value = { startsWith: labelInfo.value, mode: 'insensitive' };
+        break;
+      case 'endsWith':
+        translationWhere.value = { endsWith: labelInfo.value, mode: 'insensitive' };
+        break;
+      case 'equals':
+        translationWhere.value = labelInfo.value;
+        break;
+      case 'notEquals':
+        translationWhere.value = { not: labelInfo.value };
+        break;
+      case 'notContains':
+        translationWhere.value = { not: { contains: labelInfo.value, mode: 'insensitive' } };
+        break;
+      case 'contains':
+      default:
+        translationWhere.value = { contains: labelInfo.value, mode: 'insensitive' };
+        break;
+    }
+    
     const matchingTranslations = await prisma.translated_fields.findMany({
-      where: {
-        entity_type: ENTITY_TYPE,
-        field_name: 'label',
-        value: { contains: labelValue, mode: 'insensitive' }
-      },
+      where: translationWhere,
       select: { entity_uuid: true },
       distinct: ['entity_uuid']
     });
     const matchingUuids = matchingTranslations.map(t => t.entity_uuid);
-    logger.info(`[object_setup.search] label filter "${labelValue}" matched ${matchingUuids.length} UUIDs`);
+    logger.info(`[object_setup.search] label filter "${labelInfo.value}" (${labelInfo.matchMode}) matched ${matchingUuids.length} UUIDs`);
     
     if (matchingUuids.length > 0) {
-      where.uuid = { in: matchingUuids };
+      where = { ...where, uuid: { in: matchingUuids } };
     } else {
       // No matches found - return empty result
-      where.uuid = { in: [] };
+      where = { ...where, uuid: { in: [] } };
     }
   }
   
-  // Global filter
-  const globalFilterValue = getFilterValue(filters.global);
-  if (globalFilterValue) {
-    where.OR = [
-      { code: { contains: globalFilterValue, mode: 'insensitive' } },
-      { metadata: { contains: globalFilterValue, mode: 'insensitive' } },
-      { object_type: { contains: globalFilterValue, mode: 'insensitive' } }
-    ];
-  }
+  logger.info(`[object_setup.search] where: ${JSON.stringify(where)}`);
   
   const [records, total] = await Promise.all([
     prisma.object_setup.findMany({
