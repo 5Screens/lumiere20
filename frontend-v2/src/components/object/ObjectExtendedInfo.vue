@@ -317,7 +317,9 @@ const datePickerFieldData = ref(null)
 const extendedFieldsData = computed(() => {
   return props.extendedFields.map(field => ({
     ...field,
-    value: props.modelValue?.extended_core_fields?.[field.field_name] ?? null
+    value: props.modelValue?.extended_core_fields?.[field.field_name] ?? null,
+    // Include the resolved relation object if available
+    _relationObject: props.modelValue?._extendedRelations?.[field.field_name] ?? null
   }))
 })
 
@@ -410,9 +412,24 @@ const getSelectLabel = (field) => {
 // Get display value for relation fields
 const getRelationDisplayValue = (data) => {
   if (!data.value) return '-'
-  // For now, just show the UUID - the actual display value would need to be loaded
-  // This is a simplified version; in production, you'd cache the related object's display value
-  return data._relationDisplayValue || data.value
+  
+  // Use the resolved relation object from _extendedRelations
+  if (data._relationObject) {
+    // Return appropriate display field based on relation type
+    if (data.relation_object === 'symptoms') {
+      return data._relationObject.label || data._relationObject.code || data.value
+    }
+    if (data.relation_object === 'tickets') {
+      return data._relationObject.title || data.value
+    }
+    if (data.relation_object === 'configuration_items') {
+      return data._relationObject.name || data.value
+    }
+    // Fallback: try common display fields
+    return data._relationObject.label || data._relationObject.name || data._relationObject.title || data.value
+  }
+  
+  return data.value
 }
 
 // Handle relation field change
