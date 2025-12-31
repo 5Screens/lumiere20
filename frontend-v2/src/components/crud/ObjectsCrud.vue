@@ -109,7 +109,7 @@
                 icon="pi pi-bolt" 
                 :severity="selectionModeActive ? 'primary' : 'secondary'"
                 @click="onActionButtonClick" 
-                v-tooltip.bottom="selectionModeActive ? $t('common.revertClickActions') : $t('common.actions')"
+                v-tooltip.bottom="selectionModeActive ? $t('common.revertClickActions') : $t('common.enterSelectionMode')"
               />
               <template v-if="selectionModeActive">
                 <span class="text-sm text-surface-500 dark:text-surface-400">
