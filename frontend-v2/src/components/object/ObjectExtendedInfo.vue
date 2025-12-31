@@ -63,6 +63,38 @@
             <template v-if="data.field_type === 'boolean'">
               <i :class="data.value ? 'pi pi-check text-green-500' : 'pi pi-times text-red-500'" />
             </template>
+            <!-- Relation display/edit (rendered in body to avoid PrimeVue cell edit issues) -->
+            <template v-else-if="data.field_type === 'relation'">
+              <InlineSymptomsEditor
+                v-if="data.relation_object === 'symptoms' && data.is_editable !== false"
+                :modelValue="data.value"
+                :symptomObject="data._relationObject"
+                :placeholder="$t('common.searchSymptom')"
+                @click.stop
+                @save="({ uuid, symptom }) => onRelationSave(data, uuid, symptom)"
+              />
+              <InlineTicketEditor
+                v-else-if="data.relation_object === 'tickets' && data.is_editable !== false"
+                :modelValue="data.value"
+                :ticketObject="data._relationObject"
+                :ticketTypeCode="data.relation_filter?.ticket_type_code"
+                :placeholder="$t('common.searchTicket')"
+                @click.stop
+                @save="({ uuid, ticket }) => onRelationSave(data, uuid, ticket)"
+              />
+              <InlineConfigurationItemEditor
+                v-else-if="data.relation_object === 'configuration_items' && data.is_editable !== false"
+                :modelValue="data.value"
+                :configurationItemObject="data._relationObject"
+                :ciTypeCode="data.relation_filter?.ci_type_code"
+                :placeholder="$t('common.searchConfigurationItem')"
+                @click.stop
+                @save="({ uuid, configurationItem }) => onRelationSave(data, uuid, configurationItem)"
+              />
+              <span v-else :class="{ 'text-surface-400': !data.value }">
+                {{ getRelationDisplayValue(data) }}
+              </span>
+            </template>
             <!-- Select display with icon/color -->
             <template v-else-if="data.field_type === 'select'">
               <div v-if="data.value" class="flex items-center gap-2" :style="getTagStyle(getOptionByValue(data, data.value)?.color)">
@@ -167,26 +199,6 @@
             >
               <span v-if="data.value" class="text-sm">{{ formatDate(data.value, 'datetime') }}</span>
             </InlinePickerButton>
-            <!-- Relation: Symptoms -->
-            <SymptomsSelector
-              v-else-if="data.field_type === 'relation' && data.relation_object === 'symptoms'"
-              :modelValue="data.value"
-              @update:modelValue="onRelationChange(data, $event)"
-            />
-            <!-- Relation: Tickets (with filter) -->
-            <TicketSelector
-              v-else-if="data.field_type === 'relation' && data.relation_object === 'tickets'"
-              :modelValue="data.value"
-              :ticketTypeCode="data.relation_filter?.ticket_type_code"
-              @update:modelValue="onRelationChange(data, $event)"
-            />
-            <!-- Relation: Configuration Items (with filter) -->
-            <ConfigurationItemSelector
-              v-else-if="data.field_type === 'relation' && data.relation_object === 'configuration_items'"
-              :modelValue="data.value"
-              :ciTypeCode="data.relation_filter?.ci_type_code"
-              @update:modelValue="onRelationChange(data, $event)"
-            />
             <!-- Default fallback -->
             <InputText 
               v-else
@@ -263,9 +275,9 @@ import ProgressSpinner from 'primevue/progressspinner'
 import ExtendedFieldsEditor from '@/components/object/ExtendedFieldsEditor.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import { DateTimePicker } from '@/components/pickers'
-import SymptomsSelector from '@/components/form/SymptomsSelector.vue'
-import TicketSelector from '@/components/form/TicketSelector.vue'
-import ConfigurationItemSelector from '@/components/form/ConfigurationItemSelector.vue'
+import InlineSymptomsEditor from '@/components/form/InlineSymptomsEditor.vue'
+import InlineTicketEditor from '@/components/form/InlineTicketEditor.vue'
+import InlineConfigurationItemEditor from '@/components/form/InlineConfigurationItemEditor.vue'
 
 // Props
 const props = defineProps({
@@ -432,14 +444,21 @@ const getRelationDisplayValue = (data) => {
   return data.value
 }
 
-// Handle relation field change
-const onRelationChange = (data, newValue) => {
+// Handle relation field save (from Inline*Editor components)
+const onRelationSave = (data, newUuid, relatedObject) => {
   const currentExtended = props.modelValue?.extended_core_fields || {}
+  const currentExtendedRelations = props.modelValue?._extendedRelations || {}
+  
+  // Update both extended_core_fields (UUID) and _extendedRelations (object for display)
   emit('update:modelValue', {
     ...props.modelValue,
     extended_core_fields: {
       ...currentExtended,
-      [data.field_name]: newValue
+      [data.field_name]: newUuid
+    },
+    _extendedRelations: {
+      ...currentExtendedRelations,
+      [data.field_name]: relatedObject
     }
   })
 }

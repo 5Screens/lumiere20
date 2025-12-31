@@ -71,7 +71,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'select'])
 
 const autocompleteRef = ref(null)
 const selectedSymptom = ref(null)
@@ -196,6 +196,7 @@ const onSelect = (event) => {
   const symptom = event.value
   if (symptom?.uuid) {
     emit('update:modelValue', symptom.uuid)
+    emit('select', symptom)
   }
 }
 

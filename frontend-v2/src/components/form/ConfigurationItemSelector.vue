@@ -42,8 +42,6 @@ import AutoComplete from 'primevue/autocomplete'
 import Tag from 'primevue/tag'
 import configurationItemsService from '@/services/configurationItemsService'
 
-const MIN_SEARCH_LENGTH = 2
-
 const props = defineProps({
   modelValue: {
     type: String,
@@ -64,7 +62,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'select'])
 
 const selectedItem = ref(null)
 const suggestions = ref([])
@@ -72,15 +70,13 @@ const suggestions = ref([])
 // Search configuration items via API
 const onSearch = async (event) => {
   const query = event.query?.trim() || ''
-  
-  if (query.length < MIN_SEARCH_LENGTH) {
-    suggestions.value = []
-    return
-  }
 
   try {
-    const filters = {
-      global: { value: query, matchMode: 'contains' }
+    const filters = {}
+    
+    // Add global search filter if query is provided
+    if (query.length > 0) {
+      filters.global = { value: query, matchMode: 'contains' }
     }
     
     // Add CI type filter if specified
@@ -108,6 +104,9 @@ const onSearch = async (event) => {
 const onSelect = (event) => {
   const item = event.value
   emit('update:modelValue', item?.uuid || null)
+  if (item) {
+    emit('select', item)
+  }
 }
 
 // Handle clear
