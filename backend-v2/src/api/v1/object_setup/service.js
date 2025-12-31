@@ -277,9 +277,29 @@ const search = async (searchParams = {}, locale = 'en') => {
     objectSetupType = null
   } = searchParams;
   
-  const { globalFilter, object_type, metadata } = filters;
+  logger.info(`[object_setup.search] searchParams: ${JSON.stringify(searchParams)}`);
+  logger.info(`[object_setup.search] filters: ${JSON.stringify(filters)}`);
+  
   const skip = (page - 1) * limit;
   const take = limit;
+  
+  // Helper to extract filter value from PrimeVue format
+  // PrimeVue sends: { operator: "and", constraints: [{ value: "...", matchMode: "..." }] }
+  // or simple format: { value: "...", matchMode: "..." }
+  const getFilterValue = (filter) => {
+    if (!filter) return null;
+    // Simple format
+    if (filter.value !== undefined && filter.value !== null) return filter.value;
+    // Constraints format - get first non-null constraint value
+    if (filter.constraints && Array.isArray(filter.constraints)) {
+      for (const c of filter.constraints) {
+        if (c.value !== undefined && c.value !== null && c.value !== '') {
+          return c.value;
+        }
+      }
+    }
+    return null;
+  };
   
   let where = {};
   
@@ -288,21 +308,55 @@ const search = async (searchParams = {}, locale = 'en') => {
     where.object_type = objectSetupType;
   }
   // Or filter by object_type from filters (for manual filtering)
-  else if (object_type?.value) {
-    where.object_type = object_type.value;
+  else {
+    const objectTypeValue = getFilterValue(filters.object_type);
+    if (objectTypeValue) {
+      where.object_type = objectTypeValue;
+    }
   }
   
-  // Filter by metadata if provided
-  if (metadata?.value) {
-    where.metadata = metadata.value;
+  // Filter by metadata if provided (using contains for text search)
+  const metadataValue = getFilterValue(filters.metadata);
+  if (metadataValue) {
+    where.metadata = { contains: metadataValue, mode: 'insensitive' };
+  }
+  
+  // Filter by code if provided
+  const codeValue = getFilterValue(filters.code);
+  if (codeValue) {
+    where.code = { contains: codeValue, mode: 'insensitive' };
+  }
+  
+  // Filter by label (translated field) - search in translated_fields table
+  const labelValue = getFilterValue(filters.label);
+  if (labelValue) {
+    const matchingTranslations = await prisma.translated_fields.findMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        field_name: 'label',
+        value: { contains: labelValue, mode: 'insensitive' }
+      },
+      select: { entity_uuid: true },
+      distinct: ['entity_uuid']
+    });
+    const matchingUuids = matchingTranslations.map(t => t.entity_uuid);
+    logger.info(`[object_setup.search] label filter "${labelValue}" matched ${matchingUuids.length} UUIDs`);
+    
+    if (matchingUuids.length > 0) {
+      where.uuid = { in: matchingUuids };
+    } else {
+      // No matches found - return empty result
+      where.uuid = { in: [] };
+    }
   }
   
   // Global filter
-  if (globalFilter) {
+  const globalFilterValue = getFilterValue(filters.global);
+  if (globalFilterValue) {
     where.OR = [
-      { code: { contains: globalFilter, mode: 'insensitive' } },
-      { metadata: { contains: globalFilter, mode: 'insensitive' } },
-      { object_type: { contains: globalFilter, mode: 'insensitive' } }
+      { code: { contains: globalFilterValue, mode: 'insensitive' } },
+      { metadata: { contains: globalFilterValue, mode: 'insensitive' } },
+      { object_type: { contains: globalFilterValue, mode: 'insensitive' } }
     ];
   }
   
