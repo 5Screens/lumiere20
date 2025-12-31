@@ -90,7 +90,7 @@ test.describe('Tasks Filters', () => {
     expect(filteredCount).toBeLessThan(initialCount)
 
     // Verify results contain the search term
-    const firstRowTitle = await page.locator('tbody tr').first().locator('td').nth(2).textContent()
+    const firstRowTitle = await page.locator('tbody tr').first().locator('td').nth(0).textContent()
     expect(firstRowTitle?.toLowerCase()).toContain('email system')
 
     // Clear filters
@@ -99,19 +99,20 @@ test.describe('Tasks Filters', () => {
     expect(resetCount).toBe(50000)
   })
 
-  test('should filter by column title (contains)', async ({ page }) => {
+  test('should filter by column description contains', async ({ page }) => {
     // Open filter menu for Tickets column
-    await page.getByRole('columnheader', { name: 'Tickets Show Filter Menu' })
+    await page.getByRole('columnheader', { name: 'Description Show Filter Menu' })
       .getByLabel('Show Filter Menu').click()
 
     // The filter mode should be "Contient" by default
     await expect(page.getByRole('combobox', { name: 'Contient' })).toBeVisible()
 
-    // Enter filter value
-    await page.locator('dialog').getByRole('textbox', { name: 'Rechercher' }).fill('documentation')
+    // Enter filter value (PrimeVue uses popover, not dialog)
+    const filterOverlay = page.locator('.p-datatable-filter-overlay')
+    await filterOverlay.getByRole('textbox').fill('needed')
 
-    // Apply filter
-    await page.getByRole('button', { name: 'Appliquer' }).click()
+    // Apply filter (wait for overlay animation to stabilize)
+    await filterOverlay.getByRole('button', { name: 'Appliquer' }).click({ force: true })
 
     // Wait for filtered results
     await page.waitForResponse(response => 
@@ -120,11 +121,11 @@ test.describe('Tasks Filters', () => {
 
     // Verify filtered count
     const filteredCount = await getTotalCount(page)
-    expect(filteredCount).toBe(5000)
+    expect(filteredCount).toBe(10000)
 
     // Verify results contain the search term
-    const firstRowTitle = await page.locator('tbody tr').first().locator('td').nth(2).textContent()
-    expect(firstRowTitle?.toLowerCase()).toContain('documentation')
+    const firstRowTitle = await page.locator('tbody tr').first().locator('td').nth(1).textContent()
+    expect(firstRowTitle?.toLowerCase()).toContain('needed')
 
     // Clear filters
     await clearFilters(page)
