@@ -10,7 +10,7 @@
  *   - UAT_TICKETS_BATCH_SIZE: insert batch size (default: 1000)
  */
 
-const DEFAULT_TICKETS_PER_TYPE = 50000;
+const DEFAULT_TICKETS_PER_TYPE = 10000;
 const DEFAULT_BATCH_SIZE = 1000;
 
 const parseIntOr = (value, fallback) => {

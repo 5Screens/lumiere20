@@ -72,6 +72,7 @@ async function seedTicketTypeFields() {
         show_in_table: true,
         show_in_form: true,
         is_required: true,
+        is_readonly: false,
         display_order: 1,
         min_width: '12rem',
       },

@@ -368,6 +368,55 @@
               </span>
               <span v-else>-</span>
             </template>
+            <!-- Relation fields for extended fields (symptoms, tickets, configuration_items) -->
+            <template v-else-if="col.field_type === 'relation' && col.is_extended">
+              <!-- Symptoms relation -->
+              <InlineSymptomsEditor
+                v-if="col.relation_object === 'symptoms' && col.is_editable && !selectionModeActive"
+                :modelValue="data.extended_core_fields?.[col.field_name]"
+                :symptomObject="getSymptomsObject(data, col.field_name)"
+                :placeholder="col.label"
+                :disabled="selectionModeActive"
+                @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
+              />
+              <span
+                v-else-if="col.relation_object === 'symptoms'"
+              >
+                {{ getSymptomsObject(data, col.field_name)?.label || '-' }}
+              </span>
+              <!-- Tickets relation -->
+              <InlineTicketEditor
+                v-else-if="col.relation_object === 'tickets' && col.is_editable && !selectionModeActive"
+                :modelValue="data.extended_core_fields?.[col.field_name]"
+                :ticketObject="getTicketObject(data, col.field_name)"
+                :ticketTypeCode="col.relation_filter?.ticket_type_code"
+                :placeholder="col.label"
+                :disabled="selectionModeActive"
+                @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
+              />
+              <span
+                v-else-if="col.relation_object === 'tickets'"
+              >
+                {{ getTicketObject(data, col.field_name)?.title || data.extended_core_fields?.[col.field_name] || '-' }}
+              </span>
+              <!-- Configuration Items relation -->
+              <InlineConfigurationItemEditor
+                v-else-if="col.relation_object === 'configuration_items' && col.is_editable && !selectionModeActive"
+                :modelValue="data.extended_core_fields?.[col.field_name]"
+                :configurationItemObject="getConfigurationItemObjectForExtended(data, col.field_name)"
+                :ciTypeCode="col.relation_filter?.ci_type_code"
+                :placeholder="col.label"
+                :disabled="selectionModeActive"
+                @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
+              />
+              <span
+                v-else-if="col.relation_object === 'configuration_items'"
+              >
+                {{ getConfigurationItemObjectForExtended(data, col.field_name)?.name || '-' }}
+              </span>
+              <!-- Unknown relation type -->
+              <span v-else class="text-surface-400">{{ data.extended_core_fields?.[col.field_name] || '-' }}</span>
+            </template>
             <!-- Default text - with translation support -->
             <template v-else>
               <template v-if="col.is_extended">
@@ -380,8 +429,8 @@
             </div>
           </template>
           
-          <!-- Editor template (only for editable fields, except person, workflow_status, group, configuration_item, and ALL select fields which are handled in body with InlineSelectEditor) -->
-          <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status' && col.field_type !== 'group' && col.field_type !== 'configuration_item' && col.field_type !== 'select'" #editor="{ data, field }">
+          <!-- Editor template (only for editable fields, except person, workflow_status, group, configuration_item, select, and relation fields which are handled in body) -->
+          <template v-if="col.is_editable && col.field_type !== 'person' && col.field_type !== 'workflow_status' && col.field_type !== 'group' && col.field_type !== 'configuration_item' && col.field_type !== 'select' && col.field_type !== 'relation'" #editor="{ data, field }">
             <!-- ========== EXTENDED FIELDS ========== -->
             <template v-if="col.is_extended">
               <!-- Boolean editor for extended fields -->
@@ -418,35 +467,6 @@
                     {{ stripHtml(data.extended_core_fields?.[col.field_name]) }}
                   </span>
                 </InlinePickerButton>
-              </template>
-              <!-- Relation: Symptoms editor for extended fields -->
-              <template v-else-if="col.field_type === 'relation' && col.relation_object === 'symptoms'">
-                <InlineSymptomsEditor
-                  :modelValue="data.extended_core_fields?.[col.field_name]"
-                  :symptomObject="getSymptomsObject(data, col.field_name)"
-                  :placeholder="col.label"
-                  @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
-                />
-              </template>
-              <!-- Relation: Tickets editor for extended fields -->
-              <template v-else-if="col.field_type === 'relation' && col.relation_object === 'tickets'">
-                <InlineTicketEditor
-                  :modelValue="data.extended_core_fields?.[col.field_name]"
-                  :ticketObject="getTicketObject(data, col.field_name)"
-                  :ticketTypeCode="col.relation_filter?.ticket_type_code"
-                  :placeholder="col.label"
-                  @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
-                />
-              </template>
-              <!-- Relation: Configuration Items editor for extended fields -->
-              <template v-else-if="col.field_type === 'relation' && col.relation_object === 'configuration_items'">
-                <InlineConfigurationItemEditor
-                  :modelValue="data.extended_core_fields?.[col.field_name]"
-                  :configurationItemObject="getConfigurationItemObjectForExtended(data, col.field_name)"
-                  :ciTypeCode="col.relation_filter?.ci_type_code"
-                  :placeholder="col.label"
-                  @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
-                />
               </template>
               <!-- Default text editor for extended fields -->
               <template v-else>
@@ -1097,12 +1117,15 @@ const mapTypeFieldsToColumns = (fields) => {
       field_type: f.field_type,
       data_type: f.data_type,
       is_sortable: false, // Extended fields are not sortable for now
-      is_editable: !f.is_readonly, // Enable inline editing if not readonly
+      is_editable: f.is_editable ?? !f.is_readonly, // Enable inline editing if not readonly
       default_visible: true,
       is_extended: true, // Flag to identify extended fields
       options_source: f.options_source,
       options: f.options, // Parsed options for select fields
-      unit: f.unit
+      unit: f.unit,
+      relation_object: f.relation_object,
+      relation_display: f.relation_display,
+      relation_filter: f.relation_filter,
     }))
 }
 
