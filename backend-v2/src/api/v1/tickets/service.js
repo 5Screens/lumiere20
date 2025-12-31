@@ -127,6 +127,118 @@ const getTicketTypeFields = async (ticketTypeCode) => {
 };
 
 /**
+ * Resolve extended field relations for tickets
+ * This fetches related objects (symptoms, tickets, configuration_items) for relation fields
+ * and adds them to _extendedRelations on each ticket
+ */
+const resolveExtendedRelations = async (tickets, ticketTypeCode, locale = 'en') => {
+  if (!tickets.length || !ticketTypeCode) return tickets;
+
+  // Get field definitions for this ticket type
+  const fields = await getTicketTypeFields(ticketTypeCode);
+  const relationFields = fields.filter(f => f.field_type === 'relation' && f.relation_object);
+
+  if (!relationFields.length) return tickets;
+
+  // Collect all UUIDs to fetch for each relation type
+  const uuidsByRelation = {};
+  for (const field of relationFields) {
+    uuidsByRelation[field.field_name] = {
+      relation_object: field.relation_object,
+      relation_display: field.relation_display || 'label',
+      uuids: new Set(),
+    };
+  }
+
+  // Collect UUIDs from all tickets
+  for (const ticket of tickets) {
+    const extendedFields = ticket.extended_core_fields || {};
+    for (const field of relationFields) {
+      const value = extendedFields[field.field_name];
+      if (value) {
+        uuidsByRelation[field.field_name].uuids.add(value);
+      }
+    }
+  }
+
+  // Fetch related objects for each relation type
+  const relatedObjectsMap = {};
+  for (const [fieldName, config] of Object.entries(uuidsByRelation)) {
+    const uuids = Array.from(config.uuids);
+    if (!uuids.length) continue;
+
+    let objects = [];
+    switch (config.relation_object) {
+      case 'symptoms':
+        objects = await prisma.symptoms.findMany({
+          where: { uuid: { in: uuids } },
+          select: { uuid: true, code: true, label: true },
+        });
+        break;
+      case 'tickets':
+        objects = await prisma.tickets.findMany({
+          where: { uuid: { in: uuids } },
+          select: { uuid: true, title: true, ticket_type_code: true },
+        });
+        break;
+      case 'configuration_items':
+        objects = await prisma.configuration_items.findMany({
+          where: { uuid: { in: uuids } },
+          select: { uuid: true, name: true, ci_type_code: true },
+        });
+        break;
+      default:
+        logger.warn(`[TICKETS] Unknown relation_object: ${config.relation_object}`);
+        continue;
+    }
+
+    // Get translations for symptoms
+    if (config.relation_object === 'symptoms' && objects.length) {
+      const translations = await prisma.translated_fields.findMany({
+        where: {
+          entity_type: 'symptoms',
+          entity_uuid: { in: uuids },
+          field_name: 'label',
+          locale,
+        },
+      });
+      const translationMap = {};
+      for (const t of translations) {
+        translationMap[t.entity_uuid] = t.value;
+      }
+      objects = objects.map(obj => ({
+        ...obj,
+        label: translationMap[obj.uuid] || obj.label,
+      }));
+    }
+
+    // Create a map by UUID
+    relatedObjectsMap[fieldName] = {};
+    for (const obj of objects) {
+      relatedObjectsMap[fieldName][obj.uuid] = obj;
+    }
+  }
+
+  // Add _extendedRelations to each ticket
+  return tickets.map(ticket => {
+    const extendedFields = ticket.extended_core_fields || {};
+    const extendedRelations = {};
+
+    for (const field of relationFields) {
+      const value = extendedFields[field.field_name];
+      if (value && relatedObjectsMap[field.field_name]?.[value]) {
+        extendedRelations[field.field_name] = relatedObjectsMap[field.field_name][value];
+      }
+    }
+
+    return {
+      ...ticket,
+      _extendedRelations: Object.keys(extendedRelations).length ? extendedRelations : undefined,
+    };
+  });
+};
+
+/**
  * Standard include for ticket queries - includes assignment relations directly
  */
 const getTicketInclude = () => ({
@@ -510,8 +622,11 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       return next;
     });
 
+    // Resolve extended field relations (symptoms, tickets, configuration_items)
+    const withRelations = await resolveExtendedRelations(transformed, ticketTypeCode, locale);
+
     return {
-      data: transformed,
+      data: withRelations,
       total,
       pagination: buildPaginationResponse(page, limit, total),
     };
@@ -579,7 +694,11 @@ const getByUuid = async (uuid, locale = 'en', ticketTypeCode = null) => {
     };
   }
 
-  return item;
+  // Resolve extended field relations (symptoms, tickets, configuration_items)
+  const typeCode = ticketTypeCode || item.ticket_type_code;
+  const [withRelations] = await resolveExtendedRelations([item], typeCode, locale);
+
+  return withRelations || item;
 };
 
 /**
