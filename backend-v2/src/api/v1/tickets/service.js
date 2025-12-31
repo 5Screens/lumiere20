@@ -184,7 +184,7 @@ const resolveExtendedRelations = async (tickets, ticketTypeCode, locale = 'en') 
       case 'configuration_items':
         objects = await prisma.configuration_items.findMany({
           where: { uuid: { in: uuids } },
-          select: { uuid: true, name: true, ci_type_code: true },
+          select: { uuid: true, name: true, ci_type: true },
         });
         break;
       default:
