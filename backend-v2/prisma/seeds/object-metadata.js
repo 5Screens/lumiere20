@@ -225,26 +225,26 @@ async function seedObjectMetadata() {
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11 },
     ],
     object_setup: [
-      { field_name: 'object_type', label_key: 'objectSetup.objectType', field_type: 'select', is_required: true, min_width: '10rem', display_order: 1, is_filterable: true, options_source: '/object-setup/object-types-options' },
-      { field_name: 'metadata', label_key: 'objectSetup.metadata', field_type: 'text', is_required: true, min_width: '10rem', display_order: 2 },
-      { field_name: 'code', label_key: 'objectSetup.code', field_type: 'text', is_required: true, min_width: '10rem', display_order: 3 },
-      { field_name: 'label', label_key: 'objectSetup.label', field_type: 'text', is_translatable: true, min_width: '14rem', display_order: 4 },
-      { field_name: 'value', label_key: 'objectSetup.value', field_type: 'number', data_type: 'number', min_width: '6rem', display_order: 5, default_visible: false },
-      { field_name: 'icon', label_key: 'objectSetup.icon', field_type: 'icon_picker', min_width: '6rem', display_order: 6 },
-      { field_name: 'color', label_key: 'objectSetup.color', field_type: 'tag_style', min_width: '8rem', display_order: 7 },
-      { field_name: 'font_weight', label_key: 'objectSetup.fontWeight', field_type: 'select', min_width: '8rem', display_order: 8, default_visible: false, options_source: JSON.stringify([
+      { field_name: 'object_type', label_key: 'objectSetup.objectType', field_type: 'select', is_required: true, min_width: '20rem', display_order: 1, is_filterable: true, options_source: '/object-setup/object-types-options' },
+      { field_name: 'metadata', label_key: 'objectSetup.metadata', field_type: 'text', is_required: true, min_width: '20rem', display_order: 2 },
+      { field_name: 'code', label_key: 'objectSetup.code', field_type: 'text', is_required: true, min_width: '20rem', display_order: 3 },
+      { field_name: 'label', label_key: 'objectSetup.label', field_type: 'text', is_translatable: true, min_width: '28rem', display_order: 4 },
+      { field_name: 'value', label_key: 'objectSetup.value', field_type: 'number', data_type: 'number', min_width: '12rem', display_order: 5, default_visible: false },
+      { field_name: 'icon', label_key: 'objectSetup.icon', field_type: 'icon_picker', min_width: '12rem', display_order: 6 },
+      { field_name: 'color', label_key: 'objectSetup.color', field_type: 'tag_style', min_width: '16rem', display_order: 7 },
+      { field_name: 'font_weight', label_key: 'objectSetup.fontWeight', field_type: 'select', min_width: '16rem', display_order: 8, default_visible: false, options_source: JSON.stringify([
         { label: 'Normal', value: 'normal' },
         { label: 'Bold', value: 'bold' },
         { label: 'Semibold', value: 'semibold' }
       ])},
-      { field_name: 'font_style', label_key: 'objectSetup.fontStyle', field_type: 'select', min_width: '8rem', display_order: 9, default_visible: false, options_source: JSON.stringify([
+      { field_name: 'font_style', label_key: 'objectSetup.fontStyle', field_type: 'select', min_width: '16rem', display_order: 9, default_visible: false, options_source: JSON.stringify([
         { label: 'Normal', value: 'normal' },
         { label: 'Italic', value: 'italic' }
       ])},
-      { field_name: 'display_order', label_key: 'objectSetup.displayOrder', field_type: 'number', data_type: 'number', min_width: '6rem', display_order: 10 },
-      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '6rem', display_order: 11 },
-      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20 },
-      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21 },
+      { field_name: 'display_order', label_key: 'objectSetup.displayOrder', field_type: 'number', data_type: 'number', min_width: '12rem', display_order: 10 },
+      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '12rem', display_order: 11 },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '24rem', display_order: 20 },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '24rem', display_order: 21 },
     ],
   };
 
