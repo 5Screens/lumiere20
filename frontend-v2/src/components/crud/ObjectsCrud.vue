@@ -377,7 +377,7 @@
                 :symptomObject="getSymptomsObject(data, col.field_name)"
                 :placeholder="col.label"
                 :disabled="selectionModeActive"
-                @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
+                @save="({ uuid, symptom }) => updateExtendedRelationField(data, col.field_name, uuid, symptom)"
               />
               <span
                 v-else-if="col.relation_object === 'symptoms'"
@@ -392,7 +392,7 @@
                 :ticketTypeCode="col.relation_filter?.ticket_type_code"
                 :placeholder="col.label"
                 :disabled="selectionModeActive"
-                @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
+                @save="({ uuid, ticket }) => updateExtendedRelationField(data, col.field_name, uuid, ticket)"
               />
               <span
                 v-else-if="col.relation_object === 'tickets'"
@@ -407,7 +407,7 @@
                 :ciTypeCode="col.relation_filter?.ci_type_code"
                 :placeholder="col.label"
                 :disabled="selectionModeActive"
-                @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
+                @save="({ uuid, configurationItem }) => updateExtendedRelationField(data, col.field_name, uuid, configurationItem)"
               />
               <span
                 v-else-if="col.relation_object === 'configuration_items'"
@@ -2020,6 +2020,21 @@ const saveExtendedField = async (data, fieldName) => {
 // Update extended field value and save immediately (for select/boolean fields)
 const updateExtendedField = async (data, fieldName, value) => {
   setExtendedFieldValue(data, fieldName, value)
+  await saveExtendedField(data, fieldName)
+}
+
+// Update extended relation field (uuid + cache the related object for immediate display)
+const updateExtendedRelationField = async (data, fieldName, uuid, relatedObject) => {
+  // Update the UUID in extended_core_fields
+  setExtendedFieldValue(data, fieldName, uuid)
+  
+  // Cache the related object for immediate display (no refresh needed)
+  if (!data._extendedRelations) {
+    data._extendedRelations = {}
+  }
+  data._extendedRelations[fieldName] = relatedObject || null
+  
+  // Save to backend
   await saveExtendedField(data, fieldName)
 }
 
