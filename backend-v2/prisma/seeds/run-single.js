@@ -24,6 +24,7 @@ const seedMap = {
   'uat': () => require('./uat.seed').seedUat(prisma),
   'uat-tickets': () => require('./uat.tickets.seed').seedUatTickets(prisma),
   'object-setup': () => require('./object-setup').seedObjectSetup(),
+  'symptoms': () => require('./symptoms.seed').seedSymptoms(),
 };
 
 async function main() {

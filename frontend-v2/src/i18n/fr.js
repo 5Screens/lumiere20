@@ -210,6 +210,8 @@ export default {
     searchPerson: 'Rechercher par nom ou email...',
     selectGroup: 'Sélectionner un groupe',
     searchGroup: 'Rechercher un groupe...',
+    searchSymptom: 'Rechercher un symptôme...',
+    searchTicket: 'Rechercher un ticket...',
     selectConfigurationItem: 'Sélectionner un élément de configuration',
     searchConfigurationItem: 'Rechercher par nom...',
     typeToSearch: 'Tapez pour rechercher...',

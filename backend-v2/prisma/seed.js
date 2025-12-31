@@ -22,6 +22,7 @@ const { seedTaskWorkflow } = require('./seeds/task-workflow.seed');
 const { seedItsmWorkflows } = require('./seeds/itsm-workflows.seed');
 const { seedAgileWorkflows } = require('./seeds/agile-workflows.seed');
 const { seedObjectSetup } = require('./seeds/object-setup');
+const { seedSymptoms } = require('./seeds/symptoms.seed');
 
 async function main() {
   console.log('========================================');
@@ -95,12 +96,17 @@ async function main() {
     console.log('');
 
     // 14. Object Setup (business objects metadata configuration)
-    console.log('[14/15] Seeding object setup...');
+    console.log('[14/16] Seeding object setup...');
     await seedObjectSetup();
     console.log('');
 
-    // 15. Default Admin (last, after all dependencies)
-    console.log('[15/15] Seeding default admin...');
+    // 15. Symptoms (for incident classification)
+    console.log('[15/16] Seeding symptoms...');
+    await seedSymptoms();
+    console.log('');
+
+    // 16. Default Admin (last, after all dependencies)
+    console.log('[16/16] Seeding default admin...');
     await seedDefaultAdmin();
     console.log('');
 

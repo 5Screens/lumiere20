@@ -3,7 +3,7 @@
     <AutoComplete
       v-model="selectedItem"
       :suggestions="suggestions"
-      :placeholder="$t('common.searchConfigurationItem')"
+      :placeholder="placeholder || $t('common.searchConfigurationItem')"
       :disabled="disabled"
       :virtualScrollerOptions="{ itemSize: 56 }"
       optionLabel="name"
@@ -52,6 +52,15 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
+  },
+  // Filter by CI type code (e.g., 'SERVICE', 'SERVICE_OFFERING', 'SERVER')
+  ciTypeCode: {
+    type: String,
+    default: null
+  },
+  placeholder: {
+    type: String,
+    default: null
   }
 })
 
@@ -70,10 +79,17 @@ const onSearch = async (event) => {
   }
 
   try {
+    const filters = {
+      global: { value: query, matchMode: 'contains' }
+    }
+    
+    // Add CI type filter if specified
+    if (props.ciTypeCode) {
+      filters.ci_type = { value: props.ciTypeCode, matchMode: 'equals' }
+    }
+    
     const result = await configurationItemsService.search({
-      filters: {
-        global: { value: query, matchMode: 'contains' }
-      },
+      filters,
       page: 1,
       limit: 50,
       sortField: 'name',

@@ -52,6 +52,7 @@ const ticketTypesRoutes = require('./api/v1/ticket_types/routes');
 const ticketTypeFieldsRoutes = require('./api/v1/ticket_type_fields/routes');
 const attachmentsRoutes = require('./api/v1/attachments/routes');
 const objectSetupRoutes = require('./api/v1/object_setup/routes');
+const symptomsRoutes = require('./api/v1/symptoms/routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
@@ -74,6 +75,7 @@ app.use('/api/v1/ticket-types', ticketTypesRoutes);
 app.use('/api/v1/ticket_type_fields', ticketTypeFieldsRoutes);
 app.use('/api/v1/attachments', attachmentsRoutes);
 app.use('/api/v1/object-setup', objectSetupRoutes);
+app.use('/api/v1/symptoms', symptomsRoutes);
 
 // Health check
 app.get('/', (req, res) => {

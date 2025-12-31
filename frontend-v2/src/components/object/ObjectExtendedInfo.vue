@@ -81,6 +81,12 @@
                 {{ stripHtml(data.value) }}
               </span>
             </template>
+            <!-- Relation display -->
+            <template v-else-if="data.field_type === 'relation'">
+              <span :class="{ 'text-surface-400': !data.value }">
+                {{ getRelationDisplayValue(data) }}
+              </span>
+            </template>
             <!-- Default text display -->
             <template v-else>
               <span :class="{ 'text-surface-400': !data.value }">
@@ -161,6 +167,26 @@
             >
               <span v-if="data.value" class="text-sm">{{ formatDate(data.value, 'datetime') }}</span>
             </InlinePickerButton>
+            <!-- Relation: Symptoms -->
+            <SymptomsSelector
+              v-else-if="data.field_type === 'relation' && data.relation_object === 'symptoms'"
+              :modelValue="data.value"
+              @update:modelValue="onRelationChange(data, $event)"
+            />
+            <!-- Relation: Tickets (with filter) -->
+            <TicketSelector
+              v-else-if="data.field_type === 'relation' && data.relation_object === 'tickets'"
+              :modelValue="data.value"
+              :ticketTypeCode="data.relation_filter?.ticket_type_code"
+              @update:modelValue="onRelationChange(data, $event)"
+            />
+            <!-- Relation: Configuration Items (with filter) -->
+            <ConfigurationItemSelector
+              v-else-if="data.field_type === 'relation' && data.relation_object === 'configuration_items'"
+              :modelValue="data.value"
+              :ciTypeCode="data.relation_filter?.ci_type_code"
+              @update:modelValue="onRelationChange(data, $event)"
+            />
             <!-- Default fallback -->
             <InputText 
               v-else
@@ -237,6 +263,9 @@ import ProgressSpinner from 'primevue/progressspinner'
 import ExtendedFieldsEditor from '@/components/object/ExtendedFieldsEditor.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import { DateTimePicker } from '@/components/pickers'
+import SymptomsSelector from '@/components/form/SymptomsSelector.vue'
+import TicketSelector from '@/components/form/TicketSelector.vue'
+import ConfigurationItemSelector from '@/components/form/ConfigurationItemSelector.vue'
 
 // Props
 const props = defineProps({
@@ -376,6 +405,26 @@ const getOptionByValue = (field, value) => {
 const getSelectLabel = (field) => {
   const option = getOptionByValue(field, field.value)
   return option?.label || field.value
+}
+
+// Get display value for relation fields
+const getRelationDisplayValue = (data) => {
+  if (!data.value) return '-'
+  // For now, just show the UUID - the actual display value would need to be loaded
+  // This is a simplified version; in production, you'd cache the related object's display value
+  return data._relationDisplayValue || data.value
+}
+
+// Handle relation field change
+const onRelationChange = (data, newValue) => {
+  const currentExtended = props.modelValue?.extended_core_fields || {}
+  emit('update:modelValue', {
+    ...props.modelValue,
+    extended_core_fields: {
+      ...currentExtended,
+      [data.field_name]: newValue
+    }
+  })
 }
 
 // Format date for display

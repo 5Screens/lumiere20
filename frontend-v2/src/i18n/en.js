@@ -209,6 +209,8 @@ export default {
     searchPerson: 'Search by name or email...',
     selectGroup: 'Select a group',
     searchGroup: 'Search for a group...',
+    searchSymptom: 'Search for a symptom...',
+    searchTicket: 'Search for a ticket...',
     selectConfigurationItem: 'Select a configuration item',
     searchConfigurationItem: 'Search by name...',
     typeToSearch: 'Type to search...',

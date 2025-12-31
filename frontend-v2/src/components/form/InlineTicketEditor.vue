@@ -1,5 +1,5 @@
 <template>
-  <div class="inline-configuration-item-editor">
+  <div class="inline-ticket-editor">
     <!-- Display mode -->
     <div 
       v-if="!isEditing" 
@@ -18,7 +18,7 @@
         :suggestions="suggestions"
         @complete="onSearch"
         @item-select="onItemSelect"
-        optionLabel="name"
+        optionLabel="title"
         :placeholder="placeholder"
         :minLength="0"
         forceSelection
@@ -29,10 +29,10 @@
       >
         <template #option="slotProps">
           <div class="flex items-center gap-2">
-            <i class="pi pi-box" />
-            <span>{{ slotProps.option.name }}</span>
-            <span v-if="slotProps.option.ci_type" class="text-surface-400 text-sm">
-              ({{ slotProps.option.ci_type }})
+            <i :class="getTicketTypeIcon(slotProps.option.ticket_type_code)" />
+            <span>{{ slotProps.option.title }}</span>
+            <span v-if="!ticketTypeCode" class="text-surface-400 text-sm">
+              ({{ slotProps.option.ticket_type_code }})
             </span>
           </div>
         </template>
@@ -71,7 +71,7 @@
 <script setup>
 import { ref, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import configurationItemsService from '@/services/configurationItemsService'
+import ticketsService from '@/services/ticketsService'
 import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
 
@@ -82,7 +82,7 @@ const props = defineProps({
     type: String,
     default: null
   },
-  configurationItemObject: {
+  ticketObject: {
     type: Object,
     default: null
   },
@@ -94,8 +94,8 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  // Filter by CI type code (e.g., 'SERVICE', 'SERVICE_OFFERING', 'SERVER')
-  ciTypeCode: {
+  // Filter by ticket type code (e.g., 'PROJECT', 'EPIC', 'SPRINT', 'PROBLEM', 'CHANGE')
+  ticketTypeCode: {
     type: String,
     default: null
   }
@@ -111,10 +111,27 @@ const suggestions = ref([])
 const saving = ref(false)
 const autocompleteRef = ref(null)
 
+// Get ticket type icon
+const getTicketTypeIcon = (typeCode) => {
+  const icons = {
+    TASK: 'pi pi-check-square',
+    INCIDENT: 'pi pi-exclamation-triangle',
+    PROBLEM: 'pi pi-search',
+    PROJECT: 'pi pi-folder',
+    CHANGE: 'pi pi-sync',
+    KNOWLEDGE: 'pi pi-book',
+    USER_STORY: 'pi pi-user',
+    SPRINT: 'pi pi-forward',
+    EPIC: 'pi pi-star',
+    DEFECT: 'pi pi-bug'
+  }
+  return icons[typeCode] || 'pi pi-ticket'
+}
+
 // Computed
 const displayValue = computed(() => {
-  if (props.configurationItemObject) {
-    return props.configurationItemObject.name
+  if (props.ticketObject) {
+    return props.ticketObject.title
   }
   return null
 })
@@ -132,11 +149,11 @@ const startEditing = () => {
   isEditing.value = true
   
   // Set initial value
-  if (props.configurationItemObject) {
+  if (props.ticketObject) {
     localValue.value = {
-      uuid: props.configurationItemObject.uuid,
-      name: props.configurationItemObject.name,
-      ci_type: props.configurationItemObject.ci_type
+      uuid: props.ticketObject.uuid,
+      title: props.ticketObject.title,
+      ticket_type_code: props.ticketObject.ticket_type_code
     }
   } else {
     localValue.value = null
@@ -153,7 +170,6 @@ const startEditing = () => {
 }
 
 const onItemSelect = (event) => {
-  // When user selects an item (keyboard or mouse), update localValue
   localValue.value = event.value
 }
 
@@ -161,7 +177,7 @@ const save = async () => {
   saving.value = true
   try {
     const newUuid = localValue.value?.uuid || null
-    emit('save', { uuid: newUuid, configurationItem: localValue.value })
+    emit('save', { uuid: newUuid, ticket: localValue.value })
     isEditing.value = false
   } finally {
     saving.value = false
@@ -183,33 +199,28 @@ const onSearch = async (event) => {
       filters.global = { value: query, matchMode: 'contains' }
     }
     
-    // Add CI type filter if specified
-    if (props.ciTypeCode) {
-      filters.ci_type = { value: props.ciTypeCode, matchMode: 'equals' }
-    }
-    
-    const result = await configurationItemsService.search({
+    const result = await ticketsService.search({
       filters,
       page: 1,
       limit: 20,
-      sortField: 'name',
+      sortField: 'title',
       sortOrder: 1
-    })
+    }, props.ticketTypeCode)
     
-    suggestions.value = (result.data || []).map(ci => ({
-      uuid: ci.uuid,
-      name: ci.name,
-      ci_type: ci.ci_type
+    suggestions.value = (result.data || []).map(t => ({
+      uuid: t.uuid,
+      title: t.title,
+      ticket_type_code: t.ticket_type_code
     }))
   } catch (error) {
-    console.error('[InlineConfigurationItemEditor] Error searching configuration items:', error)
+    console.error('[InlineTicketEditor] Error searching tickets:', error)
     suggestions.value = []
   }
 }
 </script>
 
 <style scoped>
-.inline-configuration-item-editor {
+.inline-ticket-editor {
   min-width: 200px;
 }
 </style>

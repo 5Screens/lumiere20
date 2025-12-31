@@ -237,8 +237,9 @@ model ticket_type_fields {
   options_source    String?  @db.Text                  // JSON array of options or API endpoint
   
   // Relation options (for field_type = 'relation')
-  relation_object   String?  @db.VarChar(100)          // Related object type (e.g., 'services', 'persons')
+  relation_object   String?  @db.VarChar(100)          // Related object type (e.g., 'services', 'persons', 'tickets', 'configuration_items')
   relation_display  String?  @db.VarChar(100)          // Field to display from related object
+  relation_filter   Json?    @db.JsonB                 // Filter for relation (e.g., { "ticket_type_code": "PROJECT" } or { "ci_type_code": "SERVICE" })
   
   // Formatting
   format_pattern    String?  @db.VarChar(100)          // Date format, number format, etc.
@@ -275,9 +276,10 @@ model ticket_status {
 model symptoms {
   uuid       String   @id @default(uuid()) @db.Uuid
   code       String   @unique @db.VarChar(50)
+  label      String   @db.VarChar(255)          // Default label (translations in translated_fields)
+  is_active  Boolean  @default(true)
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
-
 
   @@schema("configuration")
   @@map("symptoms")

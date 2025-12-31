@@ -419,6 +419,35 @@
                   </span>
                 </InlinePickerButton>
               </template>
+              <!-- Relation: Symptoms editor for extended fields -->
+              <template v-else-if="col.field_type === 'relation' && col.relation_object === 'symptoms'">
+                <InlineSymptomsEditor
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  :symptomObject="getSymptomsObject(data, col.field_name)"
+                  :placeholder="col.label"
+                  @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
+                />
+              </template>
+              <!-- Relation: Tickets editor for extended fields -->
+              <template v-else-if="col.field_type === 'relation' && col.relation_object === 'tickets'">
+                <InlineTicketEditor
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  :ticketObject="getTicketObject(data, col.field_name)"
+                  :ticketTypeCode="col.relation_filter?.ticket_type_code"
+                  :placeholder="col.label"
+                  @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
+                />
+              </template>
+              <!-- Relation: Configuration Items editor for extended fields -->
+              <template v-else-if="col.field_type === 'relation' && col.relation_object === 'configuration_items'">
+                <InlineConfigurationItemEditor
+                  :modelValue="data.extended_core_fields?.[col.field_name]"
+                  :configurationItemObject="getConfigurationItemObjectForExtended(data, col.field_name)"
+                  :ciTypeCode="col.relation_filter?.ci_type_code"
+                  :placeholder="col.label"
+                  @save="({ uuid }) => updateExtendedField(data, col.field_name, uuid)"
+                />
+              </template>
               <!-- Default text editor for extended fields -->
               <template v-else>
                 <InlinePickerButton :placeholder="$t('common.enterValue')" @click="openInlinePicker('text', data, col.field_name, col, true)">
@@ -832,6 +861,8 @@ import InlineSelectEditor from '@/components/form/InlineSelectEditor.vue'
 import InlineWorkflowStatusEditor from '@/components/form/InlineWorkflowStatusEditor.vue'
 import InlineGroupEditor from '@/components/form/InlineGroupEditor.vue'
 import InlineConfigurationItemEditor from '@/components/form/InlineConfigurationItemEditor.vue'
+import InlineSymptomsEditor from '@/components/form/InlineSymptomsEditor.vue'
+import InlineTicketEditor from '@/components/form/InlineTicketEditor.vue'
 
 // Row summary components
 import TicketRowSummary from '@/components/crud/TicketRowSummary.vue'
@@ -1525,6 +1556,46 @@ const getConfigurationItemObject = (data, fieldName) => {
       ci_type: data[fieldName].ci_type
     }
   }
+  return null
+}
+
+// Get configuration item object for extended fields
+const getConfigurationItemObjectForExtended = (data, fieldName) => {
+  // For extended fields, the related object might be cached in _extendedRelations
+  const extendedValue = data.extended_core_fields?.[fieldName]
+  if (!extendedValue) return null
+  
+  // Check if we have cached relation data
+  if (data._extendedRelations?.[fieldName]) {
+    return data._extendedRelations[fieldName]
+  }
+  
+  return null
+}
+
+// Get symptoms object for extended fields
+const getSymptomsObject = (data, fieldName) => {
+  const extendedValue = data.extended_core_fields?.[fieldName]
+  if (!extendedValue) return null
+  
+  // Check if we have cached relation data
+  if (data._extendedRelations?.[fieldName]) {
+    return data._extendedRelations[fieldName]
+  }
+  
+  return null
+}
+
+// Get ticket object for extended fields
+const getTicketObject = (data, fieldName) => {
+  const extendedValue = data.extended_core_fields?.[fieldName]
+  if (!extendedValue) return null
+  
+  // Check if we have cached relation data
+  if (data._extendedRelations?.[fieldName]) {
+    return data._extendedRelations[fieldName]
+  }
+  
   return null
 }
 
