@@ -60,7 +60,11 @@ const transformWithTranslations = (field, translations = [], locale = null) => {
   
   const result = {
     ...field,
-    options
+    options,
+    // relation_filter is already a JSON object from Prisma (JsonB type)
+    relation_object: field.relation_object || null,
+    relation_display: field.relation_display || null,
+    relation_filter: field.relation_filter || null
   };
   
   if (translations.length > 0 && locale) {

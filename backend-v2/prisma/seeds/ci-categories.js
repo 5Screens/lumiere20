@@ -102,10 +102,23 @@ async function seedCiCategories() {
       }
     },
     {
+      code: 'SERVICES',
+      label: 'Services',
+      icon: 'pi-cog',
+      display_order: 8,
+      translations: {
+        fr: { label: 'Services' },
+        en: { label: 'Services' },
+        es: { label: 'Servicios' },
+        pt: { label: 'Serviços' },
+        de: { label: 'Dienste' }
+      }
+    },
+    {
       code: 'MODELS',
       label: 'Models',
       icon: 'pi-box',
-      display_order: 8,
+      display_order: 9,
       translations: {
         fr: { label: 'Modèles' },
         en: { label: 'Models' },

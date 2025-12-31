@@ -156,6 +156,61 @@ const fieldTranslations = {
   hypervisor: { en: 'Hypervisor', fr: 'Hyperviseur' },
   cpu_count: { en: 'CPU Count', fr: 'Nombre de CPU' },
   cpu_cores: { en: 'CPU Cores', fr: 'Cœurs CPU' },
+  
+  // SERVICE fields (ITIL4)
+  service_type: { en: 'Service Type', fr: 'Type de service' },
+  service_status: { en: 'Service Status', fr: 'Statut du service' },
+  service_criticality: { en: 'Service Criticality', fr: 'Criticité du service' },
+  service_owner: { en: 'Service Owner', fr: 'Propriétaire du service' },
+  service_manager: { en: 'Service Manager', fr: 'Gestionnaire du service' },
+  business_unit: { en: 'Business Unit', fr: 'Unité métier' },
+  service_hours: { en: 'Service Hours', fr: 'Heures de service' },
+  target_availability: { en: 'Target Availability (%)', fr: 'Disponibilité cible (%)' },
+  target_response_time: { en: 'Target Response Time', fr: 'Temps de réponse cible' },
+  target_resolution_time: { en: 'Target Resolution Time', fr: 'Temps de résolution cible' },
+  sla_reference: { en: 'SLA Reference', fr: 'Référence SLA' },
+  ola_reference: { en: 'OLA Reference', fr: 'Référence OLA' },
+  underpinning_contracts: { en: 'Underpinning Contracts', fr: 'Contrats sous-jacents' },
+  service_value_streams: { en: 'Value Streams', fr: 'Flux de valeur' },
+  service_dependencies: { en: 'Service Dependencies', fr: 'Dépendances du service' },
+  supporting_services: { en: 'Supporting Services', fr: 'Services de support' },
+  service_consumers: { en: 'Service Consumers', fr: 'Consommateurs du service' },
+  service_go_live_date: { en: 'Go-Live Date', fr: 'Date de mise en production' },
+  service_retirement_date: { en: 'Retirement Date', fr: 'Date de retrait' },
+  service_review_date: { en: 'Next Review Date', fr: 'Prochaine date de revue' },
+  cost_center: { en: 'Cost Center', fr: 'Centre de coûts' },
+  annual_cost: { en: 'Annual Cost', fr: 'Coût annuel' },
+  charging_model: { en: 'Charging Model', fr: 'Modèle de facturation' },
+  risk_level: { en: 'Risk Level', fr: 'Niveau de risque' },
+  compliance_requirements: { en: 'Compliance Requirements', fr: 'Exigences de conformité' },
+  data_classification: { en: 'Data Classification', fr: 'Classification des données' },
+  recovery_time_objective: { en: 'Recovery Time Objective (RTO)', fr: 'Objectif de temps de reprise (RTO)' },
+  recovery_point_objective: { en: 'Recovery Point Objective (RPO)', fr: 'Objectif de point de reprise (RPO)' },
+  disaster_recovery_plan: { en: 'Disaster Recovery Plan', fr: 'Plan de reprise d\'activité' },
+  continual_improvement_register: { en: 'Continual Improvement Register', fr: 'Registre d\'amélioration continue' },
+  
+  // SERVICE_OFFERING fields (ITIL4)
+  rel_parent_service_uuid: { en: 'Parent Service', fr: 'Service parent' },
+  offering_type: { en: 'Offering Type', fr: 'Type d\'offre' },
+  offering_status: { en: 'Offering Status', fr: 'Statut de l\'offre' },
+  target_audience: { en: 'Target Audience', fr: 'Public cible' },
+  service_package: { en: 'Service Package', fr: 'Package de service' },
+  goods_provided: { en: 'Goods Provided', fr: 'Biens fournis' },
+  access_provided: { en: 'Access Provided', fr: 'Accès fournis' },
+  actions_provided: { en: 'Actions Provided', fr: 'Actions fournies' },
+  ordering_process: { en: 'Ordering Process', fr: 'Processus de commande' },
+  fulfillment_time: { en: 'Fulfillment Time', fr: 'Délai de réalisation' },
+  pricing_model: { en: 'Pricing Model', fr: 'Modèle tarifaire' },
+  unit_price: { en: 'Unit Price', fr: 'Prix unitaire' },
+  minimum_commitment: { en: 'Minimum Commitment', fr: 'Engagement minimum' },
+  catalog_visibility: { en: 'Catalog Visibility', fr: 'Visibilité catalogue' },
+  approval_required: { en: 'Approval Required', fr: 'Approbation requise' },
+  approval_workflow: { en: 'Approval Workflow', fr: 'Workflow d\'approbation' },
+  eligibility_criteria: { en: 'Eligibility Criteria', fr: 'Critères d\'éligibilité' },
+  terms_and_conditions: { en: 'Terms and Conditions', fr: 'Conditions générales' },
+  warranty_terms: { en: 'Warranty Terms', fr: 'Conditions de garantie' },
+  utility_description: { en: 'Utility (What it does)', fr: 'Utilité (Ce que ça fait)' },
+  warranty_description: { en: 'Warranty (How it performs)', fr: 'Garantie (Comment ça fonctionne)' },
 };
 
 // Common fields shared across multiple CI types
@@ -570,6 +625,145 @@ const fieldsByCiType = {
     { field_name: 'serial_number', label: 'serialNumber', field_type: 'text', display_order: 3 },
     { field_name: 'asset_tag', label: 'assetTag', field_type: 'text', display_order: 4 },
     { field_name: 'notes', label: 'notes', field_type: 'textarea', display_order: 10 },
+  ],
+
+  // SERVICE - IT Service (ITIL4)
+  SERVICE: [
+    { field_name: 'service_type', label: 'serviceType', field_type: 'select', display_order: 1, is_required: true, show_in_table: true, options_source: JSON.stringify([
+      { label: 'Business Service', value: 'BUSINESS' },
+      { label: 'IT Service', value: 'IT' },
+      { label: 'Infrastructure Service', value: 'INFRASTRUCTURE' },
+      { label: 'Supporting Service', value: 'SUPPORTING' },
+      { label: 'Shared Service', value: 'SHARED' }
+    ])},
+    { field_name: 'service_status', label: 'serviceStatus', field_type: 'select', display_order: 2, is_required: true, show_in_table: true, options_source: JSON.stringify([
+      { label: 'Pipeline', value: 'PIPELINE' },
+      { label: 'Design', value: 'DESIGN' },
+      { label: 'Transition', value: 'TRANSITION' },
+      { label: 'Operational', value: 'OPERATIONAL' },
+      { label: 'Retiring', value: 'RETIRING' },
+      { label: 'Retired', value: 'RETIRED' }
+    ])},
+    { field_name: 'service_criticality', label: 'serviceCriticality', field_type: 'select', display_order: 3, show_in_table: true, options_source: JSON.stringify([
+      { label: 'Critical', value: 'CRITICAL' },
+      { label: 'High', value: 'HIGH' },
+      { label: 'Medium', value: 'MEDIUM' },
+      { label: 'Low', value: 'LOW' }
+    ])},
+    { field_name: 'service_owner', label: 'serviceOwner', field_type: 'text', display_order: 4, is_required: true, show_in_table: true },
+    { field_name: 'service_manager', label: 'serviceManager', field_type: 'text', display_order: 5 },
+    { field_name: 'business_unit', label: 'businessUnit', field_type: 'text', display_order: 6 },
+    { field_name: 'service_hours', label: 'serviceHours', field_type: 'select', display_order: 10, options_source: JSON.stringify([
+      { label: '24x7', value: '24X7' },
+      { label: 'Business Hours (8x5)', value: '8X5' },
+      { label: 'Extended Hours (12x5)', value: '12X5' },
+      { label: 'Extended Hours (12x7)', value: '12X7' },
+      { label: 'Custom', value: 'CUSTOM' }
+    ])},
+    { field_name: 'target_availability', label: 'targetAvailability', field_type: 'number', data_type: 'number', display_order: 11, unit: '%', min_value: 0, max_value: 100 },
+    { field_name: 'target_response_time', label: 'targetResponseTime', field_type: 'text', display_order: 12 },
+    { field_name: 'target_resolution_time', label: 'targetResolutionTime', field_type: 'text', display_order: 13 },
+    { field_name: 'sla_reference', label: 'slaReference', field_type: 'text', display_order: 14 },
+    { field_name: 'ola_reference', label: 'olaReference', field_type: 'text', display_order: 15 },
+    { field_name: 'underpinning_contracts', label: 'underpinningContracts', field_type: 'textarea', display_order: 16 },
+    { field_name: 'service_value_streams', label: 'serviceValueStreams', field_type: 'textarea', display_order: 20 },
+    { field_name: 'service_dependencies', label: 'serviceDependencies', field_type: 'textarea', display_order: 21 },
+    { field_name: 'supporting_services', label: 'supportingServices', field_type: 'textarea', display_order: 22 },
+    { field_name: 'service_consumers', label: 'serviceConsumers', field_type: 'textarea', display_order: 23 },
+    { field_name: 'service_go_live_date', label: 'serviceGoLiveDate', field_type: 'date', data_type: 'date', display_order: 30 },
+    { field_name: 'service_retirement_date', label: 'serviceRetirementDate', field_type: 'date', data_type: 'date', display_order: 31 },
+    { field_name: 'service_review_date', label: 'serviceReviewDate', field_type: 'date', data_type: 'date', display_order: 32 },
+    { field_name: 'cost_center', label: 'costCenter', field_type: 'text', display_order: 40 },
+    { field_name: 'annual_cost', label: 'annualCost', field_type: 'number', data_type: 'number', display_order: 41, unit: '€', min_value: 0 },
+    { field_name: 'charging_model', label: 'chargingModel', field_type: 'select', display_order: 42, options_source: JSON.stringify([
+      { label: 'No Charge', value: 'NO_CHARGE' },
+      { label: 'Cost Recovery', value: 'COST_RECOVERY' },
+      { label: 'Cost Plus', value: 'COST_PLUS' },
+      { label: 'Market Rate', value: 'MARKET_RATE' },
+      { label: 'Fixed Price', value: 'FIXED_PRICE' }
+    ])},
+    { field_name: 'risk_level', label: 'riskLevel', field_type: 'select', display_order: 50, options_source: JSON.stringify([
+      { label: 'Critical', value: 'CRITICAL' },
+      { label: 'High', value: 'HIGH' },
+      { label: 'Medium', value: 'MEDIUM' },
+      { label: 'Low', value: 'LOW' }
+    ])},
+    { field_name: 'compliance_requirements', label: 'complianceRequirements', field_type: 'multiselect', data_type: 'array', display_order: 51, options_source: JSON.stringify([
+      { label: 'GDPR', value: 'GDPR' },
+      { label: 'SOX', value: 'SOX' },
+      { label: 'HIPAA', value: 'HIPAA' },
+      { label: 'PCI-DSS', value: 'PCI_DSS' },
+      { label: 'ISO 27001', value: 'ISO27001' },
+      { label: 'SOC 2', value: 'SOC2' }
+    ])},
+    { field_name: 'data_classification', label: 'dataClassification', field_type: 'select', display_order: 52, options_source: JSON.stringify([
+      { label: 'Public', value: 'PUBLIC' },
+      { label: 'Internal', value: 'INTERNAL' },
+      { label: 'Confidential', value: 'CONFIDENTIAL' },
+      { label: 'Restricted', value: 'RESTRICTED' }
+    ])},
+    { field_name: 'recovery_time_objective', label: 'recoveryTimeObjective', field_type: 'text', display_order: 60 },
+    { field_name: 'recovery_point_objective', label: 'recoveryPointObjective', field_type: 'text', display_order: 61 },
+    { field_name: 'disaster_recovery_plan', label: 'disasterRecoveryPlan', field_type: 'text', display_order: 62 },
+    { field_name: 'continual_improvement_register', label: 'continualImprovementRegister', field_type: 'textarea', display_order: 70 },
+    { field_name: 'documentation_url', label: 'documentationUrl', field_type: 'text', display_order: 80 },
+    { field_name: 'notes', label: 'notes', field_type: 'textarea', display_order: 99 },
+  ],
+
+  // SERVICE_OFFERING - Service Offering (ITIL4)
+  SERVICE_OFFERING: [
+    { field_name: 'rel_parent_service_uuid', label: 'relParentServiceUuid', field_type: 'relation', data_type: 'string', display_order: 0, is_required: true, show_in_table: true, relation_object: 'configuration_items', relation_display: 'name', relation_filter: { ci_type: 'SERVICE' } },
+    { field_name: 'offering_type', label: 'offeringType', field_type: 'select', display_order: 1, is_required: true, show_in_table: true, options_source: JSON.stringify([
+      { label: 'Standard', value: 'STANDARD' },
+      { label: 'Custom', value: 'CUSTOM' },
+      { label: 'Premium', value: 'PREMIUM' },
+      { label: 'Basic', value: 'BASIC' }
+    ])},
+    { field_name: 'offering_status', label: 'offeringStatus', field_type: 'select', display_order: 2, is_required: true, show_in_table: true, options_source: JSON.stringify([
+      { label: 'Draft', value: 'DRAFT' },
+      { label: 'Published', value: 'PUBLISHED' },
+      { label: 'Deprecated', value: 'DEPRECATED' },
+      { label: 'Retired', value: 'RETIRED' }
+    ])},
+    { field_name: 'target_audience', label: 'targetAudience', field_type: 'text', display_order: 3, show_in_table: true },
+    { field_name: 'service_package', label: 'servicePackage', field_type: 'text', display_order: 4 },
+    { field_name: 'utility_description', label: 'utilityDescription', field_type: 'textarea', display_order: 10 },
+    { field_name: 'warranty_description', label: 'warrantyDescription', field_type: 'textarea', display_order: 11 },
+    { field_name: 'goods_provided', label: 'goodsProvided', field_type: 'textarea', display_order: 20 },
+    { field_name: 'access_provided', label: 'accessProvided', field_type: 'textarea', display_order: 21 },
+    { field_name: 'actions_provided', label: 'actionsProvided', field_type: 'textarea', display_order: 22 },
+    { field_name: 'ordering_process', label: 'orderingProcess', field_type: 'textarea', display_order: 30 },
+    { field_name: 'fulfillment_time', label: 'fulfillmentTime', field_type: 'text', display_order: 31 },
+    { field_name: 'approval_required', label: 'approvalRequired', field_type: 'boolean', data_type: 'boolean', display_order: 32 },
+    { field_name: 'approval_workflow', label: 'approvalWorkflow', field_type: 'text', display_order: 33 },
+    { field_name: 'pricing_model', label: 'pricingModel', field_type: 'select', display_order: 40, options_source: JSON.stringify([
+      { label: 'Free', value: 'FREE' },
+      { label: 'One-Time', value: 'ONE_TIME' },
+      { label: 'Subscription', value: 'SUBSCRIPTION' },
+      { label: 'Usage-Based', value: 'USAGE_BASED' },
+      { label: 'Tiered', value: 'TIERED' }
+    ])},
+    { field_name: 'unit_price', label: 'unitPrice', field_type: 'number', data_type: 'number', display_order: 41, unit: '€', min_value: 0 },
+    { field_name: 'minimum_commitment', label: 'minimumCommitment', field_type: 'text', display_order: 42 },
+    { field_name: 'catalog_visibility', label: 'catalogVisibility', field_type: 'select', display_order: 50, options_source: JSON.stringify([
+      { label: 'Public', value: 'PUBLIC' },
+      { label: 'Internal Only', value: 'INTERNAL' },
+      { label: 'Restricted', value: 'RESTRICTED' },
+      { label: 'Hidden', value: 'HIDDEN' }
+    ])},
+    { field_name: 'eligibility_criteria', label: 'eligibilityCriteria', field_type: 'textarea', display_order: 51 },
+    { field_name: 'terms_and_conditions', label: 'termsAndConditions', field_type: 'textarea', display_order: 60 },
+    { field_name: 'warranty_terms', label: 'warrantyTerms', field_type: 'textarea', display_order: 61 },
+    { field_name: 'service_hours', label: 'serviceHours', field_type: 'select', display_order: 70, options_source: JSON.stringify([
+      { label: '24x7', value: '24X7' },
+      { label: 'Business Hours (8x5)', value: '8X5' },
+      { label: 'Extended Hours (12x5)', value: '12X5' },
+      { label: 'Extended Hours (12x7)', value: '12X7' },
+      { label: 'Custom', value: 'CUSTOM' }
+    ])},
+    { field_name: 'target_availability', label: 'targetAvailability', field_type: 'number', data_type: 'number', display_order: 71, unit: '%', min_value: 0, max_value: 100 },
+    { field_name: 'documentation_url', label: 'documentationUrl', field_type: 'text', display_order: 80 },
+    { field_name: 'notes', label: 'notes', field_type: 'textarea', display_order: 99 },
   ],
 };
 

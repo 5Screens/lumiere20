@@ -172,6 +172,11 @@ model ci_type_fields {
   // Select options
   options_source    String?  @db.Text                  // JSON array of options or API endpoint
   
+  // Relation options (for field_type = 'relation')
+  relation_object   String?  @db.VarChar(100)          // Related object type (e.g., 'configuration_items', 'persons')
+  relation_display  String?  @db.VarChar(100)          // Field to display from related object
+  relation_filter   Json?    @db.JsonB                 // Filter for relation (e.g., { "ci_type": "SERVICE" })
+  
   // Formatting
   format_pattern    String?  @db.VarChar(100)          // Date format, number format, etc.
   unit              String?  @db.VarChar(20)           // Unit suffix (e.g., 'GB', 'VA', 'Gbps')

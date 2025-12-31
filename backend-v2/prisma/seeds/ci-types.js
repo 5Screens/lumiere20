@@ -328,6 +328,40 @@ async function seedCiTypes() {
       }
     },
     {
+      code: 'SERVICE',
+      label: 'IT Service',
+      description: 'IT Service as defined in ITIL4 - a means of enabling value co-creation',
+      icon: 'pi-cog',
+      color: 'blue',
+      display_order: 1,
+      has_model: false,
+      category_code: 'SERVICES',
+      translations: {
+        fr: { label: 'Service IT', description: 'Service IT tel que défini dans ITIL4 - un moyen de co-création de valeur' },
+        en: { label: 'IT Service', description: 'IT Service as defined in ITIL4 - a means of enabling value co-creation' },
+        es: { label: 'Servicio IT', description: 'Servicio IT según ITIL4 - un medio para la co-creación de valor' },
+        pt: { label: 'Serviço IT', description: 'Serviço IT conforme ITIL4 - um meio de co-criação de valor' },
+        de: { label: 'IT-Service', description: 'IT-Service gemäß ITIL4 - ein Mittel zur gemeinsamen Wertschöpfung' }
+      }
+    },
+    {
+      code: 'SERVICE_OFFERING',
+      label: 'Service Offering',
+      description: 'A description of one or more services designed to address the needs of a target consumer group',
+      icon: 'pi-gift',
+      color: 'teal',
+      display_order: 2,
+      has_model: false,
+      category_code: 'SERVICES',
+      translations: {
+        fr: { label: 'Offre de service', description: 'Description d\'un ou plusieurs services conçus pour répondre aux besoins d\'un groupe de consommateurs cible' },
+        en: { label: 'Service Offering', description: 'A description of one or more services designed to address the needs of a target consumer group' },
+        es: { label: 'Oferta de servicio', description: 'Descripción de uno o más servicios diseñados para satisfacer las necesidades de un grupo de consumidores objetivo' },
+        pt: { label: 'Oferta de serviço', description: 'Descrição de um ou mais serviços projetados para atender às necessidades de um grupo de consumidores-alvo' },
+        de: { label: 'Serviceangebot', description: 'Beschreibung eines oder mehrerer Services zur Erfüllung der Bedürfnisse einer Zielgruppe' }
+      }
+    },
+    {
       code: 'GENERIC',
       label: 'Generic',
       description: 'Generic configuration item',

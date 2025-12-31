@@ -23,6 +23,7 @@ const seedMap = {
   'agile-workflows': () => require('./agile-workflows.seed').seedAgileWorkflows(prisma),
   'uat': () => require('./uat.seed').seedUat(prisma),
   'uat-tickets': () => require('./uat.tickets.seed').seedUatTickets(prisma),
+  'uat-services': () => require('./uat.services.seed').seedUatServices(),
   'object-setup': () => require('./object-setup').seedObjectSetup(),
   'symptoms': () => require('./symptoms.seed').seedSymptoms(),
 };
