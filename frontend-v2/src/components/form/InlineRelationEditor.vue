@@ -22,7 +22,7 @@
         :placeholder="placeholder"
         :minLength="0"
         :loading="loading"
-        :virtualScrollerOptions="{ itemSize: 40 }"
+        :virtualScrollerOptions="{ itemSize: 56 }"
         forceSelection
         dropdown
         appendTo="body"
@@ -31,14 +31,18 @@
       >
         <template #option="{ option, index }">
           <div 
-            class="flex items-center gap-2"
+            class="flex items-center gap-3 py-1"
             :ref="el => { if (index === suggestions.length - 3) loadMoreTriggerRef = el }"
           >
-            <i :class="getOptionIcon(option)" />
-            <span>{{ option[displayField] }}</span>
-            <span v-if="secondaryField && option[secondaryField]" class="text-surface-400 text-sm truncate max-w-48">
-              ({{ option[secondaryField] }})
-            </span>
+            <div class="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center shrink-0">
+              <i :class="[getOptionIcon(option), 'text-primary-600 dark:text-primary-400']" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">{{ option[displayField] }}</div>
+              <div v-if="secondaryField && option[secondaryField]" class="text-sm text-surface-500 truncate">
+                {{ option[secondaryField] }}
+              </div>
+            </div>
           </div>
         </template>
         <template #footer v-if="hasMoreData">
