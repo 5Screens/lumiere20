@@ -21,19 +21,31 @@
         :optionLabel="displayField"
         :placeholder="placeholder"
         :minLength="0"
+        :loading="loading"
+        :virtualScrollerOptions="{ itemSize: 40 }"
         forceSelection
         dropdown
         appendTo="body"
         class="flex-1"
         :pt="{ root: { class: 'w-full' }, input: { class: 'w-full text-sm' } }"
       >
-        <template #option="slotProps">
-          <div class="flex items-center gap-2">
-            <i :class="getOptionIcon(slotProps.option)" />
-            <span>{{ slotProps.option[displayField] }}</span>
-            <span v-if="secondaryField && slotProps.option[secondaryField]" class="text-surface-400 text-sm truncate max-w-48">
-              ({{ slotProps.option[secondaryField] }})
+        <template #option="{ option, index }">
+          <div 
+            class="flex items-center gap-2"
+            :ref="el => { if (index === suggestions.length - 3) loadMoreTriggerRef = el }"
+          >
+            <i :class="getOptionIcon(option)" />
+            <span>{{ option[displayField] }}</span>
+            <span v-if="secondaryField && option[secondaryField]" class="text-surface-400 text-sm truncate max-w-48">
+              ({{ option[secondaryField] }})
             </span>
+          </div>
+        </template>
+        <template #footer v-if="hasMoreData">
+          <div ref="footerSentinelRef" class="p-2 text-center text-sm text-surface-500">
+            <i v-if="loading" class="pi pi-spin pi-spinner mr-2"></i>
+            <span v-if="loading">{{ $t('common.loading') }}</span>
+            <span v-else>{{ $t('common.scrollForMore') }}</span>
           </div>
         </template>
       </AutoComplete>
@@ -69,13 +81,15 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
 import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
 
 const { t } = useI18n()
+
+const PAGE_SIZE = 20
 
 const props = defineProps({
   // Current value (UUID)
@@ -133,7 +147,19 @@ const localValue = ref(null)
 const initialValue = ref(null)
 const suggestions = ref([])
 const saving = ref(false)
+const loading = ref(false)
 const autocompleteRef = ref(null)
+
+// Pagination state
+const currentQuery = ref('')
+const currentPage = ref(1)
+const totalRecords = ref(0)
+const hasMoreData = computed(() => suggestions.value.length < totalRecords.value)
+
+// Refs for IntersectionObserver
+const footerSentinelRef = ref(null)
+const loadMoreTriggerRef = ref(null)
+let intersectionObserver = null
 
 // API endpoints mapping
 const endpointMap = {
@@ -169,6 +195,99 @@ const ticketTypeIcons = {
   SPRINT: 'pi pi-forward',
   EPIC: 'pi pi-star',
   DEFECT: 'pi pi-bug'
+}
+
+// Setup IntersectionObserver for lazy loading
+const setupObserver = () => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
+  }
+  
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && hasMoreData.value && !loading.value) {
+          loadMoreItems()
+        }
+      })
+    },
+    { threshold: 0.1 }
+  )
+}
+
+// Watch for footer sentinel to observe
+watch(footerSentinelRef, (newRef) => {
+  if (newRef && intersectionObserver) {
+    intersectionObserver.observe(newRef)
+  }
+})
+
+// Watch for trigger element (3rd from last item)
+watch(loadMoreTriggerRef, (newRef) => {
+  if (newRef && intersectionObserver) {
+    intersectionObserver.observe(newRef)
+  }
+})
+
+// Load more items (next page)
+const loadMoreItems = async () => {
+  if (loading.value || !hasMoreData.value) return
+  
+  loading.value = true
+  try {
+    const endpoint = endpointMap[props.relationObject]
+    if (!endpoint) return
+    
+    // Build filters
+    const filters = buildFilters(currentQuery.value)
+    
+    const nextPage = currentPage.value + 1
+    const response = await api.post(`${endpoint}/search`, {
+      filters,
+      page: nextPage,
+      limit: PAGE_SIZE,
+      sortField: props.displayField,
+      sortOrder: 1
+    })
+    
+    const newItems = response.data?.data || []
+    if (newItems.length > 0) {
+      suggestions.value = [...suggestions.value, ...newItems]
+      currentPage.value = nextPage
+    }
+  } catch (error) {
+    console.error(`[InlineRelationEditor] Error loading more ${props.relationObject}:`, error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Build filters for search
+const buildFilters = (query) => {
+  const filters = {}
+  
+  if (query && query.trim()) {
+    filters.global = { value: query, matchMode: 'contains' }
+  }
+  
+  // Apply relation filter (e.g., ci_type_code, ticket_type_code)
+  if (props.relationFilter) {
+    for (const [key, value] of Object.entries(props.relationFilter)) {
+      // Convert filter key format (e.g., ci_type_code -> ci_type for the API)
+      let filterKey = key
+      if (key === 'ci_type_code') {
+        filterKey = 'ci_type'
+      }
+      filters[filterKey] = { value, matchMode: 'equals' }
+    }
+  }
+  
+  // Special case for symptoms: filter by is_active
+  if (props.relationObject === 'symptoms') {
+    filters.is_active = { value: true, matchMode: 'equals' }
+  }
+  
+  return filters
 }
 
 // Computed
@@ -245,54 +364,57 @@ const cancel = () => {
 }
 
 const onSearch = async (event) => {
+  const query = event.query || ''
+  
+  // Reset pagination on new search
+  currentQuery.value = query
+  currentPage.value = 1
+  
+  loading.value = true
   try {
-    const query = event.query || ''
     const endpoint = endpointMap[props.relationObject]
     
     if (!endpoint) {
       console.error(`[InlineRelationEditor] Unknown relation object: ${props.relationObject}`)
       suggestions.value = []
+      totalRecords.value = 0
       return
     }
     
-    // Build filters
-    const filters = {}
-    
-    if (query.trim()) {
-      filters.global = { value: query, matchMode: 'contains' }
-    }
-    
-    // Apply relation filter (e.g., ci_type_code, ticket_type_code)
-    if (props.relationFilter) {
-      for (const [key, value] of Object.entries(props.relationFilter)) {
-        // Convert filter key format (e.g., ci_type_code -> ci_type for the API)
-        let filterKey = key
-        if (key === 'ci_type_code') {
-          filterKey = 'ci_type'
-        }
-        filters[filterKey] = { value, matchMode: 'equals' }
-      }
-    }
-    
-    // Special case for symptoms: filter by is_active
-    if (props.relationObject === 'symptoms') {
-      filters.is_active = { value: true, matchMode: 'equals' }
-    }
+    // Build filters using helper
+    const filters = buildFilters(query)
     
     const response = await api.post(`${endpoint}/search`, {
       filters,
       page: 1,
-      limit: 20,
+      limit: PAGE_SIZE,
       sortField: props.displayField,
       sortOrder: 1
     })
     
     suggestions.value = response.data?.data || []
+    totalRecords.value = response.data?.total || 0
   } catch (error) {
     console.error(`[InlineRelationEditor] Error searching ${props.relationObject}:`, error)
     suggestions.value = []
+    totalRecords.value = 0
+  } finally {
+    loading.value = false
   }
 }
+
+// Setup observer on mount
+onMounted(() => {
+  setupObserver()
+})
+
+// Cleanup observer on unmount
+onUnmounted(() => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
+    intersectionObserver = null
+  }
+})
 </script>
 
 <style scoped>
