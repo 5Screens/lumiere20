@@ -355,67 +355,39 @@
             </template>
             <!-- Configuration Item display/edit (inline editor with save/cancel buttons) -->
             <template v-else-if="col.field_type === 'configuration_item'">
-              <InlineConfigurationItemEditor
+              <InlineRelationEditor
                 v-if="col.is_editable !== false"
                 :modelValue="data[col.field_name]"
-                :configurationItemObject="getConfigurationItemObject(data, col.field_name)"
+                :relationData="getConfigurationItemObject(data, col.field_name)"
+                relationObject="configuration_items"
+                displayField="name"
+                secondaryField="ci_type"
                 placeholder="-"
                 :disabled="selectionModeActive"
-                @save="(payload) => onConfigurationItemSave(data, col.field_name, payload)"
+                @save="({ uuid, data: ciData }) => onConfigurationItemSave(data, col.field_name, { uuid, configurationItem: ciData })"
               />
               <span v-else-if="getConfigurationItemDisplay(data, col.field_name)">
                 {{ getConfigurationItemDisplay(data, col.field_name) }}
               </span>
               <span v-else>-</span>
             </template>
-            <!-- Relation fields for extended fields (symptoms, tickets, configuration_items) -->
+            <!-- Relation fields for extended fields (generic handler) -->
             <template v-else-if="col.field_type === 'relation' && col.is_extended">
-              <!-- Symptoms relation -->
-              <InlineSymptomsEditor
-                v-if="col.relation_object === 'symptoms' && col.is_editable && !selectionModeActive"
+              <InlineRelationEditor
+                v-if="col.is_editable && !selectionModeActive"
                 :modelValue="data.extended_core_fields?.[col.field_name]"
-                :symptomObject="getSymptomsObject(data, col.field_name)"
+                :relationData="getExtendedRelationObject(data, col.field_name)"
+                :relationObject="col.relation_object"
+                :displayField="col.relation_display || 'label'"
+                :secondaryField="getRelationSecondaryField(col.relation_object)"
+                :relationFilter="col.relation_filter"
                 :placeholder="col.label"
                 :disabled="selectionModeActive"
-                @save="({ uuid, symptom }) => updateExtendedRelationField(data, col.field_name, uuid, symptom)"
+                @save="({ uuid, data: relData }) => updateExtendedRelationField(data, col.field_name, uuid, relData)"
               />
-              <span
-                v-else-if="col.relation_object === 'symptoms'"
-              >
-                {{ getSymptomsObject(data, col.field_name)?.label || '-' }}
+              <span v-else>
+                {{ getExtendedRelationDisplayValue(data, col) }}
               </span>
-              <!-- Tickets relation -->
-              <InlineTicketEditor
-                v-else-if="col.relation_object === 'tickets' && col.is_editable && !selectionModeActive"
-                :modelValue="data.extended_core_fields?.[col.field_name]"
-                :ticketObject="getTicketObject(data, col.field_name)"
-                :ticketTypeCode="col.relation_filter?.ticket_type_code"
-                :placeholder="col.label"
-                :disabled="selectionModeActive"
-                @save="({ uuid, ticket }) => updateExtendedRelationField(data, col.field_name, uuid, ticket)"
-              />
-              <span
-                v-else-if="col.relation_object === 'tickets'"
-              >
-                {{ getTicketObject(data, col.field_name)?.title || data.extended_core_fields?.[col.field_name] || '-' }}
-              </span>
-              <!-- Configuration Items relation -->
-              <InlineConfigurationItemEditor
-                v-else-if="col.relation_object === 'configuration_items' && col.is_editable && !selectionModeActive"
-                :modelValue="data.extended_core_fields?.[col.field_name]"
-                :configurationItemObject="getConfigurationItemObjectForExtended(data, col.field_name)"
-                :ciTypeCode="col.relation_filter?.ci_type_code"
-                :placeholder="col.label"
-                :disabled="selectionModeActive"
-                @save="({ uuid, configurationItem }) => updateExtendedRelationField(data, col.field_name, uuid, configurationItem)"
-              />
-              <span
-                v-else-if="col.relation_object === 'configuration_items'"
-              >
-                {{ getConfigurationItemObjectForExtended(data, col.field_name)?.name || '-' }}
-              </span>
-              <!-- Unknown relation type -->
-              <span v-else class="text-surface-400">{{ data.extended_core_fields?.[col.field_name] || '-' }}</span>
             </template>
             <!-- Default text - with translation support -->
             <template v-else>
@@ -880,9 +852,7 @@ import InlinePersonEditor from '@/components/form/InlinePersonEditor.vue'
 import InlineSelectEditor from '@/components/form/InlineSelectEditor.vue'
 import InlineWorkflowStatusEditor from '@/components/form/InlineWorkflowStatusEditor.vue'
 import InlineGroupEditor from '@/components/form/InlineGroupEditor.vue'
-import InlineConfigurationItemEditor from '@/components/form/InlineConfigurationItemEditor.vue'
-import InlineSymptomsEditor from '@/components/form/InlineSymptomsEditor.vue'
-import InlineTicketEditor from '@/components/form/InlineTicketEditor.vue'
+import InlineRelationEditor from '@/components/form/InlineRelationEditor.vue'
 
 // Row summary components
 import TicketRowSummary from '@/components/crud/TicketRowSummary.vue'
@@ -1582,9 +1552,8 @@ const getConfigurationItemObject = (data, fieldName) => {
   return null
 }
 
-// Get configuration item object for extended fields
-const getConfigurationItemObjectForExtended = (data, fieldName) => {
-  // For extended fields, the related object might be cached in _extendedRelations
+// Generic function to get extended relation object (replaces getSymptomsObject, getTicketObject, getConfigurationItemObjectForExtended)
+const getExtendedRelationObject = (data, fieldName) => {
   const extendedValue = data.extended_core_fields?.[fieldName]
   if (!extendedValue) return null
   
@@ -1596,30 +1565,29 @@ const getConfigurationItemObjectForExtended = (data, fieldName) => {
   return null
 }
 
-// Get symptoms object for extended fields
-const getSymptomsObject = (data, fieldName) => {
-  const extendedValue = data.extended_core_fields?.[fieldName]
-  if (!extendedValue) return null
-  
-  // Check if we have cached relation data
-  if (data._extendedRelations?.[fieldName]) {
-    return data._extendedRelations[fieldName]
+// Get secondary field for relation display based on relation type
+const getRelationSecondaryField = (relationObject) => {
+  const secondaryFields = {
+    symptoms: 'code',
+    tickets: 'ticket_type_code',
+    configuration_items: 'ci_type',
+    persons: 'email',
+    groups: null,
+    locations: 'code',
+    entities: 'code'
   }
-  
-  return null
+  return secondaryFields[relationObject] || null
 }
 
-// Get ticket object for extended fields
-const getTicketObject = (data, fieldName) => {
-  const extendedValue = data.extended_core_fields?.[fieldName]
-  if (!extendedValue) return null
-  
-  // Check if we have cached relation data
-  if (data._extendedRelations?.[fieldName]) {
-    return data._extendedRelations[fieldName]
+// Get display value for extended relation fields
+const getExtendedRelationDisplayValue = (data, col) => {
+  const relationData = getExtendedRelationObject(data, col.field_name)
+  if (relationData) {
+    const displayField = col.relation_display || 'label'
+    return relationData[displayField] || '-'
   }
-  
-  return null
+  // Fallback to raw UUID if no cached data
+  return data.extended_core_fields?.[col.field_name] || '-'
 }
 
 const onConfigurationItemSave = async (data, fieldName, payload) => {
