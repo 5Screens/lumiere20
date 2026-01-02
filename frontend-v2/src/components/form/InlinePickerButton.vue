@@ -24,7 +24,7 @@ import Button from 'primevue/button'
 defineProps({
   placeholder: {
     type: String,
-    default: ''
+    default: '-'
   }
 })
 

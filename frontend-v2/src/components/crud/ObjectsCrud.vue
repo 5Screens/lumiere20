@@ -329,7 +329,7 @@
                 v-if="col.is_editable"
                 :modelValue="data[col.field_name]"
                 :personObject="getPersonObject(data, col.field_name)"
-                :placeholder="$t('persons.searchPlaceholder')"
+                placeholder="-"
                 :disabled="selectionModeActive"
                 @save="(payload) => onPersonSave(data, col.field_name, payload)"
               />
@@ -344,7 +344,7 @@
                 v-if="col.is_editable !== false"
                 :modelValue="data[col.field_name]"
                 :groupObject="getGroupObject(data, col.field_name)"
-                :placeholder="$t('groups.searchPlaceholder')"
+                placeholder="-"
                 :disabled="selectionModeActive"
                 @save="(payload) => onGroupSave(data, col.field_name, payload)"
               />
@@ -359,7 +359,7 @@
                 v-if="col.is_editable !== false"
                 :modelValue="data[col.field_name]"
                 :configurationItemObject="getConfigurationItemObject(data, col.field_name)"
-                :placeholder="$t('configurationItems.searchPlaceholder')"
+                placeholder="-"
                 :disabled="selectionModeActive"
                 @save="(payload) => onConfigurationItemSave(data, col.field_name, payload)"
               />
