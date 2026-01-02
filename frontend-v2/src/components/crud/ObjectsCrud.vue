@@ -380,7 +380,7 @@
                 :relationObject="col.relation_object"
                 :displayField="col.relation_display || 'label'"
                 :secondaryField="getRelationSecondaryField(col.relation_object)"
-                :relationFilter="col.relation_filter"
+                :relationFilter="parseRelationFilter(col.relation_filter)"
                 :placeholder="col.label"
                 :disabled="selectionModeActive"
                 @save="({ uuid, data: relData }) => updateExtendedRelationField(data, col.field_name, uuid, relData)"
@@ -1577,6 +1577,18 @@ const getRelationSecondaryField = (relationObject) => {
     entities: 'code'
   }
   return secondaryFields[relationObject] || null
+}
+
+// Parse relation_filter from JSON string to object
+const parseRelationFilter = (filter) => {
+  if (!filter) return null
+  if (typeof filter === 'object') return filter
+  try {
+    return JSON.parse(filter)
+  } catch (e) {
+    console.error('[ObjectsCrud] Failed to parse relation_filter:', filter, e)
+    return null
+  }
 }
 
 // Get display value for extended relation fields

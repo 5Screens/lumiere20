@@ -69,6 +69,7 @@ async function seedTicketTypeFields() {
         data_type: 'string',
         relation_object: 'symptoms',
         relation_display: 'label',
+        relation_filter: '{"is_active": true}',
         show_in_table: true,
         show_in_form: true,
         is_required: true,

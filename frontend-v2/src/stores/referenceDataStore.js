@@ -16,19 +16,22 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
   const workflowStatusesByTicketType = ref({}) // { TASK: [...], INCIDENT: [...], ... }
   const groups = ref([])
   const objectSetupOptions = ref({}) // { 'incident:URGENCY': [...], 'incident:IMPACT': [...], ... }
+  const objectTypes = ref({}) // { 'symptoms': { code, display_field, secondary_field, ... }, ... }
   const loading = ref({
     ciCategories: false,
     ciTypes: false,
     workflowStatuses: {}, // { TASK: false, INCIDENT: false, ... }
     groups: false,
-    objectSetupOptions: {} // { 'incident:URGENCY': false, ... }
+    objectSetupOptions: {}, // { 'incident:URGENCY': false, ... }
+    objectTypes: {} // { 'symptoms': false, ... }
   })
   const loaded = ref({
     ciCategories: false,
     ciTypes: false,
     workflowStatuses: {}, // { TASK: false, INCIDENT: false, ... }
     groups: false,
-    objectSetupOptions: {} // { 'incident:URGENCY': false, ... }
+    objectSetupOptions: {}, // { 'incident:URGENCY': false, ... }
+    objectTypes: {} // { 'symptoms': false, ... }
   })
 
   // Getters
@@ -348,6 +351,70 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
   }
 
   /**
+   * Load object type metadata by code (with cache)
+   * @param {string} code - Object type code (e.g., 'symptoms', 'tickets', 'configuration_items')
+   * @param {boolean} force - Force reload even if already loaded
+   * @returns {Promise<Object>} Object type metadata { code, display_field, secondary_field, relation_icon, api_endpoint, ... }
+   */
+  const loadObjectType = async (code, force = false) => {
+    if (!code) {
+      console.warn('[ReferenceDataStore] loadObjectType called without code')
+      return null
+    }
+
+    if (loaded.value.objectTypes[code] && !force) {
+      return objectTypes.value[code] || null
+    }
+
+    if (loading.value.objectTypes[code]) {
+      return new Promise((resolve) => {
+        const checkLoaded = setInterval(() => {
+          if (!loading.value.objectTypes[code]) {
+            clearInterval(checkLoaded)
+            resolve(objectTypes.value[code] || null)
+          }
+        }, 50)
+      })
+    }
+
+    loading.value.objectTypes[code] = true
+    try {
+      const response = await api.get(`/object-types/by-code/${code}`)
+      objectTypes.value[code] = response.data || null
+      loaded.value.objectTypes[code] = true
+      return objectTypes.value[code]
+    } catch (error) {
+      console.error(`[ReferenceDataStore] Failed to load object type ${code}:`, error)
+      objectTypes.value[code] = null
+      return null
+    } finally {
+      loading.value.objectTypes[code] = false
+    }
+  }
+
+  /**
+   * Get cached object type metadata (sync, returns null if not loaded)
+   * @param {string} code - Object type code
+   * @returns {Object|null} Cached object type or null
+   */
+  const getObjectType = (code) => {
+    return objectTypes.value[code] || null
+  }
+
+  /**
+   * Invalidate object types cache
+   * @param {string} code - Optional object type code to invalidate
+   */
+  const invalidateObjectTypes = (code = null) => {
+    if (code) {
+      loaded.value.objectTypes[code] = false
+    } else {
+      loaded.value.objectTypes = {}
+      objectTypes.value = {}
+    }
+  }
+
+  /**
    * Invalidate all caches
    */
   const invalidateAll = () => {
@@ -355,6 +422,7 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
     loaded.value.ciTypes = false
     loaded.value.workflowStatuses = false
     loaded.value.groups = false
+    loaded.value.objectTypes = {}
   }
 
   /**
@@ -375,6 +443,7 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
     workflowStatusesByTicketType,
     groups,
     objectSetupOptions,
+    objectTypes,
     loading,
     loaded,
     // Getters
@@ -386,6 +455,7 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
     getWorkflowStatusesByTicketType,
     getGroupByUuid,
     getObjectSetupOptions,
+    getObjectType,
     // Actions
     loadCiCategories,
     loadCiTypes,
@@ -393,11 +463,13 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
     loadGroups,
     loadObjectSetupOptions,
     loadOptionsFromSource,
+    loadObjectType,
     invalidateCiCategories,
     invalidateCiTypes,
     invalidateWorkflowStatuses,
     invalidateGroups,
     invalidateObjectSetupOptions,
+    invalidateObjectTypes,
     invalidateAll,
     reloadAll
   }

@@ -526,6 +526,8 @@ export default {
       icon: 'Icône',
       apiEndpoint: 'Endpoint API',
       defaultSort: 'Tri par défaut',
+      displayField: 'Champ principal',
+      secondaryField: 'Champ secondaire',
       fieldsCount: 'Champs',
       viewFields: 'Voir les champs',
       loadError: 'Erreur lors du chargement des types d\'objets'

@@ -15,6 +15,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/configuration_items',
       default_sort_field: 'updated_at',
       default_sort_order: -1,
+      display_field: 'name',
+      secondary_field: 'ci_type',
     },
     {
       code: 'entities',
@@ -23,6 +25,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/entities',
       default_sort_field: 'name',
       default_sort_order: 1,
+      display_field: 'name',
+      secondary_field: 'entity_id',
     },
     {
       code: 'locations',
@@ -31,6 +35,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/locations',
       default_sort_field: 'name',
       default_sort_order: 1,
+      display_field: 'name',
+      secondary_field: 'city',
     },
     {
       code: 'groups',
@@ -39,6 +45,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/groups',
       default_sort_field: 'group_name',
       default_sort_order: 1,
+      display_field: 'group_name',
+      secondary_field: 'email',
     },
     {
       code: 'persons',
@@ -47,6 +55,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/persons',
       default_sort_field: 'last_name',
       default_sort_order: 1,
+      display_field: 'last_name',
+      secondary_field: 'email',
     },
     {
       code: 'ci_types',
@@ -55,6 +65,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/ci_types',
       default_sort_field: 'display_order',
       default_sort_order: 1,
+      display_field: 'label',
+      secondary_field: 'code',
     },
     {
       code: 'ci_categories',
@@ -63,6 +75,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/ci_categories',
       default_sort_field: 'display_order',
       default_sort_order: 1,
+      display_field: 'label',
+      secondary_field: 'code',
     },
     {
       code: 'tickets',
@@ -71,6 +85,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/tickets',
       default_sort_field: 'updated_at',
       default_sort_order: -1,
+      display_field: 'title',
+      secondary_field: 'ticket_type_code',
     },
     {
       code: 'ticket_types',
@@ -79,6 +95,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/ticket-types',
       default_sort_field: 'code',
       default_sort_order: 1,
+      display_field: 'label',
+      secondary_field: 'code',
     },
     {
       code: 'object_setup',
@@ -87,6 +105,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/object-setup',
       default_sort_field: 'display_order',
       default_sort_order: 1,
+      display_field: 'label',
+      secondary_field: 'code',
     },
     {
       code: 'symptoms',
@@ -95,6 +115,8 @@ async function seedObjectMetadata() {
       api_endpoint: '/api/v1/symptoms',
       default_sort_field: 'code',
       default_sort_order: 1,
+      display_field: 'label',
+      secondary_field: 'code',
     },
   ];
 

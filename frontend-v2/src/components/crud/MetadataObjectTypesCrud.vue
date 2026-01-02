@@ -60,14 +60,6 @@
           </div>
         </template>
 
-        <!-- Icon column -->
-        <Column field="icon" :header="$t('metadata.objectTypes.icon')" style="width: 4rem">
-          <template #body="{ data }">
-            <i v-if="data.icon" :class="data.icon" class="text-lg" />
-            <span v-else class="text-surface-400">-</span>
-          </template>
-        </Column>
-
         <!-- Code column -->
         <Column field="code" :header="$t('metadata.objectTypes.code')" sortable>
           <template #body="{ data }">
@@ -91,6 +83,17 @@
           </template>
         </Column>
 
+       <!-- Icon column -->
+        <Column field="icon" :header="$t('metadata.objectTypes.icon')" style="width: 8rem">
+          <template #body="{ data }">
+            <div v-if="data.icon" class="flex items-center gap-2">
+              <i :class="`pi ${data.icon}`" />
+              <code class="text-xs text-surface-500">{{ data.icon }}</code>
+            </div>
+            <span v-else class="text-surface-400">-</span>
+          </template>
+        </Column>
+
         <!-- Default Sort column -->
         <Column :header="$t('metadata.objectTypes.defaultSort')" style="width: 10rem">
           <template #body="{ data }">
@@ -100,6 +103,27 @@
             </div>
           </template>
         </Column>
+
+        <!-- Display Field column -->
+        <Column field="display_field" :header="$t('metadata.objectTypes.displayField')" style="width: 8rem">
+          <template #body="{ data }">
+            <code v-if="data.display_field" class="text-sm bg-surface-100 dark:bg-surface-800 px-2 py-1 rounded">
+              {{ data.display_field }}
+            </code>
+            <span v-else class="text-surface-400">-</span>
+          </template>
+        </Column>
+
+        <!-- Secondary Field column -->
+        <Column field="secondary_field" :header="$t('metadata.objectTypes.secondaryField')" style="width: 8rem">
+          <template #body="{ data }">
+            <code v-if="data.secondary_field" class="text-sm bg-surface-100 dark:bg-surface-800 px-2 py-1 rounded">
+              {{ data.secondary_field }}
+            </code>
+            <span v-else class="text-surface-400">-</span>
+          </template>
+        </Column>
+
 
         <!-- Fields count column -->
         <Column :header="$t('metadata.objectTypes.fieldsCount')" style="width: 6rem">

@@ -525,6 +525,8 @@ export default {
       icon: 'Icon',
       apiEndpoint: 'API Endpoint',
       defaultSort: 'Default Sort',
+      displayField: 'Display Field',
+      secondaryField: 'Secondary Field',
       fieldsCount: 'Fields',
       viewFields: 'View Fields',
       loadError: 'Error loading object types'

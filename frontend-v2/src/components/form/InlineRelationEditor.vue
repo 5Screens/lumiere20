@@ -18,7 +18,7 @@
         :suggestions="suggestions"
         @complete="onSearch"
         @item-select="onItemSelect"
-        :optionLabel="displayField"
+        :optionLabel="effectiveDisplayField"
         :placeholder="placeholder"
         :minLength="0"
         :loading="loading"
@@ -38,9 +38,9 @@
               <i :class="[getOptionIcon(option), 'text-primary-600 dark:text-primary-400']" />
             </div>
             <div class="flex-1 min-w-0">
-              <div class="font-medium truncate">{{ option[displayField] }}</div>
-              <div v-if="secondaryField && option[secondaryField]" class="text-sm text-surface-500 truncate">
-                {{ option[secondaryField] }}
+              <div class="font-medium truncate">{{ option[effectiveDisplayField] }}</div>
+              <div v-if="effectiveSecondaryField && option[effectiveSecondaryField]" class="text-sm text-surface-500 truncate">
+                {{ option[effectiveSecondaryField] }}
               </div>
             </div>
           </div>
@@ -90,8 +90,10 @@ import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
 import AutoComplete from 'primevue/autocomplete'
 import Button from 'primevue/button'
+import { useReferenceDataStore } from '@/stores/referenceDataStore'
 
 const { t } = useI18n()
+const referenceDataStore = useReferenceDataStore()
 
 const PAGE_SIZE = 20
 
@@ -111,12 +113,12 @@ const props = defineProps({
     type: String,
     required: true
   },
-  // Field to display in autocomplete (e.g., 'label', 'title', 'name')
+  // Field to display in autocomplete - override from object_types metadata
   displayField: {
     type: String,
-    default: 'label'
+    default: null
   },
-  // Secondary field to show in parentheses (e.g., 'code', 'ticket_type_code')
+  // Secondary field to show - override from object_types metadata
   secondaryField: {
     type: String,
     default: null
@@ -136,7 +138,7 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  // Icon to display (if not provided, will use default based on relationObject)
+  // Icon to display - override from object_types metadata
   icon: {
     type: String,
     default: null
@@ -153,6 +155,7 @@ const suggestions = ref([])
 const saving = ref(false)
 const loading = ref(false)
 const autocompleteRef = ref(null)
+const objectTypeMeta = ref(null)
 
 // Pagination state
 const currentQuery = ref('')
@@ -165,29 +168,25 @@ const footerSentinelRef = ref(null)
 const loadMoreTriggerRef = ref(null)
 let intersectionObserver = null
 
-// API endpoints mapping
-const endpointMap = {
-  symptoms: '/symptoms',
-  tickets: '/tickets',
-  configuration_items: '/configuration_items',
-  persons: '/persons',
-  groups: '/groups',
-  locations: '/locations',
-  entities: '/entities'
-}
+// Computed properties using metadata with prop overrides
+const effectiveDisplayField = computed(() => 
+  props.displayField || objectTypeMeta.value?.display_field || 'label'
+)
+const effectiveSecondaryField = computed(() => 
+  props.secondaryField || objectTypeMeta.value?.secondary_field || null
+)
+const effectiveIcon = computed(() => 
+  props.icon || (objectTypeMeta.value?.icon ? `pi ${objectTypeMeta.value.icon}` : 'pi pi-link')
+)
+const effectiveEndpoint = computed(() => {
+  if (objectTypeMeta.value?.api_endpoint) {
+    // Remove /api/v1 prefix if present
+    return objectTypeMeta.value.api_endpoint.replace('/api/v1', '')
+  }
+  return `/${props.relationObject}`
+})
 
-// Default icons mapping
-const defaultIconMap = {
-  symptoms: 'pi pi-exclamation-circle text-orange-500',
-  tickets: 'pi pi-ticket',
-  configuration_items: 'pi pi-box',
-  persons: 'pi pi-user',
-  groups: 'pi pi-users',
-  locations: 'pi pi-map-marker',
-  entities: 'pi pi-building'
-}
-
-// Ticket type icons
+// Ticket type icons (special case for dynamic icons based on ticket_type_code)
 const ticketTypeIcons = {
   TASK: 'pi pi-check-square',
   INCIDENT: 'pi pi-exclamation-triangle',
@@ -239,7 +238,7 @@ const loadMoreItems = async () => {
   
   loading.value = true
   try {
-    const endpoint = endpointMap[props.relationObject]
+    const endpoint = effectiveEndpoint.value
     if (!endpoint) return
     
     // Build filters
@@ -250,7 +249,7 @@ const loadMoreItems = async () => {
       filters,
       page: nextPage,
       limit: PAGE_SIZE,
-      sortField: props.displayField,
+      sortField: effectiveDisplayField.value,
       sortOrder: 1
     })
     
@@ -274,7 +273,7 @@ const buildFilters = (query) => {
     filters.global = { value: query, matchMode: 'contains' }
   }
   
-  // Apply relation filter (e.g., ci_type_code, ticket_type_code)
+  // Apply relation filter from props (e.g., { is_active: true }, { ci_type_code: 'SERVICE' })
   if (props.relationFilter) {
     for (const [key, value] of Object.entries(props.relationFilter)) {
       // Convert filter key format (e.g., ci_type_code -> ci_type for the API)
@@ -286,18 +285,13 @@ const buildFilters = (query) => {
     }
   }
   
-  // Special case for symptoms: filter by is_active
-  if (props.relationObject === 'symptoms') {
-    filters.is_active = { value: true, matchMode: 'equals' }
-  }
-  
   return filters
 }
 
 // Computed
 const displayValue = computed(() => {
   if (props.relationData) {
-    return props.relationData[props.displayField]
+    return props.relationData[effectiveDisplayField.value]
   }
   return null
 })
@@ -310,18 +304,13 @@ const hasChanges = computed(() => {
 
 // Methods
 const getOptionIcon = (option) => {
-  // Custom icon provided
-  if (props.icon) {
-    return props.icon
-  }
-  
   // For tickets, use dynamic icon based on ticket_type_code
   if (props.relationObject === 'tickets' && option.ticket_type_code) {
     return ticketTypeIcons[option.ticket_type_code] || 'pi pi-ticket'
   }
   
-  // Default icon for relation type
-  return defaultIconMap[props.relationObject] || 'pi pi-link'
+  // Use effective icon from metadata or prop override
+  return effectiveIcon.value
 }
 
 const startEditing = () => {
@@ -376,7 +365,7 @@ const onSearch = async (event) => {
   
   loading.value = true
   try {
-    const endpoint = endpointMap[props.relationObject]
+    const endpoint = effectiveEndpoint.value
     
     if (!endpoint) {
       console.error(`[InlineRelationEditor] Unknown relation object: ${props.relationObject}`)
@@ -392,7 +381,7 @@ const onSearch = async (event) => {
       filters,
       page: 1,
       limit: PAGE_SIZE,
-      sortField: props.displayField,
+      sortField: effectiveDisplayField.value,
       sortOrder: 1
     })
     
@@ -407,8 +396,10 @@ const onSearch = async (event) => {
   }
 }
 
-// Setup observer on mount
-onMounted(() => {
+// Load object type metadata on mount
+onMounted(async () => {
+  // Load metadata for the relation object type
+  objectTypeMeta.value = await referenceDataStore.loadObjectType(props.relationObject)
   setupObserver()
 })
 
