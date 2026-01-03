@@ -18,7 +18,7 @@
         :suggestions="suggestions"
         @complete="onSearch"
         @item-select="onItemSelect"
-        :optionLabel="effectiveDisplayField"
+        :optionLabel="getOptionDisplayValue"
         :placeholder="placeholder"
         :minLength="0"
         :loading="loading"
