@@ -119,9 +119,10 @@ const saveTranslations = async (entityUuid, translations) => {
 /**
  * Search configuration items with PrimeVue filters
  * @param {Object} searchParams - Search parameters
+ * @param {string} locale - Locale for translations
  * @returns {Promise<Object>} - Search results
  */
-const search = async (searchParams = {}) => {
+const search = async (searchParams = {}, locale = 'en') => {
   try {
     const { filters = {}, sortField = 'name', sortOrder = 1, page = 1, limit = 50, ciTypeUuid = null } = searchParams;
 
@@ -244,12 +245,85 @@ const search = async (searchParams = {}) => {
       }
     }
     
+    // Fetch model translations (models are configuration_items)
+    const modelUuids = [...new Set(items.filter(i => i.model).map(i => i.model.uuid))];
+    const modelTranslationsMap = {};
+    if (modelUuids.length > 0) {
+      const modelTranslations = await prisma.translated_fields.findMany({
+        where: {
+          entity_type: 'configuration_items',
+          entity_uuid: { in: modelUuids },
+          field_name: 'name'
+        }
+      });
+      for (const t of modelTranslations) {
+        if (!modelTranslationsMap[t.entity_uuid]) {
+          modelTranslationsMap[t.entity_uuid] = {};
+        }
+        modelTranslationsMap[t.entity_uuid][t.locale] = t.value;
+      }
+    }
+    
+    // Fetch ci_type translations (ci_type is a code, we need to get the ci_types labels)
+    const ciTypeCodes = [...new Set(items.map(i => i.ci_type).filter(Boolean))];
+    const ciTypeTranslationsMap = {};
+    if (ciTypeCodes.length > 0) {
+      // First get ci_types UUIDs by code
+      const ciTypes = await prisma.ci_types.findMany({
+        where: { code: { in: ciTypeCodes } },
+        select: { uuid: true, code: true, label: true }
+      });
+      const ciTypeUuids = ciTypes.map(ct => ct.uuid);
+      const codeToUuid = {};
+      const uuidToCode = {};
+      for (const ct of ciTypes) {
+        codeToUuid[ct.code] = ct.uuid;
+        uuidToCode[ct.uuid] = ct.code;
+        // Initialize with default label
+        ciTypeTranslationsMap[ct.code] = { _default: ct.label };
+      }
+      
+      if (ciTypeUuids.length > 0) {
+        const ciTypeTranslations = await prisma.translated_fields.findMany({
+          where: {
+            entity_type: 'ci_types',
+            entity_uuid: { in: ciTypeUuids },
+            field_name: 'label'
+          }
+        });
+        for (const t of ciTypeTranslations) {
+          const code = uuidToCode[t.entity_uuid];
+          if (code) {
+            if (!ciTypeTranslationsMap[code]) {
+              ciTypeTranslationsMap[code] = {};
+            }
+            ciTypeTranslationsMap[code][t.locale] = t.value;
+          }
+        }
+      }
+    }
+    
     // Transform items with translations
     const transformedItems = items.map(item => {
       const transformed = transformWithTranslations(item, translationsMap[item.uuid] || [], null);
       // Add status translations
       if (transformed.status && statusTranslationsMap[transformed.status.uuid]) {
         transformed.status._translations = { name: statusTranslationsMap[transformed.status.uuid] };
+      }
+      // Add model translations
+      if (transformed.model && modelTranslationsMap[transformed.model.uuid]) {
+        const modelTrans = modelTranslationsMap[transformed.model.uuid];
+        transformed.model = {
+          ...transformed.model,
+          name: modelTrans[locale] || transformed.model.name,
+          _translations: { name: modelTrans }
+        };
+      }
+      // Add ci_type label and translations
+      if (transformed.ci_type && ciTypeTranslationsMap[transformed.ci_type]) {
+        const ciTypeTrans = ciTypeTranslationsMap[transformed.ci_type];
+        transformed.ci_type_label = ciTypeTrans[locale] || ciTypeTrans._default || transformed.ci_type;
+        transformed._ci_type_translations = { label: ciTypeTrans };
       }
       return transformed;
     });

@@ -11,7 +11,8 @@ const search = async (req, res, next) => {
     logger.info('[CONTROLLER] Full req.body:', JSON.stringify(req.body));
     logger.info('[CONTROLLER] ciTypeUuid in body?:', 'ciTypeUuid' in req.body);
     logger.info('[CONTROLLER] req.body.ciTypeUuid:', req.body.ciTypeUuid);
-    const result = await service.search(req.body);
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+    const result = await service.search(req.body, locale);
     res.json(result);
   } catch (error) {
     next(error);
