@@ -611,6 +611,8 @@ const search = async (searchParams = {}, locale = 'en', ticketTypeCode = null) =
       if (next.ticket_type) {
         const ttUuid = next.ticket_type.uuid;
         const ttTranslations = ticketTypeTranslationsMap[ttUuid];
+        // Flatten ticket_type icon to ticket level for InlineRelationEditor
+        next.icon = next.ticket_type.icon;
         if (ttTranslations) {
           next.ticket_type = {
             ...next.ticket_type,

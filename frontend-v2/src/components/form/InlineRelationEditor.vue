@@ -186,19 +186,6 @@ const effectiveEndpoint = computed(() => {
   return `/${props.relationObject}`
 })
 
-// Ticket type icons (special case for dynamic icons based on ticket_type_code)
-const ticketTypeIcons = {
-  TASK: 'pi pi-check-square',
-  INCIDENT: 'pi pi-exclamation-triangle',
-  PROBLEM: 'pi pi-search',
-  PROJECT: 'pi pi-folder',
-  CHANGE: 'pi pi-sync',
-  KNOWLEDGE: 'pi pi-book',
-  USER_STORY: 'pi pi-user',
-  SPRINT: 'pi pi-forward',
-  EPIC: 'pi pi-star',
-  DEFECT: 'pi pi-bug'
-}
 
 // Setup IntersectionObserver for lazy loading
 const setupObserver = () => {
@@ -304,9 +291,9 @@ const hasChanges = computed(() => {
 
 // Methods
 const getOptionIcon = (option) => {
-  // For tickets, use dynamic icon based on ticket_type_code
-  if (props.relationObject === 'tickets' && option.ticket_type_code) {
-    return ticketTypeIcons[option.ticket_type_code] || 'pi pi-ticket'
+  // For tickets, use icon from ticket data (fetched from ticket_types.icon)
+  if (props.relationObject === 'tickets' && option.icon) {
+    return `pi ${option.icon}`
   }
   
   // Use effective icon from metadata or prop override

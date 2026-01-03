@@ -771,6 +771,7 @@ export default {
     title: 'Ticket Types',
     code: 'Code',
     label: 'Label',
+    icon: 'Icon',
     messages: {
       created: 'Ticket type created successfully',
       updated: 'Ticket type updated successfully',

@@ -772,6 +772,7 @@ export default {
     title: 'Types de ticket',
     code: 'Code',
     label: 'Libellé',
+    icon: 'Icône',
     messages: {
       created: 'Type de ticket créé avec succès',
       updated: 'Type de ticket mis à jour avec succès',

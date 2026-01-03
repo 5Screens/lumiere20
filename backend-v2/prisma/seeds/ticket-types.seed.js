@@ -4,17 +4,17 @@
  */
 
 const ticketTypes = [
-  { code: 'TASK', label: 'Task' },
-  { code: 'INCIDENT', label: 'Incident' },
-  { code: 'PROBLEM', label: 'Problem' },
-  { code: 'CHANGE', label: 'Change' },
-  { code: 'SERVICE_REQUEST', label: 'Service Request' },
-  { code: 'KNOWLEDGE', label: 'Knowledge Article' },
-  { code: 'USER_STORY', label: 'User Story' },
-  { code: 'SPRINT', label: 'Sprint' },
-  { code: 'EPIC', label: 'Epic' },
-  { code: 'DEFECT', label: 'Defect' },
-  { code: 'PROJECT', label: 'Project' },
+  { code: 'TASK', label: 'Task', icon: 'pi-check-square' },
+  { code: 'INCIDENT', label: 'Incident', icon: 'pi-exclamation-triangle' },
+  { code: 'PROBLEM', label: 'Problem', icon: 'pi-search' },
+  { code: 'CHANGE', label: 'Change', icon: 'pi-sync' },
+  { code: 'SERVICE_REQUEST', label: 'Service Request', icon: 'pi-inbox' },
+  { code: 'KNOWLEDGE', label: 'Knowledge Article', icon: 'pi-book' },
+  { code: 'USER_STORY', label: 'User Story', icon: 'pi-user' },
+  { code: 'SPRINT', label: 'Sprint', icon: 'pi-forward' },
+  { code: 'EPIC', label: 'Epic', icon: 'pi-star' },
+  { code: 'DEFECT', label: 'Defect', icon: 'pi-bug' },
+  { code: 'PROJECT', label: 'Project', icon: 'pi-folder' },
 ];
 
 // Translations for ticket type labels
@@ -109,10 +109,12 @@ async function seedTicketTypes(prisma) {
       where: { code: ticketType.code },
       update: {
         label: ticketType.label,
+        icon: ticketType.icon,
       },
       create: {
         code: ticketType.code,
         label: ticketType.label,
+        icon: ticketType.icon,
         is_active: true,
       },
     });
