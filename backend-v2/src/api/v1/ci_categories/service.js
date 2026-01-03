@@ -304,6 +304,25 @@ const remove = async (uuid) => {
 };
 
 /**
+ * Search in translations for CI categories
+ */
+const searchInTranslations = async (searchText, locale) => {
+  if (!searchText) return [];
+  
+  const translations = await prisma.translated_fields.findMany({
+    where: {
+      entity_type: 'ci_categories',
+      locale,
+      field_name: { in: ['label', 'description'] },
+      value: { contains: searchText, mode: 'insensitive' }
+    },
+    select: { entity_uuid: true }
+  });
+  
+  return [...new Set(translations.map(t => t.entity_uuid))];
+};
+
+/**
  * Search CI categories with PrimeVue filters
  */
 const search = async (searchParams = {}, locale = 'en') => {
@@ -321,12 +340,41 @@ const search = async (searchParams = {}, locale = 'en') => {
   const skip = (page - 1) * limit;
   const take = limit;
   
-  // Build where clause using the utility (supports all matchModes: contains, startsWith, endsWith, equals, notEquals, notContains)
-  const where = buildPrismaWhereFromFilters(filters, {
-    globalSearchFields: ['code', 'label'],
+  // Extract global search value
+  const globalSearchValue = filters.global?.value || null;
+  
+  // Build base where clause (only non-translatable fields for global search)
+  const baseWhere = buildPrismaWhereFromFilters(filters, {
+    globalSearchFields: ['code'],  // Only code, label is translatable
     dateColumns: ['created_at', 'updated_at'],
-    uuidColumns: ['uuid']
+    uuidColumns: ['uuid'],
+    booleanColumns: ['is_active']
   });
+  
+  let where = baseWhere;
+  
+  // If there's a global search, also search in translations
+  if (globalSearchValue) {
+    const translatedUuids = await searchInTranslations(globalSearchValue, locale);
+    
+    // Combine: match in ci_categories OR match in translations
+    where = {
+      AND: [
+        // Keep non-global filters (like is_active)
+        ...(baseWhere.is_active !== undefined ? [{ is_active: baseWhere.is_active }] : []),
+        {
+          OR: [
+            // Search in code
+            { code: { contains: globalSearchValue, mode: 'insensitive' } },
+            // Search in default label (fallback)
+            { label: { contains: globalSearchValue, mode: 'insensitive' } },
+            // Match UUIDs found in translations
+            ...(translatedUuids.length > 0 ? [{ uuid: { in: translatedUuids } }] : [])
+          ]
+        }
+      ]
+    };
+  }
   
   logger.info(`[ci_categories.search] where: ${JSON.stringify(where)}`);
   
