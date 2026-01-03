@@ -213,6 +213,8 @@ export default {
     searchTicket: 'Search for a ticket...',
     selectConfigurationItem: 'Select a configuration item',
     searchConfigurationItem: 'Search by name...',
+    searchEntity: 'Search for an entity...',
+    searchLocation: 'Search for a location...',
     typeToSearch: 'Type to search...',
     noResults: 'No results found',
     pending: 'Pending',

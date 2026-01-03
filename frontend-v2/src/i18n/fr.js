@@ -214,6 +214,8 @@ export default {
     searchTicket: 'Rechercher un ticket...',
     selectConfigurationItem: 'Sélectionner un élément de configuration',
     searchConfigurationItem: 'Rechercher par nom...',
+    searchEntity: 'Rechercher l\'entité...',
+    searchLocation: 'Rechercher la localisation...',
     typeToSearch: 'Tapez pour rechercher...',
     noResults: 'Aucun résultat trouvé',
     pending: 'En attente',

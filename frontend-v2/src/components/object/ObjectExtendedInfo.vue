@@ -65,31 +65,15 @@
             </template>
             <!-- Relation display/edit (rendered in body to avoid PrimeVue cell edit issues) -->
             <template v-else-if="data.field_type === 'relation'">
-              <InlineSymptomsEditor
-                v-if="data.relation_object === 'symptoms' && data.is_editable !== false"
+              <InlineRelationEditor
+                v-if="data.is_editable !== false"
                 :modelValue="data.value"
-                :symptomObject="data._relationObject"
-                :placeholder="$t('common.searchSymptom')"
+                :relationData="data._relationObject"
+                :relationObject="data.relation_object"
+                :relationFilter="data.relation_filter"
+                :placeholder="getRelationPlaceholder(data)"
                 @click.stop
-                @save="({ uuid, symptom }) => onRelationSave(data, uuid, symptom)"
-              />
-              <InlineTicketEditor
-                v-else-if="data.relation_object === 'tickets' && data.is_editable !== false"
-                :modelValue="data.value"
-                :ticketObject="data._relationObject"
-                :ticketTypeCode="data.relation_filter?.ticket_type_code"
-                :placeholder="$t('common.searchTicket')"
-                @click.stop
-                @save="({ uuid, ticket }) => onRelationSave(data, uuid, ticket)"
-              />
-              <InlineConfigurationItemEditor
-                v-else-if="data.relation_object === 'configuration_items' && data.is_editable !== false"
-                :modelValue="data.value"
-                :configurationItemObject="data._relationObject"
-                :ciTypeCode="data.relation_filter?.ci_type_code"
-                :placeholder="$t('common.searchConfigurationItem')"
-                @click.stop
-                @save="({ uuid, configurationItem }) => onRelationSave(data, uuid, configurationItem)"
+                @save="({ uuid, data: relatedObj }) => onRelationSave(data, uuid, relatedObj)"
               />
               <span v-else :class="{ 'text-surface-400': !data.value }">
                 {{ getRelationDisplayValue(data) }}
@@ -275,9 +259,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import ExtendedFieldsEditor from '@/components/object/ExtendedFieldsEditor.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import { DateTimePicker } from '@/components/pickers'
-import InlineSymptomsEditor from '@/components/form/InlineSymptomsEditor.vue'
-import InlineTicketEditor from '@/components/form/InlineTicketEditor.vue'
-import InlineConfigurationItemEditor from '@/components/form/InlineConfigurationItemEditor.vue'
+import InlineRelationEditor from '@/components/form/InlineRelationEditor.vue'
 
 // Props
 const props = defineProps({
@@ -442,6 +424,20 @@ const getRelationDisplayValue = (data) => {
   }
   
   return data.value
+}
+
+// Get placeholder for relation field based on relation type
+const getRelationPlaceholder = (data) => {
+  const placeholders = {
+    symptoms: t('common.searchSymptom'),
+    tickets: t('common.searchTicket'),
+    configuration_items: t('common.searchConfigurationItem'),
+    persons: t('common.searchPerson'),
+    groups: t('common.searchGroup'),
+    locations: t('common.searchLocation'),
+    entities: t('common.searchEntity')
+  }
+  return placeholders[data.relation_object] || t('common.search')
 }
 
 // Handle relation field save (from Inline*Editor components)
