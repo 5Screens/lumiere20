@@ -295,14 +295,6 @@
               </div>
               <span v-else>-</span>
             </template>
-            <!-- CI Category display -->
-            <template v-else-if="col.field_type === 'ci_category'">
-              <div v-if="getFieldValue(data, col)" class="flex items-center gap-2">
-                <i :class="`pi ${getCategoryIcon(getFieldValue(data, col))}`" />
-                <span>{{ getCategoryLabel(getFieldValue(data, col)) }}</span>
-              </div>
-              <span v-else>-</span>
-            </template>
             <!-- Workflow Status display/edit (inline editor with save/cancel buttons) -->
             <template v-else-if="col.field_type === 'workflow_status'">
               <InlineWorkflowStatusEditor
@@ -323,70 +315,22 @@
                 <span v-else class="text-surface-400 italic text-sm">{{ $t('workflow.noWorkflow') }}</span>
               </template>
             </template>
-            <!-- Person display/edit (inline editor with save/cancel buttons) -->
-            <template v-else-if="col.field_type === 'person'">
-              <InlinePersonEditor
-                v-if="col.is_editable"
-                :modelValue="data[col.field_name]"
-                :personObject="getPersonObject(data, col.field_name)"
-                placeholder="-"
-                :disabled="selectionModeActive"
-                @save="(payload) => onPersonSave(data, col.field_name, payload)"
-              />
-              <span v-else-if="getPersonDisplay(data, col.field_name)">
-                {{ getPersonDisplay(data, col.field_name) }}
-              </span>
-              <span v-else>-</span>
-            </template>
-            <!-- Group display/edit (inline editor with save/cancel buttons) -->
-            <template v-else-if="col.field_type === 'group'">
-              <InlineGroupEditor
-                v-if="col.is_editable !== false"
-                :modelValue="data[col.field_name]"
-                :groupObject="getGroupObject(data, col.field_name)"
-                placeholder="-"
-                :disabled="selectionModeActive"
-                @save="(payload) => onGroupSave(data, col.field_name, payload)"
-              />
-              <span v-else-if="getGroupDisplay(data, col.field_name)">
-                {{ getGroupDisplay(data, col.field_name) }}
-              </span>
-              <span v-else>-</span>
-            </template>
-            <!-- Configuration Item display/edit (inline editor with save/cancel buttons) -->
-            <template v-else-if="col.field_type === 'configuration_item'">
+            <!-- Relation fields (unified handler for all relation types) -->
+            <template v-else-if="col.field_type === 'relation'">
               <InlineRelationEditor
-                v-if="col.is_editable !== false"
-                :modelValue="data[col.field_name]"
-                :relationData="getConfigurationItemObject(data, col.field_name)"
-                relationObject="configuration_items"
-                displayField="name"
-                secondaryField="ci_type"
-                placeholder="-"
-                :disabled="selectionModeActive"
-                @save="({ uuid, data: ciData }) => onConfigurationItemSave(data, col.field_name, { uuid, configurationItem: ciData })"
-              />
-              <span v-else-if="getConfigurationItemDisplay(data, col.field_name)">
-                {{ getConfigurationItemDisplay(data, col.field_name) }}
-              </span>
-              <span v-else>-</span>
-            </template>
-            <!-- Relation fields for extended fields (generic handler) -->
-            <template v-else-if="col.field_type === 'relation' && col.is_extended">
-              <InlineRelationEditor
-                v-if="col.is_editable && !selectionModeActive"
-                :modelValue="data.extended_core_fields?.[col.field_name]"
-                :relationData="getExtendedRelationObject(data, col.field_name)"
+                v-if="col.is_editable !== false && !selectionModeActive"
+                :modelValue="col.is_extended ? data.extended_core_fields?.[col.field_name] : data[col.field_name]"
+                :relationData="col.is_extended ? getExtendedRelationObject(data, col.field_name) : getRelationObject(data, col.field_name)"
                 :relationObject="col.relation_object"
                 :displayField="col.relation_display || 'label'"
                 :secondaryField="getRelationSecondaryField(col.relation_object)"
                 :relationFilter="parseRelationFilter(col.relation_filter)"
                 placeholder="-"
                 :disabled="selectionModeActive"
-                @save="({ uuid, data: relData }) => updateExtendedRelationField(data, col.field_name, uuid, relData)"
+                @save="({ uuid, data: relData }) => col.is_extended ? updateExtendedRelationField(data, col.field_name, uuid, relData) : onRelationSave(data, col.field_name, uuid, relData)"
               />
               <span v-else>
-                {{ getExtendedRelationDisplayValue(data, col) }}
+                {{ col.is_extended ? getExtendedRelationDisplayValue(data, col) : getRelationDisplayValue(data, col) }}
               </span>
             </template>
             <!-- Default text - with translation support -->
@@ -848,10 +792,8 @@ import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import ObjectView from '@/components/object/ObjectView.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
-import InlinePersonEditor from '@/components/form/InlinePersonEditor.vue'
 import InlineSelectEditor from '@/components/form/InlineSelectEditor.vue'
 import InlineWorkflowStatusEditor from '@/components/form/InlineWorkflowStatusEditor.vue'
-import InlineGroupEditor from '@/components/form/InlineGroupEditor.vue'
 import InlineRelationEditor from '@/components/form/InlineRelationEditor.vue'
 
 // Row summary components
@@ -1342,82 +1284,6 @@ const getCategoryIcon = (uuid) => {
   return category?.icon || 'pi-folder'
 }
 
-// Person display and autocomplete functions
-const getPersonDisplay = (data, fieldName) => {
-  // Check if we have the person data in the row (populated by backend)
-  const personField = fieldName.replace('_uuid', '')
-  if (data[personField] && typeof data[personField] === 'object') {
-    return `${data[personField].first_name} ${data[personField].last_name}`
-  }
-  // Check cache
-  const uuid = data[fieldName]
-  if (uuid && personsCache.value[uuid]) {
-    return personsCache.value[uuid].fullName
-  }
-  return null
-}
-
-const getPersonObject = (data, fieldName) => {
-  const personField = fieldName.replace('_uuid', '')
-  if (data[personField] && typeof data[personField] === 'object') {
-    return {
-      uuid: data[personField].uuid,
-      first_name: data[personField].first_name,
-      last_name: data[personField].last_name,
-      email: data[personField].email,
-      fullName: `${data[personField].first_name} ${data[personField].last_name}`
-    }
-  }
-  const uuid = data[fieldName]
-  if (uuid && personsCache.value[uuid]) {
-    return personsCache.value[uuid]
-  }
-  return null
-}
-
-const onPersonSave = async (data, fieldName, payload) => {
-  try {
-    const { uuid: personUuid, person } = payload
-    const updateData = { [fieldName]: personUuid }
-    await service.value.update(data.uuid, updateData)
-    
-    // Update local data
-    data[fieldName] = personUuid
-    const personField = fieldName.replace('_uuid', '')
-    data[personField] = person
-    
-    // Update the item in the items array to ensure reactivity
-    const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
-    if (itemIndex !== -1) {
-      items.value[itemIndex] = { 
-        ...items.value[itemIndex], 
-        [fieldName]: personUuid,
-        [personField]: person
-      }
-    }
-    
-    // Cache the person if selected
-    if (person?.uuid) {
-      personsCache.value[person.uuid] = person
-    }
-    
-    toast.add({
-      severity: 'success',
-      summary: t('common.success'),
-      detail: t('common.saved'),
-      life: 3000
-    })
-  } catch (error) {
-    console.error('[ObjectsCrud] Error updating person field:', error)
-    toast.add({
-      severity: 'error',
-      summary: t('common.error'),
-      detail: t('common.saveFailed'),
-      life: 5000
-    })
-  }
-}
-
 const onWorkflowStatusSave = async (data, payload) => {
   try {
     const { uuid: statusUuid, status } = payload
@@ -1453,104 +1319,6 @@ const onWorkflowStatusSave = async (data, payload) => {
       life: 5000
     })
   }
-}
-
-// Group display and editor functions
-// Convention: field_name = 'assigned_group_uuid', relation = 'assigned_group'
-const getGroupDisplay = (data, fieldName) => {
-  // Transform: assigned_group_uuid -> assigned_group
-  const relationField = fieldName.replace('_uuid', '')
-  if (data[relationField] && typeof data[relationField] === 'object') {
-    return data[relationField].group_name
-  }
-  return null
-}
-
-const getGroupObject = (data, fieldName) => {
-  // Transform: assigned_group_uuid -> assigned_group
-  const relationField = fieldName.replace('_uuid', '')
-  if (data[relationField] && typeof data[relationField] === 'object') {
-    return {
-      uuid: data[relationField].uuid,
-      group_name: data[relationField].group_name,
-      description: data[relationField].description
-    }
-  }
-  return null
-}
-
-const onGroupSave = async (data, fieldName, payload) => {
-  try {
-    const { uuid: groupUuid, group } = payload
-    const updateData = { [fieldName]: groupUuid }
-    await service.value.update(data.uuid, updateData)
-    
-    // Update local data - fieldName is like 'assigned_group_uuid', relation is 'assigned_group'
-    data[fieldName] = groupUuid
-    const relationField = fieldName.replace('_uuid', '')
-    data[relationField] = group
-    
-    // Update the item in the items array to ensure reactivity
-    const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
-    if (itemIndex !== -1) {
-      items.value[itemIndex] = { 
-        ...items.value[itemIndex], 
-        [fieldName]: groupUuid,
-        [relationField]: group
-      }
-    }
-    
-    toast.add({
-      severity: 'success',
-      summary: t('common.success'),
-      detail: t('common.saved'),
-      life: 3000
-    })
-  } catch (error) {
-    console.error('[ObjectsCrud] Error updating group field:', error)
-    toast.add({
-      severity: 'error',
-      summary: t('common.error'),
-      detail: t('common.saveFailed'),
-      life: 5000
-    })
-  }
-}
-
-// Configuration Item display and editor functions
-const getConfigurationItemDisplay = (data, fieldName) => {
-  // Check if we have the CI data in the row (populated by backend)
-  // Field name is like 'configuration_item_uuid', CI object would be at 'configuration_item'
-  const ciField = fieldName.replace('_uuid', '')
-  if (data[ciField] && typeof data[ciField] === 'object') {
-    return data[ciField].name
-  }
-  // Also check direct field name without transformation
-  if (data[fieldName] && typeof data[fieldName] === 'object') {
-    return data[fieldName].name
-  }
-  return null
-}
-
-const getConfigurationItemObject = (data, fieldName) => {
-  // Field name is like 'configuration_item_uuid', CI object would be at 'configuration_item'
-  const ciField = fieldName.replace('_uuid', '')
-  if (data[ciField] && typeof data[ciField] === 'object') {
-    return {
-      uuid: data[ciField].uuid,
-      name: data[ciField].name,
-      ci_type: data[ciField].ci_type
-    }
-  }
-  // Also check direct field name without transformation
-  if (data[fieldName] && typeof data[fieldName] === 'object') {
-    return {
-      uuid: data[fieldName].uuid,
-      name: data[fieldName].name,
-      ci_type: data[fieldName].ci_type
-    }
-  }
-  return null
 }
 
 // Generic function to get extended relation object (replaces getSymptomsObject, getTicketObject, getConfigurationItemObjectForExtended)
@@ -1597,30 +1365,62 @@ const getExtendedRelationDisplayValue = (data, col) => {
   const relationData = getExtendedRelationObject(data, col.field_name)
   if (relationData) {
     const displayField = col.relation_display || 'label'
+    // Special case for persons: show "first_name last_name"
+    if (col.relation_object === 'persons' && relationData.first_name && relationData.last_name) {
+      return `${relationData.first_name} ${relationData.last_name}`
+    }
     return relationData[displayField] || '-'
   }
   // Fallback to raw UUID if no cached data
   return data.extended_core_fields?.[col.field_name] || '-'
 }
 
-const onConfigurationItemSave = async (data, fieldName, payload) => {
+// Generic function to get relation object for regular (non-extended) fields
+const getRelationObject = (data, fieldName) => {
+  // Transform: field_name_uuid -> field_name (e.g., assigned_group_uuid -> assigned_group)
+  const relationField = fieldName.replace('_uuid', '')
+  
+  if (data[relationField] && typeof data[relationField] === 'object') {
+    return data[relationField]
+  }
+  if (data[fieldName] && typeof data[fieldName] === 'object') {
+    return data[fieldName]
+  }
+  return null
+}
+
+// Get display value for regular relation fields
+const getRelationDisplayValue = (data, col) => {
+  const relationData = getRelationObject(data, col.field_name)
+  if (relationData) {
+    const displayField = col.relation_display || 'label'
+    // Special case for persons: show "first_name last_name"
+    if (col.relation_object === 'persons' && relationData.first_name && relationData.last_name) {
+      return `${relationData.first_name} ${relationData.last_name}`
+    }
+    return relationData[displayField] || '-'
+  }
+  return '-'
+}
+
+// Generic save handler for all relation fields (replaces onPersonSave, onGroupSave, onConfigurationItemSave)
+const onRelationSave = async (data, fieldName, newUuid, relationData) => {
   try {
-    const { uuid: ciUuid, configurationItem } = payload
-    const updateData = { [fieldName]: ciUuid }
+    const updateData = { [fieldName]: newUuid }
     await service.value.update(data.uuid, updateData)
     
     // Update local data
-    data[fieldName] = ciUuid
-    const ciField = fieldName.replace('_uuid', '')
-    data[ciField] = configurationItem
+    data[fieldName] = newUuid
+    const relationField = fieldName.replace('_uuid', '')
+    data[relationField] = relationData
     
     // Update the item in the items array to ensure reactivity
     const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
     if (itemIndex !== -1) {
       items.value[itemIndex] = { 
         ...items.value[itemIndex], 
-        [fieldName]: ciUuid,
-        [ciField]: configurationItem
+        [fieldName]: newUuid,
+        [relationField]: relationData
       }
     }
     
@@ -1631,7 +1431,7 @@ const onConfigurationItemSave = async (data, fieldName, payload) => {
       life: 3000
     })
   } catch (error) {
-    console.error('[ObjectsCrud] Error updating configuration item field:', error)
+    console.error('[ObjectsCrud] Error updating relation field:', error)
     toast.add({
       severity: 'error',
       summary: t('common.error'),

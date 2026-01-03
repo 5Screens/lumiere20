@@ -699,6 +699,7 @@ model object_fields {
   options_source    String?  @db.Text                  // For select: static options JSON or API endpoint
   relation_object   String?  @db.VarChar(100)          // For relation: target object type code
   relation_display  String?  @db.VarChar(100)          // For relation: field to display (e.g., 'name')
+  relation_filter   String?  @db.Text                  // For relation: JSON filter (e.g., '{"is_active":true}')
   
   // Formatting
   format_pattern    String?  @db.VarChar(100)          // Date format, number format, etc.

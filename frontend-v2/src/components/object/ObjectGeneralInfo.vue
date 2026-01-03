@@ -165,59 +165,16 @@
           :disabled="field.is_readonly"
         />
         
-        <!-- CI Category Selector -->
-        <CICategorySelector 
-          v-else-if="field.field_type === 'ci_category'"
+        <!-- Relation Selector (unified for all relation types) -->
+        <RelationSelector 
+          v-else-if="field.field_type === 'relation'"
           :id="field.field_name" 
           :modelValue="modelValue[field.field_name]"
-          @update:modelValue="updateField(field.field_name, $event)"
-          :disabled="field.is_readonly"
-        />
-        
-        <!-- CI Model Selector -->
-        <CiModelSelector 
-          v-else-if="field.field_type === 'ci_model'"
-          :id="field.field_name" 
-          :modelValue="modelValue[field.field_name]"
-          :ciTypeCode="modelValue.ci_type"
-          @update:modelValue="updateField(field.field_name, $event)"
-          :disabled="field.is_readonly"
-        />
-        
-        <!-- CI Type Target Selector (for model CIs to select which type they are model for) -->
-        <CiTypeTargetSelector 
-          v-else-if="field.field_type === 'ci_type_target'"
-          :id="field.field_name" 
-          :modelValue="modelValue[field.field_name]"
-          @update:modelValue="updateField(field.field_name, $event)"
-          :disabled="field.is_readonly"
-        />
-        
-        <!-- Person Selector -->
-        <PersonSelector 
-          v-else-if="field.field_type === 'person'"
-          :id="field.field_name" 
-          :modelValue="modelValue[field.field_name]"
+          :relationObject="field.relation_object"
+          :displayField="field.relation_display"
+          :relationFilter="field.relation_filter"
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly || field.is_editable === false"
-        />
-        
-        <!-- Group Selector -->
-        <GroupSelector 
-          v-else-if="field.field_type === 'group'"
-          :id="field.field_name" 
-          :modelValue="modelValue[field.field_name]"
-          @update:modelValue="updateField(field.field_name, $event)"
-          :disabled="field.is_readonly || field.is_editable === false"
-        />
-        
-        <!-- Configuration Item Selector -->
-        <ConfigurationItemSelector 
-          v-else-if="field.field_type === 'configuration_item'"
-          :id="field.field_name" 
-          :modelValue="modelValue[field.field_name]"
-          @update:modelValue="updateField(field.field_name, $event)"
-          :disabled="field.is_readonly"
         />
         
         <!-- Workflow Status (uses StatusPicker) -->
@@ -275,13 +232,9 @@ const referenceDataStore = useReferenceDataStore()
 import TagStyleSelector from '@/components/form/TagStyleSelector.vue'
 import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
-import CICategorySelector from '@/components/form/CICategorySelector.vue'
-import CiModelSelector from '@/components/form/CiModelSelector.vue'
-import CiTypeTargetSelector from '@/components/form/CiTypeTargetSelector.vue'
 import StatusPicker from '@/components/form/StatusPicker.vue'
+import RelationSelector from '@/components/form/RelationSelector.vue'
 import PersonSelector from '@/components/form/PersonSelector.vue'
-import GroupSelector from '@/components/form/GroupSelector.vue'
-import ConfigurationItemSelector from '@/components/form/ConfigurationItemSelector.vue'
 import AttachmentsPicker from '@/components/form/AttachmentsPicker.vue'
 
 // Utils
