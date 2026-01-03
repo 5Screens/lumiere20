@@ -70,7 +70,7 @@
                 :modelValue="data.value"
                 :relationData="data._relationObject"
                 :relationObject="data.relation_object"
-                :relationFilter="data.relation_filter"
+                :relationFilter="parseRelationFilter(data.relation_filter)"
                 :placeholder="getRelationPlaceholder(data)"
                 @click.stop
                 @save="({ uuid, data: relatedObj }) => onRelationSave(data, uuid, relatedObj)"
@@ -438,6 +438,18 @@ const getRelationPlaceholder = (data) => {
     entities: t('common.searchEntity')
   }
   return placeholders[data.relation_object] || t('common.search')
+}
+
+// Parse relation_filter from JSON string to object
+const parseRelationFilter = (filter) => {
+  if (!filter) return null
+  if (typeof filter === 'object') return filter
+  try {
+    return JSON.parse(filter)
+  } catch (e) {
+    console.warn('[ObjectExtendedInfo] Failed to parse relation_filter:', filter)
+    return null
+  }
 }
 
 // Handle relation field save (from Inline*Editor components)
