@@ -205,7 +205,7 @@ const search = async (searchParams = {}) => {
     const total = await prisma.configuration_items.count({ where });
     logger.info(`[CONFIGURATION_ITEMS] Total count: ${total}`);
 
-    // Fetch data with status included
+    // Fetch data with status and model included
     const items = await prisma.configuration_items.findMany({
       where,
       orderBy: buildPrismaOrderBy(sortField, sortOrder),
@@ -216,7 +216,8 @@ const search = async (searchParams = {}) => {
           include: {
             category: true
           }
-        }
+        },
+        model: true
       }
     });
 

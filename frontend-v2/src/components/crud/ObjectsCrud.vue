@@ -1402,9 +1402,17 @@ const getRelationObject = (data, fieldName) => {
   // Transform: field_name_uuid -> field_name (e.g., assigned_group_uuid -> assigned_group)
   const relationField = fieldName.replace('_uuid', '')
   
+  // Try standard relation field name (e.g., assigned_group for assigned_group_uuid)
   if (data[relationField] && typeof data[relationField] === 'object') {
     return data[relationField]
   }
+  
+  // Try without rel_ prefix (e.g., model for rel_model_uuid, category for rel_category_uuid)
+  const withoutRelPrefix = relationField.replace(/^rel_/, '')
+  if (data[withoutRelPrefix] && typeof data[withoutRelPrefix] === 'object') {
+    return data[withoutRelPrefix]
+  }
+  
   if (data[fieldName] && typeof data[fieldName] === 'object') {
     return data[fieldName]
   }
@@ -1434,16 +1442,26 @@ const onRelationSave = async (data, fieldName, newUuid, relationData) => {
     // Update local data
     data[fieldName] = newUuid
     const relationField = fieldName.replace('_uuid', '')
+    const withoutRelPrefix = relationField.replace(/^rel_/, '')
+    
+    // Store relation data with both possible names for compatibility
     data[relationField] = relationData
+    if (relationField !== withoutRelPrefix) {
+      data[withoutRelPrefix] = relationData
+    }
     
     // Update the item in the items array to ensure reactivity
     const itemIndex = items.value.findIndex(item => item.uuid === data.uuid)
     if (itemIndex !== -1) {
-      items.value[itemIndex] = { 
+      const updateObj = { 
         ...items.value[itemIndex], 
         [fieldName]: newUuid,
         [relationField]: relationData
       }
+      if (relationField !== withoutRelPrefix) {
+        updateObj[withoutRelPrefix] = relationData
+      }
+      items.value[itemIndex] = updateObj
     }
     
     toast.add({

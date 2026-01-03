@@ -408,12 +408,15 @@ const search = async (searchParams = {}, locale = 'en') => {
     // Count total
     const total = await prisma.ci_types.count({ where });
 
-    // Fetch data
+    // Fetch data with category included
     const items = await prisma.ci_types.findMany({
       where,
       orderBy: buildPrismaOrderBy(sortField, sortOrder),
       skip,
       take: limit,
+      include: {
+        category: true
+      }
     });
 
     // Fetch ALL translations (not filtered by locale) so admin can see all languages

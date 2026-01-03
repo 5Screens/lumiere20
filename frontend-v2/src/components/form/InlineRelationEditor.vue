@@ -346,6 +346,16 @@ const cancel = () => {
 const onSearch = async (event) => {
   const query = event.query || ''
   
+  console.log('[InlineRelationEditor] onSearch called', {
+    relationObject: props.relationObject,
+    eventQuery: event.query,
+    eventQueryType: typeof event.query,
+    query,
+    displayField: effectiveDisplayField.value,
+    secondaryField: effectiveSecondaryField.value,
+    relationFilter: props.relationFilter
+  })
+  
   // Reset pagination on new search
   currentQuery.value = query
   currentPage.value = 1
@@ -364,12 +374,24 @@ const onSearch = async (event) => {
     // Build filters using helper
     const filters = buildFilters(query)
     
+    console.log('[InlineRelationEditor] Sending search request', {
+      endpoint: `${endpoint}/search`,
+      filters,
+      sortField: effectiveDisplayField.value
+    })
+    
     const response = await api.post(`${endpoint}/search`, {
       filters,
       page: 1,
       limit: PAGE_SIZE,
       sortField: effectiveDisplayField.value,
       sortOrder: 1
+    })
+    
+    console.log('[InlineRelationEditor] Search response', {
+      dataCount: response.data?.data?.length,
+      total: response.data?.total,
+      firstItems: response.data?.data?.slice(0, 3).map(d => ({ uuid: d.uuid, first_name: d.first_name, last_name: d.last_name, label: d.label, name: d.name }))
     })
     
     suggestions.value = response.data?.data || []
