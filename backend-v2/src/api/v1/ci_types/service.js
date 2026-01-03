@@ -423,8 +423,39 @@ const search = async (searchParams = {}, locale = 'en') => {
     const uuids = items.map(ct => ct.uuid);
     const translationsMap = await fetchTranslations(uuids, null);
 
+    // Fetch translations for categories
+    const categoryUuids = [...new Set(items.filter(ct => ct.category).map(ct => ct.category.uuid))];
+    const categoryTranslationsMap = {};
+    if (categoryUuids.length > 0) {
+      const categoryTranslations = await prisma.translated_fields.findMany({
+        where: {
+          entity_type: 'ci_categories',
+          entity_uuid: { in: categoryUuids },
+          field_name: 'label'
+        }
+      });
+      for (const t of categoryTranslations) {
+        if (!categoryTranslationsMap[t.entity_uuid]) {
+          categoryTranslationsMap[t.entity_uuid] = {};
+        }
+        categoryTranslationsMap[t.entity_uuid][t.locale] = t.value;
+      }
+    }
+
     // Transform with translations (locale used only for main field value, _translations contains all)
-    const transformedItems = items.map(ct => transformWithTranslations(ct, translationsMap[ct.uuid] || [], locale));
+    const transformedItems = items.map(ct => {
+      const transformed = transformWithTranslations(ct, translationsMap[ct.uuid] || [], locale);
+      // Apply category translation
+      if (transformed.category && categoryTranslationsMap[transformed.category.uuid]) {
+        const catTranslations = categoryTranslationsMap[transformed.category.uuid];
+        transformed.category = {
+          ...transformed.category,
+          label: catTranslations[locale] || transformed.category.label,
+          _translations: { label: catTranslations }
+        };
+      }
+      return transformed;
+    });
 
     logger.info(`[CI_TYPES] Found ${items.length} items (total: ${total})`);
 
