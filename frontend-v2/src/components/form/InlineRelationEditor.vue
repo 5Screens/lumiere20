@@ -38,7 +38,7 @@
               <i :class="[getOptionIcon(option), 'text-primary-600 dark:text-primary-400']" />
             </div>
             <div class="flex-1 min-w-0">
-              <div class="font-medium truncate">{{ option[effectiveDisplayField] }}</div>
+              <div class="font-medium truncate">{{ getOptionDisplayValue(option) }}</div>
               <div v-if="effectiveSecondaryField && option[effectiveSecondaryField]" class="text-sm text-surface-500 truncate">
                 {{ option[effectiveSecondaryField] }}
               </div>
@@ -278,6 +278,10 @@ const buildFilters = (query) => {
 // Computed
 const displayValue = computed(() => {
   if (props.relationData) {
+    // Special case for persons: show "first_name last_name"
+    if (props.relationObject === 'persons' && props.relationData.first_name && props.relationData.last_name) {
+      return `${props.relationData.first_name} ${props.relationData.last_name}`
+    }
     return props.relationData[effectiveDisplayField.value]
   }
   return null
@@ -290,6 +294,14 @@ const hasChanges = computed(() => {
 })
 
 // Methods
+const getOptionDisplayValue = (option) => {
+  // Special case for persons: show "first_name last_name"
+  if (props.relationObject === 'persons' && option.first_name && option.last_name) {
+    return `${option.first_name} ${option.last_name}`
+  }
+  return option[effectiveDisplayField.value] || '-'
+}
+
 const getOptionIcon = (option) => {
   // For tickets, use icon from ticket data (fetched from ticket_types.icon)
   if (props.relationObject === 'tickets' && option.icon) {
