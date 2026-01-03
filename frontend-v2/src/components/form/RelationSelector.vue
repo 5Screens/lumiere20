@@ -7,7 +7,7 @@
       @complete="onSearch"
       @item-select="onItemSelect"
       @clear="onClear"
-      :optionLabel="effectiveDisplayField"
+      :optionLabel="getDisplayValue"
       :placeholder="placeholder || $t('common.select')"
       :minLength="0"
       :loading="loading"
