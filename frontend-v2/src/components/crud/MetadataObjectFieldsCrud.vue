@@ -116,16 +116,33 @@
               </template>
             </Column>
 
-            <!-- Options Source column -->
-            <Column field="options_source" :header="$t('extendedFields.options')" style="min-width: 120px">
+            <!-- Options Source / Relation Info column -->
+            <Column field="options_source" :header="$t('extendedFields.options')" style="min-width: 150px">
               <template #body="{ data }">
-                <span 
-                  v-if="data.options_source" 
-                  class="text-xs text-surface-600 dark:text-surface-400 cursor-help truncate max-w-[150px] inline-block"
-                  v-tooltip.top="{ value: formatOptionsTooltip(data.options_source), class: 'max-w-md' }"
-                >
-                  {{ formatOptionsDisplay(data.options_source) }}
-                </span>
+                <!-- Relation field info -->
+                <template v-if="data.field_type === 'relation'">
+                  <div 
+                    class="text-xs text-surface-600 dark:text-surface-400 cursor-help"
+                    v-tooltip.top="{ value: formatRelationTooltip(data), class: 'max-w-md' }"
+                  >
+                    <div class="flex items-center gap-1">
+                      <i class="pi pi-link text-primary-500" />
+                      <span class="font-medium">{{ data.relation_object }}</span>
+                    </div>
+                    <div v-if="data.relation_filter" class="text-surface-400 truncate max-w-[140px]">
+                      {{ formatRelationFilter(data.relation_filter) }}
+                    </div>
+                  </div>
+                </template>
+                <!-- Select options -->
+                <template v-else-if="data.options_source">
+                  <span 
+                    class="text-xs text-surface-600 dark:text-surface-400 cursor-help truncate max-w-[150px] inline-block"
+                    v-tooltip.top="{ value: formatOptionsTooltip(data.options_source), class: 'max-w-md' }"
+                  >
+                    {{ formatOptionsDisplay(data.options_source) }}
+                  </span>
+                </template>
                 <span v-else class="text-surface-300 text-xs">—</span>
               </template>
             </Column>
@@ -637,6 +654,49 @@ const formatOptionsTooltip = (options) => {
   }
   
   return JSON.stringify(options, null, 2)
+}
+
+// Format relation filter for display
+const formatRelationFilter = (filter) => {
+  if (!filter) return ''
+  
+  // Parse if string
+  let filterObj = filter
+  if (typeof filter === 'string') {
+    try {
+      filterObj = JSON.parse(filter)
+    } catch {
+      return filter
+    }
+  }
+  
+  const parts = []
+  if (filterObj.ci_type_code) parts.push(`ci: ${filterObj.ci_type_code}`)
+  if (filterObj.is_model_for_ci_type_code) parts.push(`model: ${filterObj.is_model_for_ci_type_code}`)
+  if (filterObj.is_active !== undefined) parts.push(`active: ${filterObj.is_active}`)
+  if (filterObj.ticket_type_code) parts.push(`ticket: ${filterObj.ticket_type_code}`)
+  return parts.join(', ') || JSON.stringify(filterObj)
+}
+
+// Format relation tooltip
+const formatRelationTooltip = (data) => {
+  const lines = []
+  lines.push(`Object: ${data.relation_object || '-'}`)
+  lines.push(`Display: ${data.relation_display || '-'}`)
+  if (data.relation_filter) {
+    let filterStr = data.relation_filter
+    if (typeof filterStr === 'string') {
+      try {
+        filterStr = JSON.stringify(JSON.parse(filterStr), null, 2)
+      } catch {
+        // Keep as is
+      }
+    } else {
+      filterStr = JSON.stringify(filterStr, null, 2)
+    }
+    lines.push(`Filter: ${filterStr}`)
+  }
+  return lines.join('\n')
 }
 
 const formatDate = (dateString) => {

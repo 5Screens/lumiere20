@@ -132,13 +132,48 @@ const search = async (searchParams = {}) => {
 
     const skip = (page - 1) * limit;
 
-    // Build Prisma where clause
-    const where = buildPrismaWhereFromFilters(filters, {
+    // Extract special filters that are not direct columns of configuration_items
+    const { is_model_for_ci_type_code: modelFilter, ...standardFilters } = filters;
+
+    // Build Prisma where clause (excluding special filters)
+    const where = buildPrismaWhereFromFilters(standardFilters, {
       globalSearchFields: ['name', 'description', 'ci_type'],
       dateColumns: ['created_at', 'updated_at'],
     });
 
     logger.info(`[CONFIGURATION_ITEMS] Initial where clause: ${JSON.stringify(where)}`);
+
+    // Handle is_model_for_ci_type_code filter (dynamic filter for rel_model_uuid)
+    // This finds CIs whose ci_type has is_model_for_ci_type_code matching the provided value
+    if (modelFilter?.value) {
+      const targetCiTypeCode = modelFilter.value;
+      logger.info(`[CONFIGURATION_ITEMS] Filtering models for ci_type_code: ${targetCiTypeCode}`);
+      
+      // Find all CI types that are models for this target CI type
+      const modelTypes = await prisma.ci_types.findMany({
+        where: { is_model_for_ci_type_code: targetCiTypeCode },
+        select: { code: true }
+      });
+      
+      if (modelTypes.length > 0) {
+        const modelTypeCodes = modelTypes.map(t => t.code);
+        logger.info(`[CONFIGURATION_ITEMS] Found model types: ${modelTypeCodes.join(', ')}`);
+        
+        if (where.AND) {
+          where.AND.push({ ci_type: { in: modelTypeCodes } });
+        } else {
+          where.AND = [{ ci_type: { in: modelTypeCodes } }];
+        }
+      } else {
+        logger.info(`[CONFIGURATION_ITEMS] No model types found for ${targetCiTypeCode}, returning empty`);
+        // No model types found, return empty result
+        if (where.AND) {
+          where.AND.push({ ci_type: '__NO_MATCH__' });
+        } else {
+          where.AND = [{ ci_type: '__NO_MATCH__' }];
+        }
+      }
+    }
 
     // If ciTypeUuid is provided, filter by CI type code
     if (ciTypeUuid) {

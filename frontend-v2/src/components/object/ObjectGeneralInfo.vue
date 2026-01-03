@@ -173,6 +173,7 @@
           :relationObject="field.relation_object"
           :displayField="field.relation_display"
           :relationFilter="field.relation_filter"
+          :context="modelValue"
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly || field.is_editable === false"
         />

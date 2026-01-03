@@ -324,7 +324,7 @@
                 :relationObject="col.relation_object"
                 :displayField="col.relation_display || 'label'"
                 :secondaryField="getRelationSecondaryField(col.relation_object)"
-                :relationFilter="parseRelationFilter(col.relation_filter)"
+                :relationFilter="parseRelationFilter(col.relation_filter, data)"
                 placeholder="-"
                 :disabled="selectionModeActive"
                 @save="({ uuid, data: relData }) => col.is_extended ? updateExtendedRelationField(data, col.field_name, uuid, relData) : onRelationSave(data, col.field_name, uuid, relData)"
@@ -1348,16 +1348,38 @@ const getRelationSecondaryField = (relationObject) => {
   return secondaryFields[relationObject] || null
 }
 
-// Parse relation_filter from JSON string to object
-const parseRelationFilter = (filter) => {
+// Parse relation_filter from JSON string to object and resolve dynamic placeholders
+const parseRelationFilter = (filter, context = {}) => {
   if (!filter) return null
-  if (typeof filter === 'object') return filter
-  try {
-    return JSON.parse(filter)
-  } catch (e) {
-    console.error('[ObjectsCrud] Failed to parse relation_filter:', filter, e)
-    return null
+  
+  let filterObj = filter
+  if (typeof filter === 'string') {
+    try {
+      filterObj = JSON.parse(filter)
+    } catch (e) {
+      console.error('[ObjectsCrud] Failed to parse relation_filter:', filter, e)
+      return null
+    }
   }
+  
+  // Resolve dynamic placeholders like $ci_type from context
+  const resolved = {}
+  for (const [key, value] of Object.entries(filterObj)) {
+    if (typeof value === 'string' && value.startsWith('$')) {
+      const contextKey = value.substring(1) // Remove $ prefix
+      const contextValue = context[contextKey]
+      if (contextValue !== undefined && contextValue !== null) {
+        resolved[key] = contextValue
+      } else {
+        // Skip this filter if context value is not available
+        console.warn(`[ObjectsCrud] Context value for ${value} not found, skipping filter`)
+      }
+    } else {
+      resolved[key] = value
+    }
+  }
+  
+  return Object.keys(resolved).length > 0 ? resolved : null
 }
 
 // Get display value for extended relation fields

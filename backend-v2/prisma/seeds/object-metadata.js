@@ -125,7 +125,7 @@ async function seedObjectMetadata() {
     configuration_items: [
       { field_name: 'name', label_key: 'configurationItems.name', field_type: 'text', is_required: true, is_translatable: true, min_width: '16rem', display_order: 1, default_visible: true },
       { field_name: 'ci_type', label_key: 'configurationItems.ciType', field_type: 'select', min_width: '10rem', display_order: 2, options_source: '/ci_types/options', default_visible: true },
-      { field_name: 'rel_model_uuid', label_key: 'configurationItems.model', field_type: 'relation', relation_object: 'configuration_items', relation_display: 'name', relation_filter: '{"ci_type_code":"MODEL"}', min_width: '14rem', display_order: 3, show_in_table: false, default_visible: true },
+      { field_name: 'rel_model_uuid', label_key: 'configurationItems.model', field_type: 'relation', relation_object: 'configuration_items', relation_display: 'name', relation_filter: '{"is_model_for_ci_type_code":"$ci_type"}', min_width: '14rem', display_order: 3, show_in_table: true, default_visible: true },
       { field_name: 'rel_status_uuid', label_key: 'workflow.status', field_type: 'workflow_status', show_in_table: true, default_visible: true, min_width: '10rem', display_order: 4 },
       { field_name: 'description', label_key: 'configurationItems.description', field_type: 'textarea', is_translatable: true, min_width: '20rem', display_order: 5, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10, default_visible: true },

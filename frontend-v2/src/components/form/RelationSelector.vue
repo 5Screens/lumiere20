@@ -80,9 +80,15 @@ const props = defineProps({
     default: null
   },
   // Filter to apply (e.g., { is_active: true }, { ci_type_code: 'MODEL' })
+  // Supports dynamic placeholders like $ci_type which will be replaced from context
   relationFilter: {
     type: [Object, String],
     default: null
+  },
+  // Context object for resolving dynamic filter placeholders (e.g., { ci_type: 'SERVER' })
+  context: {
+    type: Object,
+    default: () => ({})
   },
   // Placeholder text
   placeholder: {
@@ -121,18 +127,40 @@ const footerSentinelRef = ref(null)
 const loadMoreTriggerRef = ref(null)
 let intersectionObserver = null
 
-// Parse relation filter if it's a string
+// Parse relation filter if it's a string and resolve dynamic placeholders
 const parsedRelationFilter = computed(() => {
   if (!props.relationFilter) return null
-  if (typeof props.relationFilter === 'string') {
+  
+  let filterObj = props.relationFilter
+  
+  // Parse JSON string if needed
+  if (typeof filterObj === 'string') {
     try {
-      return JSON.parse(props.relationFilter)
+      filterObj = JSON.parse(filterObj)
     } catch (e) {
       console.error('[RelationSelector] Failed to parse relationFilter:', e)
       return null
     }
   }
-  return props.relationFilter
+  
+  // Resolve dynamic placeholders like $ci_type from context
+  const resolved = {}
+  for (const [key, value] of Object.entries(filterObj)) {
+    if (typeof value === 'string' && value.startsWith('$')) {
+      const contextKey = value.substring(1) // Remove $ prefix
+      const contextValue = props.context?.[contextKey]
+      if (contextValue !== undefined && contextValue !== null) {
+        resolved[key] = contextValue
+      } else {
+        // Skip this filter if context value is not available
+        console.warn(`[RelationSelector] Context value for ${value} not found, skipping filter`)
+      }
+    } else {
+      resolved[key] = value
+    }
+  }
+  
+  return Object.keys(resolved).length > 0 ? resolved : null
 })
 
 // Computed properties using metadata with prop overrides
