@@ -381,7 +381,7 @@
                 :displayField="col.relation_display || 'label'"
                 :secondaryField="getRelationSecondaryField(col.relation_object)"
                 :relationFilter="parseRelationFilter(col.relation_filter)"
-                :placeholder="col.label"
+                placeholder="-"
                 :disabled="selectionModeActive"
                 @save="({ uuid, data: relData }) => updateExtendedRelationField(data, col.field_name, uuid, relData)"
               />
