@@ -104,12 +104,13 @@ const getByCode = async (code) => {
  * Create a new ticket type
  */
 const create = async (data, translations = {}) => {
-  const { code, label, is_active = true } = data;
+  const { code, label, icon, is_active = true } = data;
   
   const ticketType = await prisma.ticket_types.create({
     data: {
       code,
       label,
+      icon,
       is_active
     }
   });
@@ -139,11 +140,12 @@ const create = async (data, translations = {}) => {
  * Update a ticket type
  */
 const update = async (uuid, data, translations = {}) => {
-  const { code, label, is_active } = data;
+  const { code, label, icon, is_active } = data;
   
   const updateData = {};
   if (code !== undefined) updateData.code = code;
   if (label !== undefined) updateData.label = label;
+  if (icon !== undefined) updateData.icon = icon;
   if (is_active !== undefined) updateData.is_active = is_active;
   
   const ticketType = await prisma.ticket_types.update({
