@@ -1093,6 +1093,7 @@ const mapTypeFieldsToColumns = (fields) => {
       options_source: f.options_source,
       options: f.options, // Parsed options for select fields
       unit: f.unit,
+      min_width: f.min_width, // Column minimum width
       relation_object: f.relation_object,
       relation_display: f.relation_display,
       relation_filter: f.relation_filter,
