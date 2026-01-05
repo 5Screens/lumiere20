@@ -1,5 +1,5 @@
 <template>
-  <div class="relation-selector">
+  <div class="relation-selector flex items-center gap-2">
     <AutoComplete
       ref="autocompleteRef"
       v-model="selectedItem"
@@ -16,7 +16,7 @@
       dropdown
       showClear
       appendTo="body"
-      fluid
+      class="flex-1"
       :pt="{ input: { class: 'w-full' } }"
     >
       <template #option="{ option, index }">
@@ -43,6 +43,35 @@
         </div>
       </template>
     </AutoComplete>
+    
+    <!-- View details button -->
+    <button
+      type="button"
+      class="p-1.5 rounded-full transition-colors shrink-0"
+      :class="selectedItem ? 'text-primary-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer' : 'text-surface-300 dark:text-surface-600 cursor-not-allowed'"
+      :disabled="!selectedItem"
+      @click="openDetailsDrawer"
+      :title="$t('common.viewDetails')"
+    >
+      <i class="pi pi-eye text-lg" />
+    </button>
+    
+    <!-- Details Drawer -->
+    <Drawer 
+      v-model:visible="detailsDrawerVisible" 
+      position="right"
+      class="w-full md:w-[600px]"
+      :showCloseIcon="false"
+      :showHeader="false"
+    >
+      <ObjectView
+        v-if="detailsDrawerVisible"
+        :object-type="relationObject"
+        :object-id="selectedItem?.uuid"
+        mode="view"
+        @close="detailsDrawerVisible = false"
+      />
+    </Drawer>
   </div>
 </template>
 
@@ -51,6 +80,8 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '@/services/api'
 import AutoComplete from 'primevue/autocomplete'
+import Drawer from 'primevue/drawer'
+import ObjectView from '@/components/object/ObjectView.vue'
 import { useReferenceDataStore } from '@/stores/referenceDataStore'
 
 const { t } = useI18n()
@@ -115,6 +146,7 @@ const suggestions = ref([])
 const loading = ref(false)
 const autocompleteRef = ref(null)
 const objectTypeMeta = ref(null)
+const detailsDrawerVisible = ref(false)
 
 // Pagination state
 const currentQuery = ref('')
@@ -293,6 +325,13 @@ const onItemSelect = (event) => {
 
 const onClear = () => {
   emit('update:modelValue', null)
+}
+
+// Open details drawer
+const openDetailsDrawer = () => {
+  if (selectedItem.value) {
+    detailsDrawerVisible.value = true
+  }
 }
 
 const onSearch = async (event) => {
