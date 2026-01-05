@@ -186,8 +186,11 @@ async function seedObjectSetup() {
     { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'NONE', icon: 'pi-minus', color: 'secondary', display_order: 1 },
     { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'TEAM_LEAD', icon: 'pi-user', color: 'info', display_order: 2 },
     { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'MANAGER', icon: 'pi-users', color: 'info', display_order: 3 },
-    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'CAB', icon: 'pi-sitemap', color: 'warning', display_order: 4 },
-    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'ECAB', icon: 'pi-building', color: 'danger', display_order: 5 },
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'TECHNICAL_VALIDATION', icon: 'pi-cog', color: 'info', display_order: 4 },
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'SECURITY_VALIDATION', icon: 'pi-shield', color: 'warning', display_order: 5 },
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'BUSINESS_VALIDATION', icon: 'pi-briefcase', color: 'info', display_order: 6 },
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'CAB', icon: 'pi-sitemap', color: 'warning', display_order: 7 },
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'ECAB', icon: 'pi-building', color: 'danger', display_order: 8 },
 
     // ========================================
     // PROBLEM - Impact (specific to Problem, not reusing Incident)
@@ -477,6 +480,9 @@ async function seedObjectSetupTranslations() {
     'change|VALIDATION_LEVEL|NONE': { fr: 'Aucune', en: 'None', es: 'Ninguna', pt: 'Nenhuma' },
     'change|VALIDATION_LEVEL|TEAM_LEAD': { fr: 'Chef d\'équipe', en: 'Team Lead', es: 'Líder de equipo', pt: 'Líder de equipe' },
     'change|VALIDATION_LEVEL|MANAGER': { fr: 'Manager', en: 'Manager', es: 'Gerente', pt: 'Gerente' },
+    'change|VALIDATION_LEVEL|TECHNICAL_VALIDATION': { fr: 'Validation technique (architecte, expert infra)', en: 'Technical validation (architect, infra expert)', es: 'Validación técnica (arquitecto, experto infra)', pt: 'Validação técnica (arquiteto, especialista infra)' },
+    'change|VALIDATION_LEVEL|SECURITY_VALIDATION': { fr: 'Validation sécurité (RSSI, DPO)', en: 'Security validation (CISO, DPO)', es: 'Validación de seguridad (CISO, DPO)', pt: 'Validação de segurança (CISO, DPO)' },
+    'change|VALIDATION_LEVEL|BUSINESS_VALIDATION': { fr: 'Validation métier (responsable de service, product owner)', en: 'Business validation (service owner, product owner)', es: 'Validación de negocio (responsable de servicio, product owner)', pt: 'Validação de negócio (responsável de serviço, product owner)' },
     'change|VALIDATION_LEVEL|CAB': { fr: 'CAB (Change Advisory Board)', en: 'CAB (Change Advisory Board)', es: 'CAB (Comité de cambios)', pt: 'CAB (Comitê de mudanças)' },
     'change|VALIDATION_LEVEL|ECAB': { fr: 'ECAB (Emergency CAB)', en: 'ECAB (Emergency CAB)', es: 'ECAB (CAB de emergencia)', pt: 'ECAB (CAB de emergência)' },
 

@@ -767,6 +767,17 @@ async function seedTicketTypeFields() {
       },
       // Validation
       {
+        field_name: 'rel_required_validations',
+        label: 'Required Validations',
+        field_type: 'select',
+        data_type: 'string',
+        show_in_table: true,
+        show_in_form: true,
+        display_order: 49,
+        min_width: '10rem',
+        options_source: '/object-setup/options?object_type=change&metadata=VALIDATION_LEVEL',
+      },
+      {
         field_name: 'cab_comments',
         label: 'CAB Comments',
         field_type: 'textarea',
