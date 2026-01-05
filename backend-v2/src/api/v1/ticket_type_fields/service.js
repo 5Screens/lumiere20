@@ -143,9 +143,11 @@ const getByTypeUuid = async (ticketTypeUuid, locale = null) => {
       orderBy: { display_order: 'asc' }
     });
     
-    // Fetch translations
+    // Fetch translations with locale filter
     const uuids = fields.map(f => f.uuid);
     const translationsMap = await fetchTranslations(uuids, locale);
+    
+    logger.info(`[TICKET_TYPE_FIELDS] getByTypeUuid - ticketTypeUuid: ${ticketTypeUuid}, locale: ${locale}, fieldsCount: ${fields.length}, translationsCount: ${Object.keys(translationsMap).length}`);
     
     // Transform with translations
     return fields.map(field => 
@@ -171,8 +173,9 @@ const getByUuid = async (uuid, locale = null) => {
     
     if (!field) return null;
     
-    // Fetch translations
+    // Fetch translations with locale filter
     const translationsMap = await fetchTranslations([uuid], locale);
+    logger.info(`[TICKET_TYPE_FIELDS] getByUuid - uuid: ${uuid}, locale: ${locale}, translationsCount: ${(translationsMap[uuid] || []).length}`);
     return transformWithTranslations(field, translationsMap[uuid] || [], locale);
   } catch (error) {
     logger.error(`[TICKET_TYPE_FIELDS] Error fetching field ${uuid}:`, error);

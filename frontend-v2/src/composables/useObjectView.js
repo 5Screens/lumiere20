@@ -302,10 +302,17 @@ export function useObjectView(options) {
       
       // Load fields for this ticket type
       const fields = await ticketTypeFieldsService.getByTypeUuid(ticketType.uuid)
-      extendedFields.value = fields.filter(f => f.show_in_form).map(f => ({
-        ...f,
-        label: f._translations?.label?.[locale.value] || f.label
-      }))
+      console.log('[useObjectView] loadExtendedFieldsForTickets - raw fields from API:', fields)
+      console.log('[useObjectView] loadExtendedFieldsForTickets - current locale:', locale.value)
+      console.log('[useObjectView] loadExtendedFieldsForTickets - first field _translations:', fields[0]?._translations)
+      extendedFields.value = fields.filter(f => f.show_in_form).map(f => {
+        const translatedLabel = f._translations?.label?.[locale.value]
+        console.log(`[useObjectView] Field ${f.field_name}: _translations.label =`, f._translations?.label, '-> translatedLabel =', translatedLabel, '-> fallback =', f.label)
+        return {
+          ...f,
+          label: translatedLabel || f.label
+        }
+      })
     } catch (error) {
       console.error('Failed to load extended fields for tickets:', error)
       extendedFields.value = []

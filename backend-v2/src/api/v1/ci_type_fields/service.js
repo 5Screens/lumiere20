@@ -147,9 +147,9 @@ const getByTypeUuid = async (ciTypeUuid, locale = null) => {
       orderBy: { display_order: 'asc' }
     });
     
-    // Fetch translations
+    // Fetch ALL translations (no locale filter) to populate _translations
     const uuids = fields.map(f => f.uuid);
-    const translationsMap = await fetchTranslations(uuids, locale);
+    const translationsMap = await fetchTranslations(uuids);
     
     // Transform with translations
     return fields.map(field => 
@@ -175,8 +175,8 @@ const getByUuid = async (uuid, locale = null) => {
     
     if (!field) return null;
     
-    // Fetch translations
-    const translationsMap = await fetchTranslations([uuid], locale);
+    // Fetch ALL translations (no locale filter) to populate _translations
+    const translationsMap = await fetchTranslations([uuid]);
     return transformWithTranslations(field, translationsMap[uuid] || [], locale);
   } catch (error) {
     logger.error(`Error fetching field ${uuid}:`, error);

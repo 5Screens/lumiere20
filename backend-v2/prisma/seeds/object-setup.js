@@ -146,6 +146,57 @@ async function seedObjectSetup() {
     { object_type: 'project', metadata: 'CATEGORY', code: 'RESEARCH', icon: 'pi-search', display_order: 7 },
 
     // ========================================
+    // CHANGE - Types
+    // ========================================
+    { object_type: 'change', metadata: 'TYPE', code: 'STANDARD', icon: 'pi-check-circle', color: 'success', display_order: 1 },
+    { object_type: 'change', metadata: 'TYPE', code: 'NORMAL', icon: 'pi-circle', color: 'info', display_order: 2 },
+    { object_type: 'change', metadata: 'TYPE', code: 'EMERGENCY', icon: 'pi-exclamation-triangle', color: 'danger', font_weight: 'bold', display_order: 3 },
+
+    // CHANGE - Justifications
+    { object_type: 'change', metadata: 'JUSTIFICATION', code: 'BUSINESS_REQUIREMENT', icon: 'pi-briefcase', display_order: 1 },
+    { object_type: 'change', metadata: 'JUSTIFICATION', code: 'SECURITY_PATCH', icon: 'pi-shield', color: 'danger', display_order: 2 },
+    { object_type: 'change', metadata: 'JUSTIFICATION', code: 'BUG_FIX', icon: 'pi-wrench', display_order: 3 },
+    { object_type: 'change', metadata: 'JUSTIFICATION', code: 'PERFORMANCE_IMPROVEMENT', icon: 'pi-chart-line', display_order: 4 },
+    { object_type: 'change', metadata: 'JUSTIFICATION', code: 'INFRASTRUCTURE_UPGRADE', icon: 'pi-server', display_order: 5 },
+    { object_type: 'change', metadata: 'JUSTIFICATION', code: 'COMPLIANCE', icon: 'pi-check-square', display_order: 6 },
+    { object_type: 'change', metadata: 'JUSTIFICATION', code: 'END_OF_LIFE', icon: 'pi-calendar-times', color: 'warning', display_order: 7 },
+
+    // CHANGE - Objectives
+    { object_type: 'change', metadata: 'OBJECTIVE', code: 'NEW_FEATURE', icon: 'pi-plus', color: 'success', display_order: 1 },
+    { object_type: 'change', metadata: 'OBJECTIVE', code: 'IMPROVEMENT', icon: 'pi-arrow-up', color: 'info', display_order: 2 },
+    { object_type: 'change', metadata: 'OBJECTIVE', code: 'CORRECTION', icon: 'pi-wrench', display_order: 3 },
+    { object_type: 'change', metadata: 'OBJECTIVE', code: 'MIGRATION', icon: 'pi-arrow-right-arrow-left', display_order: 4 },
+    { object_type: 'change', metadata: 'OBJECTIVE', code: 'DECOMMISSION', icon: 'pi-trash', color: 'secondary', display_order: 5 },
+
+    // CHANGE - CAB Validation Status
+    { object_type: 'change', metadata: 'CAB_VALIDATION_STATUS', code: 'PENDING', icon: 'pi-clock', color: 'warning', display_order: 1 },
+    { object_type: 'change', metadata: 'CAB_VALIDATION_STATUS', code: 'APPROVED', icon: 'pi-check', color: 'success', display_order: 2 },
+    { object_type: 'change', metadata: 'CAB_VALIDATION_STATUS', code: 'REJECTED', icon: 'pi-times', color: 'danger', display_order: 3 },
+    { object_type: 'change', metadata: 'CAB_VALIDATION_STATUS', code: 'MORE_INFO_REQUIRED', icon: 'pi-question-circle', color: 'info', display_order: 4 },
+    { object_type: 'change', metadata: 'CAB_VALIDATION_STATUS', code: 'DEFERRED', icon: 'pi-pause', color: 'secondary', display_order: 5 },
+
+    // CHANGE - Post Implementation Evaluation
+    { object_type: 'change', metadata: 'POST_IMPLEMENTATION_EVALUATION', code: 'SUCCESSFUL', icon: 'pi-check-circle', color: 'success', display_order: 1 },
+    { object_type: 'change', metadata: 'POST_IMPLEMENTATION_EVALUATION', code: 'SUCCESSFUL_WITH_ISSUES', icon: 'pi-exclamation-circle', color: 'warning', display_order: 2 },
+    { object_type: 'change', metadata: 'POST_IMPLEMENTATION_EVALUATION', code: 'FAILED', icon: 'pi-times-circle', color: 'danger', display_order: 3 },
+    { object_type: 'change', metadata: 'POST_IMPLEMENTATION_EVALUATION', code: 'ROLLED_BACK', icon: 'pi-undo', color: 'danger', display_order: 4 },
+    { object_type: 'change', metadata: 'POST_IMPLEMENTATION_EVALUATION', code: 'PARTIAL', icon: 'pi-minus-circle', color: 'warning', display_order: 5 },
+
+    // CHANGE - Validation Level
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'NONE', icon: 'pi-minus', color: 'secondary', display_order: 1 },
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'TEAM_LEAD', icon: 'pi-user', color: 'info', display_order: 2 },
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'MANAGER', icon: 'pi-users', color: 'info', display_order: 3 },
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'CAB', icon: 'pi-sitemap', color: 'warning', display_order: 4 },
+    { object_type: 'change', metadata: 'VALIDATION_LEVEL', code: 'ECAB', icon: 'pi-building', color: 'danger', display_order: 5 },
+
+    // ========================================
+    // PROBLEM - Impact (specific to Problem, not reusing Incident)
+    // ========================================
+    { object_type: 'problem', metadata: 'IMPACT', code: 'CRITICAL_REAL', icon: 'pi-exclamation-circle', color: 'danger', font_weight: 'bold', display_order: 1 },
+    { object_type: 'problem', metadata: 'IMPACT', code: 'LIMITED_REAL', icon: 'pi-exclamation-triangle', color: 'warning', display_order: 2 },
+    { object_type: 'problem', metadata: 'IMPACT', code: 'POTENTIAL', icon: 'pi-info-circle', color: 'info', display_order: 3 },
+
+    // ========================================
     // KNOWLEDGE - Categories (from 13_knowledge_articles_setup.sql)
     // ========================================
     { object_type: 'knowledge', metadata: 'CATEGORY', code: 'MODE_OPERATOIRE', icon: 'pi-list', display_order: 1 },
@@ -384,6 +435,57 @@ async function seedObjectSetupTranslations() {
     'project|CATEGORY|SECURITY': { fr: 'Sécurité', en: 'Security', es: 'Seguridad', pt: 'Segurança' },
     'project|CATEGORY|COMPLIANCE': { fr: 'Conformité', en: 'Compliance', es: 'Cumplimiento', pt: 'Conformidade' },
     'project|CATEGORY|RESEARCH': { fr: 'Recherche', en: 'Research', es: 'Investigación', pt: 'Pesquisa' },
+
+    // ========================================
+    // CHANGE - Types
+    // ========================================
+    'change|TYPE|STANDARD': { fr: 'Standard', en: 'Standard', es: 'Estándar', pt: 'Padrão' },
+    'change|TYPE|NORMAL': { fr: 'Normal', en: 'Normal', es: 'Normal', pt: 'Normal' },
+    'change|TYPE|EMERGENCY': { fr: 'Urgence', en: 'Emergency', es: 'Emergencia', pt: 'Emergência' },
+
+    // CHANGE - Justifications
+    'change|JUSTIFICATION|BUSINESS_REQUIREMENT': { fr: 'Exigence métier', en: 'Business Requirement', es: 'Requisito de negocio', pt: 'Requisito de negócio' },
+    'change|JUSTIFICATION|SECURITY_PATCH': { fr: 'Correctif de sécurité', en: 'Security Patch', es: 'Parche de seguridad', pt: 'Patch de segurança' },
+    'change|JUSTIFICATION|BUG_FIX': { fr: 'Correction de bug', en: 'Bug Fix', es: 'Corrección de error', pt: 'Correção de bug' },
+    'change|JUSTIFICATION|PERFORMANCE_IMPROVEMENT': { fr: 'Amélioration des performances', en: 'Performance Improvement', es: 'Mejora de rendimiento', pt: 'Melhoria de desempenho' },
+    'change|JUSTIFICATION|INFRASTRUCTURE_UPGRADE': { fr: 'Mise à niveau infrastructure', en: 'Infrastructure Upgrade', es: 'Actualización de infraestructura', pt: 'Atualização de infraestrutura' },
+    'change|JUSTIFICATION|COMPLIANCE': { fr: 'Conformité', en: 'Compliance', es: 'Cumplimiento', pt: 'Conformidade' },
+    'change|JUSTIFICATION|END_OF_LIFE': { fr: 'Fin de vie', en: 'End of Life', es: 'Fin de vida', pt: 'Fim de vida' },
+
+    // CHANGE - Objectives
+    'change|OBJECTIVE|NEW_FEATURE': { fr: 'Nouvelle fonctionnalité', en: 'New Feature', es: 'Nueva funcionalidad', pt: 'Nova funcionalidade' },
+    'change|OBJECTIVE|IMPROVEMENT': { fr: 'Amélioration', en: 'Improvement', es: 'Mejora', pt: 'Melhoria' },
+    'change|OBJECTIVE|CORRECTION': { fr: 'Correction', en: 'Correction', es: 'Corrección', pt: 'Correção' },
+    'change|OBJECTIVE|MIGRATION': { fr: 'Migration', en: 'Migration', es: 'Migración', pt: 'Migração' },
+    'change|OBJECTIVE|DECOMMISSION': { fr: 'Décommissionnement', en: 'Decommission', es: 'Desmantelamiento', pt: 'Descomissionamento' },
+
+    // CHANGE - CAB Validation Status
+    'change|CAB_VALIDATION_STATUS|PENDING': { fr: 'En attente', en: 'Pending', es: 'Pendiente', pt: 'Pendente' },
+    'change|CAB_VALIDATION_STATUS|APPROVED': { fr: 'Approuvé', en: 'Approved', es: 'Aprobado', pt: 'Aprovado' },
+    'change|CAB_VALIDATION_STATUS|REJECTED': { fr: 'Rejeté', en: 'Rejected', es: 'Rechazado', pt: 'Rejeitado' },
+    'change|CAB_VALIDATION_STATUS|MORE_INFO_REQUIRED': { fr: 'Informations supplémentaires requises', en: 'More Info Required', es: 'Se requiere más información', pt: 'Mais informações necessárias' },
+    'change|CAB_VALIDATION_STATUS|DEFERRED': { fr: 'Différé', en: 'Deferred', es: 'Diferido', pt: 'Adiado' },
+
+    // CHANGE - Post Implementation Evaluation
+    'change|POST_IMPLEMENTATION_EVALUATION|SUCCESSFUL': { fr: 'Réussi', en: 'Successful', es: 'Exitoso', pt: 'Bem-sucedido' },
+    'change|POST_IMPLEMENTATION_EVALUATION|SUCCESSFUL_WITH_ISSUES': { fr: 'Réussi avec problèmes', en: 'Successful with Issues', es: 'Exitoso con problemas', pt: 'Bem-sucedido com problemas' },
+    'change|POST_IMPLEMENTATION_EVALUATION|FAILED': { fr: 'Échoué', en: 'Failed', es: 'Fallido', pt: 'Falhou' },
+    'change|POST_IMPLEMENTATION_EVALUATION|ROLLED_BACK': { fr: 'Annulé (rollback)', en: 'Rolled Back', es: 'Revertido', pt: 'Revertido' },
+    'change|POST_IMPLEMENTATION_EVALUATION|PARTIAL': { fr: 'Partiel', en: 'Partial', es: 'Parcial', pt: 'Parcial' },
+
+    // CHANGE - Validation Level
+    'change|VALIDATION_LEVEL|NONE': { fr: 'Aucune', en: 'None', es: 'Ninguna', pt: 'Nenhuma' },
+    'change|VALIDATION_LEVEL|TEAM_LEAD': { fr: 'Chef d\'équipe', en: 'Team Lead', es: 'Líder de equipo', pt: 'Líder de equipe' },
+    'change|VALIDATION_LEVEL|MANAGER': { fr: 'Manager', en: 'Manager', es: 'Gerente', pt: 'Gerente' },
+    'change|VALIDATION_LEVEL|CAB': { fr: 'CAB (Change Advisory Board)', en: 'CAB (Change Advisory Board)', es: 'CAB (Comité de cambios)', pt: 'CAB (Comitê de mudanças)' },
+    'change|VALIDATION_LEVEL|ECAB': { fr: 'ECAB (Emergency CAB)', en: 'ECAB (Emergency CAB)', es: 'ECAB (CAB de emergencia)', pt: 'ECAB (CAB de emergência)' },
+
+    // ========================================
+    // PROBLEM - Impact (specific to Problem)
+    // ========================================
+    'problem|IMPACT|CRITICAL_REAL': { fr: 'Impact réel critique', en: 'Critical Real Impact', es: 'Impacto real crítico', pt: 'Impacto real crítico' },
+    'problem|IMPACT|LIMITED_REAL': { fr: 'Impact réel limité', en: 'Limited Real Impact', es: 'Impacto real limitado', pt: 'Impacto real limitado' },
+    'problem|IMPACT|POTENTIAL': { fr: 'Impact potentiel', en: 'Potential Impact', es: 'Impacto potencial', pt: 'Impacto potencial' },
 
     // ========================================
     // KNOWLEDGE - Categories (partial - most important ones)
