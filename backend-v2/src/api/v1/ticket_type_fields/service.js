@@ -143,13 +143,13 @@ const getByTypeUuid = async (ticketTypeUuid, locale = null) => {
       orderBy: { display_order: 'asc' }
     });
     
-    // Fetch translations with locale filter
+    // Fetch ALL translations (no locale filter) to populate _translations for editing
     const uuids = fields.map(f => f.uuid);
-    const translationsMap = await fetchTranslations(uuids, locale);
+    const translationsMap = await fetchTranslations(uuids, null);
     
     logger.info(`[TICKET_TYPE_FIELDS] getByTypeUuid - ticketTypeUuid: ${ticketTypeUuid}, locale: ${locale}, fieldsCount: ${fields.length}, translationsCount: ${Object.keys(translationsMap).length}`);
     
-    // Transform with translations
+    // Transform with translations (pass locale for applying current locale value)
     return fields.map(field => 
       transformWithTranslations(field, translationsMap[field.uuid] || [], locale)
     );

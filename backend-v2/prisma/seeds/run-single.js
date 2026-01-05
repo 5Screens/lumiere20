@@ -26,6 +26,7 @@ const seedMap = {
   'uat-services': () => require('./uat.services.seed').seedUatServices(),
   'object-setup': () => require('./object-setup').seedObjectSetup(),
   'symptoms': () => require('./symptoms.seed').seedSymptoms(),
+  'ticket-type-fields-translations': () => require('./ticket-type-fields-translations.seed').seedTicketTypeFieldsTranslations(),
 };
 
 async function main() {

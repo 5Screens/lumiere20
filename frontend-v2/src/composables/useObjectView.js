@@ -48,8 +48,17 @@ export function useObjectView(options) {
   const objectTypeMetadata = ref(null)
 
   // Extended fields (for configuration_items, tickets)
-  const extendedFields = ref([])
+  // Raw fields with _translations (not locale-applied)
+  const extendedFieldsRaw = ref([])
   const extendedFieldsLoading = ref(false)
+
+  // Computed: apply current locale translations to extended fields
+  const extendedFields = computed(() => {
+    return extendedFieldsRaw.value.map(f => ({
+      ...f,
+      label: f._translations?.label?.[locale.value] || f.label
+    }))
+  })
 
   // Reference data from store
   const ciTypes = computed(() => referenceDataStore.ciTypes)
@@ -248,7 +257,7 @@ export function useObjectView(options) {
   // Load extended fields for configuration_items
   const loadExtendedFields = async (ciTypeCode) => {
     if (!ciTypeCode || objectType.value !== 'configuration_items') {
-      extendedFields.value = []
+      extendedFieldsRaw.value = []
       return
     }
     
@@ -262,19 +271,16 @@ export function useObjectView(options) {
       
       const ciType = ciTypes.value.find(ct => ct.code === ciTypeCode)
       if (!ciType) {
-        extendedFields.value = []
+        extendedFieldsRaw.value = []
         return
       }
       
-      // Load fields for this CI type
+      // Load fields for this CI type - store raw, computed will apply locale
       const fields = await ciTypeFieldsService.getByTypeUuid(ciType.uuid)
-      extendedFields.value = fields.filter(f => f.show_in_form).map(f => ({
-        ...f,
-        label: f._translations?.label?.[locale.value] || f.label
-      }))
+      extendedFieldsRaw.value = fields.filter(f => f.show_in_form)
     } catch (error) {
       console.error('Failed to load extended fields:', error)
-      extendedFields.value = []
+      extendedFieldsRaw.value = []
     } finally {
       extendedFieldsLoading.value = false
     }
@@ -283,7 +289,7 @@ export function useObjectView(options) {
   // Load extended fields for tickets
   const loadExtendedFieldsForTickets = async (ticketTypeCode) => {
     if (!ticketTypeCode || objectType.value !== 'tickets') {
-      extendedFields.value = []
+      extendedFieldsRaw.value = []
       return
     }
     
@@ -296,7 +302,7 @@ export function useObjectView(options) {
       
       if (!ticketType) {
         console.warn(`[useObjectView] Ticket type not found for code: ${ticketTypeCode}`)
-        extendedFields.value = []
+        extendedFieldsRaw.value = []
         return
       }
       
@@ -305,17 +311,12 @@ export function useObjectView(options) {
       console.log('[useObjectView] loadExtendedFieldsForTickets - raw fields from API:', fields)
       console.log('[useObjectView] loadExtendedFieldsForTickets - current locale:', locale.value)
       console.log('[useObjectView] loadExtendedFieldsForTickets - first field _translations:', fields[0]?._translations)
-      extendedFields.value = fields.filter(f => f.show_in_form).map(f => {
-        const translatedLabel = f._translations?.label?.[locale.value]
-        console.log(`[useObjectView] Field ${f.field_name}: _translations.label =`, f._translations?.label, '-> translatedLabel =', translatedLabel, '-> fallback =', f.label)
-        return {
-          ...f,
-          label: translatedLabel || f.label
-        }
-      })
+      // Store raw fields with _translations - computed will apply locale
+      extendedFieldsRaw.value = fields.filter(f => f.show_in_form)
+      console.log(`[useObjectView] Loaded ${extendedFieldsRaw.value.length} extended fields for tickets`)
     } catch (error) {
       console.error('Failed to load extended fields for tickets:', error)
-      extendedFields.value = []
+      extendedFieldsRaw.value = []
     } finally {
       extendedFieldsLoading.value = false
     }

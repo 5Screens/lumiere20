@@ -23,6 +23,7 @@ const { seedItsmWorkflows } = require('./seeds/itsm-workflows.seed');
 const { seedAgileWorkflows } = require('./seeds/agile-workflows.seed');
 const { seedObjectSetup } = require('./seeds/object-setup');
 const { seedSymptoms } = require('./seeds/symptoms.seed');
+const { seedTicketTypeFieldsTranslations } = require('./seeds/ticket-type-fields-translations.seed');
 
 async function main() {
   console.log('========================================');
@@ -66,8 +67,13 @@ async function main() {
     console.log('');
 
     // 8. Ticket Type Fields (extended fields per ticket type)
-    console.log('[8/12] Seeding ticket type fields...');
+    console.log('[8/17] Seeding ticket type fields...');
     await seedTicketTypeFields();
+    console.log('');
+
+    // 8b. Ticket Type Fields Translations
+    console.log('[8b/17] Seeding ticket type fields translations...');
+    await seedTicketTypeFieldsTranslations();
     console.log('');
 
     // 9. Workflow Status Categories
