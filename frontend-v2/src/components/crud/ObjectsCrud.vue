@@ -30,7 +30,8 @@
         class="flex-1 min-h-0"
         :pt="{
           root: { class: 'flex flex-col min-h-0' },
-          tableContainer: { class: ['flex-1 min-h-0 overflow-auto', { 'ring-2 ring-primary rounded': selectionModeActive }] }
+          tableContainer: { class: ['flex-1 min-h-0 overflow-auto', { 'ring-2 ring-primary rounded': selectionModeActive }] },
+          bodyRow: { class: 'hover:bg-primary/10' }
         }"
         :value="items"
         :size="tableSize"
@@ -60,6 +61,7 @@
         @stateRestore="onStateRestore"
         @row-click="onRowClick"
         removableSort
+        rowHover
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
         :currentPageReportTemplate="paginationTemplate"
       >
