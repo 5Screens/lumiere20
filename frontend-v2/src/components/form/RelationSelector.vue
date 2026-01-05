@@ -48,7 +48,8 @@
     <button
       type="button"
       class="p-1.5 rounded-full transition-colors shrink-0"
-      :class="selectedItem ? 'text-primary-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer' : 'text-surface-300 dark:text-surface-600 cursor-not-allowed'"
+      :class="selectedItem ? 'cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800' : 'cursor-not-allowed'"
+      :style="{ color: selectedItem ? 'var(--p-primary-color)' : 'var(--p-surface-300)' }"
       :disabled="!selectedItem"
       @click="openDetailsDrawer"
       :title="$t('common.viewDetails')"
