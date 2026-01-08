@@ -274,12 +274,20 @@ const onCancel = () => {
   if (isDirty.value) {
     confirmDialogVisible.value = true
   } else {
-    emit('close')
+    closeTab()
   }
 }
 
 const confirmClose = () => {
   confirmDialogVisible.value = false
+  closeTab()
+}
+
+// Close the tab using the store
+const closeTab = () => {
+  if (props.tabId) {
+    tabsStore.closeTab(props.tabId)
+  }
   emit('close')
 }
 
