@@ -57,6 +57,7 @@ npm run test:e2e:report
 | File | Description |
 |------|-------------|
 | `tasks-filters.spec.js` | Tests for all filter types in the Tasks list view |
+| `tasks-crud-create.spec.js` | Tests for creating tasks via the frontend |
 
 ## Test Coverage
 
@@ -71,6 +72,27 @@ npm run test:e2e:report
 | Date filter (after) | Filter created_at after 23/12/2025 | 50,000 results |
 | Relation filter | Filter by assigned group "BLD-Automation 2025" | 501 results |
 | Combined filters | Multiple filters applied together | Fewer results |
+
+### Tasks CRUD Create (`tasks-crud-create.spec.js`)
+
+| Test | Description | API Verification |
+|------|-------------|------------------|
+| Create minimal task | Create task with title + description only | GET /tasks/{uuid} → verify title, description, ticket_type_code |
+| Create complete task | Create task with all fields filled | GET /tasks/{uuid} → verify all fields |
+| Validation error | Try to save without required fields | Show validation warning |
+| Cancel creation | Cancel and return to list | No API call |
+| Unsaved changes dialog | Cancel with data → show confirmation | Dialog visible |
+
+**Prerequisites for CRUD tests:**
+```bash
+cd backend-v2
+node prisma/seeds/run-single.js e2e-crud
+```
+
+**Cleanup after tests:**
+```bash
+node prisma/seeds/run-single.js e2e-crud-cleanup
+```
 
 ## Configuration
 
