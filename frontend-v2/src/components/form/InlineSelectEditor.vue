@@ -173,9 +173,9 @@ const onSelectChange = (event) => {
   }
 }
 
-// Handle select hide (dropdown closed) - in embedded mode, exit edit mode if no changes
+// Handle select hide (dropdown closed) - exit edit mode if no changes
 const onSelectHide = () => {
-  if (props.embedded && !hasChanges.value) {
+  if (!hasChanges.value) {
     isEditing.value = false
   }
 }

@@ -359,9 +359,9 @@ const onItemSelect = (event) => {
   }
 }
 
-// Handle autocomplete hide (dropdown closed) - in embedded mode, exit edit mode if no changes
+// Handle autocomplete hide (dropdown closed) - exit edit mode if no changes
 const onAutocompleteHide = () => {
-  if (props.embedded && !hasChanges.value) {
+  if (!hasChanges.value) {
     isEditing.value = false
   }
 }
