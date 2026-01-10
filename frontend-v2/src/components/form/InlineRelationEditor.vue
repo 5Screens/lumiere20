@@ -350,10 +350,11 @@ const startEditing = () => {
 const onItemSelect = (event) => {
   localValue.value = event.value
   
-  // In embedded mode, emit save immediately on selection
+  // In embedded mode, emit save immediately on selection and exit edit mode
   if (props.embedded) {
     const newUuid = localValue.value?.uuid || null
     emit('save', { uuid: newUuid, data: localValue.value })
+    isEditing.value = false
   }
 }
 
