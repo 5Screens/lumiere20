@@ -26,6 +26,7 @@
         class="flex-1"
         size="small"
         :pt="{ root: { class: 'w-full' } }"
+        @change="onSelectChange"
       >
         <template #value="slotProps">
           <div v-if="slotProps.value" class="flex items-center gap-2" :style="getTagStyle(getOptionByValue(slotProps.value)?.color)">
@@ -42,8 +43,8 @@
         </template>
       </Select>
       
-      <!-- Buttons stacked vertically -->
-      <div class="flex flex-col gap-0">
+      <!-- Buttons stacked vertically (hidden in embedded mode) -->
+      <div v-if="!embedded" class="flex flex-col gap-0">
         <!-- Save button (top) -->
         <Button
           icon="pi pi-check"
@@ -97,6 +98,12 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
+  },
+  // Embedded mode: hide save/cancel buttons, emit on selection
+  // Used when parent component handles the save (e.g., ObjectExtendedInfo in ObjectView)
+  embedded: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -131,10 +138,11 @@ const startEditing = () => {
   localValue.value = props.modelValue
   initialValue.value = props.modelValue
   
-  // Focus select after render
+  // Open the Select dropdown after render
   nextTick(() => {
-    if (selectRef.value?.$el) {
-      selectRef.value.$el.click()
+    if (selectRef.value) {
+      // Use PrimeVue Select's show() method to open the dropdown
+      selectRef.value.show()
     }
   })
 }
@@ -154,6 +162,14 @@ const cancel = () => {
   localValue.value = initialValue.value
   isEditing.value = false
   emit('cancel')
+}
+
+// Handle select change - in embedded mode, emit save immediately
+const onSelectChange = (event) => {
+  if (props.embedded) {
+    emit('save', event.value)
+    isEditing.value = false
+  }
 }
 </script>
 

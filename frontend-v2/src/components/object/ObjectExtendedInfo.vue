@@ -80,13 +80,24 @@
                 {{ getRelationDisplayValue(data) }}
               </span>
             </template>
-            <!-- Select display with icon/color -->
+            <!-- Select display/edit (rendered in body like relation to allow click-to-open) -->
             <template v-else-if="data.field_type === 'select'">
-              <div v-if="data.value" class="flex items-center gap-2" :style="getTagStyle(getOptionByValue(data, data.value)?.color)">
-                <i v-if="getOptionByValue(data, data.value)?.icon" :class="['pi', getOptionByValue(data, data.value)?.icon]" />
-                <span>{{ getSelectLabel(data) }}</span>
-              </div>
-              <span v-else class="text-surface-400">-</span>
+              <InlineSelectEditor
+                v-if="data.is_editable !== false"
+                :modelValue="data.value"
+                :options="getFieldSelectOptions(data)"
+                :placeholder="$t('common.select')"
+                :embedded="true"
+                @click.stop
+                @save="(newValue) => onSelectSave(data, newValue)"
+              />
+              <template v-else>
+                <div v-if="data.value" class="flex items-center gap-2" :style="getTagStyle(getOptionByValue(data, data.value)?.color)">
+                  <i v-if="getOptionByValue(data, data.value)?.icon" :class="['pi', getOptionByValue(data, data.value)?.icon]" />
+                  <span>{{ getSelectLabel(data) }}</span>
+                </div>
+                <span v-else class="text-surface-400">-</span>
+              </template>
             </template>
             <!-- Date display -->
             <template v-else-if="data.field_type === 'date' || data.field_type === 'datetime'">
@@ -286,6 +297,7 @@ import ExtendedFieldsEditor from '@/components/object/ExtendedFieldsEditor.vue'
 import InlinePickerButton from '@/components/form/InlinePickerButton.vue'
 import { DateTimePicker } from '@/components/pickers'
 import InlineRelationEditor from '@/components/form/InlineRelationEditor.vue'
+import InlineSelectEditor from '@/components/form/InlineSelectEditor.vue'
 
 // Props
 const props = defineProps({
@@ -476,6 +488,19 @@ const parseRelationFilter = (filter) => {
     console.warn('[ObjectExtendedInfo] Failed to parse relation_filter:', filter)
     return null
   }
+}
+
+// Handle select field save (from InlineSelectEditor)
+const onSelectSave = (data, newValue) => {
+  const currentExtended = props.modelValue?.extended_core_fields || {}
+  
+  emit('update:modelValue', {
+    ...props.modelValue,
+    extended_core_fields: {
+      ...currentExtended,
+      [data.field_name]: newValue
+    }
+  })
 }
 
 // Handle relation field save (from Inline*Editor components)
