@@ -331,11 +331,18 @@ const startEditing = () => {
   }
   initialValue.value = localValue.value ? { ...localValue.value } : null
   
-  // Focus autocomplete after render
-  nextTick(() => {
+  // Focus autocomplete and trigger search to open dropdown with data
+  nextTick(async () => {
     if (autocompleteRef.value?.$el) {
       const input = autocompleteRef.value.$el.querySelector('input')
-      if (input) input.focus()
+      if (input) {
+        input.focus()
+        // Trigger search to load data and open dropdown
+        await onSearch({ query: '' })
+        if (autocompleteRef.value.show) {
+          autocompleteRef.value.show()
+        }
+      }
     }
   })
 }
