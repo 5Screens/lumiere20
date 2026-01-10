@@ -92,11 +92,35 @@
             <template v-else-if="data.field_type === 'date' || data.field_type === 'datetime'">
               {{ formatDate(data.value, data.field_type) }}
             </template>
-            <!-- Textarea display (strip HTML) -->
+            <!-- Textarea display (rich text with hover preview) -->
             <template v-else-if="data.field_type === 'textarea'">
-              <span :class="{ 'text-surface-400': !data.value }">
-                {{ stripHtml(data.value) }}
-              </span>
+              <div 
+                v-if="data.value" 
+                class="textarea-preview"
+                v-tooltip.bottom="{ 
+                  value: data.value, 
+                  escape: false, 
+                  autoHide: false, 
+                  pt: { 
+                    root: {
+                      style: {
+                        maxWidth: '800px'
+                      }
+                    },
+                    text: { 
+                      style: {
+                        minWidth: '350px',
+                        maxWidth: '800px',
+                        maxHeight: '500px',
+                        overflowY: 'auto'
+                      }
+                    } 
+                  } 
+                }"
+              >
+                <span class="line-clamp-2">{{ stripHtml(data.value) }}</span>
+              </div>
+              <span v-else class="text-surface-400">-</span>
             </template>
             <!-- Relation display -->
             <template v-else-if="data.field_type === 'relation'">
@@ -127,6 +151,7 @@
               v-else-if="data.field_type === 'textarea'"
               v-model="data.value" 
               editorStyle="height: 150px"
+              @keydown="onEditorKeydown"
             />
             <!-- Number input -->
             <InputNumber 
@@ -470,6 +495,13 @@ const onRelationSave = (data, newUuid, relatedObject) => {
       [data.field_name]: relatedObject
     }
   })
+}
+
+// Prevent Enter key from exiting the Editor cell (allow line breaks)
+const onEditorKeydown = (event) => {
+  if (event.key === 'Enter') {
+    event.stopPropagation()
+  }
 }
 
 // Format date for display
