@@ -54,8 +54,8 @@
         </template>
       </AutoComplete>
       
-      <!-- Buttons stacked vertically -->
-      <div class="flex flex-col gap-0">
+      <!-- Buttons stacked vertically (hidden in embedded mode) -->
+      <div v-if="!embedded" class="flex flex-col gap-0">
         <!-- Save button (top) -->
         <Button
           icon="pi pi-check"
@@ -135,6 +135,12 @@ const props = defineProps({
   },
   // Disabled state
   disabled: {
+    type: Boolean,
+    default: false
+  },
+  // Embedded mode: hide save/cancel buttons, emit on selection
+  // Used when parent component handles the save (e.g., ObjectExtendedInfo in ObjectView)
+  embedded: {
     type: Boolean,
     default: false
   },
@@ -336,6 +342,12 @@ const startEditing = () => {
 
 const onItemSelect = (event) => {
   localValue.value = event.value
+  
+  // In embedded mode, emit save immediately on selection
+  if (props.embedded) {
+    const newUuid = localValue.value?.uuid || null
+    emit('save', { uuid: newUuid, data: localValue.value })
+  }
 }
 
 const save = async () => {

@@ -72,6 +72,7 @@
                 :relationObject="data.relation_object"
                 :relationFilter="parseRelationFilter(data.relation_filter)"
                 :placeholder="getRelationPlaceholder(data)"
+                :embedded="true"
                 @click.stop
                 @save="({ uuid, data: relatedObj }) => onRelationSave(data, uuid, relatedObj)"
               />
