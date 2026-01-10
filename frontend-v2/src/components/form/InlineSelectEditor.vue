@@ -27,6 +27,7 @@
         size="small"
         :pt="{ root: { class: 'w-full' } }"
         @change="onSelectChange"
+        @hide="onSelectHide"
       >
         <template #value="slotProps">
           <div v-if="slotProps.value" class="flex items-center gap-2" :style="getTagStyle(getOptionByValue(slotProps.value)?.color)">
@@ -168,6 +169,13 @@ const cancel = () => {
 const onSelectChange = (event) => {
   if (props.embedded) {
     emit('save', event.value)
+    isEditing.value = false
+  }
+}
+
+// Handle select hide (dropdown closed) - in embedded mode, exit edit mode if no changes
+const onSelectHide = () => {
+  if (props.embedded && !hasChanges.value) {
     isEditing.value = false
   }
 }

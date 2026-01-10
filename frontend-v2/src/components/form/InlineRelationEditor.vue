@@ -28,6 +28,7 @@
         appendTo="body"
         class="flex-1"
         :pt="{ root: { class: 'w-full' }, input: { class: 'w-full text-sm' } }"
+        @hide="onAutocompleteHide"
       >
         <template #option="{ option, index }">
           <div 
@@ -354,6 +355,13 @@ const onItemSelect = (event) => {
   if (props.embedded) {
     const newUuid = localValue.value?.uuid || null
     emit('save', { uuid: newUuid, data: localValue.value })
+    isEditing.value = false
+  }
+}
+
+// Handle autocomplete hide (dropdown closed) - in embedded mode, exit edit mode if no changes
+const onAutocompleteHide = () => {
+  if (props.embedded && !hasChanges.value) {
     isEditing.value = false
   }
 }
