@@ -57,7 +57,7 @@
         </Column>
 
         <!-- Value column (inline editable) -->
-        <Column field="value" :header="$t('common.value')" style="min-width: 250px">
+        <Column field="value" :header="$t('common.value')" class="max-w-[500px]">
           <template #body="{ data }">
             <!-- Boolean display -->
             <template v-if="data.field_type === 'boolean'">
@@ -96,7 +96,7 @@
             <template v-else-if="data.field_type === 'textarea'">
               <div 
                 v-if="data.value" 
-                class="textarea-preview"
+                class="textarea-preview w-full overflow-hidden break-all max-w-full"
                 v-tooltip.bottom="{ 
                   value: data.value, 
                   escape: false, 
@@ -118,7 +118,7 @@
                   } 
                 }"
               >
-                <span class="line-clamp-2">{{ stripHtml(data.value) }}</span>
+                <span class="line-clamp-2 block w-full">{{ stripHtml(data.value) }}</span>
               </div>
               <span v-else class="text-surface-400">-</span>
             </template>
