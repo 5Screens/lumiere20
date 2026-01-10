@@ -187,6 +187,18 @@ const resolveExtendedRelations = async (tickets, ticketTypeCode, locale = 'en') 
           select: { uuid: true, name: true, ci_type: true },
         });
         break;
+      case 'groups':
+        objects = await prisma.groups.findMany({
+          where: { uuid: { in: uuids } },
+          select: { uuid: true, group_name: true, description: true },
+        });
+        break;
+      case 'persons':
+        objects = await prisma.persons.findMany({
+          where: { uuid: { in: uuids } },
+          select: { uuid: true, first_name: true, last_name: true, email: true },
+        });
+        break;
       default:
         logger.warn(`[TICKETS] Unknown relation_object: ${config.relation_object}`);
         continue;
