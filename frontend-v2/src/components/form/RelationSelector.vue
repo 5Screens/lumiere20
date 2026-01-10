@@ -7,6 +7,7 @@
       @complete="onSearch"
       @item-select="onItemSelect"
       @clear="onClear"
+      @click="handleInputClick"
       :optionLabel="getDisplayValue"
       :placeholder="placeholder || $t('common.select')"
       :minLength="0"
@@ -328,6 +329,23 @@ const onClear = () => {
   emit('update:modelValue', null)
 }
 
+// Handle click on input to show suggestions like the dropdown button
+const handleInputClick = async (event) => {
+  if (props.disabled) return
+  
+  // If the overlay is not visible, trigger a search with the current query
+  // This simulates the behavior of clicking the dropdown chevron
+  if (autocompleteRef.value && !autocompleteRef.value.overlayVisible) {
+    await onSearch({ query: currentQuery.value })
+    // Ensure the overlay is shown after data is loaded
+    setTimeout(() => {
+      if (autocompleteRef.value) {
+        autocompleteRef.value.show()
+      }
+    }, 0)
+  }
+}
+
 // Open details drawer
 const openDetailsDrawer = () => {
   if (selectedItem.value) {
@@ -336,7 +354,7 @@ const openDetailsDrawer = () => {
 }
 
 const onSearch = async (event) => {
-  const query = event.query || ''
+  const query = event?.query || ''
   
   currentQuery.value = query
   currentPage.value = 1
