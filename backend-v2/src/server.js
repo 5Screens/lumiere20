@@ -54,6 +54,7 @@ const attachmentsRoutes = require('./api/v1/attachments/routes');
 const objectSetupRoutes = require('./api/v1/object_setup/routes');
 const objectTypesRoutes = require('./api/v1/object_types/routes');
 const symptomsRoutes = require('./api/v1/symptoms/routes');
+const agentRoutes = require('./api/v1/agent/routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
@@ -78,6 +79,7 @@ app.use('/api/v1/attachments', attachmentsRoutes);
 app.use('/api/v1/object-setup', objectSetupRoutes);
 app.use('/api/v1/object-types', objectTypesRoutes);
 app.use('/api/v1/symptoms', symptomsRoutes);
+app.use('/api/v1/agent', agentRoutes);
 
 // Health check
 app.get('/', (req, res) => {
