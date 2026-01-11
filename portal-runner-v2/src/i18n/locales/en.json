@@ -1,0 +1,26 @@
+{
+  "portal": {
+    "loading": "Loading portal...",
+    "error": "Error",
+    "notFound": "Portal not found",
+    "disabled": "Portal disabled",
+    "welcome": "Welcome",
+    "quickActions": "Quick Actions",
+    "widgets": "What awaits you today",
+    "footer": "© 2025 Lumière 16 - All rights reserved"
+  },
+  "chat": {
+    "title": "Assistant",
+    "placeholder": "Ask your question...",
+    "send": "Send",
+    "thinking": "Thinking...",
+    "error": "An error occurred",
+    "retry": "Retry"
+  },
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save"
+  }
+}

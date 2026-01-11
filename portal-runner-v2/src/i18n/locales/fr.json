@@ -1,0 +1,26 @@
+{
+  "portal": {
+    "loading": "Chargement du portail...",
+    "error": "Erreur",
+    "notFound": "Portail introuvable",
+    "disabled": "Portail désactivé",
+    "welcome": "Bienvenue",
+    "quickActions": "Actions rapides",
+    "widgets": "Ce qui vous attend aujourd'hui",
+    "footer": "© 2025 Lumière 16 - Tous droits réservés"
+  },
+  "chat": {
+    "title": "Assistant",
+    "placeholder": "Posez votre question...",
+    "send": "Envoyer",
+    "thinking": "Réflexion en cours...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer"
+  },
+  "common": {
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer"
+  }
+}

@@ -29,6 +29,7 @@ const seedMap = {
   'ticket-type-fields-translations': () => require('./ticket-type-fields-translations.seed').seedTicketTypeFieldsTranslations(),
   'e2e-crud': () => require('./e2e-crud.seed').seedE2eCrud(),
   'e2e-crud-cleanup': () => require('./e2e-crud.seed').cleanupE2eCrud(),
+  'portals': () => require('./portals').seedPortals(),
 };
 
 async function main() {

@@ -898,3 +898,132 @@ model audit_changes {
   @@schema("audit")
   @@map("audit_changes")
 }
+
+// ============================================
+// SCHEMA: core - Portals
+// ============================================
+
+model portals {
+  uuid                  String    @id @default(uuid()) @db.Uuid
+  code                  String    @unique @db.VarChar(50)
+  name                  String    @db.VarChar(255)
+  base_url              String?   @db.VarChar(500)
+  thumbnail_url         String?   @db.VarChar(500)
+  is_active             Boolean   @default(false)
+  view_component        String?   @db.VarChar(100)
+  title                 String?   @db.VarChar(255)
+  subtitle              String?   @db.VarChar(255)
+  welcome_template      String?   @db.VarChar(500)
+  logo_url              String?   @db.VarChar(500)
+  theme_primary_color   String?   @db.VarChar(20)
+  theme_secondary_color String?   @db.VarChar(20)
+  show_chat             Boolean   @default(false)
+  show_alerts           Boolean   @default(false)
+  show_actions          Boolean   @default(false)
+  show_widgets          Boolean   @default(false)
+  chat_default_message  String?   @db.VarChar(500)
+  created_at            DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  portal_actions portal_portal_actions[]
+  portal_alerts  portal_portal_alerts[]
+  portal_widgets portal_portal_widgets[]
+
+  @@schema("core")
+  @@map("portals")
+}
+
+model portal_actions {
+  uuid        String   @id @default(uuid()) @db.Uuid
+  code        String   @unique @db.VarChar(50)
+  label       String   @db.VarChar(255)
+  description String?  @db.Text
+  icon        String?  @db.VarChar(100)
+  action_type String?  @db.VarChar(50)
+  action_url  String?  @db.VarChar(500)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  portals portal_portal_actions[]
+
+  @@schema("core")
+  @@map("portal_actions")
+}
+
+model portal_alerts {
+  uuid        String   @id @default(uuid()) @db.Uuid
+  code        String   @unique @db.VarChar(50)
+  message     String   @db.Text
+  severity    String?  @db.VarChar(20)
+  icon        String?  @db.VarChar(100)
+  is_active   Boolean  @default(true)
+  start_date  DateTime? @db.Timestamptz(6)
+  end_date    DateTime? @db.Timestamptz(6)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  portals portal_portal_alerts[]
+
+  @@schema("core")
+  @@map("portal_alerts")
+}
+
+model portal_widgets {
+  uuid        String   @id @default(uuid()) @db.Uuid
+  code        String   @unique @db.VarChar(50)
+  title       String   @db.VarChar(255)
+  description String?  @db.Text
+  icon        String?  @db.VarChar(100)
+  widget_type String?  @db.VarChar(50)
+  config      Json?    @db.JsonB
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  portals portal_portal_widgets[]
+
+  @@schema("core")
+  @@map("portal_widgets")
+}
+
+// Junction tables
+model portal_portal_actions {
+  rel_portal        String @db.Uuid
+  rel_portal_action String @db.Uuid
+  display_order     Int    @default(0)
+
+  portal portals        @relation(fields: [rel_portal], references: [uuid], onDelete: Cascade)
+  action portal_actions @relation(fields: [rel_portal_action], references: [uuid], onDelete: Cascade)
+
+  @@id([rel_portal, rel_portal_action])
+  @@schema("core")
+  @@map("portal__portal_actions")
+}
+
+model portal_portal_alerts {
+  rel_portal       String @db.Uuid
+  rel_portal_alert String @db.Uuid
+  display_order    Int    @default(0)
+
+  portal portals       @relation(fields: [rel_portal], references: [uuid], onDelete: Cascade)
+  alert  portal_alerts @relation(fields: [rel_portal_alert], references: [uuid], onDelete: Cascade)
+
+  @@id([rel_portal, rel_portal_alert])
+  @@schema("core")
+  @@map("portal__portal_alerts")
+}
+
+model portal_portal_widgets {
+  rel_portal        String @db.Uuid
+  rel_portal_widget String @db.Uuid
+  display_order     Int    @default(0)
+
+  portal portals        @relation(fields: [rel_portal], references: [uuid], onDelete: Cascade)
+  widget portal_widgets @relation(fields: [rel_portal_widget], references: [uuid], onDelete: Cascade)
+
+  @@id([rel_portal, rel_portal_widget])
+  @@schema("core")
+  @@map("portal__portal_widgets")
+}
