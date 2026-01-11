@@ -7,10 +7,12 @@ import api from './api'
  * @returns {Promise<Object>} Agent response
  */
 export const sendMessage = async (message, conversationId = null) => {
-  return api.post('/agent/chat', {
+  const response = await api.post('/agent/chat', {
     message,
     conversationId
   })
+  // Backend returns { success: true, data: {...} }
+  return response.data || response
 }
 
 /**

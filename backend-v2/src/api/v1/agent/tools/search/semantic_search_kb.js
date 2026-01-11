@@ -54,7 +54,7 @@ const execute = async (params) => {
       where: {
         AND: [
           {
-            ticket_types: {
+            ticket_type: {
               code: 'KNOWLEDGE'
             }
           },
@@ -67,7 +67,7 @@ const execute = async (params) => {
         description: true,
         created_at: true,
         updated_at: true,
-        ticket_types: {
+        ticket_type: {
           select: {
             code: true,
             label: true

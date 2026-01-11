@@ -45,12 +45,24 @@ const chatCompletion = async ({ systemPrompt, messages, options = {} }) => {
         });
       }
 
-      // Add conversation messages
+      // Add conversation messages (ensure alternating roles)
       if (messages && messages.length > 0) {
-        requestMessages.push(...messages.map(m => ({
-          role: m.role,
-          content: m.content
-        })));
+        let lastRole = 'system'; // After system prompt
+        for (const m of messages) {
+          const role = m.role === 'assistant' ? 'assistant' : 'user';
+          
+          // If same role as last, merge content
+          if (role === lastRole && requestMessages.length > 0) {
+            const lastMsg = requestMessages[requestMessages.length - 1];
+            if (lastMsg.role !== 'system') {
+              lastMsg.content += '\n\n' + m.content;
+              continue;
+            }
+          }
+          
+          requestMessages.push({ role, content: m.content });
+          lastRole = role;
+        }
       }
 
       const requestBody = {
