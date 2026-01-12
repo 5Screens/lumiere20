@@ -1,4 +1,16 @@
 {
+  "auth": {
+    "title": "Connexion",
+    "email": "Adresse e-mail",
+    "emailPlaceholder": "Entrez votre e-mail",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "login": "Se connecter",
+    "logout": "Déconnexion",
+    "fillAllFields": "Veuillez remplir tous les champs",
+    "loginSuccess": "Connexion réussie",
+    "loginFailed": "Échec de la connexion"
+  },
   "portal": {
     "loading": "Chargement du portail...",
     "error": "Erreur",
@@ -21,6 +33,9 @@
     "close": "Fermer",
     "cancel": "Annuler",
     "confirm": "Confirmer",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "warning": "Attention",
+    "success": "Succès",
+    "error": "Erreur"
   }
 }

@@ -5,7 +5,7 @@ const API_BASE = '/api/v1'
  */
 const fetchApi = async (endpoint, options = {}) => {
   const url = `${API_BASE}${endpoint}`
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('portal_token')
   
   const config = {
     headers: {

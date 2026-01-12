@@ -10,10 +10,19 @@
             <p v-if="portal.subtitle" class="text-sm text-surface-500">{{ portal.subtitle }}</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-4">
           <Button icon="pi pi-globe" text rounded @click="toggleLanguageMenu" v-tooltip="'Language'" />
           <Menu ref="langMenu" :model="languageItems" :popup="true" />
-          <Button icon="pi pi-user" text rounded v-tooltip="'Profile'" />
+          
+          <!-- User info -->
+          <div class="flex items-center gap-3">
+            <div class="text-right hidden sm:block">
+              <p class="text-sm font-medium text-surface-800 dark:text-surface-100">{{ authStore.fullName }}</p>
+              <p class="text-xs text-surface-500">{{ authStore.userEmail }}</p>
+            </div>
+            <Button icon="pi pi-user" text rounded @click="toggleUserMenu" v-tooltip="authStore.fullName" />
+            <Menu ref="userMenu" :model="userMenuItems" :popup="true" />
+          </div>
         </div>
       </div>
     </header>
@@ -107,7 +116,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useAuthStore } from '@/stores/authStore'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Message from 'primevue/message'
@@ -119,14 +130,17 @@ const props = defineProps({
   portalCode: { type: String, required: true }
 })
 
-const { locale } = useI18n()
+const router = useRouter()
+const { locale, t } = useI18n()
+const authStore = useAuthStore()
 const langMenu = ref()
+const userMenu = ref()
 
 const portal = computed(() => props.portalData || {})
 const alerts = computed(() => portal.value.alerts || [])
 const quickActions = computed(() => portal.value.quick_actions || [])
 const widgets = computed(() => portal.value.widgets || [])
-const userName = computed(() => 'User') // TODO: Get from auth
+const userName = computed(() => authStore.user?.first_name || 'User')
 
 const themeStyles = computed(() => ({
   '--portal-primary': portal.value.theme_primary_color || '#FF6B00',
@@ -137,6 +151,30 @@ const languageItems = ref([
   { label: 'Français', icon: 'pi pi-flag', command: () => changeLanguage('fr') },
   { label: 'English', icon: 'pi pi-flag', command: () => changeLanguage('en') }
 ])
+
+const userMenuItems = computed(() => [
+  { 
+    label: authStore.fullName, 
+    icon: 'pi pi-user',
+    disabled: true,
+    class: 'font-semibold'
+  },
+  { separator: true },
+  { 
+    label: t('auth.logout'), 
+    icon: 'pi pi-sign-out', 
+    command: handleLogout 
+  }
+])
+
+const toggleUserMenu = (event) => {
+  userMenu.value.toggle(event)
+}
+
+const handleLogout = async () => {
+  await authStore.logout()
+  router.push({ name: 'login' })
+}
 
 const toggleLanguageMenu = (event) => {
   langMenu.value.toggle(event)

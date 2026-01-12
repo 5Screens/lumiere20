@@ -1,4 +1,16 @@
 {
+  "auth": {
+    "title": "Login",
+    "email": "Email address",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "fillAllFields": "Please fill in all fields",
+    "loginSuccess": "Login successful",
+    "loginFailed": "Login failed"
+  },
   "portal": {
     "loading": "Loading portal...",
     "error": "Error",
@@ -21,6 +33,9 @@
     "close": "Close",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "save": "Save"
+    "save": "Save",
+    "warning": "Warning",
+    "success": "Success",
+    "error": "Error"
   }
 }
