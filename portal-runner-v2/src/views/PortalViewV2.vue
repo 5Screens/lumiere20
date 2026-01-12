@@ -1,5 +1,5 @@
 <template>
-  <div class="portal-v2 min-h-screen flex flex-col" :style="themeStyles">
+  <div class="portal-v2 h-screen overflow-hidden flex flex-col" :style="themeStyles">
     <!-- Header -->
     <header class="bg-white dark:bg-surface-800 shadow-sm border-b border-surface-200 dark:border-surface-700">
       <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -28,9 +28,9 @@
     </header>
     
     <!-- Main Content -->
-    <main class="flex-1 flex">
+    <main class="flex-1 flex min-h-0">
       <!-- Left: Main Area -->
-      <div class="flex-1 p-6 overflow-y-auto">
+      <div class="flex-1 min-h-0 p-6 overflow-y-auto">
         <!-- Alerts -->
         <div v-if="portal.show_alerts && alerts.length > 0" class="mb-6 space-y-3">
           <Message 
@@ -102,9 +102,19 @@
       </div>
       
       <!-- Right: Agentic Panel -->
-      <aside v-if="portal.show_chat" class="w-96 border-l border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800">
-        <AgenticPanel :default-message="portal.chat_default_message" />
-      </aside>
+      <template v-if="portal.show_chat">
+        <div
+          class="w-2 cursor-col-resize select-none bg-surface-200 dark:bg-surface-700 hover:bg-primary/70 active:bg-primary/80 transition-colors"
+          @mousedown="onChatResizerMouseDown"
+          @dblclick="resetChatWidth"
+        ></div>
+        <aside
+          class="min-h-0 flex flex-col overflow-hidden border-l border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800"
+          :style="chatAsideStyle"
+        >
+          <AgenticPanel class="flex-1 min-h-0" :default-message="portal.chat_default_message" />
+        </aside>
+      </template>
     </main>
     
     <!-- Footer -->
@@ -115,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/authStore'
@@ -141,6 +151,60 @@ const alerts = computed(() => portal.value.alerts || [])
 const quickActions = computed(() => portal.value.quick_actions || [])
 const widgets = computed(() => portal.value.widgets || [])
 const userName = computed(() => authStore.user?.first_name || 'User')
+
+const CHAT_WIDTH_STORAGE_KEY = 'portal_runner_v2_chat_width'
+const chatWidth = ref(Number(localStorage.getItem(CHAT_WIDTH_STORAGE_KEY)) || 384)
+const chatDefaultWidth = 384
+const chatMinWidth = 320
+const chatMaxWidth = 720
+const isResizingChat = ref(false)
+const resizeHandlers = ref({ onMouseMove: null, onMouseUp: null })
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
+
+const chatAsideStyle = computed(() => ({
+  width: `${chatWidth.value}px`
+}))
+
+const onChatResizerMouseDown = (event) => {
+  event.preventDefault()
+
+  isResizingChat.value = true
+  const startX = event.clientX
+  const startWidth = chatWidth.value
+
+  const onMouseMove = (moveEvent) => {
+    const delta = startX - moveEvent.clientX
+    chatWidth.value = clamp(startWidth + delta, chatMinWidth, chatMaxWidth)
+  }
+
+  const onMouseUp = () => {
+    isResizingChat.value = false
+    localStorage.setItem(CHAT_WIDTH_STORAGE_KEY, String(chatWidth.value))
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', onMouseUp)
+    resizeHandlers.value = { onMouseMove: null, onMouseUp: null }
+  }
+
+  resizeHandlers.value = { onMouseMove, onMouseUp }
+
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('mouseup', onMouseUp)
+}
+
+const resetChatWidth = () => {
+  chatWidth.value = chatDefaultWidth
+  localStorage.setItem(CHAT_WIDTH_STORAGE_KEY, String(chatWidth.value))
+}
+
+onBeforeUnmount(() => {
+  if (resizeHandlers.value.onMouseMove) {
+    window.removeEventListener('mousemove', resizeHandlers.value.onMouseMove)
+  }
+  if (resizeHandlers.value.onMouseUp) {
+    window.removeEventListener('mouseup', resizeHandlers.value.onMouseUp)
+  }
+})
 
 const themeStyles = computed(() => ({
   '--portal-primary': portal.value.theme_primary_color || '#FF6B00',
