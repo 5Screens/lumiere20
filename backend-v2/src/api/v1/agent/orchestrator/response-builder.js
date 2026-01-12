@@ -2,6 +2,8 @@ const logger = require('../../../../config/logger');
 const llmClient = require('../utils/llm-client');
 const { INTENTS } = require('../schemas/common');
 
+const AGENT_TOOL_DATA_MAX_LENGTH = parseInt(process.env.AGENT_TOOL_DATA_MAX_LENGTH, 10) || 1500;
+
 /**
  * Response Builder - Builds natural language responses for the user
  * Uses LLM to generate contextual, helpful responses
@@ -182,7 +184,7 @@ const buildContextSummary = (intent, toolResults, conversationContext) => {
         parts.push(`- ${result.tool}: SUCCESS`);
         if (result.data) {
           // More generous data limit for better context
-          parts.push(`  Data: ${JSON.stringify(result.data).substring(0, 1500)}`);
+          parts.push(`  Data: ${JSON.stringify(result.data).substring(0, AGENT_TOOL_DATA_MAX_LENGTH)}`);
         }
       } else {
         parts.push(`- ${result.tool}: FAILED - ${result.error}`);
