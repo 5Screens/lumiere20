@@ -48,8 +48,6 @@ const processMessage = async (message, userContext) => {
     
     if (intentResult.suggestedTools && intentResult.suggestedTools.length > 0) {
       for (const toolName of intentResult.suggestedTools) {
-        logger.info(`Executing tool: ${toolName}`);
-        
         const toolResult = await toolExecutor.execute(toolName, {
           userContext,
           conversationContext: currentContext,
