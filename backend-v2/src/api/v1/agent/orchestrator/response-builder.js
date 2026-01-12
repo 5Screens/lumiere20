@@ -54,6 +54,9 @@ const build = async (params) => {
   const { userMessage, intent, toolResults, conversationContext, userContext } = params;
   const startTime = Date.now();
 
+  logger.info(`-- response-builder -- build`);
+  logger.info(`  INPUT: intent=${intent?.intent}, toolResultsCount=${toolResults?.length || 0}`);
+
   try {
     // Build context for LLM
     const contextSummary = buildContextSummary(intent, toolResults, conversationContext, userContext);
@@ -96,7 +99,7 @@ Format your response as JSON:
     const result = llmClient.parseJsonResponse(response.content);
 
     const executionTime = Date.now() - startTime;
-    logger.info(`-- response-builder -- Built in ${executionTime}ms`);
+    logger.info(`  OUTPUT: messageLength=${result.message?.length || 0}, suggestedActionsCount=${result.suggestedActions?.length || 0}, executionTimeMs=${executionTime}`);
 
     return {
       message: result.message || "I'm sorry, I couldn't generate a proper response.",

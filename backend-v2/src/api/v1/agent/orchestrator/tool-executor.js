@@ -94,6 +94,9 @@ const createPlaceholderHandler = (toolName) => {
 const execute = async (toolName, params) => {
   const startTime = Date.now();
 
+  logger.info(`-- tool-executor -- execute: ${toolName}`);
+  logger.info(`  INPUT: intent=${params.intent?.intent}, entities=${JSON.stringify(params.intent?.entities)}, previousResultsCount=${params.previousResults?.length || 0}`);
+
   // Ensure tools are loaded
   if (toolRegistry.size === 0) {
     loadTools();
@@ -103,6 +106,7 @@ const execute = async (toolName, params) => {
 
   if (!handler) {
     logger.error(`-- tool-executor -- Tool not found: ${toolName}`);
+    logger.info(`  OUTPUT: success=false, error=Tool ${toolName} not found`);
     return createToolResult(toolName, false, null, {
       error: `Tool ${toolName} not found`,
       executionTimeMs: Date.now() - startTime
@@ -110,12 +114,10 @@ const execute = async (toolName, params) => {
   }
 
   try {
-    logger.info(`-- tool-executor -- Executing: ${toolName}`);
-    
     const result = await handler(params);
     
     const executionTime = Date.now() - startTime;
-    logger.info(`-- tool-executor -- ${toolName} completed in ${executionTime}ms (success: ${result.success})`);
+    logger.info(`  OUTPUT: success=${result.success}, dataKeys=${result.data ? Object.keys(result.data).join(', ') : 'null'}, executionTimeMs=${executionTime}`);
 
     return {
       ...result,

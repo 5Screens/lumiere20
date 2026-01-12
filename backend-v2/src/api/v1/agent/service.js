@@ -23,7 +23,8 @@ const processMessage = async (message, userContext) => {
   const startTime = Date.now();
   const conversationId = userContext.conversationId || crypto.randomUUID();
   
-  logger.info(`-- agent-service -- Processing message for conversation ${conversationId}`);
+  logger.info(`-- agent-service -- processMessage`);
+  logger.info(`  INPUT: conversationId=${conversationId}, message="${message.substring(0, 80)}...", locale=${userContext.locale}`);
 
   try {
     // Step 1: Get or create conversation context
@@ -37,10 +38,12 @@ const processMessage = async (message, userContext) => {
     });
 
     // Step 2: Analyze user intent (LLM call)
-    logger.info(`-- agent-service -- Analyzing intent for: "${message.substring(0, 50)}..."`);
+    logger.info(`-- agent-service -- Step 2: Analyzing intent...`);
     const intentResult = await intentAnalyzer.analyze(message, conversationContext);
     
-    logger.info(`-- agent-service -- Intent: ${intentResult.intent} (confidence: ${intentResult.confidence})`);
+    logger.info(`-- agent-service -- Intent result: ${intentResult.intent} (confidence: ${intentResult.confidence})`);
+    logger.info(`  entities: ${JSON.stringify(intentResult.entities)}`);
+    logger.info(`  suggestedTools: ${JSON.stringify(intentResult.suggestedTools)}`);
 
     // Step 3: Execute tools based on intent
     const toolResults = [];
@@ -77,7 +80,7 @@ const processMessage = async (message, userContext) => {
     }
 
     // Step 4: Build response (LLM call)
-    logger.info(`-- agent-service -- Building response with ${toolResults.length} tool results`);
+    logger.info(`-- agent-service -- Step 4: Building response with ${toolResults.length} tool results`);
     const response = await responseBuilder.build({
       userMessage: message,
       intent: intentResult,
@@ -101,7 +104,7 @@ const processMessage = async (message, userContext) => {
     await contextManager.saveContext(conversationId, conversationContext);
 
     const processingTime = Date.now() - startTime;
-    logger.info(`-- agent-service -- Message processed in ${processingTime}ms`);
+    logger.info(`  OUTPUT: intent=${intentResult.intent}, toolsExecuted=${toolResults.length}, suggestedActions=${response.suggestedActions?.length || 0}, processingTimeMs=${processingTime}`);
 
     return {
       conversationId,

@@ -1,5 +1,6 @@
 const logger = require('../../../../../config/logger');
 const { createToolResult } = require('../../schemas/common');
+const llmClient = require('../../utils/llm-client');
 
 /**
  * Web Search Solution Tool
@@ -37,11 +38,16 @@ const TRUSTED_DOMAINS = [
  */
 const execute = async (params) => {
   const startTime = Date.now();
-  const { userContext, intent, previousResults } = params;
+  const { userContext, intent, previousResults, conversationContext } = params;
+
+  logger.info(`-- ${TOOL_NAME} -- execute`);
+  logger.info(`  INPUT: intent=${intent?.intent}, entities=${JSON.stringify(intent?.entities)}`);
 
   try {
-    // Extract search query
-    const searchQuery = intent?.entities?.problem || 
+    // Extract search query - prefer original message for better product detection
+    const originalMessage = conversationContext?.messages?.slice(-1)[0]?.content || '';
+    const searchQuery = originalMessage || 
+                       intent?.entities?.problem || 
                        intent?.entities?.query ||
                        intent?.entities?.application ||
                        '';
@@ -53,8 +59,9 @@ const execute = async (params) => {
       });
     }
 
-    // Detect product/application for targeted search
-    const productHint = detectProduct(searchQuery);
+    // Detect product/application for targeted search using LLM
+    const detectedProducts = await detectProductsWithLLM(originalMessage || searchQuery);
+    const productHint = detectedProducts.length > 0 ? detectedProducts[0] : null;
     
     logger.info(`-- ${TOOL_NAME} -- Searching for: "${searchQuery}" (product: ${productHint || 'unknown'})`);
 
@@ -64,7 +71,7 @@ const execute = async (params) => {
 
     const executionTime = Date.now() - startTime;
 
-    logger.info(`-- ${TOOL_NAME} -- Found ${mockResults.length} results in ${executionTime}ms`);
+    logger.info(`  OUTPUT: resultsCount=${mockResults.length}, productHint=${productHint || 'none'}, executionTimeMs=${executionTime}`);
 
     return createToolResult(TOOL_NAME, true, {
       query: searchQuery,
@@ -89,43 +96,57 @@ const execute = async (params) => {
 };
 
 /**
- * Detect product/application from search query
- * @param {string} query - Search query
- * @returns {string|null} Detected product
+ * Detect products/applications from user query using LLM
+ * @param {string} query - User query
+ * @returns {Promise<string[]>} Array of detected product names
  */
-const detectProduct = (query) => {
-  const queryLower = query.toLowerCase();
+const detectProductsWithLLM = async (query) => {
+  const startTime = Date.now();
   
-  const products = {
-    'excel': 'Microsoft Excel',
-    'word': 'Microsoft Word',
-    'powerpoint': 'Microsoft PowerPoint',
-    'outlook': 'Microsoft Outlook',
-    'teams': 'Microsoft Teams',
-    'sharepoint': 'Microsoft SharePoint',
-    'onedrive': 'Microsoft OneDrive',
-    'windows': 'Microsoft Windows',
-    'office': 'Microsoft Office',
-    'chrome': 'Google Chrome',
-    'gmail': 'Google Gmail',
-    'google drive': 'Google Drive',
-    'salesforce': 'Salesforce',
-    'sap': 'SAP',
-    'slack': 'Slack',
-    'zoom': 'Zoom',
-    'vpn': 'VPN',
-    'wifi': 'WiFi',
-    'printer': 'Printer',
-    'password': 'Password/Authentication'
-  };
+  try {
+    const systemPrompt = `You are a product detection assistant. Your task is to identify software products, applications, or technologies mentioned in user queries.
 
-  for (const [keyword, product] of Object.entries(products)) {
-    if (queryLower.includes(keyword)) {
-      return product;
-    }
+Rules:
+- Return ONLY a JSON array of product names
+- Use official product names (e.g., "Microsoft Excel" not just "Excel")
+- Include vendor name when applicable (e.g., "Microsoft Teams", "Google Chrome")
+- If no specific product is detected, return an empty array []
+- Maximum 3 products per query
+- Be precise: "TCD" or "tableau croisé dynamique" relates to "Microsoft Excel"
+- Common mappings: VPN, WiFi, Printer are valid product categories
+
+Examples:
+- "j'ai excel et j'aimerais faire un tcd" → ["Microsoft Excel"]
+- "outlook ne synchronise plus mes mails" → ["Microsoft Outlook"]
+- "teams et sharepoint ne marchent pas" → ["Microsoft Teams", "Microsoft SharePoint"]
+- "comment me connecter au vpn" → ["VPN"]
+- "bonjour" → []`;
+
+    const response = await llmClient.chatCompletion({
+      systemPrompt,
+      messages: [{
+        role: 'user',
+        content: `Detect products in this query: "${query}"`
+      }],
+      options: {
+        temperature: 0.1,
+        maxTokens: 100
+      }
+    });
+
+    const products = llmClient.parseJsonResponse(response.content);
+    
+    const executionTime = Date.now() - startTime;
+    logger.info(`-- ${TOOL_NAME} -- detectProductsWithLLM completed in ${executionTime}ms`);
+    logger.info(`  query: "${query.substring(0, 50)}..."`);
+    logger.info(`  detectedProducts: ${JSON.stringify(products)}`);
+
+    return Array.isArray(products) ? products : [];
+    
+  } catch (error) {
+    logger.error(`-- ${TOOL_NAME} -- detectProductsWithLLM failed: ${error.message}`);
+    return [];
   }
-
-  return null;
 };
 
 /**
@@ -206,5 +227,5 @@ module.exports = {
   execute,
   TOOL_NAME,
   TRUSTED_DOMAINS,
-  detectProduct
+  detectProductsWithLLM
 };

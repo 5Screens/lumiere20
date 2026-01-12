@@ -21,18 +21,23 @@ const CONTEXT_EXPIRATION_MS = 30 * 60 * 1000;
  * @returns {Object} Conversation context
  */
 const getContext = async (conversationId, userContext) => {
+  logger.info(`-- context-manager -- getContext: conversationId=${conversationId}`);
+
   let context = contextStore.get(conversationId);
+  let isNew = false;
+  let isExpired = false;
 
   if (context) {
     // Check if context has expired
     const age = Date.now() - new Date(context.lastActivity).getTime();
     if (age > CONTEXT_EXPIRATION_MS) {
-      logger.info(`-- context-manager -- Context ${conversationId} expired, creating new one`);
+      isExpired = true;
       context = null;
     }
   }
 
   if (!context) {
+    isNew = true;
     context = {
       conversationId,
       messages: [],
@@ -47,12 +52,13 @@ const getContext = async (conversationId, userContext) => {
       lastActivity: new Date().toISOString()
     };
     contextStore.set(conversationId, context);
-    logger.info(`-- context-manager -- Created new context for conversation ${conversationId}`);
   } else {
     // Update user context and last activity
     context.userContext = { ...context.userContext, ...userContext };
     context.lastActivity = new Date().toISOString();
   }
+
+  logger.info(`  OUTPUT: isNew=${isNew}, isExpired=${isExpired}, messagesCount=${context.messages.length}`);
 
   return context;
 };
@@ -63,6 +69,8 @@ const getContext = async (conversationId, userContext) => {
  * @param {Object} message - Message to add
  */
 const addMessage = (context, message) => {
+  logger.info(`-- context-manager -- addMessage: role=${message.role}, content="${(message.content || '').substring(0, 50)}..."`);
+
   context.messages.push(message);
   
   // Trim old messages if exceeding limit
@@ -72,6 +80,8 @@ const addMessage = (context, message) => {
   }
 
   context.lastActivity = new Date().toISOString();
+
+  logger.info(`  OUTPUT: totalMessages=${context.messages.length}`);
 };
 
 /**

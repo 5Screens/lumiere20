@@ -152,9 +152,66 @@ const sendMessage = async () => {
 }
 
 const handleSuggestedAction = (action) => {
+  console.log('handleSuggestedAction:', action)
+  
+  // If action.message exists, use it directly
   if (action.message) {
     inputMessage.value = action.message
     sendMessage()
+    return
+  }
+  
+  // Otherwise, handle based on action code
+  switch (action.action) {
+    case 'search':
+      inputMessage.value = action.params?.query || action.label || 'Search...'
+      sendMessage()
+      break
+    case 'create_ticket':
+      inputMessage.value = 'I would like to create a ticket'
+      sendMessage()
+      break
+    case 'report_incident':
+      inputMessage.value = 'I would like to report an incident'
+      sendMessage()
+      break
+    case 'list_tickets':
+      inputMessage.value = 'Show my tickets'
+      sendMessage()
+      break
+    case 'request_access':
+      inputMessage.value = 'I need access to an application'
+      sendMessage()
+      break
+    case 'browse_catalog':
+      if (action.params?.url) {
+        window.open(action.params.url, '_blank')
+      } else {
+        inputMessage.value = 'Show me the service catalog'
+        sendMessage()
+      }
+      break
+    case 'track_ticket':
+      inputMessage.value = action.params?.ticketId 
+        ? `Status of ticket ${action.params.ticketId}` 
+        : 'Track a ticket'
+      sendMessage()
+      break
+    case 'submit_ticket':
+      inputMessage.value = 'Submit the ticket'
+      sendMessage()
+      break
+    case 'add_details':
+      // Focus on input for user to add details
+      break
+    default:
+      // For unknown actions, use the label as a message
+      if (action.label) {
+        inputMessage.value = action.label
+        sendMessage()
+      } else {
+        console.warn('Unhandled action:', action.action)
+      }
   }
 }
 

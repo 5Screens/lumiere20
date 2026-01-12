@@ -70,6 +70,9 @@ Respond ONLY with a JSON object in this exact format:
 const analyze = async (message, conversationContext) => {
   const startTime = Date.now();
 
+  logger.info(`-- intent-analyzer -- analyze`);
+  logger.info(`  INPUT: message="${message.substring(0, 80)}...", historyLength=${conversationContext?.messages?.length || 0}`);
+
   try {
     // Build messages for LLM
     const messages = [];
@@ -108,7 +111,7 @@ const analyze = async (message, conversationContext) => {
     const normalizedResult = normalizeIntentResult(result, message);
 
     const executionTime = Date.now() - startTime;
-    logger.info(`-- intent-analyzer -- Completed in ${executionTime}ms: ${normalizedResult.intent} (confidence: ${normalizedResult.confidence})`);
+    logger.info(`  OUTPUT: intent=${normalizedResult.intent}, confidence=${normalizedResult.confidence}, entities=${JSON.stringify(normalizedResult.entities)}, executionTimeMs=${executionTime}`);
 
     return {
       ...normalizedResult,

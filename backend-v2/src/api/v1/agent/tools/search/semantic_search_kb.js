@@ -21,6 +21,9 @@ const execute = async (params) => {
   const startTime = Date.now();
   const { userContext, intent, conversationContext } = params;
 
+  logger.info(`-- ${TOOL_NAME} -- execute`);
+  logger.info(`  INPUT: intent=${intent?.intent}, entities=${JSON.stringify(intent?.entities)}, messagesCount=${conversationContext?.messages?.length || 0}`);
+
   try {
     // Extract search query from intent entities or original message
     const searchQuery = intent?.entities?.problem || 
@@ -29,13 +32,14 @@ const execute = async (params) => {
                        '';
 
     if (!searchQuery) {
+      logger.info(`  OUTPUT: error=No search query provided`);
       return createToolResult(TOOL_NAME, false, null, {
         error: 'No search query provided',
         executionTimeMs: Date.now() - startTime
       });
     }
 
-    logger.info(`-- ${TOOL_NAME} -- Searching KB for: "${searchQuery.substring(0, 50)}..."`);
+    logger.info(`  searchQuery: "${searchQuery.substring(0, 100)}"`);
 
     // Search in tickets of type KNOWLEDGE
     // For now, use simple text search. Can be enhanced with vector search later.
@@ -112,13 +116,13 @@ const execute = async (params) => {
 
     const executionTime = Date.now() - startTime;
 
-    logger.info(`-- ${TOOL_NAME} -- Found ${filteredResults.length} results in ${executionTime}ms`);
-
     // Determine if we should suggest web search fallback
     const hasGoodResults = filteredResults.length > 0 && filteredResults[0].relevanceScore > 0.3;
     const suggestedNextTools = hasGoodResults 
       ? ['generate_solution_steps'] 
       : ['web_search_solution'];
+
+    logger.info(`  OUTPUT: resultsCount=${filteredResults.length}, hasRelevantResults=${hasGoodResults}, bestScore=${filteredResults[0]?.relevanceScore || 0}, executionTimeMs=${executionTime}`);
 
     return createToolResult(TOOL_NAME, true, {
       query: searchQuery,
