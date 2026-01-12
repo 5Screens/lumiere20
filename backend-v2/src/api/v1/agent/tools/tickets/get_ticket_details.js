@@ -9,6 +9,105 @@ const { createToolResult } = require('../../schemas/common');
 
 const TOOL_NAME = 'get_ticket_details';
 
+// UUID v4 regex pattern
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Check if a string is a valid UUID
+ * @param {string} str - String to check
+ * @returns {boolean} True if valid UUID
+ */
+const isValidUuid = (str) => {
+  return str && UUID_REGEX.test(str);
+};
+
+// Common select fields for ticket queries
+const TICKET_SELECT = {
+  uuid: true,
+  title: true,
+  description: true,
+  extended_core_fields: true,
+  created_at: true,
+  updated_at: true,
+  ticket_type: {
+    select: {
+      code: true,
+      label: true
+    }
+  },
+  status: {
+    select: {
+      uuid: true,
+      name: true
+    }
+  },
+  requested_by: {
+    select: {
+      uuid: true,
+      first_name: true,
+      last_name: true,
+      email: true
+    }
+  },
+  requested_for: {
+    select: {
+      uuid: true,
+      first_name: true,
+      last_name: true,
+      email: true
+    }
+  },
+  assigned_person: {
+    select: {
+      uuid: true,
+      first_name: true,
+      last_name: true,
+      email: true
+    }
+  }
+};
+
+/**
+ * Find ticket by UUID
+ * @param {string} uuid - Ticket UUID
+ * @returns {Object|null} Ticket or null
+ */
+const findTicketByUuid = async (uuid) => {
+  return prisma.tickets.findUnique({
+    where: { uuid },
+    select: TICKET_SELECT
+  });
+};
+
+/**
+ * Find ticket by title (partial match)
+ * @param {string} title - Ticket title or partial title
+ * @param {string} userId - User ID to filter by (optional)
+ * @returns {Object|null} First matching ticket or null
+ */
+const findTicketByTitle = async (title, userId) => {
+  const where = {
+    title: { contains: title, mode: 'insensitive' }
+  };
+
+  // Optionally filter by user
+  if (userId) {
+    where.OR = [
+      { requested_by_uuid: userId },
+      { requested_for_uuid: userId }
+    ];
+  }
+
+  const tickets = await prisma.tickets.findMany({
+    where,
+    select: TICKET_SELECT,
+    orderBy: { updated_at: 'desc' },
+    take: 1
+  });
+
+  return tickets[0] || null;
+};
+
 /**
  * Execute get ticket details
  * @param {Object} params - Tool parameters
@@ -21,97 +120,41 @@ const execute = async (params) => {
   const { userContext, intent } = params;
 
   try {
-    // Get ticket ID from intent
-    const ticketId = intent?.entities?.ticketId || intent?.entities?.uuid;
+    // Get ticket identifier from intent (could be UUID or title)
+    const ticketIdentifier = intent?.entities?.ticketId || intent?.entities?.uuid || intent?.entities?.ticketTitle;
 
-    if (!ticketId) {
+    if (!ticketIdentifier) {
       return createToolResult(TOOL_NAME, false, null, {
-        error: 'No ticket ID provided',
+        error: 'No ticket ID or title provided',
         executionTimeMs: Date.now() - startTime,
         suggestedNextTools: ['list_user_tickets']
       });
     }
 
-    logger.info(`-- ${TOOL_NAME} -- Getting details for ticket: ${ticketId}`);
+    logger.info(`-- ${TOOL_NAME} -- Getting details for ticket: ${ticketIdentifier}`);
 
-    // Query ticket with relations
-    const ticket = await prisma.tickets.findUnique({
-      where: { uuid: ticketId },
-      select: {
-        uuid: true,
-        title: true,
-        description: true,
-        extended_core_fields: true,
-        created_at: true,
-        updated_at: true,
-        ticket_type: {
-          select: {
-            code: true,
-            label: true
-          }
-        },
-        status: {
-          select: {
-            uuid: true,
-            name: true
-          }
-        },
-        requested_by: {
-          select: {
-            uuid: true,
-            first_name: true,
-            last_name: true,
-            email: true
-          }
-        },
-        requested_for: {
-          select: {
-            uuid: true,
-            first_name: true,
-            last_name: true,
-            email: true
-          }
-        },
-        assigned_person: {
-          select: {
-            uuid: true,
-            first_name: true,
-            last_name: true,
-            email: true
-          }
-        }
-      }
-    });
+    let ticket = null;
+
+    // Check if it's a valid UUID
+    if (isValidUuid(ticketIdentifier)) {
+      // Search by UUID
+      ticket = await findTicketByUuid(ticketIdentifier);
+    } else {
+      // Search by title (partial match)
+      logger.info(`-- ${TOOL_NAME} -- Not a UUID, searching by title: ${ticketIdentifier}`);
+      ticket = await findTicketByTitle(ticketIdentifier, userContext?.userId);
+    }
 
     if (!ticket) {
       return createToolResult(TOOL_NAME, false, null, {
-        error: `Ticket ${ticketId} not found`,
+        error: `Ticket not found: ${ticketIdentifier}`,
         executionTimeMs: Date.now() - startTime,
         suggestedNextTools: ['list_user_tickets']
       });
     }
 
-    // Get ticket comments/history
-    const comments = await prisma.ticket_comments?.findMany?.({
-      where: { rel_ticket_uuid: ticketId },
-      orderBy: { created_at: 'desc' },
-      take: 10,
-      select: {
-        uuid: true,
-        content: true,
-        created_at: true,
-        persons: {
-          select: {
-            first_name: true,
-            last_name: true
-          }
-        }
-      }
-    }).catch(() => []);
-
     const executionTime = Date.now() - startTime;
-
-    logger.info(`-- ${TOOL_NAME} -- Retrieved in ${executionTime}ms`);
+    logger.info(`-- ${TOOL_NAME} -- Retrieved ticket ${ticket.uuid} in ${executionTime}ms`);
 
     // Transform result
     const requestedBy = ticket.requested_by;
@@ -142,12 +185,7 @@ const execute = async (params) => {
         email: assignedTo.email
       } : null,
       createdAt: ticket.created_at,
-      updatedAt: ticket.updated_at,
-      comments: (comments || []).map(c => ({
-        content: c.content,
-        author: c.persons ? `${c.persons.first_name || ''} ${c.persons.last_name || ''}`.trim() : 'Unknown',
-        createdAt: c.created_at
-      }))
+      updatedAt: ticket.updated_at
     }, {
       executionTimeMs: executionTime,
       suggestedNextTools: ['add_ticket_comment']
