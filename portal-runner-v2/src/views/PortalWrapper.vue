@@ -38,7 +38,6 @@ const portalCode = computed(() => route.params.portalCode)
 
 // Map of available portal view components
 const componentMap = {
-  'PortalViewV1': defineAsyncComponent(() => import('@/views/PortalViewV1.vue')),
   'PortalViewV2': defineAsyncComponent(() => import('@/views/PortalViewV2.vue'))
 }
 
