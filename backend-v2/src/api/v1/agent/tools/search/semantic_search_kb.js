@@ -35,7 +35,7 @@ const execute = async (params) => {
       });
     }
 
-    logger.info(`Searching KB for: "${searchQuery.substring(0, 50)}..."`);
+    logger.info(`-- ${TOOL_NAME} -- Searching KB for: "${searchQuery.substring(0, 50)}..."`);
 
     // Search in tickets of type KNOWLEDGE
     // For now, use simple text search. Can be enhanced with vector search later.
@@ -112,7 +112,7 @@ const execute = async (params) => {
 
     const executionTime = Date.now() - startTime;
 
-    logger.info(`KB search found ${filteredResults.length} results in ${executionTime}ms`);
+    logger.info(`-- ${TOOL_NAME} -- Found ${filteredResults.length} results in ${executionTime}ms`);
 
     // Determine if we should suggest web search fallback
     const hasGoodResults = filteredResults.length > 0 && filteredResults[0].relevanceScore > 0.3;
@@ -132,7 +132,7 @@ const execute = async (params) => {
     });
 
   } catch (error) {
-    logger.error(`KB search failed: ${error.message}`, { stack: error.stack });
+    logger.error(`-- ${TOOL_NAME} -- Failed: ${error.message}`, { stack: error.stack });
     
     return createToolResult(TOOL_NAME, false, null, {
       error: error.message,

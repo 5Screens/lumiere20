@@ -32,7 +32,7 @@ const execute = async (params) => {
       });
     }
 
-    logger.info(`Getting details for ticket: ${ticketId}`);
+    logger.info(`-- ${TOOL_NAME} -- Getting details for ticket: ${ticketId}`);
 
     // Query ticket with relations
     const ticket = await prisma.tickets.findUnique({
@@ -112,7 +112,7 @@ const execute = async (params) => {
 
     const executionTime = Date.now() - startTime;
 
-    logger.info(`Ticket details retrieved in ${executionTime}ms`);
+    logger.info(`-- ${TOOL_NAME} -- Retrieved in ${executionTime}ms`);
 
     // Transform result
     const requestedBy = ticket.persons_tickets_rel_requested_by_uuidTopersons;
@@ -154,7 +154,7 @@ const execute = async (params) => {
     });
 
   } catch (error) {
-    logger.error(`Get ticket details failed: ${error.message}`, { stack: error.stack });
+    logger.error(`-- ${TOOL_NAME} -- Failed: ${error.message}`, { stack: error.stack });
     
     return createToolResult(TOOL_NAME, false, null, {
       error: error.message,

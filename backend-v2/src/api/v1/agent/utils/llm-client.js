@@ -76,10 +76,7 @@ const chatCompletion = async ({ systemPrompt, messages, options = {} }) => {
       const url = new URL(apiUrl);
       const postData = JSON.stringify(requestBody);
 
-      logger.debug(`LLM request to ${apiUrl}`, { 
-        model: requestBody.model,
-        messageCount: requestMessages.length 
-      });
+      logger.debug(`-- llm-client -- Request to ${apiUrl} (model: ${requestBody.model}, messages: ${requestMessages.length})`);
 
       // Configure request
       const reqOptions = {
@@ -108,7 +105,7 @@ const chatCompletion = async ({ systemPrompt, messages, options = {} }) => {
           
           try {
             if (res.statusCode !== 200) {
-              logger.error(`LLM API error: ${res.statusCode}`, { response: data });
+              logger.error(`-- llm-client -- API error: ${res.statusCode}`, { response: data });
               return reject(new Error(`LLM API error: ${res.statusCode} - ${data}`));
             }
 
@@ -121,10 +118,7 @@ const chatCompletion = async ({ systemPrompt, messages, options = {} }) => {
 
             const usage = response.usage || {};
 
-            logger.debug(`LLM response received in ${executionTime}ms`, {
-              promptTokens: usage.prompt_tokens,
-              completionTokens: usage.completion_tokens
-            });
+            logger.debug(`-- llm-client -- Response received in ${executionTime}ms (tokens: ${usage.prompt_tokens || 0}+${usage.completion_tokens || 0})`);
 
             resolve({
               content,
@@ -136,20 +130,20 @@ const chatCompletion = async ({ systemPrompt, messages, options = {} }) => {
               executionTimeMs: executionTime
             });
           } catch (parseError) {
-            logger.error(`LLM response parse error: ${parseError.message}`);
+            logger.error(`-- llm-client -- Response parse error: ${parseError.message}`);
             reject(parseError);
           }
         });
       });
 
       req.on('error', (error) => {
-        logger.error(`LLM request error: ${error.message}`);
+        logger.error(`-- llm-client -- Request error: ${error.message}`);
         reject(error);
       });
 
       req.on('timeout', () => {
         req.destroy();
-        logger.error(`LLM request timeout after ${options.timeout || LLM_CONFIG.timeout}ms`);
+        logger.error(`-- llm-client -- Request timeout after ${options.timeout || LLM_CONFIG.timeout}ms`);
         reject(new Error('LLM request timeout'));
       });
 
@@ -158,7 +152,7 @@ const chatCompletion = async ({ systemPrompt, messages, options = {} }) => {
       req.end();
 
     } catch (error) {
-      logger.error(`LLM request failed: ${error.message}`);
+      logger.error(`-- llm-client -- Request failed: ${error.message}`);
       reject(error);
     }
   });
@@ -203,7 +197,7 @@ const healthCheck = async () => {
     });
     return response.content.toLowerCase().includes('ok');
   } catch (error) {
-    logger.warn(`LLM health check failed: ${error.message}`);
+    logger.warn(`-- llm-client -- Health check failed: ${error.message}`);
     return false;
   }
 };

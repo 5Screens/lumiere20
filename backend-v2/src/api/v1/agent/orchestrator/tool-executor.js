@@ -16,7 +16,7 @@ const toolRegistry = new Map();
  */
 const registerTool = (name, handler) => {
   toolRegistry.set(name, handler);
-  logger.debug(`Registered tool: ${name}`);
+  logger.debug(`-- tool-executor -- Registered tool: ${name}`);
 };
 
 /**
@@ -67,7 +67,7 @@ const loadTools = () => {
     }
   }
 
-  logger.info(`Loaded ${toolRegistry.size} tools`);
+  logger.info(`-- tool-executor -- Loaded ${toolRegistry.size} tools`);
 };
 
 /**
@@ -77,7 +77,7 @@ const loadTools = () => {
  */
 const createPlaceholderHandler = (toolName) => {
   return async (params) => {
-    logger.warn(`Tool ${toolName} is not yet implemented`);
+    logger.warn(`-- tool-executor -- Tool ${toolName} is not yet implemented`);
     return createToolResult(toolName, false, null, {
       error: `Tool ${toolName} is not yet implemented`,
       suggestedNextTools: []
@@ -102,7 +102,7 @@ const execute = async (toolName, params) => {
   const handler = toolRegistry.get(toolName);
 
   if (!handler) {
-    logger.error(`Tool not found: ${toolName}`);
+    logger.error(`-- tool-executor -- Tool not found: ${toolName}`);
     return createToolResult(toolName, false, null, {
       error: `Tool ${toolName} not found`,
       executionTimeMs: Date.now() - startTime
@@ -110,14 +110,12 @@ const execute = async (toolName, params) => {
   }
 
   try {
-    logger.info(`Executing tool: ${toolName}`);
+    logger.info(`-- tool-executor -- Executing: ${toolName}`);
     
     const result = await handler(params);
     
     const executionTime = Date.now() - startTime;
-    logger.info(`Tool ${toolName} completed in ${executionTime}ms`, {
-      success: result.success
-    });
+    logger.info(`-- tool-executor -- ${toolName} completed in ${executionTime}ms (success: ${result.success})`);
 
     return {
       ...result,
@@ -126,10 +124,7 @@ const execute = async (toolName, params) => {
 
   } catch (error) {
     const executionTime = Date.now() - startTime;
-    logger.error(`Tool ${toolName} failed: ${error.message}`, {
-      stack: error.stack,
-      executionTimeMs: executionTime
-    });
+    logger.error(`-- tool-executor -- ${toolName} failed: ${error.message}`, { stack: error.stack });
 
     return createToolResult(toolName, false, null, {
       error: error.message,
@@ -164,13 +159,13 @@ const executeSequence = async (toolNames, params) => {
 
     // Stop if tool indicates we should stop
     if (result.stopExecution) {
-      logger.info(`Stopping tool sequence at ${toolName}`);
+      logger.info(`-- tool-executor -- Stopping sequence at ${toolName}`);
       break;
     }
 
     // Stop if tool failed and is critical
     if (!result.success && result.critical) {
-      logger.warn(`Critical tool ${toolName} failed, stopping sequence`);
+      logger.warn(`-- tool-executor -- Critical tool ${toolName} failed, stopping sequence`);
       break;
     }
   }

@@ -23,7 +23,7 @@ const processMessage = async (message, userContext) => {
   const startTime = Date.now();
   const conversationId = userContext.conversationId || crypto.randomUUID();
   
-  logger.info(`Processing message for conversation ${conversationId}`);
+  logger.info(`-- agent-service -- Processing message for conversation ${conversationId}`);
 
   try {
     // Step 1: Get or create conversation context
@@ -37,10 +37,10 @@ const processMessage = async (message, userContext) => {
     });
 
     // Step 2: Analyze user intent (LLM call)
-    logger.info(`Analyzing intent for message: "${message.substring(0, 50)}..."`);
+    logger.info(`-- agent-service -- Analyzing intent for: "${message.substring(0, 50)}..."`);
     const intentResult = await intentAnalyzer.analyze(message, conversationContext);
     
-    logger.info(`Intent detected: ${intentResult.intent} (confidence: ${intentResult.confidence})`);
+    logger.info(`-- agent-service -- Intent: ${intentResult.intent} (confidence: ${intentResult.confidence})`);
 
     // Step 3: Execute tools based on intent
     const toolResults = [];
@@ -70,14 +70,14 @@ const processMessage = async (message, userContext) => {
 
         // Stop if tool indicates we should stop
         if (toolResult.stopExecution) {
-          logger.info(`Tool ${toolName} requested execution stop`);
+          logger.info(`-- agent-service -- Tool ${toolName} requested execution stop`);
           break;
         }
       }
     }
 
     // Step 4: Build response (LLM call)
-    logger.info(`Building response with ${toolResults.length} tool results`);
+    logger.info(`-- agent-service -- Building response with ${toolResults.length} tool results`);
     const response = await responseBuilder.build({
       userMessage: message,
       intent: intentResult,
@@ -101,7 +101,7 @@ const processMessage = async (message, userContext) => {
     await contextManager.saveContext(conversationId, conversationContext);
 
     const processingTime = Date.now() - startTime;
-    logger.info(`Message processed in ${processingTime}ms`);
+    logger.info(`-- agent-service -- Message processed in ${processingTime}ms`);
 
     return {
       conversationId,
@@ -119,7 +119,7 @@ const processMessage = async (message, userContext) => {
     };
 
   } catch (error) {
-    logger.error(`Error processing message: ${error.message}`, { stack: error.stack });
+    logger.error(`-- agent-service -- Error: ${error.message}`, { stack: error.stack });
     throw error;
   }
 };
@@ -142,7 +142,7 @@ const healthCheck = async () => {
     checks.llm = llmStatus ? 'ok' : 'error';
   } catch (error) {
     checks.llm = 'error';
-    logger.warn(`LLM health check failed: ${error.message}`);
+    logger.warn(`-- agent-service -- LLM health check failed: ${error.message}`);
   }
 
   // Check database connectivity
@@ -152,7 +152,7 @@ const healthCheck = async () => {
     checks.database = 'ok';
   } catch (error) {
     checks.database = 'error';
-    logger.warn(`Database health check failed: ${error.message}`);
+    logger.warn(`-- agent-service -- Database health check failed: ${error.message}`);
   }
 
   const allHealthy = Object.values(checks).every(v => v === 'ok');

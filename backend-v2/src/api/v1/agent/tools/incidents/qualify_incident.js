@@ -67,7 +67,7 @@ const execute = async (params) => {
 
     const locale = userContext?.locale || 'fr';
 
-    logger.info(`Qualifying incident: "${description.substring(0, 50)}..."`);
+    logger.info(`-- ${TOOL_NAME} -- Qualifying: "${description.substring(0, 50)}..."`);
 
     const messages = [
       {
@@ -98,7 +98,7 @@ Respond in ${locale === 'fr' ? 'French' : 'English'} for the summary and suggest
 
     const executionTime = Date.now() - startTime;
 
-    logger.info(`Incident qualified in ${executionTime}ms: ${normalizedQualification.category} / ${normalizedQualification.priority}`);
+    logger.info(`-- ${TOOL_NAME} -- Qualified in ${executionTime}ms: ${normalizedQualification.category} / ${normalizedQualification.priority}`);
 
     // Determine next tools
     const suggestedNextTools = normalizedQualification.needsMoreInfo 
@@ -111,7 +111,7 @@ Respond in ${locale === 'fr' ? 'French' : 'English'} for the summary and suggest
     });
 
   } catch (error) {
-    logger.error(`Incident qualification failed: ${error.message}`, { stack: error.stack });
+    logger.error(`-- ${TOOL_NAME} -- Failed: ${error.message}`, { stack: error.stack });
     
     return createToolResult(TOOL_NAME, false, null, {
       error: error.message,

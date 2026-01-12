@@ -56,7 +56,7 @@ const execute = async (params) => {
     // Detect product/application for targeted search
     const productHint = detectProduct(searchQuery);
     
-    logger.info(`Web search for: "${searchQuery}" (product: ${productHint || 'unknown'})`);
+    logger.info(`-- ${TOOL_NAME} -- Searching for: "${searchQuery}" (product: ${productHint || 'unknown'})`);
 
     // For now, return mock results since we don't have a search API configured
     // In production, this would call Bing API, Google Custom Search, or SerpAPI
@@ -64,7 +64,7 @@ const execute = async (params) => {
 
     const executionTime = Date.now() - startTime;
 
-    logger.info(`Web search completed in ${executionTime}ms with ${mockResults.length} results`);
+    logger.info(`-- ${TOOL_NAME} -- Found ${mockResults.length} results in ${executionTime}ms`);
 
     return createToolResult(TOOL_NAME, true, {
       query: searchQuery,
@@ -79,7 +79,7 @@ const execute = async (params) => {
     });
 
   } catch (error) {
-    logger.error(`Web search failed: ${error.message}`, { stack: error.stack });
+    logger.error(`-- ${TOOL_NAME} -- Failed: ${error.message}`, { stack: error.stack });
     
     return createToolResult(TOOL_NAME, false, null, {
       error: error.message,

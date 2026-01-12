@@ -43,7 +43,7 @@ const execute = async (params) => {
 
     const executionTime = Date.now() - startTime;
 
-    logger.info(`Incident created via tickets service: ${incident.uuid} in ${executionTime}ms`);
+    logger.info(`-- ${TOOL_NAME} -- Created incident ${incident.uuid} in ${executionTime}ms`);
 
     return createToolResult(TOOL_NAME, true, {
       ticketId: incident.uuid,
@@ -56,7 +56,7 @@ const execute = async (params) => {
     });
 
   } catch (error) {
-    logger.error(`Incident creation failed: ${error.message}`, { stack: error.stack });
+    logger.error(`-- ${TOOL_NAME} -- Failed: ${error.message}`, { stack: error.stack });
     
     return createToolResult(TOOL_NAME, false, null, {
       error: error.message,

@@ -99,10 +99,7 @@ const analyze = async (message, conversationContext) => {
     const normalizedResult = normalizeIntentResult(result, message);
 
     const executionTime = Date.now() - startTime;
-    logger.info(`Intent analysis completed in ${executionTime}ms`, {
-      intent: normalizedResult.intent,
-      confidence: normalizedResult.confidence
-    });
+    logger.info(`-- intent-analyzer -- Completed in ${executionTime}ms: ${normalizedResult.intent} (confidence: ${normalizedResult.confidence})`);
 
     return {
       ...normalizedResult,
@@ -110,7 +107,7 @@ const analyze = async (message, conversationContext) => {
     };
 
   } catch (error) {
-    logger.error(`Intent analysis failed: ${error.message}`, { stack: error.stack });
+    logger.error(`-- intent-analyzer -- Failed: ${error.message}`, { stack: error.stack });
     
     // Return unknown intent on error
     return {

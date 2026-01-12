@@ -84,7 +84,7 @@ Format your response as JSON:
     const result = llmClient.parseJsonResponse(response.content);
 
     const executionTime = Date.now() - startTime;
-    logger.info(`Response built in ${executionTime}ms`);
+    logger.info(`-- response-builder -- Built in ${executionTime}ms`);
 
     return {
       message: result.message || "I'm sorry, I couldn't generate a proper response.",
@@ -95,7 +95,7 @@ Format your response as JSON:
     };
 
   } catch (error) {
-    logger.error(`Response building failed: ${error.message}`, { stack: error.stack });
+    logger.error(`-- response-builder -- Failed: ${error.message}`, { stack: error.stack });
     
     // Return fallback response
     return buildFallbackResponse(intent, toolResults, userContext);

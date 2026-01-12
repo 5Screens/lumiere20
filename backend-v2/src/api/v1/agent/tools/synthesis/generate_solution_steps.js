@@ -95,7 +95,7 @@ Generate a step-by-step solution in ${locale === 'fr' ? 'French' : 'English'}.`
 
     const executionTime = Date.now() - startTime;
 
-    logger.info(`Solution generated in ${executionTime}ms with ${normalizedSolution.steps.length} steps`);
+    logger.info(`-- ${TOOL_NAME} -- Generated ${normalizedSolution.steps.length} steps in ${executionTime}ms`);
 
     return createToolResult(TOOL_NAME, true, normalizedSolution, {
       executionTimeMs: executionTime,
@@ -103,7 +103,7 @@ Generate a step-by-step solution in ${locale === 'fr' ? 'French' : 'English'}.`
     });
 
   } catch (error) {
-    logger.error(`Solution generation failed: ${error.message}`, { stack: error.stack });
+    logger.error(`-- ${TOOL_NAME} -- Failed: ${error.message}`, { stack: error.stack });
     
     return createToolResult(TOOL_NAME, false, null, {
       error: error.message,

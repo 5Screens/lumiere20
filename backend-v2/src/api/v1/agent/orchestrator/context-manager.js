@@ -27,7 +27,7 @@ const getContext = async (conversationId, userContext) => {
     // Check if context has expired
     const age = Date.now() - new Date(context.lastActivity).getTime();
     if (age > CONTEXT_EXPIRATION_MS) {
-      logger.info(`Context ${conversationId} expired, creating new one`);
+      logger.info(`-- context-manager -- Context ${conversationId} expired, creating new one`);
       context = null;
     }
   }
@@ -47,7 +47,7 @@ const getContext = async (conversationId, userContext) => {
       lastActivity: new Date().toISOString()
     };
     contextStore.set(conversationId, context);
-    logger.info(`Created new context for conversation ${conversationId}`);
+    logger.info(`-- context-manager -- Created new context for conversation ${conversationId}`);
   } else {
     // Update user context and last activity
     context.userContext = { ...context.userContext, ...userContext };
@@ -68,7 +68,7 @@ const addMessage = (context, message) => {
   // Trim old messages if exceeding limit
   if (context.messages.length > MAX_CONTEXT_MESSAGES) {
     const removed = context.messages.splice(0, context.messages.length - MAX_CONTEXT_MESSAGES);
-    logger.debug(`Trimmed ${removed.length} old messages from context`);
+    logger.debug(`-- context-manager -- Trimmed ${removed.length} old messages from context`);
   }
 
   context.lastActivity = new Date().toISOString();
@@ -82,7 +82,7 @@ const addMessage = (context, message) => {
 const saveContext = async (conversationId, context) => {
   context.lastActivity = new Date().toISOString();
   contextStore.set(conversationId, context);
-  logger.debug(`Saved context for conversation ${conversationId}`);
+  logger.debug(`-- context-manager -- Saved context for conversation ${conversationId}`);
 };
 
 /**
@@ -101,7 +101,7 @@ const updateState = (context, stateUpdate) => {
  */
 const clearContext = (conversationId) => {
   contextStore.delete(conversationId);
-  logger.info(`Cleared context for conversation ${conversationId}`);
+  logger.info(`-- context-manager -- Cleared context for conversation ${conversationId}`);
 };
 
 /**
@@ -149,7 +149,7 @@ const cleanupExpiredContexts = () => {
   }
 
   if (cleaned > 0) {
-    logger.info(`Cleaned up ${cleaned} expired contexts`);
+    logger.info(`-- context-manager -- Cleaned up ${cleaned} expired contexts`);
   }
 };
 

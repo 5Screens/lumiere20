@@ -50,7 +50,7 @@ const execute = async (params) => {
       };
     }
 
-    logger.info(`Listing tickets for user: ${userId || 'anonymous'}`);
+    logger.info(`-- ${TOOL_NAME} -- Listing tickets for user: ${userId || 'anonymous'}`);
 
     // Query tickets
     const tickets = await prisma.tickets.findMany({
@@ -99,7 +99,7 @@ const execute = async (params) => {
 
     const executionTime = Date.now() - startTime;
 
-    logger.info(`Found ${transformedTickets.length} tickets in ${executionTime}ms`);
+    logger.info(`-- ${TOOL_NAME} -- Found ${transformedTickets.length} tickets in ${executionTime}ms`);
 
     // Group by status for summary
     const statusSummary = {};
@@ -122,7 +122,7 @@ const execute = async (params) => {
     });
 
   } catch (error) {
-    logger.error(`List tickets failed: ${error.message}`, { stack: error.stack });
+    logger.error(`-- ${TOOL_NAME} -- Failed: ${error.message}`, { stack: error.stack });
     
     return createToolResult(TOOL_NAME, false, null, {
       error: error.message,
