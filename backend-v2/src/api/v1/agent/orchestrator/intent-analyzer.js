@@ -43,6 +43,11 @@ Available intents:
 - unknown: Intent cannot be determined
 - out_of_scope: Request is outside ITSM scope (e.g., "What's the weather?")
 
+IMPORTANT: 
+- Detect the language of the user's message
+- If clarification is needed, generate the clarification question IN THE SAME LANGUAGE as the user's message
+- The clarification question must be contextual and helpful
+
 Respond ONLY with a JSON object in this exact format:
 {
   "intent": "intent_code",
@@ -53,7 +58,7 @@ Respond ONLY with a JSON object in this exact format:
     "problem": "brief description of the problem if any"
   },
   "needsClarification": true/false,
-  "clarificationQuestion": "question to ask if clarification needed"
+  "clarificationQuestion": "contextual question to ask if clarification needed (MUST be in the user's language)"
 }`;
 
 /**
@@ -113,14 +118,14 @@ const analyze = async (message, conversationContext) => {
   } catch (error) {
     logger.error(`-- intent-analyzer -- Failed: ${error.message}`, { stack: error.stack });
     
-    // Return unknown intent on error
+    // Return unknown intent on error - minimal response, no hardcoded message
     return {
       intent: INTENTS.UNKNOWN,
       confidence: 0,
       entities: {},
       suggestedTools: [],
-      needsClarification: true,
-      clarificationQuestion: "I'm sorry, I couldn't understand your request. Could you please rephrase it?",
+      needsClarification: false,
+      clarificationQuestion: null,
       error: error.message,
       executionTimeMs: Date.now() - startTime
     };
@@ -146,7 +151,7 @@ const normalizeIntentResult = (result, originalMessage) => {
   // Get suggested tools for this intent
   const suggestedTools = INTENT_TOOL_MAPPING[intent] || [];
 
-  // Handle low confidence
+  // Handle low confidence - LLM generates clarification question directly
   const needsClarification = confidence < 0.6 || result.needsClarification === true;
 
   return {
@@ -155,32 +160,8 @@ const normalizeIntentResult = (result, originalMessage) => {
     entities: result.entities || {},
     suggestedTools,
     needsClarification,
-    clarificationQuestion: needsClarification 
-      ? (result.clarificationQuestion || generateClarificationQuestion(intent, originalMessage))
-      : null
+    clarificationQuestion: needsClarification ? (result.clarificationQuestion || null) : null
   };
-};
-
-/**
- * Generate a clarification question based on intent
- * @param {string} intent - Detected intent
- * @param {string} message - Original message
- * @returns {string} Clarification question
- */
-const generateClarificationQuestion = (intent, message) => {
-  const questions = {
-    [INTENTS.SEARCH_SOLUTION]: "Could you describe the problem you're experiencing in more detail?",
-    [INTENTS.PASSWORD_RESET]: "Which application or system do you need to reset your password for?",
-    [INTENTS.ACCOUNT_UNLOCK]: "Which account is locked? (e.g., Windows, email, specific application)",
-    [INTENTS.REQUEST_ACCESS]: "Which application or system do you need access to?",
-    [INTENTS.REPORT_INCIDENT]: "Could you describe the issue you're experiencing? What error messages do you see?",
-    [INTENTS.REQUEST_SERVICE]: "What type of service or equipment do you need?",
-    [INTENTS.TRACK_TICKET]: "Do you have a ticket number you'd like to track?",
-    [INTENTS.UNKNOWN]: "I'm not sure I understood your request. Could you please provide more details?",
-    [INTENTS.OUT_OF_SCOPE]: "I'm an IT support assistant. How can I help you with IT-related questions?"
-  };
-
-  return questions[intent] || questions[INTENTS.UNKNOWN];
 };
 
 module.exports = {

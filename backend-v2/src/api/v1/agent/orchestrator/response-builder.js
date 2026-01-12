@@ -1,29 +1,44 @@
 const logger = require('../../../../config/logger');
 const llmClient = require('../utils/llm-client');
-const { INTENTS } = require('../schemas/common');
 
 const AGENT_TOOL_DATA_MAX_LENGTH = parseInt(process.env.AGENT_TOOL_DATA_MAX_LENGTH, 10) || 1500;
 
 /**
  * Response Builder - Builds natural language responses for the user
- * Uses LLM to generate contextual, helpful responses
+ * Uses LLM to generate ALL responses dynamically - no hardcoded messages
  */
+
+const AVAILABLE_ACTIONS = [
+  { action: 'report_incident', description: 'Report a new IT incident or problem' },
+  { action: 'list_tickets', description: 'View user\'s open tickets' },
+  { action: 'request_access', description: 'Request access to an application or system' },
+  { action: 'create_ticket', description: 'Create a new support ticket' },
+  { action: 'search', description: 'Search for solutions or articles' },
+  { action: 'submit_ticket', description: 'Submit the current ticket draft' },
+  { action: 'add_details', description: 'Add more details to the current request' },
+  { action: 'track_ticket', description: 'Track a specific ticket by number' },
+  { action: 'browse_catalog', description: 'Browse available IT services' }
+];
 
 const SYSTEM_PROMPT = `You are a helpful IT support assistant for an enterprise service desk.
 Your role is to help users with IT-related requests in a friendly, professional manner.
 
 CRITICAL GUIDELINES:
+- ALWAYS respond in the SAME LANGUAGE as the user's message. If they write in Italian, respond in Italian. If they write in Portuguese, respond in Portuguese. Etc.
 - ALWAYS use the CONVERSATION HISTORY to understand context. If the user refers to "my ticket", "this issue", or "the problem I mentioned", look at the history to understand what they mean.
 - Use ONLY the data from tool results. NEVER invent ticket numbers, dates, or details.
 - If a tool failed or returned no data, say so honestly - do not make up information.
 - Be concise but helpful
-- Use the user's language (French or English based on their message)
 - If tools were executed successfully, summarize the ACTUAL results clearly
-- If clarification is needed, ask specific questions
-- Suggest relevant actions the user can take
+- If clarification is needed, ask specific questions IN THE USER'S LANGUAGE
+- Suggest relevant actions the user can take (labels must be in the user's language)
 - Format responses for readability (use bullet points for lists)
+- DO NOT start every response with a greeting like "Bonjour" or "Hello". Only greet the user if they greeted you first (intent is "greeting"). For all other messages, respond directly to their request without a greeting.
+- For thanks, acknowledge politely but briefly
+- For out-of-scope requests, politely explain you are an IT assistant
 
-When suggesting actions, format them as a JSON array in your response metadata.`;
+AVAILABLE ACTIONS you can suggest (use these action codes, but translate the labels to the user's language):
+${AVAILABLE_ACTIONS.map(a => `- ${a.action}: ${a.description}`).join('\n')}`;
 
 /**
  * Build a response based on intent and tool results
@@ -40,14 +55,8 @@ const build = async (params) => {
   const startTime = Date.now();
 
   try {
-    // Handle simple intents without LLM
-    const simpleResponse = handleSimpleIntent(intent, userContext);
-    if (simpleResponse) {
-      return simpleResponse;
-    }
-
     // Build context for LLM
-    const contextSummary = buildContextSummary(intent, toolResults, conversationContext);
+    const contextSummary = buildContextSummary(intent, toolResults, conversationContext, userContext);
 
     // Build messages for LLM
     const messages = [
@@ -59,13 +68,13 @@ Context:
 ${contextSummary}
 
 Generate a helpful response for the user. Include any relevant actions they can take.
-Respond in the same language as the user's message.
+IMPORTANT: Respond in the SAME LANGUAGE as the user's message.
 
 Format your response as JSON:
 {
-  "message": "Your response to the user",
+  "message": "Your response to the user (in the user's language)",
   "suggestedActions": [
-    {"label": "Action label", "action": "action_code", "params": {}}
+    {"label": "Action label (translated to user's language)", "action": "action_code", "params": {}}
   ],
   "clarificationNeeded": false,
   "clarificationQuestion": null
@@ -91,7 +100,7 @@ Format your response as JSON:
 
     return {
       message: result.message || "I'm sorry, I couldn't generate a proper response.",
-      suggestedActions: result.suggestedActions || [],
+      suggestedActions: validateSuggestedActions(result.suggestedActions),
       clarificationNeeded: result.clarificationNeeded || false,
       clarificationQuestion: result.clarificationQuestion || null,
       executionTimeMs: executionTime
@@ -100,49 +109,37 @@ Format your response as JSON:
   } catch (error) {
     logger.error(`-- response-builder -- Failed: ${error.message}`, { stack: error.stack });
     
-    // Return fallback response
-    return buildFallbackResponse(intent, toolResults, userContext);
+    // Return minimal error response - no hardcoded messages
+    return {
+      message: error.message || 'An error occurred',
+      suggestedActions: [],
+      clarificationNeeded: false,
+      clarificationQuestion: null,
+      executionTimeMs: Date.now() - startTime,
+      error: true
+    };
   }
 };
 
 /**
- * Handle simple intents that don't need LLM
- * @param {Object} intent - Intent result
- * @param {Object} userContext - User context
- * @returns {Object|null} Response or null if LLM needed
+ * Validate and filter suggested actions to only include known action codes
+ * @param {Object[]} actions - Actions from LLM
+ * @returns {Object[]} Validated actions
  */
-const handleSimpleIntent = (intent, userContext) => {
-  const locale = userContext.locale || 'fr';
-  const firstName = userContext.firstName || '';
-
-  const responses = {
-    [INTENTS.GREETING]: {
-      fr: `Bonjour${firstName ? ` ${firstName}` : ''} ! Comment puis-je vous aider aujourd'hui ?`,
-      en: `Hello${firstName ? ` ${firstName}` : ''}! How can I help you today?`
-    },
-    [INTENTS.THANKS]: {
-      fr: "Je vous en prie ! N'hésitez pas si vous avez d'autres questions.",
-      en: "You're welcome! Feel free to ask if you have any other questions."
-    },
-    [INTENTS.OUT_OF_SCOPE]: {
-      fr: "Je suis un assistant IT. Je peux vous aider avec des questions liées à l'informatique, comme les problèmes techniques, les demandes d'accès, ou le suivi de vos tickets.",
-      en: "I'm an IT assistant. I can help you with IT-related questions, such as technical issues, access requests, or tracking your tickets."
-    }
-  };
-
-  const intentResponses = responses[intent.intent];
-  if (intentResponses) {
-    const message = intentResponses[locale] || intentResponses.en;
-    return {
-      message,
-      suggestedActions: getSuggestedActionsForIntent(intent.intent),
-      clarificationNeeded: false,
-      clarificationQuestion: null,
-      executionTimeMs: 0
-    };
-  }
-
-  return null;
+const validateSuggestedActions = (actions) => {
+  if (!Array.isArray(actions)) return [];
+  
+  const validActionCodes = AVAILABLE_ACTIONS.map(a => a.action);
+  
+  return actions.filter(action => {
+    if (!action || typeof action !== 'object') return false;
+    if (!action.action || !action.label) return false;
+    return validActionCodes.includes(action.action);
+  }).map(action => ({
+    label: action.label,
+    action: action.action,
+    params: action.params || {}
+  }));
 };
 
 /**
@@ -150,10 +147,16 @@ const handleSimpleIntent = (intent, userContext) => {
  * @param {Object} intent - Intent result
  * @param {Object[]} toolResults - Tool results
  * @param {Object} conversationContext - Conversation context
+ * @param {Object} userContext - User context
  * @returns {string} Context summary
  */
-const buildContextSummary = (intent, toolResults, conversationContext) => {
+const buildContextSummary = (intent, toolResults, conversationContext, userContext) => {
   const parts = [];
+
+  // User info for personalization
+  if (userContext?.firstName) {
+    parts.push(`User name: ${userContext.firstName}`);
+  }
 
   // Conversation history (critical for context)
   const messages = conversationContext?.messages || [];
@@ -202,74 +205,8 @@ const buildContextSummary = (intent, toolResults, conversationContext) => {
   return parts.join('\n');
 };
 
-/**
- * Build fallback response when LLM fails
- * @param {Object} intent - Intent result
- * @param {Object[]} toolResults - Tool results
- * @param {Object} userContext - User context
- * @returns {Object} Fallback response
- */
-const buildFallbackResponse = (intent, toolResults, userContext) => {
-  const locale = userContext.locale || 'fr';
-  
-  // Check if any tools succeeded
-  const successfulTools = toolResults?.filter(r => r.success) || [];
-  
-  let message;
-  if (successfulTools.length > 0) {
-    message = locale === 'fr'
-      ? "J'ai traité votre demande. Voici ce que j'ai trouvé."
-      : "I've processed your request. Here's what I found.";
-  } else if (intent.needsClarification) {
-    message = intent.clarificationQuestion || (locale === 'fr'
-      ? "Pourriez-vous préciser votre demande ?"
-      : "Could you please clarify your request?");
-  } else {
-    message = locale === 'fr'
-      ? "Je suis désolé, je n'ai pas pu traiter votre demande. Veuillez réessayer ou contacter le support."
-      : "I'm sorry, I couldn't process your request. Please try again or contact support.";
-  }
-
-  return {
-    message,
-    suggestedActions: getSuggestedActionsForIntent(intent.intent),
-    clarificationNeeded: intent.needsClarification || false,
-    clarificationQuestion: intent.clarificationQuestion || null,
-    executionTimeMs: 0
-  };
-};
-
-/**
- * Get suggested actions for an intent
- * @param {string} intent - Intent code
- * @returns {Object[]} Suggested actions
- */
-const getSuggestedActionsForIntent = (intent) => {
-  const actionMap = {
-    [INTENTS.GREETING]: [
-      { label: 'Report an issue', action: 'report_incident', params: {} },
-      { label: 'Track my tickets', action: 'list_tickets', params: {} },
-      { label: 'Request access', action: 'request_access', params: {} }
-    ],
-    [INTENTS.SEARCH_SOLUTION]: [
-      { label: 'Create a ticket', action: 'create_ticket', params: {} },
-      { label: 'Search again', action: 'search', params: {} }
-    ],
-    [INTENTS.REPORT_INCIDENT]: [
-      { label: 'Submit ticket', action: 'submit_ticket', params: {} },
-      { label: 'Add more details', action: 'add_details', params: {} }
-    ],
-    [INTENTS.LIST_TICKETS]: [
-      { label: 'Create new ticket', action: 'create_ticket', params: {} }
-    ]
-  };
-
-  return actionMap[intent] || [];
-};
-
 module.exports = {
   build,
-  handleSimpleIntent,
   buildContextSummary,
-  buildFallbackResponse
+  AVAILABLE_ACTIONS
 };
