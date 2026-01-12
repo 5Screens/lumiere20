@@ -29,23 +29,23 @@ const execute = async (params) => {
     // Filter by user if authenticated
     if (userId) {
       where.OR = [
-        { rel_requested_by_uuid: userId },
-        { rel_requested_for_uuid: userId }
+        { requested_by_uuid: userId },
+        { requested_for_uuid: userId }
       ];
     }
 
     // Filter by status if specified in intent
     if (intent?.entities?.status) {
-      const statusCode = intent.entities.status.toUpperCase();
-      where.workflow_statuses = {
-        code: statusCode
+      const statusName = intent.entities.status;
+      where.status = {
+        name: { contains: statusName, mode: 'insensitive' }
       };
     }
 
     // Filter by type if specified
     if (intent?.entities?.ticketType) {
       const typeCode = intent.entities.ticketType.toUpperCase();
-      where.ticket_types = {
+      where.ticket_type = {
         code: typeCode
       };
     }
@@ -59,20 +59,19 @@ const execute = async (params) => {
         uuid: true,
         title: true,
         description: true,
-        priority: true,
-        category: true,
+        extended_core_fields: true,
         created_at: true,
         updated_at: true,
-        ticket_types: {
+        ticket_type: {
           select: {
             code: true,
             label: true
           }
         },
-        workflow_statuses: {
+        status: {
           select: {
-            code: true,
-            label: true
+            uuid: true,
+            name: true
           }
         }
       },
@@ -83,19 +82,22 @@ const execute = async (params) => {
     });
 
     // Transform results
-    const transformedTickets = tickets.map(t => ({
-      uuid: t.uuid,
-      title: t.title,
-      description: t.description?.substring(0, 200),
-      type: t.ticket_types?.code || 'UNKNOWN',
-      typeLabel: t.ticket_types?.label || 'Unknown',
-      status: t.workflow_statuses?.code || 'UNKNOWN',
-      statusLabel: t.workflow_statuses?.label || 'Unknown',
-      priority: mapPriorityToLabel(t.priority),
-      category: t.category,
-      createdAt: t.created_at,
-      updatedAt: t.updated_at
-    }));
+    const transformedTickets = tickets.map(t => {
+      const extFields = t.extended_core_fields || {};
+      return {
+        uuid: t.uuid,
+        title: t.title,
+        description: t.description?.substring(0, 200),
+        type: t.ticket_type?.code || 'UNKNOWN',
+        typeLabel: t.ticket_type?.label || 'Unknown',
+        status: t.status?.name || 'UNKNOWN',
+        statusLabel: t.status?.name || 'Unknown',
+        priority: mapPriorityToLabel(extFields.priority),
+        category: extFields.category,
+        createdAt: t.created_at,
+        updatedAt: t.updated_at
+      };
+    });
 
     const executionTime = Date.now() - startTime;
 

@@ -41,23 +41,22 @@ const execute = async (params) => {
         uuid: true,
         title: true,
         description: true,
-        priority: true,
-        category: true,
+        extended_core_fields: true,
         created_at: true,
         updated_at: true,
-        ticket_types: {
+        ticket_type: {
           select: {
             code: true,
             label: true
           }
         },
-        workflow_statuses: {
+        status: {
           select: {
-            code: true,
-            label: true
+            uuid: true,
+            name: true
           }
         },
-        persons_tickets_rel_requested_by_uuidTopersons: {
+        requested_by: {
           select: {
             uuid: true,
             first_name: true,
@@ -65,7 +64,7 @@ const execute = async (params) => {
             email: true
           }
         },
-        persons_tickets_rel_requested_for_uuidTopersons: {
+        requested_for: {
           select: {
             uuid: true,
             first_name: true,
@@ -73,7 +72,7 @@ const execute = async (params) => {
             email: true
           }
         },
-        persons_tickets_rel_assigned_to_uuidTopersons: {
+        assigned_person: {
           select: {
             uuid: true,
             first_name: true,
@@ -115,20 +114,21 @@ const execute = async (params) => {
     logger.info(`-- ${TOOL_NAME} -- Retrieved in ${executionTime}ms`);
 
     // Transform result
-    const requestedBy = ticket.persons_tickets_rel_requested_by_uuidTopersons;
-    const requestedFor = ticket.persons_tickets_rel_requested_for_uuidTopersons;
-    const assignedTo = ticket.persons_tickets_rel_assigned_to_uuidTopersons;
+    const requestedBy = ticket.requested_by;
+    const requestedFor = ticket.requested_for;
+    const assignedTo = ticket.assigned_person;
+    const extFields = ticket.extended_core_fields || {};
 
     return createToolResult(TOOL_NAME, true, {
       uuid: ticket.uuid,
       title: ticket.title,
       description: ticket.description,
-      type: ticket.ticket_types?.code || 'UNKNOWN',
-      typeLabel: ticket.ticket_types?.label || 'Unknown',
-      status: ticket.workflow_statuses?.code || 'UNKNOWN',
-      statusLabel: ticket.workflow_statuses?.label || 'Unknown',
-      priority: mapPriorityToLabel(ticket.priority),
-      category: ticket.category,
+      type: ticket.ticket_type?.code || 'UNKNOWN',
+      typeLabel: ticket.ticket_type?.label || 'Unknown',
+      status: ticket.status?.name || 'UNKNOWN',
+      statusLabel: ticket.status?.name || 'Unknown',
+      priority: mapPriorityToLabel(extFields.priority),
+      category: extFields.category,
       requestedBy: requestedBy ? {
         name: `${requestedBy.first_name || ''} ${requestedBy.last_name || ''}`.trim(),
         email: requestedBy.email
