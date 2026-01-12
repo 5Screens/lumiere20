@@ -40,7 +40,7 @@
           </div>
           
           <!-- Message content -->
-          <div v-else class="whitespace-pre-wrap">{{ msg.content }}</div>
+          <div v-else class="whitespace-pre-wrap" v-html="formatMessage(msg.content)"></div>
           
           <!-- Suggested actions -->
           <div v-if="msg.suggestedActions?.length" class="mt-2 flex flex-wrap gap-2">
@@ -156,5 +156,22 @@ const handleSuggestedAction = (action) => {
     inputMessage.value = action.message
     sendMessage()
   }
+}
+
+/**
+ * Format message content for display
+ * - Converts newlines to <br>
+ * - Sanitizes HTML to prevent XSS
+ */
+const formatMessage = (content) => {
+  if (!content) return ''
+  // Escape HTML entities first to prevent XSS
+  const escaped = content
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+  // Then convert newlines to <br>
+  return escaped.replace(/\n/g, '<br>')
 }
 </script>

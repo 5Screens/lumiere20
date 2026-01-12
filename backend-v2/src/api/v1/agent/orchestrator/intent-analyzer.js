@@ -10,6 +10,8 @@ const { INTENTS, INTENT_TOOL_MAPPING } = require('../schemas/common');
 const SYSTEM_PROMPT = `You are an intent analyzer for an IT Service Management (ITSM) portal assistant.
 Your task is to analyze user messages and determine their intent.
 
+IMPORTANT: Consider the conversation history when analyzing intent. If the user refers to something mentioned earlier (like "this ticket", "my request", "the issue I mentioned"), use the context to understand what they mean.
+
 Available intents:
 - search_solution: User wants to find a solution to a problem (e.g., "My screen is black", "Outlook doesn't work")
 - search_article: User wants to find a specific KB article (e.g., "Where is the VPN doc?")
@@ -67,13 +69,15 @@ const analyze = async (message, conversationContext) => {
     // Build messages for LLM
     const messages = [];
 
-    // Add recent conversation history for context
+    // Add recent conversation history for context (more messages for better context)
     if (conversationContext.messages && conversationContext.messages.length > 0) {
-      const recentMessages = conversationContext.messages.slice(-4);
-      messages.push(...recentMessages.map(m => ({
-        role: m.role,
-        content: m.content
-      })));
+      const recentMessages = conversationContext.messages.slice(-8);
+      for (const m of recentMessages) {
+        messages.push({
+          role: m.role,
+          content: m.content
+        });
+      }
     }
 
     // Add current message

@@ -10,14 +10,15 @@ const { INTENTS } = require('../schemas/common');
 const SYSTEM_PROMPT = `You are a helpful IT support assistant for an enterprise service desk.
 Your role is to help users with IT-related requests in a friendly, professional manner.
 
-Guidelines:
+CRITICAL GUIDELINES:
+- ALWAYS use the CONVERSATION HISTORY to understand context. If the user refers to "my ticket", "this issue", or "the problem I mentioned", look at the history to understand what they mean.
+- Use ONLY the data from tool results. NEVER invent ticket numbers, dates, or details.
+- If a tool failed or returned no data, say so honestly - do not make up information.
 - Be concise but helpful
 - Use the user's language (French or English based on their message)
-- If tools were executed successfully, summarize the results clearly
-- If tools failed, apologize and suggest alternatives
+- If tools were executed successfully, summarize the ACTUAL results clearly
 - If clarification is needed, ask specific questions
 - Suggest relevant actions the user can take
-- Never make up information - only use data from tool results
 - Format responses for readability (use bullet points for lists)
 
 When suggesting actions, format them as a JSON array in your response metadata.`;
@@ -152,6 +153,20 @@ const handleSimpleIntent = (intent, userContext) => {
 const buildContextSummary = (intent, toolResults, conversationContext) => {
   const parts = [];
 
+  // Conversation history (critical for context)
+  const messages = conversationContext?.messages || [];
+  if (messages.length > 1) {
+    parts.push('=== CONVERSATION HISTORY ===');
+    // Get last 10 messages (excluding the current one which is last)
+    const historyMessages = messages.slice(-11, -1);
+    for (const msg of historyMessages) {
+      const role = msg.role === 'user' ? 'User' : 'Assistant';
+      const content = msg.content?.substring(0, 300) || '';
+      parts.push(`${role}: ${content}${msg.content?.length > 300 ? '...' : ''}`);
+    }
+    parts.push('=== END HISTORY ===\n');
+  }
+
   // Intent info
   parts.push(`Detected intent: ${intent.intent} (confidence: ${(intent.confidence * 100).toFixed(0)}%)`);
 
@@ -166,7 +181,8 @@ const buildContextSummary = (intent, toolResults, conversationContext) => {
       if (result.success) {
         parts.push(`- ${result.tool}: SUCCESS`);
         if (result.data) {
-          parts.push(`  Data: ${JSON.stringify(result.data).substring(0, 500)}`);
+          // More generous data limit for better context
+          parts.push(`  Data: ${JSON.stringify(result.data).substring(0, 1500)}`);
         }
       } else {
         parts.push(`- ${result.tool}: FAILED - ${result.error}`);
@@ -177,7 +193,7 @@ const buildContextSummary = (intent, toolResults, conversationContext) => {
   }
 
   // Conversation state
-  if (conversationContext.state?.pendingAction) {
+  if (conversationContext?.state?.pendingAction) {
     parts.push(`\nPending action: ${conversationContext.state.pendingAction}`);
   }
 
