@@ -148,7 +148,7 @@ const INTENTS = {
  * Mapping of intents to their suggested tools
  */
 const INTENT_TOOL_MAPPING = {
-  [INTENTS.SEARCH_SOLUTION]: ['semantic_search_kb', 'web_search_solution', 'generate_solution_steps'],
+  [INTENTS.SEARCH_SOLUTION]: ['semantic_search_kb', 'generate_solution_steps'],
   [INTENTS.SEARCH_ARTICLE]: ['semantic_search_kb'],
   [INTENTS.PASSWORD_RESET]: ['identify_account_type', 'reset_password'],
   [INTENTS.ACCOUNT_UNLOCK]: ['identify_account_type', 'unlock_account'],
