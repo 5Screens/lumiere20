@@ -62,10 +62,7 @@ const build = async (params) => {
     const contextSummary = buildContextSummary(intent, toolResults, conversationContext, userContext);
 
     // Build messages for LLM
-    const messages = [
-      {
-        role: 'user',
-        content: `User message: "${userMessage}"
+    const userContent = `User message: "${userMessage}"
 
 Context:
 ${contextSummary}
@@ -81,9 +78,19 @@ Format your response as JSON:
   ],
   "clarificationNeeded": false,
   "clarificationQuestion": null
-}`
+}`;
+
+    const messages = [
+      {
+        role: 'user',
+        content: userContent
       }
     ];
+
+    // Log the full message being sent to LLM
+    logger.info(`-- response-builder -- LLM REQUEST:`);
+    logger.info(`  SYSTEM_PROMPT (${SYSTEM_PROMPT.length} chars): ${SYSTEM_PROMPT.substring(0, 200)}...`);
+    logger.info(`  USER_MESSAGE (${userContent.length} chars):\n${userContent}`);
 
     // Call LLM
     const response = await llmClient.chatCompletion({

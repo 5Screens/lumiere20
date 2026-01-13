@@ -76,7 +76,14 @@ const chatCompletion = async ({ systemPrompt, messages, options = {} }) => {
       const url = new URL(apiUrl);
       const postData = JSON.stringify(requestBody);
 
-      logger.debug(`-- llm-client -- Request to ${apiUrl} (model: ${requestBody.model}, messages: ${requestMessages.length})`);
+      // Log full request details
+      logger.info(`-- llm-client -- REQUEST to ${apiUrl}`);
+      logger.info(`  model: ${requestBody.model}, temperature: ${requestBody.temperature}, max_tokens: ${requestBody.max_tokens}`);
+      logger.info(`  messages count: ${requestMessages.length}`);
+      for (let i = 0; i < requestMessages.length; i++) {
+        const msg = requestMessages[i];
+        logger.info(`  [${i}] role=${msg.role}, content (${msg.content.length} chars): ${msg.content.substring(0, 500)}${msg.content.length > 500 ? '...' : ''}`);
+      }
 
       // Configure request
       const reqOptions = {
@@ -118,7 +125,10 @@ const chatCompletion = async ({ systemPrompt, messages, options = {} }) => {
 
             const usage = response.usage || {};
 
-            logger.debug(`-- llm-client -- Response received in ${executionTime}ms (tokens: ${usage.prompt_tokens || 0}+${usage.completion_tokens || 0})`);
+            // Log full response details
+            logger.info(`-- llm-client -- RESPONSE received in ${executionTime}ms`);
+            logger.info(`  tokens: prompt=${usage.prompt_tokens || 0}, completion=${usage.completion_tokens || 0}, total=${usage.total_tokens || 0}`);
+            logger.info(`  content (${content.length} chars): ${content.substring(0, 1000)}${content.length > 1000 ? '...' : ''}`);
 
             resolve({
               content,
