@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@primevue/themes": "^4.4.1",
+    "marked": "^17.0.1",
     "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.2.0",
     "primeicons": "^7.0.0",

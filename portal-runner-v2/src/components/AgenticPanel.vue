@@ -40,7 +40,7 @@
           </div>
           
           <!-- Message content -->
-          <div v-else class="whitespace-pre-wrap" v-html="formatMessage(msg.content)"></div>
+          <div v-else class="markdown-content" v-html="formatMessage(msg.content)"></div>
           
           <!-- Suggested actions -->
           <div v-if="msg.suggestedActions?.length" class="mt-2 flex flex-wrap gap-2">
@@ -85,6 +85,13 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { sendMessage as sendAgentMessage } from '@/services/agent'
+import { marked } from 'marked'
+
+// Configure marked for safe rendering
+marked.setOptions({
+  breaks: true, // Convert \n to <br>
+  gfm: true // GitHub Flavored Markdown
+})
 
 const props = defineProps({
   defaultMessage: { type: String, default: '' }
@@ -217,18 +224,96 @@ const handleSuggestedAction = (action) => {
 
 /**
  * Format message content for display
- * - Converts newlines to <br>
- * - Sanitizes HTML to prevent XSS
+ * - Renders markdown to HTML
  */
 const formatMessage = (content) => {
   if (!content) return ''
-  // Escape HTML entities first to prevent XSS
-  const escaped = content
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-  // Then convert newlines to <br>
-  return escaped.replace(/\n/g, '<br>')
+  return marked.parse(content)
 }
 </script>
+
+<style scoped>
+/* Markdown styling for assistant messages */
+:deep(.markdown-content) {
+  line-height: 1.4;
+}
+
+:deep(.markdown-content h1),
+:deep(.markdown-content h2),
+:deep(.markdown-content h3),
+:deep(.markdown-content h4),
+:deep(.markdown-content h5),
+:deep(.markdown-content h6) {
+  font-weight: 600;
+  margin-top: 0.5em;
+  margin-bottom: 0.25em;
+}
+
+:deep(.markdown-content h1) { font-size: 1.3em; }
+:deep(.markdown-content h2) { font-size: 1.2em; }
+:deep(.markdown-content h3) { font-size: 1.1em; }
+
+:deep(.markdown-content p) {
+  margin-bottom: 0.4em;
+}
+
+:deep(.markdown-content p:last-child) {
+  margin-bottom: 0;
+}
+
+:deep(.markdown-content ul) {
+  margin-left: 1.25em;
+  margin-bottom: 0.4em;
+  padding-left: 0;
+  list-style-type: disc;
+}
+
+:deep(.markdown-content ol) {
+  margin-left: 1.25em;
+  margin-bottom: 0.4em;
+  padding-left: 0;
+  list-style-type: decimal;
+}
+
+:deep(.markdown-content li) {
+  margin-bottom: 0.15em;
+  display: list-item;
+}
+
+:deep(.markdown-content li p) {
+  margin-bottom: 0.15em;
+}
+
+:deep(.markdown-content strong) {
+  font-weight: 600;
+}
+
+:deep(.markdown-content code) {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+:deep(.markdown-content pre) {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 0.5em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 0.4em;
+}
+
+:deep(.markdown-content pre code) {
+  background: none;
+  padding: 0;
+}
+
+:deep(.markdown-content blockquote) {
+  border-left: 3px solid currentColor;
+  opacity: 0.8;
+  padding-left: 0.75em;
+  margin-left: 0;
+  margin-bottom: 0.4em;
+}
+</style>

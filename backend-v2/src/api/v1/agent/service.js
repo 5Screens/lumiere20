@@ -48,6 +48,7 @@ const processMessage = async (message, userContext) => {
     // Step 3: Execute tools based on intent
     const toolResults = [];
     let currentContext = { ...conversationContext, intent: intentResult };
+    let directLlmResponse = null; // Store direct LLM response if used
     
     if (intentResult.suggestedTools && intentResult.suggestedTools.length > 0) {
       for (const toolName of intentResult.suggestedTools) {
@@ -71,6 +72,34 @@ const processMessage = async (message, userContext) => {
           lastToolResult: toolResult
         };
 
+        // Check if semantic_search_kb found no results -> call direct_llm_query
+        if (toolName === 'semantic_search_kb' && toolResult.success) {
+          const hasRelevantResults = toolResult.data?.hasRelevantResults;
+          if (!hasRelevantResults) {
+            logger.info(`-- agent-service -- semantic_search_kb found no results, calling direct_llm_query`);
+            
+            const directResult = await toolExecutor.execute('direct_llm_query', {
+              userContext,
+              conversationContext: currentContext,
+              intent: intentResult,
+              previousResults: toolResults
+            });
+            
+            toolResults.push({
+              tool: 'direct_llm_query',
+              success: directResult.success,
+              data: directResult.data,
+              error: directResult.error
+            });
+
+            if (directResult.success && directResult.data?.response) {
+              directLlmResponse = directResult.data.response;
+              logger.info(`-- agent-service -- direct_llm_query returned response (${directLlmResponse.length} chars)`);
+              break; // Stop tool chain - we have the final response
+            }
+          }
+        }
+
         // Stop if tool indicates we should stop
         if (toolResult.stopExecution) {
           logger.info(`-- agent-service -- Tool ${toolName} requested execution stop`);
@@ -79,15 +108,29 @@ const processMessage = async (message, userContext) => {
       }
     }
 
-    // Step 4: Build response (LLM call)
-    logger.info(`-- agent-service -- Step 4: Building response with ${toolResults.length} tool results`);
-    const response = await responseBuilder.build({
-      userMessage: message,
-      intent: intentResult,
-      toolResults,
-      conversationContext: currentContext,
-      userContext
-    });
+    // Step 4: Build response
+    let response;
+    
+    if (directLlmResponse) {
+      // Use direct LLM response (no response-builder processing)
+      logger.info(`-- agent-service -- Step 4: Using direct LLM response (skipping response-builder)`);
+      response = {
+        message: directLlmResponse,
+        suggestedActions: [],
+        clarificationNeeded: false,
+        clarificationQuestion: null
+      };
+    } else {
+      // Use response-builder for other cases
+      logger.info(`-- agent-service -- Step 4: Building response with ${toolResults.length} tool results`);
+      response = await responseBuilder.build({
+        userMessage: message,
+        intent: intentResult,
+        toolResults,
+        conversationContext: currentContext,
+        userContext
+      });
+    }
 
     // Add assistant response to context
     contextManager.addMessage(conversationContext, {
@@ -96,7 +139,8 @@ const processMessage = async (message, userContext) => {
       timestamp: new Date().toISOString(),
       metadata: {
         intent: intentResult.intent,
-        toolsExecuted: toolResults.map(t => t.tool)
+        toolsExecuted: toolResults.map(t => t.tool),
+        usedDirectLlm: !!directLlmResponse
       }
     });
 
@@ -104,7 +148,7 @@ const processMessage = async (message, userContext) => {
     await contextManager.saveContext(conversationId, conversationContext);
 
     const processingTime = Date.now() - startTime;
-    logger.info(`  OUTPUT: intent=${intentResult.intent}, toolsExecuted=${toolResults.length}, suggestedActions=${response.suggestedActions?.length || 0}, processingTimeMs=${processingTime}`);
+    logger.info(`  OUTPUT: intent=${intentResult.intent}, toolsExecuted=${toolResults.length}, usedDirectLlm=${!!directLlmResponse}, processingTimeMs=${processingTime}`);
 
     return {
       conversationId,
@@ -117,7 +161,8 @@ const processMessage = async (message, userContext) => {
       clarificationQuestion: response.clarificationQuestion || null,
       metadata: {
         processingTimeMs: processingTime,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        usedDirectLlm: !!directLlmResponse
       }
     };
 

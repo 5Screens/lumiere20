@@ -9,6 +9,7 @@ const toolExecutor = require('../orchestrator/tool-executor');
 // Import implemented tools
 const semanticSearchKb = require('./search/semantic_search_kb');
 const webSearchSolution = require('./search/web_search_solution');
+const directLlmQuery = require('./search/direct_llm_query');
 const generateSolutionSteps = require('./synthesis/generate_solution_steps');
 const qualifyIncident = require('./incidents/qualify_incident');
 const createIncident = require('./incidents/create_incident');
@@ -25,13 +26,14 @@ const initializeTools = () => {
   // Register implemented tools
   toolExecutor.registerTool('semantic_search_kb', semanticSearchKb.execute);
   toolExecutor.registerTool('web_search_solution', webSearchSolution.execute);
+  toolExecutor.registerTool('direct_llm_query', directLlmQuery.execute);
   toolExecutor.registerTool('generate_solution_steps', generateSolutionSteps.execute);
   toolExecutor.registerTool('qualify_incident', qualifyIncident.execute);
   toolExecutor.registerTool('create_incident', createIncident.execute);
   toolExecutor.registerTool('list_user_tickets', listUserTickets.execute);
   toolExecutor.registerTool('get_ticket_details', getTicketDetails.execute);
 
-  logger.info('Agent tools initialized (7 tools registered)');
+  logger.info('Agent tools initialized (8 tools registered)');
 };
 
 /**
@@ -53,6 +55,12 @@ const getToolMetadata = (toolName) => {
       description: 'Search web for solutions when KB is empty',
       domain: 'search',
       requiresLLM: false
+    },
+    direct_llm_query: {
+      name: 'direct_llm_query',
+      description: 'Direct LLM query without system prompt - fallback when KB has no results',
+      domain: 'search',
+      requiresLLM: true
     },
     generate_solution_steps: {
       name: 'generate_solution_steps',
