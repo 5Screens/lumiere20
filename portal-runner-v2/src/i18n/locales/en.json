@@ -36,8 +36,8 @@
     "rename": "Rename",
     "confirmDelete": "Confirm deletion",
     "cancel": "Cancel",
-    "feedbackUp": "Helpful response",
-    "feedbackDown": "Not helpful"
+    "feedbackUp": "Good response",
+    "feedbackDown": "Bad response"
   },
   "common": {
     "close": "Close",

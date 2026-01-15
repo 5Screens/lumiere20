@@ -33,28 +33,32 @@
           
           <!-- Message content -->
           <div v-else class="markdown-content" v-html="formatMessage(msg.content)"></div>
-          
+
           <!-- Feedback buttons for assistant messages -->
-          <div v-if="msg.role === 'assistant' && !msg.loading && msg.uuid" class="mt-2 flex items-center gap-1 border-t border-surface-200 dark:border-surface-600 pt-2">
+          <div v-if="msg.role === 'assistant' && !msg.loading && msg.uuid && msg.content" class="mt-2 flex items-center gap-1">
             <i 
               :class="[
-                'pi pi-thumbs-up cursor-pointer text-sm p-1 rounded transition-colors',
+                'pi pi-thumbs-up text-xs p-0.5 rounded',
                 msg.feedback === 'up' 
                   ? 'text-primary bg-primary/10' 
-                  : 'text-surface-400 hover:text-primary'
+                  : msg.feedback === 'down'
+                    ? 'text-surface-200 dark:text-surface-600 cursor-not-allowed opacity-50'
+                    : 'text-surface-400 hover:text-primary cursor-pointer transition-colors'
               ]"
-              @click="toggleFeedback(index, 'up')"
-              v-tooltip.top="$t('chat.feedbackUp')"
+              @click="!msg.feedback && toggleFeedback(index, 'up')"
+              v-tooltip.top="msg.feedback !== 'down' ? $t('chat.feedbackUp') : null"
             ></i>
             <i 
               :class="[
-                'pi pi-thumbs-down cursor-pointer text-sm p-1 rounded transition-colors',
+                'pi pi-thumbs-down text-xs p-0.5 rounded',
                 msg.feedback === 'down' 
                   ? 'text-red-500 bg-red-500/10' 
-                  : 'text-surface-400 hover:text-red-500'
+                  : msg.feedback === 'up'
+                    ? 'text-surface-200 dark:text-surface-600 cursor-not-allowed opacity-50'
+                    : 'text-surface-400 hover:text-red-500 cursor-pointer transition-colors'
               ]"
-              @click="toggleFeedback(index, 'down')"
-              v-tooltip.top="$t('chat.feedbackDown')"
+              @click="!msg.feedback && toggleFeedback(index, 'down')"
+              v-tooltip.top="msg.feedback !== 'up' ? $t('chat.feedbackDown') : null"
             ></i>
           </div>
           
@@ -146,13 +150,17 @@ const loadConversation = async (convId) => {
     if (conversation) {
       currentConversationId.value = conversation.uuid
       // Convert messages from DB format to display format
-      messages.value = (conversation.messages || []).filter(m => m.role !== 'tool').map(m => ({
+      messages.value = (conversation.messages || [])
+        .filter(m => m.role !== 'tool')
+        .filter(m => !(m.role === 'assistant' && !m.content))
+        .map(m => ({
         uuid: m.uuid,
         role: m.role,
         content: m.content || '',
         feedback: m.feedback || null,
         loading: false
       }))
+      console.log('Loaded conversation messages:', messages.value)
       emit('conversationLoaded', conversation)
       await scrollToBottom()
     }

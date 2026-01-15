@@ -36,8 +36,8 @@
     "rename":"Renommer",
     "confirmDelete":"Confirmer la suppression",
     "cancel":"Annuler",
-    "feedbackUp":"Réponse utile",
-    "feedbackDown":"Réponse non utile"
+    "feedbackUp":"Bonne réponse",
+    "feedbackDown":"Mauvaise réponse"
   },
   "common": {
     "close": "Fermer",
