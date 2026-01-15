@@ -1,80 +1,71 @@
+/**
+ * Agent Controller
+ * HTTP handlers for agent endpoints
+ */
+
+const agentService = require('./agent.service');
 const logger = require('../../../config/logger');
-const agentService = require('./service');
 
 /**
- * POST /api/v1/agent/chat
- * Main chat endpoint for the agentic AI
+ * POST /agent/chat
+ * Process a chat message
  */
 const chat = async (req, res) => {
   try {
-    const { message, conversationId, context } = req.body;
+    const { message, conversationId } = req.body;
 
-    // Validate required fields
-    if (!message || typeof message !== 'string' || message.trim() === '') {
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'Message is required and must be a non-empty string'
+        error: 'Message is required'
       });
     }
 
-    logger.info(`Agent chat request received`, { 
-      conversationId, 
-      messageLength: message.length 
-    });
-
-    // Build user context from request
+    // Get user context from authenticated request
     const userContext = {
-      userId: req.user?.uuid || null,
-      email: req.user?.email || null,
-      firstName: req.user?.first_name || null,
-      lastName: req.user?.last_name || null,
-      locale: req.headers['accept-language']?.split(',')[0] || 'fr',
-      conversationId: conversationId || null,
-      ...context
+      userUuid: req.user?.uuid,
+      locale: req.user?.language || req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en',
+      userName: req.user?.first_name || 'User',
+      conversationId: conversationId || null
     };
 
-    // Process message through agent service
-    const response = await agentService.processMessage(message, userContext);
+    if (!userContext.userUuid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
 
-    logger.info(`Agent chat response generated`, { 
-      conversationId: response.conversationId,
-      intent: response.intent,
-      toolsExecuted: response.toolsExecuted?.length || 0
-    });
+    const result = await agentService.processMessage(message.trim(), userContext);
 
     return res.json({
       success: true,
-      data: response
+      data: result
     });
 
   } catch (error) {
-    logger.error(`Agent chat error: ${error.message}`, { stack: error.stack });
-    
+    logger.error(`-- agent-controller -- chat error: ${error.message}`, { stack: error.stack });
     return res.status(500).json({
       success: false,
-      error: 'An error occurred while processing your request',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: 'An error occurred while processing your message'
     });
   }
 };
 
 /**
- * GET /api/v1/agent/health
+ * GET /agent/health
  * Health check endpoint
  */
 const health = async (req, res) => {
   try {
     const status = await agentService.healthCheck();
-    return res.json({
-      success: true,
-      data: status
-    });
+    const httpStatus = status.status === 'healthy' ? 200 : 503;
+    return res.status(httpStatus).json(status);
   } catch (error) {
-    logger.error(`Agent health check error: ${error.message}`);
-    return res.status(503).json({
-      success: false,
-      error: 'Agent service unhealthy',
-      details: error.message
+    logger.error(`-- agent-controller -- health error: ${error.message}`);
+    return res.status(500).json({
+      status: 'error',
+      error: error.message
     });
   }
 };

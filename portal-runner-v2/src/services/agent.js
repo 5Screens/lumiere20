@@ -11,8 +11,10 @@ export const sendMessage = async (message, conversationId = null) => {
     message,
     conversationId
   })
-  // Backend returns { success: true, data: {...} }
-  return response.data || response
+  // Backend returns { success: true, data: { conversationId, response, metadata } }
+  // Axios wraps in response.data, then our backend wraps in { success, data }
+  const result = response.data?.data || response.data || response
+  return result
 }
 
 /**

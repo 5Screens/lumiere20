@@ -419,6 +419,7 @@ model persons {
   audit_changes            audit_changes[] @relation("AuditUser")
   tickets_assigned       tickets[] @relation("TicketAssignedPerson")
   attachments_uploaded     attachments[]
+  agent_conversations      agent_conversations[]
 
   @@schema("configuration")
   @@map("persons")
@@ -590,6 +591,40 @@ model rel_parent_child_tickets {
 
   @@schema("core")
   @@map("rel_parent_child_tickets")
+}
+
+// Agent Conversations - Stores chat conversations with the AI agent
+model agent_conversations {
+  uuid           String   @id @default(uuid()) @db.Uuid
+  user_uuid      String   @db.Uuid
+  title          String?  @db.VarChar(255)
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  
+  messages       agent_messages[]
+  user           persons  @relation(fields: [user_uuid], references: [uuid], onDelete: Cascade)
+
+  @@index([user_uuid])
+  @@schema("core")
+  @@map("agent_conversations")
+}
+
+// Agent Messages - Individual messages within a conversation
+model agent_messages {
+  uuid              String   @id @default(uuid()) @db.Uuid
+  conversation_uuid String   @db.Uuid
+  role              String   @db.VarChar(20)   // 'user', 'assistant', 'tool'
+  content           String?  @db.Text
+  tool_calls        Json?    @db.JsonB         // If assistant requests tool calls
+  tool_call_id      String?  @db.VarChar(100)  // If role = 'tool', the tool call ID
+  tool_name         String?  @db.VarChar(100)  // If role = 'tool', the tool name
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  
+  conversation      agent_conversations @relation(fields: [conversation_uuid], references: [uuid], onDelete: Cascade)
+
+  @@index([conversation_uuid])
+  @@schema("core")
+  @@map("agent_messages")
 }
 
 
