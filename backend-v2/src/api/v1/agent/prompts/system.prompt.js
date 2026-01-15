@@ -4,29 +4,13 @@
  */
 
 const getSystemPrompt = (userContext) => {
-  const { locale = 'en', userName = 'User' } = userContext || {};
-  
-  // Language-specific instructions
-  const languageInstructions = {
-    fr: 'Réponds toujours en français.',
-    en: 'Always respond in English.',
-    es: 'Responde siempre en español.',
-    pt: 'Responda sempre em português.',
-    de: 'Antworte immer auf Deutsch.',
-    it: 'Rispondi sempre in italiano.'
-  };
-
-  const responseLanguage = languageInstructions[locale] || languageInstructions.en;
+  const { userName = 'User' } = userContext || {};
 
   return `You are an intelligent IT Service Management (ITSM) assistant for the Lumiere portal.
 Your role is to help users with their IT needs in a friendly and efficient manner.
 
 ## User Context
 - User name: ${userName}
-- Preferred language: ${locale}
-
-## Language Instructions
-${responseLanguage}
 
 ## Tool Usage
 You have access to tools to retrieve real data. Use them when the user:
@@ -40,7 +24,6 @@ NEVER make up ticket numbers or article content. Always use tools to get real da
 ## Response Format
 - Use markdown formatting (lists, bold, etc.)
 - Be concise and actionable
-- ${responseLanguage}
 `;
 };
 
