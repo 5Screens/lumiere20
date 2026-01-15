@@ -1,13 +1,5 @@
 <template>
   <div class="agentic-panel flex flex-col h-full">
-    <!-- Header -->
-    <div class="p-4 border-b border-surface-200 dark:border-surface-700">
-      <div class="flex items-center gap-2">
-        <i class="pi pi-sparkles text-primary text-xl"></i>
-        <h3 class="font-semibold text-surface-800 dark:text-surface-100">{{ $t('chat.title') }}</h3>
-      </div>
-    </div>
-    
     <!-- Messages -->
     <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4">
       <!-- Welcome message -->
@@ -79,12 +71,12 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import { sendMessage as sendAgentMessage } from '@/services/agent'
+import { sendMessage as sendAgentMessage, getConversation } from '@/services/agent'
 import { marked } from 'marked'
 
 // Configure marked for safe rendering
@@ -94,15 +86,62 @@ marked.setOptions({
 })
 
 const props = defineProps({
-  defaultMessage: { type: String, default: '' }
+  defaultMessage: { type: String, default: '' },
+  conversationId: { type: String, default: null }
 })
+
+const emit = defineEmits(['update:conversationId', 'conversationLoaded'])
 
 const toast = useToast()
 const messagesContainer = ref(null)
 const inputMessage = ref('')
 const messages = ref([])
 const isLoading = ref(false)
-const conversationId = ref(null)
+const currentConversationId = ref(null)
+
+// Watch for external conversation changes
+watch(() => props.conversationId, async (newId) => {
+  if (newId && newId !== currentConversationId.value) {
+    await loadConversation(newId)
+  } else if (!newId) {
+    // Reset to new conversation
+    messages.value = []
+    currentConversationId.value = null
+  }
+}, { immediate: true })
+
+/**
+ * Load an existing conversation
+ */
+const loadConversation = async (convId) => {
+  if (!convId) return
+  
+  isLoading.value = true
+  try {
+    const conversation = await getConversation(convId)
+    if (conversation) {
+      currentConversationId.value = conversation.uuid
+      // Convert messages from DB format to display format
+      messages.value = (conversation.messages || []).filter(m => m.role !== 'tool').map(m => ({
+        role: m.role,
+        content: m.content || '',
+        loading: false
+      }))
+      emit('conversationLoaded', conversation)
+      await scrollToBottom()
+    }
+  } catch (error) {
+    console.error('Failed to load conversation:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error.message,
+      life: 5000
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -127,11 +166,12 @@ const sendMessage = async () => {
   await scrollToBottom()
   
   try {
-    const response = await sendAgentMessage(message, conversationId.value)
+    const response = await sendAgentMessage(message, currentConversationId.value)
     
     // Update conversation ID
     if (response.conversationId) {
-      conversationId.value = response.conversationId
+      currentConversationId.value = response.conversationId
+      emit('update:conversationId', response.conversationId)
     }
     
     // Replace loading with actual response
@@ -230,6 +270,21 @@ const formatMessage = (content) => {
   if (!content) return ''
   return marked.parse(content)
 }
+
+/**
+ * Start a new conversation (clear current)
+ */
+const startNewConversation = () => {
+  messages.value = []
+  currentConversationId.value = null
+  emit('update:conversationId', null)
+}
+
+// Expose methods for parent component
+defineExpose({
+  loadConversation,
+  startNewConversation
+})
 </script>
 
 <style scoped>

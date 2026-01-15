@@ -27,7 +27,11 @@
     "send": "Send",
     "thinking": "Thinking...",
     "error": "An error occurred",
-    "retry": "Retry"
+    "retry": "Retry",
+    "newConversation": "New conversation",
+    "selectConversation": "Select a conversation",
+    "noConversations": "No conversations",
+    "loadingConversations": "Loading..."
   },
   "common": {
     "close": "Close",

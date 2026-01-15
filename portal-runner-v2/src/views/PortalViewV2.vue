@@ -112,7 +112,58 @@
           class="min-h-0 flex flex-col overflow-hidden border-l border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800"
           :style="chatAsideStyle"
         >
-          <AgenticPanel class="flex-1 min-h-0" :default-message="portal.chat_default_message" />
+          <!-- Conversation Header -->
+          <div class="p-3 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-sparkles text-primary"></i>
+              <span class="font-semibold text-surface-800 dark:text-surface-100">{{ $t('chat.title') }}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <Button 
+                icon="pi pi-plus" 
+                text 
+                rounded 
+                size="small"
+                v-tooltip.bottom="$t('chat.newConversation')"
+                @click="startNewConversation"
+              />
+              <Select
+                v-model="selectedConversationId"
+                :options="conversationsOptions"
+                optionLabel="label"
+                optionValue="value"
+                :placeholder="$t('chat.selectConversation')"
+                :loading="loadingConversations"
+                class="w-48"
+                size="small"
+                @change="onConversationSelect"
+                @show="loadConversations"
+              >
+                <template #value="slotProps">
+                  <span v-if="slotProps.value" class="text-sm truncate">
+                    {{ getConversationLabel(slotProps.value) }}
+                  </span>
+                  <span v-else class="text-sm text-surface-400">{{ $t('chat.selectConversation') }}</span>
+                </template>
+                <template #option="slotProps">
+                  <div class="flex flex-col">
+                    <span class="text-sm truncate">{{ slotProps.option.label }}</span>
+                    <span class="text-xs text-surface-400">{{ slotProps.option.date }}</span>
+                  </div>
+                </template>
+                <template #empty>
+                  <span class="text-sm text-surface-400 p-2">{{ $t('chat.noConversations') }}</span>
+                </template>
+              </Select>
+            </div>
+          </div>
+          <AgenticPanel 
+            ref="agenticPanelRef"
+            class="flex-1 min-h-0" 
+            :default-message="portal.chat_default_message"
+            :conversation-id="selectedConversationId"
+            @update:conversation-id="onConversationIdUpdate"
+          />
         </aside>
       </template>
     </main>
@@ -125,7 +176,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/authStore'
@@ -133,7 +184,9 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Message from 'primevue/message'
 import Menu from 'primevue/menu'
+import Select from 'primevue/select'
 import AgenticPanel from '@/components/AgenticPanel.vue'
+import { getConversations } from '@/services/agent'
 
 const props = defineProps({
   portalData: { type: Object, required: true },
@@ -145,6 +198,66 @@ const { locale, t } = useI18n()
 const authStore = useAuthStore()
 const langMenu = ref()
 const userMenu = ref()
+const agenticPanelRef = ref(null)
+
+// Conversations management
+const conversations = ref([])
+const selectedConversationId = ref(null)
+const loadingConversations = ref(false)
+
+const conversationsOptions = computed(() => {
+  return conversations.value.map(conv => ({
+    value: conv.uuid,
+    label: conv.title || t('chat.newConversation'),
+    date: new Date(conv.updated_at).toLocaleDateString(locale.value, { 
+      day: '2-digit', 
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }))
+})
+
+const getConversationLabel = (uuid) => {
+  const conv = conversations.value.find(c => c.uuid === uuid)
+  return conv?.title || t('chat.newConversation')
+}
+
+const loadConversations = async () => {
+  if (loadingConversations.value) return
+  loadingConversations.value = true
+  try {
+    conversations.value = await getConversations(20)
+  } catch (error) {
+    console.error('Failed to load conversations:', error)
+  } finally {
+    loadingConversations.value = false
+  }
+}
+
+const onConversationSelect = (event) => {
+  // The Select component already updates selectedConversationId via v-model
+  // AgenticPanel will react to the prop change
+}
+
+const onConversationIdUpdate = (newId) => {
+  selectedConversationId.value = newId
+  // Refresh conversations list to include the new one
+  if (newId) {
+    loadConversations()
+  }
+}
+
+const startNewConversation = () => {
+  selectedConversationId.value = null
+  if (agenticPanelRef.value) {
+    agenticPanelRef.value.startNewConversation()
+  }
+}
+
+onMounted(() => {
+  loadConversations()
+})
 
 const portal = computed(() => props.portalData || {})
 const alerts = computed(() => portal.value.alerts || [])

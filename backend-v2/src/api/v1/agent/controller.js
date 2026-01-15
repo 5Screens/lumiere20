@@ -4,6 +4,7 @@
  */
 
 const agentService = require('./agent.service');
+const conversationService = require('./conversation.service');
 const logger = require('../../../config/logger');
 
 /**
@@ -89,7 +90,107 @@ const health = async (req, res) => {
   }
 };
 
+/**
+ * GET /agent/conversations
+ * Get user's conversations list
+ */
+const getConversations = async (req, res) => {
+  try {
+    const userUuid = req.user?.uuid;
+    if (!userUuid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    const limit = parseInt(req.query.limit) || 20;
+    const conversations = await conversationService.getUserConversations(userUuid, limit);
+
+    return res.json({
+      success: true,
+      data: conversations
+    });
+  } catch (error) {
+    logger.error(`-- agent-controller -- getConversations error: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve conversations'
+    });
+  }
+};
+
+/**
+ * GET /agent/conversations/:uuid
+ * Get a specific conversation with messages
+ */
+const getConversation = async (req, res) => {
+  try {
+    const userUuid = req.user?.uuid;
+    const conversationUuid = req.params.uuid;
+
+    if (!userUuid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    const conversation = await conversationService.getOrCreateConversation(conversationUuid, userUuid);
+    
+    if (!conversation || conversation.user_uuid !== userUuid) {
+      return res.status(404).json({
+        success: false,
+        error: 'Conversation not found'
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: conversation
+    });
+  } catch (error) {
+    logger.error(`-- agent-controller -- getConversation error: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve conversation'
+    });
+  }
+};
+
+/**
+ * POST /agent/conversations
+ * Create a new conversation
+ */
+const createConversation = async (req, res) => {
+  try {
+    const userUuid = req.user?.uuid;
+    if (!userUuid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    const conversation = await conversationService.getOrCreateConversation(null, userUuid);
+
+    return res.json({
+      success: true,
+      data: conversation
+    });
+  } catch (error) {
+    logger.error(`-- agent-controller -- createConversation error: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to create conversation'
+    });
+  }
+};
+
 module.exports = {
   chat,
-  health
+  health,
+  getConversations,
+  getConversation,
+  createConversation
 };
