@@ -31,7 +31,11 @@
     "newConversation": "Nouvelle conversation",
     "selectConversation": "Sélectionner une conversation",
     "noConversations": "Aucune conversation",
-    "loadingConversations": "Chargement..."
+    "loadingConversations": "Chargement...",
+    "delete":"Supprimer",
+    "rename":"Renommer",
+    "confirmDelete":"Confirmer la suppression",
+    "cancel":"Annuler"
   },
   "common": {
     "close": "Fermer",

@@ -75,10 +75,26 @@ export const createConversation = async () => {
   }
 }
 
+/**
+ * Delete a conversation
+ * @param {string} conversationId - Conversation UUID
+ * @returns {Promise<boolean>} True if deleted
+ */
+export const deleteConversation = async (conversationId) => {
+  try {
+    const response = await api.delete(`/agent/conversations/${conversationId}`)
+    return response.data?.success || false
+  } catch (error) {
+    const errorMessage = error.response?.data?.error || error.message || 'Failed to delete conversation'
+    throw new Error(errorMessage)
+  }
+}
+
 export default {
   sendMessage,
   checkHealth,
   getConversations,
   getConversation,
-  createConversation
+  createConversation,
+  deleteConversation
 }

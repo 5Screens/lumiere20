@@ -31,7 +31,11 @@
     "newConversation": "New conversation",
     "selectConversation": "Select a conversation",
     "noConversations": "No conversations",
-    "loadingConversations": "Loading..."
+    "loadingConversations": "Loading...",
+    "delete": "Delete",
+    "rename": "Rename",
+    "confirmDelete": "Confirm deletion",
+    "cancel": "Cancel"
   },
   "common": {
     "close": "Close",

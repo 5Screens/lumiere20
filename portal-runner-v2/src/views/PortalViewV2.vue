@@ -146,9 +146,39 @@
                   <span v-else class="text-sm text-surface-400">{{ $t('chat.selectConversation') }}</span>
                 </template>
                 <template #option="slotProps">
-                  <div class="flex flex-col">
-                    <span class="text-sm truncate">{{ slotProps.option.label }}</span>
-                    <span class="text-xs text-surface-400">{{ slotProps.option.date }}</span>
+                  <div class="flex items-center justify-between w-full gap-2">
+                    <div class="flex flex-col flex-1 min-w-0">
+                      <span class="text-sm truncate">{{ slotProps.option.label }}</span>
+                      <span class="text-xs text-surface-400">{{ slotProps.option.date }}</span>
+                    </div>
+                    <div class="flex items-center gap-1" @click.stop @mousedown.stop>
+                      <!-- Delete mode: show red trash + cancel -->
+                      <template v-if="deletingConversationId === slotProps.option.value">
+                        <i 
+                          class="pi pi-trash text-red-500 cursor-pointer hover:text-red-700 p-1"
+                          @click="confirmDeleteConversation(slotProps.option.value)"
+                          v-tooltip.top="$t('chat.confirmDelete')"
+                        ></i>
+                        <i 
+                          class="pi pi-times text-surface-400 cursor-pointer hover:text-surface-600 p-1"
+                          @click="cancelDeleteConversation"
+                          v-tooltip.top="$t('chat.cancel')"
+                        ></i>
+                      </template>
+                      <!-- Normal mode: show edit + trash -->
+                      <template v-else>
+                        <i 
+                          class="pi pi-pencil text-surface-400 cursor-pointer hover:text-primary p-1"
+                          @click="startEditConversation(slotProps.option.value)"
+                          v-tooltip.top="$t('chat.rename')"
+                        ></i>
+                        <i 
+                          class="pi pi-trash text-surface-400 cursor-pointer hover:text-red-500 p-1"
+                          @click="startDeleteConversation(slotProps.option.value)"
+                          v-tooltip.top="$t('chat.delete')"
+                        ></i>
+                      </template>
+                    </div>
                   </div>
                 </template>
                 <template #empty>
@@ -186,7 +216,7 @@ import Message from 'primevue/message'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import AgenticPanel from '@/components/AgenticPanel.vue'
-import { getConversations } from '@/services/agent'
+import { getConversations, deleteConversation } from '@/services/agent'
 
 const props = defineProps({
   portalData: { type: Object, required: true },
@@ -204,6 +234,7 @@ const agenticPanelRef = ref(null)
 const conversations = ref([])
 const selectedConversationId = ref(null)
 const loadingConversations = ref(false)
+const deletingConversationId = ref(null)
 
 const conversationsOptions = computed(() => {
   return conversations.value.map(conv => ({
@@ -253,6 +284,36 @@ const startNewConversation = () => {
   if (agenticPanelRef.value) {
     agenticPanelRef.value.startNewConversation()
   }
+}
+
+// Delete conversation functions
+const startDeleteConversation = (convId) => {
+  deletingConversationId.value = convId
+}
+
+const cancelDeleteConversation = () => {
+  deletingConversationId.value = null
+}
+
+const confirmDeleteConversation = async (convId) => {
+  try {
+    await deleteConversation(convId)
+    // Remove from local list
+    conversations.value = conversations.value.filter(c => c.uuid !== convId)
+    // If deleted conversation was selected, start new one
+    if (selectedConversationId.value === convId) {
+      startNewConversation()
+    }
+    deletingConversationId.value = null
+  } catch (error) {
+    console.error('Failed to delete conversation:', error)
+  }
+}
+
+// Edit conversation (placeholder for now)
+const startEditConversation = (convId) => {
+  // TODO: Implement rename functionality
+  console.log('Edit conversation:', convId)
 }
 
 onMounted(() => {

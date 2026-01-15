@@ -187,10 +187,49 @@ const createConversation = async (req, res) => {
   }
 };
 
+/**
+ * DELETE /agent/conversations/:uuid
+ * Delete a conversation
+ */
+const deleteConversation = async (req, res) => {
+  try {
+    const userUuid = req.user?.uuid;
+    const conversationUuid = req.params.uuid;
+
+    if (!userUuid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    const deleted = await conversationService.deleteConversation(conversationUuid, userUuid);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        error: 'Conversation not found'
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Conversation deleted'
+    });
+  } catch (error) {
+    logger.error(`-- agent-controller -- deleteConversation error: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to delete conversation'
+    });
+  }
+};
+
 module.exports = {
   chat,
   health,
   getConversations,
   getConversation,
-  createConversation
+  createConversation,
+  deleteConversation
 };

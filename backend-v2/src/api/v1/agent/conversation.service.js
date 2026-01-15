@@ -186,10 +186,41 @@ const getUserConversations = async (userUuid, limit = 10) => {
   });
 };
 
+/**
+ * Delete a conversation and all its messages
+ * @param {string} conversationUuid - Conversation UUID
+ * @param {string} userUuid - User UUID (for ownership verification)
+ * @returns {boolean} True if deleted, false if not found or not owned
+ */
+const deleteConversation = async (conversationUuid, userUuid) => {
+  // Verify ownership
+  const conversation = await prisma.agent_conversations.findUnique({
+    where: { uuid: conversationUuid }
+  });
+
+  if (!conversation || conversation.user_uuid !== userUuid) {
+    return false;
+  }
+
+  // Delete messages first (cascade should handle this, but being explicit)
+  await prisma.agent_messages.deleteMany({
+    where: { conversation_uuid: conversationUuid }
+  });
+
+  // Delete conversation
+  await prisma.agent_conversations.delete({
+    where: { uuid: conversationUuid }
+  });
+
+  logger.info(`-- conversation-service -- Deleted conversation: ${conversationUuid}`);
+  return true;
+};
+
 module.exports = {
   getOrCreateConversation,
   addMessage,
   getMessagesForLLM,
   updateTitle,
-  getUserConversations
+  getUserConversations,
+  deleteConversation
 };
