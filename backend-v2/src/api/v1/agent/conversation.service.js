@@ -78,7 +78,7 @@ const addMessage = async (conversationUuid, message) => {
  * Get conversation messages formatted for LLM
  * @param {string} conversationUuid - Conversation UUID
  * @param {number} limit - Max messages to return (default: 20)
- * @returns {Array} Messages formatted for LLM
+ * @returns {Array} Messages formatted for Mistral API
  */
 const getMessagesForLLM = async (conversationUuid, limit = 20) => {
   const messages = await prisma.agent_messages.findMany({
@@ -87,23 +87,66 @@ const getMessagesForLLM = async (conversationUuid, limit = 20) => {
     take: limit
   });
 
-  return messages.map(m => {
-    const msg = { role: m.role };
+  const formatted = [];
+  
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i];
     
-    if (m.content) {
-      msg.content = m.content;
+    if (m.role === 'user') {
+      formatted.push({ role: 'user', content: m.content || '' });
+    } 
+    else if (m.role === 'assistant') {
+      const msg = { role: 'assistant' };
+      if (m.content) {
+        msg.content = m.content;
+      }
+      if (m.tool_calls && Array.isArray(m.tool_calls) && m.tool_calls.length > 0) {
+        msg.tool_calls = m.tool_calls;
+      }
+      formatted.push(msg);
     }
-    
-    if (m.tool_calls) {
-      msg.tool_calls = m.tool_calls;
+    else if (m.role === 'tool') {
+      // Tool messages must have tool_call_id and content
+      if (m.tool_call_id) {
+        formatted.push({
+          role: 'tool',
+          tool_call_id: m.tool_call_id,
+          content: m.content || '{}'
+        });
+      }
     }
-    
-    if (m.tool_call_id) {
-      msg.tool_call_id = m.tool_call_id;
-    }
+  }
 
-    return msg;
-  });
+  // Validate message order: ensure we don't end with assistant that has tool_calls without tool responses
+  // Mistral requires: after assistant with tool_calls, there must be tool messages
+  const validated = [];
+  for (let i = 0; i < formatted.length; i++) {
+    const msg = formatted[i];
+    validated.push(msg);
+    
+    // If assistant has tool_calls, check that tool responses follow
+    if (msg.role === 'assistant' && msg.tool_calls && msg.tool_calls.length > 0) {
+      const toolCallIds = msg.tool_calls.map(tc => tc.id);
+      let allToolsFound = true;
+      
+      // Check if all tool responses exist in the remaining messages
+      for (const tcId of toolCallIds) {
+        const toolResponse = formatted.slice(i + 1).find(m => m.role === 'tool' && m.tool_call_id === tcId);
+        if (!toolResponse) {
+          allToolsFound = false;
+          break;
+        }
+      }
+      
+      // If not all tool responses found, remove tool_calls from this assistant message
+      if (!allToolsFound) {
+        logger.warn(`-- conversation-service -- Removing incomplete tool_calls from message`);
+        delete validated[validated.length - 1].tool_calls;
+      }
+    }
+  }
+
+  return validated;
 };
 
 /**

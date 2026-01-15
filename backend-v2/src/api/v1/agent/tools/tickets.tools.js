@@ -63,9 +63,8 @@ const listMyTickets = async (args, context) => {
     filteredTickets = tickets.filter(t => t.closed_at);
   }
 
-  // Format for display
-  const formattedTickets = filteredTickets.map((t, index) => ({
-    id: `TKT-${String(index + 1).padStart(3, '0')}`,
+  // Format for display - use real UUIDs
+  const formattedTickets = filteredTickets.map((t) => ({
     uuid: t.uuid,
     title: t.title,
     type: t.ticket_type?.label || t.ticket_type_code,
@@ -121,50 +120,23 @@ const getTicketDetails = async (args, context) => {
     });
   }
 
-  // If not found and user has access, search by title pattern
-  if (!ticket) {
-    // Search in user's tickets
-    const userTickets = await prisma.tickets.findMany({
-      where: {
-        OR: [
-          { requested_by_uuid: userUuid },
-          { requested_for_uuid: userUuid },
-          { writer_uuid: userUuid }
-        ]
-      },
-      include: {
-        status: true,
-        ticket_type: true,
-        requested_by: {
-          select: { first_name: true, last_name: true, email: true }
-        },
-        requested_for: {
-          select: { first_name: true, last_name: true, email: true }
-        },
-        assigned_person: {
-          select: { first_name: true, last_name: true }
-        },
-        assigned_group: {
-          select: { group_name: true }
-        }
-      },
-      orderBy: { created_at: 'desc' }
-    });
-
-    // Try to match by TKT-XXX pattern
-    const match = ticket_id.match(/TKT-(\d+)/i);
-    if (match) {
-      const index = parseInt(match[1]) - 1;
-      if (index >= 0 && index < userTickets.length) {
-        ticket = userTickets[index];
-      }
-    }
-  }
-
+  // If not found by UUID, check if user has access to this ticket
   if (!ticket) {
     return {
       found: false,
-      message: `Ticket "${ticket_id}" not found or you don't have access to it.`
+      message: `Ticket "${ticket_id}" not found. Please provide a valid UUID.`
+    };
+  }
+
+  // Verify user has access to this ticket
+  const hasAccess = ticket.requested_by_uuid === userUuid ||
+                    ticket.requested_for_uuid === userUuid ||
+                    ticket.writer_uuid === userUuid;
+  
+  if (!hasAccess) {
+    return {
+      found: false,
+      message: `You don't have access to ticket "${ticket_id}".`
     };
   }
 
