@@ -13,13 +13,13 @@ const logger = require('../../../../config/logger');
  * @returns {Object} List of tickets
  */
 const listMyTickets = async (args, context) => {
-  const { status = 'open', limit = 10 } = args;
+  const { status = 'all', limit = 10 } = args;
   const { userUuid } = context;
 
   logger.info(`-- tickets-tools -- listMyTickets: status=${status}, limit=${limit}, user=${userUuid}`);
 
-  // Build where clause
-  const where = {
+  // Base where clause for user's tickets
+  const baseWhere = {
     OR: [
       { requested_by_uuid: userUuid },
       { requested_for_uuid: userUuid },
@@ -27,9 +27,22 @@ const listMyTickets = async (args, context) => {
     ]
   };
 
-  // Note: status filtering by open/closed would require joining with workflow_status_categories
-  // For simplicity, we filter after fetching if needed
+  // Count total tickets by status
+  const [totalAll, totalOpen, totalClosed] = await Promise.all([
+    prisma.tickets.count({ where: baseWhere }),
+    prisma.tickets.count({ where: { ...baseWhere, closed_at: null } }),
+    prisma.tickets.count({ where: { ...baseWhere, closed_at: { not: null } } })
+  ]);
 
+  // Build where clause with status filter
+  let where = { ...baseWhere };
+  if (status === 'open') {
+    where.closed_at = null;
+  } else if (status === 'closed') {
+    where.closed_at = { not: null };
+  }
+
+  // Get the most recent tickets (limited)
   const tickets = await prisma.tickets.findMany({
     where,
     take: limit,
@@ -55,16 +68,8 @@ const listMyTickets = async (args, context) => {
     }
   });
 
-  // Filter by open/closed based on closed_at field
-  let filteredTickets = tickets;
-  if (status === 'open') {
-    filteredTickets = tickets.filter(t => !t.closed_at);
-  } else if (status === 'closed') {
-    filteredTickets = tickets.filter(t => t.closed_at);
-  }
-
   // Format for display - use real UUIDs
-  const formattedTickets = filteredTickets.map((t) => ({
+  const formattedTickets = tickets.map((t) => ({
     uuid: t.uuid,
     title: t.title,
     type: t.ticket_type?.label || t.ticket_type_code,
@@ -75,7 +80,13 @@ const listMyTickets = async (args, context) => {
   }));
 
   return {
-    count: formattedTickets.length,
+    total_counts: {
+      all: totalAll,
+      open: totalOpen,
+      closed: totalClosed
+    },
+    filter_applied: status,
+    showing: formattedTickets.length,
     tickets: formattedTickets
   };
 };
