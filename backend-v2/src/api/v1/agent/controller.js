@@ -225,11 +225,59 @@ const deleteConversation = async (req, res) => {
   }
 };
 
+/**
+ * PATCH /agent/messages/:uuid/feedback
+ * Update feedback on a message
+ */
+const updateMessageFeedback = async (req, res) => {
+  try {
+    const userUuid = req.user?.uuid;
+    const messageUuid = req.params.uuid;
+    const { feedback } = req.body;
+
+    if (!userUuid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    // Validate feedback value
+    if (feedback !== null && feedback !== 'up' && feedback !== 'down') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid feedback value. Must be "up", "down", or null'
+      });
+    }
+
+    const updated = await conversationService.updateMessageFeedback(messageUuid, userUuid, feedback);
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message not found'
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: { uuid: updated.uuid, feedback: updated.feedback }
+    });
+  } catch (error) {
+    logger.error(`-- agent-controller -- updateMessageFeedback error: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to update feedback'
+    });
+  }
+};
+
 module.exports = {
   chat,
   health,
   getConversations,
   getConversation,
   createConversation,
-  deleteConversation
+  deleteConversation,
+  updateMessageFeedback
 };

@@ -90,11 +90,28 @@ export const deleteConversation = async (conversationId) => {
   }
 }
 
+/**
+ * Update feedback on a message
+ * @param {string} messageId - Message UUID
+ * @param {string} feedback - 'up', 'down', or null to clear
+ * @returns {Promise<Object>} Updated message feedback
+ */
+export const updateMessageFeedback = async (messageId, feedback) => {
+  try {
+    const response = await api.patch(`/agent/messages/${messageId}/feedback`, { feedback })
+    return response.data?.data || response.data || null
+  } catch (error) {
+    const errorMessage = error.response?.data?.error || error.message || 'Failed to update feedback'
+    throw new Error(errorMessage)
+  }
+}
+
 export default {
   sendMessage,
   checkHealth,
   getConversations,
   getConversation,
   createConversation,
-  deleteConversation
+  deleteConversation,
+  updateMessageFeedback
 }

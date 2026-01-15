@@ -34,6 +34,30 @@
           <!-- Message content -->
           <div v-else class="markdown-content" v-html="formatMessage(msg.content)"></div>
           
+          <!-- Feedback buttons for assistant messages -->
+          <div v-if="msg.role === 'assistant' && !msg.loading && msg.uuid" class="mt-2 flex items-center gap-1 border-t border-surface-200 dark:border-surface-600 pt-2">
+            <i 
+              :class="[
+                'pi pi-thumbs-up cursor-pointer text-sm p-1 rounded transition-colors',
+                msg.feedback === 'up' 
+                  ? 'text-primary bg-primary/10' 
+                  : 'text-surface-400 hover:text-primary'
+              ]"
+              @click="toggleFeedback(index, 'up')"
+              v-tooltip.top="$t('chat.feedbackUp')"
+            ></i>
+            <i 
+              :class="[
+                'pi pi-thumbs-down cursor-pointer text-sm p-1 rounded transition-colors',
+                msg.feedback === 'down' 
+                  ? 'text-red-500 bg-red-500/10' 
+                  : 'text-surface-400 hover:text-red-500'
+              ]"
+              @click="toggleFeedback(index, 'down')"
+              v-tooltip.top="$t('chat.feedbackDown')"
+            ></i>
+          </div>
+          
           <!-- Suggested actions -->
           <div v-if="msg.suggestedActions?.length" class="mt-2 flex flex-wrap gap-2">
             <Button 
@@ -76,7 +100,7 @@ import { useToast } from 'primevue/usetoast'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import { sendMessage as sendAgentMessage, getConversation } from '@/services/agent'
+import { sendMessage as sendAgentMessage, getConversation, updateMessageFeedback } from '@/services/agent'
 import { marked } from 'marked'
 
 // Configure marked for safe rendering
@@ -123,8 +147,10 @@ const loadConversation = async (convId) => {
       currentConversationId.value = conversation.uuid
       // Convert messages from DB format to display format
       messages.value = (conversation.messages || []).filter(m => m.role !== 'tool').map(m => ({
+        uuid: m.uuid,
         role: m.role,
         content: m.content || '',
+        feedback: m.feedback || null,
         loading: false
       }))
       emit('conversationLoaded', conversation)
@@ -176,8 +202,10 @@ const sendMessage = async () => {
     
     // Replace loading with actual response
     messages.value[loadingIndex] = {
+      uuid: response.messageUuid || null,
       role: 'assistant',
       content: response.response || response.message,
+      feedback: null,
       suggestedActions: response.suggestedActions || []
     }
   } catch (error) {
@@ -269,6 +297,30 @@ const handleSuggestedAction = (action) => {
 const formatMessage = (content) => {
   if (!content) return ''
   return marked.parse(content)
+}
+
+/**
+ * Toggle feedback on a message
+ */
+const toggleFeedback = async (index, feedbackType) => {
+  const msg = messages.value[index]
+  if (!msg?.uuid) return
+  
+  // Toggle: if same feedback, clear it; otherwise set new feedback
+  const newFeedback = msg.feedback === feedbackType ? null : feedbackType
+  
+  try {
+    await updateMessageFeedback(msg.uuid, newFeedback)
+    messages.value[index].feedback = newFeedback
+  } catch (error) {
+    console.error('Failed to update feedback:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error.message,
+      life: 3000
+    })
+  }
 }
 
 /**

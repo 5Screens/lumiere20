@@ -127,7 +127,7 @@ const processMessage = async (message, userContext) => {
     // Step 7: Save final assistant response
     const finalContent = response.content || 'I apologize, but I was unable to process your request.';
     
-    await conversationService.addMessage(conversation.uuid, {
+    const savedMessage = await conversationService.addMessage(conversation.uuid, {
       role: 'assistant',
       content: finalContent
     });
@@ -137,6 +137,7 @@ const processMessage = async (message, userContext) => {
 
     return {
       conversationId: conversation.uuid,
+      messageUuid: savedMessage.uuid,
       response: finalContent,
       metadata: {
         processingTimeMs: processingTime,

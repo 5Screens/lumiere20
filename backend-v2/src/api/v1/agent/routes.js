@@ -23,6 +23,9 @@ router.get('/conversations/:uuid', authenticate, controller.getConversation);
 // DELETE /api/v1/agent/conversations/:uuid - Delete a conversation
 router.delete('/conversations/:uuid', authenticate, controller.deleteConversation);
 
+// PATCH /api/v1/agent/messages/:uuid/feedback - Update message feedback
+router.patch('/messages/:uuid/feedback', authenticate, controller.updateMessageFeedback);
+
 // GET /api/v1/agent/health - Health check (no auth required)
 router.get('/health', controller.health);
 

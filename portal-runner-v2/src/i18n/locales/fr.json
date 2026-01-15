@@ -22,7 +22,7 @@
     "footer": "© 2025 Lumière 16 - Tous droits réservés"
   },
   "chat": {
-    "title": "Assistant",
+    "title": "Lumiere",
     "placeholder": "Posez votre question...",
     "send": "Envoyer",
     "thinking": "Réflexion en cours...",
@@ -35,7 +35,9 @@
     "delete":"Supprimer",
     "rename":"Renommer",
     "confirmDelete":"Confirmer la suppression",
-    "cancel":"Annuler"
+    "cancel":"Annuler",
+    "feedbackUp":"Réponse utile",
+    "feedbackDown":"Réponse non utile"
   },
   "common": {
     "close": "Fermer",

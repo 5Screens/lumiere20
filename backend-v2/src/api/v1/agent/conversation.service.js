@@ -108,11 +108,16 @@ const getMessagesForLLM = async (conversationUuid, limit = 20) => {
     else if (m.role === 'tool') {
       // Tool messages must have tool_call_id and content
       if (m.tool_call_id) {
-        formatted.push({
+        const toolMsg = {
           role: 'tool',
           tool_call_id: m.tool_call_id,
           content: m.content || '{}'
-        });
+        };
+        // Add name if available (as per Mistral docs)
+        if (m.tool_name) {
+          toolMsg.name = m.tool_name;
+        }
+        formatted.push(toolMsg);
       }
     }
   }
@@ -216,11 +221,40 @@ const deleteConversation = async (conversationUuid, userUuid) => {
   return true;
 };
 
+/**
+ * Update feedback on a message
+ * @param {string} messageUuid - Message UUID
+ * @param {string} userUuid - User UUID (for ownership verification)
+ * @param {string} feedback - 'up', 'down', or null to clear
+ * @returns {Object|null} Updated message or null if not found/not owned
+ */
+const updateMessageFeedback = async (messageUuid, userUuid, feedback) => {
+  // Find the message and verify ownership through conversation
+  const message = await prisma.agent_messages.findUnique({
+    where: { uuid: messageUuid },
+    include: { conversation: true }
+  });
+
+  if (!message || message.conversation.user_uuid !== userUuid) {
+    return null;
+  }
+
+  // Update feedback
+  const updated = await prisma.agent_messages.update({
+    where: { uuid: messageUuid },
+    data: { feedback }
+  });
+
+  logger.debug(`-- conversation-service -- Updated feedback for message ${messageUuid}: ${feedback}`);
+  return updated;
+};
+
 module.exports = {
   getOrCreateConversation,
   addMessage,
   getMessagesForLLM,
   updateTitle,
   getUserConversations,
-  deleteConversation
+  deleteConversation,
+  updateMessageFeedback
 };

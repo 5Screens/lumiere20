@@ -134,6 +134,7 @@
                 optionValue="value"
                 :placeholder="$t('chat.selectConversation')"
                 :loading="loadingConversations"
+                dropdownIcon="pi pi-history"
                 class="w-48"
                 size="small"
                 @change="onConversationSelect"

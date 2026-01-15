@@ -51,11 +51,16 @@ const chatCompletion = async ({ systemPrompt, messages, tools = null, options = 
         for (const m of messages) {
           // Handle tool messages
           if (m.role === 'tool') {
-            requestMessages.push({
+            const toolMsg = {
               role: 'tool',
               tool_call_id: m.tool_call_id,
               content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
-            });
+            };
+            // Add name if available (as per Mistral docs)
+            if (m.name) {
+              toolMsg.name = m.name;
+            }
+            requestMessages.push(toolMsg);
           }
           // Handle assistant messages with tool_calls
           else if (m.role === 'assistant' && m.tool_calls) {
