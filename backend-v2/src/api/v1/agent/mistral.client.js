@@ -114,6 +114,7 @@ const chatCompletion = async ({ systemPrompt, messages, tools = null, options = 
 
       // Make request
       const req = https.request(reqOptions, (res) => {
+        res.setEncoding('utf8');
         let data = '';
 
         res.on('data', (chunk) => {

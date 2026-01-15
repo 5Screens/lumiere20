@@ -45,9 +45,28 @@ const chat = async (req, res) => {
 
   } catch (error) {
     logger.error(`-- agent-controller -- chat error: ${error.message}`, { stack: error.stack });
-    return res.status(500).json({
+    
+    // Handle specific LLM errors with friendly messages
+    let friendlyMessage = 'An error occurred while processing your message. Please try again.';
+    let statusCode = 500;
+
+    if (error.message?.includes('503') || error.message?.includes('overflow')) {
+      friendlyMessage = 'The AI service is temporarily overloaded. Please wait a moment and try again.';
+      statusCode = 503;
+    } else if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+      friendlyMessage = 'AI service authentication error. Please contact support.';
+      statusCode = 500;
+    } else if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+      friendlyMessage = 'Too many requests. Please wait a moment before trying again.';
+      statusCode = 429;
+    } else if (error.message?.includes('timeout') || error.message?.includes('ETIMEDOUT')) {
+      friendlyMessage = 'The request took too long. Please try again.';
+      statusCode = 504;
+    }
+
+    return res.status(statusCode).json({
       success: false,
-      error: 'An error occurred while processing your message'
+      error: friendlyMessage
     });
   }
 };

@@ -5,6 +5,7 @@
 
 const prisma = require('../../../../config/prisma');
 const logger = require('../../../../config/logger');
+const ticketsService = require('../../tickets/service');
 
 /**
  * List tickets for the current user
@@ -79,7 +80,7 @@ const listMyTickets = async (args, context) => {
     updated_at: t.updated_at.toISOString().split('T')[0]
   }));
 
-  return {
+  const result = {
     total_counts: {
       all: totalAll,
       open: totalOpen,
@@ -89,6 +90,8 @@ const listMyTickets = async (args, context) => {
     showing: formattedTickets.length,
     tickets: formattedTickets
   };
+
+  return result;
 };
 
 /**
@@ -99,43 +102,27 @@ const listMyTickets = async (args, context) => {
  */
 const getTicketDetails = async (args, context) => {
   const { ticket_id } = args;
-  const { userUuid } = context;
+  const { userUuid, locale = 'en' } = context;
 
   logger.info(`-- tickets-tools -- getTicketDetails: ticket_id=${ticket_id}`);
 
-  // Try to find by UUID first
-  let ticket = null;
-  
   // Check if it's a UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   
-  if (uuidRegex.test(ticket_id)) {
-    ticket = await prisma.tickets.findUnique({
-      where: { uuid: ticket_id },
-      include: {
-        status: true,
-        ticket_type: true,
-        requested_by: {
-          select: { first_name: true, last_name: true, email: true }
-        },
-        requested_for: {
-          select: { first_name: true, last_name: true, email: true }
-        },
-        assigned_person: {
-          select: { first_name: true, last_name: true }
-        },
-        assigned_group: {
-          select: { group_name: true }
-        }
-      }
-    });
+  if (!uuidRegex.test(ticket_id)) {
+    return {
+      found: false,
+      message: `Invalid ticket ID "${ticket_id}". Please provide a valid UUID.`
+    };
   }
 
-  // If not found by UUID, check if user has access to this ticket
+  // Use tickets service getByUuid for full data with translations and extended relations
+  const ticket = await ticketsService.getByUuid(ticket_id, locale);
+
   if (!ticket) {
     return {
       found: false,
-      message: `Ticket "${ticket_id}" not found. Please provide a valid UUID.`
+      message: `Ticket "${ticket_id}" not found.`
     };
   }
 
@@ -152,7 +139,7 @@ const getTicketDetails = async (args, context) => {
   }
 
   // Format for display
-  return {
+  const result = {
     found: true,
     ticket: {
       uuid: ticket.uuid,
@@ -162,19 +149,44 @@ const getTicketDetails = async (args, context) => {
       status: ticket.status?.name || 'Unknown',
       is_closed: !!ticket.closed_at,
       requested_by: ticket.requested_by 
-        ? `${ticket.requested_by.first_name} ${ticket.requested_by.last_name}`
+        ? {
+            uuid: ticket.requested_by.uuid,
+            name: `${ticket.requested_by.first_name} ${ticket.requested_by.last_name}`,
+            email: ticket.requested_by.email
+          }
         : null,
       requested_for: ticket.requested_for
-        ? `${ticket.requested_for.first_name} ${ticket.requested_for.last_name}`
+        ? {
+            uuid: ticket.requested_for.uuid,
+            name: `${ticket.requested_for.first_name} ${ticket.requested_for.last_name}`,
+            email: ticket.requested_for.email
+          }
         : null,
-      assigned_to: ticket.assigned_person
-        ? `${ticket.assigned_person.first_name} ${ticket.assigned_person.last_name}`
-        : ticket.assigned_group?.group_name || 'Not assigned',
+      assigned_person: ticket.assigned_person
+        ? {
+            uuid: ticket.assigned_person.uuid,
+            name: `${ticket.assigned_person.first_name} ${ticket.assigned_person.last_name}`,
+            email: ticket.assigned_person.email
+          }
+        : null,
+      assigned_group: ticket.assigned_group
+        ? {
+            uuid: ticket.assigned_group.uuid,
+            name: ticket.assigned_group.group_name,
+            description: ticket.assigned_group.description
+          }
+        : null,
+      extended_fields: ticket.extended_core_fields || {},
+      extended_relations: ticket._extendedRelations || {},
       created_at: ticket.created_at.toISOString(),
       updated_at: ticket.updated_at.toISOString(),
       closed_at: ticket.closed_at?.toISOString() || null
     }
   };
+
+  logger.info(`-- tickets-tools -- getTicketDetails RESULT: ${JSON.stringify(result, null, 2)}`);
+
+  return result;
 };
 
 /**

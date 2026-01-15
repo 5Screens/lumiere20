@@ -7,14 +7,20 @@ import api from './api'
  * @returns {Promise<Object>} Agent response
  */
 export const sendMessage = async (message, conversationId = null) => {
-  const response = await api.post('/agent/chat', {
-    message,
-    conversationId
-  })
-  // Backend returns { success: true, data: { conversationId, response, metadata } }
-  // Axios wraps in response.data, then our backend wraps in { success, data }
-  const result = response.data?.data || response.data || response
-  return result
+  try {
+    const response = await api.post('/agent/chat', {
+      message,
+      conversationId
+    })
+    // Backend returns { success: true, data: { conversationId, response, metadata } }
+    // Axios wraps in response.data, then our backend wraps in { success, data }
+    const result = response.data?.data || response.data || response
+    return result
+  } catch (error) {
+    // Extract friendly error message from backend response
+    const errorMessage = error.response?.data?.error || error.message || 'An error occurred'
+    throw new Error(errorMessage)
+  }
 }
 
 /**
