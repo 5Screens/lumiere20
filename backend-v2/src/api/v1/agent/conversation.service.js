@@ -80,12 +80,16 @@ const addMessage = async (conversationUuid, message) => {
  * @param {number} limit - Max messages to return (default: 20)
  * @returns {Array} Messages formatted for Mistral API
  */
-const getMessagesForLLM = async (conversationUuid, limit = 20) => {
+const getMessagesForLLM = async (conversationUuid, limit = 50) => {
+  // Get the N most recent messages, then reverse to chronological order
   const messages = await prisma.agent_messages.findMany({
     where: { conversation_uuid: conversationUuid },
-    orderBy: { created_at: 'asc' },
+    orderBy: { created_at: 'desc' },
     take: limit
   });
+  
+  // Reverse to get chronological order (oldest first)
+  messages.reverse();
 
   const formatted = [];
   
