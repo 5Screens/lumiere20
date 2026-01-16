@@ -43,7 +43,9 @@
     "attachmentUploaded": "Pièce jointe ajoutée",
     "filesUploaded": "fichier(s) téléchargé(s)",
     "attachedFiles": "Fichiers joints",
-    "uploadError": "Échec du téléchargement"
+    "uploadError": "Échec du téléchargement",
+    "filesAdded": "Fichiers ajoutés",
+    "filesReadyToAttach": "fichier(s) prêt(s) à joindre"
   },
   "common": {
     "close": "Fermer",

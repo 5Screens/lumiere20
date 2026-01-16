@@ -123,15 +123,27 @@ export const uploadAttachments = async (conversationId, files) => {
     const entityType = 'agent_conversation'
     const entityUuid = conversationId || '00000000-0000-0000-0000-000000000000'
     
-    const response = await api.post(`/attachments/${entityType}/${entityUuid}`, formData, {
+    const token = localStorage.getItem('portal_token')
+    const url = `/api/v1/attachments/${entityType}/${entityUuid}`
+    
+    // Use fetch directly for FormData (not api.post which JSON.stringify)
+    const response = await fetch(url, {
+      method: 'POST',
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        ...(token && { 'Authorization': `Bearer ${token}` })
+        // Note: Do NOT set Content-Type for FormData, browser sets it with boundary
+      },
+      body: formData
     })
     
-    return response.data?.data || response.data || []
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }))
+      throw new Error(error.message || `HTTP ${response.status}`)
+    }
+    
+    return await response.json()
   } catch (error) {
-    const errorMessage = error.response?.data?.error || error.message || 'Failed to upload attachments'
+    const errorMessage = error.message || 'Failed to upload attachments'
     throw new Error(errorMessage)
   }
 }

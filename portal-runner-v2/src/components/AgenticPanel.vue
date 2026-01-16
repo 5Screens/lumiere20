@@ -144,7 +144,7 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import FileUpload from 'primevue/fileupload'
 import Chip from 'primevue/chip'
-import { sendMessage as sendAgentMessage, getConversation, updateMessageFeedback, uploadAttachments, deleteAttachment } from '@/services/agent'
+import { sendMessage as sendAgentMessage, getConversation, updateMessageFeedback } from '@/services/agent'
 import { marked } from 'marked'
 
 // Configure marked for safe rendering
@@ -271,6 +271,33 @@ const sendMessage = async () => {
       content: response.response || response.message,
       feedback: null,
       suggestedActions: response.suggestedActions || []
+    }
+    
+    // Check if a ticket was created and upload pending attachments
+    if (pendingAttachments.value.length > 0) {
+      // Try to extract ticket UUID from response
+      const ticketUuidMatch = (response.response || '').match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i)
+      if (ticketUuidMatch && (response.response || '').toLowerCase().includes('créé')) {
+        const ticketUuid = ticketUuidMatch[0]
+        console.log('Ticket created, uploading pending attachments to:', ticketUuid)
+        try {
+          await uploadPendingAttachments(ticketUuid)
+          toast.add({
+            severity: 'success',
+            summary: t('chat.attachmentUploaded'),
+            detail: t('chat.filesUploaded'),
+            life: 3000
+          })
+        } catch (uploadError) {
+          console.error('Failed to upload attachments:', uploadError)
+          toast.add({
+            severity: 'warn',
+            summary: t('chat.uploadError'),
+            detail: uploadError.message,
+            life: 5000
+          })
+        }
+      }
     }
   } catch (error) {
     console.error('Agent error:', error)
@@ -406,84 +433,108 @@ const triggerFileUpload = () => {
 }
 
 /**
- * Handle file selection
+ * Handle file selection - stores files locally without uploading
+ * Files will be uploaded after ticket creation
  */
 const handleFileSelect = async (event) => {
   const files = Array.from(event.target.files || [])
   if (!files.length) return
   
-  isUploading.value = true
+  // Store files locally (no upload yet)
+  files.forEach(file => {
+    pendingAttachments.value.push({
+      file: file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      // No UUID yet - will be assigned after upload
+    })
+  })
+  
+  toast.add({
+    severity: 'info',
+    summary: t('chat.filesAdded'),
+    detail: `${files.length} ${t('chat.filesReadyToAttach')}`,
+    life: 3000
+  })
+  
+  // Notify the agent about the attached files
+  const fileNames = files.map(f => f.name).join(', ')
+  messages.value.push({ 
+    role: 'user', 
+    content: `📎 ${t('chat.attachedFiles')}: ${fileNames}`,
+    isAttachmentNotice: true
+  })
+  await scrollToBottom()
+  
+  // Reset file input
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+}
+
+/**
+ * Remove a pending attachment (local file, not yet uploaded)
+ */
+const removePendingAttachment = (attachment) => {
+  // Remove by name since local files don't have UUID yet
+  pendingAttachments.value = pendingAttachments.value.filter(a => a.name !== attachment.name)
+}
+
+/**
+ * Get pending files for ticket creation
+ */
+const getPendingFiles = () => {
+  return pendingAttachments.value.map(a => a.file)
+}
+
+/**
+ * Upload pending attachments to a ticket after creation
+ * @param {string} ticketUuid - UUID of the created ticket
+ */
+const uploadPendingAttachments = async (ticketUuid) => {
+  if (!pendingAttachments.value.length || !ticketUuid) {
+    return []
+  }
+  
+  const files = pendingAttachments.value.map(a => a.file)
   
   try {
-    const uploaded = await uploadAttachments(currentConversationId.value, files)
+    const formData = new FormData()
+    files.forEach(file => {
+      formData.append('files', file)
+    })
     
-    // Add to pending attachments
-    if (Array.isArray(uploaded)) {
-      pendingAttachments.value.push(...uploaded)
-    } else if (uploaded) {
-      pendingAttachments.value.push(uploaded)
+    const token = localStorage.getItem('portal_token')
+    // Use existing endpoint: POST /attachments/:entityType/:entityUuid
+    const response = await fetch(`/api/v1/attachments/tickets/${ticketUuid}`, {
+      method: 'POST',
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      },
+      body: formData
+    })
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }))
+      throw new Error(error.message || 'Upload failed')
     }
     
-    toast.add({
-      severity: 'success',
-      summary: t('chat.attachmentUploaded'),
-      detail: `${files.length} ${t('chat.filesUploaded')}`,
-      life: 3000
-    })
+    const result = await response.json()
+    console.log('Attachments uploaded:', result)
     
-    // Notify the agent about the uploaded files
-    const fileNames = files.map(f => f.name).join(', ')
-    messages.value.push({ 
-      role: 'user', 
-      content: `📎 ${t('chat.attachedFiles')}: ${fileNames}`,
-      isAttachmentNotice: true
-    })
-    await scrollToBottom()
+    // Clear pending attachments after successful upload
+    pendingAttachments.value = []
     
+    return result || []
   } catch (error) {
-    console.error('Upload error:', error)
-    toast.add({
-      severity: 'error',
-      summary: t('chat.uploadError'),
-      detail: error.message,
-      life: 5000
-    })
-  } finally {
-    isUploading.value = false
-    // Reset file input
-    if (fileInputRef.value) {
-      fileInputRef.value.value = ''
-    }
+    console.error('Error uploading attachments:', error)
+    throw error
   }
 }
 
 /**
- * Remove a pending attachment
- */
-const removePendingAttachment = async (attachment) => {
-  try {
-    await deleteAttachment(attachment.uuid)
-    pendingAttachments.value = pendingAttachments.value.filter(a => a.uuid !== attachment.uuid)
-  } catch (error) {
-    console.error('Delete attachment error:', error)
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: error.message,
-      life: 3000
-    })
-  }
-}
-
-/**
- * Get attachment UUIDs for ticket creation
- */
-const getAttachmentUuids = () => {
-  return pendingAttachments.value.map(a => a.uuid)
-}
-
-/**
- * Clear pending attachments (called after ticket creation)
+ * Clear pending attachments
  */
 const clearPendingAttachments = () => {
   pendingAttachments.value = []
@@ -493,7 +544,8 @@ const clearPendingAttachments = () => {
 defineExpose({
   loadConversation,
   startNewConversation,
-  getAttachmentUuids,
+  getPendingFiles,
+  uploadPendingAttachments,
   clearPendingAttachments,
   pendingAttachments
 })
