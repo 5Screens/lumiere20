@@ -182,17 +182,6 @@ const focusInput = async () => {
   inputRef.value?.$el?.focus()
 }
 
-// Watch for external conversation changes
-watch(() => props.conversationId, async (newId) => {
-  if (newId && newId !== currentConversationId.value) {
-    await loadConversation(newId)
-  } else if (!newId) {
-    // Reset to new conversation
-    messages.value = []
-    currentConversationId.value = null
-  }
-}, { immediate: true })
-
 /**
  * Load an existing conversation
  */
@@ -231,6 +220,18 @@ const loadConversation = async (convId) => {
     isLoading.value = false
   }
 }
+
+// Watch for external conversation changes
+// Note: Must be placed AFTER loadConversation is defined
+watch(() => props.conversationId, async (newId) => {
+  if (newId && newId !== currentConversationId.value) {
+    await loadConversation(newId)
+  } else if (!newId) {
+    // Reset to new conversation
+    messages.value = []
+    currentConversationId.value = null
+  }
+}, { immediate: true })
 
 const scrollToBottom = async () => {
   await nextTick()
