@@ -232,7 +232,8 @@ export default {
     dontSave: 'Ne pas enregistrer',
     addToFilter: 'Ajouter au filtre',
     filterAdded: 'Filtre ajouté',
-    filterAddedDetail: 'La valeur a été ajoutée au filtre de la colonne'
+    filterAddedDetail: 'La valeur a été ajoutée au filtre de la colonne',
+    viewDetails: 'Voir les détails'
   },
   tabs: {
     backToList: 'Retour à la liste',

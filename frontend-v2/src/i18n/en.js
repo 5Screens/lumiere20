@@ -231,7 +231,8 @@ export default {
     dontSave: 'Don\'t save',
     addToFilter: 'Add to filter',
     filterAdded: 'Filter added',
-    filterAddedDetail: 'The value has been added to the column filter'
+    filterAddedDetail: 'The value has been added to the column filter',
+    viewDetails: 'View details'
   },
   tabs: {
     backToList: 'Back to list',
