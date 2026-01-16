@@ -117,6 +117,7 @@
         />
         
         <InputText 
+          ref="inputRef"
           v-model="inputMessage"
           :placeholder="$t('chat.placeholder')"
           class="flex-1"
@@ -171,6 +172,15 @@ const currentConversationId = ref(null)
 const pendingAttachments = ref([])
 const isUploading = ref(false)
 const fileInputRef = ref(null)
+const inputRef = ref(null)
+
+/**
+ * Focus the input field
+ */
+const focusInput = async () => {
+  await nextTick()
+  inputRef.value?.$el?.focus()
+}
 
 // Watch for external conversation changes
 watch(() => props.conversationId, async (newId) => {
@@ -276,6 +286,7 @@ const sendMessage = async () => {
   } finally {
     isLoading.value = false
     await scrollToBottom()
+    await focusInput()
   }
 }
 
