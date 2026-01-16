@@ -550,7 +550,7 @@ model tickets {
   // Parent/child relations
   parent_relations   rel_parent_child_tickets[] @relation("TicketParent")
   child_relations    rel_parent_child_tickets[] @relation("TicketChild")
-  attachments        attachments[]
+  // Note: attachments are linked via entity_type='tickets' + entity_uuid (polymorphic, no FK)
 
   @@schema("core")
   @@map("tickets")
@@ -558,8 +558,8 @@ model tickets {
 
 model attachments {
   uuid              String    @id @default(uuid()) @db.Uuid
-  entity_type       String    @db.VarChar(50)
-  entity_uuid       String    @db.Uuid
+  entity_type       String    @db.VarChar(50)    // 'tickets', 'agent_conversation', etc.
+  entity_uuid       String    @db.Uuid           // UUID of the related entity (not a FK - polymorphic)
   file_name         String    @db.VarChar(255)
   original_name     String    @db.VarChar(255)
   mime_type         String    @db.VarChar(100)
@@ -570,7 +570,8 @@ model attachments {
 
   // Relations
   uploaded_by       persons   @relation(fields: [uploaded_by_uuid], references: [uuid], onDelete: Restrict)
-  ticket            tickets?  @relation(fields: [entity_uuid], references: [uuid], onDelete: Cascade, map: "attachments_ticket_fkey")
+  // Note: entity_uuid is polymorphic (can reference tickets, agent_conversations, etc.)
+  // No FK constraint - the relation is managed by entity_type + entity_uuid
 
   @@index([entity_type, entity_uuid])
   @@schema("core")
