@@ -471,6 +471,9 @@ const handleFileSelect = async (event) => {
   if (fileInputRef.value) {
     fileInputRef.value.value = ''
   }
+  
+  // Focus back on input field
+  await focusInput()
 }
 
 /**
