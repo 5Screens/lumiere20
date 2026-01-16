@@ -114,7 +114,7 @@ const getToolDefinitions = () => {
       type: 'function',
       function: {
         name: 'create_ticket',
-        description: 'Create a new ticket (incident or service request). Only call this after confirming with the user.',
+        description: 'Create a new ticket (incident or service request). Only call this after confirming with the user and collecting all required information (title, description, and optionally attachments).',
         parameters: {
           type: 'object',
           properties: {
@@ -124,14 +124,31 @@ const getToolDefinitions = () => {
             },
             title: {
               type: 'string',
-              description: 'Short title describing the issue or request'
+              description: 'Short title describing the issue or request (max 255 characters)'
             },
             description: {
               type: 'string',
               description: 'Detailed description of the issue or request'
+            },
+            attachment_uuids: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Optional array of attachment UUIDs to link to the ticket. These are files previously uploaded by the user.'
             }
           },
           required: ['ticket_type', 'title', 'description']
+        }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'get_pending_attachments',
+        description: 'Get the list of attachments uploaded by the user in the current conversation that are not yet linked to a ticket. Use this before creating a ticket to check if the user has uploaded files.',
+        parameters: {
+          type: 'object',
+          properties: {},
+          required: []
         }
       }
     }
@@ -157,7 +174,8 @@ const executeTool = async (toolName, args, context) => {
     
     // UC3: Ticket creation
     get_ticket_types: ticketsTools.getTicketTypes,
-    create_ticket: ticketsTools.createTicket
+    create_ticket: ticketsTools.createTicket,
+    get_pending_attachments: ticketsTools.getPendingAttachments
   };
 
   const handler = toolHandlers[toolName];

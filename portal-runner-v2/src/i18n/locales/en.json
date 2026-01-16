@@ -37,7 +37,13 @@
     "confirmDelete": "Confirm deletion",
     "cancel": "Cancel",
     "feedbackUp": "Good response",
-    "feedbackDown": "Bad response"
+    "feedbackDown": "Bad response",
+    "attachFiles": "Attach files",
+    "pendingAttachments": "Attachments",
+    "attachmentUploaded": "Attachment uploaded",
+    "filesUploaded": "file(s) uploaded",
+    "attachedFiles": "Attached files",
+    "uploadError": "Upload failed"
   },
   "common": {
     "close": "Close",

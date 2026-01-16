@@ -77,9 +77,45 @@
       </div>
     </div>
     
+    <!-- Pending attachments display -->
+    <div v-if="pendingAttachments.length > 0" class="px-4 py-2 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs text-surface-500">{{ $t('chat.pendingAttachments') }}:</span>
+        <Chip 
+          v-for="attachment in pendingAttachments" 
+          :key="attachment.uuid"
+          :label="attachment.original_name"
+          removable
+          @remove="removePendingAttachment(attachment)"
+          class="text-xs"
+        />
+      </div>
+    </div>
+    
     <!-- Input -->
     <div class="p-4 border-t border-surface-200 dark:border-surface-700">
       <div class="flex gap-2">
+        <!-- Hidden file input -->
+        <input 
+          ref="fileInputRef"
+          type="file"
+          multiple
+          class="hidden"
+          @change="handleFileSelect"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.log,.zip"
+        />
+        
+        <!-- Attachment button -->
+        <Button 
+          icon="pi pi-paperclip" 
+          text
+          rounded
+          @click="triggerFileUpload"
+          :disabled="isLoading || isUploading"
+          :loading="isUploading"
+          v-tooltip.top="$t('chat.attachFiles')"
+        />
+        
         <InputText 
           v-model="inputMessage"
           :placeholder="$t('chat.placeholder')"
@@ -99,12 +135,15 @@
 </template>
 
 <script setup>
-import { ref, nextTick, watch } from 'vue'
+import { ref, nextTick, watch, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
+import { useI18n } from 'vue-i18n'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import { sendMessage as sendAgentMessage, getConversation, updateMessageFeedback } from '@/services/agent'
+import FileUpload from 'primevue/fileupload'
+import Chip from 'primevue/chip'
+import { sendMessage as sendAgentMessage, getConversation, updateMessageFeedback, uploadAttachments, deleteAttachment } from '@/services/agent'
 import { marked } from 'marked'
 
 // Configure marked for safe rendering
@@ -120,12 +159,18 @@ const props = defineProps({
 
 const emit = defineEmits(['update:conversationId', 'conversationLoaded'])
 
+const { t } = useI18n()
 const toast = useToast()
 const messagesContainer = ref(null)
 const inputMessage = ref('')
 const messages = ref([])
 const isLoading = ref(false)
 const currentConversationId = ref(null)
+
+// Attachments management
+const pendingAttachments = ref([])
+const isUploading = ref(false)
+const fileInputRef = ref(null)
 
 // Watch for external conversation changes
 watch(() => props.conversationId, async (newId) => {
@@ -337,13 +382,108 @@ const toggleFeedback = async (index, feedbackType) => {
 const startNewConversation = () => {
   messages.value = []
   currentConversationId.value = null
+  pendingAttachments.value = []
   emit('update:conversationId', null)
+}
+
+/**
+ * Trigger file input click
+ */
+const triggerFileUpload = () => {
+  fileInputRef.value?.click()
+}
+
+/**
+ * Handle file selection
+ */
+const handleFileSelect = async (event) => {
+  const files = Array.from(event.target.files || [])
+  if (!files.length) return
+  
+  isUploading.value = true
+  
+  try {
+    const uploaded = await uploadAttachments(currentConversationId.value, files)
+    
+    // Add to pending attachments
+    if (Array.isArray(uploaded)) {
+      pendingAttachments.value.push(...uploaded)
+    } else if (uploaded) {
+      pendingAttachments.value.push(uploaded)
+    }
+    
+    toast.add({
+      severity: 'success',
+      summary: t('chat.attachmentUploaded'),
+      detail: `${files.length} ${t('chat.filesUploaded')}`,
+      life: 3000
+    })
+    
+    // Notify the agent about the uploaded files
+    const fileNames = files.map(f => f.name).join(', ')
+    messages.value.push({ 
+      role: 'user', 
+      content: `📎 ${t('chat.attachedFiles')}: ${fileNames}`,
+      isAttachmentNotice: true
+    })
+    await scrollToBottom()
+    
+  } catch (error) {
+    console.error('Upload error:', error)
+    toast.add({
+      severity: 'error',
+      summary: t('chat.uploadError'),
+      detail: error.message,
+      life: 5000
+    })
+  } finally {
+    isUploading.value = false
+    // Reset file input
+    if (fileInputRef.value) {
+      fileInputRef.value.value = ''
+    }
+  }
+}
+
+/**
+ * Remove a pending attachment
+ */
+const removePendingAttachment = async (attachment) => {
+  try {
+    await deleteAttachment(attachment.uuid)
+    pendingAttachments.value = pendingAttachments.value.filter(a => a.uuid !== attachment.uuid)
+  } catch (error) {
+    console.error('Delete attachment error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error.message,
+      life: 3000
+    })
+  }
+}
+
+/**
+ * Get attachment UUIDs for ticket creation
+ */
+const getAttachmentUuids = () => {
+  return pendingAttachments.value.map(a => a.uuid)
+}
+
+/**
+ * Clear pending attachments (called after ticket creation)
+ */
+const clearPendingAttachments = () => {
+  pendingAttachments.value = []
 }
 
 // Expose methods for parent component
 defineExpose({
   loadConversation,
-  startNewConversation
+  startNewConversation,
+  getAttachmentUuids,
+  clearPendingAttachments,
+  pendingAttachments
 })
 </script>
 

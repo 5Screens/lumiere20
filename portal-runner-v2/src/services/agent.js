@@ -106,6 +106,69 @@ export const updateMessageFeedback = async (messageId, feedback) => {
   }
 }
 
+/**
+ * Upload attachments for a conversation (pending attachments for ticket creation)
+ * @param {string} conversationId - Conversation UUID (optional, for linking)
+ * @param {File[]} files - Array of files to upload
+ * @returns {Promise<Object[]>} Array of uploaded attachment info
+ */
+export const uploadAttachments = async (conversationId, files) => {
+  try {
+    const formData = new FormData()
+    files.forEach(file => {
+      formData.append('files', file)
+    })
+    
+    // Upload to attachments endpoint with entity_type='agent_conversation'
+    const entityType = 'agent_conversation'
+    const entityUuid = conversationId || '00000000-0000-0000-0000-000000000000'
+    
+    const response = await api.post(`/attachments/${entityType}/${entityUuid}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    
+    return response.data?.data || response.data || []
+  } catch (error) {
+    const errorMessage = error.response?.data?.error || error.message || 'Failed to upload attachments'
+    throw new Error(errorMessage)
+  }
+}
+
+/**
+ * Get pending attachments for a conversation
+ * @param {string} conversationId - Conversation UUID
+ * @returns {Promise<Object[]>} Array of pending attachments
+ */
+export const getPendingAttachments = async (conversationId) => {
+  try {
+    const entityType = 'agent_conversation'
+    const entityUuid = conversationId || '00000000-0000-0000-0000-000000000000'
+    
+    const response = await api.get(`/attachments/${entityType}/${entityUuid}`)
+    return response.data || []
+  } catch (error) {
+    const errorMessage = error.response?.data?.error || error.message || 'Failed to get attachments'
+    throw new Error(errorMessage)
+  }
+}
+
+/**
+ * Delete an attachment
+ * @param {string} attachmentUuid - Attachment UUID
+ * @returns {Promise<boolean>} True if deleted
+ */
+export const deleteAttachment = async (attachmentUuid) => {
+  try {
+    await api.delete(`/attachments/${attachmentUuid}`)
+    return true
+  } catch (error) {
+    const errorMessage = error.response?.data?.error || error.message || 'Failed to delete attachment'
+    throw new Error(errorMessage)
+  }
+}
+
 export default {
   sendMessage,
   checkHealth,
@@ -113,5 +176,8 @@ export default {
   getConversation,
   createConversation,
   deleteConversation,
-  updateMessageFeedback
+  updateMessageFeedback,
+  uploadAttachments,
+  getPendingAttachments,
+  deleteAttachment
 }

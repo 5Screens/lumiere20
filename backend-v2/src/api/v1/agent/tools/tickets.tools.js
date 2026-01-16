@@ -229,10 +229,10 @@ const getTicketTypes = async (args, context) => {
  * @returns {Object} Created ticket info
  */
 const createTicket = async (args, context) => {
-  const { ticket_type, title, description } = args;
+  const { ticket_type, title, description, attachment_uuids = [] } = args;
   const { userUuid } = context;
 
-  logger.info(`-- tickets-tools -- createTicket: type=${ticket_type}, title="${title.substring(0, 50)}..."`);
+  logger.info(`-- tickets-tools -- createTicket: type=${ticket_type}, title="${title.substring(0, 50)}...", attachments=${attachment_uuids.length}`);
 
   // Validate ticket type
   const ticketType = await prisma.ticket_types.findUnique({
@@ -247,15 +247,39 @@ const createTicket = async (args, context) => {
   }
 
   // Get initial status for this ticket type
-  const initialStatus = await prisma.workflow_statuses.findFirst({
+  // First try to find a workflow specific to this ticket type
+  let workflow = await prisma.workflows.findFirst({
     where: {
-      workflow: {
-        entity_type: 'tickets',
-        subtype_code: ticket_type
-      },
-      is_initial: true
+      entity_type: 'tickets',
+      rel_entity_type_uuid: ticketType.uuid,
+      is_active: true
+    },
+    include: {
+      statuses: {
+        where: { is_initial: true },
+        take: 1
+      }
     }
   });
+
+  // If no specific workflow, try to find a generic tickets workflow
+  if (!workflow) {
+    workflow = await prisma.workflows.findFirst({
+      where: {
+        entity_type: 'tickets',
+        rel_entity_type_uuid: null,
+        is_active: true
+      },
+      include: {
+        statuses: {
+          where: { is_initial: true },
+          take: 1
+        }
+      }
+    });
+  }
+
+  const initialStatus = workflow?.statuses?.[0] || null;
 
   // Create the ticket
   const ticket = await prisma.tickets.create({
@@ -272,14 +296,86 @@ const createTicket = async (args, context) => {
 
   logger.info(`-- tickets-tools -- Created ticket: ${ticket.uuid}`);
 
+  // Link attachments to the ticket if any were provided
+  let attachmentCount = 0;
+  if (attachment_uuids && attachment_uuids.length > 0) {
+    // Update attachments to link them to this ticket
+    const updateResult = await prisma.attachments.updateMany({
+      where: {
+        uuid: { in: attachment_uuids },
+        uploaded_by_uuid: userUuid // Security: only link user's own attachments
+      },
+      data: {
+        entity_type: 'tickets',
+        entity_uuid: ticket.uuid
+      }
+    });
+    attachmentCount = updateResult.count;
+    logger.info(`-- tickets-tools -- Linked ${attachmentCount} attachments to ticket ${ticket.uuid}`);
+  }
+
   return {
     success: true,
     ticket: {
       uuid: ticket.uuid,
       title: ticket.title,
       type: ticketType.label,
+      attachments_count: attachmentCount,
       message: `Your ${ticketType.label.toLowerCase()} has been created successfully.`
     }
+  };
+};
+
+/**
+ * Get pending attachments for the current user
+ * These are attachments uploaded but not yet linked to a ticket
+ * @param {Object} args - Tool arguments
+ * @param {Object} context - Execution context
+ * @returns {Object} List of pending attachments
+ */
+const getPendingAttachments = async (args, context) => {
+  const { userUuid, conversationId } = context;
+
+  logger.info(`-- tickets-tools -- getPendingAttachments: user=${userUuid}, conversation=${conversationId}`);
+
+  // Find attachments uploaded by this user that are not yet linked to a ticket
+  // We look for attachments with entity_type='pending' or entity_type='agent_conversation'
+  const pendingAttachments = await prisma.attachments.findMany({
+    where: {
+      uploaded_by_uuid: userUuid,
+      OR: [
+        { entity_type: 'pending' },
+        { entity_type: 'agent_conversation' },
+        { 
+          entity_type: 'agent_conversation',
+          entity_uuid: conversationId 
+        }
+      ]
+    },
+    orderBy: { created_at: 'desc' },
+    take: 20
+  });
+
+  if (pendingAttachments.length === 0) {
+    return {
+      has_attachments: false,
+      count: 0,
+      attachments: [],
+      message: 'No pending attachments found.'
+    };
+  }
+
+  return {
+    has_attachments: true,
+    count: pendingAttachments.length,
+    attachments: pendingAttachments.map(a => ({
+      uuid: a.uuid,
+      original_name: a.original_name,
+      mime_type: a.mime_type,
+      file_size: a.file_size,
+      uploaded_at: a.created_at.toISOString()
+    })),
+    message: `Found ${pendingAttachments.length} pending attachment(s).`
   };
 };
 
@@ -287,5 +383,6 @@ module.exports = {
   listMyTickets,
   getTicketDetails,
   getTicketTypes,
-  createTicket
+  createTicket,
+  getPendingAttachments
 };

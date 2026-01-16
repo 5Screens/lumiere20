@@ -81,7 +81,8 @@ const processMessage = async (message, userContext) => {
         // Execute the tool
         const toolResult = await executeTool(toolName, toolArgs, {
           userUuid,
-          locale
+          locale,
+          conversationId: conversation.uuid
         });
 
         // Check if KB search returned no results and needs LLM fallback
