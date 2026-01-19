@@ -116,18 +116,52 @@
           v-tooltip.top="$t('chat.attachFiles')"
         />
         
-        <InputText 
-          ref="inputRef"
-          v-model="inputMessage"
-          :placeholder="$t('chat.placeholder')"
-          class="flex-1"
-          @keyup.enter="sendMessage"
-          :disabled="isLoading"
+        <!-- Input field with voice transcription overlay -->
+        <div class="flex-1 relative">
+          <InputText 
+            ref="inputRef"
+            v-model="inputMessage"
+            :placeholder="isRecording ? $t('voice.listening') : $t('chat.placeholder')"
+            class="w-full"
+            @keyup.enter="sendMessage"
+            :disabled="isLoading || isRecording"
+          />
+          <!-- Live transcription overlay -->
+          <div 
+            v-if="isRecording && transcription" 
+            class="absolute inset-0 flex items-center px-3 pointer-events-none"
+          >
+            <span class="text-primary font-medium truncate">{{ transcription }}</span>
+          </div>
+        </div>
+        
+        <!-- Voice input button (push-to-talk) -->
+        <Button 
+          v-if="isVoiceSupported"
+          :icon="isRecording ? 'pi pi-microphone' : 'pi pi-microphone'"
+          :class="[
+            'transition-all duration-200 select-none',
+            isRecording 
+              ? 'bg-green-500 hover:bg-green-600 border-green-500 text-white animate-pulse' 
+              : 'text-surface-400 hover:text-surface-600'
+          ]"
+          :text="!isRecording"
+          rounded
+          @mousedown.prevent="handleVoiceStart"
+          @mouseup.prevent="handleVoiceEnd"
+          @mouseleave="handleVoiceEnd"
+          @touchstart.prevent="handleVoiceStart"
+          @touchend.prevent="handleVoiceEnd"
+          @click.prevent.stop
+          :disabled="isLoading || isConnecting"
+          :loading="isConnecting"
+          v-tooltip.top="isRecording ? $t('voice.release') : $t('voice.holdToSpeak')"
         />
+        
         <Button 
           icon="pi pi-send" 
           @click="sendMessage"
-          :disabled="!inputMessage.trim() || isLoading"
+          :disabled="!inputMessage.trim() || isLoading || isRecording"
           :loading="isLoading"
         />
       </div>
@@ -142,6 +176,7 @@ import { useI18n } from 'vue-i18n'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
+import { useVoiceInput } from '@/composables/useVoiceInput'
 import FileUpload from 'primevue/fileupload'
 import Chip from 'primevue/chip'
 import { sendMessage as sendAgentMessage, getConversation, updateMessageFeedback } from '@/services/agent'
@@ -173,6 +208,17 @@ const pendingAttachments = ref([])
 const isUploading = ref(false)
 const fileInputRef = ref(null)
 const inputRef = ref(null)
+
+// Voice input
+const { 
+  isRecording, 
+  isConnecting, 
+  transcription, 
+  isVoiceSupported,
+  startRecording, 
+  stopRecording,
+  clearTranscription 
+} = useVoiceInput()
 
 /**
  * Focus the input field
@@ -406,6 +452,31 @@ const startNewConversation = () => {
   currentConversationId.value = null
   pendingAttachments.value = []
   emit('update:conversationId', null)
+}
+
+/**
+ * Handle voice input start (push-to-talk mousedown/touchstart)
+ */
+const handleVoiceStart = async () => {
+  if (isLoading.value || isConnecting.value) return
+  await startRecording()
+}
+
+/**
+ * Handle voice input end (push-to-talk mouseup/touchend)
+ */
+const handleVoiceEnd = () => {
+  if (!isRecording.value && !isConnecting.value) return
+  
+  const finalText = stopRecording()
+  
+  if (finalText && finalText.trim()) {
+    inputMessage.value = finalText.trim()
+    // Automatically send the message
+    sendMessage()
+  }
+  
+  clearTranscription()
 }
 
 /**

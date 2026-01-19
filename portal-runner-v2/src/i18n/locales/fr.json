@@ -47,6 +47,17 @@
     "filesAdded": "Fichiers ajoutés",
     "filesReadyToAttach": "fichier(s) prêt(s) à joindre"
   },
+  "voice": {
+    "holdToSpeak": "Maintenez pour parler",
+    "release": "Relâchez pour envoyer",
+    "listening": "Écoute en cours...",
+    "error": "Erreur vocale",
+    "microphoneDenied": "Accès au microphone refusé",
+    "noMicrophone": "Aucun microphone détecté",
+    "microphoneError": "Impossible d'accéder au microphone",
+    "connectionFailed": "Échec de connexion au service vocal",
+    "serviceNotConfigured": "Service vocal non configuré"
+  },
   "common": {
     "close": "Fermer",
     "cancel": "Annuler",

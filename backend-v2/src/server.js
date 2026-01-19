@@ -1,8 +1,10 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const logger = require('./config/logger');
 const errorHandler = require('./middleware/errorHandler');
+const { initializeWebSocket } = require('./api/v1/speech/websocket');
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
@@ -104,8 +106,15 @@ app.get('/api/v1/health', (req, res) => {
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
+// Create HTTP server and attach WebSocket
+const server = http.createServer(app);
+
+// Initialize WebSocket for speech services (STT)
+initializeWebSocket(server);
+
 // Start server
-app.listen(port, () => {
+server.listen(port, () => {
   logger.info(`Server is running on port ${port}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`WebSocket STT available at ws://localhost:${port}/api/v1/speech/stt`);
 });

@@ -47,6 +47,17 @@
     "filesAdded": "Files added",
     "filesReadyToAttach": "file(s) ready to attach"
   },
+  "voice": {
+    "holdToSpeak": "Hold to speak",
+    "release": "Release to send",
+    "listening": "Listening...",
+    "error": "Voice error",
+    "microphoneDenied": "Microphone access denied",
+    "noMicrophone": "No microphone found",
+    "microphoneError": "Failed to access microphone",
+    "connectionFailed": "Failed to connect to voice service",
+    "serviceNotConfigured": "Voice service not configured"
+  },
   "common": {
     "close": "Close",
     "cancel": "Cancel",
