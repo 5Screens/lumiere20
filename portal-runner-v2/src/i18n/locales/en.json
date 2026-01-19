@@ -56,7 +56,9 @@
     "noMicrophone": "No microphone found",
     "microphoneError": "Failed to access microphone",
     "connectionFailed": "Failed to connect to voice service",
-    "serviceNotConfigured": "Voice service not configured"
+    "serviceNotConfigured": "Voice service not configured",
+    "stopSpeaking": "Stop speaking",
+    "speaking": "Speaking..."
   },
   "common": {
     "close": "Close",

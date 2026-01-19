@@ -152,9 +152,23 @@
           @touchstart.prevent="handleVoiceStart"
           @touchend.prevent="handleVoiceEnd"
           @click.prevent.stop
-          :disabled="isLoading || isConnecting"
+          :disabled="isLoading || isConnecting || isSpeaking"
           :loading="isConnecting"
           v-tooltip.top="isRecording ? $t('voice.release') : $t('voice.holdToSpeak')"
+        />
+        
+        <!-- TTS indicator/stop button -->
+        <Button 
+          v-if="isSpeaking || isTTSConnecting"
+          icon="pi pi-wave-pulse"
+          :class="[
+            'transition-all duration-200',
+            'bg-blue-500 hover:bg-blue-600 border-blue-500 text-white animate-pulse'
+          ]"
+          rounded
+          @click="stopTTS"
+          :loading="isTTSConnecting"
+          v-tooltip.top="$t('voice.stopSpeaking')"
         />
         
         <Button 
@@ -176,6 +190,7 @@ import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useVoiceInput } from '@/composables/useVoiceInput'
+import { useTTS } from '@/composables/useTTS'
 import FileUpload from 'primevue/fileupload'
 import Chip from 'primevue/chip'
 import { sendMessage as sendAgentMessage, getConversation, updateMessageFeedback } from '@/services/agent'
@@ -227,6 +242,15 @@ const {
   stopRecording,
   clearTranscription 
 } = useVoiceInput({ onAutoStop: handleVoiceAutoStop })
+
+// TTS for reading AI responses
+const {
+  isSpeaking,
+  isConnecting: isTTSConnecting,
+  isTTSAvailable,
+  speak,
+  stop: stopTTS
+} = useTTS()
 
 /**
  * Focus the input field
@@ -319,12 +343,19 @@ const sendMessage = async () => {
     }
     
     // Replace loading with actual response
+    const assistantContent = response.response || response.message
     messages.value[loadingIndex] = {
       uuid: response.messageUuid || null,
       role: 'assistant',
-      content: response.response || response.message,
+      content: assistantContent,
       feedback: null,
       suggestedActions: response.suggestedActions || []
+    }
+    
+    // Read the response aloud using TTS if available
+    if (isTTSAvailable.value && assistantContent) {
+      console.log('[AgenticPanel] Speaking AI response via TTS')
+      speak(assistantContent)
     }
     
     // Clear pending attachments if a ticket was created
