@@ -8,6 +8,7 @@
 
 let ws = null;
 let audioContext = null;
+let masterGainNode = null;
 
 // Buffered playback state
 let audioBufferQueue = [];      // Queue of Float32Array audio data
@@ -16,6 +17,7 @@ let hasStartedPlayback = false; // Track if we've called onPlaybackStart
 let scheduledSources = [];      // Track scheduled AudioBufferSourceNodes for cleanup
 let nextScheduledTime = 0;      // Next time to schedule audio (in AudioContext time)
 let streamEnded = false;        // Track if we received end_of_stream
+let stoppedManually = false;    // Track if playback was stopped manually (to ignore onended callbacks)
 
 // Buffer settings - accumulate chunks before starting playback
 const MIN_BUFFER_CHUNKS = 3;    // Wait for at least 3 chunks before starting (prevents choppy start)
@@ -44,6 +46,20 @@ export const createTTSConnection = (language = 'fr', callbacks = {}) => {
   // Create AudioContext if needed
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  // Ensure master gain node exists and is connected (used for instant stop/mute)
+  if (!masterGainNode) {
+    masterGainNode = audioContext.createGain();
+    masterGainNode.gain.value = 1;
+    masterGainNode.connect(audioContext.destination);
+  } else {
+    // Reset gain for a new playback session
+    try {
+      masterGainNode.gain.setValueAtTime(1, audioContext.currentTime);
+    } catch (e) {
+      // Ignore
+    }
   }
 
   // Build WebSocket URL (relative to current host)
@@ -127,7 +143,8 @@ const resetAudioState = () => {
   // Stop all scheduled sources
   for (const source of scheduledSources) {
     try {
-      source.stop();
+      source.disconnect();
+      source.stop(0);
     } catch (e) {
       // Ignore - might already be stopped
     }
@@ -139,6 +156,16 @@ const resetAudioState = () => {
   scheduledSources = [];
   nextScheduledTime = 0;
   streamEnded = false;
+  stoppedManually = false; // Reset for new playback session
+
+  // Reset master gain as well
+  if (masterGainNode && audioContext) {
+    try {
+      masterGainNode.gain.setValueAtTime(1, audioContext.currentTime);
+    } catch (e) {
+      // Ignore
+    }
+  }
 };
 
 /**
@@ -253,7 +280,12 @@ const scheduleNextChunk = (callbacks) => {
     // Create source node
     const source = audioContext.createBufferSource();
     source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
+    if (masterGainNode) {
+      source.connect(masterGainNode);
+    } else {
+      // Fallback (should not happen because masterGainNode is created in createTTSConnection)
+      source.connect(audioContext.destination);
+    }
     
     // Calculate duration of this chunk
     const duration = floatData.length / PCM_SAMPLE_RATE;
@@ -262,6 +294,11 @@ const scheduleNextChunk = (callbacks) => {
     if (nextScheduledTime < audioContext.currentTime) {
       nextScheduledTime = audioContext.currentTime + 0.01; // Small buffer
     }
+
+    const scheduledAheadSeconds = nextScheduledTime - audioContext.currentTime;
+    if (scheduledAheadSeconds > 1) {
+      console.log('[TTS] Scheduling audio far ahead:', scheduledAheadSeconds.toFixed(2), 's', 'scheduledSources:', scheduledSources.length);
+    }
     
     // Schedule playback at precise time
     source.start(nextScheduledTime);
@@ -269,21 +306,26 @@ const scheduleNextChunk = (callbacks) => {
     // Track this source for cleanup
     scheduledSources.push(source);
     
-    // Clean up old sources (keep last 10)
-    if (scheduledSources.length > 10) {
-      scheduledSources.shift();
-    }
-    
     // Update next scheduled time
     nextScheduledTime += duration;
     
     // Set up end handler on the last scheduled source to detect playback completion
     source.onended = () => {
+      // Remove this source from the tracked list (prevents memory growth)
+      const idx = scheduledSources.indexOf(source);
+      if (idx !== -1) {
+        scheduledSources.splice(idx, 1);
+      }
+
+      // Ignore if playback was stopped manually
+      if (stoppedManually) {
+        return;
+      }
       // Check if this was the last chunk and stream has ended
       if (streamEnded && audioBufferQueue.length === 0) {
         // Small delay to ensure all audio has played
         setTimeout(() => {
-          if (audioBufferQueue.length === 0 && streamEnded) {
+          if (audioBufferQueue.length === 0 && streamEnded && !stoppedManually) {
             console.log('[TTS] Playback complete');
             isPlaying = false;
             hasStartedPlayback = false;
@@ -302,25 +344,46 @@ const scheduleNextChunk = (callbacks) => {
  * @param {Object} callbacks - Event callbacks
  */
 const stopPlayback = (callbacks) => {
-  console.log('[TTS] Stopping playback');
+  console.log('[TTS] stopPlayback called - scheduledSources:', scheduledSources.length, 'audioBufferQueue:', audioBufferQueue.length, 'isPlaying:', isPlaying);
   
-  // Stop all scheduled sources
-  for (const source of scheduledSources) {
+  // Mark as manually stopped to ignore onended callbacks
+  stoppedManually = true;
+
+  // Hard mute immediately (guarantees instant stop even if something is still playing)
+  if (masterGainNode && audioContext) {
     try {
-      source.stop();
+      masterGainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      console.log('[TTS] Master gain muted at', audioContext.currentTime.toFixed(3));
     } catch (e) {
-      // Ignore - might already be stopped
+      // Ignore
     }
   }
+  
+  // Stop all scheduled sources IMMEDIATELY
+  // source.stop(0) forces immediate stop, and disconnect() removes from audio graph
+  let stoppedCount = 0;
+  for (const source of scheduledSources) {
+    try {
+      source.disconnect(); // Disconnect from audio graph first
+      source.stop(0);      // Force immediate stop (0 = now)
+      stoppedCount++;
+    } catch (e) {
+      // Ignore - might already be stopped or disconnected
+    }
+  }
+  console.log('[TTS] Stopped', stoppedCount, 'audio sources immediately');
   
   audioBufferQueue = [];
   scheduledSources = [];
   isPlaying = false;
+  streamEnded = true; // Mark stream as ended to prevent further scheduling
   
   if (hasStartedPlayback) {
+    console.log('[TTS] Calling onPlaybackEnd callback');
     hasStartedPlayback = false;
     callbacks?.onPlaybackEnd?.();
   }
+  console.log('[TTS] stopPlayback complete');
 };
 
 /**
@@ -328,13 +391,15 @@ const stopPlayback = (callbacks) => {
  * @param {Object} callbacks - Event callbacks
  */
 const closeConnection = (callbacks) => {
-  console.log('[TTS] Closing connection');
+  console.log('[TTS] closeConnection called - ws state:', ws?.readyState);
   stopPlayback(callbacks);
   
   if (ws && ws.readyState === WebSocket.OPEN) {
+    console.log('[TTS] Closing WebSocket');
     ws.close();
   }
   ws = null;
+  console.log('[TTS] closeConnection complete');
 };
 
 /**

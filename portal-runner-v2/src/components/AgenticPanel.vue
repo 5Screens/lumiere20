@@ -135,40 +135,28 @@
           </div>
         </div>
         
-        <!-- Voice input button (push-to-talk) -->
+        <!-- Voice input / TTS stop button -->
         <Button 
           v-if="isVoiceSupported"
-          :icon="isRecording ? 'pi pi-microphone' : 'pi pi-microphone'"
+          :icon="isSpeaking ? 'pi pi-stop-circle' : 'pi pi-wave-pulse'"
           :class="[
             'transition-all duration-200 select-none',
-            isRecording 
-              ? 'bg-green-500 hover:bg-green-600 border-green-500 text-white animate-pulse' 
-              : 'text-surface-400 hover:text-surface-600'
+            isSpeaking
+              ? 'bg-blue-500 hover:bg-blue-600 border-blue-500 text-white animate-pulse'
+              : isRecording 
+                ? 'bg-green-500 hover:bg-green-600 border-green-500 text-white animate-pulse' 
+                : 'text-surface-400 hover:text-surface-600'
           ]"
-          :text="!isRecording"
+          :text="!isRecording && !isSpeaking"
           rounded
-          @mousedown.prevent="handleVoiceStart"
-          @mouseup.prevent="handleVoiceEnd"
-          @touchstart.prevent="handleVoiceStart"
-          @touchend.prevent="handleVoiceEnd"
-          @click.prevent.stop
-          :disabled="isLoading || isConnecting || isSpeaking"
-          :loading="isConnecting"
-          v-tooltip.top="isRecording ? $t('voice.release') : $t('voice.holdToSpeak')"
-        />
-        
-        <!-- TTS indicator/stop button -->
-        <Button 
-          v-if="isSpeaking || isTTSConnecting"
-          icon="pi pi-wave-pulse"
-          :class="[
-            'transition-all duration-200',
-            'bg-blue-500 hover:bg-blue-600 border-blue-500 text-white animate-pulse'
-          ]"
-          rounded
-          @click="stopTTS"
-          :loading="isTTSConnecting"
-          v-tooltip.top="$t('voice.stopSpeaking')"
+          @mousedown.prevent="handleVoiceButtonMouseDown"
+          @mouseup.prevent="handleVoiceButtonMouseUp"
+          @touchstart.prevent="handleVoiceButtonMouseDown"
+          @touchend.prevent="handleVoiceButtonMouseUp"
+          @click.prevent.stop="handleVoiceButtonClick"
+          :disabled="isLoading || isConnecting || isTTSConnecting"
+          :loading="isConnecting || isTTSConnecting"
+          v-tooltip.top="isSpeaking ? $t('voice.stopSpeaking') : (isRecording ? $t('voice.release') : $t('voice.holdToSpeak'))"
         />
         
         <Button 
@@ -223,11 +211,15 @@ const isUploading = ref(false)
 const fileInputRef = ref(null)
 const inputRef = ref(null)
 
+// Track if last input was voice (to enable TTS for response)
+const lastInputWasVoice = ref(false)
+
 // Voice input with VAD auto-stop
 const handleVoiceAutoStop = (finalText) => {
   console.log('[AgenticPanel] VAD auto-stop triggered with text:', finalText)
   if (finalText && finalText.trim()) {
     inputMessage.value = finalText.trim()
+    lastInputWasVoice.value = true // Enable TTS for response
     sendMessage()
   }
   clearTranscription()
@@ -318,9 +310,13 @@ const scrollToBottom = async () => {
   }
 }
 
-const sendMessage = async () => {
+const sendMessage = async (options = {}) => {
   const message = inputMessage.value.trim()
   if (!message || isLoading.value) return
+  
+  // Track if this message should trigger TTS response
+  const shouldUseTTS = lastInputWasVoice.value
+  lastInputWasVoice.value = false // Reset for next input
   
   // Add user message
   messages.value.push({ role: 'user', content: message })
@@ -352,9 +348,9 @@ const sendMessage = async () => {
       suggestedActions: response.suggestedActions || []
     }
     
-    // Read the response aloud using TTS if available
-    if (isTTSAvailable.value && assistantContent) {
-      console.log('[AgenticPanel] Speaking AI response via TTS')
+    // Read the response aloud using TTS only if input was voice
+    if (shouldUseTTS && isTTSAvailable.value && assistantContent) {
+      console.log('[AgenticPanel] Speaking AI response via TTS (voice input detected)')
       speak(assistantContent)
     }
     
@@ -519,11 +515,52 @@ const handleVoiceEnd = (event) => {
   
   if (finalText && finalText.trim()) {
     inputMessage.value = finalText.trim()
+    lastInputWasVoice.value = true // Enable TTS for response
     // Automatically send the message
     sendMessage()
   }
   
   clearTranscription()
+}
+
+/**
+ * Handle voice button mousedown/touchstart
+ * - If TTS is speaking: do nothing (click will handle stop)
+ * - Otherwise: start voice recording
+ */
+const handleVoiceButtonMouseDown = (event) => {
+  if (isSpeaking.value) {
+    console.log('[AgenticPanel] Voice button mousedown ignored - TTS speaking')
+    return
+  }
+  handleVoiceStart(event)
+}
+
+/**
+ * Handle voice button mouseup/touchend
+ * - If TTS is speaking: do nothing
+ * - Otherwise: stop voice recording
+ */
+const handleVoiceButtonMouseUp = (event) => {
+  if (isSpeaking.value) {
+    console.log('[AgenticPanel] Voice button mouseup ignored - TTS speaking')
+    return
+  }
+  handleVoiceEnd(event)
+}
+
+/**
+ * Handle voice button click
+ * - If TTS is speaking: stop TTS
+ * - Otherwise: do nothing (mousedown/mouseup handle recording)
+ */
+const handleVoiceButtonClick = () => {
+  console.log('[AgenticPanel] Voice button click - isSpeaking:', isSpeaking.value)
+  if (isSpeaking.value) {
+    console.log('[AgenticPanel] Calling stopTTS()')
+    stopTTS()
+    console.log('[AgenticPanel] stopTTS() called, isSpeaking now:', isSpeaking.value)
+  }
 }
 
 /**

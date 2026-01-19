@@ -103,16 +103,22 @@ export const useTTS = () => {
    * Stop TTS playback
    */
   const stop = () => {
-    console.log('[useTTS] Stopping TTS')
+    console.log('[useTTS] Stopping TTS - isSpeaking:', isSpeaking.value, 'hasConnection:', !!ttsConnection.value)
     
     if (ttsConnection.value) {
+      console.log('[useTTS] Calling connection.stop()')
       ttsConnection.value.stop()
+      console.log('[useTTS] Calling connection.close()')
       ttsConnection.value.close()
       ttsConnection.value = null
+      console.log('[useTTS] Connection cleared')
+    } else {
+      console.log('[useTTS] No connection to stop')
     }
     
     isSpeaking.value = false
     isConnecting.value = false
+    console.log('[useTTS] State reset - isSpeaking:', isSpeaking.value)
   }
 
   return {
