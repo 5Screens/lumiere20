@@ -29,9 +29,10 @@ const handleSTTConnection = (clientWs, language = 'fr') => {
   
   // VAD (Voice Activity Detection) tracking
   // When inactivity_prob is high for several consecutive steps, user has stopped speaking
+  // Gradium recommends: horizon 2s and inactivity_prob > 0.5
   let consecutiveHighInactivityCount = 0;
-  const VAD_INACTIVITY_THRESHOLD = 0.95; // Probability threshold
-  const VAD_CONSECUTIVE_STEPS_FOR_END = 15; // ~1.2 seconds at 80ms per step
+  const VAD_INACTIVITY_THRESHOLD = 0.5; // Probability threshold (Gradium recommends > 0.5)
+  const VAD_CONSECUTIVE_STEPS_FOR_END = 8; // ~640ms at 80ms per step (faster response with lower threshold)
   let hasReceivedText = false; // Only trigger speech_end if we received some text
 
   // Connect to Gradium STT
@@ -107,9 +108,9 @@ const handleSTTConnection = (clientWs, language = 'fr') => {
         case 'step':
           // VAD activity - check for prolonged inactivity
           if (message.vad && message.vad.length > 0) {
-            // Use the 1-second horizon for detecting end of speech
-            const vad1s = message.vad.find(v => v.horizon_s === 1);
-            if (vad1s && vad1s.inactivity_prob >= VAD_INACTIVITY_THRESHOLD) {
+            // Use the 2-second horizon for detecting end of speech (Gradium recommendation)
+            const vad2s = message.vad.find(v => v.horizon_s === 2);
+            if (vad2s && vad2s.inactivity_prob > VAD_INACTIVITY_THRESHOLD) {
               consecutiveHighInactivityCount++;
               
               // If we've had high inactivity for enough steps AND received some text, signal speech end
