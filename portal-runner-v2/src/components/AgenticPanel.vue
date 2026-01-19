@@ -129,9 +129,9 @@
           <!-- Live transcription overlay -->
           <div 
             v-if="isRecording && transcription" 
-            class="absolute inset-0 flex items-center px-3 pointer-events-none"
+            class="absolute inset-0 flex items-center px-3 pointer-events-none bg-surface-0 dark:bg-surface-900 rounded-md"
           >
-            <span class="text-primary font-medium truncate">{{ transcription }}</span>
+            <span class="text-surface-700 dark:text-surface-200 truncate">{{ transcription }}</span>
           </div>
         </div>
         
@@ -149,7 +149,6 @@
           rounded
           @mousedown.prevent="handleVoiceStart"
           @mouseup.prevent="handleVoiceEnd"
-          @mouseleave="handleVoiceEnd"
           @touchstart.prevent="handleVoiceStart"
           @touchend.prevent="handleVoiceEnd"
           @click.prevent.stop
@@ -209,7 +208,16 @@ const isUploading = ref(false)
 const fileInputRef = ref(null)
 const inputRef = ref(null)
 
-// Voice input
+// Voice input with VAD auto-stop
+const handleVoiceAutoStop = (finalText) => {
+  console.log('[AgenticPanel] VAD auto-stop triggered with text:', finalText)
+  if (finalText && finalText.trim()) {
+    inputMessage.value = finalText.trim()
+    sendMessage()
+  }
+  clearTranscription()
+}
+
 const { 
   isRecording, 
   isConnecting, 
@@ -218,7 +226,7 @@ const {
   startRecording, 
   stopRecording,
   clearTranscription 
-} = useVoiceInput()
+} = useVoiceInput({ onAutoStop: handleVoiceAutoStop })
 
 /**
  * Focus the input field
@@ -457,16 +465,24 @@ const startNewConversation = () => {
 /**
  * Handle voice input start (push-to-talk mousedown/touchstart)
  */
-const handleVoiceStart = async () => {
-  if (isLoading.value || isConnecting.value) return
+const handleVoiceStart = async (event) => {
+  console.log('[AgenticPanel] handleVoiceStart triggered', event?.type)
+  if (isLoading.value || isConnecting.value) {
+    console.log('[AgenticPanel] handleVoiceStart blocked - isLoading:', isLoading.value, 'isConnecting:', isConnecting.value)
+    return
+  }
   await startRecording()
 }
 
 /**
  * Handle voice input end (push-to-talk mouseup/touchend)
  */
-const handleVoiceEnd = () => {
-  if (!isRecording.value && !isConnecting.value) return
+const handleVoiceEnd = (event) => {
+  console.log('[AgenticPanel] handleVoiceEnd triggered', event?.type, 'isRecording:', isRecording.value, 'isConnecting:', isConnecting.value)
+  if (!isRecording.value && !isConnecting.value) {
+    console.log('[AgenticPanel] handleVoiceEnd blocked - not recording')
+    return
+  }
   
   const finalText = stopRecording()
   

@@ -26,6 +26,13 @@ const handleSTTConnection = (clientWs, language = 'fr') => {
 
   let gradiumWs = null;
   let isGradiumReady = false;
+  
+  // VAD (Voice Activity Detection) tracking
+  // When inactivity_prob is high for several consecutive steps, user has stopped speaking
+  let consecutiveHighInactivityCount = 0;
+  const VAD_INACTIVITY_THRESHOLD = 0.95; // Probability threshold
+  const VAD_CONSECUTIVE_STEPS_FOR_END = 15; // ~1.2 seconds at 80ms per step
+  let hasReceivedText = false; // Only trigger speech_end if we received some text
 
   // Connect to Gradium STT
   try {
@@ -79,6 +86,8 @@ const handleSTTConnection = (clientWs, language = 'fr') => {
           break;
 
         case 'text':
+          hasReceivedText = true;
+          consecutiveHighInactivityCount = 0; // Reset on new text
           // Forward transcription to client
           clientWs.send(JSON.stringify({
             type: 'text',
@@ -96,8 +105,26 @@ const handleSTTConnection = (clientWs, language = 'fr') => {
           break;
 
         case 'step':
-          // VAD activity - optionally forward for visualization
-          // clientWs.send(JSON.stringify(message));
+          // VAD activity - check for prolonged inactivity
+          if (message.vad && message.vad.length > 0) {
+            // Use the 1-second horizon for detecting end of speech
+            const vad1s = message.vad.find(v => v.horizon_s === 1);
+            if (vad1s && vad1s.inactivity_prob >= VAD_INACTIVITY_THRESHOLD) {
+              consecutiveHighInactivityCount++;
+              
+              // If we've had high inactivity for enough steps AND received some text, signal speech end
+              if (consecutiveHighInactivityCount >= VAD_CONSECUTIVE_STEPS_FOR_END && hasReceivedText) {
+                logger.info(`STT proxy: VAD detected speech end after ${consecutiveHighInactivityCount} inactive steps`);
+                clientWs.send(JSON.stringify({ type: 'speech_end' }));
+                // Reset to avoid sending multiple speech_end signals
+                hasReceivedText = false;
+                consecutiveHighInactivityCount = 0;
+              }
+            } else {
+              // Reset counter if activity detected
+              consecutiveHighInactivityCount = 0;
+            }
+          }
           break;
 
         case 'end_of_stream':

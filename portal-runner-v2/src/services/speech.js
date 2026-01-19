@@ -66,6 +66,11 @@ export const createSTTConnection = (language, callbacks) => {
           callbacks.onEndText?.(message.stop_s);
           break;
 
+        case 'speech_end':
+          console.log('[Speech] VAD detected speech end - user stopped talking');
+          callbacks.onSpeechEnd?.();
+          break;
+
         case 'end_of_stream':
           console.log('[Speech] End of stream received');
           callbacks.onClose?.();

@@ -4,10 +4,13 @@ import { useToast } from 'primevue/usetoast'
 import { createSTTConnection, isSpeechSupported, isLanguageSupported } from '@/services/speech'
 
 /**
- * Composable for voice input with push-to-talk
+ * Composable for voice input with push-to-talk and VAD auto-stop
+ * @param {Object} options - Options
+ * @param {Function} options.onAutoStop - Callback when VAD detects user stopped speaking
  * @returns {Object} Voice input state and methods
  */
-export const useVoiceInput = () => {
+export const useVoiceInput = (options = {}) => {
+  const { onAutoStop } = options
   const { locale, t } = useI18n()
   const toast = useToast()
 
@@ -62,7 +65,18 @@ export const useVoiceInput = () => {
           console.log('[VoiceInput] Full transcription:', transcription.value)
         },
         onEndText: () => {
-          console.log('[VoiceInput] End of speech detected')
+          console.log('[VoiceInput] End of text segment detected')
+        },
+        onSpeechEnd: () => {
+          console.log('[VoiceInput] VAD detected user stopped speaking - auto-stopping')
+          // Automatically stop recording when VAD detects user stopped speaking
+          if (isRecording.value) {
+            const finalText = stopRecording()
+            // Emit event for parent component to handle
+            if (onAutoStop && typeof onAutoStop === 'function') {
+              onAutoStop(finalText)
+            }
+          }
         },
         onError: (message) => {
           console.error('[VoiceInput] Error:', message)
