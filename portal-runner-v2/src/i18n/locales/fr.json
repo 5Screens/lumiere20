@@ -58,7 +58,9 @@
     "connectionFailed": "Échec de connexion au service vocal",
     "serviceNotConfigured": "Service vocal non configuré",
     "stopSpeaking": "Arrêter la lecture",
-    "speaking": "Lecture en cours..."
+    "speaking": "Lecture en cours...",
+    "startRecording": "Parler à Lumiere",
+    "stopRecording": "Arrêter l'enregistrement"
   },
   "common": {
     "close": "Fermer",
