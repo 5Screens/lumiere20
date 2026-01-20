@@ -4,13 +4,15 @@ import api from './api'
  * Send a message to the AI agent
  * @param {string} message - User message
  * @param {string} conversationId - Optional conversation ID for context
+ * @param {string} inputMode - 'text' or 'voice' to indicate input method
  * @returns {Promise<Object>} Agent response
  */
-export const sendMessage = async (message, conversationId = null) => {
+export const sendMessage = async (message, conversationId = null, inputMode = 'text') => {
   try {
     const response = await api.post('/agent/chat', {
       message,
-      conversationId
+      conversationId,
+      inputMode
     })
     // Backend returns { success: true, data: { conversationId, response, metadata } }
     // Axios wraps in response.data, then our backend wraps in { success, data }

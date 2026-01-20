@@ -13,7 +13,7 @@ const logger = require('../../../config/logger');
  */
 const chat = async (req, res) => {
   try {
-    const { message, conversationId } = req.body;
+    const { message, conversationId, inputMode } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return res.status(400).json({
@@ -27,7 +27,8 @@ const chat = async (req, res) => {
       userUuid: req.user?.uuid,
       locale: req.user?.language || req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en',
       userName: req.user?.first_name || 'User',
-      conversationId: conversationId || null
+      conversationId: conversationId || null,
+      inputMode: inputMode === 'voice' ? 'voice' : 'text'
     };
 
     if (!userContext.userUuid) {

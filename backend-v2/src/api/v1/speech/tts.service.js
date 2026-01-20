@@ -73,11 +73,16 @@ const handleTTSConnection = (clientWs, language = 'fr') => {
     
     // Send setup message to Gradium
     // Use PCM format - WAV chunks cannot be decoded individually by Web Audio API
+    // padding_bonus: negative = faster speech, positive = slower speech (range: -4.0 to 4.0)
     const setupMessage = {
       type: 'setup',
       model_name: 'default',
       voice_id: voiceId,
-      output_format: 'pcm'
+      output_format: 'pcm',
+      json_config: {
+        padding_bonus: -2.5,  // Slightly faster speech for more natural conversation
+        rewrite_rules: language  // Enable language-specific rewrite rules (dates, numbers, etc.)
+      }
     };
     
     gradiumWs.send(JSON.stringify(setupMessage));

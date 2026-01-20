@@ -327,7 +327,9 @@ const sendMessage = async (options = {}) => {
   await scrollToBottom()
   
   try {
-    const response = await sendAgentMessage(message, currentConversationId.value)
+    // Determine input mode based on whether last input was voice
+    const inputMode = shouldUseTTS ? 'voice' : 'text'
+    const response = await sendAgentMessage(message, currentConversationId.value, inputMode)
     
     // Update conversation ID
     if (response.conversationId) {

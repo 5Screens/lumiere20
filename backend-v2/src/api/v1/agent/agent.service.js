@@ -20,10 +20,10 @@ const MAX_TOOL_ITERATIONS = 5;
  */
 const processMessage = async (message, userContext) => {
   const startTime = Date.now();
-  const { userUuid, locale, userName, conversationId } = userContext;
+  const { userUuid, locale, userName, conversationId, inputMode = 'text' } = userContext;
 
   logger.info(`-- agent-service -- processMessage`);
-  logger.info(`  INPUT: user=${userUuid}, locale=${locale}, message="${message.substring(0, 80)}..."`);
+  logger.info(`  INPUT: user=${userUuid}, locale=${locale}, inputMode=${inputMode}, message="${message.substring(0, 80)}..."`);
 
   try {
     // Step 1: Get or create conversation
@@ -46,7 +46,7 @@ const processMessage = async (message, userContext) => {
 
     // Step 4: Prepare tools and system prompt
     const tools = getToolDefinitions();
-    const systemPrompt = getSystemPrompt({ locale, userName });
+    const systemPrompt = getSystemPrompt({ locale, userName, inputMode });
 
     // Step 5: Call Mistral with function calling
     let response = await mistralClient.chatCompletion({
