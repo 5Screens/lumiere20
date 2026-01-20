@@ -121,14 +121,15 @@
           <InputText 
             ref="inputRef"
             v-model="inputMessage"
-            :placeholder="isRecording ? $t('voice.listening') : $t('chat.placeholder')"
+            :placeholder="isRecording ? '' : $t('chat.placeholder')"
             class="w-full"
             @keyup.enter="sendMessage"
-            :disabled="isLoading || isRecording"
+            :disabled="isLoading"
+            :readonly="isRecording"
           />
           <!-- Live transcription overlay -->
           <div 
-            v-if="isRecording && transcription" 
+            v-if="isRecording && transcription && !isSpeaking" 
             class="absolute inset-0 flex items-center px-3 pointer-events-none bg-surface-0 dark:bg-surface-900 rounded-md"
           >
             <span class="text-surface-700 dark:text-surface-200 truncate">{{ transcription }}</span>
