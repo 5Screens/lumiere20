@@ -139,7 +139,7 @@
         <!-- Voice input / TTS stop button -->
         <Button 
           v-if="isVoiceSupported"
-          :icon="isSpeaking ? 'pi pi-stop-circle' : 'pi pi-wave-pulse'"
+          :icon="isSpeaking ? 'pi pi-stop-circle' : (isRecording ? 'pi pi-microphone' : 'pi pi-wave-pulse')"
           :class="[
             'transition-all duration-200 select-none',
             isSpeaking
@@ -150,14 +150,10 @@
           ]"
           :text="!isRecording && !isSpeaking"
           rounded
-          @mousedown.prevent="handleVoiceButtonMouseDown"
-          @mouseup.prevent="handleVoiceButtonMouseUp"
-          @touchstart.prevent="handleVoiceButtonMouseDown"
-          @touchend.prevent="handleVoiceButtonMouseUp"
-          @click.prevent.stop="handleVoiceButtonClick"
+          @click="handleVoiceButtonClick"
           :disabled="isLoading || isConnecting || isTTSConnecting"
           :loading="isConnecting || isTTSConnecting"
-          v-tooltip.top="isSpeaking ? $t('voice.stopSpeaking') : (isRecording ? $t('voice.release') : $t('voice.holdToSpeak'))"
+          v-tooltip.top="isSpeaking ? $t('voice.stopSpeaking') : (isRecording ? $t('voice.stopRecording') : $t('voice.startRecording'))"
         />
         
         <Button 
@@ -525,42 +521,22 @@ const handleVoiceEnd = (event) => {
 }
 
 /**
- * Handle voice button mousedown/touchstart
- * - If TTS is speaking: do nothing (click will handle stop)
- * - Otherwise: start voice recording
- */
-const handleVoiceButtonMouseDown = (event) => {
-  if (isSpeaking.value) {
-    console.log('[AgenticPanel] Voice button mousedown ignored - TTS speaking')
-    return
-  }
-  handleVoiceStart(event)
-}
-
-/**
- * Handle voice button mouseup/touchend
- * - If TTS is speaking: do nothing
- * - Otherwise: stop voice recording
- */
-const handleVoiceButtonMouseUp = (event) => {
-  if (isSpeaking.value) {
-    console.log('[AgenticPanel] Voice button mouseup ignored - TTS speaking')
-    return
-  }
-  handleVoiceEnd(event)
-}
-
-/**
- * Handle voice button click
- * - If TTS is speaking: stop TTS
- * - Otherwise: do nothing (mousedown/mouseup handle recording)
+ * Handle voice button click - toggle between states:
+ * - Speaking: stop TTS
+ * - Recording: stop recording
+ * - Idle: start recording
  */
 const handleVoiceButtonClick = () => {
-  console.log('[AgenticPanel] Voice button click - isSpeaking:', isSpeaking.value)
+  console.log('[AgenticPanel] Voice button click - isSpeaking:', isSpeaking.value, 'isRecording:', isRecording.value)
   if (isSpeaking.value) {
-    console.log('[AgenticPanel] Calling stopTTS()')
+    console.log('[AgenticPanel] Stopping TTS')
     stopTTS()
-    console.log('[AgenticPanel] stopTTS() called, isSpeaking now:', isSpeaking.value)
+  } else if (isRecording.value) {
+    console.log('[AgenticPanel] Stopping recording')
+    handleVoiceEnd()
+  } else {
+    console.log('[AgenticPanel] Starting recording')
+    handleVoiceStart()
   }
 }
 
