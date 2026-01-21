@@ -60,7 +60,9 @@
     "stopSpeaking": "Arrêter la lecture",
     "speaking": "Lecture en cours...",
     "startRecording": "Parler à Lumiere",
-    "stopRecording": "Arrêter l'enregistrement"
+    "stopRecording": "Arrêter l'enregistrement",
+    "startSession": "Démarrer la conversation vocale",
+    "stopSession": "Arrêter la conversation vocale"
   },
   "common": {
     "close": "Fermer",

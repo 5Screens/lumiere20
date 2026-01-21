@@ -121,15 +121,15 @@
           <InputText 
             ref="inputRef"
             v-model="inputMessage"
-            :placeholder="isRecording ? '' : $t('chat.placeholder')"
+            :placeholder="isSessionActive ? '' : $t('chat.placeholder')"
             class="w-full"
             @keyup.enter="sendMessage"
             :disabled="isLoading"
-            :readonly="isRecording"
+            :readonly="isSessionActive"
           />
           <!-- Live transcription overlay -->
           <div 
-            v-if="isRecording && transcription && !isSpeaking" 
+            v-if="isSessionActive && transcription && !isSpeaking" 
             class="absolute inset-0 flex items-center px-3 pointer-events-none bg-surface-0 dark:bg-surface-900 rounded-md"
           >
             <span class="text-surface-700 dark:text-surface-200 truncate">{{ transcription }}</span>
@@ -139,27 +139,29 @@
         <!-- Voice input / TTS stop button -->
         <Button 
           v-if="isVoiceSupported"
-          :icon="isSpeaking ? 'pi pi-stop-circle' : (isRecording ? 'pi pi-microphone' : 'pi pi-wave-pulse')"
+          :icon="isSessionActive ? (isSpeaking ? 'pi pi-volume-up' : (isUserSpeaking ? 'pi pi-microphone' : 'pi pi-circle')) : 'pi pi-wave-pulse'"
           :class="[
             'transition-all duration-200 select-none',
-            isSpeaking
-              ? 'bg-blue-500 hover:bg-blue-600 border-blue-500 text-white animate-pulse'
-              : isRecording 
-                ? 'bg-green-500 hover:bg-green-600 border-green-500 text-white animate-pulse' 
-                : 'text-surface-400 hover:text-surface-600'
+            isSessionActive
+              ? (isSpeaking 
+                  ? 'bg-blue-500 hover:bg-blue-600 border-blue-500 text-white animate-pulse'
+                  : (isUserSpeaking 
+                      ? 'bg-green-500 hover:bg-green-600 border-green-500 text-white animate-pulse' 
+                      : 'bg-primary hover:bg-primary-600 border-primary text-white'))
+              : 'text-surface-400 hover:text-surface-600'
           ]"
-          :text="!isRecording && !isSpeaking"
+          :text="!isSessionActive"
           rounded
-          @click="handleVoiceButtonClick"
-          :disabled="isLoading || isConnecting || isTTSConnecting"
-          :loading="isConnecting || isTTSConnecting"
-          v-tooltip.top="isSpeaking ? $t('voice.stopSpeaking') : (isRecording ? $t('voice.stopRecording') : $t('voice.startRecording'))"
+          @click="toggleSession"
+          :disabled="isLoading || isConnecting"
+          :loading="isConnecting"
+          v-tooltip.top="isSessionActive ? $t('voice.stopSession') : $t('voice.startSession')"
         />
         
         <Button 
           icon="pi pi-send" 
           @click="sendMessage"
-          :disabled="!inputMessage.trim() || isLoading || isRecording"
+          :disabled="!inputMessage.trim() || isLoading || isSessionActive"
           :loading="isLoading"
         />
       </div>
@@ -174,8 +176,7 @@ import { useI18n } from 'vue-i18n'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import { useVoiceInput } from '@/composables/useVoiceInput'
-import { useTTS } from '@/composables/useTTS'
+import { useFullDuplexVoice } from '@/composables/useFullDuplexVoice'
 import FileUpload from 'primevue/fileupload'
 import Chip from 'primevue/chip'
 import { sendMessage as sendAgentMessage, getConversation, updateMessageFeedback } from '@/services/agent'
@@ -208,38 +209,78 @@ const isUploading = ref(false)
 const fileInputRef = ref(null)
 const inputRef = ref(null)
 
-// Track if last input was voice (to enable TTS for response)
-const lastInputWasVoice = ref(false)
-
-// Voice input with VAD auto-stop
-const handleVoiceAutoStop = (finalText) => {
-  console.log('[AgenticPanel] VAD auto-stop triggered with text:', finalText)
+// Full-duplex voice conversation
+const handleFullDuplexUserMessage = async (finalText) => {
+  console.log('[AgenticPanel] Full-duplex user message:', finalText)
   if (finalText && finalText.trim()) {
-    inputMessage.value = finalText.trim()
-    lastInputWasVoice.value = true // Enable TTS for response
-    sendMessage()
+    // Add user message to UI
+    messages.value.push({ role: 'user', content: finalText.trim() })
+    
+    // Add loading placeholder
+    const loadingIndex = messages.value.length
+    messages.value.push({ role: 'assistant', loading: true })
+    isLoading.value = true
+    
+    await scrollToBottom()
+    
+    try {
+      // Send to LLM with voice input mode
+      const response = await sendAgentMessage(finalText.trim(), currentConversationId.value, 'voice')
+      
+      // Update conversation ID
+      if (response.conversationId) {
+        currentConversationId.value = response.conversationId
+        emit('update:conversationId', response.conversationId)
+      }
+      
+      // Replace loading with actual response
+      const assistantContent = response.response || response.message
+      messages.value[loadingIndex] = {
+        uuid: response.messageUuid || null,
+        role: 'assistant',
+        content: assistantContent,
+        feedback: null,
+        suggestedActions: response.suggestedActions || []
+      }
+      
+      // Speak the response via full-duplex TTS
+      if (assistantContent && isSessionActive.value) {
+        console.log('[AgenticPanel] Speaking AI response via full-duplex TTS')
+        speak(assistantContent)
+      }
+    } catch (error) {
+      console.error('Agent error:', error)
+      messages.value[loadingIndex] = {
+        role: 'assistant',
+        content: error.message || 'An error occurred'
+      }
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: error.message,
+        life: 5000
+      })
+    } finally {
+      isLoading.value = false
+      await scrollToBottom()
+    }
   }
-  clearTranscription()
 }
 
 const { 
-  isRecording, 
-  isConnecting, 
-  transcription, 
-  isVoiceSupported,
-  startRecording, 
-  stopRecording,
-  clearTranscription 
-} = useVoiceInput({ onAutoStop: handleVoiceAutoStop })
-
-// TTS for reading AI responses
-const {
+  isSessionActive,
+  isConnecting,
+  isSupported: isVoiceSupported,
+  currentState: voiceState,
+  transcription,
+  isUserSpeaking,
   isSpeaking,
-  isConnecting: isTTSConnecting,
-  isTTSAvailable,
-  speak,
-  stop: stopTTS
-} = useTTS()
+  toggleSession,
+  speak
+} = useFullDuplexVoice({ 
+  onUserMessage: handleFullDuplexUserMessage,
+  onStateChange: (state) => console.log('[AgenticPanel] Voice state:', state)
+})
 
 /**
  * Focus the input field
@@ -311,10 +352,6 @@ const sendMessage = async (options = {}) => {
   const message = inputMessage.value.trim()
   if (!message || isLoading.value) return
   
-  // Track if this message should trigger TTS response
-  const shouldUseTTS = lastInputWasVoice.value
-  lastInputWasVoice.value = false // Reset for next input
-  
   // Add user message
   messages.value.push({ role: 'user', content: message })
   inputMessage.value = ''
@@ -327,9 +364,8 @@ const sendMessage = async (options = {}) => {
   await scrollToBottom()
   
   try {
-    // Determine input mode based on whether last input was voice
-    const inputMode = shouldUseTTS ? 'voice' : 'text'
-    const response = await sendAgentMessage(message, currentConversationId.value, inputMode)
+    // Text input mode (voice is handled by full-duplex composable)
+    const response = await sendAgentMessage(message, currentConversationId.value, 'text')
     
     // Update conversation ID
     if (response.conversationId) {
@@ -345,12 +381,6 @@ const sendMessage = async (options = {}) => {
       content: assistantContent,
       feedback: null,
       suggestedActions: response.suggestedActions || []
-    }
-    
-    // Read the response aloud using TTS only if input was voice
-    if (shouldUseTTS && isTTSAvailable.value && assistantContent) {
-      console.log('[AgenticPanel] Speaking AI response via TTS (voice input detected)')
-      speak(assistantContent)
     }
     
     // Clear pending attachments if a ticket was created
@@ -486,60 +516,6 @@ const startNewConversation = () => {
   currentConversationId.value = null
   pendingAttachments.value = []
   emit('update:conversationId', null)
-}
-
-/**
- * Handle voice input start (push-to-talk mousedown/touchstart)
- */
-const handleVoiceStart = async (event) => {
-  console.log('[AgenticPanel] handleVoiceStart triggered', event?.type)
-  if (isLoading.value || isConnecting.value) {
-    console.log('[AgenticPanel] handleVoiceStart blocked - isLoading:', isLoading.value, 'isConnecting:', isConnecting.value)
-    return
-  }
-  await startRecording()
-}
-
-/**
- * Handle voice input end (push-to-talk mouseup/touchend)
- */
-const handleVoiceEnd = (event) => {
-  console.log('[AgenticPanel] handleVoiceEnd triggered', event?.type, 'isRecording:', isRecording.value, 'isConnecting:', isConnecting.value)
-  if (!isRecording.value && !isConnecting.value) {
-    console.log('[AgenticPanel] handleVoiceEnd blocked - not recording')
-    return
-  }
-  
-  const finalText = stopRecording()
-  
-  if (finalText && finalText.trim()) {
-    inputMessage.value = finalText.trim()
-    lastInputWasVoice.value = true // Enable TTS for response
-    // Automatically send the message
-    sendMessage()
-  }
-  
-  clearTranscription()
-}
-
-/**
- * Handle voice button click - toggle between states:
- * - Speaking: stop TTS
- * - Recording: stop recording
- * - Idle: start recording
- */
-const handleVoiceButtonClick = () => {
-  console.log('[AgenticPanel] Voice button click - isSpeaking:', isSpeaking.value, 'isRecording:', isRecording.value)
-  if (isSpeaking.value) {
-    console.log('[AgenticPanel] Stopping TTS')
-    stopTTS()
-  } else if (isRecording.value) {
-    console.log('[AgenticPanel] Stopping recording')
-    handleVoiceEnd()
-  } else {
-    console.log('[AgenticPanel] Starting recording')
-    handleVoiceStart()
-  }
 }
 
 /**

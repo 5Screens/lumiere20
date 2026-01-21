@@ -58,7 +58,11 @@
     "connectionFailed": "Failed to connect to voice service",
     "serviceNotConfigured": "Voice service not configured",
     "stopSpeaking": "Stop speaking",
-    "speaking": "Speaking..."
+    "speaking": "Speaking...",
+    "startRecording": "Talk to Lumiere",
+    "stopRecording": "Stop recording",
+    "startSession": "Start voice conversation",
+    "stopSession": "Stop voice conversation"
   },
   "common": {
     "close": "Close",
