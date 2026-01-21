@@ -1,7 +1,7 @@
 <template>
-  <div class="portal-v2 h-screen overflow-hidden flex flex-col" :style="themeStyles">
+  <div class="portal-v2 h-screen overflow-hidden flex flex-col bg-surface-0 dark:bg-surface-900" :style="themeStyles">
     <!-- Header -->
-    <header class="bg-white dark:bg-surface-800 shadow-sm border-b border-surface-200 dark:border-surface-700">
+    <header class="bg-surface-0 dark:bg-surface-800 shadow-sm border-b border-surface-200 dark:border-surface-700">
       <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-4">
           <img v-if="portal.logo_url" :src="portal.logo_url" alt="Logo" class="h-10" />
@@ -13,6 +13,15 @@
         <div class="flex items-center gap-4">
           <Button icon="pi pi-globe" text rounded @click="toggleLanguageMenu" v-tooltip="'Language'" />
           <Menu ref="langMenu" :model="languageItems" :popup="true" />
+          
+          <!-- Theme toggle -->
+          <Button 
+            :icon="theme === 'light' ? 'pi pi-moon' : 'pi pi-sun'" 
+            text 
+            rounded
+            @click="toggleTheme"
+            v-tooltip="theme === 'light' ? 'Dark mode' : 'Light mode'"
+          />
           
           <!-- User info -->
           <div class="flex items-center gap-3">
@@ -109,7 +118,7 @@
           @dblclick="resetChatWidth"
         ></div>
         <aside
-          class="min-h-0 flex flex-col overflow-hidden border-l border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800"
+          class="min-h-0 flex flex-col overflow-hidden border-l border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-800"
           :style="chatAsideStyle"
         >
           <!-- Conversation Header -->
@@ -200,7 +209,7 @@
     </main>
     
     <!-- Footer -->
-    <footer class="bg-white dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 py-4 text-center">
+    <footer class="bg-surface-0 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 py-4 text-center">
       <p class="text-sm text-surface-500">{{ $t('portal.footer') }}</p>
     </footer>
   </div>
@@ -317,9 +326,6 @@ const startEditConversation = (convId) => {
   console.log('Edit conversation:', convId)
 }
 
-onMounted(() => {
-  loadConversations()
-})
 
 const portal = computed(() => props.portalData || {})
 const alerts = computed(() => portal.value.alerts || [])
@@ -423,6 +429,22 @@ const changeLanguage = (lang) => {
   locale.value = lang
   localStorage.setItem('locale', lang)
 }
+
+// Theme
+const theme = ref(localStorage.getItem('theme') || 'light')
+
+const toggleTheme = () => {
+  theme.value = theme.value === 'light' ? 'dark' : 'light'
+  localStorage.setItem('theme', theme.value)
+  document.documentElement.setAttribute('data-theme', theme.value)
+}
+
+// Initialize theme on mount
+onMounted(() => {
+  loadConversations()
+  // Apply saved theme
+  document.documentElement.setAttribute('data-theme', theme.value)
+})
 
 const handleAction = (action) => {
   console.log('Action clicked:', action)

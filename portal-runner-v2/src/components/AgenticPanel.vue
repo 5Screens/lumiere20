@@ -1,5 +1,5 @@
 <template>
-  <div class="agentic-panel flex flex-col h-full">
+  <div class="agentic-panel flex flex-col h-full bg-surface-0 dark:bg-surface-900">
     <!-- Messages -->
     <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4">
       <!-- Welcome message -->
