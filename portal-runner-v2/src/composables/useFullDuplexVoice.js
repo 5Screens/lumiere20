@@ -55,7 +55,7 @@ export const useFullDuplexVoice = (options = {}) => {
   
   // VAD tracking for detecting when user stops speaking
   let consecutiveHighInactivityCount = 0
-  const VAD_INACTIVITY_THRESHOLD = 0.5
+  const VAD_INACTIVITY_THRESHOLD = 0.9
   const VAD_CONSECUTIVE_STEPS_FOR_END = 8 // ~640ms
   let hasReceivedText = false
   

@@ -31,7 +31,7 @@ const handleSTTConnection = (clientWs, language = 'fr') => {
   // When inactivity_prob is high for several consecutive steps, user has stopped speaking
   // Gradium recommends: horizon 2s and inactivity_prob > 0.5
   let consecutiveHighInactivityCount = 0;
-  const VAD_INACTIVITY_THRESHOLD = 0.5; // Probability threshold (Gradium recommends > 0.5)
+  const VAD_INACTIVITY_THRESHOLD = 0.9; // Probability threshold (Gradium recommends > 0.5)
   const VAD_CONSECUTIVE_STEPS_FOR_END = 8; // ~640ms at 80ms per step (faster response with lower threshold)
   let hasReceivedText = false; // Only trigger speech_end if we received some text
 
