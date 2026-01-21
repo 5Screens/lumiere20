@@ -139,15 +139,13 @@
         <!-- Voice input / TTS stop button -->
         <Button 
           v-if="isVoiceSupported"
-          :icon="isSessionActive ? (isSpeaking ? 'pi pi-volume-up' : (isUserSpeaking ? 'pi pi-microphone' : 'pi pi-circle')) : 'pi pi-wave-pulse'"
+          :icon="isSessionActive ? (isSpeaking ? 'pi pi-stop-circle' : 'pi pi-microphone') : 'pi pi-microphone'"
           :class="[
             'transition-all duration-200 select-none',
             isSessionActive
               ? (isSpeaking 
-                  ? 'bg-blue-500 hover:bg-blue-600 border-blue-500 text-white animate-pulse'
-                  : (isUserSpeaking 
-                      ? 'bg-green-500 hover:bg-green-600 border-green-500 text-white animate-pulse' 
-                      : 'bg-primary hover:bg-primary-600 border-primary text-white'))
+                  ? 'bg-red-500 hover:bg-red-600 border-red-500 text-white'
+                  : 'bg-green-500 hover:bg-green-600 border-green-500 text-white animate-pulse')
               : 'text-surface-400 hover:text-surface-600'
           ]"
           :text="!isSessionActive"
