@@ -144,8 +144,8 @@
             'transition-all duration-200 select-none',
             isSessionActive
               ? (isSpeaking 
-                  ? 'bg-red-500 hover:bg-red-600 border-red-500 text-white'
-                  : 'bg-green-500 hover:bg-green-600 border-green-500 text-white animate-pulse')
+                  ? 'text-red-500 hover:text-red-600'
+                  : 'text-green-500 hover:text-green-600 animate-pulse')
               : 'text-surface-400 hover:text-surface-600'
           ]"
           :text="!isSessionActive"
