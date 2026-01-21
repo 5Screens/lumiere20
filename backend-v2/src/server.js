@@ -58,6 +58,7 @@ const objectTypesRoutes = require('./api/v1/object_types/routes');
 const symptomsRoutes = require('./api/v1/symptoms/routes');
 const agentRoutes = require('./api/v1/agent/routes');
 const portalsRoutes = require('./api/v1/portals/routes');
+const globalSearchRoutes = require('./api/v1/global-search/routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/configuration_items', configurationItemsRoutes);
@@ -84,6 +85,7 @@ app.use('/api/v1/object-types', objectTypesRoutes);
 app.use('/api/v1/symptoms', symptomsRoutes);
 app.use('/api/v1/agent', agentRoutes);
 app.use('/api/v1/portals', portalsRoutes);
+app.use('/api/v1/global-search', globalSearchRoutes);
 
 // Health check
 app.get('/', (req, res) => {

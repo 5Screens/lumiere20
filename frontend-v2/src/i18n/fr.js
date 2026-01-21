@@ -171,6 +171,8 @@ export default {
     selectIcon: 'Sélectionner une icône',
     searchIcon: 'Rechercher une icône...',
     noResults: 'Aucun résultat',
+    typeToSearch: 'Tapez pour rechercher...',
+    totalResults: '{count} résultats trouvés',
     selected: 'sélectionné(s)',
     clear: 'Effacer',
     saved: 'Enregistré avec succès',

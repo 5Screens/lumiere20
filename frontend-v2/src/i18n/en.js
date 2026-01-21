@@ -170,6 +170,8 @@ export default {
     selectIcon: 'Select an icon',
     searchIcon: 'Search icon...',
     noResults: 'No results',
+    typeToSearch: 'Type to search...',
+    totalResults: '{count} results found',
     selected: 'selected',
     clear: 'Clear',
     saved: 'Saved successfully',

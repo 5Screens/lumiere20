@@ -15,18 +15,9 @@
       </router-link>
     </div>
 
-    <!-- Center: Breadcrumb or search (optional) -->
+    <!-- Center: Global search -->
     <div class="hidden md:flex items-center flex-1 justify-center max-w-xl mx-4">
-      <IconField class="w-full">
-        <InputIcon>
-          <i class="pi pi-search" />
-        </InputIcon>
-        <InputText 
-          v-model="searchQuery" 
-          :placeholder="$t('common.search')" 
-          class="w-full"
-        />
-      </IconField>
+      <GlobalSearch />
     </div>
 
     <!-- Right: Actions -->
@@ -104,12 +95,10 @@ import { useResponsiveSize } from '@/composables/useResponsiveSize'
 import languagesService from '@/services/languagesService'
 import metadataService from '@/services/metadataService'
 import Button from 'primevue/button'
-import InputText from 'primevue/inputtext'
-import IconField from 'primevue/iconfield'
-import InputIcon from 'primevue/inputicon'
 import Menu from 'primevue/menu'
 import Avatar from 'primevue/avatar'
 import ThemeSwitcher from '@/components/layout/ThemeSwitcher.vue'
+import GlobalSearch from '@/components/layout/GlobalSearch.vue'
 
 const emit = defineEmits(['toggle-sidebar', 'open-profile'])
 
@@ -169,9 +158,6 @@ const changeLanguage = (code) => {
     primevue.config.locale = primeVueLocale
   }
 }
-
-// Search
-const searchQuery = ref('')
 
 // Theme
 const theme = ref(localStorage.getItem('theme') || 'light')
