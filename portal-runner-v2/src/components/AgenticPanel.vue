@@ -93,18 +93,42 @@
     </div>
     
     <!-- Input -->
-    <div class="p-4 border-t border-surface-200 dark:border-surface-700">
-      <div class="flex gap-2">
-        <!-- Hidden file input -->
-        <input 
-          ref="fileInputRef"
-          type="file"
-          multiple
-          class="hidden"
-          @change="handleFileSelect"
-          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.log,.zip"
+    <div class="px-3 py-2 border-t border-surface-200 dark:border-surface-700">
+      <!-- Hidden file input -->
+      <input 
+        ref="fileInputRef"
+        type="file"
+        multiple
+        class="hidden"
+        @change="handleFileSelect"
+        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.log,.zip"
+      />
+      
+      <!-- Textarea with voice transcription overlay -->
+      <div class="relative">
+        <Textarea 
+          ref="inputRef"
+          v-model="inputMessage"
+          :placeholder="isSessionActive ? '' : $t('chat.placeholder')"
+          class="w-full resize-none"
+          :autoResize="true"
+          rows="2"
+          :style="{ maxHeight: '21rem', overflowY: 'auto' }"
+          @keydown="onKeydown"
+          :disabled="isLoading"
+          :readonly="isSessionActive"
         />
-        
+        <!-- Live transcription overlay -->
+        <div 
+          v-if="isSessionActive && transcription && !isSpeaking" 
+          class="absolute inset-0 flex items-start p-3 pointer-events-none bg-surface-0 dark:bg-surface-900 rounded-md"
+        >
+          <span class="text-surface-700 dark:text-surface-200">{{ transcription }}</span>
+        </div>
+      </div>
+      
+      <!-- Footer with buttons aligned right -->
+      <div class="flex justify-end">
         <!-- Attachment button -->
         <Button 
           icon="pi pi-paperclip" 
@@ -114,27 +138,8 @@
           :disabled="isLoading || isUploading"
           :loading="isUploading"
           v-tooltip.top="$t('chat.attachFiles')"
+          class="text-primary hover:text-primary-600"
         />
-        
-        <!-- Input field with voice transcription overlay -->
-        <div class="flex-1 relative">
-          <InputText 
-            ref="inputRef"
-            v-model="inputMessage"
-            :placeholder="isSessionActive ? '' : $t('chat.placeholder')"
-            class="w-full"
-            @keyup.enter="sendMessage"
-            :disabled="isLoading"
-            :readonly="isSessionActive"
-          />
-          <!-- Live transcription overlay -->
-          <div 
-            v-if="isSessionActive && transcription && !isSpeaking" 
-            class="absolute inset-0 flex items-center px-3 pointer-events-none bg-surface-0 dark:bg-surface-900 rounded-md"
-          >
-            <span class="text-surface-700 dark:text-surface-200 truncate">{{ transcription }}</span>
-          </div>
-        </div>
         
         <!-- Voice input / TTS stop button -->
         <Button 
@@ -146,9 +151,9 @@
               ? (isSpeaking 
                   ? 'text-red-500 hover:text-red-600'
                   : 'text-green-500 hover:text-green-600 animate-pulse')
-              : 'text-surface-400 hover:text-surface-600'
+              : 'text-primary hover:text-primary-600'
           ]"
-          :text="!isSessionActive"
+          text
           rounded
           @click="toggleSession"
           :disabled="isLoading || isConnecting"
@@ -156,11 +161,15 @@
           v-tooltip.top="isSessionActive ? $t('voice.stopSession') : $t('voice.startSession')"
         />
         
+        <!-- Send button -->
         <Button 
           icon="pi pi-send" 
+          text
+          rounded
           @click="sendMessage"
           :disabled="!inputMessage.trim() || isLoading || isSessionActive"
           :loading="isLoading"
+          class="text-primary hover:text-primary-600"
         />
       </div>
     </div>
@@ -171,7 +180,7 @@
 import { ref, nextTick, watch, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
-import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useFullDuplexVoice } from '@/composables/useFullDuplexVoice'
@@ -343,6 +352,18 @@ const scrollToBottom = async () => {
   await nextTick()
   if (messagesContainer.value) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
+
+/**
+ * Handle keydown in textarea
+ * Enter alone = send message
+ * Shift+Enter = new line (default behavior, not prevented)
+ */
+const onKeydown = (event) => {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault()
+    sendMessage()
   }
 }
 

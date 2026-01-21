@@ -124,7 +124,7 @@
           <!-- Conversation Header -->
           <div class="p-3 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
-              <i class="pi pi-sparkles text-primary"></i>
+              <i class="pi pi-microchip-ai text-primary"></i>
               <span class="font-semibold text-surface-800 dark:text-surface-100">{{ $t('chat.title') }}</span>
             </div>
             <div class="flex items-center gap-1">
