@@ -82,9 +82,23 @@ const onBlur = () => {
   }, 200)
 }
 
-// Object type to tab configuration mapping
+// Ticket type to tab configuration mapping
+const TICKET_TYPE_CONFIG = {
+  INCIDENT: { id: 'incidents', icon: 'pi pi-exclamation-triangle', labelKey: 'menu.incidents' },
+  PROBLEM: { id: 'problems', icon: 'pi pi-question-circle', labelKey: 'menu.problems' },
+  TASK: { id: 'tasks', icon: 'pi pi-check-square', labelKey: 'menu.tasks' },
+  CHANGE: { id: 'changes', icon: 'pi pi-sync', labelKey: 'menu.changes' },
+  KNOWLEDGE: { id: 'knowledge', icon: 'pi pi-book', labelKey: 'menu.knowledge' },
+  USER_STORY: { id: 'user-stories', icon: 'pi pi-file', labelKey: 'menu.userStories' },
+  PROJECT: { id: 'projects', icon: 'pi pi-folder', labelKey: 'menu.projects' },
+  SPRINT: { id: 'sprints', icon: 'pi pi-bolt', labelKey: 'menu.sprints' },
+  EPIC: { id: 'epics', icon: 'pi pi-bookmark', labelKey: 'menu.epics' },
+  DEFECT: { id: 'defects', icon: 'pi pi-exclamation-circle', labelKey: 'menu.defects' },
+  SERVICE_REQUEST: { id: 'service-requests', icon: 'pi pi-inbox', labelKey: 'menu.serviceRequests' },
+}
+
+// Object type to tab configuration mapping (non-ticket objects)
 const OBJECT_CONFIG = {
-  tickets: { id: 'tickets', icon: 'pi pi-ticket', labelKey: 'tickets.title' },
   configuration_items: { id: 'configuration-items', icon: 'pi pi-cog', labelKey: 'configurationItems.title' },
   entities: { id: 'entities', icon: 'pi pi-building', labelKey: 'entities.title' },
   locations: { id: 'locations', icon: 'pi pi-map-marker', labelKey: 'locations.title' },
@@ -126,24 +140,46 @@ const onItemSelect = (event) => {
   const item = event.value
   if (!item || !item.uuid || !item.objectType) return
 
-  const config = OBJECT_CONFIG[item.objectType]
-  if (!config) {
+  let parentTabConfig
+  let ticketTypeCode = null
+  let ciTypeUuid = null
+
+  // Handle tickets specially - use ticket type for parent tab
+  if (item.objectType === 'tickets') {
+    ticketTypeCode = item.ticketTypeCode
+    if (ticketTypeCode && TICKET_TYPE_CONFIG[ticketTypeCode]) {
+      parentTabConfig = TICKET_TYPE_CONFIG[ticketTypeCode]
+    } else {
+      // Fallback for unknown ticket types
+      parentTabConfig = { id: 'tickets', icon: 'pi pi-ticket', labelKey: 'tickets.title' }
+    }
+  } else {
+    parentTabConfig = OBJECT_CONFIG[item.objectType]
+    // For configuration items, capture ciTypeUuid
+    if (item.objectType === 'configuration_items' && item.ciTypeUuid) {
+      ciTypeUuid = item.ciTypeUuid
+    }
+  }
+
+  if (!parentTabConfig) {
     console.warn('Unknown object type:', item.objectType)
     return
   }
 
   // First, ensure parent tab exists for this object type
-  const parentTabId = config.id
+  const parentTabId = parentTabConfig.id
   const existingParentTab = tabsStore.tabs.find(t => t.id === parentTabId && !t.parentId)
   
   if (!existingParentTab) {
     // Open parent tab first (the list view)
     tabsStore.openTab({
       id: parentTabId,
-      label: config.labelKey,
-      icon: config.icon,
+      labelKey: parentTabConfig.labelKey,
+      icon: parentTabConfig.icon,
       objectType: item.objectType,
       component: 'ObjectsCrud',
+      ticketTypeCode,
+      ciTypeUuid,
     })
   }
 
@@ -158,7 +194,7 @@ const onItemSelect = (event) => {
   tabsStore.openTab({
     id: `${item.objectType}-${item.uuid}`,
     label: item.display,
-    icon: config.icon,
+    icon: parentTabConfig.icon,
     objectType: item.objectType,
     objectId: item.uuid,
     parentId: parentTab.id_tab,

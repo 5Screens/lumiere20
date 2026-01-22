@@ -173,12 +173,26 @@ const searchInObjectType = async (objectType, query, limit, locale) => {
     }
 
     // Transform items to standard format
-    const transformedItems = translatedItems.map(item => ({
-      uuid: item.uuid,
-      display: config.customDisplay ? config.customDisplay(item) : item[config.displayField],
-      secondary: item[config.secondaryField] || null,
-      objectType,
-    }));
+    const transformedItems = translatedItems.map(item => {
+      const result = {
+        uuid: item.uuid,
+        display: config.customDisplay ? config.customDisplay(item) : item[config.displayField],
+        secondary: item[config.secondaryField] || null,
+        objectType,
+      };
+      
+      // For tickets, include ticket_type_code for proper tab routing
+      if (objectType === 'tickets' && item.ticket_type_code) {
+        result.ticketTypeCode = item.ticket_type_code;
+      }
+      
+      // For configuration_items, include ci_type_uuid for proper tab routing
+      if (objectType === 'configuration_items' && item.rel_ci_type_uuid) {
+        result.ciTypeUuid = item.rel_ci_type_uuid;
+      }
+      
+      return result;
+    });
 
     return { items: transformedItems, count };
   } catch (error) {
