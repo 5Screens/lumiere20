@@ -1,5 +1,8 @@
 <template>
-  <div class="global-search w-full">
+  <div 
+    class="global-search transition-all duration-300 ease-out"
+    :class="isFocused ? 'w-full' : 'w-64'"
+  >
     <AutoComplete
       ref="autocompleteRef"
       v-model="searchQuery"
@@ -15,22 +18,25 @@
       @complete="onSearch"
       @item-select="onItemSelect"
       @keydown="onKeydown"
+      @focus="isFocused = true"
+      @blur="onBlur"
       :pt="{
         root: { class: 'w-full' },
-        input: { class: 'w-full' }
+        input: { class: 'w-full' },
+        overlay: { class: 'global-search-overlay' }
       }"
     >
       <template #optiongroup="{ option }">
-        <div class="flex items-center gap-2 px-2 py-1 font-semibold text-surface-600 dark:text-surface-300">
-          <i :class="['pi', option.icon]"></i>
-          <span>{{ option.label }}</span>
-          <span class="text-xs text-surface-400 ml-auto">
+        <div class="flex items-center gap-2 px-3 py-2 font-semibold text-primary bg-primary/5">
+          <i :class="['pi', option.icon, 'text-primary']"></i>
+          <span class="text-primary">{{ option.label }}</span>
+          <span class="text-xs text-primary/70 ml-auto font-normal">
             {{ option.items.length }}{{ option.count > option.items.length ? `/${option.count}` : '' }}
           </span>
         </div>
       </template>
       <template #option="{ option }">
-        <div class="flex flex-col gap-0.5 px-2 py-1">
+        <div class="flex flex-col gap-0.5 px-3 py-2 cursor-pointer transition-colors hover:bg-primary/10">
           <span class="font-medium">{{ option.display }}</span>
           <span v-if="option.secondary" class="text-xs text-surface-400">{{ option.secondary }}</span>
         </div>
@@ -41,7 +47,7 @@
         </div>
       </template>
       <template #footer v-if="totalCount > 0">
-        <div class="px-4 py-2 text-xs text-surface-500 border-t border-surface-200 dark:border-surface-700 text-center">
+        <div class="px-4 py-2 text-xs text-primary border-t-2 border-primary text-center font-medium">
           {{ $t('common.totalResults', { count: totalCount }) }}
         </div>
       </template>
@@ -62,6 +68,14 @@ const searchQuery = ref('')
 const suggestions = ref([])
 const loading = ref(false)
 const totalCount = ref(0)
+const isFocused = ref(false)
+
+// Handle blur with delay to allow click on suggestions
+const onBlur = () => {
+  setTimeout(() => {
+    isFocused.value = false
+  }, 200)
+}
 
 // Object type to tab configuration mapping
 const OBJECT_CONFIG = {
@@ -143,7 +157,8 @@ const onItemSelect = (event) => {
     objectType: item.objectType,
     objectId: item.uuid,
     parentId: parentTab.id_tab,
-    component: 'ObjectViewInTab',
+    component: 'ObjectView',
+    mode: 'edit',
   })
 
   // Clear search after selection
