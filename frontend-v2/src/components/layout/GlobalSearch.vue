@@ -32,7 +32,7 @@
           <i :class="['pi', option.icon, 'text-primary']"></i>
           <span class="text-primary">{{ option.label }}</span>
           <span class="text-xs text-primary/70 ml-auto font-normal">
-            {{ option.items.length }}{{ option.count > option.items.length ? `/${option.count}` : '' }}
+            {{ option.items.length }}/{{ option.count }}
           </span>
         </div>
       </template>
