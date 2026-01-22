@@ -23,11 +23,12 @@
       :pt="{
         root: { class: 'w-full' },
         input: { class: 'w-full' },
-        overlay: { class: 'global-search-overlay' }
+        overlay: { class: 'global-search-overlay' },
+        option: { class: 'hover:!bg-primary/10 transition-colors' }
       }"
     >
       <template #optiongroup="{ option }">
-        <div class="flex items-center gap-2 px-3 py-2 font-semibold text-primary bg-primary/5">
+        <div class="flex items-center gap-2 px-3 py-2 font-semibold">
           <i :class="['pi', option.icon, 'text-primary']"></i>
           <span class="text-primary">{{ option.label }}</span>
           <span class="text-xs text-primary/70 ml-auto font-normal">
@@ -36,7 +37,7 @@
         </div>
       </template>
       <template #option="{ option }">
-        <div class="flex flex-col gap-0.5 px-3 py-2 cursor-pointer transition-colors hover:bg-primary/10">
+        <div class="flex flex-col gap-0.5 px-3 py-2">
           <span class="font-medium">{{ option.display }}</span>
           <span v-if="option.secondary" class="text-xs text-surface-400">{{ option.secondary }}</span>
         </div>
