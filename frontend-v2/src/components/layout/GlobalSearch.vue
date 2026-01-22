@@ -75,6 +75,10 @@ const isFocused = ref(false)
 const onBlur = () => {
   setTimeout(() => {
     isFocused.value = false
+    // Clear search and close dropdown when focus is lost
+    searchQuery.value = ''
+    suggestions.value = []
+    totalCount.value = 0
   }, 200)
 }
 
