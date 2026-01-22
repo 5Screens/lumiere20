@@ -16,7 +16,7 @@
     </div>
 
     <!-- Center: Global search -->
-    <div class="hidden md:flex items-center flex-1 justify-center max-w-xl mx-4">
+    <div class="hidden md:flex items-center flex-1 justify-center max-w-6xl mx-4">
       <GlobalSearch />
     </div>
 
