@@ -36,7 +36,7 @@
         <template v-if="suggestions.length > 0">
           <div v-for="group in suggestions" :key="group.label" class="mb-2">
             <!-- Group header -->
-            <div class="flex items-center gap-2 px-3 py-2 font-semibold bg-surface-100 dark:bg-surface-800 sticky top-0">
+            <div class="flex items-center gap-2 px-3 py-2 font-semibold bg-gray-100 dark:bg-gray-800 sticky top-0 z-10">
               <i :class="['pi', group.icon, 'text-primary']"></i>
               <span class="text-primary">{{ group.label }}</span>
               <span class="text-xs text-primary/70 ml-auto font-normal">
@@ -64,7 +64,7 @@
         </div>
 
         <!-- Footer with total count -->
-        <div v-if="totalCount > 0" class="px-4 py-2 text-xs text-primary border-t-2 border-primary text-center font-medium sticky bottom-0 bg-surface-0 dark:bg-surface-900">
+        <div v-if="totalCount > 0" class="px-4 py-2 text-xs text-primary border-t-2 border-primary text-center font-medium sticky bottom-0 bg-white dark:bg-gray-900 z-10">
           {{ $t('common.totalResults', { count: totalCount }) }}
         </div>
       </div>
