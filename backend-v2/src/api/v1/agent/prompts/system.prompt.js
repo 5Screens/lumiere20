@@ -46,6 +46,7 @@ IMPORTANT:
 - Be helpful in formulating a clear title and description
 - ALWAYS call \`get_pending_attachments\` before creating a ticket to check for uploaded files
 - When a user uploads a file (message starting with 📎), acknowledge it and remember it for the ticket
+- **Knowledge Base Reference**: If the user consulted a knowledge article (via \`search_knowledge_base\`) before creating a ticket, add a reference to that article at the end of the ticket description. Format: "\\n\\n---\\nArticle de référence: [Article Title] (KB: article_uuid)"
 
 ## Response Format
 ${isVoice ? `CRITICAL - VOICE MODE ACTIVE: Your response will be read aloud by text-to-speech. You MUST follow these rules strictly:

@@ -9,9 +9,10 @@ const mistralClient = require('../mistral.client');
 
 /**
  * Search the knowledge base for articles
+ * Searches in title, description, and extended_core_fields (summary, keywords)
  * @param {Object} args - Tool arguments
  * @param {Object} context - Execution context
- * @returns {Object} Search results
+ * @returns {Object} Search results with raw article data for LLM processing
  */
 const searchKnowledgeBase = async (args, context) => {
   const { query, limit = 5 } = args;
@@ -19,17 +20,11 @@ const searchKnowledgeBase = async (args, context) => {
 
   logger.info(`-- knowledge-tools -- searchKnowledgeBase: query="${query}", limit=${limit}`);
 
-  // Search in tickets with type KNOWLEDGE
-  // Search in title, description, and extended_core_fields (summary, keywords)
-  const articles = await prisma.tickets.findMany({
+  // Get all KNOWLEDGE articles first, then filter in JS for extended_core_fields search
+  const allArticles = await prisma.tickets.findMany({
     where: {
-      ticket_type_code: 'KNOWLEDGE',
-      OR: [
-        { title: { contains: query, mode: 'insensitive' } },
-        { description: { contains: query, mode: 'insensitive' } }
-      ]
+      ticket_type_code: 'KNOWLEDGE'
     },
-    take: limit,
     orderBy: { updated_at: 'desc' },
     select: {
       uuid: true,
@@ -40,53 +35,51 @@ const searchKnowledgeBase = async (args, context) => {
       updated_at: true,
       status: {
         select: {
-          code: true,
-          label: true
+          name: true
         }
+      },
+      writer: {
+        select: { first_name: true, last_name: true }
       }
     }
   });
 
-  // If no results found with simple search, try keyword-based search
-  if (articles.length === 0) {
-    // Split query into keywords and search
-    const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 2);
-    
-    if (keywords.length > 0) {
-      const keywordArticles = await prisma.tickets.findMany({
-        where: {
-          ticket_type_code: 'KNOWLEDGE',
-          OR: keywords.map(keyword => ({
-            OR: [
-              { title: { contains: keyword, mode: 'insensitive' } },
-              { description: { contains: keyword, mode: 'insensitive' } }
-            ]
-          }))
-        },
-        take: limit,
-        orderBy: { updated_at: 'desc' },
-        select: {
-          uuid: true,
-          title: true,
-          description: true,
-          extended_core_fields: true,
-          created_at: true,
-          updated_at: true,
-          status: {
-            select: {
-              code: true,
-              label: true
-            }
-          }
-        }
-      });
+  const queryLower = query.toLowerCase();
+  const keywords = queryLower.split(/\s+/).filter(k => k.length > 2);
 
-      if (keywordArticles.length > 0) {
-        return formatArticleResults(keywordArticles, query);
-      }
+  // Score and filter articles based on matches in title, description, and extended_core_fields
+  const scoredArticles = allArticles.map(article => {
+    let score = 0;
+    const extFields = article.extended_core_fields || {};
+    const titleLower = (article.title || '').toLowerCase();
+    const descLower = (article.description || '').toLowerCase();
+    const summaryLower = (extFields.summary || '').toLowerCase();
+    const keywordsArray = extFields.keywords || [];
+    const keywordsLower = keywordsArray.map(k => k.toLowerCase());
+
+    // Full query match (higher score)
+    if (titleLower.includes(queryLower)) score += 10;
+    if (descLower.includes(queryLower)) score += 5;
+    if (summaryLower.includes(queryLower)) score += 7;
+
+    // Keyword matches
+    for (const kw of keywords) {
+      if (titleLower.includes(kw)) score += 3;
+      if (descLower.includes(kw)) score += 1;
+      if (summaryLower.includes(kw)) score += 2;
+      if (keywordsLower.some(k => k.includes(kw))) score += 4;
     }
 
-    // No results in KB - indicate that LLM should answer directly
+    return { ...article, score };
+  });
+
+  // Filter articles with score > 0 and sort by score descending
+  const matchedArticles = scoredArticles
+    .filter(a => a.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
+
+  if (matchedArticles.length === 0) {
     logger.info(`-- knowledge-tools -- No KB results for "${query}", will use LLM fallback`);
     return {
       found: false,
@@ -98,38 +91,34 @@ const searchKnowledgeBase = async (args, context) => {
     };
   }
 
-  return formatArticleResults(articles, query);
-};
+  // Return raw article data for LLM to process
+  const articles = matchedArticles.map(a => ({
+    uuid: a.uuid,
+    title: a.title,
+    description: a.description,
+    extended_core_fields: a.extended_core_fields,
+    status: a.status?.name || 'Published',
+    author: a.writer ? `${a.writer.first_name} ${a.writer.last_name}` : null,
+    updated_at: a.updated_at.toISOString().split('T')[0]
+  }));
 
-/**
- * Format article results for display
- */
-const formatArticleResults = (articles, query) => {
-  const formattedArticles = articles.map(a => {
-    const extFields = a.extended_core_fields || {};
-    return {
-      uuid: a.uuid,
-      title: a.title,
-      summary: extFields.summary || a.description?.substring(0, 200) || '',
-      keywords: extFields.keywords || [],
-      status: a.status?.label || 'Published',
-      updated_at: a.updated_at.toISOString().split('T')[0]
-    };
-  });
+  logger.info(`-- knowledge-tools -- Found ${articles.length} article(s) for "${query}"`);
 
   return {
     found: true,
-    count: formattedArticles.length,
-    articles: formattedArticles,
-    message: `Found ${formattedArticles.length} article(s) matching your query.`
+    count: articles.length,
+    articles,
+    message: `Found ${articles.length} article(s) matching your query.`
   };
 };
 
+
 /**
  * Get the full content of a knowledge article
+ * Returns raw article data for LLM to process
  * @param {Object} args - Tool arguments
  * @param {Object} context - Execution context
- * @returns {Object} Article content
+ * @returns {Object} Raw article content
  */
 const getArticleContent = async (args, context) => {
   const { article_uuid } = args;
@@ -143,10 +132,14 @@ const getArticleContent = async (args, context) => {
       title: true,
       description: true,
       extended_core_fields: true,
+      ticket_type_code: true,
       created_at: true,
       updated_at: true,
       writer: {
         select: { first_name: true, last_name: true }
+      },
+      status: {
+        select: { name: true }
       }
     }
   });
@@ -158,24 +151,20 @@ const getArticleContent = async (args, context) => {
     };
   }
 
-  const extFields = article.extended_core_fields || {};
-
+  // Return raw article data - LLM will format the response
   return {
     found: true,
     article: {
       uuid: article.uuid,
       title: article.title,
-      summary: extFields.summary || '',
-      content: article.description || '',
-      prerequisites: extFields.prerequisites || null,
-      limitations: extFields.limitations || null,
-      security_notes: extFields.security_notes || null,
-      keywords: extFields.keywords || [],
-      version: extFields.version || '1.0',
+      description: article.description,
+      extended_core_fields: article.extended_core_fields,
+      status: article.status?.name || 'Published',
       author: article.writer 
         ? `${article.writer.first_name} ${article.writer.last_name}`
-        : 'Unknown',
-      last_updated: article.updated_at.toISOString().split('T')[0]
+        : null,
+      created_at: article.created_at.toISOString().split('T')[0],
+      updated_at: article.updated_at.toISOString().split('T')[0]
     }
   };
 };
