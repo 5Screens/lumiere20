@@ -142,6 +142,30 @@ const removeMany = async (req, res, next) => {
 };
 
 /**
+ * Get tickets related to a person
+ * GET /api/v1/persons/:uuid/tickets
+ */
+const getRelatedTickets = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { role = 'all', page = 1, limit = 50 } = req.query;
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+
+    const result = await service.getRelatedTickets(uuid, {
+      role,
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 50,
+      locale,
+    });
+
+    res.json(result);
+  } catch (error) {
+    logger.error('Error getting related tickets:', error);
+    next(error);
+  }
+};
+
+/**
  * Reset password for a person (admin action)
  * POST /api/v1/persons/:uuid/reset-password
  */
@@ -183,4 +207,5 @@ module.exports = {
   remove,
   removeMany,
   resetPassword,
+  getRelatedTickets,
 };

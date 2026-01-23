@@ -1,6 +1,7 @@
 const prisma = require('../../../config/prisma');
 const bcrypt = require('bcrypt');
 const authConfig = require('../../../config/auth');
+const logger = require('../../../config/logger');
 const { buildPrismaWhereFromFilters, buildPrismaOrderBy } = require('../../../utils/primeVueFilters');
 
 /**
@@ -244,6 +245,152 @@ const resetPassword = async (uuid, newPassword, adminUuid) => {
   return updatedPerson;
 };
 
+/**
+ * Get tickets related to a person (as writer, requested_for, or requested_by)
+ * @param {string} personUuid - Person UUID
+ * @param {Object} options - Filter options
+ * @param {string} options.role - Filter by role: 'all', 'writer', 'requested_for', 'requested_by'
+ * @param {number} options.page - Page number (1-indexed)
+ * @param {number} options.limit - Items per page
+ * @param {string} options.locale - Locale for translations
+ * @returns {Object} { data, total, pagination }
+ */
+const getRelatedTickets = async (personUuid, options = {}) => {
+  const { role = 'all', page = 1, limit = 50, locale = 'en' } = options;
+  const skip = (page - 1) * limit;
+
+  // Build where clause based on role filter
+  let where = {};
+  if (role === 'writer') {
+    where = { writer_uuid: personUuid };
+  } else if (role === 'requested_for') {
+    where = { requested_for_uuid: personUuid };
+  } else if (role === 'requested_by') {
+    where = { requested_by_uuid: personUuid };
+  } else {
+    // 'all' - any of the three roles
+    where = {
+      OR: [
+        { writer_uuid: personUuid },
+        { requested_for_uuid: personUuid },
+        { requested_by_uuid: personUuid },
+      ],
+    };
+  }
+
+  try {
+    const [tickets, total] = await Promise.all([
+      prisma.tickets.findMany({
+        where,
+        orderBy: { updated_at: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          status: {
+            include: { category: true },
+          },
+          ticket_type: true,
+          writer: {
+            select: { uuid: true, first_name: true, last_name: true },
+          },
+          requested_by: {
+            select: { uuid: true, first_name: true, last_name: true },
+          },
+          requested_for: {
+            select: { uuid: true, first_name: true, last_name: true },
+          },
+          configuration_item: {
+            select: { uuid: true, name: true },
+          },
+        },
+      }),
+      prisma.tickets.count({ where }),
+    ]);
+
+    // Get status translations
+    const statusUuids = tickets.filter(t => t.status).map(t => t.status.uuid);
+    const statusTranslationsMap = {};
+
+    if (statusUuids.length > 0) {
+      const statusTranslations = await prisma.translated_fields.findMany({
+        where: {
+          entity_type: 'workflow_statuses',
+          entity_uuid: { in: statusUuids },
+          field_name: 'name',
+          locale,
+        },
+      });
+
+      for (const t of statusTranslations) {
+        statusTranslationsMap[t.entity_uuid] = t.value;
+      }
+    }
+
+    // Get ticket type translations
+    const ticketTypeUuids = tickets.filter(t => t.ticket_type).map(t => t.ticket_type.uuid);
+    const ticketTypeTranslationsMap = {};
+
+    if (ticketTypeUuids.length > 0) {
+      const ticketTypeTranslations = await prisma.translated_fields.findMany({
+        where: {
+          entity_type: 'ticket_types',
+          entity_uuid: { in: ticketTypeUuids },
+          field_name: 'label',
+          locale,
+        },
+      });
+
+      for (const t of ticketTypeTranslations) {
+        ticketTypeTranslationsMap[t.entity_uuid] = t.value;
+      }
+    }
+
+    // Transform tickets with translations and role indicator
+    const transformed = tickets.map(ticket => {
+      // Determine roles for this person on this ticket
+      const roles = [];
+      if (ticket.writer_uuid === personUuid) roles.push('writer');
+      if (ticket.requested_for_uuid === personUuid) roles.push('requested_for');
+      if (ticket.requested_by_uuid === personUuid) roles.push('requested_by');
+
+      return {
+        uuid: ticket.uuid,
+        title: ticket.title,
+        ticket_type_code: ticket.ticket_type_code,
+        ticket_type: ticket.ticket_type ? {
+          ...ticket.ticket_type,
+          label: ticketTypeTranslationsMap[ticket.ticket_type.uuid] || ticket.ticket_type.label,
+        } : null,
+        status: ticket.status ? {
+          ...ticket.status,
+          name: statusTranslationsMap[ticket.status.uuid] || ticket.status.name,
+        } : null,
+        writer: ticket.writer,
+        requested_by: ticket.requested_by,
+        requested_for: ticket.requested_for,
+        configuration_item: ticket.configuration_item,
+        created_at: ticket.created_at,
+        updated_at: ticket.updated_at,
+        // Roles this person has on this ticket
+        _personRoles: roles,
+      };
+    });
+
+    return {
+      data: transformed,
+      total,
+      pagination: {
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  } catch (error) {
+    logger.error(`[PERSONS] Error getting related tickets for ${personUuid}:`, error);
+    throw error;
+  }
+};
+
 module.exports = {
   search,
   getAll,
@@ -253,4 +400,5 @@ module.exports = {
   remove,
   removeMany,
   resetPassword,
+  getRelatedTickets,
 };

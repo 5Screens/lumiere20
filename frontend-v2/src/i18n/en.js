@@ -404,6 +404,14 @@ export default {
       passwordMismatch: 'Passwords do not match',
       success: 'Password reset successfully',
       error: 'Error resetting password'
+    },
+    relatedTickets: 'Tickets',
+    noRelatedTickets: 'No tickets related to this person',
+    ticketRole: {
+      all: 'All',
+      writer: 'Writer',
+      requested_for: 'Requested for',
+      requested_by: 'Requested by'
     }
   },
   ciTypes: {

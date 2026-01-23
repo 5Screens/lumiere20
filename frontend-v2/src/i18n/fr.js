@@ -405,6 +405,14 @@ export default {
       passwordMismatch: 'Les mots de passe ne correspondent pas',
       success: 'Mot de passe réinitialisé avec succès',
       error: 'Erreur lors de la réinitialisation du mot de passe'
+    },
+    relatedTickets: 'Tickets',
+    noRelatedTickets: 'Aucun ticket lié à cette personne',
+    ticketRole: {
+      all: 'Tous',
+      writer: 'Rédacteur',
+      requested_for: 'Demandé pour',
+      requested_by: 'Demandé par'
     }
   },
   ciTypes: {

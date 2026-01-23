@@ -46,6 +46,10 @@
             <i class="pi pi-list mr-2" />
             {{ $t('common.extendedInfo') }}
           </Tab>
+          <Tab v-if="hasRelatedTickets" value="tickets">
+            <i class="pi pi-ticket mr-2" />
+            {{ $t('persons.relatedTickets') }}
+          </Tab>
         </TabList>
         
         <TabPanels class="flex-1 min-h-0 overflow-hidden" :pt="{ root: { class: 'p-0' } }">
@@ -71,6 +75,14 @@
               :objectType="objectType"
               :extendedFields="extendedFields"
               :loading="extendedFieldsLoading"
+            />
+          </TabPanel>
+
+          <!-- Related Tickets Tab (for persons) -->
+          <TabPanel v-if="hasRelatedTickets" value="tickets" class="h-full overflow-auto">
+            <RelatedTicketsList 
+              v-if="item?.uuid"
+              :personUuid="item.uuid"
             />
           </TabPanel>
         </TabPanels>
@@ -133,6 +145,7 @@ import Dialog from 'primevue/dialog'
 // Custom components
 import ObjectGeneralInfo from './ObjectGeneralInfo.vue'
 import ObjectExtendedInfo from './ObjectExtendedInfo.vue'
+import RelatedTicketsList from './RelatedTicketsList.vue'
 import UuidDisplay from '@/components/form/UuidDisplay.vue'
 
 // Props
@@ -187,6 +200,7 @@ const {
   extendedFieldsLoading,
   availableTransitions,
   hasExtendedInfo,
+  hasRelatedTickets,
   getDisplayName,
   saveItem,
   applyTransition,

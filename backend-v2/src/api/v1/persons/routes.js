@@ -74,6 +74,9 @@ router.put('/:uuid', validate(updateSchema), controller.update);
 router.delete('/:uuid', controller.remove);
 router.post('/delete-many', controller.removeMany);
 
+// Get tickets related to a person (writer, requested_for, requested_by)
+router.get('/:uuid/tickets', controller.getRelatedTickets);
+
 // Admin action: Reset password (requires authentication)
 router.post('/:uuid/reset-password', authenticate, validate(resetPasswordSchema), controller.resetPassword);
 
