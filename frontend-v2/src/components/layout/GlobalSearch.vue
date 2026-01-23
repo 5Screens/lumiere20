@@ -28,7 +28,7 @@
       :dismissable="true"
       @hide="onPopoverHide"
       :pt="{
-        root: { class: 'w-96 max-h-96 overflow-auto' }
+        root: { style: { width: popoverWidth + 'px', maxHeight: '24rem', overflow: 'auto' } }
       }"
     >
       <div class="flex flex-col">
@@ -92,10 +92,13 @@ const suggestions = ref([])
 const loading = ref(false)
 const totalCount = ref(0)
 const isFocused = ref(false)
+const popoverWidth = ref(400)
 
 // Show popover when we have results
 const showPopover = () => {
   if (popoverRef.value && inputRef.value?.$el) {
+    // Calculate width based on input width
+    popoverWidth.value = inputRef.value.$el.offsetWidth || 400
     popoverRef.value.show({ currentTarget: inputRef.value.$el })
   }
 }
