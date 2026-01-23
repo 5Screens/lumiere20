@@ -1,85 +1,127 @@
 <template>
   <div 
-    class="global-search transition-all duration-300 ease-out"
+    ref="containerRef"
+    class="global-search relative transition-all duration-300 ease-out"
     :class="isFocused ? 'w-full' : 'w-64'"
   >
-    <AutoComplete
-      ref="autocompleteRef"
-      v-model="searchQuery"
-      :suggestions="suggestions"
-      :placeholder="$t('common.search')"
-      :minLength="2"
-      :delay="300"
-      optionLabel="display"
-      optionGroupLabel="label"
-      optionGroupChildren="items"
-      :loading="loading"
-      fluid
-      @complete="onSearch"
-      @item-select="onItemSelect"
-      @keydown="onKeydown"
-      @focus="isFocused = true"
-      @blur="onBlur"
+    <!-- Search Input -->
+    <IconField>
+      <InputIcon class="pi pi-search" />
+      <InputText
+        ref="inputRef"
+        v-model="searchQuery"
+        :placeholder="$t('common.search')"
+        class="w-full"
+        @focus="onFocus"
+        @input="onInput"
+        @keydown="onKeydown"
+      />
+      <InputIcon 
+        v-if="loading" 
+        class="pi pi-spin pi-spinner" 
+      />
+    </IconField>
+
+    <!-- Results Popover -->
+    <Popover 
+      ref="popoverRef" 
+      :dismissable="true"
+      @hide="onPopoverHide"
       :pt="{
-        root: { class: 'w-full' },
-        input: { class: 'w-full' },
-        overlay: { class: 'global-search-overlay' },
-        option: { class: 'hover:!bg-primary/10 transition-colors' }
+        root: { class: 'w-96 max-h-96 overflow-auto' }
       }"
     >
-      <template #optiongroup="{ option }">
-        <div class="flex items-center gap-2 px-3 py-2 font-semibold">
-          <i :class="['pi', option.icon, 'text-primary']"></i>
-          <span class="text-primary">{{ option.label }}</span>
-          <span class="text-xs text-primary/70 ml-auto font-normal">
-            {{ option.items.length }}/{{ option.count }}
-          </span>
+      <div class="flex flex-col">
+        <!-- Results grouped by type -->
+        <template v-if="suggestions.length > 0">
+          <div v-for="group in suggestions" :key="group.label" class="mb-2">
+            <!-- Group header -->
+            <div class="flex items-center gap-2 px-3 py-2 font-semibold bg-surface-100 dark:bg-surface-800 sticky top-0">
+              <i :class="['pi', group.icon, 'text-primary']"></i>
+              <span class="text-primary">{{ group.label }}</span>
+              <span class="text-xs text-primary/70 ml-auto font-normal">
+                {{ group.items.length }}/{{ group.count }}
+              </span>
+            </div>
+            <!-- Group items -->
+            <ul class="list-none p-0 m-0">
+              <li 
+                v-for="item in group.items" 
+                :key="item.uuid"
+                class="flex flex-col gap-0.5 px-3 py-2 hover:bg-primary/10 cursor-pointer transition-colors"
+                @click="onItemSelect(item)"
+              >
+                <span class="font-medium">{{ item.display }}</span>
+                <span v-if="item.secondary" class="text-xs text-surface-400">{{ item.secondary }}</span>
+              </li>
+            </ul>
+          </div>
+        </template>
+
+        <!-- Empty state -->
+        <div v-else-if="searchQuery?.length >= 2 && !loading" class="px-4 py-3 text-surface-500 text-center">
+          {{ $t('common.noResults') }}
         </div>
-      </template>
-      <template #option="{ option }">
-        <div class="flex flex-col gap-0.5 px-3 py-2">
-          <span class="font-medium">{{ option.display }}</span>
-          <span v-if="option.secondary" class="text-xs text-surface-400">{{ option.secondary }}</span>
-        </div>
-      </template>
-      <template #empty>
-        <div class="px-4 py-3 text-surface-500 text-center">
-          {{ searchQuery?.length >= 2 ? $t('common.noResults') : $t('common.typeToSearch') }}
-        </div>
-      </template>
-      <template #footer v-if="totalCount > 0">
-        <div class="px-4 py-2 text-xs text-primary border-t-2 border-primary text-center font-medium">
+
+        <!-- Footer with total count -->
+        <div v-if="totalCount > 0" class="px-4 py-2 text-xs text-primary border-t-2 border-primary text-center font-medium sticky bottom-0 bg-surface-0 dark:bg-surface-900">
           {{ $t('common.totalResults', { count: totalCount }) }}
         </div>
-      </template>
-    </AutoComplete>
+      </div>
+    </Popover>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useTabsStore } from '@/stores/tabsStore'
+import { useDebounceFn } from '@vueuse/core'
 import api from '@/services/api'
-import AutoComplete from 'primevue/autocomplete'
+import InputText from 'primevue/inputtext'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import Popover from 'primevue/popover'
 
 const tabsStore = useTabsStore()
 
-const autocompleteRef = ref(null)
+const containerRef = ref(null)
+const inputRef = ref(null)
+const popoverRef = ref(null)
 const searchQuery = ref('')
 const suggestions = ref([])
 const loading = ref(false)
 const totalCount = ref(0)
 const isFocused = ref(false)
 
-// Handle blur with delay to allow click on suggestions
-const onBlur = () => {
-  setTimeout(() => {
-    isFocused.value = false
-    // Clear search and close dropdown when focus is lost
+// Show popover when we have results
+const showPopover = () => {
+  if (popoverRef.value && inputRef.value?.$el) {
+    popoverRef.value.show({ currentTarget: inputRef.value.$el })
+  }
+}
+
+// Hide popover
+const hidePopover = () => {
+  popoverRef.value?.hide()
+}
+
+// Handle focus
+const onFocus = () => {
+  isFocused.value = true
+  // Show popover if we already have results
+  if (suggestions.value.length > 0) {
+    showPopover()
+  }
+}
+
+// Handle popover hide
+const onPopoverHide = () => {
+  // Only clear if input is not focused
+  if (!isFocused.value) {
     searchQuery.value = ''
     suggestions.value = []
     totalCount.value = 0
-  }, 200)
+  }
 }
 
 // Ticket type to tab configuration mapping
@@ -107,13 +149,12 @@ const OBJECT_CONFIG = {
   symptoms: { id: 'symptoms', icon: 'pi pi-exclamation-circle', labelKey: 'symptoms.title' },
 }
 
-// Search handler
-const onSearch = async (event) => {
-  const query = event.query?.trim()
-  
+// Debounced search function
+const doSearch = useDebounceFn(async (query) => {
   if (!query || query.length < 2) {
     suggestions.value = []
     totalCount.value = 0
+    hidePopover()
     return
   }
 
@@ -126,6 +167,13 @@ const onSearch = async (event) => {
     
     suggestions.value = response.data.groups || []
     totalCount.value = response.data.totalCount || 0
+    
+    // Show popover if we have results
+    if (suggestions.value.length > 0) {
+      showPopover()
+    } else {
+      showPopover() // Show empty state
+    }
   } catch (error) {
     console.error('Global search error:', error)
     suggestions.value = []
@@ -133,11 +181,15 @@ const onSearch = async (event) => {
   } finally {
     loading.value = false
   }
+}, 300)
+
+// Handle input
+const onInput = () => {
+  doSearch(searchQuery.value?.trim())
 }
 
-// Handle item selection - open in new tab
-const onItemSelect = (event) => {
-  const item = event.value
+// Handle item selection - open in new tab (popover stays open!)
+const onItemSelect = (item) => {
   if (!item || !item.uuid || !item.objectType) return
 
   let parentTabConfig
@@ -202,18 +254,18 @@ const onItemSelect = (event) => {
     mode: 'edit',
   })
 
-  // Clear search after selection
-  searchQuery.value = ''
-  suggestions.value = []
-  totalCount.value = 0
+  // Popover stays open - user can click more items!
 }
 
 // Handle keyboard shortcuts
 const onKeydown = (event) => {
   if (event.key === 'Escape') {
+    isFocused.value = false
     searchQuery.value = ''
     suggestions.value = []
-    autocompleteRef.value?.$el?.querySelector('input')?.blur()
+    totalCount.value = 0
+    hidePopover()
+    inputRef.value?.$el?.blur()
   }
 }
 
@@ -221,7 +273,7 @@ const onKeydown = (event) => {
 const handleGlobalKeydown = (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
     event.preventDefault()
-    autocompleteRef.value?.$el?.querySelector('input')?.focus()
+    inputRef.value?.$el?.focus()
   }
 }
 
