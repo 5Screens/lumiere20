@@ -9,7 +9,9 @@
     "logout": "Sign out",
     "fillAllFields": "Please fill in all fields",
     "loginSuccess": "Login successful",
-    "loginFailed": "Login failed"
+    "loginFailed": "Login failed",
+    "sessionExpired": "Session expired",
+    "sessionExpiredMessage": "For security reasons, your session has expired. Please log in again to continue using the application."
   },
   "portal": {
     "loading": "Loading portal...",

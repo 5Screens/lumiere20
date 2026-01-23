@@ -121,7 +121,9 @@ export default {
     settings: 'Settings',
     or: 'or',
     noAccount: 'No account yet? Sign up',
-    hasAccount: 'Already have an account? Sign in'
+    hasAccount: 'Already have an account? Sign in',
+    sessionExpired: 'Session expired',
+    sessionExpiredMessage: 'For security reasons, your session has expired. Please log in again to continue using the application.'
   },
   common: {
     save: 'Save',

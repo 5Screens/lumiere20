@@ -1,6 +1,17 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-surface-50">
     <div class="w-full max-w-md p-8">
+      <!-- Session expired message -->
+      <Message v-if="sessionExpired" severity="warn" :closable="false" class="mb-4">
+        <template #icon>
+          <i class="pi pi-clock text-xl"></i>
+        </template>
+        <div class="flex flex-col gap-1">
+          <span class="font-semibold">{{ $t('auth.sessionExpired') }}</span>
+          <span class="text-sm">{{ $t('auth.sessionExpiredMessage') }}</span>
+        </div>
+      </Message>
+      
       <Card>
         <template #title>
           <div class="text-center">
@@ -47,8 +58,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useAuthStore } from '@/stores/authStore'
 import Card from 'primevue/card'
@@ -56,10 +67,14 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Toast from 'primevue/toast'
+import Message from 'primevue/message'
 
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
 const authStore = useAuthStore()
+
+const sessionExpired = computed(() => route.query.sessionExpired === 'true')
 
 const form = ref({
   email: '',

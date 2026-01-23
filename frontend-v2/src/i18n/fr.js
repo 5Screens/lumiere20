@@ -121,7 +121,9 @@ export default {
     settings: 'Paramètres',
     or: 'ou',
     noAccount: 'Pas encore de compte ? Inscrivez-vous',
-    hasAccount: 'Déjà un compte ? Connectez-vous'
+    hasAccount: 'Déjà un compte ? Connectez-vous',
+    sessionExpired: 'Session expirée',
+    sessionExpiredMessage: 'Pour des raisons de sécurité, votre session a expiré. Merci de vous reconnecter pour continuer à utiliser l\'application.'
   },
   common: {
     save: 'Enregistrer',

@@ -8,10 +8,14 @@ import Tooltip from 'primevue/tooltip'
 import App from './App.vue'
 import router from './router'
 import i18n from './i18n'
+import { initSessionManager } from './services/sessionManager'
 
 // Styles
 import './assets/styles/main.css'
 import 'primeicons/primeicons.css'
+
+// Initialize session manager with router for handling session expiration
+initSessionManager(router, i18n)
 
 // Create Pinia instance
 const pinia = createPinia()

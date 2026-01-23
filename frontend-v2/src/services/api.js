@@ -51,6 +51,32 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
+// Flag to prevent multiple simultaneous session expiration handling
+let isHandlingSessionExpiration = false
+
+// Handle session expiration - redirect to login with message
+const handleSessionExpired = () => {
+  if (isHandlingSessionExpiration) return
+  isHandlingSessionExpiration = true
+  
+  localStorage.removeItem('token')
+  
+  // Redirect to login with session expired flag
+  const currentUrl = window.location.pathname
+  const params = new URLSearchParams()
+  params.set('sessionExpired', 'true')
+  if (currentUrl && currentUrl !== '/login') {
+    params.set('redirect', currentUrl)
+  }
+  
+  window.location.href = `/login?${params.toString()}`
+  
+  // Reset flag after delay
+  setTimeout(() => {
+    isHandlingSessionExpiration = false
+  }, 1000)
+}
+
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
@@ -61,10 +87,13 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
-    // Handle authentication errors
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      // Redirect to login if needed
+    // Handle authentication errors - session expired
+    if (error.response?.status === 401 && !isHandlingSessionExpiration) {
+      const url = error.config?.url || ''
+      // Don't handle 401 for login/logout endpoints
+      if (!url.includes('/auth/login') && !url.includes('/auth/logout')) {
+        handleSessionExpired()
+      }
     }
     
     // Handle network/server connection errors

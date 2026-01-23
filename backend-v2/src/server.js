@@ -4,6 +4,7 @@ const http = require('http');
 const cors = require('cors');
 const logger = require('./config/logger');
 const errorHandler = require('./middleware/errorHandler');
+const { authenticate } = require('./middleware/auth');
 const { initializeWebSocket } = require('./api/v1/speech/websocket');
 
 // Handle uncaught exceptions
@@ -60,32 +61,35 @@ const agentRoutes = require('./api/v1/agent/routes');
 const portalsRoutes = require('./api/v1/portals/routes');
 const globalSearchRoutes = require('./api/v1/global-search/routes');
 
+// Public routes (no authentication required)
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/configuration_items', configurationItemsRoutes);
-app.use('/api/v1/entities', entitiesRoutes);
-app.use('/api/v1/locations', locationsRoutes);
-app.use('/api/v1/groups', groupsRoutes);
-app.use('/api/v1/persons', personsRoutes);
-app.use('/api/v1/metadata', metadataRoutes);
-app.use('/api/v1/ci_types', ciTypesRoutes);
-app.use('/api/v1/ci_type_fields', ciTypeFieldsRoutes);
-app.use('/api/v1/ci_categories', ciCategoriesRoutes);
-app.use('/api/v1/languages', languagesRoutes);
-app.use('/api/v1/audit', auditRoutes);
-app.use('/api/v1/workflow-status-categories', workflowStatusCategoriesRoutes);
-app.use('/api/v1/workflows', workflowsRoutes);
-app.use('/api/v1/workflow-entity-config', workflowEntityConfigRoutes);
-app.use('/api/v1/tasks', tasksRoutes);
-app.use('/api/v1/tickets', ticketsRoutes);
-app.use('/api/v1/ticket-types', ticketTypesRoutes);
-app.use('/api/v1/ticket_type_fields', ticketTypeFieldsRoutes);
-app.use('/api/v1/attachments', attachmentsRoutes);
-app.use('/api/v1/object-setup', objectSetupRoutes);
-app.use('/api/v1/object-types', objectTypesRoutes);
-app.use('/api/v1/symptoms', symptomsRoutes);
-app.use('/api/v1/agent', agentRoutes);
-app.use('/api/v1/portals', portalsRoutes);
-app.use('/api/v1/global-search', globalSearchRoutes);
+
+// Protected routes (authentication required)
+app.use('/api/v1/configuration_items', authenticate, configurationItemsRoutes);
+app.use('/api/v1/entities', authenticate, entitiesRoutes);
+app.use('/api/v1/locations', authenticate, locationsRoutes);
+app.use('/api/v1/groups', authenticate, groupsRoutes);
+app.use('/api/v1/persons', authenticate, personsRoutes);
+app.use('/api/v1/metadata', authenticate, metadataRoutes);
+app.use('/api/v1/ci_types', authenticate, ciTypesRoutes);
+app.use('/api/v1/ci_type_fields', authenticate, ciTypeFieldsRoutes);
+app.use('/api/v1/ci_categories', authenticate, ciCategoriesRoutes);
+app.use('/api/v1/languages', authenticate, languagesRoutes);
+app.use('/api/v1/audit', authenticate, auditRoutes);
+app.use('/api/v1/workflow-status-categories', authenticate, workflowStatusCategoriesRoutes);
+app.use('/api/v1/workflows', authenticate, workflowsRoutes);
+app.use('/api/v1/workflow-entity-config', authenticate, workflowEntityConfigRoutes);
+app.use('/api/v1/tasks', authenticate, tasksRoutes);
+app.use('/api/v1/tickets', authenticate, ticketsRoutes);
+app.use('/api/v1/ticket-types', authenticate, ticketTypesRoutes);
+app.use('/api/v1/ticket_type_fields', authenticate, ticketTypeFieldsRoutes);
+app.use('/api/v1/attachments', authenticate, attachmentsRoutes);
+app.use('/api/v1/object-setup', authenticate, objectSetupRoutes);
+app.use('/api/v1/object-types', authenticate, objectTypesRoutes);
+app.use('/api/v1/symptoms', authenticate, symptomsRoutes);
+app.use('/api/v1/agent', authenticate, agentRoutes);
+app.use('/api/v1/portals', authenticate, portalsRoutes);
+app.use('/api/v1/global-search', authenticate, globalSearchRoutes);
 
 // Health check
 app.get('/', (req, res) => {

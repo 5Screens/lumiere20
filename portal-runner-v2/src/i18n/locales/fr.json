@@ -9,7 +9,9 @@
     "logout": "Déconnexion",
     "fillAllFields": "Veuillez remplir tous les champs",
     "loginSuccess": "Connexion réussie",
-    "loginFailed": "Échec de la connexion"
+    "loginFailed": "Échec de la connexion",
+    "sessionExpired": "Session expirée",
+    "sessionExpiredMessage": "Pour des raisons de sécurité, votre session a expiré. Merci de vous reconnecter pour continuer à utiliser l'application."
   },
   "portal": {
     "loading": "Chargement du portail...",

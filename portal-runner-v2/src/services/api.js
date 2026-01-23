@@ -1,7 +1,10 @@
+import { handleSessionExpired, isSessionExpirationInProgress } from './sessionManager'
+
 const API_BASE = '/api/v1'
 
 /**
  * Generic fetch wrapper with error handling
+ * Includes automatic session expiration handling for 401 errors
  */
 const fetchApi = async (endpoint, options = {}) => {
   const url = `${API_BASE}${endpoint}`
@@ -19,6 +22,15 @@ const fetchApi = async (endpoint, options = {}) => {
   const response = await fetch(url, config)
   
   if (!response.ok) {
+    // Handle 401 Unauthorized - session expired
+    if (response.status === 401 && !isSessionExpirationInProgress()) {
+      // Don't handle 401 for login/logout endpoints
+      if (!endpoint.includes('/auth/login') && !endpoint.includes('/auth/logout')) {
+        handleSessionExpired()
+        throw new Error('Invalid or expired token')
+      }
+    }
+    
     const error = await response.json().catch(() => ({ message: 'Request failed' }))
     throw new Error(error.message || `HTTP ${response.status}`)
   }
