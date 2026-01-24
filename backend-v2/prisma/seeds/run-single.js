@@ -31,6 +31,7 @@ const seedMap = {
   'e2e-crud-cleanup': () => require('./e2e-crud.seed').cleanupE2eCrud(),
   'portals': () => require('./portals').seedPortals(),
   'uat-knowledge': () => require('./uat.knowledge.seed').seedUatKnowledge(prisma),
+  'uat-knowledge-cm2': () => require('./uat.knowledge.cm2.seed').seedUatKnowledgeCm2(prisma),
 };
 
 async function main() {
