@@ -14,6 +14,7 @@
         class="w-full"
         :class="{ 'pr-16': searchQuery && !loading, 'pr-8': loading }"
         @focus="onFocus"
+        @blur="onBlur"
         @input="onInput"
         @keydown="onKeydown"
       />
@@ -120,6 +121,13 @@ const onFocus = () => {
   // Show popover if we already have results
   if (suggestions.value.length > 0) {
     showPopover()
+  }
+}
+
+// Handle blur - shrink back if empty
+const onBlur = () => {
+  if (!searchQuery.value) {
+    isFocused.value = false
   }
 }
 
