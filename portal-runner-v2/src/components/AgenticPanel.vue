@@ -438,7 +438,7 @@ const updateOverflowState = (index) => {
   }
 }
 
-const toggleMessage = (index) => {
+const toggleMessage = async (index) => {
   // Check if user is selecting text
   const selection = window.getSelection()
   if (selection && !selection.isCollapsed) return
@@ -447,8 +447,25 @@ const toggleMessage = (index) => {
   if (!target || !target.isOverflowing) return
   
   target.expanded = !target.expanded
+  
   if (target.expanded) {
-    scrollToBottom()
+    // Wait for DOM update then scroll to top of the message
+    await nextTick()
+    const messageEl = messageRefs.value[index]
+    if (messageEl && messagesContainer.value) {
+      // Get the message bubble container (parent of markdown-content)
+      const bubbleEl = messageEl.closest('.rounded-lg')
+      if (bubbleEl) {
+        // Scroll so the top of the message is at the top of the container
+        const containerRect = messagesContainer.value.getBoundingClientRect()
+        const bubbleRect = bubbleEl.getBoundingClientRect()
+        const scrollOffset = bubbleRect.top - containerRect.top + messagesContainer.value.scrollTop
+        messagesContainer.value.scrollTo({
+          top: scrollOffset,
+          behavior: 'smooth'
+        })
+      }
+    }
   }
 }
 
