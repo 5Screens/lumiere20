@@ -86,7 +86,7 @@
     "noContent": "No content extracted from document",
     "drawerTitle": "Document scanning",
     "featureTitle": "Smart scanning",
-    "featureDescription": "Drop a document (PDF, image, Word, PowerPoint) to automatically extract text using artificial intelligence.",
+    "featureDescription": "Drop a document (PDF, image, Word, PowerPoint) to automatically extract text using artificial intelligence. The original document is not stored, only its text transcription will be saved.",
     "dropZoneTitle": "Drop your document here",
     "dropZoneSubtitle": "or click to browse your files",
     "browseFiles": "Browse",

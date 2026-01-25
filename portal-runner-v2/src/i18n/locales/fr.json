@@ -86,7 +86,7 @@
     "noContent": "Aucun contenu extrait du document",
     "drawerTitle": "Numérisation de document",
     "featureTitle": "Numérisation intelligente",
-    "featureDescription": "Déposez un document (PDF, image, Word, PowerPoint) pour en extraire le texte automatiquement grâce à l'intelligence artificielle.",
+    "featureDescription": "Déposez un document (PDF, image, Word, PowerPoint) pour en extraire le texte automatiquement grâce à l'intelligence artificielle. Le document original n'est pas conservé, seule sa retranscription textuelle sera enregistrée.",
     "dropZoneTitle": "Déposez votre document ici",
     "dropZoneSubtitle": "ou cliquez pour parcourir vos fichiers",
     "browseFiles": "Parcourir",

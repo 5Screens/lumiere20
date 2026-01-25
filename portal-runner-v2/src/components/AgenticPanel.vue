@@ -129,6 +129,28 @@
       
       <!-- Footer with buttons aligned right -->
       <div class="flex justify-end">
+        <!-- OCR button -->
+        <Button 
+          icon="pi pi-file-pdf" 
+          text
+          rounded
+          @click="$emit('open-ocr')"
+          :disabled="isLoading"
+          v-tooltip.top="$t('ocr.scanDocument')"
+          class="text-primary hover:text-primary-600"
+        />
+        
+        <!-- Documents button -->
+        <Button 
+          icon="pi pi-folder" 
+          text
+          rounded
+          @click="$emit('open-documents')"
+          :disabled="isLoading"
+          v-tooltip.top="$t('documents.drawerTitle')"
+          class="text-primary hover:text-primary-600"
+        />
+        
         <!-- Attachment button -->
         <Button 
           icon="pi pi-paperclip" 
@@ -200,7 +222,7 @@ const props = defineProps({
   conversationId: { type: String, default: null }
 })
 
-const emit = defineEmits(['update:conversationId', 'conversationLoaded'])
+const emit = defineEmits(['update:conversationId', 'conversationLoaded', 'open-ocr', 'open-documents'])
 
 const { t } = useI18n()
 const toast = useToast()

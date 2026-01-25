@@ -128,24 +128,6 @@
               <span class="font-semibold text-surface-800 dark:text-surface-100">{{ $t('chat.title') }}</span>
             </div>
             <div class="flex items-center gap-1">
-              <!-- OCR button -->
-              <Button 
-                icon="pi pi-file-pdf" 
-                text 
-                rounded 
-                size="small"
-                v-tooltip.bottom="$t('ocr.scanDocument')"
-                @click="openOcrDrawer"
-              />
-              <!-- Documents button -->
-              <Button 
-                icon="pi pi-folder" 
-                text 
-                rounded 
-                size="small"
-                v-tooltip.bottom="$t('documents.drawerTitle')"
-                @click="openDocumentsDrawer"
-              />
               <!-- New conversation button -->
               <Button 
                 icon="pi pi-plus" 
@@ -222,6 +204,8 @@
             :default-message="portal.chat_default_message"
             :conversation-id="selectedConversationId"
             @update:conversation-id="onConversationIdUpdate"
+            @open-ocr="openOcrDrawer"
+            @open-documents="openDocumentsDrawer"
           />
         </aside>
       </template>
@@ -540,8 +524,9 @@ const onOcrComplete = async (data) => {
     documentsDrawerRef.value.refresh()
   }
   
-  // Send message to agent about the scanned document
-  const message = `[OCR] ${t('ocr.documentScanned')}: ${data.fileName}\n\n${t('ocr.askFollowUp')}`
+  // Send message to agent with the scanned document content
+  // Include the markdown so the agent has context for follow-up questions
+  const message = `[OCR] ${t('ocr.documentScanned')}: ${data.fileName}\n\n${data.markdown}`
   
   try {
     const response = await sendAgentMessage(message, selectedConversationId.value, 'text')
