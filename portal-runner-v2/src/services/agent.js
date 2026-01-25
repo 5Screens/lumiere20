@@ -93,6 +93,22 @@ export const deleteConversation = async (conversationId) => {
 }
 
 /**
+ * Rename a conversation
+ * @param {string} conversationId - Conversation UUID
+ * @param {string} title - New title
+ * @returns {Promise<Object>} Updated conversation
+ */
+export const renameConversation = async (conversationId, title) => {
+  try {
+    const response = await api.patch(`/agent/conversations/${conversationId}`, { title })
+    return response.data?.data || response.data || null
+  } catch (error) {
+    const errorMessage = error.response?.data?.error || error.message || 'Failed to rename conversation'
+    throw new Error(errorMessage)
+  }
+}
+
+/**
  * Update feedback on a message
  * @param {string} messageId - Message UUID
  * @param {string} feedback - 'up', 'down', or null to clear
@@ -190,6 +206,7 @@ export default {
   getConversation,
   createConversation,
   deleteConversation,
+  renameConversation,
   updateMessageFeedback,
   uploadAttachments,
   getPendingAttachments,

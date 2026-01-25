@@ -190,6 +190,52 @@ const createConversation = async (req, res) => {
 };
 
 /**
+ * PATCH /agent/conversations/:uuid
+ * Rename a conversation
+ */
+const renameConversation = async (req, res) => {
+  try {
+    const userUuid = req.user?.uuid;
+    const conversationUuid = req.params.uuid;
+    const { title } = req.body;
+
+    if (!userUuid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Title is required'
+      });
+    }
+
+    const updated = await conversationService.renameConversation(conversationUuid, userUuid, title);
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        error: 'Conversation not found'
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: { uuid: updated.uuid, title: updated.title }
+    });
+  } catch (error) {
+    logger.error(`-- agent-controller -- renameConversation error: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to rename conversation'
+    });
+  }
+};
+
+/**
  * DELETE /agent/conversations/:uuid
  * Delete a conversation
  */
@@ -365,6 +411,7 @@ module.exports = {
   getConversations,
   getConversation,
   createConversation,
+  renameConversation,
   deleteConversation,
   updateMessageFeedback,
   ocr

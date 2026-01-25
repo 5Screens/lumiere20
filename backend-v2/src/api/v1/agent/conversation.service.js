@@ -176,6 +176,33 @@ const updateTitle = async (conversationUuid, firstMessage) => {
 };
 
 /**
+ * Rename a conversation
+ * @param {string} conversationUuid - Conversation UUID
+ * @param {string} userUuid - User UUID (for ownership verification)
+ * @param {string} newTitle - New title for the conversation
+ * @returns {Object|null} Updated conversation or null if not found/not owned
+ */
+const renameConversation = async (conversationUuid, userUuid, newTitle) => {
+  // Verify ownership
+  const conversation = await prisma.agent_conversations.findUnique({
+    where: { uuid: conversationUuid }
+  });
+
+  if (!conversation || conversation.user_uuid !== userUuid) {
+    return null;
+  }
+
+  // Update title
+  const updated = await prisma.agent_conversations.update({
+    where: { uuid: conversationUuid },
+    data: { title: newTitle.trim() }
+  });
+
+  logger.info(`-- conversation-service -- Renamed conversation ${conversationUuid} to: ${newTitle}`);
+  return updated;
+};
+
+/**
  * Get user's recent conversations
  * @param {string} userUuid - User UUID
  * @param {number} limit - Max conversations to return
@@ -258,6 +285,7 @@ module.exports = {
   addMessage,
   getMessagesForLLM,
   updateTitle,
+  renameConversation,
   getUserConversations,
   deleteConversation,
   updateMessageFeedback

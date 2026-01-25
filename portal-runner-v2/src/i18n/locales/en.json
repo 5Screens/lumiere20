@@ -36,6 +36,8 @@
     "loadingConversations": "Loading...",
     "delete": "Delete",
     "rename": "Rename",
+    "renameConversation": "Rename conversation",
+    "conversationTitle": "Conversation title",
     "confirmDelete": "Confirm deletion",
     "cancel": "Cancel",
     "feedbackUp": "Good response",

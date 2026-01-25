@@ -11,7 +11,7 @@
           </div>
         </div>
         <div class="flex items-center gap-4">
-          <Button icon="pi pi-globe" text rounded @click="toggleLanguageMenu" v-tooltip="'Language'" />
+          <Button icon="pi pi-language" text rounded @click="toggleLanguageMenu" v-tooltip="'Language'" />
           <Menu ref="langMenu" :model="languageItems" :popup="true" />
           
           <!-- Theme toggle -->
@@ -158,7 +158,7 @@
                 </template>
                 <template #option="slotProps">
                   <div class="flex items-center justify-between w-full gap-2">
-                    <div class="flex flex-col flex-1 min-w-0">
+                    <div class="flex flex-col flex-1 min-w-0" v-tooltip.top="slotProps.option.label">
                       <span class="text-sm truncate">{{ slotProps.option.label }}</span>
                       <span class="text-xs text-surface-400">{{ slotProps.option.date }}</span>
                     </div>
@@ -227,6 +227,41 @@
       ref="documentsDrawerRef"
       v-model:show="showDocumentsDrawer"
     />
+    
+    <!-- Rename Conversation Dialog -->
+    <Dialog 
+      v-model:visible="showRenameDialog" 
+      :header="$t('chat.renameConversation')"
+      :modal="true"
+      :closable="true"
+      :style="{ width: '400px' }"
+      @hide="cancelRenameConversation"
+    >
+      <div class="flex flex-col gap-4">
+        <InputText 
+          v-model="renameTitle" 
+          :placeholder="$t('chat.conversationTitle')"
+          class="w-full"
+          @keyup.enter="confirmRenameConversation"
+          autofocus
+        />
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button 
+            :label="$t('common.cancel')" 
+            severity="secondary" 
+            text 
+            @click="cancelRenameConversation" 
+          />
+          <Button 
+            :label="$t('common.save')" 
+            @click="confirmRenameConversation" 
+            :disabled="!renameTitle.trim()"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -243,7 +278,9 @@ import Select from 'primevue/select'
 import AgenticPanel from '@/components/AgenticPanel.vue'
 import OcrDrawer from '@/components/OcrDrawer.vue'
 import DocumentsDrawer from '@/components/DocumentsDrawer.vue'
-import { getConversations, deleteConversation, sendMessage as sendAgentMessage } from '@/services/agent'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import { getConversations, deleteConversation, renameConversation, sendMessage as sendAgentMessage } from '@/services/agent'
 
 const props = defineProps({
   portalData: { type: Object, required: true },
@@ -267,6 +304,11 @@ const conversations = ref([])
 const selectedConversationId = ref(null)
 const loadingConversations = ref(false)
 const deletingConversationId = ref(null)
+
+// Rename conversation
+const showRenameDialog = ref(false)
+const renamingConversationId = ref(null)
+const renameTitle = ref('')
 
 const conversationsOptions = computed(() => {
   return conversations.value.map(conv => ({
@@ -342,10 +384,36 @@ const confirmDeleteConversation = async (convId) => {
   }
 }
 
-// Edit conversation (placeholder for now)
+// Edit/Rename conversation
 const startEditConversation = (convId) => {
-  // TODO: Implement rename functionality
-  console.log('Edit conversation:', convId)
+  const conv = conversations.value.find(c => c.uuid === convId)
+  renamingConversationId.value = convId
+  renameTitle.value = conv?.title || ''
+  showRenameDialog.value = true
+}
+
+const confirmRenameConversation = async () => {
+  if (!renamingConversationId.value || !renameTitle.value.trim()) return
+  
+  try {
+    await renameConversation(renamingConversationId.value, renameTitle.value.trim())
+    // Update local list
+    const conv = conversations.value.find(c => c.uuid === renamingConversationId.value)
+    if (conv) {
+      conv.title = renameTitle.value.trim()
+    }
+    showRenameDialog.value = false
+    renamingConversationId.value = null
+    renameTitle.value = ''
+  } catch (error) {
+    console.error('Failed to rename conversation:', error)
+  }
+}
+
+const cancelRenameConversation = () => {
+  showRenameDialog.value = false
+  renamingConversationId.value = null
+  renameTitle.value = ''
 }
 
 

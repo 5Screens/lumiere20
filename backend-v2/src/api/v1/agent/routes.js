@@ -20,6 +20,9 @@ router.post('/conversations', authenticate, controller.createConversation);
 // GET /api/v1/agent/conversations/:uuid - Get a specific conversation with messages
 router.get('/conversations/:uuid', authenticate, controller.getConversation);
 
+// PATCH /api/v1/agent/conversations/:uuid - Rename a conversation
+router.patch('/conversations/:uuid', authenticate, controller.renameConversation);
+
 // DELETE /api/v1/agent/conversations/:uuid - Delete a conversation
 router.delete('/conversations/:uuid', authenticate, controller.deleteConversation);
 

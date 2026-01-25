@@ -36,6 +36,8 @@
     "loadingConversations": "Chargement...",
     "delete": "Supprimer",
     "rename": "Renommer",
+    "renameConversation": "Renommer la conversation",
+    "conversationTitle": "Titre de la conversation",
     "confirmDelete": "Confirmer la suppression",
     "cancel": "Annuler",
     "feedbackUp": "Bonne réponse",
