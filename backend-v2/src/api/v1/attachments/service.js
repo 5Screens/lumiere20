@@ -3,6 +3,21 @@ const logger = require('../../../config/logger');
 const path = require('path');
 const fs = require('fs').promises;
 
+/**
+ * Decode filename from Latin-1 to UTF-8
+ * Multer receives filenames as Latin-1 (per HTTP spec), but browsers send UTF-8
+ * This causes accented characters to appear corrupted (e.g., "Ã©" instead of "é")
+ */
+const decodeFilename = (filename) => {
+  try {
+    // Convert Latin-1 string to UTF-8
+    return Buffer.from(filename, 'latin1').toString('utf8');
+  } catch (error) {
+    logger.warn(`[ATTACHMENTS] Could not decode filename: ${filename}`, error);
+    return filename;
+  }
+};
+
 // Upload directory (resolve to absolute path)
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
 
@@ -45,7 +60,7 @@ const create = async (data, file, uploadedByUuid) => {
       entity_type: data.entity_type,
       entity_uuid: data.entity_uuid,
       file_name: file.filename,
-      original_name: file.originalname,
+      original_name: decodeFilename(file.originalname),
       mime_type: file.mimetype,
       file_size: file.size,
       file_path: relativePath,
