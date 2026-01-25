@@ -60,13 +60,10 @@ const getByUuid = async (req, res) => {
       });
     }
 
-    // Return document with markdown content from file_path
+    // Return document with markdown content (already loaded by service)
     return res.json({
       success: true,
-      data: {
-        ...document,
-        markdown: document.file_path // file_path stores the markdown content
-      }
+      data: document
     });
   } catch (error) {
     logger.error(`[OCR_DOCUMENTS] getByUuid error: ${error.message}`);
