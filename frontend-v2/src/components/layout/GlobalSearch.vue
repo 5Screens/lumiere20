@@ -12,6 +12,7 @@
         v-model="searchQuery"
         :placeholder="$t('common.search')"
         class="w-full"
+        :class="{ 'pr-16': searchQuery && !loading, 'pr-8': loading }"
         @focus="onFocus"
         @input="onInput"
         @keydown="onKeydown"
@@ -19,6 +20,11 @@
       <InputIcon 
         v-if="loading" 
         class="pi pi-spin pi-spinner" 
+      />
+      <InputIcon 
+        v-else-if="searchQuery"
+        class="pi pi-times cursor-pointer hover:text-primary transition-colors"
+        @click="clearSearch"
       />
     </IconField>
 
@@ -189,6 +195,16 @@ const doSearch = useDebounceFn(async (query) => {
 // Handle input
 const onInput = () => {
   doSearch(searchQuery.value?.trim())
+}
+
+// Clear search field
+const clearSearch = () => {
+  searchQuery.value = ''
+  suggestions.value = []
+  totalCount.value = 0
+  hidePopover()
+  // Keep focus on input so user can type new search
+  inputRef.value?.$el?.focus()
 }
 
 // Handle item selection - open in new tab (popover stays open!)
