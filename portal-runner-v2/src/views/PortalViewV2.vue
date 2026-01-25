@@ -1,5 +1,24 @@
 <template>
   <div class="portal-v2 h-screen overflow-hidden flex flex-col bg-surface-0 dark:bg-surface-900" :style="themeStyles">
+    <!-- Mobile Bottom Navigation -->
+    <nav v-if="isMobile" class="fixed bottom-0 left-0 right-0 z-50 bg-surface-0 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 flex items-center justify-around py-3 px-4">
+      <button 
+        @click="mobileView = 'home'"
+        class="flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors"
+        :class="mobileView === 'home' ? 'text-primary bg-primary/10' : 'text-surface-500 hover:text-surface-700 dark:hover:text-surface-300'"
+      >
+        <i class="pi pi-home text-xl"></i>
+        <span class="text-xs font-medium">{{ $t('portal.home') }}</span>
+      </button>
+      <button 
+        @click="mobileView = 'chat'"
+        class="flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors"
+        :class="mobileView === 'chat' ? 'text-primary bg-primary/10' : 'text-surface-500 hover:text-surface-700 dark:hover:text-surface-300'"
+      >
+        <i class="pi pi-microchip-ai text-xl"></i>
+        <span class="text-xs font-medium">{{ $t('chat.title') }}</span>
+      </button>
+    </nav>
     <!-- Header -->
     <header class="bg-surface-0 dark:bg-surface-800 shadow-sm border-b border-surface-200 dark:border-surface-700">
       <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -37,9 +56,13 @@
     </header>
     
     <!-- Main Content -->
-    <main class="flex-1 flex min-h-0">
-      <!-- Left: Main Area -->
-      <div class="flex-1 min-h-0 p-6 overflow-y-auto">
+    <main class="flex-1 flex min-h-0" :class="{ 'pb-20': isMobile }">
+      <!-- Left: Main Area (hidden on mobile when chat is active) -->
+      <div 
+        v-show="!isMobile || mobileView === 'home'"
+        class="flex-1 min-h-0 p-6 overflow-y-auto"
+        :class="{ 'w-full': isMobile }"
+      >
         <!-- Alerts -->
         <div v-if="portal.show_alerts && alerts.length > 0" class="mb-6 space-y-3">
           <Message 
@@ -112,14 +135,18 @@
       
       <!-- Right: Agentic Panel -->
       <template v-if="portal.show_chat">
+        <!-- Resizer (hidden on mobile) -->
         <div
+          v-if="!isMobile"
           class="w-2 cursor-col-resize select-none bg-surface-200 dark:bg-surface-700 hover:bg-primary/70 active:bg-primary/80 transition-colors"
           @mousedown="onChatResizerMouseDown"
           @dblclick="resetChatWidth"
         ></div>
         <aside
+          v-show="!isMobile || mobileView === 'chat'"
           class="min-h-0 flex flex-col overflow-hidden border-l border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-800"
-          :style="chatAsideStyle"
+          :class="{ 'w-full border-l-0': isMobile }"
+          :style="isMobile ? {} : chatAsideStyle"
         >
           <!-- Conversation Header -->
           <div class="p-3 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between gap-2">
@@ -211,8 +238,8 @@
       </template>
     </main>
     
-    <!-- Footer -->
-    <footer class="bg-surface-0 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 py-4 text-center">
+    <!-- Footer (hidden on mobile) -->
+    <footer v-if="!isMobile" class="bg-surface-0 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 py-4 text-center">
       <p class="text-sm text-surface-500">{{ $t('portal.footer') }}</p>
     </footer>
     
@@ -270,6 +297,7 @@ import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/authStore'
+import { useResponsiveSize } from '@/composables/useResponsiveSize'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Message from 'primevue/message'
@@ -290,9 +318,13 @@ const props = defineProps({
 const router = useRouter()
 const { locale, t } = useI18n()
 const authStore = useAuthStore()
+const { isMobile } = useResponsiveSize()
 const langMenu = ref()
 const userMenu = ref()
 const agenticPanelRef = ref(null)
+
+// Mobile view state: 'home' or 'chat'
+const mobileView = ref('home')
 
 // OCR and Documents drawers
 const showOcrDrawer = ref(false)
