@@ -86,6 +86,12 @@
               v-tooltip.top="msg.feedback !== 'up' ? $t('chat.feedbackDown') : null"
             ></i>
             </template>
+            <!-- Ellipsis indicator for collapsed messages (aligned right) -->
+            <span 
+              v-if="msg.isOverflowing && !msg.expanded" 
+              class="flex-1 text-right text-surface-400 cursor-pointer select-none"
+              @click.stop="toggleMessage(index)"
+            >...</span>
           </div>
           
           <!-- Suggested actions -->
@@ -920,21 +926,10 @@ defineExpose({
   margin-bottom: 0.4em;
 }
 
-/* Collapsed message with ellipsis */
+/* Collapsed message */
 .message-collapsed {
   max-height: 160px;
   overflow: hidden;
   cursor: pointer;
-  position: relative;
-}
-
-.message-collapsed::after {
-  content: '…';
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  font-weight: 700;
-  padding: 0 4px;
-  background: inherit;
 }
 </style>
