@@ -39,7 +39,7 @@ services:
     networks:
       - lumiere-network
 
-  # Frontend
+  # Frontend (IT Portal)
   frontend:
     build:
       context: ./frontend-v2
@@ -47,6 +47,18 @@ services:
       args:
         VITE_API_URL: /api/v1
     container_name: lumiere-frontend
+    restart: unless-stopped
+    networks:
+      - lumiere-network
+
+  # Portal Runner (End User Portal)
+  portal:
+    build:
+      context: ./portal-runner-v2
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api/v1
+    container_name: lumiere-portal
     restart: unless-stopped
     networks:
       - lumiere-network
@@ -67,6 +79,7 @@ services:
     depends_on:
       - backend
       - frontend
+      - portal
     networks:
       - lumiere-network
 

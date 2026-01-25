@@ -24,6 +24,7 @@ $SourceDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ItemsToUpload = @(
     "backend-v2",
     "frontend-v2",
+    "portal-runner-v2",
     "nginx",
     "docker-compose.yml",
     ".env.production.example",

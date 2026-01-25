@@ -33,6 +33,8 @@ S'assurer que ces fichiers existent et sont à jour :
 - `backend-v2/prisma.config.ts`
 - `frontend-v2/Dockerfile`
 - `frontend-v2/nginx.conf`
+- `portal-runner-v2/Dockerfile`
+- `portal-runner-v2/nginx.conf`
 - `docker-compose.yml`
 - `nginx/nginx.conf`
 - `nginx/conf.d/default.conf`
@@ -335,7 +337,8 @@ Doit retourner `{"status":"ok",...}`
 
 ### 6.3 Ouvrir dans le navigateur
 
-https://lumiere.mindcentra.com
+- **IT Portal** : https://lumiere.mindcentra.com
+- **End User Portal** : https://lumiere.mindcentra.com/portal/
 
 ---
 
@@ -441,16 +444,17 @@ docker compose up -d
                     │   :443    │ SSL/HTTPS
                     └─────┬─────┘
                           │
-          ┌───────────────┼───────────────┐
-          │               │               │
-    ┌─────▼─────┐   ┌─────▼─────┐   ┌─────▼─────┐
-    │ FRONTEND  │   │  BACKEND  │   │  CERTBOT  │
-    │   :80     │   │   :3000   │   │  (renew)  │
-    │  (Vue.js) │   │ (Node.js) │   └───────────┘
-    └───────────┘   └─────┬─────┘
-                          │
-                    ┌─────▼─────┐
-                    │ POSTGRES  │
-                    │   :5432   │
-                    └───────────┘
+     ┌────────────────────┼────────────────────┐
+     │                    │                    │
+┌────▼────┐         ┌─────▼─────┐        ┌─────▼─────┐
+│ FRONTEND│         │  PORTAL   │        │  BACKEND  │
+│  :80    │         │   :80     │        │   :3000   │
+│ (IT)    │         │(End User) │        │ (Node.js) │
+│   /     │         │  /portal/ │        │   /api    │
+└─────────┘         └───────────┘        └─────┬─────┘
+                                               │
+                                         ┌─────▼─────┐
+                                         │ POSTGRES  │
+                                         │   :5432   │
+                                         └───────────┘
 ```
