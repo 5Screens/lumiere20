@@ -31,11 +31,36 @@
             <span class="text-sm">{{ $t('chat.thinking') }}</span>
           </div>
           
-          <!-- Message content -->
-          <div v-else class="markdown-content" v-html="formatMessage(msg.content)"></div>
+          <!-- Message content with collapse/expand -->
+          <div 
+            v-else 
+            :ref="el => setMessageRef(el, index)"
+            :class="[
+              'markdown-content',
+              { 'message-collapsed': msg.isOverflowing && !msg.expanded }
+            ]"
+            :role="msg.isOverflowing ? 'button' : undefined"
+            :tabindex="msg.isOverflowing ? 0 : undefined"
+            @click="toggleMessage(index)"
+            @keydown.enter.prevent="toggleMessage(index)"
+            @keydown.space.prevent="toggleMessage(index)"
+            v-html="formatMessage(msg.content)"
+          ></div>
 
-          <!-- Feedback buttons for assistant messages -->
-          <div v-if="msg.role === 'assistant' && !msg.loading && msg.uuid && msg.content" class="mt-2 flex items-center gap-1">
+          <!-- Meta: feedback + copy for assistant messages -->
+          <div v-if="msg.role === 'assistant' && !msg.loading && msg.content" class="mt-2 flex items-center gap-1">
+            <!-- Copy button -->
+            <i 
+              :class="[
+                'pi text-xs p-0.5 rounded cursor-pointer transition-colors',
+                msg.copied ? 'pi-check text-green-500' : 'pi-copy text-surface-400 hover:text-primary'
+              ]"
+              @click.stop="copyMessage(index)"
+              v-tooltip.top="msg.copied ? $t('chat.copied') : $t('chat.copyResponse')"
+            ></i>
+            
+            <!-- Feedback buttons (only if msg has uuid) -->
+            <template v-if="msg.uuid">
             <i 
               :class="[
                 'pi pi-thumbs-up text-xs p-0.5 rounded',
@@ -60,6 +85,7 @@
               @click="!msg.feedback && toggleFeedback(index, 'down')"
               v-tooltip.top="msg.feedback !== 'up' ? $t('chat.feedbackDown') : null"
             ></i>
+            </template>
           </div>
           
           <!-- Suggested actions -->
@@ -231,6 +257,10 @@ const inputMessage = ref('')
 const messages = ref([])
 const isLoading = ref(false)
 const currentConversationId = ref(null)
+const messageRefs = ref([])
+
+// Constants for collapsed messages
+const COLLAPSED_MAX_HEIGHT = 160
 
 // Attachments management
 const pendingAttachments = ref([])
@@ -374,6 +404,85 @@ const scrollToBottom = async () => {
   await nextTick()
   if (messagesContainer.value) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
+
+// Message refs for overflow detection
+const setMessageRef = (el, index) => {
+  if (el) {
+    messageRefs.value[index] = el
+    nextTick(() => {
+      updateOverflowState(index)
+    })
+  } else {
+    messageRefs.value.splice(index, 1)
+  }
+}
+
+const updateOverflowState = (index) => {
+  const el = messageRefs.value[index]
+  const message = messages.value[index]
+  if (!el || !message) return
+  
+  el.offsetHeight // Force reflow
+  const isOverflowing = el.scrollHeight > COLLAPSED_MAX_HEIGHT + 1
+  
+  if (message.isOverflowing !== isOverflowing) {
+    message.isOverflowing = isOverflowing
+  }
+}
+
+const toggleMessage = (index) => {
+  // Check if user is selecting text
+  const selection = window.getSelection()
+  if (selection && !selection.isCollapsed) return
+  
+  const target = messages.value[index]
+  if (!target || !target.isOverflowing) return
+  
+  target.expanded = !target.expanded
+  if (target.expanded) {
+    scrollToBottom()
+  }
+}
+
+// Copy message functionality
+const copyTimers = new WeakMap()
+
+const copyMessage = async (index) => {
+  const message = messages.value[index]
+  if (!message) return
+  
+  try {
+    const text = message.content
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+    } else {
+      const textareaElement = document.createElement('textarea')
+      textareaElement.value = text
+      textareaElement.setAttribute('readonly', '')
+      textareaElement.style.position = 'absolute'
+      textareaElement.style.left = '-9999px'
+      document.body.appendChild(textareaElement)
+      textareaElement.select()
+      document.execCommand('copy')
+      document.body.removeChild(textareaElement)
+    }
+    
+    message.copied = true
+    
+    if (copyTimers.has(message)) {
+      clearTimeout(copyTimers.get(message))
+    }
+    
+    const timeoutId = setTimeout(() => {
+      message.copied = false
+      copyTimers.delete(message)
+    }, 3000)
+    
+    copyTimers.set(message, timeoutId)
+  } catch (error) {
+    console.error('[AgenticPanel] Unable to copy message', error)
   }
 }
 
@@ -809,5 +918,23 @@ defineExpose({
   padding-left: 0.75em;
   margin-left: 0;
   margin-bottom: 0.4em;
+}
+
+/* Collapsed message with ellipsis */
+.message-collapsed {
+  max-height: 160px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.message-collapsed::after {
+  content: '…';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-weight: 700;
+  padding: 0 4px;
+  background: inherit;
 }
 </style>

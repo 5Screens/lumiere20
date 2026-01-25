@@ -47,7 +47,9 @@
     "attachedFiles": "Fichiers joints",
     "uploadError": "Échec du téléchargement",
     "filesAdded": "Fichiers ajoutés",
-    "filesReadyToAttach": "fichier(s) prêt(s) à joindre"
+    "filesReadyToAttach": "fichier(s) prêt(s) à joindre",
+    "copyResponse": "Copier la réponse",
+    "copied": "Copié !"
   },
   "voice": {
     "holdToSpeak": "Maintenez pour parler",

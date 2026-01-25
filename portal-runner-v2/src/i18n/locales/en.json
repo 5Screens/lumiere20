@@ -47,7 +47,9 @@
     "attachedFiles": "Attached files",
     "uploadError": "Upload failed",
     "filesAdded": "Files added",
-    "filesReadyToAttach": "file(s) ready to attach"
+    "filesReadyToAttach": "file(s) ready to attach",
+    "copyResponse": "Copy response",
+    "copied": "Copied!"
   },
   "voice": {
     "holdToSpeak": "Hold to speak",
