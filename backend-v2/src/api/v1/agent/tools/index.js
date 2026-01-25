@@ -17,7 +17,13 @@ const getToolDefinitions = () => {
       type: 'function',
       function: {
         name: 'list_my_tickets',
-        description: 'List the tickets of the current user. Returns ticket ID, title, status, type, and creation date.',
+        description: `List the tickets of the current user. Returns ticket UUID, title, status, type, and dates.
+
+TRIGGER PHRASES (use this tool when user says):
+- "show me my tickets", "mes tickets", "my requests", "mes demandes"
+- "what are my open tickets?", "do I have pending tickets?"
+- "where are my requests?", "status of my tickets"
+- "list my incidents", "show my service requests"`,
         parameters: {
           type: 'object',
           properties: {
@@ -41,13 +47,18 @@ const getToolDefinitions = () => {
       type: 'function',
       function: {
         name: 'get_ticket_details',
-        description: 'Get detailed information about a specific ticket by its ID or UUID.',
+        description: `Get detailed information about a specific ticket by its UUID.
+
+TRIGGER PHRASES (use this tool when user says):
+- "show me ticket [uuid]", "details of ticket [uuid]"
+- "what's the status of [uuid]?", "tell me about this ticket"
+- When user provides a UUID and wants more info about it`,
         parameters: {
           type: 'object',
           properties: {
             ticket_id: {
               type: 'string',
-              description: 'The ticket ID (e.g., "TKT-001") or UUID'
+              description: 'The ticket UUID'
             }
           },
           required: ['ticket_id']
@@ -60,7 +71,14 @@ const getToolDefinitions = () => {
       type: 'function',
       function: {
         name: 'search_knowledge_base',
-        description: 'Search the knowledge base for articles matching a problem description or query. Use this when the user describes a problem they want to solve.',
+        description: `Search the knowledge base for articles matching a problem description or query.
+
+TRIGGER PHRASES (use this tool when user says):
+- "how do I...", "comment faire pour...", "how to..."
+- "I have a problem with...", "j'ai un problème avec..."
+- "my [X] is not working", "mon [X] ne marche pas"
+- "is there documentation about...", "do you have info on..."
+- Any technical question or problem description BEFORE suggesting to create a ticket`,
         parameters: {
           type: 'object',
           properties: {
@@ -83,7 +101,11 @@ const getToolDefinitions = () => {
       type: 'function',
       function: {
         name: 'get_article_content',
-        description: 'Get the full content of a knowledge base article by its UUID.',
+        description: `Get the full content of a knowledge base article by its UUID.
+
+Use this when:
+- User wants more details about an article from search results
+- User clicks on or references a specific article UUID`,
         parameters: {
           type: 'object',
           properties: {
@@ -102,7 +124,7 @@ const getToolDefinitions = () => {
       type: 'function',
       function: {
         name: 'get_ticket_types',
-        description: 'Get the list of available ticket types (incident, service request, etc.).',
+        description: 'Get the list of available ticket types. Internal use only - do not expose type choice to user.',
         parameters: {
           type: 'object',
           properties: {},
@@ -114,13 +136,21 @@ const getToolDefinitions = () => {
       type: 'function',
       function: {
         name: 'create_ticket',
-        description: 'Create a new ticket (incident or service request). Only call this after confirming with the user and collecting all required information (title, description, and optionally attachments).',
+        description: `Create a new ticket. Only call this after:
+1. Collecting title and description from user
+2. Checking for pending attachments
+3. Getting explicit user confirmation
+
+IMPORTANT: Detect ticket_type automatically from context:
+- INCIDENT: user reports something broken, not working, error, malfunction
+- SERVICE_REQUEST: user asks for something new (access, equipment, account)
+Never ask the user which type - detect it silently.`,
         parameters: {
           type: 'object',
           properties: {
             ticket_type: {
               type: 'string',
-              description: 'The type of ticket (e.g., "INCIDENT", "SERVICE_REQUEST")'
+              description: 'INCIDENT or SERVICE_REQUEST - detected from user context, never asked'
             },
             title: {
               type: 'string',
@@ -133,7 +163,7 @@ const getToolDefinitions = () => {
             attachment_uuids: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Optional array of attachment UUIDs to link to the ticket. These are files previously uploaded by the user.'
+              description: 'Array of attachment UUIDs from get_pending_attachments'
             }
           },
           required: ['ticket_type', 'title', 'description']
@@ -144,7 +174,12 @@ const getToolDefinitions = () => {
       type: 'function',
       function: {
         name: 'get_pending_attachments',
-        description: 'Get the list of attachments uploaded by the user in the current conversation that are not yet linked to a ticket. Use this before creating a ticket to check if the user has uploaded files.',
+        description: `Get attachments uploaded by the user in this conversation that are not yet linked to a ticket.
+
+WHEN TO USE:
+- At step 4 of ticket creation: check if user already uploaded files
+- Before showing ticket summary: get final attachment count and UUIDs
+- When user mentions they uploaded a file`,
         parameters: {
           type: 'object',
           properties: {},
