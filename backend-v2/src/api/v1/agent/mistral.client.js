@@ -215,8 +215,176 @@ const healthCheck = async () => {
   }
 };
 
+/**
+ * OCR Configuration
+ */
+const OCR_CONFIG = {
+  apiUrl: process.env.MISTRAL_OCR_API_URL || 'https://api.mistral.ai/v1/ocr',
+  model: process.env.MISTRAL_OCR_MODEL || 'mistral-ocr-latest',
+  timeout: parseInt(process.env.MISTRAL_OCR_TIMEOUT) || 120000
+};
+
+/**
+ * Process a document with OCR
+ * @param {Object} params - OCR parameters
+ * @param {string} params.documentBase64 - Base64 encoded document (PDF or image)
+ * @param {string} params.documentUrl - URL of the document (alternative to base64)
+ * @param {string} params.mimeType - MIME type of the document
+ * @param {Object} params.options - Additional options
+ * @returns {Promise<Object>} OCR result with markdown content
+ */
+const ocrProcess = async ({ documentBase64, documentUrl, mimeType, options = {} }) => {
+  const startTime = Date.now();
+
+  const apiUrl = OCR_CONFIG.apiUrl;
+  const apiKey = LLM_CONFIG.apiKey;
+
+  if (!apiKey) {
+    throw new Error('Mistral API key missing. Check MISTRAL_API_KEY in .env');
+  }
+
+  return new Promise((resolve, reject) => {
+    try {
+      // Build document object based on input type
+      let document;
+      
+      if (documentUrl) {
+        // URL-based document
+        const isImage = mimeType && mimeType.startsWith('image/');
+        document = {
+          type: isImage ? 'image_url' : 'document_url',
+          [isImage ? 'image_url' : 'document_url']: documentUrl
+        };
+      } else if (documentBase64) {
+        // Base64-encoded document
+        const isImage = mimeType && mimeType.startsWith('image/');
+        document = {
+          type: isImage ? 'image_url' : 'document_url',
+          [isImage ? 'image_url' : 'document_url']: `data:${mimeType};base64,${documentBase64}`
+        };
+      } else {
+        throw new Error('Either documentBase64 or documentUrl must be provided');
+      }
+
+      const requestBody = {
+        model: options.model || OCR_CONFIG.model,
+        document,
+        include_image_base64: options.includeImages || false
+      };
+
+      // Add table format if specified (null, 'markdown', or 'html')
+      if (options.tableFormat) {
+        requestBody.table_format = options.tableFormat;
+      }
+
+      // Add header/footer extraction if requested
+      if (options.extractHeader) {
+        requestBody.extract_header = true;
+      }
+      if (options.extractFooter) {
+        requestBody.extract_footer = true;
+      }
+
+      // Parse URL
+      const url = new URL(apiUrl);
+      const postData = JSON.stringify(requestBody);
+
+      // Log request
+      logger.info(`-- mistral-client -- OCR REQUEST to ${apiUrl}`);
+      logger.info(`  model: ${requestBody.model}, document type: ${document.type}`);
+      logger.debug(`  request body size: ${postData.length} bytes`);
+
+      // Configure request
+      const reqOptions = {
+        hostname: url.hostname,
+        port: 443,
+        path: url.pathname,
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(postData)
+        },
+        timeout: options.timeout || OCR_CONFIG.timeout
+      };
+
+      // Make request
+      const req = https.request(reqOptions, (res) => {
+        res.setEncoding('utf8');
+        let data = '';
+
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        res.on('end', () => {
+          const executionTime = Date.now() - startTime;
+          
+          try {
+            if (res.statusCode !== 200) {
+              logger.error(`-- mistral-client -- OCR API error: ${res.statusCode}`, { response: data });
+              return reject(new Error(`OCR API error: ${res.statusCode} - ${data}`));
+            }
+
+            const response = JSON.parse(data);
+            
+            // Extract markdown from all pages
+            const pages = response.pages || [];
+            const markdownContent = pages.map(page => page.markdown || '').join('\n\n---\n\n');
+            
+            // Log response
+            logger.info(`-- mistral-client -- OCR RESPONSE in ${executionTime}ms`);
+            logger.info(`  pages: ${pages.length}, total chars: ${markdownContent.length}`);
+
+            resolve({
+              markdown: markdownContent,
+              pages: pages.map(p => ({
+                index: p.index,
+                markdown: p.markdown,
+                header: p.header || null,
+                footer: p.footer || null,
+                tables: p.tables || [],
+                images: p.images || [],
+                hyperlinks: p.hyperlinks || [],
+                dimensions: p.dimensions || null
+              })),
+              model: response.model,
+              usageInfo: response.usage_info || {},
+              executionTimeMs: executionTime
+            });
+          } catch (parseError) {
+            logger.error(`-- mistral-client -- OCR Response parse error: ${parseError.message}`);
+            reject(parseError);
+          }
+        });
+      });
+
+      req.on('error', (error) => {
+        logger.error(`-- mistral-client -- OCR Request error: ${error.message}`);
+        reject(error);
+      });
+
+      req.on('timeout', () => {
+        req.destroy();
+        logger.error(`-- mistral-client -- OCR Request timeout after ${options.timeout || OCR_CONFIG.timeout}ms`);
+        reject(new Error('OCR request timeout'));
+      });
+
+      // Send request
+      req.write(postData);
+      req.end();
+
+    } catch (error) {
+      logger.error(`-- mistral-client -- OCR Request failed: ${error.message}`);
+      reject(error);
+    }
+  });
+};
+
 module.exports = {
   chatCompletion,
   healthCheck,
-  LLM_CONFIG
+  ocrProcess,
+  LLM_CONFIG,
+  OCR_CONFIG
 };

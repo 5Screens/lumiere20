@@ -29,4 +29,7 @@ router.patch('/messages/:uuid/feedback', authenticate, controller.updateMessageF
 // GET /api/v1/agent/health - Health check (no auth required)
 router.get('/health', controller.health);
 
+// POST /api/v1/agent/ocr - Process a document with OCR
+router.post('/ocr', authenticate, controller.ocr);
+
 module.exports = router;

@@ -5,6 +5,7 @@
 
 const agentService = require('./agent.service');
 const conversationService = require('./conversation.service');
+const { ocrProcess } = require('./mistral.client');
 const logger = require('../../../config/logger');
 
 /**
@@ -273,6 +274,91 @@ const updateMessageFeedback = async (req, res) => {
   }
 };
 
+/**
+ * POST /agent/ocr
+ * Process a document with OCR
+ */
+const ocr = async (req, res) => {
+  try {
+    const userUuid = req.user?.uuid;
+    if (!userUuid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    const { documentBase64, documentUrl, mimeType, options } = req.body;
+
+    if (!documentBase64 && !documentUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Either documentBase64 or documentUrl is required'
+      });
+    }
+
+    // Validate mime type for supported formats
+    const supportedMimeTypes = [
+      'application/pdf',
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'image/webp',
+      'image/gif',
+      'image/avif',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation' // pptx
+    ];
+
+    if (mimeType && !supportedMimeTypes.includes(mimeType)) {
+      return res.status(400).json({
+        success: false,
+        error: `Unsupported file type: ${mimeType}. Supported types: PDF, PNG, JPEG, WEBP, GIF, AVIF, DOCX, PPTX`
+      });
+    }
+
+    logger.info(`-- agent-controller -- OCR request from user ${userUuid}, mimeType: ${mimeType}`);
+
+    const result = await ocrProcess({
+      documentBase64,
+      documentUrl,
+      mimeType,
+      options: options || {}
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        markdown: result.markdown,
+        pageCount: result.pages?.length || 0,
+        executionTimeMs: result.executionTimeMs
+      }
+    });
+
+  } catch (error) {
+    logger.error(`-- agent-controller -- OCR error: ${error.message}`, { stack: error.stack });
+    
+    let friendlyMessage = 'An error occurred while processing the document. Please try again.';
+    let statusCode = 500;
+
+    if (error.message?.includes('503') || error.message?.includes('overflow')) {
+      friendlyMessage = 'The OCR service is temporarily overloaded. Please wait a moment and try again.';
+      statusCode = 503;
+    } else if (error.message?.includes('timeout')) {
+      friendlyMessage = 'The document processing took too long. Please try with a smaller document.';
+      statusCode = 504;
+    } else if (error.message?.includes('429')) {
+      friendlyMessage = 'Too many requests. Please wait a moment before trying again.';
+      statusCode = 429;
+    }
+
+    return res.status(statusCode).json({
+      success: false,
+      error: friendlyMessage
+    });
+  }
+};
+
 module.exports = {
   chat,
   health,
@@ -280,5 +366,6 @@ module.exports = {
   getConversation,
   createConversation,
   deleteConversation,
-  updateMessageFeedback
+  updateMessageFeedback,
+  ocr
 };

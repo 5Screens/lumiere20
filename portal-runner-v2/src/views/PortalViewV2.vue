@@ -128,6 +128,25 @@
               <span class="font-semibold text-surface-800 dark:text-surface-100">{{ $t('chat.title') }}</span>
             </div>
             <div class="flex items-center gap-1">
+              <!-- OCR button -->
+              <Button 
+                icon="pi pi-file-pdf" 
+                text 
+                rounded 
+                size="small"
+                v-tooltip.bottom="$t('ocr.scanDocument')"
+                @click="openOcrDrawer"
+              />
+              <!-- Documents button -->
+              <Button 
+                icon="pi pi-folder" 
+                text 
+                rounded 
+                size="small"
+                v-tooltip.bottom="$t('documents.drawerTitle')"
+                @click="openDocumentsDrawer"
+              />
+              <!-- New conversation button -->
               <Button 
                 icon="pi pi-plus" 
                 text 
@@ -212,6 +231,18 @@
     <footer class="bg-surface-0 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 py-4 text-center">
       <p class="text-sm text-surface-500">{{ $t('portal.footer') }}</p>
     </footer>
+    
+    <!-- OCR Drawer -->
+    <OcrDrawer 
+      v-model:show="showOcrDrawer"
+      @ocr-complete="onOcrComplete"
+    />
+    
+    <!-- Documents Drawer -->
+    <DocumentsDrawer 
+      ref="documentsDrawerRef"
+      v-model:show="showDocumentsDrawer"
+    />
   </div>
 </template>
 
@@ -226,7 +257,9 @@ import Message from 'primevue/message'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import AgenticPanel from '@/components/AgenticPanel.vue'
-import { getConversations, deleteConversation } from '@/services/agent'
+import OcrDrawer from '@/components/OcrDrawer.vue'
+import DocumentsDrawer from '@/components/DocumentsDrawer.vue'
+import { getConversations, deleteConversation, sendMessage as sendAgentMessage } from '@/services/agent'
 
 const props = defineProps({
   portalData: { type: Object, required: true },
@@ -239,6 +272,11 @@ const authStore = useAuthStore()
 const langMenu = ref()
 const userMenu = ref()
 const agenticPanelRef = ref(null)
+
+// OCR and Documents drawers
+const showOcrDrawer = ref(false)
+const showDocumentsDrawer = ref(false)
+const documentsDrawerRef = ref(null)
 
 // Conversations management
 const conversations = ref([])
@@ -448,6 +486,78 @@ onMounted(() => {
 
 const handleAction = (action) => {
   console.log('Action clicked:', action)
-  // TODO: Implement action handling
+  
+  // Handle specific action codes
+  const actionCode = action.code || action.action
+  
+  switch (actionCode) {
+    case 'ocr':
+    case 'scan_document':
+      openOcrDrawer()
+      break
+    case 'my_documents':
+    case 'documents':
+      openDocumentsDrawer()
+      break
+    case 'my_tickets':
+    case 'tickets':
+      // TODO: Navigate to tickets view or open tickets drawer
+      console.log('Open my tickets')
+      break
+    default:
+      // For other actions, send to chat
+      if (action.message) {
+        // Send message to agent
+        console.log('Sending action message to agent:', action.message)
+      }
+  }
+}
+
+/**
+ * Open OCR drawer
+ */
+const openOcrDrawer = () => {
+  // Start a new conversation for OCR workflow
+  startNewConversation()
+  showOcrDrawer.value = true
+}
+
+/**
+ * Open Documents drawer
+ */
+const openDocumentsDrawer = () => {
+  showDocumentsDrawer.value = true
+}
+
+/**
+ * Handle OCR completion - send message to chat
+ */
+const onOcrComplete = async (data) => {
+  console.log('OCR complete:', data)
+  
+  // Refresh documents drawer if open
+  if (documentsDrawerRef.value) {
+    documentsDrawerRef.value.refresh()
+  }
+  
+  // Send message to agent about the scanned document
+  const message = `[OCR] ${t('ocr.documentScanned')}: ${data.fileName}\n\n${t('ocr.askFollowUp')}`
+  
+  try {
+    const response = await sendAgentMessage(message, selectedConversationId.value, 'text')
+    
+    // Update conversation ID if new
+    if (response.conversationId) {
+      selectedConversationId.value = response.conversationId
+      loadConversations()
+    }
+    
+    // Reload the conversation in the panel to show the new message
+    if (agenticPanelRef.value && response.conversationId) {
+      agenticPanelRef.value.loadConversation(response.conversationId)
+    }
+  } catch (error) {
+    console.error('Failed to send OCR message to agent:', error)
+  }
 }
 </script>

@@ -60,6 +60,7 @@ const symptomsRoutes = require('./api/v1/symptoms/routes');
 const agentRoutes = require('./api/v1/agent/routes');
 const portalsRoutes = require('./api/v1/portals/routes');
 const globalSearchRoutes = require('./api/v1/global-search/routes');
+const ocrDocumentsRoutes = require('./api/v1/ocr_documents/routes');
 
 // Public routes (no authentication required)
 app.use('/api/v1/auth', authRoutes);
@@ -90,6 +91,7 @@ app.use('/api/v1/symptoms', authenticate, symptomsRoutes);
 app.use('/api/v1/agent', authenticate, agentRoutes);
 app.use('/api/v1/portals', authenticate, portalsRoutes);
 app.use('/api/v1/global-search', authenticate, globalSearchRoutes);
+app.use('/api/v1/ocr-documents', authenticate, ocrDocumentsRoutes);
 
 // Health check
 app.get('/', (req, res) => {

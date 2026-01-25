@@ -74,5 +74,40 @@
     "warning": "Warning",
     "success": "Success",
     "error": "Error"
+  },
+  "ocr": {
+    "scanDocument": "Smart scan",
+    "processing": "Processing document",
+    "resultTitle": "Extracted content",
+    "pages": "pages",
+    "success": "Document processed",
+    "extractedFrom": "Text extracted from",
+    "error": "OCR Error",
+    "noContent": "No content extracted from document",
+    "drawerTitle": "Document scanning",
+    "featureTitle": "Smart scanning",
+    "featureDescription": "Drop a document (PDF, image, Word, PowerPoint) to automatically extract text using artificial intelligence.",
+    "dropZoneTitle": "Drop your document here",
+    "dropZoneSubtitle": "or click to browse your files",
+    "browseFiles": "Browse",
+    "supportedFormats": "Supported formats: PDF, PNG, JPEG, DOCX, PPTX",
+    "processingFile": "Processing...",
+    "unsupportedFormat": "Unsupported file format",
+    "fileTooLarge": "File is too large (max 20 MB)",
+    "documentSaved": "Document scanned and saved",
+    "documentScanned": "Document scanned",
+    "askFollowUp": "Would you like to do something with this document?"
+  },
+  "documents": {
+    "drawerTitle": "My documents",
+    "noDocuments": "No scanned documents",
+    "noDocumentsHint": "Use smart scanning to add documents",
+    "fileName": "File name",
+    "date": "Date",
+    "view": "View",
+    "delete": "Delete",
+    "confirmDeleteTitle": "Delete document",
+    "confirmDeleteMessage": "Are you sure you want to delete {name}?",
+    "deleted": "Document deleted"
   }
 }
