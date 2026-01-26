@@ -1,15 +1,8 @@
 <template>
-  <main>
-    <router-view />
-  </main>
+  <Toast position="top-right" />
+  <router-view />
 </template>
 
 <script setup>
-// App root component - minimal wrapper for router-view
+import Toast from 'primevue/toast'
 </script>
-
-<style>
-main {
-  width: 100%;
-}
-</style>

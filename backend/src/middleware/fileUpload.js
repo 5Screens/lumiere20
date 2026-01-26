@@ -1,5 +1,5 @@
 /**
- * Middleware pour la gestion des uploads de fichiers
+ * Middleware for file upload management
  */
 const multer = require('multer');
 const path = require('path');
@@ -7,7 +7,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const logger = require('../config/logger');
 
-// Assurez-vous que le répertoire d'upload existe
+// Ensure upload directory exists
 const createUploadDir = () => {
   const now = new Date();
   const year = now.getFullYear();
@@ -19,60 +19,60 @@ const createUploadDir = () => {
   
   if (!fs.existsSync(baseDir)) {
     fs.mkdirSync(baseDir, { recursive: true });
-    logger.info(`Répertoire d'upload créé: ${baseDir}`);
+    logger.info(`Upload directory created: ${baseDir}`);
   }
   
   if (!fs.existsSync(yearDir)) {
     fs.mkdirSync(yearDir, { recursive: true });
-    logger.info(`Répertoire d'upload créé: ${yearDir}`);
+    logger.info(`Upload directory created: ${yearDir}`);
   }
   
   if (!fs.existsSync(monthDir)) {
     fs.mkdirSync(monthDir, { recursive: true });
-    logger.info(`Répertoire d'upload créé: ${monthDir}`);
+    logger.info(`Upload directory created: ${monthDir}`);
   }
   
   return monthDir;
 };
 
-// Configuration du stockage
+// Storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = createUploadDir();
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Générer un UUID pour le nom de fichier
+    // Generate UUID for filename
     const uuid = crypto.randomUUID();
     const ext = path.extname(file.originalname);
     cb(null, uuid + ext);
   }
 });
 
-// Filtre pour les types de fichiers autorisés et interdits
+// File type filter (allowed and forbidden types)
 const fileFilter = (req, file, cb) => {
   const allowedTypes = (process.env.ALLOWED_FILE_TYPES || '').split(',').filter(type => type.trim() !== '');
   const forbiddenTypes = (process.env.FORBIDDEN_FILE_TYPES || '').split(',').filter(type => type.trim() !== '');
   
-  // Vérifier si le type est explicitement interdit
+  // Check if type is explicitly forbidden
   if (forbiddenTypes.length > 0 && forbiddenTypes.includes(file.mimetype)) {
-    cb(new Error(`Type de fichier interdit: ${file.mimetype}`), false);
+    cb(new Error(`Forbidden file type: ${file.mimetype}`), false);
     return;
   }
   
-  // Vérifier si le type est autorisé (si la liste n'est pas vide)
+  // Check if type is allowed (if list is not empty)
   if (allowedTypes.length === 0 || allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error(`Type de fichier non autorisé. Types autorisés: ${allowedTypes.join(', ')}`), false);
+    cb(new Error(`File type not allowed. Allowed types: ${allowedTypes.join(', ')}`), false);
   }
 };
 
-// Configuration de Multer
+// Multer configuration
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE || 10485760) // 10MB par défaut
+    fileSize: parseInt(process.env.MAX_FILE_SIZE || 10485760) // 10MB default
   },
   fileFilter: fileFilter
 });

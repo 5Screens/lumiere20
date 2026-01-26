@@ -1,337 +1,152 @@
-const groupService = require('./service');
+const service = require('./service');
 const logger = require('../../../config/logger');
-const { validateGroup, validateGroupPatch, validateUuid, validateAddMultipleMembers } = require('./validation');
 
-class GroupController {
-    async getAllGroups(req, res) {
-        logger.info('[CONTROLLER] getAllGroups - Starting to process request');
-        try {
-            const lang = req.query.lang;
-            if (lang) {
-                logger.info(`[CONTROLLER] getAllGroups - Language parameter provided: ${lang}`);
-            }
-            
-            const groups = await groupService.getAllGroups();
-            logger.info(`[CONTROLLER] getAllGroups - Successfully retrieved ${groups.length} groups`);
-            res.json(groups);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getAllGroups - Error: ${error.message}`);
-            res.status(500).json({ 
-                error: 'An error occurred while retrieving groups' 
-            });
-        }
+/**
+ * Search groups with PrimeVue filters
+ * POST /api/v1/groups/search
+ */
+const search = async (req, res, next) => {
+  try {
+    const result = await service.search(req.body);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error searching groups:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get all groups
+ * GET /api/v1/groups
+ */
+const getAll = async (req, res, next) => {
+  try {
+    const { page, limit, sortField, sortOrder } = req.query;
+    const result = await service.getAll({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 50,
+      sortField: sortField || 'group_name',
+      sortOrder: parseInt(sortOrder) || 1,
+    });
+    res.json(result);
+  } catch (error) {
+    logger.error('Error getting groups:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get group by UUID
+ * GET /api/v1/groups/:uuid
+ */
+const getById = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const item = await service.getById(uuid);
+
+    if (!item) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Group not found',
+      });
     }
 
-    async getGroupByUuid(req, res) {
-        const uuid = req.params.uuid;
-        logger.info(`[CONTROLLER] getGroupByUuid - Processing request for UUID: ${uuid}`);
-        try {
-            const group = await groupService.getGroupByUuid(uuid);
-            
-            if (!group) {
-                logger.warn(`[CONTROLLER] getGroupByUuid - Group not found with UUID: ${uuid}`);
-                return res.status(404).json({
-                    error: 'Group not found'
-                });
-            }
-            
-            logger.info(`[CONTROLLER] getGroupByUuid - Successfully retrieved group with UUID: ${uuid}`);
-            return res.json(group);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getGroupByUuid - Error: ${error.message}`);
-            return res.status(500).json({
-                error: 'Error while retrieving group'
-            });
-        }
+    res.json(item);
+  } catch (error) {
+    logger.error('Error getting group:', error);
+    next(error);
+  }
+};
+
+/**
+ * Create new group
+ * POST /api/v1/groups
+ */
+const create = async (req, res, next) => {
+  try {
+    const item = await service.create(req.body);
+    res.status(201).json(item);
+  } catch (error) {
+    logger.error('Error creating group:', error);
+    next(error);
+  }
+};
+
+/**
+ * Update group
+ * PUT /api/v1/groups/:uuid
+ */
+const update = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const item = await service.update(uuid, req.body);
+
+    if (!item) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Group not found',
+      });
     }
 
-    async createGroup(req, res) {
-        logger.info('[CONTROLLER] createGroup - Starting to process request');
-        try {
-            const groupData = req.body;
-            logger.info('[CONTROLLER] createGroup - Validating group data');
-            
-            // Validate data
-            const { error, value } = validateGroup(groupData);
-            if (error) {
-                logger.warn(`[CONTROLLER] createGroup - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
-                return res.status(400).json({
-                    error: 'Invalid group data',
-                    details: error.details.map(d => d.message)
-                });
-            }
-            
-            logger.info('[CONTROLLER] createGroup - Creating new group');
-            const newGroup = await groupService.createGroup(value);
-            
-            logger.info(`[CONTROLLER] createGroup - Group created successfully with UUID: ${newGroup.uuid}`);
-            return res.status(201).json(newGroup);
-        } catch (error) {
-            logger.error(`[CONTROLLER] createGroup - Error: ${error.message}`);
-            
-            if (error.code === '23505') { // PostgreSQL unique constraint violation code
-                return res.status(409).json({
-                    error: 'Group with this name already exists'
-                });
-            }
-            
-            return res.status(500).json({
-                error: 'An error occurred while creating the group'
-            });
-        }
+    res.json(item);
+  } catch (error) {
+    logger.error('Error updating group:', error);
+    next(error);
+  }
+};
+
+/**
+ * Delete group
+ * DELETE /api/v1/groups/:uuid
+ */
+const remove = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const success = await service.remove(uuid);
+
+    if (!success) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Group not found',
+      });
     }
 
-    async updateGroupField(req, res) {
-        const uuid = req.groupUuid;
-        logger.info(`[CONTROLLER] updateGroupField - Processing request for UUID: ${uuid}`);
+    res.status(204).send();
+  } catch (error) {
+    logger.error('Error deleting group:', error);
+    next(error);
+  }
+};
 
-        try {
-            // Validate the group exists
-            const existingGroup = await groupService.getGroupByUuid(uuid);
-            if (!existingGroup) {
-                logger.warn(`[CONTROLLER] updateGroupField - Group not found with UUID: ${uuid}`);
-                return res.status(404).json({
-                    error: 'Group not found'
-                });
-            }
+/**
+ * Delete multiple groups
+ * POST /api/v1/groups/delete-many
+ */
+const removeMany = async (req, res, next) => {
+  try {
+    const { uuids } = req.body;
 
-            // Validate update data
-            const { error, value } = validateGroupPatch(req.body);
-            if (error) {
-                logger.warn(`[CONTROLLER] updateGroupField - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
-                return res.status(400).json({
-                    error: 'Invalid update data',
-                    details: error.details.map(d => d.message)
-                });
-            }
-
-            // Update the group
-            const updatedGroup = await groupService.updateGroup(uuid, value);
-            logger.info(`[CONTROLLER] updateGroupField - Group updated successfully: ${uuid}`);
-            
-            return res.json(updatedGroup);
-        } catch (error) {
-            logger.error(`[CONTROLLER] updateGroupField - Error: ${error.message}`);
-            return res.status(500).json({
-                error: 'An error occurred while updating the group'
-            });
-        }
+    if (!Array.isArray(uuids) || uuids.length === 0) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: 'uuids must be a non-empty array',
+      });
     }
 
-    async getGroupMembers(req, res) {
-        const uuid = req.params.uuid;
-        logger.info(`[CONTROLLER] getGroupMembers - Processing request for group UUID: ${uuid}`);
-        try {
-            // Vérifier d'abord que le groupe existe
-            const group = await groupService.getGroupByUuid(uuid);
-            if (!group) {
-                logger.warn(`[CONTROLLER] getGroupMembers - Group not found with UUID: ${uuid}`);
-                return res.status(404).json({
-                    error: 'Group not found'
-                });
-            }
-            
-            const members = await groupService.getGroupMembers(uuid);
-            logger.info(`[CONTROLLER] getGroupMembers - Successfully retrieved ${members.length} members for group: ${uuid}`);
-            return res.json(members);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getGroupMembers - Error: ${error.message}`);
-            return res.status(500).json({
-                error: 'Error while retrieving group members'
-            });
-        }
-    }
+    const count = await service.removeMany(uuids);
+    res.json({ deleted: count });
+  } catch (error) {
+    logger.error('Error deleting groups:', error);
+    next(error);
+  }
+};
 
-    async getAllGroupMembers(req, res) {
-        logger.info('[CONTROLLER] getAllGroupMembers - Starting to process request');
-        try {
-            const members = await groupService.getAllGroupMembers();
-            logger.info(`[CONTROLLER] getAllGroupMembers - Successfully retrieved ${members.length} members`);
-            res.json(members);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getAllGroupMembers - Error: ${error.message}`);
-            res.status(500).json({ 
-                error: 'An error occurred while retrieving group members' 
-            });
-        }
-    }
-
-    async addMultipleMembersToGroup(req, res) {
-        const groupUuid = req.params.group_uuid;
-        logger.info(`[CONTROLLER] addMultipleMembersToGroup - Processing request for group: ${groupUuid}`);
-        
-        try {
-            // Valider l'UUID du groupe
-            const groupValidation = validateUuid(groupUuid, 'Group UUID');
-            if (groupValidation.error) {
-                logger.warn(`[CONTROLLER] addMultipleMembersToGroup - Invalid group UUID: ${groupUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid group UUID format',
-                    details: groupValidation.error.details.map(d => d.message)
-                });
-            }
-
-            // Valider le body de la requête
-            const bodyValidation = validateAddMultipleMembers(req.body);
-            if (bodyValidation.error) {
-                logger.warn(`[CONTROLLER] addMultipleMembersToGroup - Invalid request body`);
-                return res.status(400).json({
-                    error: 'Invalid request body',
-                    details: bodyValidation.error.details.map(d => d.message)
-                });
-            }
-
-            const { members } = bodyValidation.value;
-            logger.info(`[CONTROLLER] addMultipleMembersToGroup - Adding ${members.length} members to group: ${groupUuid}`);
-
-            // Vérifier que le groupe existe
-            const group = await groupService.getGroupByUuid(groupUuid);
-            if (!group) {
-                logger.warn(`[CONTROLLER] addMultipleMembersToGroup - Group not found with UUID: ${groupUuid}`);
-                return res.status(404).json({
-                    error: 'Group not found'
-                });
-            }
-
-            // Ajouter les membres au groupe
-            const result = await groupService.addMultipleGroupMembers(groupUuid, members);
-            logger.info(`[CONTROLLER] addMultipleMembersToGroup - ${result.added.length} members added successfully to group: ${groupUuid}`);
-            
-            return res.status(201).json({
-                message: `${result.added.length} members added to group successfully`,
-                data: {
-                    added: result.added,
-                    skipped: result.skipped,
-                    errors: result.errors
-                }
-            });
-        } catch (error) {
-            logger.error(`[CONTROLLER] addMultipleMembersToGroup - Error: ${error.message}`);
-            return res.status(500).json({
-                error: 'An error occurred while adding members to group'
-            });
-        }
-    }
-
-    async addMemberToGroup(req, res) {
-        const groupUuid = req.params.group_uuid;
-        const userUuid = req.params.user_uuid;
-        logger.info(`[CONTROLLER] addMemberToGroup - Processing request for group: ${groupUuid}, user: ${userUuid}`);
-        
-        try {
-            // Valider les UUID des paramètres
-            const groupValidation = validateUuid(groupUuid, 'Group UUID');
-            if (groupValidation.error) {
-                logger.warn(`[CONTROLLER] addMemberToGroup - Invalid group UUID: ${groupUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid group UUID format',
-                    details: groupValidation.error.details.map(d => d.message)
-                });
-            }
-
-            const userValidation = validateUuid(userUuid, 'User UUID');
-            if (userValidation.error) {
-                logger.warn(`[CONTROLLER] addMemberToGroup - Invalid user UUID: ${userUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid user UUID format',
-                    details: userValidation.error.details.map(d => d.message)
-                });
-            }
-
-            // Vérifier que le groupe existe
-            const group = await groupService.getGroupByUuid(groupUuid);
-            if (!group) {
-                logger.warn(`[CONTROLLER] addMemberToGroup - Group not found with UUID: ${groupUuid}`);
-                return res.status(404).json({
-                    error: 'Group not found'
-                });
-            }
-
-            // Ajouter le membre au groupe
-            const result = await groupService.addGroupMember(groupUuid, userUuid);
-            logger.info(`[CONTROLLER] addMemberToGroup - Member added successfully to group: ${groupUuid}`);
-            
-            return res.status(201).json({
-                message: 'Member added to group successfully',
-                data: result
-            });
-        } catch (error) {
-            logger.error(`[CONTROLLER] addMemberToGroup - Error: ${error.message}`);
-            
-            if (error.code === '23505') { // PostgreSQL unique constraint violation
-                return res.status(409).json({
-                    error: 'User is already a member of this group'
-                });
-            }
-            
-            if (error.code === '23503') { // PostgreSQL foreign key constraint violation
-                return res.status(404).json({
-                    error: 'User not found'
-                });
-            }
-            
-            return res.status(500).json({
-                error: 'An error occurred while adding member to group'
-            });
-        }
-    }
-
-    async removeMemberFromGroup(req, res) {
-        const groupUuid = req.params.group_uuid;
-        const userUuid = req.params.user_uuid;
-        logger.info(`[CONTROLLER] removeMemberFromGroup - Processing request for group: ${groupUuid}, user: ${userUuid}`);
-        
-        try {
-            // Valider les UUID des paramètres
-            const groupValidation = validateUuid(groupUuid, 'Group UUID');
-            if (groupValidation.error) {
-                logger.warn(`[CONTROLLER] removeMemberFromGroup - Invalid group UUID: ${groupUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid group UUID format',
-                    details: groupValidation.error.details.map(d => d.message)
-                });
-            }
-
-            const userValidation = validateUuid(userUuid, 'User UUID');
-            if (userValidation.error) {
-                logger.warn(`[CONTROLLER] removeMemberFromGroup - Invalid user UUID: ${userUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid user UUID format',
-                    details: userValidation.error.details.map(d => d.message)
-                });
-            }
-
-            // Vérifier que le groupe existe
-            const group = await groupService.getGroupByUuid(groupUuid);
-            if (!group) {
-                logger.warn(`[CONTROLLER] removeMemberFromGroup - Group not found with UUID: ${groupUuid}`);
-                return res.status(404).json({
-                    error: 'Group not found'
-                });
-            }
-
-            // Supprimer le membre du groupe
-            const result = await groupService.removeGroupMember(groupUuid, userUuid);
-            
-            if (!result) {
-                logger.warn(`[CONTROLLER] removeMemberFromGroup - Member not found in group: ${groupUuid}`);
-                return res.status(404).json({
-                    error: 'Member not found in this group'
-                });
-            }
-            
-            logger.info(`[CONTROLLER] removeMemberFromGroup - Member removed successfully from group: ${groupUuid}`);
-            
-            return res.json({
-                message: 'Member removed from group successfully'
-            });
-        } catch (error) {
-            logger.error(`[CONTROLLER] removeMemberFromGroup - Error: ${error.message}`);
-            return res.status(500).json({
-                error: 'An error occurred while removing member from group'
-            });
-        }
-    }
-}
-
-module.exports = new GroupController();
+module.exports = {
+  search,
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+  removeMany,
+};

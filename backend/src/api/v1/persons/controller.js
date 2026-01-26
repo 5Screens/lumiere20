@@ -2,441 +2,210 @@ const service = require('./service');
 const logger = require('../../../config/logger');
 
 /**
- * Get persons with lazy search and pagination
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Search persons with PrimeVue filters
+ * POST /api/v1/persons/search
  */
-const getPersonsLazySearch = async (req, res) => {
-    try {
-        const { search = '', page = 1, limit = 10 } = req.query;
-        logger.info(`[CONTROLLER] - Getting persons with lazy search: "${search}", page: ${page}, limit: ${limit}`);
-        
-        const result = await service.getPersonsLazySearch(search, page, limit);
-        
-        logger.info(`[CONTROLLER] - Successfully retrieved ${result.data.length} persons (page ${result.pagination.page}, total: ${result.pagination.total})`);
-        res.json(result);
-    } catch (error) {
-        logger.error('[CONTROLLER] - Error in lazy search:', error);
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * DEPRECATED - Get persons with pagination support for infinite scroll
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @deprecated
- */
-const getPersonsPaginated = async (req, res) => {
-    try {
-        logger.info('[CONTROLLER] - Getting persons paginated');
-        
-        const {
-            offset = 0,
-            limit = 50,
-            sortBy = 'updated_at',
-            sortDirection = 'desc',
-            search = '',
-            lang
-        } = req.query;
-
-        // Parse filters from query parameters
-        const filters = {};
-        Object.keys(req.query).forEach(key => {
-            if (key.startsWith('filter_') && req.query[key]) {
-                const filterKey = key.replace('filter_', '');
-                filters[filterKey] = req.query[key];
-            }
-        });
-
-        const options = {
-            offset: parseInt(offset) || 0,
-            limit: Math.min(parseInt(limit) || 50, 100), // Max 100 items per request
-            sortBy,
-            sortDirection,
-            filters,
-            search
-        };
-
-        logger.info(`[CONTROLLER] - Pagination options: ${JSON.stringify(options)}`);
-        
-        const result = await service.getPersonsPaginated(options, lang);
-        
-        logger.info(`[CONTROLLER] - Successfully retrieved ${result.data.length} persons (${result.pagination.offset + 1}-${result.pagination.offset + result.data.length} of ${result.total})`);
-        
-        res.json(result);
-    } catch (error) {
-        logger.error('[CONTROLLER] - Error getting persons paginated:', error);
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * Get a person by UUID
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const getPersonByUuid = async (req, res) => {
-    try {
-        const { uuid } = req.params;
-        const { lang } = req.query;
-        
-        logger.info(`[CONTROLLER] - Getting person with UUID: ${uuid}`);
-        
-        const person = await service.getPersonByUuid(uuid, lang);
-        
-        if (!person) {
-            logger.info(`[CONTROLLER] - Person not found with UUID: ${uuid}`);
-            return res.status(404).json({ 
-                error: 'Person not found',
-                message: `No person found with UUID: ${uuid}`
-            });
-        }
-        
-        logger.info(`[CONTROLLER] - Successfully retrieved person with UUID: ${uuid}`);
-        res.json(person);
-    } catch (error) {
-        logger.error(`[CONTROLLER] - Error getting person with UUID: ${req.params.uuid}:`, error);
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * Get all groups for a specific person
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const getPersonGroups = async (req, res) => {
-    try {
-        const { uuid } = req.params;
-        logger.info(`Controller - Getting groups for person with UUID: ${uuid}`);
-        
-        const groups = await service.getPersonGroups(uuid);
-        logger.info(`Controller - Successfully retrieved ${groups.length} groups for person with UUID: ${uuid}`);
-        
-        res.json(groups);
-    } catch (error) {
-        logger.error(`Controller - Error getting groups for person with UUID: ${req.params.uuid}:`, error);
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * Update a person by UUID
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const updatePerson = async (req, res) => {
-    try {
-        const { uuid } = req.params;
-        const personData = req.body;
-        
-        logger.info(`[CONTROLLER] - Updating person with UUID: ${uuid}`);
-        
-        const updatedPerson = await service.updatePerson(uuid, personData);
-        
-        if (!updatedPerson) {
-            logger.info(`[CONTROLLER] - Person not found with UUID: ${uuid}`);
-            return res.status(404).json({ 
-                error: 'Person not found',
-                message: `No person found with UUID: ${uuid}`
-            });
-        }
-        
-        logger.info(`[CONTROLLER] - Successfully updated person with UUID: ${uuid}`);
-        res.json(updatedPerson);
-    } catch (error) {
-        logger.error(`[CONTROLLER] - Error updating person with UUID: ${req.params.uuid}:`, error);
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * Create a new person
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const createPerson = async (req, res) => {
-    try {
-        const personData = req.body;
-        
-        logger.info('[CONTROLLER] - Creating new person');
-        
-        const newPerson = await service.createPerson(personData);
-        
-        logger.info(`[CONTROLLER] - Successfully created person with UUID: ${newPerson.uuid}`);
-        res.status(201).json(newPerson);
-    } catch (error) {
-        logger.error('[CONTROLLER] - Error creating person:', error);
-        
-        // Gestion spécifique des erreurs de contrainte unique (email)
-        if (error.code === '23505') {
-            return res.status(409).json({
-                error: 'Conflict',
-                message: 'A person with this email already exists',
-                details: error.detail
-            });
-        }
-        
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * Add groups to a person
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const addPersonGroups = async (req, res) => {
-    try {
-        const { uuid } = req.params;
-        const { groups } = req.body;
-        
-        logger.info(`[CONTROLLER] - Adding groups to person with UUID: ${uuid}`);
-        
-        const result = await service.addPersonGroups(uuid, groups);
-        
-        logger.info(`[CONTROLLER] - Successfully processed group addition for person: ${uuid}`);
-        res.status(200).json(result);
-    } catch (error) {
-        logger.error(`[CONTROLLER] - Error adding groups to person with UUID: ${req.params.uuid}:`, error);
-        
-        if (error.message === 'Person not found') {
-            return res.status(404).json({
-                error: 'Person not found',
-                message: `No person found with UUID: ${req.params.uuid}`
-            });
-        }
-        
-        if (error.message.startsWith('Groups not found:')) {
-            return res.status(404).json({
-                error: 'Groups not found',
-                message: error.message
-            });
-        }
-        
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * Remove a group from a person
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const removePersonGroup = async (req, res) => {
-    try {
-        const { uuid, group_uuid } = req.params;
-        
-        logger.info(`[CONTROLLER] - Removing group ${group_uuid} from person with UUID: ${uuid}`);
-        
-        const result = await service.removePersonGroup(uuid, group_uuid);
-        
-        if (!result.success) {
-            logger.info(`[CONTROLLER] - No relation found between person ${uuid} and group ${group_uuid}`);
-            return res.status(404).json({
-                error: 'Relation not found',
-                message: result.message
-            });
-        }
-        
-        logger.info(`[CONTROLLER] - Successfully removed group ${group_uuid} from person: ${uuid}`);
-        res.status(200).json(result);
-    } catch (error) {
-        logger.error(`[CONTROLLER] - Error removing group from person with UUID: ${req.params.uuid}:`, error);
-        
-        if (error.message === 'Person not found') {
-            return res.status(404).json({
-                error: 'Person not found',
-                message: `No person found with UUID: ${req.params.uuid}`
-            });
-        }
-        
-        if (error.message === 'Group not found') {
-            return res.status(404).json({
-                error: 'Group not found',
-                message: `No group found with UUID: ${req.params.group_uuid}`
-            });
-        }
-        
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * Add approver entities to a person
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const addApproverEntities = async (req, res) => {
-    try {
-        const { uuid } = req.params;
-        const { 'approver-entities': entities } = req.body;
-        
-        logger.info(`[CONTROLLER] - Setting person ${uuid} as budget approver for entities`);
-        
-        const result = await service.addApproverEntities(uuid, entities);
-        
-        logger.info(`[CONTROLLER] - Successfully processed approver entities assignment for person: ${uuid}`);
-        res.status(200).json(result);
-    } catch (error) {
-        logger.error(`[CONTROLLER] - Error setting person as budget approver with UUID: ${req.params.uuid}:`, error);
-        
-        if (error.message === 'Person not found') {
-            return res.status(404).json({
-                error: 'Person not found',
-                message: `No person found with UUID: ${req.params.uuid}`
-            });
-        }
-        
-        if (error.message.startsWith('Entities not found:')) {
-            return res.status(404).json({
-                error: 'Entities not found',
-                message: error.message
-            });
-        }
-        
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * Remove a person as budget approver from an entity
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const removeApproverEntity = async (req, res) => {
-    try {
-        const { uuid, entity_uuid } = req.params;
-        
-        logger.info(`[CONTROLLER] - Removing person ${uuid} as budget approver from entity ${entity_uuid}`);
-        
-        const result = await service.removeApproverEntity(uuid, entity_uuid);
-        
-        if (!result.success) {
-            logger.info(`[CONTROLLER] - Person ${uuid} is not budget approver for entity ${entity_uuid}`);
-            return res.status(404).json({
-                error: 'Approver relation not found',
-                message: result.message
-            });
-        }
-        
-        logger.info(`[CONTROLLER] - Successfully removed person ${uuid} as budget approver from entity: ${entity_uuid}`);
-        res.status(200).json(result);
-    } catch (error) {
-        logger.error(`[CONTROLLER] - Error removing person as budget approver with UUID: ${req.params.uuid}:`, error);
-        
-        if (error.message === 'Person not found') {
-            return res.status(404).json({
-                error: 'Person not found',
-                message: `No person found with UUID: ${req.params.uuid}`
-            });
-        }
-        
-        if (error.message === 'Entity not found') {
-            return res.status(404).json({
-                error: 'Entity not found',
-                message: `No entity found with UUID: ${req.params.entity_uuid}`
-            });
-        }
-        
-        res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
-    }
-};
-
-/**
- * Search persons with filters, sorting and pagination
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const searchPersons = async (req, res) => {
+const search = async (req, res, next) => {
   try {
-    logger.info('[PERSONS CONTROLLER] Searching persons with body:', req.body);
-    
-    const searchResults = await service.searchPersons(req.body);
-    
-    res.status(200).json(searchResults);
+    const result = await service.search(req.body);
+    res.json(result);
   } catch (error) {
-    logger.error('[PERSONS CONTROLLER] Error searching persons:', error);
-    res.status(500).json({ 
-      error: 'Error searching persons',
-      message: error.message 
-    });
+    logger.error('Error searching persons:', error);
+    next(error);
   }
 };
 
 /**
- * Get filter values for a specific column in persons table
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Get all persons
+ * GET /api/v1/persons
  */
-const getPersonsFilterValues = async (req, res) => {
+const getAll = async (req, res, next) => {
   try {
-    const { columnName } = req.params;
-    const { q: searchQuery } = req.query;
-    
-    logger.info(`[PERSONS CONTROLLER] Getting filter values for column: ${columnName}`);
-    
-    const filterValues = await service.getPersonsFilterValues(columnName, searchQuery);
-    
-    res.status(200).json(filterValues);
+    const { page, limit, sortField, sortOrder } = req.query;
+    const result = await service.getAll({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 50,
+      sortField: sortField || 'last_name',
+      sortOrder: parseInt(sortOrder) || 1,
+    });
+    res.json(result);
   } catch (error) {
-    logger.error('[PERSONS CONTROLLER] Error getting filter values:', error);
-    
-    if (error.message.includes('No metadata found')) {
+    logger.error('Error getting persons:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get person by UUID
+ * GET /api/v1/persons/:uuid
+ */
+const getById = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const item = await service.getById(uuid);
+
+    if (!item) {
       return res.status(404).json({
-        error: 'Column not found',
-        message: error.message
+        error: 'Not found',
+        message: 'Person not found',
       });
     }
-    
-    res.status(500).json({ 
-      error: 'Error getting filter values',
-      message: error.message 
+
+    res.json(item);
+  } catch (error) {
+    logger.error('Error getting person:', error);
+    next(error);
+  }
+};
+
+/**
+ * Create new person
+ * POST /api/v1/persons
+ */
+const create = async (req, res, next) => {
+  try {
+    const item = await service.create(req.body);
+    res.status(201).json(item);
+  } catch (error) {
+    logger.error('Error creating person:', error);
+    next(error);
+  }
+};
+
+/**
+ * Update person
+ * PUT /api/v1/persons/:uuid
+ */
+const update = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const item = await service.update(uuid, req.body);
+
+    if (!item) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Person not found',
+      });
+    }
+
+    res.json(item);
+  } catch (error) {
+    logger.error('Error updating person:', error);
+    next(error);
+  }
+};
+
+/**
+ * Delete person
+ * DELETE /api/v1/persons/:uuid
+ */
+const remove = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const success = await service.remove(uuid);
+
+    if (!success) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Person not found',
+      });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    logger.error('Error deleting person:', error);
+    next(error);
+  }
+};
+
+/**
+ * Delete multiple persons
+ * POST /api/v1/persons/delete-many
+ */
+const removeMany = async (req, res, next) => {
+  try {
+    const { uuids } = req.body;
+
+    if (!Array.isArray(uuids) || uuids.length === 0) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: 'uuids must be a non-empty array',
+      });
+    }
+
+    const count = await service.removeMany(uuids);
+    res.json({ deleted: count });
+  } catch (error) {
+    logger.error('Error deleting persons:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get tickets related to a person
+ * GET /api/v1/persons/:uuid/tickets
+ */
+const getRelatedTickets = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { role = 'all', page = 1, limit = 50 } = req.query;
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+
+    const result = await service.getRelatedTickets(uuid, {
+      role,
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 50,
+      locale,
     });
+
+    res.json(result);
+  } catch (error) {
+    logger.error('Error getting related tickets:', error);
+    next(error);
+  }
+};
+
+/**
+ * Reset password for a person (admin action)
+ * POST /api/v1/persons/:uuid/reset-password
+ */
+const resetPassword = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { newPassword } = req.body;
+    
+    // Get admin UUID from authenticated user
+    const adminUuid = req.user?.uuid;
+    
+    if (!adminUuid) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required',
+      });
+    }
+
+    const result = await service.resetPassword(uuid, newPassword, adminUuid);
+    
+    logger.info(`Password reset for user ${uuid} by admin ${adminUuid}`);
+    
+    res.json({ 
+      message: 'Password reset successfully',
+      user: result
+    });
+  } catch (error) {
+    logger.error('Error resetting password:', error);
+    next(error);
   }
 };
 
 module.exports = {
-    getPersonsLazySearch,
-    getPersonByUuid,
-    getPersonGroups,
-    updatePerson,
-    createPerson,
-    addPersonGroups,
-    removePersonGroup,
-    addApproverEntities,
-    removeApproverEntity,
-    searchPersons,
-    getPersonsFilterValues
+  search,
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+  removeMany,
+  resetPassword,
+  getRelatedTickets,
 };

@@ -3,35 +3,47 @@ const { PrismaPg } = require('@prisma/adapter-pg');
 const { Pool } = require('pg');
 const logger = require('./logger');
 
-// Create PostgreSQL connection pool using existing env variables
+// Prisma 7 requires an adapter for database connection
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  connectionString: process.env.DATABASE_URL,
+  // Keep connections alive to prevent idle timeout issues
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
+  // Close idle connections after 30 seconds
+  idleTimeoutMillis: 30000,
+  // Maximum number of connections in the pool
+  max: 20,
+  // Connection timeout
+  connectionTimeoutMillis: 5000,
 });
 
-// Create Prisma adapter
 const adapter = new PrismaPg(pool);
 
-// Create Prisma Client with adapter
 const prisma = new PrismaClient({
   adapter,
   log: [
-    { level: 'query', emit: 'event' },
-    { level: 'error', emit: 'stdout' },
-    { level: 'warn', emit: 'stdout' },
+    { emit: 'event', level: 'query' },
+    { emit: 'event', level: 'error' },
+    { emit: 'event', level: 'warn' },
   ],
 });
 
 // Log queries in development
 if (process.env.NODE_ENV === 'development') {
   prisma.$on('query', (e) => {
-    logger.debug(`[PRISMA] Query: ${e.query}`);
-    logger.debug(`[PRISMA] Duration: ${e.duration}ms`);
+    logger.debug(`Query: ${e.query}`);
+    logger.debug(`Params: ${e.params}`);
+    logger.debug(`Duration: ${e.duration}ms`);
   });
 }
+
+prisma.$on('error', (e) => {
+  logger.error('Prisma error:', e);
+});
+
+prisma.$on('warn', (e) => {
+  logger.warn('Prisma warning:', e);
+});
 
 // Graceful shutdown
 process.on('beforeExit', async () => {

@@ -1,82 +1,83 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
-const validate = require('../../../middleware/validate');
-const { getPersonsQuerySchema, getPersonsPaginatedQuerySchema, personUuidParamSchema, updatePersonSchema, createPersonSchema, addPersonGroupsSchema, personGroupUuidParamSchema, addApproverEntitiesSchema, personEntityUuidParamSchema, searchPersonsSchema, columnNameParamSchema, searchQuerySchema } = require('./validation');
-const logger = require('../../../config/logger');
+const { validate, primeVueFilterSchema } = require('../../../middleware/validate');
+const { authenticate } = require('../../../middleware/auth');
+const { z } = require('zod');
 
-// Log middleware for this route
-router.use((req, res, next) => {
-    logger.info('Routes - Accessing persons routes');
-    next();
+// Validation schemas
+const createSchema = z.object({
+  first_name: z.string().min(1).max(100),
+  last_name: z.string().min(1).max(100),
+  email: z.string().email().max(255),
+  job_role: z.string().max(255).optional().nullable(),
+  ref_entity_uuid: z.string().uuid().optional().nullable(),
+  is_active: z.boolean().optional().default(true),
+  critical_user: z.boolean().optional().default(false),
+  external_user: z.boolean().optional().default(false),
+  date_format: z.string().max(50).optional().nullable(),
+  internal_id: z.string().max(100).optional().nullable(),
+  notification: z.boolean().optional().default(true),
+  time_zone: z.string().max(100).optional().nullable(),
+  ref_location_uuid: z.string().uuid().optional().nullable(),
+  floor: z.string().max(50).optional().nullable(),
+  room: z.string().max(50).optional().nullable(),
+  ref_approving_manager_uuid: z.string().uuid().optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  business_phone: z.string().max(50).optional().nullable(),
+  business_mobile_phone: z.string().max(50).optional().nullable(),
+  personal_mobile_phone: z.string().max(50).optional().nullable(),
+  language: z.string().max(10).optional().nullable(),
+  role: z.string().max(50).optional().default('user'),
+  roles: z.record(z.any()).optional().nullable(),
+  photo: z.string().optional().nullable(),
 });
 
-// GET /api/v1/persons - Lazy search with max 10 results
-router.get('/', 
-    controller.getPersonsLazySearch
-);
+const updateSchema = z.object({
+  first_name: z.string().min(1).max(100).optional(),
+  last_name: z.string().min(1).max(100).optional(),
+  email: z.string().email().max(255).optional(),
+  job_role: z.string().max(255).optional().nullable(),
+  ref_entity_uuid: z.string().uuid().optional().nullable(),
+  is_active: z.boolean().optional(),
+  critical_user: z.boolean().optional(),
+  external_user: z.boolean().optional(),
+  date_format: z.string().max(50).optional().nullable(),
+  internal_id: z.string().max(100).optional().nullable(),
+  notification: z.boolean().optional(),
+  time_zone: z.string().max(100).optional().nullable(),
+  ref_location_uuid: z.string().uuid().optional().nullable(),
+  floor: z.string().max(50).optional().nullable(),
+  room: z.string().max(50).optional().nullable(),
+  ref_approving_manager_uuid: z.string().uuid().optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  business_phone: z.string().max(50).optional().nullable(),
+  business_mobile_phone: z.string().max(50).optional().nullable(),
+  personal_mobile_phone: z.string().max(50).optional().nullable(),
+  language: z.string().max(10).optional().nullable(),
+  role: z.string().max(50).optional(),
+  roles: z.record(z.any()).optional().nullable(),
+  photo: z.string().optional().nullable(),
+});
 
-// GET /api/v1/persons/:uuid
-router.get('/:uuid',
-    validate({ params: personUuidParamSchema, query: getPersonsQuerySchema }),
-    controller.getPersonByUuid
-);
+// Validation schema for reset password
+const resetPasswordSchema = z.object({
+  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+});
 
-// PATCH /api/v1/persons/:uuid
-router.patch('/:uuid',
-    validate({ params: personUuidParamSchema, body: updatePersonSchema }),
-    controller.updatePerson
-);
+// Routes
+router.post('/search', validate(primeVueFilterSchema), controller.search);
+router.get('/', controller.getAll);
+router.get('/:uuid', controller.getById);
+router.post('/', validate(createSchema), controller.create);
+router.put('/:uuid', validate(updateSchema), controller.update);
+router.delete('/:uuid', controller.remove);
+router.post('/delete-many', controller.removeMany);
 
-// POST /api/v1/persons
-router.post('/',
-    validate({ body: createPersonSchema }),
-    controller.createPerson
-);
+// Get tickets related to a person (writer, requested_for, requested_by)
+router.get('/:uuid/tickets', controller.getRelatedTickets);
 
-// GET /api/v1/persons/:uuid/groups
-router.get('/:uuid/groups',
-    validate({ params: personUuidParamSchema }),
-    controller.getPersonGroups
-);
-
-// POST /api/v1/persons/:uuid/groups
-router.post('/:uuid/groups',
-    validate({ params: personUuidParamSchema, body: addPersonGroupsSchema }),
-    controller.addPersonGroups
-);
-
-// DELETE /api/v1/persons/:uuid/groups/:group_uuid
-router.delete('/:uuid/groups/:group_uuid',
-    validate({ params: personGroupUuidParamSchema }),
-    controller.removePersonGroup
-);
-
-// POST /api/v1/persons/:uuid/approver-entities
-router.post('/:uuid/approver-entities',
-    validate({ params: personUuidParamSchema, body: addApproverEntitiesSchema }),
-    controller.addApproverEntities
-);
-
-// DELETE /api/v1/persons/:uuid/approver-entities/:entity_uuid
-router.delete('/:uuid/approver-entities/:entity_uuid',
-    validate({ params: personEntityUuidParamSchema }),
-    controller.removeApproverEntity
-);
-
-// POST /api/v1/persons/search - Search persons with filters
-router.post('/search',
-    validate({ body: searchPersonsSchema }),
-    controller.searchPersons
-);
-
-// GET /api/v1/persons/filters/:columnName - Get filter values for a specific column
-router.get('/filters/:columnName',
-    validate({ 
-        params: columnNameParamSchema,
-        query: searchQuerySchema 
-    }),
-    controller.getPersonsFilterValues
-);
+// Admin action: Reset password (requires authentication)
+router.post('/:uuid/reset-password', authenticate, validate(resetPasswordSchema), controller.resetPassword);
 
 module.exports = router;

@@ -1,31 +1,24 @@
-/**
- * Routes pour la gestion des attachments
- */
 const express = require('express');
 const router = express.Router();
-const attachmentsController = require('./controller');
+const controller = require('./controller');
 const upload = require('../../../middleware/fileUpload');
-const { 
-  validateUploadFile, 
-  validateUploadMultipleFiles,
-  validateGetAttachmentsByObject,
-  validateGetAttachmentsByObjectUuid,
-  validateAttachmentUuid
-} = require('./validation');
+const { authenticate } = require('../../../middleware/auth');
 
-// Route pour l'upload d'un seul fichier
-router.post('/upload', upload.single('file'), validateUploadFile, attachmentsController.uploadFile);
+// IMPORTANT: Specific routes must come BEFORE parameterized routes
 
-// Route pour l'upload de plusieurs fichiers
-router.post('/upload-multiple', upload.array('files', 10), validateUploadMultipleFiles, attachmentsController.uploadMultipleFiles);
+// Get single attachment by UUID
+router.get('/file/:uuid', controller.getByUuid);
 
-// Route pour récupérer un fichier
-router.get('/:uuid', validateAttachmentUuid, attachmentsController.getFile);
+// Download attachment
+router.get('/download/:uuid', controller.download);
 
-// Route pour supprimer un fichier
-router.delete('/:uuid', validateAttachmentUuid, attachmentsController.deleteFile);
+// Get all attachments for an entity (must be after /file and /download)
+router.get('/:entityType/:entityUuid', controller.getByEntity);
 
-// Route pour récupérer les attachments d'un objet par son UUID
-router.get('/object/:objectUuid', validateGetAttachmentsByObjectUuid, attachmentsController.getAttachmentsByObjectUuid);
+// Upload attachments (multiple files) - requires authentication
+router.post('/:entityType/:entityUuid', authenticate, upload.array('files', 10), controller.upload);
+
+// Delete attachment
+router.delete('/:uuid', controller.remove);
 
 module.exports = router;

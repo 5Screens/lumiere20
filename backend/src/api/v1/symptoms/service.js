@@ -1,284 +1,325 @@
-const { pool } = require('../../../config/database');
-const logger = require('../../../config/logger');
+const prisma = require('../../../config/prisma');
+const { buildPrismaWhereFromFilters, buildPrismaOrderBy } = require('../../../utils/primeVueFilters');
 
-class SymptomsService {
-    async getAllSymptoms(lang) {
-        logger.info(`[SERVICE] getAllSymptoms - Starting database query for language: ${lang}`);
-        try {
-            const query = `
-                SELECT 
-                    s.uuid,
-                    s.code,
-                    st.label,
-                    st.lang,
-                    s.created_at,
-                    s.updated_at
-                FROM translations.symptoms_translation st
-                JOIN configuration.symptoms s ON s.code = st.symptom_code
-                WHERE st.lang = $1
-                ORDER BY updated_at DESC
-            `;
-            
-            const result = await pool.query(query, [lang]);
-            logger.info(`[SERVICE] getAllSymptoms - Query executed successfully, found ${result.rows.length} symptoms`);
-            return result.rows;
-        } catch (error) {
-            logger.error(`[SERVICE] getAllSymptoms - Database error: ${error.message}`);
-            throw error;
+const ENTITY_TYPE = 'symptoms';
+
+/**
+ * Build translations map from translations array
+ */
+const buildTranslationsMap = (translations) => {
+  const map = {};
+  for (const t of translations) {
+    if (!map[t.entity_uuid]) {
+      map[t.entity_uuid] = {};
+    }
+    if (!map[t.entity_uuid][t.field_name]) {
+      map[t.entity_uuid][t.field_name] = {};
+    }
+    map[t.entity_uuid][t.field_name][t.locale] = t.value;
+  }
+  return map;
+};
+
+/**
+ * Transform symptom with translations
+ */
+const transformWithTranslations = (symptom, translationsMap, locale = 'en') => {
+  const entityTranslations = translationsMap[symptom.uuid] || {};
+  
+  return {
+    ...symptom,
+    label: entityTranslations.label?.[locale] || symptom.label,
+    _translations: entityTranslations
+  };
+};
+
+/**
+ * Search symptoms with PrimeVue filters
+ * Searches in both base fields and translated fields
+ */
+const search = async (params) => {
+  const { filters, sortField, sortOrder, page = 1, limit = 25, locale = 'en' } = params;
+  
+  const skip = (page - 1) * limit;
+  const orderBy = buildPrismaOrderBy(sortField, sortOrder);
+  
+  // Extract global filter
+  const globalFilter = filters?.global?.value;
+  
+  // Build base where clause (excluding global search on translated fields)
+  let where = {};
+  
+  // Handle is_active filter
+  if (filters?.is_active?.value !== undefined) {
+    where.is_active = filters.is_active.value;
+  }
+  
+  // If there's a global search, we need to search in translations too
+  if (globalFilter && globalFilter.trim()) {
+    const searchTerm = globalFilter.trim().toLowerCase();
+    
+    // First, find UUIDs of symptoms that match in translated_fields
+    const matchingTranslations = await prisma.translated_fields.findMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        field_name: 'label',
+        value: { contains: searchTerm, mode: 'insensitive' }
+      },
+      select: { entity_uuid: true }
+    });
+    const translatedUuids = [...new Set(matchingTranslations.map(t => t.entity_uuid))];
+    
+    // Search in code, label (base), OR in translated UUIDs
+    where = {
+      ...where,
+      OR: [
+        { code: { contains: searchTerm, mode: 'insensitive' } },
+        { label: { contains: searchTerm, mode: 'insensitive' } },
+        ...(translatedUuids.length > 0 ? [{ uuid: { in: translatedUuids } }] : [])
+      ]
+    };
+  }
+
+  const [data, total] = await Promise.all([
+    prisma.symptoms.findMany({
+      where,
+      orderBy,
+      skip,
+      take: limit,
+    }),
+    prisma.symptoms.count({ where }),
+  ]);
+
+  // Get all translations for these symptoms
+  const uuids = data.map(s => s.uuid);
+  const translations = await prisma.translated_fields.findMany({
+    where: {
+      entity_type: ENTITY_TYPE,
+      entity_uuid: { in: uuids }
+    }
+  });
+
+  const translationsMap = buildTranslationsMap(translations);
+  const transformedData = data.map(s => transformWithTranslations(s, translationsMap, locale));
+
+  return { data: transformedData, total, page, limit, totalPages: Math.ceil(total / limit) };
+};
+
+/**
+ * Get all symptoms
+ */
+const getAll = async ({ page = 1, limit = 50, sortField = 'code', sortOrder = 1, locale = 'en', is_active } = {}) => {
+  const skip = (page - 1) * limit;
+  const orderBy = { [sortField]: sortOrder === 1 ? 'asc' : 'desc' };
+  
+  const where = {};
+  if (is_active !== undefined) {
+    where.is_active = is_active === 'yes' || is_active === true;
+  }
+
+  const [data, total] = await Promise.all([
+    prisma.symptoms.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy,
+    }),
+    prisma.symptoms.count({ where }),
+  ]);
+
+  // Get all translations
+  const uuids = data.map(s => s.uuid);
+  const translations = await prisma.translated_fields.findMany({
+    where: {
+      entity_type: ENTITY_TYPE,
+      entity_uuid: { in: uuids }
+    }
+  });
+
+  const translationsMap = buildTranslationsMap(translations);
+  const transformedData = data.map(s => transformWithTranslations(s, translationsMap, locale));
+
+  return { data: transformedData, total, page, limit, totalPages: Math.ceil(total / limit) };
+};
+
+/**
+ * Get symptom by UUID
+ */
+const getByUuid = async (uuid, locale = 'en') => {
+  const symptom = await prisma.symptoms.findUnique({
+    where: { uuid },
+  });
+
+  if (!symptom) return null;
+
+  // Get ALL translations for this symptom
+  const translations = await prisma.translated_fields.findMany({
+    where: {
+      entity_type: ENTITY_TYPE,
+      entity_uuid: uuid
+    }
+  });
+
+  // Build _translations object: { fieldName: { locale: value } }
+  const allTranslationsMap = {};
+  for (const t of translations) {
+    if (!allTranslationsMap[t.field_name]) {
+      allTranslationsMap[t.field_name] = {};
+    }
+    allTranslationsMap[t.field_name][t.locale] = t.value;
+  }
+
+  return {
+    ...symptom,
+    label: allTranslationsMap.label?.[locale] || symptom.label,
+    _translations: allTranslationsMap
+  };
+};
+
+/**
+ * Create new symptom
+ */
+const create = async (data) => {
+  const { _translations, ...symptomData } = data;
+  
+  const symptom = await prisma.symptoms.create({
+    data: symptomData,
+  });
+
+  // Save translations if provided
+  if (_translations) {
+    const translationRecords = [];
+    for (const [fieldName, locales] of Object.entries(_translations)) {
+      for (const [locale, value] of Object.entries(locales)) {
+        if (value) {
+          translationRecords.push({
+            entity_type: ENTITY_TYPE,
+            entity_uuid: symptom.uuid,
+            field_name: fieldName,
+            locale,
+            value
+          });
         }
+      }
+    }
+    if (translationRecords.length > 0) {
+      await prisma.translated_fields.createMany({ data: translationRecords });
+    }
+  }
+
+  return symptom;
+};
+
+/**
+ * Update symptom
+ */
+const update = async (uuid, data) => {
+  const { _translations, ...symptomData } = data;
+  
+  try {
+    const symptom = await prisma.symptoms.update({
+      where: { uuid },
+      data: symptomData,
+    });
+
+    // Update translations if provided
+    if (_translations) {
+      for (const [fieldName, locales] of Object.entries(_translations)) {
+        for (const [locale, value] of Object.entries(locales)) {
+          if (value) {
+            await prisma.translated_fields.upsert({
+              where: {
+                entity_type_entity_uuid_field_name_locale: {
+                  entity_type: ENTITY_TYPE,
+                  entity_uuid: uuid,
+                  field_name: fieldName,
+                  locale
+                }
+              },
+              update: { value },
+              create: {
+                entity_type: ENTITY_TYPE,
+                entity_uuid: uuid,
+                field_name: fieldName,
+                locale,
+                value
+              }
+            });
+          } else {
+            // Delete translation if value is empty
+            await prisma.translated_fields.deleteMany({
+              where: {
+                entity_type: ENTITY_TYPE,
+                entity_uuid: uuid,
+                field_name: fieldName,
+                locale
+              }
+            });
+          }
+        }
+      }
     }
 
-    async getAllSymptomsAllLanguages() {
-        logger.info('[SERVICE] getAllSymptomsAllLanguages - Starting database query');
-        try {
-            const query = `
-                SELECT 
-                    st.uuid,
-                    st.symptom_code,
-                    st.label,
-                    st.lang,
-                    st.created_at,
-                    st.updated_at
-                FROM translations.symptoms_translation st
-                ORDER BY st.lang, st.label ASC
-            `;
-            
-            const result = await pool.query(query);
-            logger.info(`[SERVICE] getAllSymptomsAllLanguages - Query executed successfully, found ${result.rows.length} symptoms`);
-            return result.rows;
-        } catch (error) {
-            logger.error(`[SERVICE] getAllSymptomsAllLanguages - Database error: ${error.message}`);
-            throw error;
-        }
+    return symptom;
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return null;
     }
+    throw error;
+  }
+};
 
-    async getSymptomByCode(scode) {
-        logger.info(`[SERVICE] getSymptomByCode - Starting database query for symptom code: ${scode}`);
-        try {
-            const query = `
-                SELECT 
-                    s.code,
-                    s.uuid as symptom_uuid,
-                    st.uuid,
-                    st.lang,
-                    st.label
-                FROM configuration.symptoms s
-                JOIN translations.symptoms_translation st ON s.code = st.symptom_code
-                WHERE s.code = $1
-                ORDER BY st.lang ASC
-            `;
-            
-            const result = await pool.query(query, [scode]);
-            
-            if (result.rows.length === 0) {
-                logger.info(`[SERVICE] getSymptomByCode - No symptom found with code: ${scode}`);
-                return null;
-            }
-            
-            // Formatage de la réponse selon le format demandé
-            const symptom = {
-                code: result.rows[0].code,
-                uuid: result.rows[0].symptom_uuid,
-                translations: result.rows.map(row => ({
-                    uuid: row.uuid,
-                    langue: row.langue,
-                    libelle: row.libelle
-                }))
-            };
-            
-            logger.info(`[SERVICE] getSymptomByCode - Query executed successfully, found symptom with ${symptom.translations.length} translations`);
-            return symptom;
-        } catch (error) {
-            logger.error(`[SERVICE] getSymptomByCode - Database error: ${error.message}`);
-            throw error;
-        }
+/**
+ * Delete symptom
+ */
+const remove = async (uuid) => {
+  try {
+    // Delete translations first
+    await prisma.translated_fields.deleteMany({
+      where: {
+        entity_type: ENTITY_TYPE,
+        entity_uuid: uuid
+      }
+    });
+    
+    await prisma.symptoms.delete({
+      where: { uuid },
+    });
+    return true;
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return false;
     }
+    throw error;
+  }
+};
 
-    async getSymptomByUuid(uuid, lang = null) {
-        logger.info(`[SERVICE] getSymptomByUuid - Starting database query for symptom UUID: ${uuid}, language: ${lang}`);
-        try {
-            let query, params;
-            
-            if (lang) {
-                // Si une langue est spécifiée, retourner seulement cette traduction
-                query = `
-                    SELECT 
-                        s.uuid,
-                        s.code as symptom_code,
-                        st.label,
-                        st.lang,
-                        st.created_at,
-                        st.updated_at
-                    FROM configuration.symptoms s
-                    JOIN translations.symptoms_translation st ON s.code = st.symptom_code
-                    WHERE s.uuid = $1 AND st.lang = $2
-                `;
-                params = [uuid, lang];
-            } else {
-                // Si aucune langue spécifiée, retourner toutes les traductions
-                query = `
-                    SELECT 
-                        s.uuid as uuid,
-                        s.code as code,
-                        s.created_at,
-                        s.updated_at,
-                        json_agg(
-                            json_build_object(
-                                'label_uuid', st.uuid,
-                                'label_lang_code', st.lang,
-                                'label', st.label
-                            ) ORDER BY st.lang ASC
-                        ) as labels
-                    FROM configuration.symptoms s
-                    JOIN translations.symptoms_translation st ON s.code = st.symptom_code
-                    WHERE s.uuid = $1
-                    GROUP BY s.uuid, s.code
-                `;
-                params = [uuid];
-            }
-            
-            const result = await pool.query(query, params);
-            
-            if (result.rows.length === 0) {
-                logger.info(`[SERVICE] getSymptomByUuid - No symptom found with UUID: ${uuid}`);
-                return null;
-            }
-            
-            if (lang) {
-                // Retourner un seul objet pour une langue spécifique
-                const symptom = result.rows[0];
-                logger.info(`[SERVICE] getSymptomByUuid - Query executed successfully, found symptom for language: ${lang}`);
-                return symptom;
-            } else {
-                // Retourner l'objet avec toutes les traductions
-                const symptom = result.rows[0];
-                logger.info(`[SERVICE] getSymptomByUuid - Query executed successfully, found symptom with ${symptom.labels.length} translations`);
-                return symptom;
-            }
-        } catch (error) {
-            logger.error(`[SERVICE] getSymptomByUuid - Database error: ${error.message}`);
-            throw error;
-        }
+/**
+ * Delete multiple symptoms
+ */
+const removeMany = async (uuids) => {
+  // Delete translations first
+  await prisma.translated_fields.deleteMany({
+    where: {
+      entity_type: ENTITY_TYPE,
+      entity_uuid: { in: uuids }
     }
+  });
+  
+  const result = await prisma.symptoms.deleteMany({
+    where: {
+      uuid: { in: uuids },
+    },
+  });
+  return result.count;
+};
 
-    async createSymptom(symptomData) {
-        logger.info('[SERVICE] createSymptom - Starting transaction');
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-            logger.info('[SERVICE] createSymptom - Transaction started');
-
-            // Insérer dans la table symptoms
-            const symptomQuery = `
-                INSERT INTO configuration.symptoms (code)
-                VALUES ($1)
-                RETURNING code
-            `;
-            const symptomResult = await client.query(symptomQuery, [symptomData.code]);
-            logger.info(`[SERVICE] createSymptom - Inserted into configuration.symptoms with code: ${symptomData.code}`);
-
-            // Insérer les traductions (labels)
-            const translationQuery = `
-                INSERT INTO translations.symptoms_translation (symptom_code, langue, libelle)
-                VALUES ($1, $2, $3)
-                RETURNING *
-            `;
-
-            const translationPromises = symptomData.labels.map(label =>
-                client.query(translationQuery, [
-                    symptomData.code,
-                    label.label_lang_code,
-                    label.label
-                ])
-            );
-
-            const translationResults = await Promise.all(translationPromises);
-            logger.info(`[SERVICE] createSymptom - Inserted ${translationResults.length} translations`);
-
-            await client.query('COMMIT');
-            logger.info('[SERVICE] createSymptom - Transaction committed successfully');
-
-            return {
-                code: symptomResult.rows[0].code,
-                labels: translationResults.map(result => ({
-                    label_uuid: result.rows[0].uuid,
-                    label_lang_code: result.rows[0].langue,
-                    label: result.rows[0].libelle
-                }))
-            };
-        } catch (error) {
-            await client.query('ROLLBACK');
-            logger.error(`[SERVICE] createSymptom - Transaction rolled back due to error: ${error.message}`);
-            throw error;
-        } finally {
-            client.release();
-            logger.info('[SERVICE] createSymptom - Database client released');
-        }
-    }
-
-    async updateSymptom(uuid, symptomData) {
-        logger.info(`[SERVICE] updateSymptom - Starting transaction for UUID: ${uuid}`);
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-            logger.info('[SERVICE] updateSymptom - Transaction started');
-
-            // Récupérer le code actuel du symptôme
-            const getCurrentCodeQuery = `
-                SELECT code FROM configuration.symptoms WHERE uuid = $1
-            `;
-            const currentCodeResult = await client.query(getCurrentCodeQuery, [uuid]);
-            
-            if (currentCodeResult.rows.length === 0) {
-                throw new Error(`Symptom with UUID ${uuid} not found`);
-            }
-            
-            const currentCode = currentCodeResult.rows[0].code;
-            logger.info(`[SERVICE] updateSymptom - Current symptom code: ${currentCode}`);
-
-            // Mettre à jour le code dans les tables en utilisant les contraintes différées
-            if (symptomData.code && symptomData.code !== currentCode) {
-                // Différer la vérification de la contrainte de clé étrangère
-                await client.query('SET CONSTRAINTS symptoms_translation_symptom_code_fkey DEFERRED');
-                logger.info('[SERVICE] updateSymptom - Foreign key constraint deferred');
-                
-                // Mettre à jour le code dans la table symptoms
-                const updateSymptomQuery = `
-                    UPDATE configuration.symptoms 
-                    SET code = $1, updated_at = CURRENT_TIMESTAMP 
-                    WHERE uuid = $2
-                    RETURNING code
-                `;
-                const symptomResult = await client.query(updateSymptomQuery, [symptomData.code, uuid]);
-                logger.info(`[SERVICE] updateSymptom - Updated symptom code from ${currentCode} to ${symptomData.code}`);
-                
-                // Mettre à jour les codes dans la table de traductions
-                const updateTranslationCodesQuery = `
-                    UPDATE translations.symptoms_translation 
-                    SET symptom_code = $1, updated_at = CURRENT_TIMESTAMP 
-                    WHERE symptom_code = $2
-                `;
-                const translationResult = await client.query(updateTranslationCodesQuery, [symptomData.code, currentCode]);
-                logger.info(`[SERVICE] updateSymptom - Updated ${translationResult.rowCount} translation codes from ${currentCode} to ${symptomData.code}`);
-            } else {
-                logger.info('[SERVICE] updateSymptom - No code change requested or code is identical');
-            }
-
-            await client.query('COMMIT');
-            logger.info('[SERVICE] updateSymptom - Transaction committed successfully');
-
-            // Récupérer et retourner le symptôme mis à jour
-            const updatedSymptom = await this.getSymptomByUuid(uuid);
-            return updatedSymptom;
-        } catch (error) {
-            await client.query('ROLLBACK');
-            logger.error(`[SERVICE] updateSymptom - Transaction rolled back due to error: ${error.message}`);
-            throw error;
-        } finally {
-            client.release();
-            logger.info('[SERVICE] updateSymptom - Database client released');
-        }
-    }
-}
-
-module.exports = new SymptomsService();
+module.exports = {
+  search,
+  getAll,
+  getByUuid,
+  create,
+  update,
+  remove,
+  removeMany,
+};

@@ -22,9 +22,9 @@ $SourceDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Files and folders to upload
 $ItemsToUpload = @(
-    "backend-v2",
-    "frontend-v2",
-    "portal-runner-v2",
+    "backend",
+    "frontend",
+    "portal-runner",
     "nginx",
     "docker-compose.yml",
     ".env.production.example",

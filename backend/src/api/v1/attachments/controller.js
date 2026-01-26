@@ -1,254 +1,126 @@
-/**
- * Contrôleur pour la gestion des attachments
- */
-const fs = require('fs');
-const path = require('path');
+const service = require('./service');
 const logger = require('../../../config/logger');
-const attachmentService = require('./service');
 
-/**
- * Contrôleur pour l'upload d'un fichier
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- */
-exports.uploadFile = async (req, res) => {
+const getByEntity = async (req, res, next) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Aucun fichier n\'a été téléchargé' });
-    }
-
-    // Récupérer les informations sur l'objet parent
-    const objectType = req.body.objectType;
-    const objectUuid = req.body.objectUuid;
-    
-    if (!objectType || !objectUuid) {
-      // Supprimer le fichier si les paramètres sont invalides
-      if (req.file && req.file.path) {
-        fs.unlinkSync(req.file.path);
-      }
-      return res.status(400).json({ error: 'objectType et objectUuid sont requis' });
-    }
-    
-    // Récupérer l'ID de l'utilisateur depuis l'authentification ou le corps de la requête
-    const uploadedBy = req.body.uploadedBy || '00000000-0000-0000-0000-000000000000';
-    
-    // Assurer l'encodage correct du nom de fichier original pour les accents
-    let decodedFilename;
-    try {
-      decodedFilename = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
-    } catch (error) {
-      logger.warn(`Erreur lors du décodage du nom de fichier: ${error.message}`);
-      decodedFilename = req.file.originalname;
-    }
-    
-    const fileWithCorrectName = {
-      ...req.file,
-      originalname: decodedFilename
-    };
-    
-    // Créer l'enregistrement dans la base de données
-    const attachmentUuid = await attachmentService.createAttachment(fileWithCorrectName, objectType, objectUuid, uploadedBy);
-    
-    // Renvoyer les informations sur le fichier uploadé
-    return res.status(201).json({
-      message: 'Fichier téléchargé avec succès',
-      attachment: {
-        uuid: attachmentUuid,
-        filename: req.file.filename,
-        originalname: decodedFilename,
-        mimetype: req.file.mimetype,
-        size: req.file.size
-      }
-    });
+    const { entityType, entityUuid } = req.params;
+    const attachments = await service.getByEntity(entityType, entityUuid);
+    res.json(attachments);
   } catch (error) {
-    logger.error(`Erreur lors de l'upload du fichier: ${error.message}`);
-    
-    // Supprimer le fichier en cas d'erreur
-    if (req.file && req.file.path) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (err) {
-        logger.error(`Erreur lors de la suppression du fichier: ${err.message}`);
-      }
-    }
-    
-    return res.status(500).json({ error: 'Erreur lors de l\'upload du fichier' });
+    logger.error('[ATTACHMENTS CONTROLLER] Error in getByEntity:', error);
+    next(error);
   }
 };
 
-/**
- * Contrôleur pour l'upload de plusieurs fichiers
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- */
-exports.uploadMultipleFiles = async (req, res) => {
+const getByUuid = async (req, res, next) => {
   try {
-    // Vérification du nombre de fichiers reçus
-    
-    if (!req.files || req.files.length === 0) {
-
-      return res.status(400).json({ error: 'Aucun fichier n\'a été téléchargé' });
-    }
-
-    // Récupérer les informations sur l'objet parent
-    const objectType = req.body.objectType;
-    const objectUuid = req.body.objectUuid;
-    
-
-    
-    if (!objectType || !objectUuid) {
-
-      // Supprimer les fichiers si les paramètres sont invalides
-      if (req.files) {
-        for (const file of req.files) {
-
-          fs.unlinkSync(file.path);
-        }
-      }
-      return res.status(400).json({ error: 'objectType et objectUuid sont requis' });
-    }
-    console.log('objectType:', objectType);
-    console.log('objectUuid:', objectUuid);
-    
-    // Récupérer l'ID de l'utilisateur depuis l'authentification ou le corps de la requête
-    // Utiliser un ID utilisateur valide connu qui existe dans la base de données
-    // L'ID par défaut doit correspondre à un utilisateur existant dans la table référencée
-    const uploadedBy = req.body.uploadedBy || '00000000-0000-0000-0000-000000000000';
-    console.log('uploadedBy:', uploadedBy);
-    // Créer des enregistrements dans la base de données
-    const attachments = [];
-
-    
-    for (const file of req.files) {
-
-      
-      try {
-        // Assurer l'encodage correct du nom de fichier original pour les accents
-        let decodedFilename;
-        try {
-          decodedFilename = Buffer.from(file.originalname, 'latin1').toString('utf8');
-        } catch (error) {
-          logger.warn(`Erreur lors du décodage du nom de fichier: ${error.message}`);
-          decodedFilename = file.originalname;
-        }
-        
-        const fileWithCorrectName = {
-          ...file,
-          originalname: decodedFilename
-        };
-        
-        const attachmentUuid = await attachmentService.createAttachment(fileWithCorrectName, objectType, objectUuid, uploadedBy);
-        
-        attachments.push({
-          uuid: attachmentUuid,
-          filename: file.filename,
-          originalname: decodedFilename,
-          mimetype: file.mimetype,
-          size: file.size
-        });
-      } catch (err) {
-        logger.error(`Erreur lors du traitement du fichier ${file.originalname}: ${err.message}`);
-        logger.error(err.stack);
-        throw err;
-      }
-    }
-    
-    // Renvoyer les informations sur les fichiers uploadés
-
-    return res.status(201).json({
-      message: `${req.files.length} fichiers téléchargés avec succès`,
-      attachments: attachments
-    });
-  } catch (error) {
-    logger.error(`Erreur lors de l'upload des fichiers: ${error.message}`);
-    logger.error(error.stack);
-    
-    // Supprimer les fichiers en cas d'erreur
-    if (req.files) {
-      for (const file of req.files) {
-        try {
-
-          fs.unlinkSync(file.path);
-        } catch (err) {
-          logger.error(`Erreur lors de la suppression du fichier: ${err.message}`);
-        }
-      }
-    }
-    
-    return res.status(500).json({ error: 'Erreur lors de l\'upload des fichiers' });
-  }
-};
-
-/**
- * Contrôleur pour récupérer un fichier
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- */
-exports.getFile = async (req, res) => {
-  try {
-    const attachmentUuid = req.params.uuid;
-    
-    // Récupérer l'attachment depuis la base de données
-    const attachment = await attachmentService.getAttachmentByUuid(attachmentUuid);
+    const { uuid } = req.params;
+    const attachment = await service.getByUuid(uuid);
     
     if (!attachment) {
-      return res.status(404).json({ error: 'Attachment non trouvé' });
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Attachment not found',
+      });
     }
     
-    // Vérifier si le fichier existe
-    if (!fs.existsSync(attachment.storage_uri)) {
-      return res.status(404).json({ error: 'Fichier non trouvé' });
-    }
-    
-    // Définir les en-têtes de réponse
-    res.setHeader('Content-Type', attachment.mime_type);
-    res.setHeader('Content-Disposition', `inline; filename="${attachment.file_name}"`);
-    
-    // Envoyer le fichier
-    return res.sendFile(path.resolve(attachment.storage_uri));
+    res.json(attachment);
   } catch (error) {
-    logger.error(`Erreur lors de la récupération du fichier: ${error.message}`);
-    return res.status(500).json({ error: 'Erreur lors de la récupération du fichier' });
+    logger.error('[ATTACHMENTS CONTROLLER] Error in getByUuid:', error);
+    next(error);
   }
 };
 
-/**
- * Contrôleur pour supprimer un fichier
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- */
-exports.deleteFile = async (req, res) => {
+const upload = async (req, res, next) => {
   try {
-    const attachmentUuid = req.params.uuid;
+    const { entityType, entityUuid } = req.params;
+    const files = req.files;
     
-    // Supprimer l'attachment
-    await attachmentService.deleteAttachment(attachmentUuid);
+    if (!files || files.length === 0) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: 'No files uploaded',
+      });
+    }
     
-    return res.status(200).json({ message: 'Attachment supprimé avec succès' });
+    // Get user UUID from auth (assuming it's set by auth middleware)
+    const uploadedByUuid = req.user?.uuid;
+    
+    if (!uploadedByUuid) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'User not authenticated',
+      });
+    }
+    
+    // Create attachments for each file
+    const attachments = [];
+    for (const file of files) {
+      const attachment = await service.create(
+        { entity_type: entityType, entity_uuid: entityUuid },
+        file,
+        uploadedByUuid
+      );
+      attachments.push(attachment);
+    }
+    
+    res.status(201).json(attachments);
   } catch (error) {
-    logger.error(`Erreur lors de la suppression de l'attachment: ${error.message}`);
-    return res.status(500).json({ error: 'Erreur lors de la suppression de l\'attachment' });
+    logger.error('[ATTACHMENTS CONTROLLER] Error in upload:', error);
+    next(error);
   }
 };
 
-/**
- * Contrôleur pour récupérer les attachments par UUID de l'objet parent, sans préciser le type
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- */
-exports.getAttachmentsByObjectUuid = async (req, res) => {
+const download = async (req, res, next) => {
   try {
-    const { objectUuid } = req.params;
+    const { uuid } = req.params;
+    const fileInfo = await service.getFilePath(uuid);
     
-    if (!objectUuid) {
-      return res.status(400).json({ error: 'objectUuid est requis' });
+    if (!fileInfo) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Attachment not found',
+      });
     }
     
-    const attachments = await attachmentService.getAttachmentsByObjectUuid(objectUuid);
+    logger.info(`[ATTACHMENTS] Download file: ${fileInfo.path}`);
     
-    return res.status(200).json(attachments);
+    // Use path.resolve to ensure absolute path
+    const absolutePath = require('path').resolve(fileInfo.path);
+    logger.info(`[ATTACHMENTS] Absolute path: ${absolutePath}`);
+    
+    res.setHeader('Content-Type', fileInfo.mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${fileInfo.originalName}"`);
+    res.sendFile(absolutePath);
   } catch (error) {
-    logger.error(`Erreur lors de la récupération des attachments par UUID: ${error.message}`);
-    return res.status(500).json({ error: 'Erreur lors de la récupération des attachments' });
+    logger.error('[ATTACHMENTS CONTROLLER] Error in download:', error);
+    next(error);
   }
+};
+
+const remove = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const success = await service.remove(uuid);
+    
+    if (!success) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Attachment not found',
+      });
+    }
+    
+    res.status(204).send();
+  } catch (error) {
+    logger.error('[ATTACHMENTS CONTROLLER] Error in remove:', error);
+    next(error);
+  }
+};
+
+module.exports = {
+  getByEntity,
+  getByUuid,
+  upload,
+  download,
+  remove,
 };

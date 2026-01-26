@@ -1,473 +1,152 @@
-const locationService = require('./service');
+const service = require('./service');
 const logger = require('../../../config/logger');
-const { validateLocation, validateLocationPatch, validateAddOccupants, validateAddLocations, validateUuid } = require('./validation');
 
-class LocationController {
-    async getAllLocations(req, res) {
-        logger.info('[CONTROLLER] getAllLocations - Starting to process request');
-        
-        const lang = req.query.lang;
-        if (!lang) {
-            logger.warn('[CONTROLLER] getAllLocations - Missing lang parameter');
-            return res.status(400).json({
-                error: 'lang parameter is required (e.g., ?lang=fr)'
-            });
-        }
-        
-        try {
-            const locations = await locationService.getAllLocations(lang);
-            logger.info(`[CONTROLLER] getAllLocations - Successfully retrieved ${locations.length} locations`);
-            res.json(locations);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getAllLocations - Error: ${error.message}`);
-            res.status(500).json({ 
-                error: 'An error occurred while retrieving locations' 
-            });
-        }
+/**
+ * Search locations with PrimeVue filters
+ * POST /api/v1/locations/search
+ */
+const search = async (req, res, next) => {
+  try {
+    const result = await service.search(req.body);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error searching locations:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get all locations
+ * GET /api/v1/locations
+ */
+const getAll = async (req, res, next) => {
+  try {
+    const { page, limit, sortField, sortOrder } = req.query;
+    const result = await service.getAll({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 50,
+      sortField: sortField || 'name',
+      sortOrder: parseInt(sortOrder) || 1,
+    });
+    res.json(result);
+  } catch (error) {
+    logger.error('Error getting locations:', error);
+    next(error);
+  }
+};
+
+/**
+ * Get location by UUID
+ * GET /api/v1/locations/:uuid
+ */
+const getById = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const item = await service.getById(uuid);
+
+    if (!item) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Location not found',
+      });
     }
 
-    async getLocationByUuid(req, res) {
-        const uuid = req.params.uuid;
-        const lang = req.query.lang || 'fr'; // Default to French if not specified
-        
-        logger.info(`[CONTROLLER] getLocationByUuid - Processing request for UUID: ${uuid} with language: ${lang}`);
-        try {
-            const location = await locationService.getLocationByUuid(uuid, lang);
-            
-            if (!location) {
-                logger.warn(`[CONTROLLER] getLocationByUuid - Location not found with UUID: ${uuid}`);
-                return res.status(404).json({
-                    error: 'Location not found'
-                });
-            }
-            
-            logger.info(`[CONTROLLER] getLocationByUuid - Successfully retrieved location with UUID: ${uuid}`);
-            return res.json(location);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getLocationByUuid - Error: ${error.message}`);
-            return res.status(500).json({
-                error: 'Error while retrieving location'
-            });
-        }
+    res.json(item);
+  } catch (error) {
+    logger.error('Error getting location:', error);
+    next(error);
+  }
+};
+
+/**
+ * Create new location
+ * POST /api/v1/locations
+ */
+const create = async (req, res, next) => {
+  try {
+    const item = await service.create(req.body);
+    res.status(201).json(item);
+  } catch (error) {
+    logger.error('Error creating location:', error);
+    next(error);
+  }
+};
+
+/**
+ * Update location
+ * PUT /api/v1/locations/:uuid
+ */
+const update = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const item = await service.update(uuid, req.body);
+
+    if (!item) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Location not found',
+      });
     }
 
-    async getActiveLocations(req, res) {
-        logger.info('[CONTROLLER] getActiveLocations - Starting to process request');
-        
-        const lang = req.query.lang;
-        if (!lang) {
-            logger.warn('[CONTROLLER] getActiveLocations - Missing lang parameter');
-            return res.status(400).json({
-                error: 'lang parameter is required (e.g., ?lang=fr)'
-            });
-        }
-        
-        try {
-            const activeLocations = await locationService.getActiveLocations(lang);
-            logger.info(`[CONTROLLER] getActiveLocations - Successfully retrieved ${activeLocations.length} active locations`);
-            res.json(activeLocations);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getActiveLocations - Error: ${error.message}`);
-            res.status(500).json({ 
-                error: 'An error occurred while retrieving active locations' 
-            });
-        }
+    res.json(item);
+  } catch (error) {
+    logger.error('Error updating location:', error);
+    next(error);
+  }
+};
+
+/**
+ * Delete location
+ * DELETE /api/v1/locations/:uuid
+ */
+const remove = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const success = await service.remove(uuid);
+
+    if (!success) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Location not found',
+      });
     }
 
-    async getChildLocationsCount(req, res) {
-        const uuid = req.query.uuid;
-        
-        if (!uuid) {
-            logger.warn('[CONTROLLER] getChildLocationsCount - Missing UUID parameter');
-            return res.status(400).json({
-                error: 'UUID parameter is required'
-            });
-        }
-        
-        // UUID format validation
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(uuid)) {
-            logger.warn(`[CONTROLLER] getChildLocationsCount - Invalid UUID format: ${uuid}`);
-            return res.status(400).json({
-                error: `Invalid UUID format: "${uuid}". UUID must be in the format of 8-4-4-4-12 hexadecimal characters.`
-            });
-        }
-        
-        logger.info(`[CONTROLLER] getChildLocationsCount - Processing request for UUID: ${uuid}`);
-        try {
-            const result = await locationService.getChildLocationsCount(uuid);
-            
-            if (result === null) {
-                logger.warn(`[CONTROLLER] getChildLocationsCount - Location not found with UUID: ${uuid}`);
-                return res.status(404).json({
-                    error: 'Location not found'
-                });
-            }
-            
-            logger.info(`[CONTROLLER] getChildLocationsCount - Successfully retrieved child count for location UUID: ${uuid}`);
-            return res.json(result);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getChildLocationsCount - Error: ${error.message}`);
-            
-            // Specific handling for UUID format errors
-            if (error.message.includes('uuid')) {
-                return res.status(400).json({
-                    error: `Invalid UUID format: "${uuid}". The following error occurred: ${error.message}`
-                });
-            }
-            
-            return res.status(500).json({
-                error: 'Error while counting child locations',
-                details: error.message
-            });
-        }
+    res.status(204).send();
+  } catch (error) {
+    logger.error('Error deleting location:', error);
+    next(error);
+  }
+};
+
+/**
+ * Delete multiple locations
+ * POST /api/v1/locations/delete-many
+ */
+const removeMany = async (req, res, next) => {
+  try {
+    const { uuids } = req.body;
+
+    if (!Array.isArray(uuids) || uuids.length === 0) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: 'uuids must be a non-empty array',
+      });
     }
 
-    async getEntityLocationsCount(req, res) {
-        const entityUuid = req.query.entityUuid;
-        
-        if (!entityUuid) {
-            logger.warn('[CONTROLLER] getEntityLocationsCount - Missing entityUuid parameter');
-            return res.status(400).json({
-                error: 'entityUuid parameter is required'
-            });
-        }
-        
-        // UUID format validation
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(entityUuid)) {
-            logger.warn(`[CONTROLLER] getEntityLocationsCount - Invalid UUID format: ${entityUuid}`);
-            return res.status(400).json({
-                error: `Invalid UUID format: "${entityUuid}". UUID must be in the format of 8-4-4-4-12 hexadecimal characters.`
-            });
-        }
-        
-        logger.info(`[CONTROLLER] getEntityLocationsCount - Processing request for entity UUID: ${entityUuid}`);
-        try {
-            const result = await locationService.getEntityLocationsCount(entityUuid);
-            
-            if (result === null) {
-                logger.warn(`[CONTROLLER] getEntityLocationsCount - Entity not found with UUID: ${entityUuid}`);
-                return res.status(404).json({
-                    error: 'Entity not found'
-                });
-            }
-            
-            logger.info(`[CONTROLLER] getEntityLocationsCount - Successfully retrieved locations count for entity UUID: ${entityUuid}`);
-            return res.json(result);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getEntityLocationsCount - Error: ${error.message}`);
-            
-            // Specific handling for UUID format errors
-            if (error.message.includes('uuid')) {
-                return res.status(400).json({
-                    error: `Invalid UUID format: "${entityUuid}". The following error occurred: ${error.message}`
-                });
-            }
-            
-            return res.status(500).json({
-                error: 'Error while counting entity locations',
-                details: error.message
-            });
-        }
-    }
+    const count = await service.removeMany(uuids);
+    res.json({ deleted: count });
+  } catch (error) {
+    logger.error('Error deleting locations:', error);
+    next(error);
+  }
+};
 
-    async updateLocationField(req, res) {
-        const uuid = req.locationUuid;
-        logger.info(`[CONTROLLER] updateLocationField - Processing request for UUID: ${uuid}`);
-
-        try {
-            // Validate the location exists
-            const existingLocation = await locationService.getLocationByUuid(uuid);
-            if (!existingLocation) {
-                logger.warn(`[CONTROLLER] updateLocationField - Location not found with UUID: ${uuid}`);
-                return res.status(404).json({
-                    error: 'Location not found'
-                });
-            }
-
-            // Validate update data
-            const { error, value } = validateLocationPatch(req.body);
-            if (error) {
-                logger.warn(`[CONTROLLER] updateLocationField - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
-                return res.status(400).json({
-                    error: 'Invalid update data',
-                    details: error.details.map(d => d.message)
-                });
-            }
-
-            // Update the location
-            const updatedLocation = await locationService.updateLocation(uuid, value);
-            logger.info(`[CONTROLLER] updateLocationField - Location updated successfully: ${uuid}`);
-            
-            return res.json(updatedLocation);
-        } catch (error) {
-            logger.error(`[CONTROLLER] updateLocationField - Error: ${error.message}`);
-            return res.status(500).json({
-                error: 'An error occurred while updating the location'
-            });
-        }
-    }
-
-    async createLocation(req, res) {
-        logger.info('[CONTROLLER] createLocation - Starting to process request');
-        try {
-            // Validate location data
-            const { error, value } = validateLocation(req.body);
-            if (error) {
-                logger.warn(`[CONTROLLER] createLocation - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
-                return res.status(400).json({
-                    error: 'Invalid location data',
-                    details: error.details.map(d => d.message)
-                });
-            }
-
-            // Create the location
-            const newLocation = await locationService.createLocation(value);
-            logger.info(`[CONTROLLER] createLocation - Location created successfully: ${newLocation.uuid}`);
-            
-            return res.status(201).json(newLocation);
-        } catch (error) {
-            logger.error(`[CONTROLLER] createLocation - Error: ${error.message}`);
-            
-            // Handle specific database errors
-            if (error.code === '23505') { // Unique constraint violation
-                return res.status(409).json({
-                    error: 'A location with this name already exists'
-                });
-            }
-            
-            return res.status(500).json({
-                error: 'An error occurred while creating the location'
-            });
-        }
-    }
-
-    async addOccupantToLocation(req, res) {
-        const locationUuid = req.params.location_uuid;
-        const personUuid = req.params.user_uuid;
-        
-        logger.info(`[CONTROLLER] addOccupantToLocation - Adding person ${personUuid} to location ${locationUuid}`);
-        
-        try {
-            // Validate UUIDs
-            const locationValidation = validateUuid(locationUuid);
-            if (locationValidation.error) {
-                logger.warn(`[CONTROLLER] addOccupantToLocation - Invalid location UUID: ${locationUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid location UUID format'
-                });
-            }
-            
-            const personValidation = validateUuid(personUuid);
-            if (personValidation.error) {
-                logger.warn(`[CONTROLLER] addOccupantToLocation - Invalid person UUID: ${personUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid person UUID format'
-                });
-            }
-
-            const result = await locationService.addOccupantToLocation(locationUuid, personUuid);
-            logger.info(`[CONTROLLER] addOccupantToLocation - Person added successfully to location`);
-            
-            return res.status(201).json({
-                message: 'Person added to location successfully',
-                person: result
-            });
-        } catch (error) {
-            logger.error(`[CONTROLLER] addOccupantToLocation - Error: ${error.message}`);
-            
-            if (error.message === 'Location not found') {
-                return res.status(404).json({ error: 'Location not found' });
-            }
-            if (error.message === 'Person not found') {
-                return res.status(404).json({ error: 'Person not found' });
-            }
-            
-            return res.status(500).json({
-                error: 'An error occurred while adding person to location'
-            });
-        }
-    }
-
-    async addMultipleOccupantsToLocation(req, res) {
-        const locationUuid = req.params.location_uuid;
-        
-        logger.info(`[CONTROLLER] addMultipleOccupantsToLocation - Processing request for location ${locationUuid}`);
-        
-        try {
-            // Validate location UUID
-            const locationValidation = validateUuid(locationUuid);
-            if (locationValidation.error) {
-                logger.warn(`[CONTROLLER] addMultipleOccupantsToLocation - Invalid location UUID: ${locationUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid location UUID format'
-                });
-            }
-            
-            // Validate request body
-            const { error, value } = validateAddOccupants(req.body);
-            if (error) {
-                logger.warn(`[CONTROLLER] addMultipleOccupantsToLocation - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
-                return res.status(400).json({
-                    error: 'Invalid request data',
-                    details: error.details.map(d => d.message)
-                });
-            }
-
-            const result = await locationService.addOccupantsToLocation(locationUuid, value.occupants);
-            logger.info(`[CONTROLLER] addMultipleOccupantsToLocation - ${result.length} persons added successfully to location`);
-            
-            return res.status(201).json({
-                message: `${result.length} persons added to location successfully`,
-                persons: result
-            });
-        } catch (error) {
-            logger.error(`[CONTROLLER] addMultipleOccupantsToLocation - Error: ${error.message}`);
-            
-            if (error.message === 'Location not found') {
-                return res.status(404).json({ error: 'Location not found' });
-            }
-            
-            return res.status(500).json({
-                error: 'An error occurred while adding persons to location'
-            });
-        }
-    }
-
-    async removeOccupantFromLocation(req, res) {
-        const locationUuid = req.params.location_uuid;
-        const personUuid = req.params.user_uuid;
-        
-        logger.info(`[CONTROLLER] removeOccupantFromLocation - Removing person ${personUuid} from location ${locationUuid}`);
-        
-        try {
-            // Validate UUIDs
-            const locationValidation = validateUuid(locationUuid);
-            if (locationValidation.error) {
-                logger.warn(`[CONTROLLER] removeOccupantFromLocation - Invalid location UUID: ${locationUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid location UUID format'
-                });
-            }
-            
-            const personValidation = validateUuid(personUuid);
-            if (personValidation.error) {
-                logger.warn(`[CONTROLLER] removeOccupantFromLocation - Invalid person UUID: ${personUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid person UUID format'
-                });
-            }
-
-            const result = await locationService.removeOccupantFromLocation(locationUuid, personUuid);
-            logger.info(`[CONTROLLER] removeOccupantFromLocation - Person removed successfully from location`);
-            
-            return res.json({
-                message: 'Person removed from location successfully',
-                person: result
-            });
-        } catch (error) {
-            logger.error(`[CONTROLLER] removeOccupantFromLocation - Error: ${error.message}`);
-            
-            if (error.message === 'Person not found in this location') {
-                return res.status(404).json({ error: 'Person not found in this location' });
-            }
-            
-            return res.status(500).json({
-                error: 'An error occurred while removing person from location'
-            });
-        }
-    }
-
-    async addMultipleChildLocationsToLocation(req, res) {
-        const parentLocationUuid = req.params.location_uuid;
-        
-        logger.info(`[CONTROLLER] addMultipleChildLocationsToLocation - Processing request for parent location ${parentLocationUuid}`);
-        
-        try {
-            // Validate parent location UUID
-            const locationValidation = validateUuid(parentLocationUuid);
-            if (locationValidation.error) {
-                logger.warn(`[CONTROLLER] addMultipleChildLocationsToLocation - Invalid parent location UUID: ${parentLocationUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid parent location UUID format'
-                });
-            }
-
-            // Validate request body
-            const { error, value } = validateAddLocations(req.body);
-            if (error) {
-                logger.warn(`[CONTROLLER] addMultipleChildLocationsToLocation - Validation failed: ${error.details.map(d => d.message).join(', ')}`);
-                return res.status(400).json({
-                    error: 'Invalid request data',
-                    details: error.details.map(d => d.message)
-                });
-            }
-
-            const result = await locationService.addChildLocationsToLocation(parentLocationUuid, value.locations);
-            logger.info(`[CONTROLLER] addMultipleChildLocationsToLocation - ${result.length} child locations added successfully to parent location`);
-            
-            return res.status(201).json({
-                message: `${result.length} child locations added to parent location successfully`,
-                locations: result
-            });
-        } catch (error) {
-            logger.error(`[CONTROLLER] addMultipleChildLocationsToLocation - Error: ${error.message}`);
-            
-            if (error.message === 'Parent location not found') {
-                return res.status(404).json({ error: 'Parent location not found' });
-            }
-            
-            return res.status(500).json({
-                error: 'An error occurred while adding child locations to parent location'
-            });
-        }
-    }
-
-    async removeChildLocationFromLocation(req, res) {
-        const parentLocationUuid = req.params.location_uuid;
-        const childLocationUuid = req.params.child_location_uuid;
-        
-        logger.info(`[CONTROLLER] removeChildLocationFromLocation - Processing request to remove child location ${childLocationUuid} from parent location ${parentLocationUuid}`);
-        
-        try {
-            // Validate parent location UUID
-            const parentLocationValidation = validateUuid(parentLocationUuid);
-            if (parentLocationValidation.error) {
-                logger.warn(`[CONTROLLER] removeChildLocationFromLocation - Invalid parent location UUID: ${parentLocationUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid parent location UUID format'
-                });
-            }
-
-            // Validate child location UUID
-            const childLocationValidation = validateUuid(childLocationUuid);
-            if (childLocationValidation.error) {
-                logger.warn(`[CONTROLLER] removeChildLocationFromLocation - Invalid child location UUID: ${childLocationUuid}`);
-                return res.status(400).json({
-                    error: 'Invalid child location UUID format'
-                });
-            }
-
-            const result = await locationService.removeChildLocationFromLocation(parentLocationUuid, childLocationUuid);
-            logger.info(`[CONTROLLER] removeChildLocationFromLocation - Child location removed successfully from parent location`);
-            
-            return res.json({
-                message: 'Child location removed from parent location successfully',
-                location: result
-            });
-        } catch (error) {
-            logger.error(`[CONTROLLER] removeChildLocationFromLocation - Error: ${error.message}`);
-            
-            if (error.message === 'Child location not found in this parent location') {
-                return res.status(404).json({ error: 'Child location not found in this parent location' });
-            }
-            
-            return res.status(500).json({
-                error: 'An error occurred while removing child location from parent location'
-            });
-        }
-    }
-}
-
-module.exports = new LocationController();
+module.exports = {
+  search,
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+  removeMany,
+};

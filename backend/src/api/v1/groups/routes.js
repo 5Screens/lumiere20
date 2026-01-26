@@ -1,91 +1,39 @@
 const express = require('express');
 const router = express.Router();
-const groupController = require('./controller');
-const logger = require('../../../config/logger');
+const controller = require('./controller');
+const { validate, primeVueFilterSchema } = require('../../../middleware/validate');
+const { z } = require('zod');
 
-// GET /api/v1/groups/members
-router.get('/members', (req, res) => {
-    logger.info('[ROUTES] GET /api/v1/groups/members - Route handler started');
-    return groupController.getAllGroupMembers(req, res);
+// Validation schemas
+const createSchema = z.object({
+  group_name: z.string().min(1).max(255),
+  support_level: z.number().int().optional().nullable(),
+  description: z.string().optional().nullable(),
+  rel_supervisor: z.string().uuid().optional().nullable(),
+  rel_manager: z.string().uuid().optional().nullable(),
+  rel_schedule: z.string().uuid().optional().nullable(),
+  email: z.string().email().max(255).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
 });
 
-// GET /api/v1/groups/:uuid
-router.get('/:uuid', (req, res) => {
-    logger.info(`[ROUTES] GET /api/v1/groups/${req.params.uuid} - Route handler started`);
-    return groupController.getGroupByUuid(req, res);
+const updateSchema = z.object({
+  group_name: z.string().min(1).max(255).optional(),
+  support_level: z.number().int().optional().nullable(),
+  description: z.string().optional().nullable(),
+  rel_supervisor: z.string().uuid().optional().nullable(),
+  rel_manager: z.string().uuid().optional().nullable(),
+  rel_schedule: z.string().uuid().optional().nullable(),
+  email: z.string().email().max(255).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
 });
 
-// GET /api/v1/groups/:uuid/members
-router.get('/:uuid/members', (req, res) => {
-    logger.info(`[ROUTES] GET /api/v1/groups/${req.params.uuid}/members - Route handler started`);
-    return groupController.getGroupMembers(req, res);
-});
-
-// GET /api/v1/groups
-router.get('/', (req, res) => {
-    logger.info('[ROUTES] GET /api/v1/groups - Route handler started');
-    
-    // Vérification des paramètres de requête
-    const allowedParams = ['lang'];
-    const queryParams = Object.keys(req.query);
-    
-    const invalidParams = queryParams.filter(param => !allowedParams.includes(param));
-    if (invalidParams.length > 0) {
-        logger.warn(`[ROUTES] GET /api/v1/groups - Invalid query parameters detected: ${invalidParams.join(', ')}`);
-        return res.status(400).json({
-            error: 'Invalid query parameters',
-            invalidParams: invalidParams
-        });
-    }
-    
-    return groupController.getAllGroups(req, res);
-});
-
-// POST /api/v1/groups
-router.post('/', (req, res) => {
-    logger.info('[ROUTES] POST /api/v1/groups - Route handler started');
-    return groupController.createGroup(req, res);
-});
-
-// PATCH /api/v1/groups/:uuid
-router.patch('/:uuid', (req, res) => {
-    logger.info('[ROUTES] PATCH /api/v1/groups/:uuid - Route handler started');
-    
-    // Validate allowed fields in request body
-    const allowedFields = ['group_name', 'support_level', 'description', 'rel_supervisor', 'rel_manager', 'rel_schedule', 'email', 'phone'];
-    const requestFields = Object.keys(req.body);
-    
-    const invalidFields = requestFields.filter(field => !allowedFields.includes(field));
-    if (invalidFields.length > 0) {
-        logger.warn(`[ROUTES] PATCH /api/v1/groups/:uuid - Invalid fields detected in request body: ${invalidFields.join(', ')}`);
-        return res.status(400).json({
-            error: 'Invalid fields in request body',
-            invalidFields: invalidFields
-        });
-    }
-
-    // Add UUID from URL params to the request
-    req.groupUuid = req.params.uuid;
-    
-    return groupController.updateGroupField(req, res);
-});
-
-// POST /api/v1/groups/:group_uuid/members (ajout multiple)
-router.post('/:group_uuid/members', (req, res) => {
-    logger.info(`[ROUTES] POST /api/v1/groups/${req.params.group_uuid}/members - Route handler started for multiple members`);
-    return groupController.addMultipleMembersToGroup(req, res);
-});
-
-// POST /api/v1/groups/:group_uuid/members/:user_uuid
-router.post('/:group_uuid/members/:user_uuid', (req, res) => {
-    logger.info(`[ROUTES] POST /api/v1/groups/${req.params.group_uuid}/members/${req.params.user_uuid} - Route handler started`);
-    return groupController.addMemberToGroup(req, res);
-});
-
-// DELETE /api/v1/groups/:group_uuid/members/:user_uuid
-router.delete('/:group_uuid/members/:user_uuid', (req, res) => {
-    logger.info(`[ROUTES] DELETE /api/v1/groups/${req.params.group_uuid}/members/${req.params.user_uuid} - Route handler started`);
-    return groupController.removeMemberFromGroup(req, res);
-});
+// Routes
+router.post('/search', validate(primeVueFilterSchema), controller.search);
+router.get('/', controller.getAll);
+router.get('/:uuid', controller.getById);
+router.post('/', validate(createSchema), controller.create);
+router.put('/:uuid', validate(updateSchema), controller.update);
+router.delete('/:uuid', controller.remove);
+router.post('/delete-many', controller.removeMany);
 
 module.exports = router;

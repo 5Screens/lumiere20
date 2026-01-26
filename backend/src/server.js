@@ -1,117 +1,128 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const logger = require('./config/logger');
+const errorHandler = require('./middleware/errorHandler');
+const { authenticate } = require('./middleware/auth');
+const { initializeWebSocket } = require('./api/v1/speech/websocket');
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error(`Uncaught Exception: ${error.message}`, { stack: error.stack });
+  // Give time to log before exit
+  setTimeout(() => process.exit(1), 1000);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error(`Unhandled Rejection at: ${promise}, reason: ${reason}`);
+});
 
 const app = express();
-const port = process.env.PORT || 3000;
-
-// Routes
-const symptomsRoutes = require('./api/v1/symptoms/routes');
-const entitiesRoutes = require('./api/v1/entities/routes');
-const languagesRoutes = require('./api/v1/languages/routes');
-const symptomsTranslationsRoutes = require('./api/v1/symptoms_translations/routes');
-
-const locationsRoutes = require('./api/v1/locations/routes');
-const serviceOfferingsRoutes = require('./api/v1/service_offerings/routes');
-const servicesRoutes = require('./api/v1/services/routes');
-const auditChangesRoutes = require('./api/v1/audit_changes/routes');
-const ticketTypesRoutes = require('./api/v1/ticket_types/routes');
-const ticketStatusRoutes = require('./api/v1/ticket_status/routes');
-const configurationItemsRoutes = require('./api/v1/configuration_items/routes');
-const personsRoutes = require('./api/v1/persons/routes');
-const ticketsRoutes = require('./api/v1/tickets/routes');
-const groupsRoutes = require('./api/v1/groups/routes');
-const contactTypesRoutes = require('./api/v1/contact_types/routes');
-const contactTypesLabelsRoutes = require('./api/v1/contact_types_labels/routes');
-const defectSetupLabelsRoutes = require('./api/v1/defect_setup_labels/routes');
-const knowledgeSetupLabelsRoutes = require('./api/v1/knowledge_setup_label/routes');
-const incidentPrioritiesRoutes = require('./api/v1/incident_priorities/routes');
-const problemCategoriesRoutes = require('./api/v1/problem_categories/routes');
-const problemCategoriesLabelsRoutes = require('./api/v1/problem_categories_labels/routes');
-const changeSetupRoutes = require('./api/v1/change_setup/routes');
-const changeSetupLabelRoutes = require('./api/v1/change_setup_label/routes');
-const changeQuestionsRoutes = require('./api/v1/change_questions/routes');
-const changeQuestionsLabelsRoutes = require('./api/v1/change_questions_labels/routes');
-const changeOptionsRoutes = require('./api/v1/change_options/routes');
-const changeOptionsLabelsRoutes = require('./api/v1/change_options_labels/routes');
-const knowledgeSetupRoutes = require('./api/v1/knowledge_setup/routes');
-const attachmentsRoutes = require('./api/v1/attachments/routes');
-const projectSetupRoutes = require('./api/v1/project_setup/routes');
-const projectSetupLabelRoutes = require('./api/v1/project_setup_label/routes');
-const defectSetupRoutes = require('./api/v1/defect_setup/routes');
-const entitySetupRoutes = require('./api/v1/entity_setup/routes');
-const entitySetupLabelsRoutes = require('./api/v1/entity_setup_labels/routes');
-const incidentSetupRoutes = require('./api/v1/incident_setup/routes');
-const incidentSetupLabelsRoutes = require('./api/v1/incident_setup_labels/routes');
-const tableMetadataRoutes = require('./api/v1/table_metadata/routes');
-const portalsRoutes = require('./api/v1/portals/routes');
-const agentRoutes = require('./api/v1/agent/routes');
+const port = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); // Augmentation de la taille des requêtes à 50MB
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Logging middleware
 app.use((req, res, next) => {
-    logger.info(`${req.method} ${req.url}`);
-    next();
+  logger.info(`${req.method} ${req.url}`);
+  next();
 });
 
 // API Routes
-app.use('/api/v1/symptoms', symptomsRoutes);
-app.use('/api/v1/entities', entitiesRoutes);
-app.use('/api/v1/languages', languagesRoutes);
-app.use('/api/v1/symptoms_translations', symptomsTranslationsRoutes);
+const authRoutes = require('./api/v1/auth/routes');
+const configurationItemsRoutes = require('./api/v1/configuration_items/routes');
+const entitiesRoutes = require('./api/v1/entities/routes');
+const locationsRoutes = require('./api/v1/locations/routes');
+const groupsRoutes = require('./api/v1/groups/routes');
+const personsRoutes = require('./api/v1/persons/routes');
+const metadataRoutes = require('./api/v1/metadata/routes');
+const ciTypesRoutes = require('./api/v1/ci_types/routes');
+const ciTypeFieldsRoutes = require('./api/v1/ci_type_fields/routes');
+const ciCategoriesRoutes = require('./api/v1/ci_categories/routes');
+const languagesRoutes = require('./api/v1/languages/routes');
+const auditRoutes = require('./api/v1/audit/routes');
+const workflowStatusCategoriesRoutes = require('./api/v1/workflow_status_categories/routes');
+const workflowsRoutes = require('./api/v1/workflows/routes');
+const workflowEntityConfigRoutes = require('./api/v1/workflow_entity_config/routes');
+const tasksRoutes = require('./api/v1/tasks/routes');
+const ticketsRoutes = require('./api/v1/tickets/routes');
+const ticketTypesRoutes = require('./api/v1/ticket_types/routes');
+const ticketTypeFieldsRoutes = require('./api/v1/ticket_type_fields/routes');
+const attachmentsRoutes = require('./api/v1/attachments/routes');
+const objectSetupRoutes = require('./api/v1/object_setup/routes');
+const objectTypesRoutes = require('./api/v1/object_types/routes');
+const symptomsRoutes = require('./api/v1/symptoms/routes');
+const agentRoutes = require('./api/v1/agent/routes');
+const portalsRoutes = require('./api/v1/portals/routes');
+const globalSearchRoutes = require('./api/v1/global-search/routes');
+const ocrDocumentsRoutes = require('./api/v1/ocr_documents/routes');
 
-app.use('/api/v1/locations', locationsRoutes);
-app.use('/api/v1/service_offerings', serviceOfferingsRoutes);
-app.use('/api/v1/services', servicesRoutes);
-app.use('/api/v1/audit_changes', auditChangesRoutes);
-app.use('/api/v1/ticket_types', ticketTypesRoutes);
-app.use('/api/v1/ticket_status', ticketStatusRoutes);
-app.use('/api/v1/configuration_items', configurationItemsRoutes);
-app.use('/api/v1/persons', personsRoutes);
-app.use('/api/v1/tickets', ticketsRoutes);
-app.use('/api/v1/groups', groupsRoutes);
-app.use('/api/v1/contact_types', contactTypesRoutes);
-app.use('/api/v1/contact_types_labels', contactTypesLabelsRoutes);
-app.use('/api/v1/defect_setup_labels', defectSetupLabelsRoutes);
-app.use('/api/v1/knowledge_setup_label', knowledgeSetupLabelsRoutes);
-app.use('/api/v1/incident_priorities', incidentPrioritiesRoutes);
-app.use('/api/v1/problem_categories', problemCategoriesRoutes);
-app.use('/api/v1/problem_categories_labels', problemCategoriesLabelsRoutes);
-app.use('/api/v1/change_setup', changeSetupRoutes);
-app.use('/api/v1/change_setup_label', changeSetupLabelRoutes);
-app.use('/api/v1/change_questions', changeQuestionsRoutes);
-app.use('/api/v1/change_questions_labels', changeQuestionsLabelsRoutes);
-app.use('/api/v1/change_options', changeOptionsRoutes);
-app.use('/api/v1/change_options_labels', changeOptionsLabelsRoutes);
-app.use('/api/v1/knowledge_setup', knowledgeSetupRoutes);
-app.use('/api/v1/attachments', attachmentsRoutes);
-app.use('/api/v1/project_setup', projectSetupRoutes);
-app.use('/api/v1/project_setup_label', projectSetupLabelRoutes);
-app.use('/api/v1/defect_setup', defectSetupRoutes);
-app.use('/api/v1/entity_setup', entitySetupRoutes);
-app.use('/api/v1/entity_setup_labels', entitySetupLabelsRoutes);
-app.use('/api/v1/incident_setup', incidentSetupRoutes);
-app.use('/api/v1/incident_setup_labels', incidentSetupLabelsRoutes);
-app.use('/api/v1/table_metadata', tableMetadataRoutes);
-app.use('/api/v1/portals', portalsRoutes);
-app.use('/api/v1/agent', agentRoutes);
+// Public routes (no authentication required)
+app.use('/api/v1/auth', authRoutes);
 
-// Basic route
+// Protected routes (authentication required)
+app.use('/api/v1/configuration_items', authenticate, configurationItemsRoutes);
+app.use('/api/v1/entities', authenticate, entitiesRoutes);
+app.use('/api/v1/locations', authenticate, locationsRoutes);
+app.use('/api/v1/groups', authenticate, groupsRoutes);
+app.use('/api/v1/persons', authenticate, personsRoutes);
+app.use('/api/v1/metadata', authenticate, metadataRoutes);
+app.use('/api/v1/ci_types', authenticate, ciTypesRoutes);
+app.use('/api/v1/ci_type_fields', authenticate, ciTypeFieldsRoutes);
+app.use('/api/v1/ci_categories', authenticate, ciCategoriesRoutes);
+app.use('/api/v1/languages', authenticate, languagesRoutes);
+app.use('/api/v1/audit', authenticate, auditRoutes);
+app.use('/api/v1/workflow-status-categories', authenticate, workflowStatusCategoriesRoutes);
+app.use('/api/v1/workflows', authenticate, workflowsRoutes);
+app.use('/api/v1/workflow-entity-config', authenticate, workflowEntityConfigRoutes);
+app.use('/api/v1/tasks', authenticate, tasksRoutes);
+app.use('/api/v1/tickets', authenticate, ticketsRoutes);
+app.use('/api/v1/ticket-types', authenticate, ticketTypesRoutes);
+app.use('/api/v1/ticket_type_fields', authenticate, ticketTypeFieldsRoutes);
+app.use('/api/v1/attachments', authenticate, attachmentsRoutes);
+app.use('/api/v1/object-setup', authenticate, objectSetupRoutes);
+app.use('/api/v1/object-types', authenticate, objectTypesRoutes);
+app.use('/api/v1/symptoms', authenticate, symptomsRoutes);
+app.use('/api/v1/agent', authenticate, agentRoutes);
+app.use('/api/v1/portals', authenticate, portalsRoutes);
+app.use('/api/v1/global-search', authenticate, globalSearchRoutes);
+app.use('/api/v1/ocr-documents', authenticate, ocrDocumentsRoutes);
+
+// Health check
 app.get('/', (req, res) => {
-    res.json({ message: 'API is running' });
+  res.json({ 
+    message: 'Lumiere API V2 is running',
+    version: '2.0.0',
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    logger.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
-app.listen(port, () => {
-    logger.info(`Server is running on port ${port}`);
+// Health check under /api/v1 for frontend proxy
+app.get('/api/v1/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
+
+// Create HTTP server and attach WebSocket
+const server = http.createServer(app);
+
+// Initialize WebSocket for speech services (STT)
+initializeWebSocket(server);
+
+// Start server
+server.listen(port, () => {
+  logger.info(`Server is running on port ${port}`);
+  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`WebSocket STT available at ws://localhost:${port}/api/v1/speech/stt`);
 });

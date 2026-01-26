@@ -1,15 +1,16 @@
 <template>
-  <div class="portal-wrapper">
+  <div class="min-h-screen bg-surface-50 dark:bg-surface-900">
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
-      <div class="spinner"></div>
-      <p>Chargement du portail…</p>
+    <div v-if="loading" class="flex flex-col items-center justify-center min-h-screen">
+      <ProgressSpinner />
+      <p class="mt-4 text-surface-600 dark:text-surface-400">{{ $t('portal.loading') }}</p>
     </div>
     
     <!-- Error State -->
-    <div v-else-if="error" class="error-container">
-      <h2>❌ Erreur</h2>
-      <p>{{ error }}</p>
+    <div v-else-if="error" class="flex flex-col items-center justify-center min-h-screen">
+      <i class="pi pi-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+      <h2 class="text-2xl font-semibold text-surface-800 dark:text-surface-200 mb-2">{{ $t('portal.error') }}</h2>
+      <p class="text-surface-600 dark:text-surface-400">{{ error }}</p>
     </div>
     
     <!-- Dynamic Component based on portal.view_component -->
@@ -26,6 +27,7 @@
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { getFullPortal } from '@/services/portals'
+import ProgressSpinner from 'primevue/progressspinner'
 
 const route = useRoute()
 const portalData = ref(null)
@@ -34,28 +36,24 @@ const error = ref('')
 
 const portalCode = computed(() => route.params.portalCode)
 
-// Map of available components
+// Map of available portal view components
 const componentMap = {
-  'PortalViewV1': defineAsyncComponent(() => import('@/views/PortalViewV1.vue')),
-  'PortalPOC': defineAsyncComponent(() => import('@/views/PortalPOC.vue'))
+  'PortalViewV2': defineAsyncComponent(() => import('@/views/PortalViewV2.vue'))
 }
 
 const currentComponent = computed(() => {
-  // Return null during loading or if no data yet
-  if (!portalData.value) {
-    return null
-  }
+  if (!portalData.value) return null
   
-  // After loading, view_component MUST exist
   if (!portalData.value.view_component) {
     throw new Error('Portal data loaded but view_component is missing')
   }
   
   const componentName = portalData.value.view_component
   
-  // Component MUST exist in componentMap
   if (!componentMap[componentName]) {
-    throw new Error(`Component "${componentName}" not found in componentMap. Available components: ${Object.keys(componentMap).join(', ')}`)
+    // Fallback to V2 if component not found
+    console.warn(`Component "${componentName}" not found, using PortalViewV2`)
+    return componentMap['PortalViewV2']
   }
   
   return componentMap[componentName]
@@ -66,62 +64,13 @@ onMounted(async () => {
     portalData.value = await getFullPortal(portalCode.value)
     
     if (!portalData.value.is_active) {
-      error.value = 'Portail désactivé'
+      error.value = 'portal.disabled'
     }
   } catch (e) {
     console.error('Error loading portal:', e)
-    error.value = e?.response?.data?.message || 'Portail introuvable'
+    error.value = e?.message || 'portal.notFound'
   } finally {
     loading.value = false
   }
 })
 </script>
-
-<style scoped>
-.portal-wrapper {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #f5f5f5;
-}
-
-/* Loading & Error States */
-.loading-container,
-.error-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #FF6B00;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-container {
-  color: #d32f2f;
-}
-
-.error-container h2 {
-  font-size: 24px;
-  margin-bottom: 12px;
-}
-
-.error-container p {
-  font-size: 16px;
-}
-</style>

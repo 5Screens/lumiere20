@@ -29,12 +29,12 @@
 
 S'assurer que ces fichiers existent et sont à jour :
 
-- `backend-v2/Dockerfile`
-- `backend-v2/prisma.config.ts`
-- `frontend-v2/Dockerfile`
-- `frontend-v2/nginx.conf`
-- `portal-runner-v2/Dockerfile`
-- `portal-runner-v2/nginx.conf`
+- `backend/Dockerfile`
+- `backend/prisma.config.ts`
+- `frontend/Dockerfile`
+- `frontend/nginx.conf`
+- `portal-runner/Dockerfile`
+- `portal-runner/nginx.conf`
 - `docker-compose.yml`
 - `nginx/nginx.conf`
 - `nginx/conf.d/default.conf`
@@ -50,7 +50,7 @@ frontend:
       VITE_API_URL: /api/v1
 ```
 
-### 1.3 Vérifier le backend-v2/Dockerfile
+### 1.3 Vérifier le backend/Dockerfile
 
 ```dockerfile
 # Doit contenir ces lignes pour Prisma v7
@@ -62,7 +62,7 @@ RUN npx prisma generate
 RUN rm .env
 ```
 
-### 1.4 Vérifier le backend-v2/prisma.config.ts
+### 1.4 Vérifier le backend/prisma.config.ts
 
 ```typescript
 import path from 'node:path'
@@ -90,7 +90,7 @@ export default defineConfig({
 ### 1.5 Transférer les fichiers
 
 ```powershell
-cd C:\Users\MarcOliva\CascadeProjects\lumiere16
+cd C:\Users\MarcOliva\CascadeProjects\lumiere20
 .\upload-to-server.ps1
 ```
 

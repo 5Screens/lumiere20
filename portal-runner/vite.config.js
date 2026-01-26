@@ -1,16 +1,27 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import path from 'path'
+import { fileURLToPath, URL } from 'node:url'
+import pkg from './package.json'
 
 export default defineConfig({
-  plugins: [vue()],
-  server: {
-    port: 7240,
-    strictPort: true
+  base: '/portal/',
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
   },
+  plugins: [vue()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  },
+  server: {
+    port: 5175,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        ws: true
+      }
     }
   }
 })

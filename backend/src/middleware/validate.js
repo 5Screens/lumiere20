@@ -1,55 +1,92 @@
-const logger = require('../config/logger');
+const { z } = require('zod');
 
-const validate = (schema) => (req, res, next) => {
-    const validationOptions = {
-        abortEarly: false, // retourne toutes les erreurs
-        allowUnknown: true, // permet des propriétés inconnues
-        stripUnknown: true // supprime les propriétés inconnues
-    };
-
-    // Validation du corps de la requête si un schéma est fourni
-    if (schema.body) {
-        const { error: bodyError } = schema.body.validate(req.body, validationOptions);
-        if (bodyError) {
-            const errors = bodyError.details.map((detail) => detail.message);
-            logger.error(`Erreur de validation du corps: ${errors.join(', ')}`);
-            return res.status(400).json({
-                success: false,
-                message: 'Erreur de validation du corps de la requête',
-                errors: errors
-            });
+/**
+ * Validation middleware factory
+ * Supports schemas with body, query, params keys or simple schemas
+ * @param {z.ZodSchema} schema - Zod schema to validate against
+ */
+const validate = (schema) => {
+  return (req, res, next) => {
+    try {
+      // Check if schema has body/query/params structure
+      const schemaShape = schema._def?.shape?.();
+      
+      if (schemaShape?.body || schemaShape?.query || schemaShape?.params) {
+        // Validate each part separately
+        const result = schema.parse({
+          body: req.body,
+          query: req.query,
+          params: req.params
+        });
+        
+        // Update request with validated data
+        if (result.body) req.body = result.body;
+        if (result.query) req.query = result.query;
+        if (result.params) req.params = result.params;
+      } else {
+        // Simple schema - validate body by default
+        const result = schema.safeParse(req.body);
+        if (!result.success) {
+          console.log('[VALIDATE] Body received:', JSON.stringify(req.body, null, 2));
+          console.log('[VALIDATE] Errors:', result.error.errors);
+          return res.status(400).json({
+            error: 'Validation error',
+            details: result.error.errors.map((e) => ({
+              field: e.path.join('.'),
+              message: e.message,
+            })),
+          });
         }
+        req.body = result.data;
+      }
+      
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          error: 'Validation error',
+          details: error.errors.map((e) => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        });
+      }
+      next(error);
     }
-
-    // Validation des paramètres de requête si un schéma est fourni
-    if (schema.query) {
-        const { error: queryError } = schema.query.validate(req.query, validationOptions);
-        if (queryError) {
-            const errors = queryError.details.map((detail) => detail.message);
-            logger.error(`Erreur de validation des paramètres: ${errors.join(', ')}`);
-            return res.status(400).json({
-                success: false,
-                message: 'Erreur de validation des paramètres de requête',
-                errors: errors
-            });
-        }
-    }
-
-    // Validation des paramètres d'URL si un schéma est fourni
-    if (schema.params) {
-        const { error: paramsError } = schema.params.validate(req.params, validationOptions);
-        if (paramsError) {
-            const errors = paramsError.details.map((detail) => detail.message);
-            logger.error(`Erreur de validation des paramètres d'URL: ${errors.join(', ')}`);
-            return res.status(400).json({
-                success: false,
-                message: 'Erreur de validation des paramètres d\'URL',
-                errors: errors
-            });
-        }
-    }
-
-    next();
+  };
 };
 
-module.exports = validate;
+// Common validation schemas
+const uuidSchema = z.string().uuid();
+
+const paginationSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(50),
+});
+
+const sortSchema = z.object({
+  sortField: z.string().optional().default('created_at'),
+  sortOrder: z.coerce.number().int().min(-1).max(1).optional().default(1),
+});
+
+// PrimeVue filter schema
+// Extended with ciTypeUuid, ticketTypeCode, and objectSetupType for scoped searches
+const primeVueFilterSchema = z.object({
+  filters: z.record(z.any()).optional().default({}),
+  sortField: z.string().optional().nullable().default('created_at'),
+  sortOrder: z.coerce.number().int().optional().nullable().default(1),
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(100).optional().default(50),
+  ciTypeUuid: z.string().uuid().optional().nullable(),
+  ticketTypeCode: z.string().optional().nullable(),
+  objectSetupType: z.string().optional().nullable(),
+  globalSearchFields: z.array(z.string()).optional().nullable(),
+});
+
+module.exports = {
+  validate,
+  uuidSchema,
+  paginationSchema,
+  sortSchema,
+  primeVueFilterSchema,
+};

@@ -1,165 +1,125 @@
-const symptomsService = require('./service');
+const service = require('./service');
 const logger = require('../../../config/logger');
 
-class SymptomsController {
-    async getSymptoms(req, res) {
-        logger.info('[CONTROLLER] getSymptoms - Starting to process request');
-        try {
-            const { langue } = req.query;
-            logger.info(`[CONTROLLER] getSymptoms - Fetching symptoms for language: ${langue}`);
-            const symptoms = await symptomsService.getAllSymptoms(langue);
-            
-            logger.info(`[CONTROLLER] getSymptoms - Successfully retrieved ${symptoms.length} symptoms`);
-            return res.status(200).json(symptoms);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getSymptoms - Error: ${error.message}`);
-            return res.status(500).json({
-                success: false,
-                message: 'Une erreur est survenue lors de la récupération des symptômes'
-            });
-        }
-    }
+/**
+ * Search symptoms with PrimeVue filters
+ */
+const search = async (req, res) => {
+  try {
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+    const result = await service.search({ ...req.body, locale });
+    res.json(result);
+  } catch (error) {
+    logger.error('Error searching symptoms:', error);
+    res.status(500).json({ error: 'Failed to search symptoms' });
+  }
+};
 
-    async getAllSymptoms(req, res) {
-        logger.info('[CONTROLLER] getAllSymptoms - Starting to process request');
-        try {
-            const { lang } = req.query;
-            
-            let symptoms;
-            if (lang) {
-                logger.info(`[CONTROLLER] getAllSymptoms - Fetching symptoms for language: ${lang}`);
-                symptoms = await symptomsService.getAllSymptoms(lang);
-            } else {
-                logger.info('[CONTROLLER] getAllSymptoms - Fetching symptoms for all languages');
-                symptoms = await symptomsService.getAllSymptomsAllLanguages();
-            }
-            
-            logger.info(`[CONTROLLER] getAllSymptoms - Successfully retrieved ${symptoms.length} symptoms`);
-            return res.status(200).json(symptoms);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getAllSymptoms - Error: ${error.message}`);
-            return res.status(500).json({
-                success: false,
-                message: 'Une erreur est survenue lors de la récupération des symptômes'
-            });
-        }
-    }
+/**
+ * Get all symptoms
+ */
+const getAll = async (req, res) => {
+  try {
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+    const result = await service.getAll({ ...req.query, locale });
+    res.json(result);
+  } catch (error) {
+    logger.error('Error getting symptoms:', error);
+    res.status(500).json({ error: 'Failed to get symptoms' });
+  }
+};
 
-    async getSymptomByCode(req, res) {
-        logger.info('[CONTROLLER] getSymptomByCode - Starting to process request');
-        try {
-            const { scode } = req.query;
-            logger.info(`[CONTROLLER] getSymptomByCode - Fetching symptom with code: ${scode}`);
-            
-            const symptom = await symptomsService.getSymptomByCode(scode);
-            
-            if (!symptom) {
-                logger.info(`[CONTROLLER] getSymptomByCode - No symptom found with code: ${scode}`);
-                return res.status(404).json({
-                    success: false,
-                    message: `Aucun symptôme trouvé avec le code: ${scode}`
-                });
-            }
-            
-            logger.info(`[CONTROLLER] getSymptomByCode - Successfully retrieved symptom with code: ${scode}`);
-            return res.status(200).json(symptom);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getSymptomByCode - Error: ${error.message}`);
-            return res.status(500).json({
-                success: false,
-                message: 'Une erreur est survenue lors de la récupération du symptôme'
-            });
-        }
+/**
+ * Get symptom by UUID
+ */
+const getByUuid = async (req, res) => {
+  try {
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+    const symptom = await service.getByUuid(req.params.uuid, locale);
+    if (!symptom) {
+      return res.status(404).json({ error: 'Symptom not found' });
     }
+    res.json(symptom);
+  } catch (error) {
+    logger.error('Error getting symptom:', error);
+    res.status(500).json({ error: 'Failed to get symptom' });
+  }
+};
 
-    async getSymptomByUuid(req, res) {
-        logger.info('[CONTROLLER] getSymptomByUuid - Starting to process request');
-        try {
-            const { uuid } = req.params;
-            const { lang } = req.query;
-            logger.info(`[CONTROLLER] getSymptomByUuid - Fetching symptom with UUID: ${uuid}, language: ${lang}`);
-            
-            const symptom = await symptomsService.getSymptomByUuid(uuid, lang);
-            
-            if (!symptom) {
-                logger.info(`[CONTROLLER] getSymptomByUuid - No symptom found with UUID: ${uuid}`);
-                return res.status(404).json({
-                    success: false,
-                    message: `Aucun symptôme trouvé avec l'UUID: ${uuid}`
-                });
-            }
-            
-            logger.info(`[CONTROLLER] getSymptomByUuid - Successfully retrieved symptom with UUID: ${uuid}`);
-            return res.status(200).json(symptom);
-        } catch (error) {
-            logger.error(`[CONTROLLER] getSymptomByUuid - Error: ${error.message}`);
-            return res.status(500).json({
-                success: false,
-                message: 'Une erreur est survenue lors de la récupération du symptôme'
-            });
-        }
+/**
+ * Create new symptom
+ */
+const create = async (req, res) => {
+  try {
+    const symptom = await service.create(req.body);
+    res.status(201).json(symptom);
+  } catch (error) {
+    logger.error('Error creating symptom:', error);
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Symptom with this code already exists' });
     }
+    res.status(500).json({ error: 'Failed to create symptom' });
+  }
+};
 
-    async createSymptom(req, res) {
-        logger.info('[CONTROLLER] createSymptom - Starting to process request');
-        try {
-            const symptomData = req.body;
-            logger.info('[CONTROLLER] createSymptom - Creating new symptom');
-            const newSymptom = await symptomsService.createSymptom(symptomData);
-            
-            logger.info('[CONTROLLER] createSymptom - Symptom created successfully');
-            return res.status(201).json(newSymptom);
-        } catch (error) {
-            logger.error(`[CONTROLLER] createSymptom - Error: ${error.message}`);
-            
-            if (error.code === '23505') { // Code d'erreur PostgreSQL pour violation de contrainte unique
-                return res.status(409).json({
-                    success: false,
-                    message: 'Un symptôme avec ce code existe déjà'
-                });
-            }
-            
-            return res.status(500).json({
-                success: false,
-                message: 'Une erreur est survenue lors de la création du symptôme'
-            });
-        }
+/**
+ * Update symptom
+ */
+const update = async (req, res) => {
+  try {
+    const symptom = await service.update(req.params.uuid, req.body);
+    if (!symptom) {
+      return res.status(404).json({ error: 'Symptom not found' });
     }
-
-    async updateSymptom(req, res) {
-        logger.info('[CONTROLLER] updateSymptom - Starting to process request');
-        try {
-            const { uuid } = req.params;
-            const symptomData = req.body;
-            
-            logger.info(`[CONTROLLER] updateSymptom - Updating symptom with UUID: ${uuid}`);
-            const updatedSymptom = await symptomsService.updateSymptom(uuid, symptomData);
-            
-            logger.info('[CONTROLLER] updateSymptom - Symptom updated successfully');
-            return res.status(200).json(updatedSymptom);
-        } catch (error) {
-            logger.error(`[CONTROLLER] updateSymptom - Error: ${error.message}`);
-            
-            if (error.message.includes('not found')) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Symptôme non trouvé'
-                });
-            }
-            
-            if (error.code === '23505') { // Code d'erreur PostgreSQL pour violation de contrainte unique
-                return res.status(409).json({
-                    success: false,
-                    message: 'Un symptôme avec ce code existe déjà'
-                });
-            }
-            
-            return res.status(500).json({
-                success: false,
-                message: 'Une erreur est survenue lors de la mise à jour du symptôme'
-            });
-        }
+    res.json(symptom);
+  } catch (error) {
+    logger.error('Error updating symptom:', error);
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Symptom with this code already exists' });
     }
-}
+    res.status(500).json({ error: 'Failed to update symptom' });
+  }
+};
 
-module.exports = new SymptomsController();
+/**
+ * Delete symptom
+ */
+const remove = async (req, res) => {
+  try {
+    const success = await service.remove(req.params.uuid);
+    if (!success) {
+      return res.status(404).json({ error: 'Symptom not found' });
+    }
+    res.status(204).send();
+  } catch (error) {
+    logger.error('Error deleting symptom:', error);
+    res.status(500).json({ error: 'Failed to delete symptom' });
+  }
+};
+
+/**
+ * Delete multiple symptoms
+ */
+const removeMany = async (req, res) => {
+  try {
+    const { uuids } = req.body;
+    if (!Array.isArray(uuids) || uuids.length === 0) {
+      return res.status(400).json({ error: 'uuids array is required' });
+    }
+    const count = await service.removeMany(uuids);
+    res.json({ deleted: count });
+  } catch (error) {
+    logger.error('Error deleting symptoms:', error);
+    res.status(500).json({ error: 'Failed to delete symptoms' });
+  }
+};
+
+module.exports = {
+  search,
+  getAll,
+  getByUuid,
+  create,
+  update,
+  remove,
+  removeMany,
+};

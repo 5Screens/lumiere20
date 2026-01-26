@@ -1,692 +1,182 @@
-const ticketService = require('./service');
-const incidentService = require('./incidentService');
-const taskService = require('./taskService');
-const problemService = require('./problemService');
-const changeService = require('./changeService');
-const knowledgeService = require('./knowledgeService');
-const projectService = require('./projectService');
-const defectService = require('./defectService');
-const sprintService = require('./sprintService');
-const storyService = require('./storyService');
-const epicService = require('./epicService');
+const service = require('./service');
 const logger = require('../../../config/logger');
 
-const getTickets = async (req, res) => {
-    try {
-        logger.info('[TICKETS CONTROLLER] Processing GET /tickets request');
-        const { lang = 'en', ticket_type, page = 1, limit = 25, search = '' } = req.query;
-        
-        // If no ticket_type is specified and search/pagination params are provided, use generic lazy search
-        if (!ticket_type && (search || page || limit)) {
-            logger.info(`[TICKETS CONTROLLER] Using generic lazy search for all tickets with query: "${search}"`);
-            const searchResults = await ticketService.getTicketsLazySearch(search, page, limit, lang);
-            return res.json(searchResults);
-        }
-        
-        // For PROBLEM, CHANGE, PROJECT, EPIC, SPRINT, USER_STORY and DEFECT tickets, always use lazy search (with or without search query)
-        if (ticket_type === 'PROBLEM' || ticket_type === 'CHANGE' || ticket_type === 'PROJECT' || ticket_type === 'EPIC' || ticket_type === 'SPRINT' || ticket_type === 'USER_STORY' || ticket_type === 'DEFECT') {
-            logger.info(`[TICKETS CONTROLLER] Using lazy search for ${ticket_type} with query: "${search}"`);
-            
-            let searchResults;
-            if (ticket_type === 'PROBLEM') {
-                searchResults = await problemService.getProblemsLazySearch(search, page, limit, lang);
-            } else if (ticket_type === 'CHANGE') {
-                searchResults = await changeService.getChangesLazySearch(search, page, limit, lang);
-            } else if (ticket_type === 'EPIC') {
-                searchResults = await epicService.getEpicsLazySearch(search, page, limit, lang);
-            } else if (ticket_type === 'SPRINT') {
-                searchResults = await sprintService.getSprintsLazySearch(search, page, limit, lang);
-            } else if (ticket_type === 'USER_STORY') {
-                searchResults = await storyService.getUserStoriesLazySearch(search, page, limit, lang);
-            } else if (ticket_type === 'DEFECT') {
-                searchResults = await defectService.getDefectsLazySearch(search, page, limit, lang);
-            } else {
-                searchResults = await projectService.getProjectsLazySearch(search, page, limit, lang);
-            }
-            
-            return res.json(searchResults);
-        }
-        
-        // If pagination parameters are provided, use search with pagination
-        if (page || limit) {
-            logger.info(`[TICKETS CONTROLLER] Using paginated search: page=${page}, limit=${limit}`);
-            
-            const searchParams = {
-                filters: { conditions: [] },
-                sort: { by: 'created_at', direction: 'desc' },
-                pagination: { page: parseInt(page), limit: parseInt(limit) },
-                lang
-            };
-            
-            let searchResults;
-            
-            // Utiliser le service de recherche approprié selon le type de ticket
-            switch (ticket_type) {
-                case 'INCIDENT':
-                    logger.info('[TICKETS CONTROLLER] Calling incidentService.searchIncidents');
-                    searchResults = await incidentService.searchIncidents(searchParams);
-                    break;
-                case 'CHANGE':
-                    logger.info('[TICKETS CONTROLLER] Calling changeService.searchChanges');
-                    searchResults = await changeService.searchChanges(searchParams);
-                    break;
-                case 'TASK':
-                    logger.info('[TICKETS CONTROLLER] Calling taskService.searchTasks');
-                    searchResults = await taskService.searchTasks(searchParams);
-                    break;
-                case 'KNOWLEDGE':
-                    logger.info('[TICKETS CONTROLLER] Calling knowledgeService.searchKnowledgeArticles');
-                    searchResults = await knowledgeService.searchKnowledgeArticles(searchParams);
-                    break;
-                case 'PROJECT':
-                    logger.info('[TICKETS CONTROLLER] Calling projectService.searchProjects');
-                    searchResults = await projectService.searchProjects(searchParams);
-                    break;
-                case 'DEFECT':
-                    logger.info('[TICKETS CONTROLLER] Calling defectService.searchDefects');
-                    searchResults = await defectService.searchDefects(searchParams);
-                    break;
-                case 'SPRINT':
-                    logger.info('[TICKETS CONTROLLER] Calling sprintService.searchSprints');
-                    searchResults = await sprintService.searchSprints(searchParams);
-                    break;
-                case 'EPIC':
-                    logger.info('[TICKETS CONTROLLER] Calling epicService.searchEpics');
-                    searchResults = await epicService.searchEpics(searchParams);
-                    break;
-                case 'USER_STORY':
-                    logger.info('[TICKETS CONTROLLER] Calling storyService.searchUserStories');
-                    searchResults = await storyService.searchUserStories(searchParams);
-                    break;
-                default:
-                    logger.error(`[TICKETS CONTROLLER] Unknown ticket type: ${ticket_type}`);
-                    return res.status(400).json({ error: 'Invalid ticket type for paginated search' });
-            }
-            
-            return res.json(searchResults);
-        }
-        
-        // Otherwise, use legacy getAll methods (no pagination)
-        let tickets;
-        
-        switch (ticket_type) {
-            case 'INCIDENT':
-                logger.info('[TICKETS CONTROLLER] Calling incidentService.getIncidents');
-                tickets = await incidentService.getIncidents(lang);
-                break;
-            case 'CHANGE':
-                logger.info('[TICKETS CONTROLLER] Calling changeService.getChanges');
-                tickets = await changeService.getChanges(lang);
-                break;
-            case 'KNOWLEDGE':
-                logger.info('[TICKETS CONTROLLER] Calling knowledgeService.getKnowledgeArticles');
-                tickets = await knowledgeService.getKnowledgeArticles(lang);
-                break;
-            case 'PROJECT':
-                logger.info('[TICKETS CONTROLLER] Calling projectService.getProjects');
-                tickets = await projectService.getProjects(lang);
-                break;
-            case 'DEFECT':
-                logger.info('[TICKETS CONTROLLER] DEFECT type no longer uses legacy getDefects - use search endpoint');
-                return res.status(400).json({ error: 'Use POST /tickets/search/defects for defect queries' });
-                break;
-            case 'SPRINT':
-                logger.info('[TICKETS CONTROLLER] SPRINT type no longer uses legacy getSprints - use search endpoint');
-                return res.status(400).json({ error: 'Use POST /tickets/search/sprints for sprint queries' });
-                break;
-            case 'EPIC':
-                logger.info('[TICKETS CONTROLLER] Calling epicService.getEpics');
-                tickets = await epicService.getEpics(lang);
-                break;
-            case 'USER_STORY':
-                logger.info('[TICKETS CONTROLLER] Calling storyService.getUserStories');
-                tickets = await storyService.getUserStories(lang);
-                break;
-            default:
-                logger.info(`[TICKETS CONTROLLER] Calling ticketService.getTickets for type: ${ticket_type || 'all'}`);
-                tickets = await ticketService.getTickets(lang, ticket_type);
-                break;
-        }
-        
-        res.json(tickets);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in getTickets:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+const getLocale = (req) => {
+  const headerLocale = req.headers['accept-language']?.split(',')[0]?.split('-')[0];
+  return req.query.locale || headerLocale || 'en';
 };
 
 /**
- * Search tickets with advanced filters
- * Dispatches to the appropriate service based on ticket_type parameter
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * Get ticket_type_code from query params or route
  */
-const searchTickets = async (req, res) => {
+const getTicketTypeCode = (req) => {
+  return req.query.ticket_type_code || req.params.ticketType || null;
+};
+
+const search = async (req, res, next) => {
   try {
-    // Get ticket_type from request params (set by route)
-    const ticketType = req.params.ticket_type;
+    const locale = getLocale(req);
+    // ticketTypeCode can come from query params, route params, or request body
+    const ticketTypeCode = getTicketTypeCode(req) || req.body.ticketTypeCode || null;
     
-    logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/search/${ticketType} request`);
-    logger.info('[TICKETS CONTROLLER] Search body:', req.body);
+    // Enhanced logging for debugging
+    logger.info(`[TICKETS CONTROLLER] search called`);
+    logger.info(`[TICKETS CONTROLLER] URL: ${req.originalUrl}`);
+    logger.info(`[TICKETS CONTROLLER] Query params: ${JSON.stringify(req.query)}`);
+    logger.info(`[TICKETS CONTROLLER] Route params: ${JSON.stringify(req.params)}`);
+    logger.info(`[TICKETS CONTROLLER] Body: ${JSON.stringify(req.body, null, 2)}`);
+    logger.info(`[TICKETS CONTROLLER] Resolved ticketTypeCode: ${ticketTypeCode}, locale: ${locale}`);
     
-    let searchResults;
-    
-    // Dispatch to appropriate service based on ticket type
-    switch (ticketType) {
-      case 'tasks':
-        logger.info('[TICKETS CONTROLLER] Calling taskService.searchTasks');
-        searchResults = await taskService.searchTasks(req.body);
-        break;
-      case 'incidents':
-        logger.info('[TICKETS CONTROLLER] Calling incidentService.searchIncidents');
-        searchResults = await incidentService.searchIncidents(req.body);
-        break;
-      case 'problems':
-        logger.info('[TICKETS CONTROLLER] Calling problemService.searchProblems');
-        searchResults = await problemService.searchProblems(req.body);
-        break;
-      case 'changes':
-        logger.info('[TICKETS CONTROLLER] Calling changeService.searchChanges');
-        searchResults = await changeService.searchChanges(req.body);
-        break;
-      case 'knowledge':
-        logger.info('[TICKETS CONTROLLER] Calling knowledgeService.searchKnowledgeArticles');
-        searchResults = await knowledgeService.searchKnowledgeArticles(req.body);
-        break;
-      case 'projects':
-        logger.info('[TICKETS CONTROLLER] Calling projectService.searchProjects');
-        searchResults = await projectService.searchProjects(req.body);
-        break;
-      case 'defects':
-        logger.info('[TICKETS CONTROLLER] Calling defectService.searchDefects');
-        searchResults = await defectService.searchDefects(req.body);
-        break;
-      case 'sprints':
-        logger.info('[TICKETS CONTROLLER] Calling sprintService.searchSprints');
-        searchResults = await sprintService.searchSprints(req.body);
-        break;
-      case 'epics':
-        logger.info('[TICKETS CONTROLLER] Calling epicService.searchEpics');
-        searchResults = await epicService.searchEpics(req.body);
-        break;
-      case 'user_stories':
-        logger.info('[TICKETS CONTROLLER] Calling storyService.searchUserStories');
-        searchResults = await storyService.searchUserStories(req.body);
-        break;
-      default:
-        logger.error(`[TICKETS CONTROLLER] Unknown ticket type: ${ticketType}`);
-        return res.status(400).json({ 
-          error: 'Invalid ticket type',
-          message: `Ticket type '${ticketType}' is not supported` 
-        });
-    }
-    
-    res.status(200).json(searchResults);
+    const result = await service.search(req.body, locale, ticketTypeCode);
+    logger.info(`[TICKETS CONTROLLER] search result: ${result.total} items found`);
+    res.json(result);
   } catch (error) {
-    logger.error('[TICKETS CONTROLLER] Error in searchTickets:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
-    });
+    logger.error('[TICKETS CONTROLLER] Error in search:', error);
+    next(error);
   }
 };
 
-const createTicket = async (req, res) => {
-    try {
-        // Récupérer le type de ticket depuis req.body.ticket_type_code
-        const ticketType = req.body && req.body.ticket_type_code;
-        
-        // Log pour le debugging
-        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets request for type: ${ticketType || 'UNKNOWN'}`);
-        
-        // Créer le ticket
-        const ticket = await ticketService.createTicket(req.body);
-        
-        // Log de succès avec l'UUID du ticket créé
-        logger.info(`[TICKETS CONTROLLER] Successfully created ticket with UUID: ${ticket.uuid}`);
-        
-        res.status(201).json(ticket);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in createTicket:', error);
-        if (error.constraint) {
-            res.status(400).json({ error: 'Invalid reference data' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
+const getAll = async (req, res, next) => {
+  try {
+    const { page, limit, sortField, sortOrder } = req.query;
+    const ticketTypeCode = getTicketTypeCode(req);
+    const result = await service.getAll({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 50,
+      sortField: sortField || 'updated_at',
+      sortOrder: parseInt(sortOrder) || -1,
+      ticketTypeCode,
+    });
+    res.json(result);
+  } catch (error) {
+    logger.error('[TICKETS CONTROLLER] Error in getAll:', error);
+    next(error);
+  }
 };
 
-const getTicketTeam = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/team request`);
-        const ticketUuid = req.params.uuid;
-        
-        // Vérifier que l'UUID est valide
-        if (!ticketUuid || ticketUuid.trim() === '') {
-            logger.error('[TICKETS CONTROLLER] Invalid ticket UUID provided');
-            return res.status(400).json({ error: 'Invalid ticket UUID' });
-        }
-        
-        const team = await ticketService.getTicketTeam(ticketUuid);
-        res.json(team);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in getTicketTeam:', error);
-        res.status(500).json({ error: 'Internal server error' });
+const getByUuid = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const locale = getLocale(req);
+    const ticketTypeCode = getTicketTypeCode(req);
+    const item = await service.getByUuid(uuid, locale, ticketTypeCode);
+
+    if (!item) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Ticket not found',
+      });
     }
+
+    res.json(item);
+  } catch (error) {
+    logger.error('[TICKETS CONTROLLER] Error in getByUuid:', error);
+    next(error);
+  }
 };
 
-const getProjectEpics = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/epics request`);
-        const projectUuid = req.params.uuid;
-        
-        // Vérifier que l'UUID est valide
-        if (!projectUuid || projectUuid.trim() === '') {
-            logger.error('[TICKETS CONTROLLER] Invalid project UUID provided');
-            return res.status(400).json({ error: 'Invalid project UUID' });
-        }
-        
-        const epics = await ticketService.getProjectEpics(projectUuid);
-        res.json(epics);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in getProjectEpics:', error);
-        if (error.message === 'Project not found') {
-            res.status(404).json({ error: 'Project not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
+const create = async (req, res, next) => {
+  try {
+    const ticketTypeCode = getTicketTypeCode(req) || req.body.ticket_type_code;
+    const item = await service.create(req.body, ticketTypeCode);
+    res.status(201).json(item);
+  } catch (error) {
+    logger.error('[TICKETS CONTROLLER] Error in create:', error);
+    next(error);
+  }
 };
 
-const getProjectSprints = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/sprints request`);
-        const projectUuid = req.params.uuid;
-        
-        // Vérifier que l'UUID est valide
-        if (!projectUuid || projectUuid.trim() === '') {
-            logger.error('[TICKETS CONTROLLER] Invalid project UUID provided');
-            return res.status(400).json({ error: 'Invalid project UUID' });
-        }
-        
-        const sprints = await ticketService.getProjectSprints(projectUuid);
-        res.json(sprints);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in getProjectSprints:', error);
-        if (error.message === 'Project not found') {
-            res.status(404).json({ error: 'Project not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
+const update = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const ticketTypeCode = getTicketTypeCode(req);
+    logger.info(`[TICKETS CONTROLLER] update called for uuid: ${uuid}, body: ${JSON.stringify(req.body)}`);
+    const item = await service.update(uuid, req.body, ticketTypeCode);
+    logger.info(`[TICKETS CONTROLLER] update result: ${JSON.stringify(item)}`);
+
+    if (!item) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Ticket not found',
+      });
     }
+
+    res.json(item);
+  } catch (error) {
+    logger.error('[TICKETS CONTROLLER] Error in update:', error);
+
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        error: 'Not found',
+        message: `Ticket with UUID '${req.params.uuid}' not found`,
+      });
+    }
+
+    next(error);
+  }
 };
 
-const getTicketTeamMembers = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/team/members request`);
-        const ticketUuid = req.params.uuid;
-        
-        // Vérifier que l'UUID est valide
-        if (!ticketUuid || ticketUuid.trim() === '') {
-            logger.error('[TICKETS CONTROLLER] Invalid ticket UUID provided');
-            return res.status(400).json({ error: 'Invalid ticket UUID' });
-        }
-        
-        const members = await ticketService.getTicketTeamMembers(ticketUuid);
-        res.json(members);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in getTicketTeamMembers:', error);
-        res.status(500).json({ error: 'Internal server error' });
+const remove = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const ticketTypeCode = getTicketTypeCode(req);
+    const success = await service.remove(uuid, ticketTypeCode);
+
+    if (!success) {
+      return res.status(404).json({
+        error: 'Not found',
+        message: 'Ticket not found',
+      });
     }
+
+    res.status(204).send();
+  } catch (error) {
+    logger.error('[TICKETS CONTROLLER] Error in remove:', error);
+    next(error);
+  }
 };
 
-const getTicketById = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid} request`);
-        const ticketUuid = req.params.uuid;
-        const { lang, ticket_type } = req.query;
-        
-        // Vérifier que l'UUID est valide
-        if (!ticketUuid || ticketUuid.trim() === '') {
-            logger.error('[TICKETS CONTROLLER] Invalid ticket UUID provided');
-            return res.status(400).json({ error: 'Invalid ticket UUID' });
-        }
-        
-        let ticket;
-        
-        // Utiliser le service approprié selon le type de ticket
-        switch (ticket_type) {
-            case 'TASK':
-                logger.info(`[TICKETS CONTROLLER] Calling taskService.getTaskById for UUID: ${ticketUuid}`);
-                ticket = await taskService.getTaskById(ticketUuid, lang || 'en');
-                break;
-            case 'PROBLEM':
-                logger.info(`[TICKETS CONTROLLER] Calling problemService.getProblemById for UUID: ${ticketUuid}`);
-                ticket = await problemService.getProblemById(ticketUuid, lang || 'en');
-                break;
-            case 'CHANGE':
-                logger.info(`[TICKETS CONTROLLER] Calling changeService.getChangeById for UUID: ${ticketUuid}`);
-                ticket = await changeService.getChangeById(ticketUuid, lang || 'en');
-                break;
-            case 'INCIDENT':
-                logger.info(`[TICKETS CONTROLLER] Calling incidentService.getIncidentById for UUID: ${ticketUuid}`);
-                ticket = await incidentService.getIncidentById(ticketUuid, lang || 'en');
-                break;
-            // Ajouter d'autres cas pour les différents types de tickets si nécessaire
-            default:
-                logger.info(`[TICKETS CONTROLLER] Calling ticketService.getTicketById for UUID: ${ticketUuid}`);
-                ticket = await ticketService.getTicketById(ticketUuid, lang || 'en');
-                break;
-        }
-        
-        if (!ticket) {
-            logger.warn(`[TICKETS CONTROLLER] No ticket found with UUID: ${ticketUuid}`);
-            return res.status(404).json({ error: 'Ticket not found' });
-        }
-        
-        res.json(ticket);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in getTicketById:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
+const removeMany = async (req, res, next) => {
+  try {
+    const { uuids } = req.body;
+    const ticketTypeCode = getTicketTypeCode(req);
 
-const updateTicket = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing PATCH /tickets/${req.params.uuid} request`);
-        const ticketUuid = req.params.uuid;
-        
-        // Vérifier que l'UUID est valide
-        if (!ticketUuid || ticketUuid.trim() === '') {
-            logger.error('[TICKETS CONTROLLER] Invalid ticket UUID provided');
-            return res.status(400).json({ error: 'Invalid ticket UUID' });
-        }
-        
-        // Déléguer la mise à jour au service
-        const updatedTicket = await ticketService.updateTicket(ticketUuid, req.body);
-        
-        if (!updatedTicket) {
-            logger.error(`[TICKETS CONTROLLER] Failed to update ticket with UUID: ${ticketUuid}`);
-            return res.status(404).json({ error: 'Ticket not found or update failed' });
-        }
-        
-        logger.info(`[TICKETS CONTROLLER] Successfully updated ticket with UUID: ${ticketUuid}`);
-        res.json(updatedTicket);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in updateTicket:', error);
-        if (error.constraint) {
-            res.status(400).json({ error: 'Invalid reference data' });
-        } else if (error.message === 'Not implemented') {
-            res.status(501).json({ error: 'PATCH not implemented for this ticket type' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
+    if (!Array.isArray(uuids) || uuids.length === 0) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: 'uuids must be a non-empty array',
+      });
     }
-};
 
-const addWatchers = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.uuid}/watchers request`);
-        const ticketUuid = req.params.uuid;
-        const { watch_list } = req.body;
-        
-        const result = await ticketService.addWatchers(ticketUuid, watch_list);
-        res.status(201).json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in addWatchers:', error);
-        if (error.message === 'Ticket not found') {
-            res.status(404).json({ error: 'Ticket not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-};
-
-const removeWatcher = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing DELETE /tickets/${req.params.uuid}/watchers/${req.params.user_uuid} request`);
-        const ticketUuid = req.params.uuid;
-        const userUuid = req.params.user_uuid;
-        
-        const result = await ticketService.removeWatcher(ticketUuid, userUuid);
-        
-        if (!result.success && result.message === 'Watcher not found or already removed') {
-            return res.status(404).json({ error: result.message });
-        }
-        
-        res.json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in removeWatcher:', error);
-        if (error.message === 'Ticket not found') {
-            res.status(404).json({ error: 'Ticket not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-};
-
-// Add access groups to a project
-const addAccessGroups = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.uuid}/access-groups request`);
-        const ticketUuid = req.params.uuid;
-        const { 'access-groups': access_groups } = req.body;
-        
-        const result = await ticketService.addAccessGroups(ticketUuid, access_groups);
-        res.status(201).json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in addAccessGroups:', error);
-        if (error.message === 'Ticket not found') {
-            res.status(404).json({ error: 'Ticket not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-};
-
-// Remove access group from a project
-const removeAccessGroup = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing DELETE /tickets/${req.params.uuid}/access-groups/${req.params.group_uuid} request`);
-        const ticketUuid = req.params.uuid;
-        const groupUuid = req.params.group_uuid;
-        
-        const result = await ticketService.removeAccessGroup(ticketUuid, groupUuid);
-        
-        if (!result.success && result.message === 'Access group not found or already removed') {
-            return res.status(404).json({ error: result.message });
-        }
-        
-        res.json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in removeAccessGroup:', error);
-        if (error.message === 'Ticket not found') {
-            res.status(404).json({ error: 'Ticket not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-};
-
-// Get access groups for a project
-const getAccessGroups = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/access-groups request`);
-        const ticketUuid = req.params.uuid;
-        const { lang = 'en' } = req.query;
-        
-        const result = await ticketService.getAccessGroups(ticketUuid, lang);
-        res.json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in getAccessGroups:', error);
-        if (error.message === 'Ticket not found') {
-            res.status(404).json({ error: 'Ticket not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-};
-
-// Add access users to a project
-const addAccessUsers = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.uuid}/access-users request`);
-        const ticketUuid = req.params.uuid;
-        const { 'access-users': access_users } = req.body;
-        
-        const result = await ticketService.addAccessUsers(ticketUuid, access_users);
-        res.status(201).json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in addAccessUsers:', error);
-        if (error.message === 'Ticket not found') {
-            res.status(404).json({ error: 'Ticket not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-};
-
-// Remove access user from a project
-const removeAccessUser = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing DELETE /tickets/${req.params.uuid}/access-users/${req.params.user_uuid} request`);
-        const ticketUuid = req.params.uuid;
-        const userUuid = req.params.user_uuid;
-        
-        const result = await ticketService.removeAccessUser(ticketUuid, userUuid);
-        
-        if (!result.success && result.message === 'Access user not found or already removed') {
-            return res.status(404).json({ error: result.message });
-        }
-        
-        res.json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in removeAccessUser:', error);
-        if (error.message === 'Ticket not found') {
-            res.status(404).json({ error: 'Ticket not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-};
-
-// Get access users for a project
-const getAccessUsers = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing GET /tickets/${req.params.uuid}/access-users request`);
-        const ticketUuid = req.params.uuid;
-        const { lang = 'en' } = req.query;
-        
-        const result = await ticketService.getAccessUsers(ticketUuid, lang);
-        res.json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in getAccessUsers:', error);
-        if (error.message === 'Ticket not found') {
-            res.status(404).json({ error: 'Ticket not found' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
+    const count = await service.removeMany(uuids, ticketTypeCode);
+    res.json({ deleted: count });
+  } catch (error) {
+    logger.error('[TICKETS CONTROLLER] Error in removeMany:', error);
+    next(error);
+  }
 };
 
 /**
- * Ajoute des relations parent-enfant entre tickets
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
+ * Get extended fields definition for a ticket type
  */
-const addChildrenTickets = async (req, res) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing POST /tickets/${req.params.parent_uuid}/children request`);
-        const parentUuid = req.params.parent_uuid;
-        const { type, children } = req.body;
-        
-        // Vérifier que l'UUID parent est valide
-        if (!parentUuid || parentUuid.trim() === '') {
-            logger.error('[TICKETS CONTROLLER] Invalid parent ticket UUID provided');
-            return res.status(400).json({ error: 'Invalid parent ticket UUID' });
-        }
-        
-        // Vérifier que le type de dépendance est fourni
-        if (!type || type.trim() === '') {
-            logger.error('[TICKETS CONTROLLER] Dependency type not provided');
-            return res.status(400).json({ error: 'Dependency type is required' });
-        }
-        
-        // Vérifier que la liste des enfants est fournie et valide
-        if (!children || !Array.isArray(children) || children.length === 0) {
-            logger.error('[TICKETS CONTROLLER] Children UUIDs not provided or invalid');
-            return res.status(400).json({ error: 'Children UUIDs must be a non-empty array' });
-        }
-        
-        // Ajouter les relations parent-enfant
-        const result = await ticketService.addChildrenTickets(parentUuid, type, children);
-        
-        res.status(201).json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in addChildrenTickets:', error);
-        if (error.constraint) {
-            res.status(400).json({ error: 'Invalid reference data' });
-        } else {
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-};
-
-/**
- * Supprime une relation parent-enfant entre tickets
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- * @param {string} parentUuid - UUID du ticket parent
- * @param {string} childUuid - UUID du ticket enfant
- */
-const removeChildTicket = async (req, res, parentUuid, childUuid) => {
-    try {
-        logger.info(`[TICKETS CONTROLLER] Processing DELETE /tickets/${parentUuid}/children/${childUuid} request`);
-        
-        // Vérifier que les UUIDs sont valides
-        if (!parentUuid || parentUuid.trim() === '' || !childUuid || childUuid.trim() === '') {
-            logger.error('[TICKETS CONTROLLER] Invalid parent or child UUID provided');
-            return res.status(400).json({ 
-                success: false,
-                message: 'Invalid parent or child UUID'
-            });
-        }
-        
-        const result = await ticketService.removeChildTicket(parentUuid, childUuid);
-        
-        if (!result.success) {
-            return res.status(404).json(result);
-        }
-        
-        return res.status(200).json(result);
-    } catch (error) {
-        logger.error('[TICKETS CONTROLLER] Error in removeChildTicket:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-            error: error.message
-        });
-    }
+const getTypeFields = async (req, res, next) => {
+  try {
+    const { ticketType } = req.params;
+    const fields = await service.getTicketTypeFields(ticketType);
+    res.json(fields);
+  } catch (error) {
+    logger.error('[TICKETS CONTROLLER] Error in getTypeFields:', error);
+    next(error);
+  }
 };
 
 module.exports = {
-    getTickets,
-    searchTickets,
-    createTicket,
-    getTicketTeam,
-    getTicketById,
-    getProjectEpics,
-    getProjectSprints,
-    getTicketTeamMembers,
-    updateTicket,
-    addWatchers,
-    removeWatcher,
-    addAccessGroups,
-    removeAccessGroup,
-    getAccessGroups,
-    addAccessUsers,
-    removeAccessUser,
-    getAccessUsers,
-    addChildrenTickets,
-    removeChildTicket
+  search,
+  getAll,
+  getByUuid,
+  create,
+  update,
+  remove,
+  removeMany,
+  getTypeFields,
 };

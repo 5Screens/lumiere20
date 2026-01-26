@@ -23,7 +23,7 @@ services:
   # Backend API
   backend:
     build:
-      context: ./backend-v2
+      context: ./backend
       dockerfile: Dockerfile
     container_name: lumiere-backend
     restart: unless-stopped
@@ -55,7 +55,7 @@ services:
   # Frontend (IT Portal)
   frontend:
     build:
-      context: ./frontend-v2
+      context: ./frontend
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api/v1
@@ -67,7 +67,7 @@ services:
   # Portal Runner (End User Portal)
   portal:
     build:
-      context: ./portal-runner-v2
+      context: ./portal-runner
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api/v1

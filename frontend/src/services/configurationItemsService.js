@@ -1,80 +1,92 @@
-import apiService from './apiService';
+import api from './api'
 
-/**
- * Service for Configuration Items CRUD operations
- */
-const configurationItemsService = {
+const ENDPOINT = '/configuration_items'
+
+export default {
   /**
-   * Get all configuration items with pagination and filters (legacy - simple search)
-   * @param {Object} options - Query options
-   * @returns {Promise<Object>} - Paginated configuration items
+   * Search configuration items with PrimeVue filters
+   * @param {Object} params - Search parameters
+   * @returns {Promise<Object>} - Search results
    */
-  async getAll(options = {}) {
-    const params = {
-      search: options.search || '',
-      ci_type: options.ci_type || null,
-      page: options.page || 1,
-      limit: options.limit || 50,
-      sortBy: options.sortBy || 'name',
-      sortDirection: options.sortDirection || 'asc'
-    };
-    
-    return await apiService.get('configuration_items', params);
+  async search(params = {}) {
+    // Deep clone to avoid Proxy serialization issues
+    const payload = JSON.parse(JSON.stringify(params))
+    console.log('[configurationItemsService] search payload:', payload)
+    console.log('[configurationItemsService] payload.ciTypeUuid:', payload.ciTypeUuid)
+    const response = await api.post(`${ENDPOINT}/search`, payload)
+    return response.data
   },
 
   /**
-   * Search configuration items with advanced filters (PrimeVue format)
-   * @param {Object} searchParams - Search parameters with PrimeVue filters
-   * @returns {Promise<Object>} - Search results
+   * Get all configuration items
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} - Paginated results
    */
-  async search(searchParams = {}) {
-    return await apiService.post('configuration_items/search', searchParams);
+  async getAll(params = {}) {
+    const response = await api.get(ENDPOINT, { params })
+    return response.data
   },
 
   /**
    * Get configuration item by UUID
-   * @param {string} uuid - Configuration item UUID
-   * @returns {Promise<Object>} - Configuration item details
+   * @param {string} uuid - Item UUID
+   * @returns {Promise<Object>} - Item data
    */
-  async getById(uuid) {
-    return await apiService.get(`configuration_items/${uuid}`);
+  async getByUuid(uuid) {
+    const response = await api.get(`${ENDPOINT}/${uuid}`)
+    return response.data
   },
 
   /**
    * Create new configuration item
-   * @param {Object} data - Configuration item data
-   * @returns {Promise<Object>} - Created configuration item
+   * @param {Object} data - Item data
+   * @returns {Promise<Object>} - Created item
    */
   async create(data) {
-    return await apiService.post('configuration_items', data);
+    const response = await api.post(ENDPOINT, data)
+    return response.data
   },
 
   /**
    * Update configuration item
-   * @param {string} uuid - Configuration item UUID
+   * @param {string} uuid - Item UUID
    * @param {Object} data - Update data
-   * @returns {Promise<Object>} - Updated configuration item
+   * @returns {Promise<Object>} - Updated item
    */
   async update(uuid, data) {
-    return await apiService.patch(`configuration_items/${uuid}`, data);
+    const response = await api.put(`${ENDPOINT}/${uuid}`, data)
+    return response.data
   },
 
   /**
    * Delete configuration item
-   * @param {string} uuid - Configuration item UUID
+   * @param {string} uuid - Item UUID
    * @returns {Promise<void>}
    */
   async delete(uuid) {
-    return await apiService.delete(`configuration_items/${uuid}`);
+    await api.delete(`${ENDPOINT}/${uuid}`)
   },
 
   /**
-   * Get CI type schemas
-   * @returns {Promise<Object>} - CI type schemas
+   * Delete multiple configuration items
+   * @param {string[]} uuids - Array of UUIDs
+   * @returns {Promise<Object>} - Deletion result
    */
-  async getSchemas() {
-    return await apiService.get('configuration_items/schemas');
-  }
-};
+  async deleteMany(uuids) {
+    const response = await api.post(`${ENDPOINT}/delete-many`, { uuids })
+    return response.data
+  },
 
-export default configurationItemsService;
+  /**
+   * Get models for a specific CI type
+   * @param {string} ciTypeCode - CI type code (e.g., 'SERVER')
+   * @param {string} locale - Locale for translations
+   * @returns {Promise<Array>} - Array of model CIs
+   */
+  async getModelsForType(ciTypeCode, locale = 'en') {
+    const response = await api.get(`${ENDPOINT}/models/${ciTypeCode}`, {
+      params: { locale }
+    })
+    return response.data
+  }
+}

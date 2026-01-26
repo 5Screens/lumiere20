@@ -1,478 +1,122 @@
-const { pool } = require('../../../config/database');
-const logger = require('../../../config/logger');
+const prisma = require('../../../config/prisma');
+const { buildPrismaWhereFromFilters, buildPrismaOrderBy } = require('../../../utils/primeVueFilters');
 
-class GroupService {
-    async getAllGroups() {
-        logger.info('[SERVICE] getAllGroups - Starting database query');
-        try {
-            const query = `
-                SELECT 
-                    g.uuid, 
-                    g.group_name, 
-                    g.support_level,
-                    g.description,
-                    g.rel_supervisor,
-                    CASE 
-                        WHEN g.rel_supervisor IS NULL THEN NULL 
-                        ELSE CONCAT(supervisor.first_name, ' ', supervisor.last_name) 
-                    END as supervisor_name,
-                    g.rel_manager,
-                    CASE 
-                        WHEN g.rel_manager IS NULL THEN NULL 
-                        ELSE CONCAT(manager.first_name, ' ', manager.last_name) 
-                    END as manager_name,
-                    g.rel_schedule,
-                    g.email,
-                    g.phone,
-                    g.created_at,
-                    g.updated_at,
-                    COALESCE(
-                        (SELECT COUNT(*) 
-                         FROM configuration.rel_persons_groups rpg 
-                         WHERE rpg.rel_group = g.uuid), 
-                        0
-                    ) as persons_count
-                FROM configuration.groups g
-                LEFT JOIN configuration.persons supervisor ON g.rel_supervisor = supervisor.uuid
-                LEFT JOIN configuration.persons manager ON g.rel_manager = manager.uuid
-                ORDER BY g.group_name ASC`;
-            
-            const result = await pool.query(query);
-            logger.info(`[SERVICE] getAllGroups - Query executed successfully, found ${result.rows.length} records`);
-            return result.rows;
-        } catch (error) {
-            logger.error(`[SERVICE] getAllGroups - Database error: ${error.message}`);
-            throw error;
-        }
+/**
+ * Search groups with PrimeVue filters
+ */
+const search = async (params) => {
+  const { filters, sortField, sortOrder, page = 1, limit = 25 } = params;
+  
+  const where = buildPrismaWhereFromFilters(filters, { globalSearchFields: ['group_name', 'description'] });
+  const orderBy = buildPrismaOrderBy(sortField, sortOrder);
+  const skip = (page - 1) * limit;
+
+  const [data, total] = await Promise.all([
+    prisma.groups.findMany({
+      where,
+      orderBy,
+      skip,
+      take: limit,
+    }),
+    prisma.groups.count({ where }),
+  ]);
+
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+};
+
+/**
+ * Get all groups with pagination
+ */
+const getAll = async ({ page = 1, limit = 50, sortField = 'group_name', sortOrder = 1 }) => {
+  const skip = (page - 1) * limit;
+  const orderBy = { [sortField]: sortOrder === 1 ? 'asc' : 'desc' };
+
+  const [data, total] = await Promise.all([
+    prisma.groups.findMany({
+      skip,
+      take: limit,
+      orderBy,
+    }),
+    prisma.groups.count(),
+  ]);
+
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+};
+
+/**
+ * Get group by UUID
+ */
+const getById = async (uuid) => {
+  return prisma.groups.findUnique({
+    where: { uuid },
+    include: {
+      supervisor: true,
+      manager: true,
+    },
+  });
+};
+
+/**
+ * Create new group
+ */
+const create = async (data) => {
+  return prisma.groups.create({
+    data,
+  });
+};
+
+/**
+ * Update group
+ */
+const update = async (uuid, data) => {
+  try {
+    return await prisma.groups.update({
+      where: { uuid },
+      data,
+    });
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return null;
     }
+    throw error;
+  }
+};
 
-    async getGroupByUuid(uuid) {
-        logger.info(`[SERVICE] getGroupByUuid - Starting database query for UUID: ${uuid}`);
-        try {
-            const query = `
-                SELECT 
-                    g.uuid, 
-                    g.group_name, 
-                    g.support_level,
-                    g.description,
-                    g.rel_supervisor,
-                    CASE 
-                        WHEN g.rel_supervisor IS NULL THEN NULL 
-                        ELSE CONCAT(supervisor.first_name, ' ', supervisor.last_name) 
-                    END as supervisor_name,
-                    g.rel_manager,
-                    CASE 
-                        WHEN g.rel_manager IS NULL THEN NULL 
-                        ELSE CONCAT(manager.first_name, ' ', manager.last_name) 
-                    END as manager_name,
-                    g.rel_schedule,
-                    g.email,
-                    g.phone,
-                    g.created_at,
-                    g.updated_at,
-                    -- Informations sur les membres du groupe
-                    (
-                        SELECT json_agg(json_build_object(
-                            'uuid', rpg.uuid,
-                            'person_uuid', p.uuid,
-                            'person_name', p.first_name || ' ' || p.last_name,
-                            'created_at', rpg.created_at
-                        ))
-                        FROM configuration.rel_persons_groups rpg
-                        JOIN configuration.persons p ON rpg.rel_member = p.uuid
-                        WHERE rpg.rel_group = g.uuid
-                    ) as persons_list
-                FROM configuration.groups g
-                LEFT JOIN configuration.persons supervisor ON g.rel_supervisor = supervisor.uuid
-                LEFT JOIN configuration.persons manager ON g.rel_manager = manager.uuid
-                WHERE g.uuid = $1`;
-            
-            const result = await pool.query(query, [uuid]);
-            
-            if (result.rows.length === 0) {
-                return null;
-            }
-            
-            return result.rows[0];
-        } catch (error) {
-            logger.error(`[SERVICE] getGroupByUuid - Error: ${error.message}`);
-            throw error;
-        }
+/**
+ * Delete group
+ */
+const remove = async (uuid) => {
+  try {
+    await prisma.groups.delete({
+      where: { uuid },
+    });
+    return true;
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return false;
     }
+    throw error;
+  }
+};
 
-    async createGroup(groupData) {
-        logger.info('[SERVICE] createGroup - Starting database operation');
-        const client = await pool.connect();
-        
-        try {
-            await client.query('BEGIN');
-            
-            const {
-                group_name,
-                support_level,
-                description,
-                rel_supervisor,
-                rel_manager,
-                rel_schedule,
-                email,
-                phone,
-                members
-            } = groupData;
+/**
+ * Delete multiple groups
+ */
+const removeMany = async (uuids) => {
+  const result = await prisma.groups.deleteMany({
+    where: {
+      uuid: { in: uuids },
+    },
+  });
+  return result.count;
+};
 
-            // Créer le groupe
-            const groupQuery = `
-                INSERT INTO configuration.groups (
-                    group_name,
-                    support_level,
-                    description,
-                    rel_supervisor,
-                    rel_manager,
-                    rel_schedule,
-                    email,
-                    phone
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                RETURNING 
-                    uuid,
-                    group_name,
-                    support_level,
-                    description,
-                    rel_supervisor,
-                    rel_manager,
-                    rel_schedule,
-                    email,
-                    phone,
-                    created_at,
-                    updated_at`;
-            
-            const groupValues = [
-                group_name,
-                support_level,
-                description,
-                rel_supervisor,
-                rel_manager,
-                rel_schedule,
-                email,
-                phone
-            ];
-            
-            const groupResult = await client.query(groupQuery, groupValues);
-            const newGroup = groupResult.rows[0];
-            logger.info(`[SERVICE] createGroup - Group created successfully with UUID: ${newGroup.uuid}`);
-
-            // Ajouter les membres si fournis
-            if (members && Array.isArray(members) && members.length > 0) {
-                logger.info(`[SERVICE] createGroup - Adding ${members.length} members to group: ${newGroup.uuid}`);
-                
-                for (const memberUuid of members) {
-                    try {
-                        // Vérifier que la personne existe
-                        const personCheckQuery = `
-                            SELECT uuid FROM configuration.persons 
-                            WHERE uuid = $1`;
-                        
-                        const personResult = await client.query(personCheckQuery, [memberUuid]);
-                        if (personResult.rows.length === 0) {
-                            logger.warn(`[SERVICE] createGroup - Person not found: ${memberUuid}, skipping`);
-                            continue;
-                        }
-
-                        // Ajouter la relation groupe-membre
-                        const memberQuery = `
-                            INSERT INTO configuration.rel_persons_groups (rel_group, rel_member)
-                            VALUES ($1, $2)`;
-                        
-                        await client.query(memberQuery, [newGroup.uuid, memberUuid]);
-                        logger.info(`[SERVICE] createGroup - Member added: ${memberUuid} to group ${newGroup.uuid}`);
-                    } catch (memberError) {
-                        logger.error(`[SERVICE] createGroup - Error adding member ${memberUuid}: ${memberError.message}`);
-                        // Continue avec les autres membres même si un échoue
-                    }
-                }
-            }
-
-            await client.query('COMMIT');
-            return newGroup;
-        } catch (error) {
-            await client.query('ROLLBACK');
-            logger.error(`[SERVICE] createGroup - Error: ${error.message}`);
-            throw error;
-        } finally {
-            client.release();
-        }
-    }
-
-    async updateGroup(uuid, groupData) {
-        logger.info(`[SERVICE] updateGroup - Starting database operation for UUID: ${uuid}`);
-        try {
-            // Construire la requête dynamiquement en fonction des champs fournis
-            const fields = Object.keys(groupData);
-            const values = Object.values(groupData);
-            
-            // Ajouter l'UUID à la fin des valeurs
-            values.push(uuid);
-            
-            // Construire la partie SET de la requête
-            const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
-            
-            const query = `
-                UPDATE configuration.groups
-                SET ${setClause}, updated_at = CURRENT_TIMESTAMP
-                WHERE uuid = $${values.length}
-                RETURNING 
-                    uuid,
-                    group_name,
-                    support_level,
-                    description,
-                    rel_supervisor,
-                    rel_manager,
-                    rel_schedule,
-                    email,
-                    phone,
-                    created_at,
-                    updated_at`;
-            
-            const result = await pool.query(query, values);
-            
-            if (result.rows.length === 0) {
-                return null;
-            }
-            
-            logger.info(`[SERVICE] updateGroup - Group updated successfully: ${uuid}`);
-            return result.rows[0];
-        } catch (error) {
-            logger.error(`[SERVICE] updateGroup - Error: ${error.message}`);
-            throw error;
-        }
-    }
-
-    async getGroupMembers(groupUuid) {
-        logger.info(`[SERVICE] getGroupMembers - Starting database query for group UUID: ${groupUuid}`);
-        try {
-            const query = `
-                SELECT 
-                    p.uuid,
-                    p.first_name,
-                    p.last_name,
-                    CONCAT(p.first_name, ' ', p.last_name) as person_name,
-                    p.job_role,
-                    p.email,
-                    p.business_phone,
-                    p.business_mobile_phone,
-                    rpg.created_at as member_since
-                FROM configuration.rel_persons_groups rpg
-                JOIN configuration.persons p ON rpg.rel_member = p.uuid
-                WHERE rpg.rel_group = $1
-                ORDER BY p.last_name, p.first_name`;
-            
-            const result = await pool.query(query, [groupUuid]);
-            logger.info(`[SERVICE] getGroupMembers - Query executed successfully, found ${result.rows.length} members`);
-            return result.rows;
-        } catch (error) {
-            logger.error(`[SERVICE] getGroupMembers - Error: ${error.message}`);
-            throw error;
-        }
-    }
-
-    async getAllGroupMembers() {
-        logger.info('[SERVICE] getAllGroupMembers - Starting database query');
-        try {
-            const query = `
-                WITH unique_members AS (
-                    SELECT DISTINCT rel_member
-                    FROM configuration.rel_persons_groups
-                )
-                SELECT 
-                    p.uuid,
-                    p.first_name,
-                    p.last_name,
-                    CONCAT(p.first_name, ' ', p.last_name) as person_name,
-                    p.job_role,
-                    p.email,
-                    p.business_phone,
-                    p.business_mobile_phone,
-                    (
-                        SELECT array_agg(json_build_object(
-                            'group_uuid', g.uuid,
-                            'group_name', g.group_name,
-                            'member_since', rpg.created_at
-                        ))
-                        FROM configuration.rel_persons_groups rpg
-                        JOIN configuration.groups g ON rpg.rel_group = g.uuid
-                        WHERE rpg.rel_member = p.uuid
-                    ) as groups
-                FROM unique_members um
-                JOIN configuration.persons p ON um.rel_member = p.uuid
-                ORDER BY p.last_name, p.first_name`;
-            
-            const result = await pool.query(query);
-            logger.info(`[SERVICE] getAllGroupMembers - Query executed successfully, found ${result.rows.length} members`);
-            return result.rows;
-        } catch (error) {
-            logger.error(`[SERVICE] getAllGroupMembers - Error: ${error.message}`);
-            throw error;
-        }
-    }
-
-    async addMultipleGroupMembers(groupUuid, memberUuids) {
-        logger.info(`[SERVICE] addMultipleGroupMembers - Starting database operation for group: ${groupUuid}, members: ${memberUuids.length}`);
-        
-        const client = await pool.connect();
-        const results = {
-            added: [],
-            skipped: [],
-            errors: []
-        };
-
-        try {
-            await client.query('BEGIN');
-
-            for (const userUuid of memberUuids) {
-                try {
-                    // Vérifier d'abord que l'utilisateur existe
-                    const userCheckQuery = `
-                        SELECT uuid, first_name, last_name 
-                        FROM configuration.persons 
-                        WHERE uuid = $1`;
-                    
-                    const userResult = await client.query(userCheckQuery, [userUuid]);
-                    if (userResult.rows.length === 0) {
-                        results.errors.push({
-                            user_uuid: userUuid,
-                            error: 'User not found'
-                        });
-                        continue;
-                    }
-
-                    // Vérifier si l'utilisateur est déjà membre du groupe
-                    const existingMemberQuery = `
-                        SELECT uuid FROM configuration.rel_persons_groups 
-                        WHERE rel_group = $1 AND rel_member = $2`;
-                    
-                    const existingResult = await client.query(existingMemberQuery, [groupUuid, userUuid]);
-                    if (existingResult.rows.length > 0) {
-                        results.skipped.push({
-                            user_uuid: userUuid,
-                            user_name: `${userResult.rows[0].first_name} ${userResult.rows[0].last_name}`,
-                            reason: 'Already a member of this group'
-                        });
-                        continue;
-                    }
-
-                    // Insérer la relation groupe-membre
-                    const insertQuery = `
-                        INSERT INTO configuration.rel_persons_groups (rel_group, rel_member)
-                        VALUES ($1, $2)
-                        RETURNING 
-                            uuid,
-                            rel_group,
-                            rel_member,
-                            created_at`;
-                    
-                    const insertResult = await client.query(insertQuery, [groupUuid, userUuid]);
-                    
-                    // Enrichir le résultat avec les informations de l'utilisateur
-                    const enrichedResult = {
-                        ...insertResult.rows[0],
-                        user_name: `${userResult.rows[0].first_name} ${userResult.rows[0].last_name}`,
-                        user_first_name: userResult.rows[0].first_name,
-                        user_last_name: userResult.rows[0].last_name
-                    };
-                    
-                    results.added.push(enrichedResult);
-                    logger.info(`[SERVICE] addMultipleGroupMembers - Member added: ${userUuid} to group ${groupUuid}`);
-
-                } catch (memberError) {
-                    logger.error(`[SERVICE] addMultipleGroupMembers - Error adding member ${userUuid}: ${memberError.message}`);
-                    results.errors.push({
-                        user_uuid: userUuid,
-                        error: memberError.message
-                    });
-                }
-            }
-
-            await client.query('COMMIT');
-            logger.info(`[SERVICE] addMultipleGroupMembers - Operation completed. Added: ${results.added.length}, Skipped: ${results.skipped.length}, Errors: ${results.errors.length}`);
-            
-            return results;
-        } catch (error) {
-            await client.query('ROLLBACK');
-            logger.error(`[SERVICE] addMultipleGroupMembers - Transaction error: ${error.message}`);
-            throw error;
-        } finally {
-            client.release();
-        }
-    }
-
-    async addGroupMember(groupUuid, userUuid) {
-        logger.info(`[SERVICE] addGroupMember - Starting database operation for group: ${groupUuid}, user: ${userUuid}`);
-        try {
-            // Vérifier d'abord que l'utilisateur existe
-            const userCheckQuery = `
-                SELECT uuid, first_name, last_name 
-                FROM configuration.persons 
-                WHERE uuid = $1`;
-            
-            const userResult = await pool.query(userCheckQuery, [userUuid]);
-            if (userResult.rows.length === 0) {
-                const error = new Error('User not found');
-                error.code = '23503'; // Simulate foreign key constraint violation
-                throw error;
-            }
-
-            // Insérer la relation groupe-membre
-            const insertQuery = `
-                INSERT INTO configuration.rel_persons_groups (rel_group, rel_member)
-                VALUES ($1, $2)
-                RETURNING 
-                    uuid,
-                    rel_group,
-                    rel_member,
-                    created_at`;
-            
-            const result = await pool.query(insertQuery, [groupUuid, userUuid]);
-            
-            // Enrichir le résultat avec les informations de l'utilisateur
-            const enrichedResult = {
-                ...result.rows[0],
-                user_name: `${userResult.rows[0].first_name} ${userResult.rows[0].last_name}`,
-                user_first_name: userResult.rows[0].first_name,
-                user_last_name: userResult.rows[0].last_name
-            };
-            
-            logger.info(`[SERVICE] addGroupMember - Member added successfully: ${userUuid} to group ${groupUuid}`);
-            return enrichedResult;
-        } catch (error) {
-            logger.error(`[SERVICE] addGroupMember - Error: ${error.message}`);
-            throw error;
-        }
-    }
-
-    async removeGroupMember(groupUuid, userUuid) {
-        logger.info(`[SERVICE] removeGroupMember - Starting database operation for group: ${groupUuid}, user: ${userUuid}`);
-        try {
-            const deleteQuery = `
-                DELETE FROM configuration.rel_persons_groups
-                WHERE rel_group = $1 AND rel_member = $2
-                RETURNING 
-                    uuid,
-                    rel_group,
-                    rel_member,
-                    created_at`;
-            
-            const result = await pool.query(deleteQuery, [groupUuid, userUuid]);
-            
-            if (result.rows.length === 0) {
-                logger.warn(`[SERVICE] removeGroupMember - No relation found between group ${groupUuid} and user ${userUuid}`);
-                return null;
-            }
-            
-            logger.info(`[SERVICE] removeGroupMember - Member removed successfully: ${userUuid} from group ${groupUuid}`);
-            return result.rows[0];
-        } catch (error) {
-            logger.error(`[SERVICE] removeGroupMember - Error: ${error.message}`);
-            throw error;
-        }
-    }
-}
-
-module.exports = new GroupService();
+module.exports = {
+  search,
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+  removeMany,
+};
