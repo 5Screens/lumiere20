@@ -1,7 +1,7 @@
 <template>
   <div class="portal-v2 h-dvh overflow-hidden flex flex-col bg-surface-0 dark:bg-surface-900" :style="themeStyles">
     <!-- Mobile Bottom Navigation -->
-    <nav v-if="isMobile" class="fixed bottom-0 left-0 right-0 z-50 bg-surface-0 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 flex items-center justify-around py-3 px-4">
+    <nav v-if="isMobile" class="fixed bottom-0 left-0 right-0 z-50 border-t border-surface-200 dark:border-surface-700 flex items-center justify-around py-3 px-4" :style="{ backgroundColor: theme === 'dark' ? 'var(--p-surface-800)' : 'var(--p-surface-0)' }">
       <button 
         @click="mobileView = 'home'"
         class="flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors"
