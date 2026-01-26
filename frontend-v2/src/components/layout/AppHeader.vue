@@ -114,6 +114,9 @@ const { t, locale, messages } = useI18n()
 const primevue = usePrimeVue()
 const authStore = useAuthStore()
 
+// App version from build
+const appVersion = __APP_VERSION__ || '0.0.0'
+
 // Languages
 const languages = ref([])
 const languageMenu = ref()
@@ -199,6 +202,13 @@ const userMenuItems = computed(() => [
           await authStore.logout()
           router.push('/login')
         }
+      },
+      { separator: true },
+      {
+        label: `v${appVersion}`,
+        icon: 'pi pi-info-circle',
+        disabled: true,
+        class: 'text-xs text-surface-400'
       }
     ]
   }

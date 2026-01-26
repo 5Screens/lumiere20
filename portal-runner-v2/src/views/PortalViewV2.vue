@@ -1,5 +1,5 @@
 <template>
-  <div class="portal-v2 h-screen overflow-hidden flex flex-col bg-surface-0 dark:bg-surface-900" :style="themeStyles">
+  <div class="portal-v2 h-dvh overflow-hidden flex flex-col bg-surface-0 dark:bg-surface-900" :style="themeStyles">
     <!-- Mobile Bottom Navigation -->
     <nav v-if="isMobile" class="fixed bottom-0 left-0 right-0 z-50 bg-surface-0 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 flex items-center justify-around py-3 px-4">
       <button 
@@ -520,6 +520,9 @@ const languageItems = ref([
   { label: 'English', icon: 'pi pi-flag', command: () => changeLanguage('en') }
 ])
 
+// App version from build
+const appVersion = __APP_VERSION__ || '0.0.0'
+
 const userMenuItems = computed(() => [
   { 
     label: authStore.fullName, 
@@ -532,6 +535,13 @@ const userMenuItems = computed(() => [
     label: t('auth.logout'), 
     icon: 'pi pi-sign-out', 
     command: handleLogout 
+  },
+  { separator: true },
+  { 
+    label: `v${appVersion}`, 
+    icon: 'pi pi-info-circle',
+    disabled: true,
+    class: 'text-xs text-surface-400'
   }
 ])
 
