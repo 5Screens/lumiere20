@@ -260,7 +260,7 @@ const menuItems = computed(() => [
       {
         label: t('menu.portals') || 'Portals',
         icon: 'pi pi-globe',
-        command: () => openTab('portals', 'Portals', 'menu.portals', 'pi pi-globe', 'portals')
+        command: () => openTab('portals', 'Portals', 'menu.portals', 'pi pi-globe', 'portals', 'AdminPortals')
       }
     ]
   },
@@ -435,7 +435,7 @@ const flatMenuItems = computed(() => [
   { label: t('menu.serviceHub'), icon: 'pi pi-ticket', command: () => openTab('incidents', 'Incidents', 'menu.incidents', 'pi pi-exclamation-triangle', 'incidents') },
   { label: t('menu.sprintCenter'), icon: 'pi pi-bolt', command: () => openTab('sprint-tasks', 'Tasks', 'menu.sprintTasks', 'pi pi-check-square', 'sprint_tasks') },
   { label: t('menu.mail'), icon: 'pi pi-envelope', command: () => {} },
-  { label: t('menu.portalsBuilder'), icon: 'pi pi-globe', command: () => openTab('portals', 'Portals', 'menu.portals', 'pi pi-globe', 'portals') },
+  { label: t('menu.portalsBuilder'), icon: 'pi pi-globe', command: () => openTab('portals', 'Portals', 'menu.portals', 'pi pi-globe', 'portals', 'AdminPortals') },
   { label: t('menu.assetsData'), icon: 'pi pi-database', command: () => openTab('configuration-items', 'All Configuration Items', 'menu.allConfigurationItems', 'pi pi-box', 'configuration_items', 'ObjectsCrud') },
   { label: t('menu.tableaux'), icon: 'pi pi-chart-bar', command: () => {} },
   { label: t('menu.configuration'), icon: 'pi pi-cog', command: () => openTab('ci-types', 'CI Types', 'menu.ciTypes', 'pi pi-tags', 'ci_types', 'ObjectsCrud') },

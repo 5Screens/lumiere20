@@ -9,6 +9,48 @@ router.get('/', (req, res, next) => {
   next();
 }, portalsController.list);
 
+// GET /api/v1/portals/actions - List all portal actions
+router.get('/actions', (req, res, next) => {
+  logger.info('[ROUTES] GET /api/v1/portals/actions');
+  next();
+}, portalsController.listActions);
+
+// GET /api/v1/portals/alerts - List all portal alerts
+router.get('/alerts', (req, res, next) => {
+  logger.info('[ROUTES] GET /api/v1/portals/alerts');
+  next();
+}, portalsController.listAlerts);
+
+// GET /api/v1/portals/widgets - List all portal widgets
+router.get('/widgets', (req, res, next) => {
+  logger.info('[ROUTES] GET /api/v1/portals/widgets');
+  next();
+}, portalsController.listWidgets);
+
+// GET /api/v1/portals/uuid/:uuid - Get portal by UUID
+router.get('/uuid/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] GET /api/v1/portals/uuid/${req.params.uuid}`);
+  next();
+}, portalsController.getByUuid);
+
+// GET /api/v1/portals/uuid/:uuid/full - Get full portal by UUID
+router.get('/uuid/:uuid/full', (req, res, next) => {
+  logger.info(`[ROUTES] GET /api/v1/portals/uuid/${req.params.uuid}/full`);
+  next();
+}, portalsController.getFullByUuid);
+
+// PUT /api/v1/portals/:uuid - Update portal
+router.put('/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] PUT /api/v1/portals/${req.params.uuid}`);
+  next();
+}, portalsController.update);
+
+// PATCH /api/v1/portals/:uuid/toggle - Toggle portal active state
+router.patch('/:uuid/toggle', (req, res, next) => {
+  logger.info(`[ROUTES] PATCH /api/v1/portals/${req.params.uuid}/toggle`);
+  next();
+}, portalsController.toggleActive);
+
 // GET /api/v1/portals/:code/full - Get full portal with actions, alerts, widgets
 router.get('/:code/full', (req, res, next) => {
   logger.info(`[ROUTES] GET /api/v1/portals/${req.params.code}/full`);

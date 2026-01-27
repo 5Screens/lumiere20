@@ -107,8 +107,9 @@
                   </template>
                 </draggable>
 
-                <!-- Create button (always at the right) -->
+                <!-- Create button (always at the right) - only for components that support creation -->
                 <Button
+                  v-if="componentsWithCreateButton.includes(tab.component)"
                   :label="$t('common.create')"
                   icon="pi pi-plus"
                   text
@@ -231,10 +232,15 @@ const componentRegistry = {
   AuditView: markRaw(defineAsyncComponent(() => import('@/components/crud/AuditView.vue'))),
   WorkflowsList: markRaw(defineAsyncComponent(() => import('@/components/workflow/WorkflowsList.vue'))),
   WorkflowStatusCategoriesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/WorkflowStatusCategoriesCrud.vue'))),
+  AdminPortals: markRaw(defineAsyncComponent(() => import('@/components/portals/AdminPortals.vue'))),
+  PortalAdminForm: markRaw(defineAsyncComponent(() => import('@/components/portals/PortalAdminForm.vue'))),
 }
 
 // Components that support child tabs
-const componentsWithChildTabs = ['ObjectsCrud', 'MetadataObjectTypesCrud']
+const componentsWithChildTabs = ['ObjectsCrud', 'MetadataObjectTypesCrud', 'AdminPortals']
+
+// Components that support the create button in child tabs
+const componentsWithCreateButton = ['ObjectsCrud', 'MetadataObjectTypesCrud']
 
 const tabsStore = useTabsStore()
 const { t } = useI18n()
