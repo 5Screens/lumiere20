@@ -4,7 +4,7 @@ export default {
     serviceHub: 'Service Hub',
     sprintCenter: 'Sprint Center',
     mail: 'Mail',
-    portalsBuilder: 'Portals Builder',
+    portalsBuilder: 'Portails',
     assetsData: 'Assets & Data',
     tableaux: 'Tableaux',
     configuration: 'Configuration',
@@ -26,7 +26,9 @@ export default {
     defects: 'Défauts',
     
     // Portals Builder items
-    portals: 'Portails',
+    portals: 'Gestion des portails',
+    news: 'Nouvelles et actualités',
+    portalTemplates: 'Modèles de portails',
     
     // Assets & Data items
     allConfigurationItems: 'Tous les éléments de configuration',
