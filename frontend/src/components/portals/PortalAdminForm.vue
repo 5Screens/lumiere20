@@ -362,16 +362,12 @@ const uploadingThumbnail = ref(false)
 const deletingLogo = ref(false)
 const deletingThumbnail = ref(false)
 
-// API base URL for images
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-
 /**
- * Get full image URL (prepend API base if relative)
+ * Get full image URL (relative URLs are proxied to backend via Vite)
  */
 const getFullImageUrl = (url) => {
   if (!url) return ''
-  if (url.startsWith('http')) return url
-  return `${apiBaseUrl}${url}`
+  return url
 }
 
 /**
