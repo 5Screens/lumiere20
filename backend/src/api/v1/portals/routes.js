@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const portalsController = require('./controller');
 const logger = require('../../../config/logger');
+const { portalImageUpload } = require('../../../middleware/portalImageUpload');
 
 // GET /api/v1/portals - List all portals
 router.get('/', (req, res, next) => {
@@ -62,5 +63,29 @@ router.get('/:code', (req, res, next) => {
   logger.info(`[ROUTES] GET /api/v1/portals/${req.params.code}`);
   next();
 }, portalsController.getByCode);
+
+// POST /api/v1/portals/:uuid/logo - Upload portal logo
+router.post('/:uuid/logo', (req, res, next) => {
+  logger.info(`[ROUTES] POST /api/v1/portals/${req.params.uuid}/logo`);
+  next();
+}, portalImageUpload.single('image'), portalsController.uploadLogo);
+
+// POST /api/v1/portals/:uuid/thumbnail - Upload portal thumbnail
+router.post('/:uuid/thumbnail', (req, res, next) => {
+  logger.info(`[ROUTES] POST /api/v1/portals/${req.params.uuid}/thumbnail`);
+  next();
+}, portalImageUpload.single('image'), portalsController.uploadThumbnail);
+
+// DELETE /api/v1/portals/:uuid/logo - Delete portal logo
+router.delete('/:uuid/logo', (req, res, next) => {
+  logger.info(`[ROUTES] DELETE /api/v1/portals/${req.params.uuid}/logo`);
+  next();
+}, portalsController.deleteLogo);
+
+// DELETE /api/v1/portals/:uuid/thumbnail - Delete portal thumbnail
+router.delete('/:uuid/thumbnail', (req, res, next) => {
+  logger.info(`[ROUTES] DELETE /api/v1/portals/${req.params.uuid}/thumbnail`);
+  next();
+}, portalsController.deleteThumbnail);
 
 module.exports = router;

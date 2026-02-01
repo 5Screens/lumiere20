@@ -93,32 +93,92 @@
               :placeholder="t('portals.admin.baseUrlPlaceholder')"
               :invalid="!!errors.base_url"
               class="w-full"
+              readonly
+              disabled
             />
             <small v-if="errors.base_url" class="text-red-500">{{ errors.base_url }}</small>
           </div>
 
           <div class="flex flex-col gap-2">
-            <label for="thumbnail_url" class="font-medium text-surface-700 dark:text-surface-200">
-              {{ t('portals.admin.thumbnailUrl') }}
+            <label class="font-medium text-surface-700 dark:text-surface-200">
+              {{ t('portals.admin.thumbnail') }}
             </label>
-            <InputText
-              id="thumbnail_url"
-              v-model="formData.thumbnail_url"
-              :placeholder="t('portals.admin.thumbnailUrlPlaceholder')"
-              class="w-full"
-            />
+            <div class="flex items-center gap-4">
+              <!-- Preview -->
+              <div v-if="formData.thumbnail_url" class="relative">
+                <img 
+                  :src="getFullImageUrl(formData.thumbnail_url)" 
+                  alt="Thumbnail" 
+                  class="h-20 rounded border border-surface-200 dark:border-surface-700 object-cover"
+                />
+                <Button 
+                  icon="pi pi-times" 
+                  severity="danger" 
+                  text 
+                  rounded 
+                  size="small"
+                  class="absolute -top-2 -right-2"
+                  @click="handleDeleteThumbnail"
+                  :loading="deletingThumbnail"
+                />
+              </div>
+              <!-- Upload button -->
+              <div class="flex flex-col gap-2">
+                <FileUpload
+                  mode="basic"
+                  :auto="true"
+                  accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                  :maxFileSize="2097152"
+                  :chooseLabel="t('portals.admin.uploadImage')"
+                  :customUpload="true"
+                  @uploader="handleThumbnailUpload"
+                  :disabled="uploadingThumbnail"
+                />
+                <small v-if="uploadingThumbnail" class="text-primary">{{ t('portals.admin.imageUploading') }}</small>
+              </div>
+            </div>
+            <small class="text-surface-400">{{ t('portals.admin.thumbnailHint') }}</small>
           </div>
 
           <div class="flex flex-col gap-2">
-            <label for="logo_url" class="font-medium text-surface-700 dark:text-surface-200">
-              {{ t('portals.admin.logoUrl') }}
+            <label class="font-medium text-surface-700 dark:text-surface-200">
+              {{ t('portals.admin.logo') }}
             </label>
-            <InputText
-              id="logo_url"
-              v-model="formData.logo_url"
-              :placeholder="t('portals.admin.logoUrlPlaceholder')"
-              class="w-full"
-            />
+            <div class="flex items-center gap-4">
+              <!-- Preview -->
+              <div v-if="formData.logo_url" class="relative">
+                <img 
+                  :src="getFullImageUrl(formData.logo_url)" 
+                  alt="Logo" 
+                  class="h-10 rounded border border-surface-200 dark:border-surface-700 object-contain"
+                />
+                <Button 
+                  icon="pi pi-times" 
+                  severity="danger" 
+                  text 
+                  rounded 
+                  size="small"
+                  class="absolute -top-2 -right-2"
+                  @click="handleDeleteLogo"
+                  :loading="deletingLogo"
+                />
+              </div>
+              <!-- Upload button -->
+              <div class="flex flex-col gap-2">
+                <FileUpload
+                  mode="basic"
+                  :auto="true"
+                  accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                  :maxFileSize="2097152"
+                  :chooseLabel="t('portals.admin.uploadImage')"
+                  :customUpload="true"
+                  @uploader="handleLogoUpload"
+                  :disabled="uploadingLogo"
+                />
+                <small v-if="uploadingLogo" class="text-primary">{{ t('portals.admin.imageUploading') }}</small>
+              </div>
+            </div>
+            <small class="text-surface-400">{{ t('portals.admin.logoHint') }}</small>
           </div>
         </div>
       </Panel>
@@ -275,6 +335,7 @@ import ColorPicker from 'primevue/colorpicker'
 import Checkbox from 'primevue/checkbox'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
+import FileUpload from 'primevue/fileupload'
 
 const { t } = useI18n()
 const tabsStore = useTabsStore()
@@ -294,6 +355,94 @@ const loading = ref(true)
 const saving = ref(false)
 const error = ref(null)
 const errors = ref({})
+
+// Image upload states
+const uploadingLogo = ref(false)
+const uploadingThumbnail = ref(false)
+const deletingLogo = ref(false)
+const deletingThumbnail = ref(false)
+
+// API base URL for images
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
+/**
+ * Get full image URL (prepend API base if relative)
+ */
+const getFullImageUrl = (url) => {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return `${apiBaseUrl}${url}`
+}
+
+/**
+ * Handle thumbnail upload
+ */
+const handleThumbnailUpload = async (event) => {
+  const file = event.files[0]
+  if (!file) return
+  
+  uploadingThumbnail.value = true
+  try {
+    const result = await portalsService.uploadThumbnail(props.objectId, file)
+    formData.value.thumbnail_url = result.thumbnail_url
+    console.info('[PORTAL ADMIN FORM] Thumbnail uploaded:', result.thumbnail_url)
+  } catch (err) {
+    console.error('[PORTAL ADMIN FORM] Error uploading thumbnail:', err)
+  } finally {
+    uploadingThumbnail.value = false
+  }
+}
+
+/**
+ * Handle logo upload
+ */
+const handleLogoUpload = async (event) => {
+  const file = event.files[0]
+  if (!file) return
+  
+  uploadingLogo.value = true
+  try {
+    const result = await portalsService.uploadLogo(props.objectId, file)
+    formData.value.logo_url = result.logo_url
+    console.info('[PORTAL ADMIN FORM] Logo uploaded:', result.logo_url)
+  } catch (err) {
+    console.error('[PORTAL ADMIN FORM] Error uploading logo:', err)
+  } finally {
+    uploadingLogo.value = false
+  }
+}
+
+/**
+ * Handle thumbnail delete
+ */
+const handleDeleteThumbnail = async () => {
+  deletingThumbnail.value = true
+  try {
+    await portalsService.deleteThumbnail(props.objectId)
+    formData.value.thumbnail_url = ''
+    console.info('[PORTAL ADMIN FORM] Thumbnail deleted')
+  } catch (err) {
+    console.error('[PORTAL ADMIN FORM] Error deleting thumbnail:', err)
+  } finally {
+    deletingThumbnail.value = false
+  }
+}
+
+/**
+ * Handle logo delete
+ */
+const handleDeleteLogo = async () => {
+  deletingLogo.value = true
+  try {
+    await portalsService.deleteLogo(props.objectId)
+    formData.value.logo_url = ''
+    console.info('[PORTAL ADMIN FORM] Logo deleted')
+  } catch (err) {
+    console.error('[PORTAL ADMIN FORM] Error deleting logo:', err)
+  } finally {
+    deletingLogo.value = false
+  }
+}
 
 const formData = ref({
   code: '',

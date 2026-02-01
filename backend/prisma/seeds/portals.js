@@ -8,7 +8,7 @@ async function seedPortals() {
     {
       code: 'demo',
       name: 'Demo Portal',
-      base_url: 'http://localhost:5175',
+      base_url: 'http://localhost:5175/portal/',
       is_active: true,
       view_component: 'PortalViewV2',
       title: 'Demo Portal',
@@ -25,7 +25,7 @@ async function seedPortals() {
     {
       code: 'self-service-l',
       name: 'Self-Service Lumière',
-      base_url: 'http://localhost:5175',
+      base_url: 'http://localhost:5175/portal/',
       is_active: true,
       view_component: 'PortalViewV2',
       title: 'Lumière Self-service',
@@ -42,7 +42,7 @@ async function seedPortals() {
     {
       code: 'self-service-s',
       name: 'Self-Service Support',
-      base_url: 'http://localhost:5175',
+      base_url: 'http://localhost:5175/portal/',
       is_active: true,
       view_component: 'PortalViewV2',
       title: 'Support Technique',

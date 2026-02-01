@@ -646,6 +646,11 @@ onMounted(() => {
     theme_secondary_color: portal.value.theme_secondary_color
   })
   applyPrimaryColor(portal.value.theme_primary_color)
+  
+  // Set browser tab title
+  if (portal.value.title) {
+    document.title = portal.value.title
+  }
 })
 
 // Watch for portal data changes (e.g., if portalData prop is updated)
