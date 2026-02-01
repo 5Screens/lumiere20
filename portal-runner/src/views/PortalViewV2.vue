@@ -294,7 +294,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/authStore'
@@ -572,12 +572,65 @@ const toggleTheme = () => {
   document.documentElement.setAttribute('data-theme', theme.value)
 }
 
+/**
+ * Apply portal primary color to PrimeVue CSS variables
+ */
+const applyPrimaryColor = (color) => {
+  if (!color) {
+    console.log('[THEME] No primary color provided, using default')
+    return
+  }
+  
+  console.log('[THEME] Applying primary color:', color)
+  
+  // Apply the color to PrimeVue CSS variables
+  const root = document.documentElement
+  
+  // Set the primary color for both light and dark modes
+  root.style.setProperty('--p-primary-500', color)
+  root.style.setProperty('--p-primary-color', color)
+  
+  // Generate lighter/darker variants based on the primary color
+  // For simplicity, we adjust opacity for lighter shades
+  root.style.setProperty('--p-primary-50', `color-mix(in srgb, ${color} 10%, white)`)
+  root.style.setProperty('--p-primary-100', `color-mix(in srgb, ${color} 20%, white)`)
+  root.style.setProperty('--p-primary-200', `color-mix(in srgb, ${color} 40%, white)`)
+  root.style.setProperty('--p-primary-300', `color-mix(in srgb, ${color} 60%, white)`)
+  root.style.setProperty('--p-primary-400', `color-mix(in srgb, ${color} 80%, white)`)
+  root.style.setProperty('--p-primary-600', `color-mix(in srgb, ${color} 80%, black)`)
+  root.style.setProperty('--p-primary-700', `color-mix(in srgb, ${color} 60%, black)`)
+  root.style.setProperty('--p-primary-800', `color-mix(in srgb, ${color} 40%, black)`)
+  root.style.setProperty('--p-primary-900', `color-mix(in srgb, ${color} 20%, black)`)
+  root.style.setProperty('--p-primary-950', `color-mix(in srgb, ${color} 10%, black)`)
+  
+  // Also set hover and active colors
+  root.style.setProperty('--p-primary-hover-color', `color-mix(in srgb, ${color} 80%, black)`)
+  root.style.setProperty('--p-primary-active-color', `color-mix(in srgb, ${color} 60%, black)`)
+  
+  console.log('[THEME] Primary color applied successfully')
+}
+
 // Initialize theme on mount
 onMounted(() => {
   loadConversations()
   // Apply saved theme
   document.documentElement.setAttribute('data-theme', theme.value)
+  
+  // Apply portal primary color
+  console.log('[THEME] Portal data on mount:', {
+    theme_primary_color: portal.value.theme_primary_color,
+    theme_secondary_color: portal.value.theme_secondary_color
+  })
+  applyPrimaryColor(portal.value.theme_primary_color)
 })
+
+// Watch for portal data changes (e.g., if portalData prop is updated)
+watch(() => props.portalData?.theme_primary_color, (newColor, oldColor) => {
+  if (newColor !== oldColor) {
+    console.log('[THEME] Portal primary color changed:', { oldColor, newColor })
+    applyPrimaryColor(newColor)
+  }
+}, { immediate: false })
 
 const handleAction = (action) => {
   console.log('Action clicked:', action)

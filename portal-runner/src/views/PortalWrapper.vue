@@ -61,13 +61,22 @@ const currentComponent = computed(() => {
 
 onMounted(async () => {
   try {
+    console.log('[PORTAL_WRAPPER] Loading portal:', portalCode.value)
     portalData.value = await getFullPortal(portalCode.value)
+    
+    console.log('[PORTAL_WRAPPER] Portal data received:', {
+      uuid: portalData.value?.uuid,
+      code: portalData.value?.code,
+      theme_primary_color: portalData.value?.theme_primary_color,
+      theme_secondary_color: portalData.value?.theme_secondary_color,
+      is_active: portalData.value?.is_active
+    })
     
     if (!portalData.value.is_active) {
       error.value = 'portal.disabled'
     }
   } catch (e) {
-    console.error('Error loading portal:', e)
+    console.error('[PORTAL_WRAPPER] Error loading portal:', e)
     error.value = e?.message || 'portal.notFound'
   } finally {
     loading.value = false

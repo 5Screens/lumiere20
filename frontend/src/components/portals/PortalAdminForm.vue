@@ -131,7 +131,7 @@
               {{ t('portals.admin.themePrimaryColor') }}
             </label>
             <div class="flex items-center gap-3">
-              <ColorPicker v-model="formData.theme_primary_color" format="hex" />
+              <ColorPicker v-model="primaryColorModel" format="hex" />
               <InputText
                 id="theme_primary_color"
                 v-model="formData.theme_primary_color"
@@ -147,7 +147,7 @@
               {{ t('portals.admin.themeSecondaryColor') }}
             </label>
             <div class="flex items-center gap-3">
-              <ColorPicker v-model="formData.theme_secondary_color" format="hex" />
+              <ColorPicker v-model="secondaryColorModel" format="hex" />
               <InputText
                 id="theme_secondary_color"
                 v-model="formData.theme_secondary_color"
@@ -261,7 +261,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTabsStore } from '@/stores/tabsStore'
 import portalsService from '@/services/portalsService'
@@ -319,6 +319,21 @@ const allWidgets = ref([])
 const selectedActions = ref([])
 const selectedAlerts = ref([])
 const selectedWidgets = ref([])
+
+// Computed for ColorPicker (strips # for picker, adds # for formData)
+const primaryColorModel = computed({
+  get: () => formData.value.theme_primary_color?.replace('#', '') || '',
+  set: (val) => {
+    formData.value.theme_primary_color = val ? `#${val.replace('#', '')}` : ''
+  }
+})
+
+const secondaryColorModel = computed({
+  get: () => formData.value.theme_secondary_color?.replace('#', '') || '',
+  set: (val) => {
+    formData.value.theme_secondary_color = val ? `#${val.replace('#', '')}` : ''
+  }
+})
 
 // Load portal data
 onMounted(async () => {
