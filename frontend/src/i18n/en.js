@@ -863,7 +863,7 @@ export default {
     subtitlePlaceholder: 'Subtitle displayed on the portal',
     welcomeTemplate: 'Welcome template',
     welcomeTemplatePlaceholder: 'Welcome {firstName}!',
-    welcomeTemplateHint: 'Use {firstName}, {lastName}, {email} to personalize',
+    welcomeTemplateHint: "Available placeholders: {'{'}firstName{'}'}, {'{'}lastName{'}'}, {'{'}fullName{'}'}, {'{'}email{'}'}",
     baseUrl: 'Base URL',
     baseUrlPlaceholder: 'https://portal.example.com',
     thumbnailUrl: 'Thumbnail URL',

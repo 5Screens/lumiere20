@@ -866,7 +866,7 @@ portals: {
     subtitlePlaceholder: 'Sous-titre affiché sur le portail',
     welcomeTemplate: 'Template de bienvenue',
     welcomeTemplatePlaceholder: 'Bienvenue {firstName} !',
-    welcomeTemplateHint: 'Utilisez {firstName}, {lastName}, {email} pour personnaliser',
+    welcomeTemplateHint: "Placeholders disponibles : {'{'}firstName{'}'}, {'{'}lastName{'}'}, {'{'}fullName{'}'}, {'{'}email{'}'}",
     baseUrl: 'URL de base',
     baseUrlPlaceholder: 'https://portail.example.com',
     thumbnailUrl: 'URL de la miniature',

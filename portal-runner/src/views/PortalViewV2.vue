@@ -81,7 +81,7 @@
         <!-- Welcome -->
         <div class="mb-8">
           <h2 class="text-2xl font-semibold text-surface-800 dark:text-surface-100">
-            {{ $t('portal.welcome') }}, {{ userName }}
+            {{ welcomeMessage }}
           </h2>
         </div>
         
@@ -454,7 +454,31 @@ const portal = computed(() => props.portalData || {})
 const alerts = computed(() => portal.value.alerts || [])
 const quickActions = computed(() => portal.value.quick_actions || [])
 const widgets = computed(() => portal.value.widgets || [])
-const userName = computed(() => authStore.user?.first_name || 'User')
+/**
+ * Parse welcome template and replace placeholders with user data
+ * Available placeholders: {firstName}, {lastName}, {fullName}, {email}
+ */
+const parseWelcomeTemplate = (template) => {
+  if (!template) return authStore.user?.first_name || 'User'
+  
+  const user = authStore.user || {}
+  const placeholders = {
+    firstName: user.first_name || '',
+    lastName: user.last_name || '',
+    fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+    email: user.email || ''
+  }
+  
+  let result = template
+  for (const [key, value] of Object.entries(placeholders)) {
+    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value)
+  }
+  
+  console.log('[WELCOME] Template parsed:', { template, result, placeholders })
+  return result
+}
+
+const welcomeMessage = computed(() => parseWelcomeTemplate(portal.value.welcome_template))
 
 const CHAT_WIDTH_STORAGE_KEY = 'portal_runner_v2_chat_width'
 const chatWidth = ref(Number(localStorage.getItem(CHAT_WIDTH_STORAGE_KEY)) || 384)
