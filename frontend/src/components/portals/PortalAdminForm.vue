@@ -17,22 +17,8 @@
       <!-- Section: Basic Information -->
       <Panel :header="t('portals.admin.basicInfo')" toggleable>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="flex flex-col gap-2">
-            <label for="code" class="font-medium text-surface-700 dark:text-surface-200">
-              {{ t('portals.admin.code') }} <span class="text-red-500">*</span>
-            </label>
-            <InputText
-              id="code"
-              v-model="formData.code"
-              :placeholder="t('portals.admin.codePlaceholder')"
-              :invalid="!!errors.code"
-              class="w-full"
-            />
-            <small class="text-surface-400">{{ t('portals.admin.codeHint') }}</small>
-            <small v-if="errors.code" class="text-red-500">{{ errors.code }}</small>
-          </div>
-
-          <div class="flex flex-col gap-2">
+          <!-- 1. Nom (pleine largeur) -->
+          <div class="flex flex-col gap-2 md:col-span-2">
             <label for="name" class="font-medium text-surface-700 dark:text-surface-200">
               {{ t('portals.admin.name') }} <span class="text-red-500">*</span>
             </label>
@@ -46,43 +32,7 @@
             <small v-if="errors.name" class="text-red-500">{{ errors.name }}</small>
           </div>
 
-          <div class="flex flex-col gap-2">
-            <label for="title" class="font-medium text-surface-700 dark:text-surface-200">
-              {{ t('portals.admin.title') }}
-            </label>
-            <InputText
-              id="title"
-              v-model="formData.title"
-              :placeholder="t('portals.admin.titlePlaceholder')"
-              class="w-full"
-            />
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <label for="subtitle" class="font-medium text-surface-700 dark:text-surface-200">
-              {{ t('portals.admin.subtitle') }}
-            </label>
-            <InputText
-              id="subtitle"
-              v-model="formData.subtitle"
-              :placeholder="t('portals.admin.subtitlePlaceholder')"
-              class="w-full"
-            />
-          </div>
-
-          <div class="flex flex-col gap-2 md:col-span-2">
-            <label for="welcome_template" class="font-medium text-surface-700 dark:text-surface-200">
-              {{ t('portals.admin.welcomeTemplate') }}
-            </label>
-            <InputText
-              id="welcome_template"
-              v-model="formData.welcome_template"
-              :placeholder="t('portals.admin.welcomeTemplatePlaceholder')"
-              class="w-full"
-            />
-            <small class="text-surface-400">{{ t('portals.admin.welcomeTemplateHint') }}</small>
-          </div>
-
+          <!-- 2. URL de base -->
           <div class="flex flex-col gap-2">
             <label for="base_url" class="font-medium text-surface-700 dark:text-surface-200">
               {{ t('portals.admin.baseUrl') }} <span class="text-red-500">*</span>
@@ -99,43 +49,103 @@
             <small v-if="errors.base_url" class="text-red-500">{{ errors.base_url }}</small>
           </div>
 
+          <!-- 3. Code -->
           <div class="flex flex-col gap-2">
+            <label for="code" class="font-medium text-surface-700 dark:text-surface-200">
+              {{ t('portals.admin.code') }} <span class="text-red-500">*</span>
+            </label>
+            <InputText
+              id="code"
+              v-model="formData.code"
+              :placeholder="t('portals.admin.codePlaceholder')"
+              :invalid="!!errors.code"
+              class="w-full"
+            />
+            <small class="text-surface-400">{{ t('portals.admin.codeHint') }}</small>
+            <small v-if="errors.code" class="text-red-500">{{ errors.code }}</small>
+          </div>
+
+          <!-- 4. Titre -->
+          <div class="flex flex-col gap-2">
+            <label for="title" class="font-medium text-surface-700 dark:text-surface-200">
+              {{ t('portals.admin.title') }}
+            </label>
+            <InputText
+              id="title"
+              v-model="formData.title"
+              :placeholder="t('portals.admin.titlePlaceholder')"
+              class="w-full"
+            />
+          </div>
+
+          <!-- 5. Sous-titre -->
+          <div class="flex flex-col gap-2">
+            <label for="subtitle" class="font-medium text-surface-700 dark:text-surface-200">
+              {{ t('portals.admin.subtitle') }}
+            </label>
+            <InputText
+              id="subtitle"
+              v-model="formData.subtitle"
+              :placeholder="t('portals.admin.subtitlePlaceholder')"
+              class="w-full"
+            />
+          </div>
+
+          <!-- 6. Template de bienvenue (pleine largeur) -->
+          <div class="flex flex-col gap-2 md:col-span-2">
+            <label for="welcome_template" class="font-medium text-surface-700 dark:text-surface-200">
+              {{ t('portals.admin.welcomeTemplate') }}
+            </label>
+            <InputText
+              id="welcome_template"
+              v-model="formData.welcome_template"
+              :placeholder="t('portals.admin.welcomeTemplatePlaceholder')"
+              class="w-full"
+            />
+            <small class="text-surface-400">{{ t('portals.admin.welcomeTemplateHint') }}</small>
+          </div>
+
+          <!-- 7. Logo -->
+          <div class="flex flex-col gap-2 md:col-span-2">
             <label class="font-medium text-surface-700 dark:text-surface-200">
               {{ t('portals.admin.logo') }}
             </label>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
               <!-- Preview -->
-              <div v-if="formData.logo_url" class="relative">
-                <img 
-                  :src="getFullImageUrl(formData.logo_url)" 
-                  alt="Logo" 
-                  class="h-10 rounded border border-surface-200 dark:border-surface-700 object-contain"
-                />
-                <Button 
-                  icon="pi pi-times" 
-                  severity="danger" 
-                  text 
-                  rounded 
-                  size="small"
-                  class="absolute -top-2 -right-2"
-                  @click="handleDeleteLogo"
-                  :loading="deletingLogo"
-                />
-              </div>
+              <img 
+                v-if="formData.logo_url"
+                :src="getFullImageUrl(formData.logo_url)" 
+                alt="Logo" 
+                class="h-10 object-contain"
+              />
+              <!-- Delete button -->
+              <Button 
+                v-if="formData.logo_url"
+                icon="pi pi-times" 
+                severity="danger" 
+                text 
+                rounded 
+                size="small"
+                @click="handleDeleteLogo"
+                :loading="deletingLogo"
+              />
               <!-- Upload button -->
-              <div class="flex flex-col gap-2">
-                <FileUpload
-                  mode="basic"
-                  :auto="true"
-                  accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                  :maxFileSize="2097152"
-                  :chooseLabel="t('portals.admin.uploadImage')"
-                  :customUpload="true"
-                  @uploader="handleLogoUpload"
-                  :disabled="uploadingLogo"
-                />
-                <small v-if="uploadingLogo" class="text-primary">{{ t('portals.admin.imageUploading') }}</small>
-              </div>
+              <Button
+                icon="pi pi-search"
+                text
+                rounded
+                size="small"
+                @click="triggerLogoUpload"
+                :loading="uploadingLogo"
+                v-tooltip.top="t('portals.admin.uploadImage')"
+              />
+              <input
+                ref="logoFileInput"
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                class="hidden"
+                @change="handleLogoFileChange"
+              />
             </div>
             <small class="text-surface-400">{{ t('portals.admin.logoHint') }}</small>
           </div>
@@ -294,7 +304,6 @@ import ColorPicker from 'primevue/colorpicker'
 import Checkbox from 'primevue/checkbox'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import FileUpload from 'primevue/fileupload'
 
 const { t } = useI18n()
 const tabsStore = useTabsStore()
@@ -318,6 +327,7 @@ const errors = ref({})
 // Image upload states
 const uploadingLogo = ref(false)
 const deletingLogo = ref(false)
+const logoFileInput = ref(null)
 
 /**
  * Get full image URL (relative URLs are proxied to backend via Vite)
@@ -328,10 +338,17 @@ const getFullImageUrl = (url) => {
 }
 
 /**
- * Handle logo upload
+ * Trigger logo file input
  */
-const handleLogoUpload = async (event) => {
-  const file = event.files[0]
+const triggerLogoUpload = () => {
+  logoFileInput.value?.click()
+}
+
+/**
+ * Handle logo file change
+ */
+const handleLogoFileChange = async (event) => {
+  const file = event.target.files[0]
   if (!file) return
   
   uploadingLogo.value = true
@@ -343,6 +360,7 @@ const handleLogoUpload = async (event) => {
     console.error('[PORTAL ADMIN FORM] Error uploading logo:', err)
   } finally {
     uploadingLogo.value = false
+    event.target.value = ''
   }
 }
 
