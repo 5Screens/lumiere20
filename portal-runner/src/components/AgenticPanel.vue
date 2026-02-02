@@ -5,7 +5,6 @@
       <!-- Welcome message -->
       <div v-if="messages.length === 0" class="text-center py-8">
         <i class="pi pi-comments text-4xl text-surface-300 dark:text-surface-600 mb-4"></i>
-        <p class="text-surface-500">{{ defaultMessage || $t('chat.placeholder') }}</p>
       </div>
       
       <!-- Message list -->
@@ -141,7 +140,7 @@
         <Textarea 
           ref="inputRef"
           v-model="inputMessage"
-          :placeholder="isSessionActive ? '' : $t('chat.placeholder')"
+          :placeholder="isSessionActive ? '' : (defaultMessage || $t('chat.placeholder'))"
           class="w-full resize-none"
           :autoResize="true"
           rows="2"
