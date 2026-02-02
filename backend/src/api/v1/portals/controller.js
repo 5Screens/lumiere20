@@ -237,45 +237,6 @@ const uploadLogo = async (req, res) => {
 };
 
 /**
- * Upload portal thumbnail
- * POST /api/v1/portals/:uuid/thumbnail
- */
-const uploadThumbnail = async (req, res) => {
-  try {
-    const { uuid } = req.params;
-    logger.info(`[PORTALS] POST /${uuid}/thumbnail`);
-
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
-
-    // Get current portal to delete old image
-    const currentPortal = await portalsService.getByUuid(uuid);
-    if (!currentPortal) {
-      return res.status(404).json({ message: 'Portal not found' });
-    }
-
-    // Delete old thumbnail if exists
-    deleteOldImage(currentPortal.thumbnail_url);
-
-    // Resize image
-    await resizeImage(req.file.path, 'thumbnail');
-
-    // Get public URL
-    const thumbnailUrl = getImageUrl(req.file.filename);
-
-    // Update portal with new thumbnail URL
-    await portalsService.update(uuid, { thumbnail_url: thumbnailUrl });
-
-    logger.info(`[PORTALS] Thumbnail uploaded for portal ${uuid}: ${thumbnailUrl}`);
-    res.json({ thumbnail_url: thumbnailUrl });
-  } catch (error) {
-    logger.error(`[PORTALS] Error uploading thumbnail: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-/**
  * Delete portal logo
  * DELETE /api/v1/portals/:uuid/logo
  */
@@ -303,34 +264,6 @@ const deleteLogo = async (req, res) => {
   }
 };
 
-/**
- * Delete portal thumbnail
- * DELETE /api/v1/portals/:uuid/thumbnail
- */
-const deleteThumbnail = async (req, res) => {
-  try {
-    const { uuid } = req.params;
-    logger.info(`[PORTALS] DELETE /${uuid}/thumbnail`);
-
-    const currentPortal = await portalsService.getByUuid(uuid);
-    if (!currentPortal) {
-      return res.status(404).json({ message: 'Portal not found' });
-    }
-
-    // Delete old thumbnail if exists
-    deleteOldImage(currentPortal.thumbnail_url);
-
-    // Update portal to remove thumbnail URL
-    await portalsService.update(uuid, { thumbnail_url: null });
-
-    logger.info(`[PORTALS] Thumbnail deleted for portal ${uuid}`);
-    res.json({ message: 'Thumbnail deleted' });
-  } catch (error) {
-    logger.error(`[PORTALS] Error deleting thumbnail: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
 module.exports = {
   getFull,
   getByCode,
@@ -343,7 +276,5 @@ module.exports = {
   listAlerts,
   listWidgets,
   uploadLogo,
-  uploadThumbnail,
-  deleteLogo,
-  deleteThumbnail
+  deleteLogo
 };

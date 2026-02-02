@@ -88,34 +88,11 @@ export const uploadLogo = async (uuid, file) => {
 }
 
 /**
- * Upload portal thumbnail
- * @param {string} uuid - Portal UUID
- * @param {File} file - Image file
- */
-export const uploadThumbnail = async (uuid, file) => {
-  const formData = new FormData()
-  formData.append('image', file)
-  const response = await api.post(`${BASE_URL}/${uuid}/thumbnail`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
-  return response.data
-}
-
-/**
  * Delete portal logo
  * @param {string} uuid - Portal UUID
  */
 export const deleteLogo = async (uuid) => {
   const response = await api.delete(`${BASE_URL}/${uuid}/logo`)
-  return response.data
-}
-
-/**
- * Delete portal thumbnail
- * @param {string} uuid - Portal UUID
- */
-export const deleteThumbnail = async (uuid) => {
-  const response = await api.delete(`${BASE_URL}/${uuid}/thumbnail`)
   return response.data
 }
 
@@ -129,7 +106,5 @@ export default {
   listAlerts,
   listWidgets,
   uploadLogo,
-  uploadThumbnail,
-  deleteLogo,
-  deleteThumbnail
+  deleteLogo
 }

@@ -945,7 +945,6 @@ model portals {
   code                  String    @unique @db.VarChar(50)
   name                  String    @db.VarChar(255)
   base_url              String?   @db.VarChar(500)
-  thumbnail_url         String?   @db.VarChar(500)
   is_active             Boolean   @default(false)
   view_component        String?   @db.VarChar(100)
   title                 String?   @db.VarChar(255)

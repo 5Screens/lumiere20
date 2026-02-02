@@ -101,47 +101,6 @@
 
           <div class="flex flex-col gap-2">
             <label class="font-medium text-surface-700 dark:text-surface-200">
-              {{ t('portals.admin.thumbnail') }}
-            </label>
-            <div class="flex items-center gap-4">
-              <!-- Preview -->
-              <div v-if="formData.thumbnail_url" class="relative">
-                <img 
-                  :src="getFullImageUrl(formData.thumbnail_url)" 
-                  alt="Thumbnail" 
-                  class="h-20 rounded border border-surface-200 dark:border-surface-700 object-cover"
-                />
-                <Button 
-                  icon="pi pi-times" 
-                  severity="danger" 
-                  text 
-                  rounded 
-                  size="small"
-                  class="absolute -top-2 -right-2"
-                  @click="handleDeleteThumbnail"
-                  :loading="deletingThumbnail"
-                />
-              </div>
-              <!-- Upload button -->
-              <div class="flex flex-col gap-2">
-                <FileUpload
-                  mode="basic"
-                  :auto="true"
-                  accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                  :maxFileSize="2097152"
-                  :chooseLabel="t('portals.admin.uploadImage')"
-                  :customUpload="true"
-                  @uploader="handleThumbnailUpload"
-                  :disabled="uploadingThumbnail"
-                />
-                <small v-if="uploadingThumbnail" class="text-primary">{{ t('portals.admin.imageUploading') }}</small>
-              </div>
-            </div>
-            <small class="text-surface-400">{{ t('portals.admin.thumbnailHint') }}</small>
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <label class="font-medium text-surface-700 dark:text-surface-200">
               {{ t('portals.admin.logo') }}
             </label>
             <div class="flex items-center gap-4">
@@ -358,9 +317,7 @@ const errors = ref({})
 
 // Image upload states
 const uploadingLogo = ref(false)
-const uploadingThumbnail = ref(false)
 const deletingLogo = ref(false)
-const deletingThumbnail = ref(false)
 
 /**
  * Get full image URL (relative URLs are proxied to backend via Vite)
@@ -368,25 +325,6 @@ const deletingThumbnail = ref(false)
 const getFullImageUrl = (url) => {
   if (!url) return ''
   return url
-}
-
-/**
- * Handle thumbnail upload
- */
-const handleThumbnailUpload = async (event) => {
-  const file = event.files[0]
-  if (!file) return
-  
-  uploadingThumbnail.value = true
-  try {
-    const result = await portalsService.uploadThumbnail(props.objectId, file)
-    formData.value.thumbnail_url = result.thumbnail_url
-    console.info('[PORTAL ADMIN FORM] Thumbnail uploaded:', result.thumbnail_url)
-  } catch (err) {
-    console.error('[PORTAL ADMIN FORM] Error uploading thumbnail:', err)
-  } finally {
-    uploadingThumbnail.value = false
-  }
 }
 
 /**
@@ -405,22 +343,6 @@ const handleLogoUpload = async (event) => {
     console.error('[PORTAL ADMIN FORM] Error uploading logo:', err)
   } finally {
     uploadingLogo.value = false
-  }
-}
-
-/**
- * Handle thumbnail delete
- */
-const handleDeleteThumbnail = async () => {
-  deletingThumbnail.value = true
-  try {
-    await portalsService.deleteThumbnail(props.objectId)
-    formData.value.thumbnail_url = ''
-    console.info('[PORTAL ADMIN FORM] Thumbnail deleted')
-  } catch (err) {
-    console.error('[PORTAL ADMIN FORM] Error deleting thumbnail:', err)
-  } finally {
-    deletingThumbnail.value = false
   }
 }
 
@@ -444,7 +366,6 @@ const formData = ref({
   code: '',
   name: '',
   base_url: '',
-  thumbnail_url: '',
   title: '',
   subtitle: '',
   welcome_template: 'Bienvenue {firstName} !',
@@ -508,7 +429,6 @@ onMounted(async () => {
       code: portalFull.code || '',
       name: portalFull.name || '',
       base_url: portalFull.base_url || '',
-      thumbnail_url: portalFull.thumbnail_url || '',
       title: portalFull.title || '',
       subtitle: portalFull.subtitle || '',
       welcome_template: portalFull.welcome_template || 'Bienvenue {firstName} !',

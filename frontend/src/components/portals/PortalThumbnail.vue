@@ -1,21 +1,20 @@
 <template>
   <div class="relative w-full h-44 bg-surface-100 dark:bg-surface-700 overflow-hidden">
-    <!-- Thumbnail image if available -->
-    <img 
-      v-if="portal.thumbnail_url"
-      :src="portal.thumbnail_url"
-      :alt="portal.name"
-      class="w-full h-full object-cover"
-      @error="onImageError"
-    />
-    
-    <!-- Fallback gradient with portal info -->
+    <!-- Gradient background -->
     <div 
-      v-else
       class="w-full h-full flex items-center justify-center"
       :style="gradientStyle"
     >
-      <div class="text-center text-white">
+      <!-- Logo if available -->
+      <img 
+        v-if="portal.logo_url && !imageError"
+        :src="portal.logo_url"
+        :alt="portal.name"
+        class="max-h-20 max-w-[80%] object-contain drop-shadow-lg"
+        @error="onImageError"
+      />
+      <!-- Fallback icon -->
+      <div v-else class="text-center text-white">
         <i class="pi pi-globe text-4xl opacity-80 mb-2"></i>
         <p class="text-sm font-medium opacity-90">{{ portal.code }}</p>
       </div>
