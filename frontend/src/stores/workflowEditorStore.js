@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
+import api from '@/services/api'
 
 export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
   // State
@@ -32,12 +33,12 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
 
     loading.value = true
     try {
-      const response = await fetch(`/api/v1/workflows/${workflowUuid}?locale=${locale}`)
-      if (response.ok) {
-        workflow.value = await response.json()
-        originalWorkflow.value = JSON.parse(JSON.stringify(workflow.value))
-        isDirty.value = false
-      }
+      const response = await api.get(`/workflows/${workflowUuid}`, {
+        params: { locale }
+      })
+      workflow.value = response.data
+      originalWorkflow.value = JSON.parse(JSON.stringify(workflow.value))
+      isDirty.value = false
     } catch (error) {
       console.error('Error loading workflow:', error)
     } finally {
@@ -47,10 +48,10 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
 
   const loadStatusCategories = async (locale = 'en') => {
     try {
-      const response = await fetch(`/api/v1/workflow-status-categories?locale=${locale}`)
-      if (response.ok) {
-        statusCategories.value = await response.json()
-      }
+      const response = await api.get('/workflow-status-categories', {
+        params: { locale }
+      })
+      statusCategories.value = response.data
     } catch (error) {
       console.error('Error loading status categories:', error)
     }
@@ -178,45 +179,37 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
     
     saving.value = true
     try {
-      const response = await fetch(`/api/v1/workflows/${workflow.value.uuid}/save-all`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: workflow.value.name,
-          description: workflow.value.description,
-          entity_type: workflow.value.entity_type,
-          is_active: workflow.value.is_active,
-          statuses: workflow.value.statuses.map(s => ({
-            uuid: s._isNew ? null : s.uuid,
-            tempUuid: s._isNew ? s.uuid : null,
-            _isNew: s._isNew,
-            name: s.name,
-            rel_category_uuid: s.rel_category_uuid,
-            allow_all_inbound: s.allow_all_inbound,
-            is_initial: s.is_initial,
-            position_x: s.position_x,
-            position_y: s.position_y,
-            _translations: s._translations
-          })),
-          transitions: workflow.value.transitions.map(t => ({
-            uuid: t._isNew ? null : t.uuid,
-            _isNew: t._isNew,
-            name: t.name,
-            to_status_uuid: t._isNew ? t.rel_to_status_uuid : (t.to_status?.uuid || t.rel_to_status_uuid),
-            source_status_uuids: t.sources.map(s => s._isNew ? s.rel_from_status_uuid : (s.from_status?.uuid || s.rel_from_status_uuid)),
-            _translations: t._translations
-          }))
-        })
+      const response = await api.put(`/workflows/${workflow.value.uuid}/save-all`, {
+        name: workflow.value.name,
+        description: workflow.value.description,
+        entity_type: workflow.value.entity_type,
+        is_active: workflow.value.is_active,
+        statuses: workflow.value.statuses.map(s => ({
+          uuid: s._isNew ? null : s.uuid,
+          tempUuid: s._isNew ? s.uuid : null,
+          _isNew: s._isNew,
+          name: s.name,
+          rel_category_uuid: s.rel_category_uuid,
+          allow_all_inbound: s.allow_all_inbound,
+          is_initial: s.is_initial,
+          position_x: s.position_x,
+          position_y: s.position_y,
+          _translations: s._translations
+        })),
+        transitions: workflow.value.transitions.map(t => ({
+          uuid: t._isNew ? null : t.uuid,
+          _isNew: t._isNew,
+          name: t.name,
+          to_status_uuid: t._isNew ? t.rel_to_status_uuid : (t.to_status?.uuid || t.rel_to_status_uuid),
+          source_status_uuids: t.sources.map(s => s._isNew ? s.rel_from_status_uuid : (s.from_status?.uuid || s.rel_from_status_uuid)),
+          _translations: t._translations
+        }))
       })
       
-      if (response.ok) {
-        const savedWorkflow = await response.json()
-        workflow.value = savedWorkflow
-        originalWorkflow.value = JSON.parse(JSON.stringify(savedWorkflow))
-        isDirty.value = false
-        return true
-      }
-      return false
+      workflow.value = response.data
+      originalWorkflow.value = JSON.parse(JSON.stringify(response.data))
+      isDirty.value = false
+      return true
     } catch (error) {
       console.error('Error saving workflow:', error)
       return false

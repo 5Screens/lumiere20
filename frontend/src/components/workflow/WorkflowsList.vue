@@ -169,6 +169,7 @@ import { useI18n } from 'vue-i18n'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import WorkflowEditor from './WorkflowEditor.vue'
+import api from '@/services/api'
 
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -235,14 +236,12 @@ const subtypeOptionsWithAll = computed(() => {
 
 const loadEntityTypeConfigs = async () => {
   try {
-    const response = await fetch('/api/v1/workflow-entity-config')
-    if (response.ok) {
-      const configs = await response.json()
-      entityTypeConfigs.value = configs.map(c => ({
-        ...c,
-        label: t(`workflow.entityTypes.${c.entity_type}`, c.entity_type)
-      }))
-    }
+    const response = await api.get('/workflow-entity-config')
+    const configs = response.data
+    entityTypeConfigs.value = configs.map(c => ({
+      ...c,
+      label: t(`workflow.entityTypes.${c.entity_type}`, c.entity_type)
+    }))
   } catch (error) {
     console.error('Error loading entity type configs:', error)
   }
@@ -255,12 +254,10 @@ const loadSubtypes = async (entityType) => {
   }
   
   try {
-    const response = await fetch(`/api/v1/workflow-entity-config/entity/${entityType}/subtypes?locale=${locale.value}`)
-    if (response.ok) {
-      subtypeOptions.value = await response.json()
-    } else {
-      subtypeOptions.value = []
-    }
+    const response = await api.get(`/workflow-entity-config/entity/${entityType}/subtypes`, {
+      params: { locale: locale.value }
+    })
+    subtypeOptions.value = response.data
   } catch (error) {
     console.error('Error loading subtypes:', error)
     subtypeOptions.value = []
@@ -275,17 +272,15 @@ const onEntityTypeChange = () => {
 const loadWorkflows = async () => {
   loading.value = true
   try {
-    const params = new URLSearchParams({
+    const params = {
       locale: locale.value,
       active: 'false'
-    })
+    }
     if (globalFilter.value?.trim()) {
-      params.append('search', globalFilter.value.trim())
+      params.search = globalFilter.value.trim()
     }
-    const response = await fetch(`/api/v1/workflows?${params}`)
-    if (response.ok) {
-      workflows.value = await response.json()
-    }
+    const response = await api.get('/workflows', { params })
+    workflows.value = response.data
   } catch (error) {
     console.error('Error loading workflows:', error)
   } finally {
@@ -317,30 +312,25 @@ const editWorkflow = (workflow) => {
 const saveWorkflow = async () => {
   saving.value = true
   try {
-    const method = editingWorkflow.value ? 'PUT' : 'POST'
-    const url = editingWorkflow.value 
-      ? `/api/v1/workflows/${editingWorkflow.value.uuid}`
-      : '/api/v1/workflows'
-    
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData.value)
-    })
-    
-    if (response.ok) {
-      const saved = await response.json()
-      showDialog.value = false
-      await loadWorkflows()
-      
-      // Open editor for new workflow
-      if (!editingWorkflow.value) {
-        editingWorkflow.value = saved
-        showEditor.value = true
-      }
-      
-      toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
+    let saved
+    if (editingWorkflow.value) {
+      const response = await api.put(`/workflows/${editingWorkflow.value.uuid}`, formData.value)
+      saved = response.data
+    } else {
+      const response = await api.post('/workflows', formData.value)
+      saved = response.data
     }
+    
+    showDialog.value = false
+    await loadWorkflows()
+    
+    // Open editor for new workflow
+    if (!editingWorkflow.value) {
+      editingWorkflow.value = saved
+      showEditor.value = true
+    }
+    
+    toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
   } catch (error) {
     console.error('Error saving workflow:', error)
     toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
@@ -361,11 +351,9 @@ const confirmDelete = (workflow) => {
 
 const deleteWorkflow = async (workflow) => {
   try {
-    const response = await fetch(`/api/v1/workflows/${workflow.uuid}`, { method: 'DELETE' })
-    if (response.ok) {
-      await loadWorkflows()
-      toast.add({ severity: 'success', summary: t('common.success'), life: 3000 })
-    }
+    await api.delete(`/workflows/${workflow.uuid}`)
+    await loadWorkflows()
+    toast.add({ severity: 'success', summary: t('common.success'), life: 3000 })
   } catch (error) {
     console.error('Error deleting workflow:', error)
   }
@@ -393,16 +381,9 @@ const saveWorkflowName = async (workflow) => {
   }
   
   try {
-    const response = await fetch(`/api/v1/workflows/${workflow.uuid}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editingNameValue.value.trim() })
-    })
-    
-    if (response.ok) {
-      workflow.name = editingNameValue.value.trim()
-      toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
-    }
+    await api.put(`/workflows/${workflow.uuid}`, { name: editingNameValue.value.trim() })
+    workflow.name = editingNameValue.value.trim()
+    toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
   } catch (error) {
     console.error('Error updating workflow name:', error)
     toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
@@ -413,18 +394,8 @@ const saveWorkflowName = async (workflow) => {
 
 const toggleWorkflowActive = async (workflow) => {
   try {
-    const response = await fetch(`/api/v1/workflows/${workflow.uuid}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ is_active: workflow.is_active })
-    })
-    
-    if (response.ok) {
-      toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
-    } else {
-      workflow.is_active = !workflow.is_active
-      toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
-    }
+    await api.put(`/workflows/${workflow.uuid}`, { is_active: workflow.is_active })
+    toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.saved'), life: 3000 })
   } catch (error) {
     console.error('Error updating workflow active status:', error)
     workflow.is_active = !workflow.is_active
@@ -434,18 +405,10 @@ const toggleWorkflowActive = async (workflow) => {
 
 const duplicateWorkflow = async (workflow) => {
   try {
-    const response = await fetch(`/api/v1/workflows/${workflow.uuid}/duplicate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    
-    if (response.ok) {
-      const newWorkflow = await response.json()
-      workflows.value.unshift(newWorkflow)
-      toast.add({ severity: 'success', summary: t('common.success'), detail: t('workflow.duplicated'), life: 3000 })
-    } else {
-      toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
-    }
+    const response = await api.post(`/workflows/${workflow.uuid}/duplicate`)
+    const newWorkflow = response.data
+    workflows.value.unshift(newWorkflow)
+    toast.add({ severity: 'success', summary: t('common.success'), detail: t('workflow.duplicated'), life: 3000 })
   } catch (error) {
     console.error('Error duplicating workflow:', error)
     toast.add({ severity: 'error', summary: t('common.error'), life: 3000 })
