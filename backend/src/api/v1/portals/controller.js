@@ -264,6 +264,270 @@ const deleteLogo = async (req, res) => {
   }
 };
 
+// ============================================
+// PORTAL ACTIONS CRUD
+// ============================================
+
+/**
+ * Get action by UUID
+ * GET /api/v1/portals/actions/:uuid
+ */
+const getActionByUuid = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    logger.info(`[PORTALS] GET /actions/${uuid}`);
+
+    const action = await portalsService.getActionByUuid(uuid);
+
+    if (!action) {
+      return res.status(404).json({ message: 'Action not found' });
+    }
+
+    res.json(action);
+  } catch (error) {
+    logger.error(`[PORTALS] Error getting action: ${error.message}`);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Create a new portal action
+ * POST /api/v1/portals/actions
+ */
+const createAction = async (req, res) => {
+  try {
+    logger.info('[PORTALS] POST /actions');
+
+    const action = await portalsService.createAction(req.body);
+    res.status(201).json(action);
+  } catch (error) {
+    logger.error(`[PORTALS] Error creating action: ${error.message}`);
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: 'Action code already exists' });
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Update a portal action
+ * PUT /api/v1/portals/actions/:uuid
+ */
+const updateAction = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    logger.info(`[PORTALS] PUT /actions/${uuid}`);
+
+    const action = await portalsService.updateAction(uuid, req.body);
+    res.json(action);
+  } catch (error) {
+    logger.error(`[PORTALS] Error updating action: ${error.message}`);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Action not found' });
+    }
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: 'Action code already exists' });
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Delete a portal action
+ * DELETE /api/v1/portals/actions/:uuid
+ */
+const deleteAction = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    logger.info(`[PORTALS] DELETE /actions/${uuid}`);
+
+    await portalsService.deleteAction(uuid);
+    res.status(204).send();
+  } catch (error) {
+    logger.error(`[PORTALS] Error deleting action: ${error.message}`);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Action not found' });
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// ============================================
+// PORTAL ALERTS CRUD
+// ============================================
+
+/**
+ * Get alert by UUID
+ * GET /api/v1/portals/alerts/:uuid
+ */
+const getAlertByUuid = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    logger.info(`[PORTALS] GET /alerts/${uuid}`);
+
+    const alert = await portalsService.getAlertByUuid(uuid);
+
+    if (!alert) {
+      return res.status(404).json({ message: 'Alert not found' });
+    }
+
+    res.json(alert);
+  } catch (error) {
+    logger.error(`[PORTALS] Error getting alert: ${error.message}`);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Create a new portal alert
+ * POST /api/v1/portals/alerts
+ */
+const createAlert = async (req, res) => {
+  try {
+    logger.info('[PORTALS] POST /alerts');
+
+    const alert = await portalsService.createAlert(req.body);
+    res.status(201).json(alert);
+  } catch (error) {
+    logger.error(`[PORTALS] Error creating alert: ${error.message}`);
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: 'Alert code already exists' });
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Update a portal alert
+ * PUT /api/v1/portals/alerts/:uuid
+ */
+const updateAlert = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    logger.info(`[PORTALS] PUT /alerts/${uuid}`);
+
+    const alert = await portalsService.updateAlert(uuid, req.body);
+    res.json(alert);
+  } catch (error) {
+    logger.error(`[PORTALS] Error updating alert: ${error.message}`);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Alert not found' });
+    }
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: 'Alert code already exists' });
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Delete a portal alert
+ * DELETE /api/v1/portals/alerts/:uuid
+ */
+const deleteAlert = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    logger.info(`[PORTALS] DELETE /alerts/${uuid}`);
+
+    await portalsService.deleteAlert(uuid);
+    res.status(204).send();
+  } catch (error) {
+    logger.error(`[PORTALS] Error deleting alert: ${error.message}`);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Alert not found' });
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// ============================================
+// PORTAL WIDGETS CRUD
+// ============================================
+
+/**
+ * Get widget by UUID
+ * GET /api/v1/portals/widgets/:uuid
+ */
+const getWidgetByUuid = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    logger.info(`[PORTALS] GET /widgets/${uuid}`);
+
+    const widget = await portalsService.getWidgetByUuid(uuid);
+
+    if (!widget) {
+      return res.status(404).json({ message: 'Widget not found' });
+    }
+
+    res.json(widget);
+  } catch (error) {
+    logger.error(`[PORTALS] Error getting widget: ${error.message}`);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Create a new portal widget
+ * POST /api/v1/portals/widgets
+ */
+const createWidget = async (req, res) => {
+  try {
+    logger.info('[PORTALS] POST /widgets');
+
+    const widget = await portalsService.createWidget(req.body);
+    res.status(201).json(widget);
+  } catch (error) {
+    logger.error(`[PORTALS] Error creating widget: ${error.message}`);
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: 'Widget code already exists' });
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Update a portal widget
+ * PUT /api/v1/portals/widgets/:uuid
+ */
+const updateWidget = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    logger.info(`[PORTALS] PUT /widgets/${uuid}`);
+
+    const widget = await portalsService.updateWidget(uuid, req.body);
+    res.json(widget);
+  } catch (error) {
+    logger.error(`[PORTALS] Error updating widget: ${error.message}`);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Widget not found' });
+    }
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: 'Widget code already exists' });
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * Delete a portal widget
+ * DELETE /api/v1/portals/widgets/:uuid
+ */
+const deleteWidget = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    logger.info(`[PORTALS] DELETE /widgets/${uuid}`);
+
+    await portalsService.deleteWidget(uuid);
+    res.status(204).send();
+  } catch (error) {
+    logger.error(`[PORTALS] Error deleting widget: ${error.message}`);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Widget not found' });
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   getFull,
   getByCode,
@@ -276,5 +540,20 @@ module.exports = {
   listAlerts,
   listWidgets,
   uploadLogo,
-  deleteLogo
+  deleteLogo,
+  // Actions CRUD
+  getActionByUuid,
+  createAction,
+  updateAction,
+  deleteAction,
+  // Alerts CRUD
+  getAlertByUuid,
+  createAlert,
+  updateAlert,
+  deleteAlert,
+  // Widgets CRUD
+  getWidgetByUuid,
+  createWidget,
+  updateWidget,
+  deleteWidget
 };

@@ -252,6 +252,189 @@ const getFullByUuid = async (uuid) => {
   };
 };
 
+// ============================================
+// PORTAL ACTIONS CRUD
+// ============================================
+
+/**
+ * Get action by UUID
+ */
+const getActionByUuid = async (uuid) => {
+  logger.info(`[PORTALS] Getting action by uuid: ${uuid}`);
+  return prisma.portal_actions.findUnique({
+    where: { uuid }
+  });
+};
+
+/**
+ * Create a new portal action
+ */
+const createAction = async (data) => {
+  logger.info('[PORTALS] Creating new portal action');
+  return prisma.portal_actions.create({
+    data: {
+      code: data.code,
+      label: data.label,
+      description: data.description || null,
+      icon: data.icon || null,
+      action_type: data.action_type || null,
+      action_url: data.action_url || null,
+      is_active: data.is_active !== undefined ? data.is_active : true
+    }
+  });
+};
+
+/**
+ * Update a portal action
+ */
+const updateAction = async (uuid, data) => {
+  logger.info(`[PORTALS] Updating action: ${uuid}`);
+  return prisma.portal_actions.update({
+    where: { uuid },
+    data: {
+      code: data.code,
+      label: data.label,
+      description: data.description,
+      icon: data.icon,
+      action_type: data.action_type,
+      action_url: data.action_url,
+      is_active: data.is_active
+    }
+  });
+};
+
+/**
+ * Delete a portal action
+ */
+const deleteAction = async (uuid) => {
+  logger.info(`[PORTALS] Deleting action: ${uuid}`);
+  return prisma.portal_actions.delete({
+    where: { uuid }
+  });
+};
+
+// ============================================
+// PORTAL ALERTS CRUD
+// ============================================
+
+/**
+ * Get alert by UUID
+ */
+const getAlertByUuid = async (uuid) => {
+  logger.info(`[PORTALS] Getting alert by uuid: ${uuid}`);
+  return prisma.portal_alerts.findUnique({
+    where: { uuid }
+  });
+};
+
+/**
+ * Create a new portal alert
+ */
+const createAlert = async (data) => {
+  logger.info('[PORTALS] Creating new portal alert');
+  return prisma.portal_alerts.create({
+    data: {
+      code: data.code,
+      message: data.message,
+      severity: data.severity || null,
+      icon: data.icon || null,
+      is_active: data.is_active !== undefined ? data.is_active : true,
+      start_date: data.start_date || null,
+      end_date: data.end_date || null
+    }
+  });
+};
+
+/**
+ * Update a portal alert
+ */
+const updateAlert = async (uuid, data) => {
+  logger.info(`[PORTALS] Updating alert: ${uuid}`);
+  return prisma.portal_alerts.update({
+    where: { uuid },
+    data: {
+      code: data.code,
+      message: data.message,
+      severity: data.severity,
+      icon: data.icon,
+      is_active: data.is_active,
+      start_date: data.start_date,
+      end_date: data.end_date
+    }
+  });
+};
+
+/**
+ * Delete a portal alert
+ */
+const deleteAlert = async (uuid) => {
+  logger.info(`[PORTALS] Deleting alert: ${uuid}`);
+  return prisma.portal_alerts.delete({
+    where: { uuid }
+  });
+};
+
+// ============================================
+// PORTAL WIDGETS CRUD
+// ============================================
+
+/**
+ * Get widget by UUID
+ */
+const getWidgetByUuid = async (uuid) => {
+  logger.info(`[PORTALS] Getting widget by uuid: ${uuid}`);
+  return prisma.portal_widgets.findUnique({
+    where: { uuid }
+  });
+};
+
+/**
+ * Create a new portal widget
+ */
+const createWidget = async (data) => {
+  logger.info('[PORTALS] Creating new portal widget');
+  return prisma.portal_widgets.create({
+    data: {
+      code: data.code,
+      title: data.title,
+      description: data.description || null,
+      icon: data.icon || null,
+      widget_type: data.widget_type || null,
+      config: data.config || null,
+      is_active: data.is_active !== undefined ? data.is_active : true
+    }
+  });
+};
+
+/**
+ * Update a portal widget
+ */
+const updateWidget = async (uuid, data) => {
+  logger.info(`[PORTALS] Updating widget: ${uuid}`);
+  return prisma.portal_widgets.update({
+    where: { uuid },
+    data: {
+      code: data.code,
+      title: data.title,
+      description: data.description,
+      icon: data.icon,
+      widget_type: data.widget_type,
+      config: data.config,
+      is_active: data.is_active
+    }
+  });
+};
+
+/**
+ * Delete a portal widget
+ */
+const deleteWidget = async (uuid) => {
+  logger.info(`[PORTALS] Deleting widget: ${uuid}`);
+  return prisma.portal_widgets.delete({
+    where: { uuid }
+  });
+};
+
 module.exports = {
   getFullByCode,
   getByCode,
@@ -262,5 +445,20 @@ module.exports = {
   toggleActive,
   listActions,
   listAlerts,
-  listWidgets
+  listWidgets,
+  // Actions CRUD
+  getActionByUuid,
+  createAction,
+  updateAction,
+  deleteAction,
+  // Alerts CRUD
+  getAlertByUuid,
+  createAlert,
+  updateAlert,
+  deleteAlert,
+  // Widgets CRUD
+  getWidgetByUuid,
+  createWidget,
+  updateWidget,
+  deleteWidget
 };

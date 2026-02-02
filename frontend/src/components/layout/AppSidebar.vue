@@ -261,6 +261,21 @@ const menuItems = computed(() => [
         label: t('menu.portals') || 'Portals',
         icon: 'pi pi-globe',
         command: () => openTab('portals', 'Portals', 'menu.portals', 'pi pi-globe', 'portals', 'AdminPortals')
+      },
+      {
+        label: t('menu.portalAlerts') || 'Alerts',
+        icon: 'pi pi-bell',
+        command: () => openTab('portal-alerts', 'Portal Alerts', 'menu.portalAlerts', 'pi pi-bell', 'portal_alerts', 'PortalAlertsCrud')
+      },
+      {
+        label: t('menu.portalActions') || 'Quick Actions',
+        icon: 'pi pi-bolt',
+        command: () => openTab('portal-actions', 'Portal Actions', 'menu.portalActions', 'pi pi-bolt', 'portal_actions', 'PortalActionsCrud')
+      },
+      {
+        label: t('menu.portalWidgets') || 'Widgets',
+        icon: 'pi pi-th-large',
+        command: () => openTab('portal-widgets', 'Portal Widgets', 'menu.portalWidgets', 'pi pi-th-large', 'portal_widgets', 'PortalWidgetsCrud')
       }
     ]
   },

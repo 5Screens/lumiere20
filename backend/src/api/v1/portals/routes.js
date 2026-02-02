@@ -10,11 +10,43 @@ router.get('/', (req, res, next) => {
   next();
 }, portalsController.list);
 
+// ============================================
+// PORTAL ACTIONS CRUD
+// ============================================
+
 // GET /api/v1/portals/actions - List all portal actions
 router.get('/actions', (req, res, next) => {
   logger.info('[ROUTES] GET /api/v1/portals/actions');
   next();
 }, portalsController.listActions);
+
+// GET /api/v1/portals/actions/:uuid - Get action by UUID
+router.get('/actions/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] GET /api/v1/portals/actions/${req.params.uuid}`);
+  next();
+}, portalsController.getActionByUuid);
+
+// POST /api/v1/portals/actions - Create a new action
+router.post('/actions', (req, res, next) => {
+  logger.info('[ROUTES] POST /api/v1/portals/actions');
+  next();
+}, portalsController.createAction);
+
+// PUT /api/v1/portals/actions/:uuid - Update an action
+router.put('/actions/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] PUT /api/v1/portals/actions/${req.params.uuid}`);
+  next();
+}, portalsController.updateAction);
+
+// DELETE /api/v1/portals/actions/:uuid - Delete an action
+router.delete('/actions/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] DELETE /api/v1/portals/actions/${req.params.uuid}`);
+  next();
+}, portalsController.deleteAction);
+
+// ============================================
+// PORTAL ALERTS CRUD
+// ============================================
 
 // GET /api/v1/portals/alerts - List all portal alerts
 router.get('/alerts', (req, res, next) => {
@@ -22,11 +54,63 @@ router.get('/alerts', (req, res, next) => {
   next();
 }, portalsController.listAlerts);
 
+// GET /api/v1/portals/alerts/:uuid - Get alert by UUID
+router.get('/alerts/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] GET /api/v1/portals/alerts/${req.params.uuid}`);
+  next();
+}, portalsController.getAlertByUuid);
+
+// POST /api/v1/portals/alerts - Create a new alert
+router.post('/alerts', (req, res, next) => {
+  logger.info('[ROUTES] POST /api/v1/portals/alerts');
+  next();
+}, portalsController.createAlert);
+
+// PUT /api/v1/portals/alerts/:uuid - Update an alert
+router.put('/alerts/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] PUT /api/v1/portals/alerts/${req.params.uuid}`);
+  next();
+}, portalsController.updateAlert);
+
+// DELETE /api/v1/portals/alerts/:uuid - Delete an alert
+router.delete('/alerts/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] DELETE /api/v1/portals/alerts/${req.params.uuid}`);
+  next();
+}, portalsController.deleteAlert);
+
+// ============================================
+// PORTAL WIDGETS CRUD
+// ============================================
+
 // GET /api/v1/portals/widgets - List all portal widgets
 router.get('/widgets', (req, res, next) => {
   logger.info('[ROUTES] GET /api/v1/portals/widgets');
   next();
 }, portalsController.listWidgets);
+
+// GET /api/v1/portals/widgets/:uuid - Get widget by UUID
+router.get('/widgets/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] GET /api/v1/portals/widgets/${req.params.uuid}`);
+  next();
+}, portalsController.getWidgetByUuid);
+
+// POST /api/v1/portals/widgets - Create a new widget
+router.post('/widgets', (req, res, next) => {
+  logger.info('[ROUTES] POST /api/v1/portals/widgets');
+  next();
+}, portalsController.createWidget);
+
+// PUT /api/v1/portals/widgets/:uuid - Update a widget
+router.put('/widgets/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] PUT /api/v1/portals/widgets/${req.params.uuid}`);
+  next();
+}, portalsController.updateWidget);
+
+// DELETE /api/v1/portals/widgets/:uuid - Delete a widget
+router.delete('/widgets/:uuid', (req, res, next) => {
+  logger.info(`[ROUTES] DELETE /api/v1/portals/widgets/${req.params.uuid}`);
+  next();
+}, portalsController.deleteWidget);
 
 // GET /api/v1/portals/uuid/:uuid - Get portal by UUID
 router.get('/uuid/:uuid', (req, res, next) => {

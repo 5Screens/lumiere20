@@ -234,6 +234,9 @@ const componentRegistry = {
   WorkflowStatusCategoriesCrud: markRaw(defineAsyncComponent(() => import('@/components/crud/WorkflowStatusCategoriesCrud.vue'))),
   AdminPortals: markRaw(defineAsyncComponent(() => import('@/components/portals/AdminPortals.vue'))),
   PortalAdminForm: markRaw(defineAsyncComponent(() => import('@/components/portals/PortalAdminForm.vue'))),
+  PortalAlertsCrud: markRaw(defineAsyncComponent(() => import('@/components/portals/PortalAlertsCrud.vue'))),
+  PortalActionsCrud: markRaw(defineAsyncComponent(() => import('@/components/portals/PortalActionsCrud.vue'))),
+  PortalWidgetsCrud: markRaw(defineAsyncComponent(() => import('@/components/portals/PortalWidgetsCrud.vue'))),
 }
 
 // Components that support child tabs
