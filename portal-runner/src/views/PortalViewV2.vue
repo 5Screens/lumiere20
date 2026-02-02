@@ -79,10 +79,11 @@
         </div>
         
         <!-- Welcome -->
-        <div class="mb-8">
-          <h2 class="text-2xl font-semibold text-surface-800 dark:text-surface-100">
-            {{ welcomeMessage }}
-          </h2>
+        <div 
+          class="mb-8 h-20 rounded-lg flex items-center justify-center text-white font-medium text-2xl"
+          :style="{ background: `linear-gradient(135deg, ${portal.theme_primary_color || '#FF6B00'} 0%, ${portal.theme_secondary_color || '#111111'} 100%)` }"
+        >
+          {{ welcomeMessage }}
         </div>
         
         <!-- Quick Actions -->
