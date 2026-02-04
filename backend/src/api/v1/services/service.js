@@ -23,7 +23,7 @@ const search = async (params) => {
         managed_by: true,
         cab: true,
         parent: true,
-        lifecycle_status: {
+        status: {
           include: {
             category: true,
           },
@@ -52,7 +52,7 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'updated_at', sortOrde
         owning_entity: true,
         owned_by: true,
         managed_by: true,
-        lifecycle_status: {
+        status: {
           include: {
             category: true,
           },
@@ -78,7 +78,7 @@ const getById = async (uuid) => {
       cab: true,
       parent: true,
       children: true,
-      lifecycle_status: {
+      status: {
         include: {
           category: true,
           workflow: true,
@@ -87,7 +87,7 @@ const getById = async (uuid) => {
       service_offerings: {
         include: {
           operator_entity: true,
-          lifecycle_status: {
+          status: {
             include: {
               category: true,
             },
@@ -108,7 +108,7 @@ const create = async (data) => {
       owning_entity: true,
       owned_by: true,
       managed_by: true,
-      lifecycle_status: {
+      status: {
         include: {
           category: true,
         },
@@ -131,7 +131,7 @@ const update = async (uuid, data) => {
         managed_by: true,
         cab: true,
         parent: true,
-        lifecycle_status: {
+        status: {
           include: {
             category: true,
           },

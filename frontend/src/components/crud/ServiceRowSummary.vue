@@ -32,7 +32,7 @@
       
       <!-- Lifecycle Status Tag -->
       <Tag 
-        v-if="data.lifecycle_status"
+        v-if="data.status"
         :value="statusLabel"
         :style="statusStyle"
         class="text-xs"
@@ -87,7 +87,7 @@ const criticalityStyle = computed(() => {
 
 // Status label (with translation support)
 const statusLabel = computed(() => {
-  const status = props.data.lifecycle_status
+  const status = props.data.status
   if (!status) return ''
   if (status._translations?.name?.[locale.value]) {
     return status._translations.name[locale.value]
@@ -97,7 +97,7 @@ const statusLabel = computed(() => {
 
 // Status style
 const statusStyle = computed(() => {
-  const status = props.data.lifecycle_status
+  const status = props.data.status
   if (!status?.category?.color) {
     return { backgroundColor: '#6b7280', color: 'white' }
   }

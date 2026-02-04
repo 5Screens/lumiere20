@@ -79,7 +79,9 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     const { uuid } = req.params;
+    logger.info('Update service request:', { uuid, body: req.body });
     const item = await service.update(uuid, req.body);
+    logger.info('Update service result:', { uuid, updated: !!item });
 
     if (!item) {
       return res.status(404).json({

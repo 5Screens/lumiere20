@@ -297,7 +297,7 @@ async function seedObjectMetadata() {
     services: [
       { field_name: 'name', label_key: 'services.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
       { field_name: 'description', label_key: 'services.description', field_type: 'textarea', min_width: '20rem', display_order: 2, default_visible: true },
-      { field_name: 'rel_lifecycle_status_uuid', label_key: 'workflow.status', field_type: 'workflow_status', show_in_table: true, default_visible: true, min_width: '10rem', display_order: 3 },
+      { field_name: 'rel_status_uuid', label_key: 'workflow.status', field_type: 'workflow_status', show_in_table: true, default_visible: true, min_width: '10rem', display_order: 3 },
       { field_name: 'business_criticality', label_key: 'services.businessCriticality', field_type: 'select', min_width: '10rem', display_order: 4, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=BUSINESS_CRITICALITY' },
       { field_name: 'version', label_key: 'services.version', field_type: 'text', min_width: '8rem', display_order: 5, default_visible: true },
       { field_name: 'owning_entity_uuid', label_key: 'services.owningEntity', field_type: 'relation', relation_object: 'entities', relation_display: 'name', min_width: '14rem', display_order: 6, default_visible: true },

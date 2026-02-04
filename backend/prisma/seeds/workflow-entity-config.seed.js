@@ -61,13 +61,24 @@ const entityConfigs = [
   },
   {
     entity_type: 'services',
-    subtype_field: 'lifecycle_status',
+    subtype_field: '',
     subtype_table: null,
     subtype_uuid_field: null,
     subtype_code_field: null,
     subtype_label_field: null,
-    subtype_options: ['draft', 'active', 'deprecated', 'retired'],
-    description: 'Services use lifecycle_status field with static options',
+    subtype_options: null,
+    description: 'Services have a single workflow without subtypes',
+    is_active: true
+  },
+  {
+    entity_type: 'service_offerings',
+    subtype_field: '',
+    subtype_table: null,
+    subtype_uuid_field: null,
+    subtype_code_field: null,
+    subtype_label_field: null,
+    subtype_options: null,
+    description: 'Service offerings have a single workflow without subtypes',
     is_active: true
   }
 ];

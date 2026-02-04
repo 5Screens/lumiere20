@@ -1122,33 +1122,35 @@ const getWorkflowForEntity = async (entityType, entityUuid, locale = 'en') => {
   let subtypeUuid = null;
   let subtypeCode = null;
   
-  // Get the entity to find its subtype value
-  try {
-    const entity = await prisma[entityType].findUnique({
-      where: { uuid: entityUuid },
-      select: { [entityConfig.subtype_field]: true }
-    });
-    
-    if (!entity) {
-      logger.warn(`[WORKFLOWS] Entity not found: ${entityType}/${entityUuid}`);
-      return null;
-    }
-    
-    subtypeCode = entity[entityConfig.subtype_field];
-    
-    // If there's a subtype table, resolve the UUID
-    if (entityConfig.subtype_table && entityConfig.subtype_code_field) {
-      const subtypeRecord = await prisma[entityConfig.subtype_table].findFirst({
-        where: { [entityConfig.subtype_code_field]: subtypeCode }
+  // Get the entity to find its subtype value (only if subtype_field is defined)
+  if (entityConfig.subtype_field && entityConfig.subtype_field.trim() !== '') {
+    try {
+      const entity = await prisma[entityType].findUnique({
+        where: { uuid: entityUuid },
+        select: { [entityConfig.subtype_field]: true }
       });
       
-      if (subtypeRecord) {
-        subtypeUuid = subtypeRecord[entityConfig.subtype_uuid_field || 'uuid'];
+      if (!entity) {
+        logger.warn(`[WORKFLOWS] Entity not found: ${entityType}/${entityUuid}`);
+        return null;
       }
+      
+      subtypeCode = entity[entityConfig.subtype_field];
+      
+      // If there's a subtype table, resolve the UUID
+      if (entityConfig.subtype_table && entityConfig.subtype_code_field) {
+        const subtypeRecord = await prisma[entityConfig.subtype_table].findFirst({
+          where: { [entityConfig.subtype_code_field]: subtypeCode }
+        });
+        
+        if (subtypeRecord) {
+          subtypeUuid = subtypeRecord[entityConfig.subtype_uuid_field || 'uuid'];
+        }
+      }
+    } catch (error) {
+      logger.error(`[WORKFLOWS] Error getting entity subtype:`, error);
+      return null;
     }
-  } catch (error) {
-    logger.error(`[WORKFLOWS] Error getting entity subtype:`, error);
-    return null;
   }
   
   // Find the workflow for this entity type and subtype

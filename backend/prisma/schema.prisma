@@ -46,7 +46,7 @@ model services {
   owned_by_uuid             String?   @db.Uuid
   managed_by_uuid           String?   @db.Uuid
   business_criticality      String?   @db.VarChar(50)
-  rel_lifecycle_status_uuid String?   @db.Uuid
+  rel_status_uuid           String?   @db.Uuid
   version                   String?   @db.VarChar(50)
   operational               String?   @db.VarChar(50)
   legal_regulatory          String?   @db.VarChar(50)
@@ -65,10 +65,10 @@ model services {
   cab              groups?            @relation("ServiceCAB", fields: [cab_uuid], references: [uuid])
   parent           services?          @relation("ServiceParent", fields: [parent_uuid], references: [uuid])
   children         services[]         @relation("ServiceParent")
-  lifecycle_status workflow_statuses? @relation("ServiceLifecycle", fields: [rel_lifecycle_status_uuid], references: [uuid])
+  status           workflow_statuses? @relation("ServiceLifecycle", fields: [rel_status_uuid], references: [uuid])
   service_offerings service_offerings[]
 
-  @@index([rel_lifecycle_status_uuid])
+  @@index([rel_status_uuid])
   @@schema("data")
   @@map("services")
 }
@@ -85,21 +85,21 @@ model service_offerings {
   currency                  String?   @db.VarChar(3)
   service_uuid              String    @db.Uuid
   operator_entity_uuid      String    @db.Uuid
-  rel_lifecycle_status_uuid String?   @db.Uuid
+  rel_status_uuid           String?   @db.Uuid
   created_at                DateTime  @default(now()) @db.Timestamptz(6)
   updated_at                DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
 
   // Relations
   service          services           @relation(fields: [service_uuid], references: [uuid], onDelete: Cascade)
   operator_entity  entities           @relation("ServiceOfferingOperator", fields: [operator_entity_uuid], references: [uuid], onDelete: Cascade)
-  lifecycle_status workflow_statuses? @relation("ServiceOfferingLifecycle", fields: [rel_lifecycle_status_uuid], references: [uuid])
+  status           workflow_statuses? @relation("ServiceOfferingLifecycle", fields: [rel_status_uuid], references: [uuid])
   
   // Reverse relations
   subscriptions    service_offering_subscriptions[]
   sla_commitments  sla_commitments[]
   ci_scope         rel_service_offerings_cis[]
 
-  @@index([rel_lifecycle_status_uuid])
+  @@index([rel_status_uuid])
   @@schema("data")
   @@map("service_offerings")
 }
