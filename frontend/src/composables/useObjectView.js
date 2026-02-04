@@ -80,9 +80,9 @@ export function useObjectView(options) {
     return ['ci_types', 'ticket_types', 'tickets', 'configuration_items'].includes(objectType.value)
   })
 
-  // Check if should show related tickets tab (for persons in edit mode)
+  // Check if should show related tickets tab (for persons in edit or view mode)
   const hasRelatedTickets = computed(() => {
-    return objectType.value === 'persons' && mode.value === 'edit'
+    return objectType.value === 'persons' && (mode.value === 'edit' || mode.value === 'view')
   })
 
   // Get display name for header
