@@ -200,6 +200,21 @@ async function seedObjectSetup() {
     { object_type: 'problem', metadata: 'IMPACT', code: 'POTENTIAL', icon: 'pi-info-circle', color: 'info', display_order: 3 },
 
     // ========================================
+    // SERVICE - Business Criticality
+    // ========================================
+    { object_type: 'service', metadata: 'BUSINESS_CRITICALITY', code: 'CRITICAL', icon: 'pi-exclamation-circle', color: 'danger', font_weight: 'bold', display_order: 1 },
+    { object_type: 'service', metadata: 'BUSINESS_CRITICALITY', code: 'HIGH', icon: 'pi-exclamation-triangle', color: 'warning', display_order: 2 },
+    { object_type: 'service', metadata: 'BUSINESS_CRITICALITY', code: 'MEDIUM', icon: 'pi-info-circle', color: 'info', display_order: 3 },
+    { object_type: 'service', metadata: 'BUSINESS_CRITICALITY', code: 'LOW', icon: 'pi-minus-circle', color: 'secondary', display_order: 4 },
+
+    // SERVICE - Impact Levels (for operational, legal, reputational, financial)
+    { object_type: 'service', metadata: 'IMPACT_LEVEL', code: 'CRITICAL', icon: 'pi-exclamation-circle', color: 'danger', font_weight: 'bold', display_order: 1 },
+    { object_type: 'service', metadata: 'IMPACT_LEVEL', code: 'HIGH', icon: 'pi-exclamation-triangle', color: 'warning', display_order: 2 },
+    { object_type: 'service', metadata: 'IMPACT_LEVEL', code: 'MEDIUM', icon: 'pi-info-circle', color: 'info', display_order: 3 },
+    { object_type: 'service', metadata: 'IMPACT_LEVEL', code: 'LOW', icon: 'pi-minus-circle', color: 'secondary', display_order: 4 },
+    { object_type: 'service', metadata: 'IMPACT_LEVEL', code: 'NONE', icon: 'pi-minus', color: 'secondary', display_order: 5 },
+
+    // ========================================
     // KNOWLEDGE - Categories (from 13_knowledge_articles_setup.sql)
     // ========================================
     { object_type: 'knowledge', metadata: 'CATEGORY', code: 'MODE_OPERATOIRE', icon: 'pi-list', display_order: 1 },
@@ -552,6 +567,21 @@ async function seedObjectSetupTranslations() {
     'knowledge|BUSINESS_SCOPE|OPTIONAL_ENHANCEMENT': { fr: 'Optional Enhancement', en: 'Optional Enhancement', es: 'Mejora opcional', pt: 'Melhoria opcional' },
     'knowledge|BUSINESS_SCOPE|TRAINING': { fr: 'Training & Onboarding', en: 'Training & Onboarding', es: 'Formación e incorporación', pt: 'Treinamento e integração' },
     'knowledge|BUSINESS_SCOPE|LEGACY_MAINTENANCE': { fr: 'Legacy System Maintenance', en: 'Legacy System Maintenance', es: 'Mantenimiento de sistemas legacy', pt: 'Manutenção de sistemas legados' },
+
+    // ========================================
+    // SERVICE - Business Criticality
+    // ========================================
+    'service|BUSINESS_CRITICALITY|CRITICAL': { fr: 'Critique', en: 'Critical', es: 'Crítico', pt: 'Crítico' },
+    'service|BUSINESS_CRITICALITY|HIGH': { fr: 'Élevée', en: 'High', es: 'Alta', pt: 'Alta' },
+    'service|BUSINESS_CRITICALITY|MEDIUM': { fr: 'Moyenne', en: 'Medium', es: 'Media', pt: 'Média' },
+    'service|BUSINESS_CRITICALITY|LOW': { fr: 'Faible', en: 'Low', es: 'Baja', pt: 'Baixa' },
+
+    // SERVICE - Impact Levels
+    'service|IMPACT_LEVEL|CRITICAL': { fr: 'Critique', en: 'Critical', es: 'Crítico', pt: 'Crítico' },
+    'service|IMPACT_LEVEL|HIGH': { fr: 'Élevé', en: 'High', es: 'Alto', pt: 'Alto' },
+    'service|IMPACT_LEVEL|MEDIUM': { fr: 'Moyen', en: 'Medium', es: 'Medio', pt: 'Médio' },
+    'service|IMPACT_LEVEL|LOW': { fr: 'Faible', en: 'Low', es: 'Bajo', pt: 'Baixo' },
+    'service|IMPACT_LEVEL|NONE': { fr: 'Aucun', en: 'None', es: 'Ninguno', pt: 'Nenhum' },
   };
 
   // Get all object_setup records to get their UUIDs

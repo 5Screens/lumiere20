@@ -212,6 +212,7 @@
             >
               <TicketRowSummary v-if="isTickets" :data="data" />
               <CiRowSummary v-else-if="isConfigurationItems" :data="data" />
+              <ServiceRowSummary v-else-if="isServices" :data="data" />
             </div>
           </template>
         </Column>
@@ -801,6 +802,7 @@ import InlineRelationEditor from '@/components/form/InlineRelationEditor.vue'
 // Row summary components
 import TicketRowSummary from '@/components/crud/TicketRowSummary.vue'
 import CiRowSummary from '@/components/crud/CiRowSummary.vue'
+import ServiceRowSummary from '@/components/crud/ServiceRowSummary.vue'
 
 // Pickers
 import {
@@ -1776,11 +1778,14 @@ const isConfigurationItems = computed(() => props.objectType === 'configuration_
 // Check if current object type is tickets
 const isTickets = computed(() => props.objectType === 'tickets')
 
+// Check if current object type is services
+const isServices = computed(() => props.objectType === 'services')
+
 // Check if current object type is persons (for row actions menu)
 const isPersons = computed(() => props.objectType === 'persons')
 
 // Check if current object type has a summary column
-const hasSummaryColumn = computed(() => isTickets.value || isConfigurationItems.value)
+const hasSummaryColumn = computed(() => isTickets.value || isConfigurationItems.value || isServices.value)
 
 // Row actions menu items for persons
 const rowActionsMenuItems = computed(() => [

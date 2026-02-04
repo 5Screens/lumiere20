@@ -16,6 +16,7 @@ export default {
     tasks: 'Tasks',
     changes: 'Changes',
     knowledge: 'Knowledge Base',
+    services: 'Services',
     
     // Sprint Center items
     sprintTasks: 'Tasks',
@@ -324,6 +325,27 @@ export default {
       updated: 'Entity updated successfully',
       deleted: 'Entity deleted successfully',
       deletedMultiple: '{count} entities deleted successfully'
+    }
+  },
+  services: {
+    title: 'Services',
+    name: 'Name',
+    description: 'Description',
+    businessCriticality: 'Business Criticality',
+    version: 'Version',
+    owningEntity: 'Owning Entity',
+    ownedBy: 'Owned By',
+    managedBy: 'Managed By',
+    cab: 'CAB (Change Advisory Board)',
+    operational: 'Operational Impact',
+    legalRegulatory: 'Legal/Regulatory Impact',
+    reputational: 'Reputational Impact',
+    financial: 'Financial Impact',
+    messages: {
+      created: 'Service created successfully',
+      updated: 'Service updated successfully',
+      deleted: 'Service deleted successfully',
+      deletedMultiple: '{count} services deleted successfully'
     }
   },
   locations: {

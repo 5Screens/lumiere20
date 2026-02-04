@@ -206,6 +206,11 @@ const menuItems = computed(() => [
         label: t('menu.knowledge') || 'Knowledge',
         icon: 'pi pi-book',
         command: () => openTab('knowledge', 'Knowledge', 'menu.knowledge', 'pi pi-book', 'tickets', 'ObjectsCrud', null, 'KNOWLEDGE')
+      },
+      {
+        label: t('menu.services') || 'Services',
+        icon: 'pi pi-sitemap',
+        command: () => openTab('services', 'Services', 'menu.services', 'pi pi-sitemap', 'services', 'ObjectsCrud')
       }
     ]
   },

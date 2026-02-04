@@ -118,6 +118,16 @@ async function seedObjectMetadata() {
       display_field: 'label',
       secondary_field: 'code',
     },
+    {
+      code: 'services',
+      label_key: 'services.title',
+      icon: 'pi-sitemap',
+      api_endpoint: '/api/v1/services',
+      default_sort_field: 'updated_at',
+      default_sort_order: -1,
+      display_field: 'name',
+      secondary_field: 'version',
+    },
   ];
 
   // Define fields for each object type
@@ -283,6 +293,25 @@ async function seedObjectMetadata() {
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 3, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11, default_visible: true },
+    ],
+    services: [
+      { field_name: 'name', label_key: 'services.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
+      { field_name: 'description', label_key: 'services.description', field_type: 'textarea', min_width: '20rem', display_order: 2, default_visible: true },
+      { field_name: 'rel_lifecycle_status_uuid', label_key: 'workflow.status', field_type: 'workflow_status', show_in_table: true, default_visible: true, min_width: '10rem', display_order: 3 },
+      { field_name: 'business_criticality', label_key: 'services.businessCriticality', field_type: 'select', min_width: '10rem', display_order: 4, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=BUSINESS_CRITICALITY' },
+      { field_name: 'version', label_key: 'services.version', field_type: 'text', min_width: '8rem', display_order: 5, default_visible: true },
+      { field_name: 'owning_entity_uuid', label_key: 'services.owningEntity', field_type: 'relation', relation_object: 'entities', relation_display: 'name', min_width: '14rem', display_order: 6, default_visible: true },
+      { field_name: 'owned_by_uuid', label_key: 'services.ownedBy', field_type: 'relation', relation_object: 'persons', relation_display: 'last_name', min_width: '14rem', display_order: 7, default_visible: true },
+      { field_name: 'managed_by_uuid', label_key: 'services.managedBy', field_type: 'relation', relation_object: 'persons', relation_display: 'last_name', min_width: '14rem', display_order: 8, default_visible: true },
+      { field_name: 'cab_uuid', label_key: 'services.cab', field_type: 'relation', relation_object: 'groups', relation_display: 'group_name', min_width: '14rem', display_order: 9, show_in_table: false, default_visible: true },
+      { field_name: 'parent_uuid', label_key: 'common.parent', field_type: 'relation', relation_object: 'services', relation_display: 'name', min_width: '14rem', display_order: 10, show_in_table: false, default_visible: true },
+      { field_name: 'operational', label_key: 'services.operational', field_type: 'select', min_width: '10rem', display_order: 11, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=IMPACT_LEVEL' },
+      { field_name: 'legal_regulatory', label_key: 'services.legalRegulatory', field_type: 'select', min_width: '10rem', display_order: 12, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=IMPACT_LEVEL' },
+      { field_name: 'reputational', label_key: 'services.reputational', field_type: 'select', min_width: '10rem', display_order: 13, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=IMPACT_LEVEL' },
+      { field_name: 'financial', label_key: 'services.financial', field_type: 'select', min_width: '10rem', display_order: 14, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=IMPACT_LEVEL' },
+      { field_name: 'comments', label_key: 'common.comments', field_type: 'textarea', min_width: '20rem', display_order: 15, show_in_table: false, default_visible: true },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
     ],
   };
 

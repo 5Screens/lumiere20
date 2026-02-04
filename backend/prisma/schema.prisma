@@ -30,6 +30,7 @@ model configuration_items {
   instances            configuration_items[] @relation("CiModel")
   status               workflow_statuses?    @relation(fields: [rel_status_uuid], references: [uuid])
   tickets              tickets[]
+  service_offering_scope rel_service_offerings_cis[]
 
   @@index([ci_type])
   @@index([rel_status_uuid])
@@ -38,59 +39,205 @@ model configuration_items {
 }
 
 model services {
-  uuid                 String    @id @default(uuid()) @db.Uuid
-  name                 String    @db.VarChar(255)
-  description          String?   @db.Text
-  owning_entity_uuid   String?   @db.Uuid
-  owned_by_uuid        String?   @db.Uuid
-  managed_by_uuid      String?   @db.Uuid
-  business_criticality String?   @db.VarChar(50)
-  lifecycle_status     String?   @db.VarChar(50)
-  version              String?   @db.VarChar(50)
-  operational          String?   @db.VarChar(50)
-  legal_regulatory     String?   @db.VarChar(50)
-  reputational         String?   @db.VarChar(50)
-  financial            String?   @db.VarChar(50)
-  comments             String?   @db.Text
-  cab_uuid             String?   @db.Uuid
-  parent_uuid          String?   @db.Uuid
-  created_at           DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at           DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  uuid                      String    @id @default(uuid()) @db.Uuid
+  name                      String    @db.VarChar(255)
+  description               String?   @db.Text
+  owning_entity_uuid        String?   @db.Uuid
+  owned_by_uuid             String?   @db.Uuid
+  managed_by_uuid           String?   @db.Uuid
+  business_criticality      String?   @db.VarChar(50)
+  rel_lifecycle_status_uuid String?   @db.Uuid
+  version                   String?   @db.VarChar(50)
+  operational               String?   @db.VarChar(50)
+  legal_regulatory          String?   @db.VarChar(50)
+  reputational              String?   @db.VarChar(50)
+  financial                 String?   @db.VarChar(50)
+  comments                  String?   @db.Text
+  cab_uuid                  String?   @db.Uuid
+  parent_uuid               String?   @db.Uuid
+  created_at                DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
 
   // Relations
-  owning_entity   entities? @relation("ServiceOwningEntity", fields: [owning_entity_uuid], references: [uuid])
-  owned_by        persons?  @relation("ServiceOwnedBy", fields: [owned_by_uuid], references: [uuid])
-  managed_by      persons?  @relation("ServiceManagedBy", fields: [managed_by_uuid], references: [uuid])
-  cab             groups?   @relation("ServiceCAB", fields: [cab_uuid], references: [uuid])
-  parent          services? @relation("ServiceParent", fields: [parent_uuid], references: [uuid])
-  children        services[] @relation("ServiceParent")
+  owning_entity    entities?          @relation("ServiceOwningEntity", fields: [owning_entity_uuid], references: [uuid])
+  owned_by         persons?           @relation("ServiceOwnedBy", fields: [owned_by_uuid], references: [uuid])
+  managed_by       persons?           @relation("ServiceManagedBy", fields: [managed_by_uuid], references: [uuid])
+  cab              groups?            @relation("ServiceCAB", fields: [cab_uuid], references: [uuid])
+  parent           services?          @relation("ServiceParent", fields: [parent_uuid], references: [uuid])
+  children         services[]         @relation("ServiceParent")
+  lifecycle_status workflow_statuses? @relation("ServiceLifecycle", fields: [rel_lifecycle_status_uuid], references: [uuid])
   service_offerings service_offerings[]
 
+  @@index([rel_lifecycle_status_uuid])
   @@schema("data")
   @@map("services")
 }
 
 model service_offerings {
-  uuid                  String    @id @default(uuid()) @db.Uuid
-  name                  String    @db.VarChar(255)
-  description           String?   @db.Text
-  start_date            DateTime  @default(now()) @db.Date
-  end_date              DateTime? @db.Date
-  business_criticality  String?   @db.VarChar(50)
-  environment           String?   @db.VarChar(100)
-  price_model           String?   @db.VarChar(100)
-  currency              String?   @db.VarChar(3)
-  service_uuid          String    @db.Uuid
-  operator_entity_uuid  String    @db.Uuid
-  created_at            DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at            DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  uuid                      String    @id @default(uuid()) @db.Uuid
+  name                      String    @db.VarChar(255)
+  description               String?   @db.Text
+  start_date                DateTime  @default(now()) @db.Date
+  end_date                  DateTime? @db.Date
+  business_criticality      String?   @db.VarChar(50)
+  environment               String?   @db.VarChar(100)
+  price_model               String?   @db.VarChar(100)
+  currency                  String?   @db.VarChar(3)
+  service_uuid              String    @db.Uuid
+  operator_entity_uuid      String    @db.Uuid
+  rel_lifecycle_status_uuid String?   @db.Uuid
+  created_at                DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
 
   // Relations
-  service         services @relation(fields: [service_uuid], references: [uuid], onDelete: Cascade)
-  operator_entity entities @relation("ServiceOfferingOperator", fields: [operator_entity_uuid], references: [uuid], onDelete: Cascade)
+  service          services           @relation(fields: [service_uuid], references: [uuid], onDelete: Cascade)
+  operator_entity  entities           @relation("ServiceOfferingOperator", fields: [operator_entity_uuid], references: [uuid], onDelete: Cascade)
+  lifecycle_status workflow_statuses? @relation("ServiceOfferingLifecycle", fields: [rel_lifecycle_status_uuid], references: [uuid])
+  
+  // Reverse relations
+  subscriptions    service_offering_subscriptions[]
+  sla_commitments  sla_commitments[]
+  ci_scope         rel_service_offerings_cis[]
 
+  @@index([rel_lifecycle_status_uuid])
   @@schema("data")
   @@map("service_offerings")
+}
+
+// User Sets - Define sets of users based on criteria
+model user_sets {
+  uuid        String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  criteria    Json     @db.JsonB  // JSON criteria for filtering users (e.g., {"role": "manager", "language": "fr", "ref_location_uuid": "...", "room": {"$exists": true}})
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Reverse relations
+  subscriptions service_offering_subscriptions[]
+
+  @@schema("data")
+  @@map("user_sets")
+}
+
+// Calendars - Define time schedules (working hours, holidays, etc.)
+model calendars {
+  uuid           String   @id @default(uuid()) @db.Uuid
+  name           String   @db.VarChar(255)
+  description    String?  @db.Text
+  timezone       String   @db.VarChar(100)  // e.g., 'Europe/Paris', 'UTC'
+  parent_uuid    String?  @db.Uuid          // Reference to parent calendar (e.g., CEST for SUPPORT_WORKING_HOURS)
+  schedule       Json     @db.JsonB         // Weekly schedule: {"monday": [{"start": "09:00", "end": "18:00"}], ...}
+  holidays       Json?    @db.JsonB         // List of holidays: [{"date": "2026-01-01", "name": "New Year"}, ...]
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  parent   calendars?  @relation("CalendarParent", fields: [parent_uuid], references: [uuid])
+  children calendars[] @relation("CalendarParent")
+  
+  // Reverse relations
+  sla_definitions sla_definitions[]
+
+  @@schema("data")
+  @@map("calendars")
+}
+
+// SLA Definitions - Define SLA templates with targets
+model sla_definitions {
+  uuid                String   @id @default(uuid()) @db.Uuid
+  name                String   @db.VarChar(255)
+  description         String?  @db.Text
+  metric_type         String   @db.VarChar(50)   // 'resolution_time', 'response_time', 'availability', etc.
+  priority_code       String?  @db.VarChar(50)   // P1, P2, P3, P4 or null for all priorities
+  target_value        Float                      // Target value (e.g., 2 for 2 hours, 99.9 for 99.9% availability)
+  target_unit         String   @db.VarChar(20)   // 'hours', 'minutes', 'days', 'percent'
+  target_percentage   Float    @default(100)     // Percentage of cases that must meet the target (e.g., 80 for 80%)
+  rel_calendar_uuid   String   @db.Uuid          // Calendar to use for time calculations
+  is_active           Boolean  @default(true)
+  created_at          DateTime @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  calendar calendars @relation(fields: [rel_calendar_uuid], references: [uuid])
+  
+  // Reverse relations
+  commitments sla_commitments[]
+
+  @@schema("data")
+  @@map("sla_definitions")
+}
+
+// SLA Commitments - Link SLA definitions to service offerings
+model sla_commitments {
+  uuid                     String    @id @default(uuid()) @db.Uuid
+  rel_service_offering_uuid String   @db.Uuid
+  rel_sla_definition_uuid  String    @db.Uuid
+  start_date               DateTime  @default(now()) @db.Date
+  end_date                 DateTime? @db.Date
+  is_active                Boolean   @default(true)
+  created_at               DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  service_offering service_offerings @relation(fields: [rel_service_offering_uuid], references: [uuid], onDelete: Cascade)
+  sla_definition   sla_definitions   @relation(fields: [rel_sla_definition_uuid], references: [uuid], onDelete: Cascade)
+
+  @@unique([rel_service_offering_uuid, rel_sla_definition_uuid])
+  @@schema("data")
+  @@map("sla_commitments")
+}
+
+// Service Offering Subscriptions - Link offerings to user_sets, locations, entities, groups
+model service_offering_subscriptions {
+  uuid                      String    @id @default(uuid()) @db.Uuid
+  rel_service_offering_uuid String    @db.Uuid
+  subscriber_type           String    @db.VarChar(50)  // 'user_set', 'location', 'entity', 'group'
+  rel_user_set_uuid         String?   @db.Uuid
+  rel_location_uuid         String?   @db.Uuid
+  rel_entity_uuid           String?   @db.Uuid
+  rel_group_uuid            String?   @db.Uuid
+  start_date                DateTime  @default(now()) @db.Date
+  end_date                  DateTime? @db.Date
+  is_active                 Boolean   @default(true)
+  created_at                DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  service_offering service_offerings @relation(fields: [rel_service_offering_uuid], references: [uuid], onDelete: Cascade)
+  user_set         user_sets?        @relation(fields: [rel_user_set_uuid], references: [uuid], onDelete: Cascade)
+  location         locations?        @relation(fields: [rel_location_uuid], references: [uuid], onDelete: Cascade)
+  entity           entities?         @relation(fields: [rel_entity_uuid], references: [uuid], onDelete: Cascade)
+  group            groups?           @relation(fields: [rel_group_uuid], references: [uuid], onDelete: Cascade)
+
+  @@index([rel_service_offering_uuid])
+  @@index([subscriber_type])
+  @@schema("data")
+  @@map("service_offering_subscriptions")
+}
+
+// Relation: Service Offerings to Configuration Items (CI scope)
+model rel_service_offerings_cis {
+  uuid                      String    @id @default(uuid()) @db.Uuid
+  rel_service_offering_uuid String    @db.Uuid
+  rel_ci_uuid               String    @db.Uuid
+  relationship_type         String?   @db.VarChar(50)  // 'includes', 'supports', 'requires', etc.
+  start_date                DateTime  @default(now()) @db.Date
+  end_date                  DateTime? @db.Date
+  created_at                DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  service_offering service_offerings   @relation(fields: [rel_service_offering_uuid], references: [uuid], onDelete: Cascade)
+  configuration_item configuration_items @relation(fields: [rel_ci_uuid], references: [uuid], onDelete: Cascade)
+
+  @@unique([rel_service_offering_uuid, rel_ci_uuid])
+  @@index([rel_service_offering_uuid])
+  @@index([rel_ci_uuid])
+  @@schema("data")
+  @@map("rel_service_offerings_cis")
 }
 
 // ============================================
@@ -317,6 +464,7 @@ model entities {
   locations_primary     locations[] @relation("LocationPrimaryEntity")
   rel_entities_locations rel_entities_locations[]
   rel_persons_entities  rel_persons_entities[]
+  service_offering_subscriptions service_offering_subscriptions[]
 
   @@schema("configuration")
   @@map("entities")
@@ -359,6 +507,7 @@ model locations {
   persons             persons[]      @relation("PersonLocation")
   entities_headquarters entities[]   @relation("EntityHeadquarters")
   rel_entities_locations rel_entities_locations[]
+  service_offering_subscriptions service_offering_subscriptions[]
 
   @@schema("configuration")
   @@map("locations")
@@ -447,6 +596,7 @@ model groups {
   locations_field_service locations[] @relation("LocationFieldServiceGroup")
   rel_persons_groups     rel_persons_groups[]
   tickets_assigned       tickets[] @relation("TicketAssignedGroup")
+  service_offering_subscriptions service_offering_subscriptions[]
 
   @@schema("configuration")
   @@map("groups")
@@ -841,6 +991,8 @@ model workflow_statuses {
   transition_sources workflow_transition_sources[]
   configuration_items configuration_items[]
   tickets          tickets[]
+  services         services[]                    @relation("ServiceLifecycle")
+  service_offerings service_offerings[]          @relation("ServiceOfferingLifecycle")
 
   @@index([rel_workflow_uuid])
   @@index([rel_category_uuid])
