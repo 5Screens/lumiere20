@@ -21,6 +21,7 @@ const { seedTicketTypeFields } = require('./seeds/ticket-type-fields.seed');
 const { seedTaskWorkflow } = require('./seeds/task-workflow.seed');
 const { seedItsmWorkflows } = require('./seeds/itsm-workflows.seed');
 const { seedAgileWorkflows } = require('./seeds/agile-workflows.seed');
+const { seedServiceWorkflows } = require('./seeds/service-workflows.seed');
 const { seedObjectSetup } = require('./seeds/object-setup');
 const { seedSymptoms } = require('./seeds/symptoms.seed');
 const { seedTicketTypeFieldsTranslations } = require('./seeds/ticket-type-fields-translations.seed');
@@ -97,22 +98,27 @@ async function main() {
     console.log('');
 
     // 13. Agile Workflows (User Story, Project, Sprint, Epic, Defect)
-    console.log('[13/14] Seeding Agile workflows...');
+    console.log('[13/17] Seeding Agile workflows...');
     await seedAgileWorkflows(prisma);
     console.log('');
 
-    // 14. Object Setup (business objects metadata configuration)
-    console.log('[14/16] Seeding object setup...');
+    // 14. Service Workflows (Service, Service Offering)
+    console.log('[14/17] Seeding Service workflows...');
+    await seedServiceWorkflows(prisma);
+    console.log('');
+
+    // 15. Object Setup (business objects metadata configuration)
+    console.log('[15/17] Seeding object setup...');
     await seedObjectSetup();
     console.log('');
 
-    // 15. Symptoms (for incident classification)
-    console.log('[15/16] Seeding symptoms...');
+    // 16. Symptoms (for incident classification)
+    console.log('[16/17] Seeding symptoms...');
     await seedSymptoms();
     console.log('');
 
-    // 16. Default Admin (last, after all dependencies)
-    console.log('[16/16] Seeding default admin...');
+    // 17. Default Admin (last, after all dependencies)
+    console.log('[17/17] Seeding default admin...');
     await seedDefaultAdmin();
     console.log('');
 
