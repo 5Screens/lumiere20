@@ -368,6 +368,7 @@ export default {
     editOffering: 'Modifier l\'offre',
     noOfferings: 'Aucune offre de service',
     noOfferingsDescription: 'Ce service n\'a pas encore d\'offres. Créez-en une pour commencer.',
+    status: 'Statut',
     messages: {
       created: 'Offre de service créée avec succès',
       updated: 'Offre de service mise à jour avec succès',

@@ -112,13 +112,13 @@ const getById = async (uuid) => {
       },
       subscriptions: {
         include: {
-          subscriber_entity: true,
+          entity: true,
         },
       },
       sla_commitments: true,
       ci_scope: {
         include: {
-          ci: true,
+          configuration_item: true,
         },
       },
     },

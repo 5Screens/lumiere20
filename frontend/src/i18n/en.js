@@ -365,6 +365,7 @@ export default {
     editOffering: 'Edit Offering',
     noOfferings: 'No service offerings',
     noOfferingsDescription: 'This service has no offerings yet. Create one to get started.',
+    status: 'Status',
     messages: {
       created: 'Service offering created successfully',
       updated: 'Service offering updated successfully',

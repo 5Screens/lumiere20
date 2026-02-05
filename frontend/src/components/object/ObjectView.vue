@@ -193,6 +193,10 @@ const props = defineProps({
   tabId: {
     type: String,
     default: null
+  },
+  defaultValues: {
+    type: Object,
+    default: () => ({})
   }
 })
 
@@ -231,7 +235,8 @@ const {
   objectId: toRef(props, 'objectId'),
   mode: toRef(props, 'mode'),
   ciTypeUuid: toRef(props, 'ciTypeUuid'),
-  ticketTypeCode: toRef(props, 'ticketTypeCode')
+  ticketTypeCode: toRef(props, 'ticketTypeCode'),
+  defaultValues: toRef(props, 'defaultValues')
 })
 
 // Deep clone utility for snapshot

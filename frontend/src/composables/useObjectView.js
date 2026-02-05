@@ -23,7 +23,7 @@ import { useTabsStore } from '@/stores/tabsStore'
  * @param {Ref<string>} options.ticketTypeCode - Ticket type code for create mode (tickets)
  */
 export function useObjectView(options) {
-  const { objectType, objectId, mode, ciTypeUuid, ticketTypeCode } = options
+  const { objectType, objectId, mode, ciTypeUuid, ticketTypeCode, defaultValues } = options
 
   // Composables
   const toast = useToast()
@@ -192,6 +192,11 @@ export function useObjectView(options) {
     // Set writer_uuid to current user for tickets
     if (objectType.value === 'tickets' && authStore.user?.uuid) {
       defaults.writer_uuid = authStore.user.uuid
+    }
+    
+    // Apply defaultValues passed from parent component
+    if (defaultValues?.value) {
+      Object.assign(defaults, defaultValues.value)
     }
     
     return defaults
