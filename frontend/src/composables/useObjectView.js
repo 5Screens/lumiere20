@@ -85,6 +85,12 @@ export function useObjectView(options) {
     return objectType.value === 'persons' && (mode.value === 'edit' || mode.value === 'view')
   })
 
+  // Get reverse link fields (for displaying related objects in separate tabs)
+  const reverseLinkFields = computed(() => {
+    if (!objectTypeMetadata.value?.fields) return []
+    return objectTypeMetadata.value.fields.filter(f => f.field_type === 'reverse_link' && f.show_in_detail)
+  })
+
   // Get display name for header
   const getDisplayName = () => {
     if (!item.value) return ''
@@ -564,6 +570,7 @@ export function useObjectView(options) {
     isConfigurationItems,
     hasExtendedInfo,
     hasRelatedTickets,
+    reverseLinkFields,
     
     // Methods
     getDisplayName,

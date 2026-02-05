@@ -344,11 +344,35 @@ export default {
     legalRegulatory: 'Impact légal/réglementaire',
     reputational: 'Impact réputationnel',
     financial: 'Impact financier',
+    serviceOfferings: 'Offres de service',
     messages: {
       created: 'Service créé avec succès',
       updated: 'Service mis à jour avec succès',
       deleted: 'Service supprimé avec succès',
       deletedMultiple: '{count} services supprimés avec succès'
+    }
+  },
+  serviceOfferings: {
+    title: 'Offres de service',
+    name: 'Nom',
+    description: 'Description',
+    environment: 'Environnement',
+    businessCriticality: 'Criticité métier',
+    startDate: 'Date de début',
+    endDate: 'Date de fin',
+    priceModel: 'Modèle de tarification',
+    currency: 'Devise',
+    service: 'Service',
+    operatorEntity: 'Entité opératrice',
+    addNew: 'Ajouter une offre',
+    editOffering: 'Modifier l\'offre',
+    noOfferings: 'Aucune offre de service',
+    noOfferingsDescription: 'Ce service n\'a pas encore d\'offres. Créez-en une pour commencer.',
+    messages: {
+      created: 'Offre de service créée avec succès',
+      updated: 'Offre de service mise à jour avec succès',
+      deleted: 'Offre de service supprimée avec succès',
+      deletedMultiple: '{count} offres de service supprimées avec succès'
     }
   },
   locations: {

@@ -341,11 +341,35 @@ export default {
     legalRegulatory: 'Legal/Regulatory Impact',
     reputational: 'Reputational Impact',
     financial: 'Financial Impact',
+    serviceOfferings: 'Service Offerings',
     messages: {
       created: 'Service created successfully',
       updated: 'Service updated successfully',
       deleted: 'Service deleted successfully',
       deletedMultiple: '{count} services deleted successfully'
+    }
+  },
+  serviceOfferings: {
+    title: 'Service Offerings',
+    name: 'Name',
+    description: 'Description',
+    environment: 'Environment',
+    businessCriticality: 'Business Criticality',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    priceModel: 'Price Model',
+    currency: 'Currency',
+    service: 'Service',
+    operatorEntity: 'Operator Entity',
+    addNew: 'Add Offering',
+    editOffering: 'Edit Offering',
+    noOfferings: 'No service offerings',
+    noOfferingsDescription: 'This service has no offerings yet. Create one to get started.',
+    messages: {
+      created: 'Service offering created successfully',
+      updated: 'Service offering updated successfully',
+      deleted: 'Service offering deleted successfully',
+      deletedMultiple: '{count} service offerings deleted successfully'
     }
   },
   locations: {

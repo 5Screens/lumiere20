@@ -128,6 +128,16 @@ async function seedObjectMetadata() {
       display_field: 'name',
       secondary_field: 'version',
     },
+    {
+      code: 'service_offerings',
+      label_key: 'serviceOfferings.title',
+      icon: 'pi-box',
+      api_endpoint: '/api/v1/service-offerings',
+      default_sort_field: 'updated_at',
+      default_sort_order: -1,
+      display_field: 'name',
+      secondary_field: 'environment',
+    },
   ];
 
   // Define fields for each object type
@@ -310,6 +320,23 @@ async function seedObjectMetadata() {
       { field_name: 'reputational', label_key: 'services.reputational', field_type: 'select', min_width: '10rem', display_order: 13, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=IMPACT_LEVEL' },
       { field_name: 'financial', label_key: 'services.financial', field_type: 'select', min_width: '10rem', display_order: 14, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=IMPACT_LEVEL' },
       { field_name: 'comments', label_key: 'common.comments', field_type: 'textarea', min_width: '20rem', display_order: 15, show_in_table: false, default_visible: true },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
+      // Reverse link to service offerings - displayed as a separate tab
+      { field_name: 'service_offerings', label_key: 'services.serviceOfferings', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status,start_date,end_date', relation_filter: 'service_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 50, default_visible: true },
+    ],
+    service_offerings: [
+      { field_name: 'name', label_key: 'serviceOfferings.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
+      { field_name: 'description', label_key: 'serviceOfferings.description', field_type: 'textarea', min_width: '20rem', display_order: 2, default_visible: true },
+      { field_name: 'rel_status_uuid', label_key: 'workflow.status', field_type: 'workflow_status', show_in_table: true, default_visible: true, min_width: '10rem', display_order: 3 },
+      { field_name: 'environment', label_key: 'serviceOfferings.environment', field_type: 'select', min_width: '10rem', display_order: 4, default_visible: true, options_source: '/object-setup/options?object_type=service_offering&metadata=ENVIRONMENT' },
+      { field_name: 'business_criticality', label_key: 'serviceOfferings.businessCriticality', field_type: 'select', min_width: '10rem', display_order: 5, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=BUSINESS_CRITICALITY' },
+      { field_name: 'start_date', label_key: 'serviceOfferings.startDate', field_type: 'date', data_type: 'date', min_width: '10rem', display_order: 6, default_visible: true },
+      { field_name: 'end_date', label_key: 'serviceOfferings.endDate', field_type: 'date', data_type: 'date', min_width: '10rem', display_order: 7, default_visible: true },
+      { field_name: 'price_model', label_key: 'serviceOfferings.priceModel', field_type: 'select', min_width: '10rem', display_order: 8, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service_offering&metadata=PRICE_MODEL' },
+      { field_name: 'currency', label_key: 'serviceOfferings.currency', field_type: 'select', min_width: '6rem', display_order: 9, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service_offering&metadata=CURRENCY' },
+      { field_name: 'service_uuid', label_key: 'serviceOfferings.service', field_type: 'relation', relation_object: 'services', relation_display: 'name', is_required: true, min_width: '14rem', display_order: 10, default_visible: true },
+      { field_name: 'operator_entity_uuid', label_key: 'serviceOfferings.operatorEntity', field_type: 'relation', relation_object: 'entities', relation_display: 'name', is_required: true, min_width: '14rem', display_order: 11, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
     ],

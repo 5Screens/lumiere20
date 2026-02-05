@@ -215,6 +215,29 @@ async function seedObjectSetup() {
     { object_type: 'service', metadata: 'IMPACT_LEVEL', code: 'NONE', icon: 'pi-minus', color: 'secondary', display_order: 5 },
 
     // ========================================
+    // SERVICE OFFERING - Environment
+    // ========================================
+    { object_type: 'service_offering', metadata: 'ENVIRONMENT', code: 'PRODUCTION', icon: 'pi-server', color: 'success', display_order: 1 },
+    { object_type: 'service_offering', metadata: 'ENVIRONMENT', code: 'STAGING', icon: 'pi-clone', color: 'warning', display_order: 2 },
+    { object_type: 'service_offering', metadata: 'ENVIRONMENT', code: 'TEST', icon: 'pi-check-circle', color: 'info', display_order: 3 },
+    { object_type: 'service_offering', metadata: 'ENVIRONMENT', code: 'DEVELOPMENT', icon: 'pi-code', color: 'secondary', display_order: 4 },
+    { object_type: 'service_offering', metadata: 'ENVIRONMENT', code: 'SANDBOX', icon: 'pi-box', color: 'secondary', display_order: 5 },
+
+    // SERVICE OFFERING - Price Model
+    { object_type: 'service_offering', metadata: 'PRICE_MODEL', code: 'FREE', icon: 'pi-gift', color: 'success', display_order: 1 },
+    { object_type: 'service_offering', metadata: 'PRICE_MODEL', code: 'FLAT_RATE', icon: 'pi-money-bill', color: 'info', display_order: 2 },
+    { object_type: 'service_offering', metadata: 'PRICE_MODEL', code: 'PER_USER', icon: 'pi-user', color: 'info', display_order: 3 },
+    { object_type: 'service_offering', metadata: 'PRICE_MODEL', code: 'PER_USAGE', icon: 'pi-chart-bar', color: 'warning', display_order: 4 },
+    { object_type: 'service_offering', metadata: 'PRICE_MODEL', code: 'TIERED', icon: 'pi-list', color: 'info', display_order: 5 },
+    { object_type: 'service_offering', metadata: 'PRICE_MODEL', code: 'CUSTOM', icon: 'pi-cog', color: 'secondary', display_order: 6 },
+
+    // SERVICE OFFERING - Currency
+    { object_type: 'service_offering', metadata: 'CURRENCY', code: 'EUR', icon: 'pi-euro', display_order: 1 },
+    { object_type: 'service_offering', metadata: 'CURRENCY', code: 'USD', icon: 'pi-dollar', display_order: 2 },
+    { object_type: 'service_offering', metadata: 'CURRENCY', code: 'GBP', icon: 'pi-pound', display_order: 3 },
+    { object_type: 'service_offering', metadata: 'CURRENCY', code: 'CHF', icon: 'pi-money-bill', display_order: 4 },
+
+    // ========================================
     // KNOWLEDGE - Categories (from 13_knowledge_articles_setup.sql)
     // ========================================
     { object_type: 'knowledge', metadata: 'CATEGORY', code: 'MODE_OPERATOIRE', icon: 'pi-list', display_order: 1 },
@@ -582,6 +605,29 @@ async function seedObjectSetupTranslations() {
     'service|IMPACT_LEVEL|MEDIUM': { fr: 'Moyen', en: 'Medium', es: 'Medio', pt: 'Médio' },
     'service|IMPACT_LEVEL|LOW': { fr: 'Faible', en: 'Low', es: 'Bajo', pt: 'Baixo' },
     'service|IMPACT_LEVEL|NONE': { fr: 'Aucun', en: 'None', es: 'Ninguno', pt: 'Nenhum' },
+
+    // ========================================
+    // SERVICE OFFERING - Environment
+    // ========================================
+    'service_offering|ENVIRONMENT|PRODUCTION': { fr: 'Production', en: 'Production', es: 'Producción', pt: 'Produção' },
+    'service_offering|ENVIRONMENT|STAGING': { fr: 'Pré-production', en: 'Staging', es: 'Preproducción', pt: 'Pré-produção' },
+    'service_offering|ENVIRONMENT|TEST': { fr: 'Test', en: 'Test', es: 'Prueba', pt: 'Teste' },
+    'service_offering|ENVIRONMENT|DEVELOPMENT': { fr: 'Développement', en: 'Development', es: 'Desarrollo', pt: 'Desenvolvimento' },
+    'service_offering|ENVIRONMENT|SANDBOX': { fr: 'Bac à sable', en: 'Sandbox', es: 'Sandbox', pt: 'Sandbox' },
+
+    // SERVICE OFFERING - Price Model
+    'service_offering|PRICE_MODEL|FREE': { fr: 'Gratuit', en: 'Free', es: 'Gratis', pt: 'Gratuito' },
+    'service_offering|PRICE_MODEL|FLAT_RATE': { fr: 'Forfait', en: 'Flat Rate', es: 'Tarifa plana', pt: 'Taxa fixa' },
+    'service_offering|PRICE_MODEL|PER_USER': { fr: 'Par utilisateur', en: 'Per User', es: 'Por usuario', pt: 'Por usuário' },
+    'service_offering|PRICE_MODEL|PER_USAGE': { fr: 'À l\'usage', en: 'Per Usage', es: 'Por uso', pt: 'Por uso' },
+    'service_offering|PRICE_MODEL|TIERED': { fr: 'Par paliers', en: 'Tiered', es: 'Por niveles', pt: 'Por níveis' },
+    'service_offering|PRICE_MODEL|CUSTOM': { fr: 'Personnalisé', en: 'Custom', es: 'Personalizado', pt: 'Personalizado' },
+
+    // SERVICE OFFERING - Currency
+    'service_offering|CURRENCY|EUR': { fr: 'Euro (€)', en: 'Euro (€)', es: 'Euro (€)', pt: 'Euro (€)' },
+    'service_offering|CURRENCY|USD': { fr: 'Dollar US ($)', en: 'US Dollar ($)', es: 'Dólar US ($)', pt: 'Dólar US ($)' },
+    'service_offering|CURRENCY|GBP': { fr: 'Livre Sterling (£)', en: 'British Pound (£)', es: 'Libra esterlina (£)', pt: 'Libra esterlina (£)' },
+    'service_offering|CURRENCY|CHF': { fr: 'Franc Suisse (CHF)', en: 'Swiss Franc (CHF)', es: 'Franco suizo (CHF)', pt: 'Franco suíço (CHF)' },
   };
 
   // Get all object_setup records to get their UUIDs

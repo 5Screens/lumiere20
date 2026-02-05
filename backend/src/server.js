@@ -66,6 +66,7 @@ const portalsRoutes = require('./api/v1/portals/routes');
 const globalSearchRoutes = require('./api/v1/global-search/routes');
 const ocrDocumentsRoutes = require('./api/v1/ocr_documents/routes');
 const servicesRoutes = require('./api/v1/services/routes');
+const serviceOfferingsRoutes = require('./api/v1/service_offerings/routes');
 
 // Public routes (no authentication required)
 app.use('/api/v1/auth', authRoutes);
@@ -98,6 +99,7 @@ app.use('/api/v1/portals', authenticate, portalsRoutes);
 app.use('/api/v1/global-search', authenticate, globalSearchRoutes);
 app.use('/api/v1/ocr-documents', authenticate, ocrDocumentsRoutes);
 app.use('/api/v1/services', authenticate, servicesRoutes);
+app.use('/api/v1/service-offerings', authenticate, serviceOfferingsRoutes);
 
 // Health check
 app.get('/', (req, res) => {

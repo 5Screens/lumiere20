@@ -50,6 +50,10 @@
             <i class="pi pi-ticket mr-2" />
             {{ $t('persons.relatedTickets') }}
           </Tab>
+          <Tab v-for="rlField in reverseLinkFields" :key="rlField.field_name" :value="rlField.field_name">
+            <i class="pi pi-list mr-2" />
+            {{ $t(rlField.label_key) }}
+          </Tab>
         </TabList>
         
         <TabPanels class="flex-1 min-h-0 overflow-hidden" :pt="{ root: { class: 'p-0' } }">
@@ -83,6 +87,21 @@
             <RelatedTicketsList 
               v-if="item?.uuid"
               :personUuid="item.uuid"
+            />
+          </TabPanel>
+
+          <!-- Reverse Link Tabs (e.g., service offerings for services) -->
+          <TabPanel 
+            v-for="rlField in reverseLinkFields" 
+            :key="rlField.field_name" 
+            :value="rlField.field_name" 
+            class="h-full overflow-auto"
+          >
+            <ReverseLinkTable 
+              v-if="item?.uuid"
+              :field="rlField"
+              :parentUuid="item.uuid"
+              :parentType="objectType"
             />
           </TabPanel>
         </TabPanels>
@@ -146,6 +165,7 @@ import Dialog from 'primevue/dialog'
 import ObjectGeneralInfo from './ObjectGeneralInfo.vue'
 import ObjectExtendedInfo from './ObjectExtendedInfo.vue'
 import RelatedTicketsList from './RelatedTicketsList.vue'
+import ReverseLinkTable from './ReverseLinkTable.vue'
 import UuidDisplay from '@/components/form/UuidDisplay.vue'
 
 // Props
@@ -201,6 +221,7 @@ const {
   availableTransitions,
   hasExtendedInfo,
   hasRelatedTickets,
+  reverseLinkFields,
   getDisplayName,
   saveItem,
   applyTransition,
