@@ -129,8 +129,15 @@ const getById = async (uuid) => {
  * Create new service offering
  */
 const create = async (data) => {
+  // Convert date strings to Date objects for Prisma
+  const processedData = {
+    ...data,
+    start_date: data.start_date ? new Date(data.start_date) : null,
+    end_date: data.end_date ? new Date(data.end_date) : null,
+  };
+
   return prisma.service_offerings.create({
-    data,
+    data: processedData,
     include: {
       service: true,
       operator_entity: true,
@@ -147,10 +154,19 @@ const create = async (data) => {
  * Update service offering
  */
 const update = async (uuid, data) => {
+  // Convert date strings to Date objects for Prisma
+  const processedData = { ...data };
+  if (data.start_date !== undefined) {
+    processedData.start_date = data.start_date ? new Date(data.start_date) : null;
+  }
+  if (data.end_date !== undefined) {
+    processedData.end_date = data.end_date ? new Date(data.end_date) : null;
+  }
+
   try {
     return await prisma.service_offerings.update({
       where: { uuid },
-      data,
+      data: processedData,
       include: {
         service: true,
         operator_entity: true,
