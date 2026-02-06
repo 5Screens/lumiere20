@@ -152,7 +152,11 @@ export default {
     scrollForMore: 'Défiler pour plus de résultats',
     noData: 'Aucune donnée',
     confirm: 'Confirmer',
-    confirmDelete: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
+    confirmDelete: 'Confirmer la suppression',
+    confirmDeleteMessage: 'Êtes-vous sûr de vouloir supprimer "{name}" ?',
+    deleted: 'Supprimé avec succès',
+    deleteFailed: 'Échec de la suppression',
+    add: 'Ajouter',
     confirmDeleteMultiple: 'Êtes-vous sûr de vouloir supprimer les {count} éléments sélectionnés ?',
     yes: 'Oui',
     no: 'Non',
@@ -858,11 +862,39 @@ export default {
     title: 'Symptômes',
     code: 'Code',
     label: 'Libellé',
+    service: 'Service',
     messages: {
       created: 'Symptôme créé avec succès',
       updated: 'Symptôme mis à jour avec succès',
       deleted: 'Symptôme supprimé avec succès',
       deletedMultiple: '{count} symptômes supprimés avec succès'
+    }
+  },
+  causes: {
+    title: 'Causes',
+    code: 'Code',
+    label: 'Libellé',
+    service: 'Service',
+    messages: {
+      created: 'Cause créée avec succès',
+      updated: 'Cause mise à jour avec succès',
+      deleted: 'Cause supprimée avec succès',
+      deletedMultiple: '{count} causes supprimées avec succès'
+    }
+  },
+  requestCatalogItems: {
+    title: 'Articles du catalogue',
+    name: 'Nom',
+    description: 'Description',
+    service: 'Service',
+    icon: 'Icône',
+    displayOrder: 'Ordre d\'affichage',
+    formFields: 'Champs du formulaire',
+    messages: {
+      created: 'Article créé avec succès',
+      updated: 'Article mis à jour avec succès',
+      deleted: 'Article supprimé avec succès',
+      deletedMultiple: '{count} articles supprimés avec succès'
     }
   },
   objectSetup: {

@@ -149,7 +149,11 @@ export default {
     nRowsSelected:'{count} rows selected',
     noData: 'No data',
     confirm: 'Confirm',
-    confirmDelete: 'Are you sure you want to delete this item?',
+    confirmDelete: 'Confirm Delete',
+    confirmDeleteMessage: 'Are you sure you want to delete "{name}"?',
+    deleted: 'Deleted successfully',
+    deleteFailed: 'Failed to delete',
+    add: 'Add',
     confirmDeleteMultiple: 'Are you sure you want to delete the {count} selected items?',
     yes: 'Yes',
     no: 'No',
@@ -855,11 +859,39 @@ export default {
     title: 'Symptoms',
     code: 'Code',
     label: 'Label',
+    service: 'Service',
     messages: {
       created: 'Symptom created successfully',
       updated: 'Symptom updated successfully',
       deleted: 'Symptom deleted successfully',
       deletedMultiple: '{count} symptoms deleted successfully'
+    }
+  },
+  causes: {
+    title: 'Causes',
+    code: 'Code',
+    label: 'Label',
+    service: 'Service',
+    messages: {
+      created: 'Cause created successfully',
+      updated: 'Cause updated successfully',
+      deleted: 'Cause deleted successfully',
+      deletedMultiple: '{count} causes deleted successfully'
+    }
+  },
+  requestCatalogItems: {
+    title: 'Request Catalog Items',
+    name: 'Name',
+    description: 'Description',
+    service: 'Service',
+    icon: 'Icon',
+    displayOrder: 'Display Order',
+    formFields: 'Form Fields',
+    messages: {
+      created: 'Catalog item created successfully',
+      updated: 'Catalog item updated successfully',
+      deleted: 'Catalog item deleted successfully',
+      deletedMultiple: '{count} catalog items deleted successfully'
     }
   },
   objectSetup: {

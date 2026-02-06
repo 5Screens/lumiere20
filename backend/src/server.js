@@ -67,6 +67,8 @@ const globalSearchRoutes = require('./api/v1/global-search/routes');
 const ocrDocumentsRoutes = require('./api/v1/ocr_documents/routes');
 const servicesRoutes = require('./api/v1/services/routes');
 const serviceOfferingsRoutes = require('./api/v1/service_offerings/routes');
+const causesRoutes = require('./api/v1/causes/routes');
+const requestCatalogItemsRoutes = require('./api/v1/request_catalog_items/routes');
 
 // Public routes (no authentication required)
 app.use('/api/v1/auth', authRoutes);
@@ -100,6 +102,8 @@ app.use('/api/v1/global-search', authenticate, globalSearchRoutes);
 app.use('/api/v1/ocr-documents', authenticate, ocrDocumentsRoutes);
 app.use('/api/v1/services', authenticate, servicesRoutes);
 app.use('/api/v1/service-offerings', authenticate, serviceOfferingsRoutes);
+app.use('/api/v1/causes', authenticate, causesRoutes);
+app.use('/api/v1/request-catalog-items', authenticate, requestCatalogItemsRoutes);
 
 // Health check
 app.get('/', (req, res) => {

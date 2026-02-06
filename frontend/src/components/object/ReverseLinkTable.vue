@@ -6,7 +6,7 @@
         {{ t(field.label_key) }}
       </h3>
       <Button 
-        :label="t('serviceOfferings.addNew')" 
+        :label="t('common.add')" 
         icon="pi pi-plus" 
         size="small"
         @click="openCreateDrawer"
@@ -21,8 +21,7 @@
     <!-- Empty state -->
     <div v-else-if="items.length === 0" class="text-center py-8">
       <i class="pi pi-inbox text-4xl text-surface-400 mb-4" />
-      <p class="text-surface-500 dark:text-surface-400">{{ t('serviceOfferings.noOfferings') }}</p>
-      <p class="text-sm text-surface-400 dark:text-surface-500 mt-2">{{ t('serviceOfferings.noOfferingsDescription') }}</p>
+      <p class="text-surface-500 dark:text-surface-400">{{ t('common.noData') }}</p>
     </div>
 
     <!-- Data table -->
@@ -123,7 +122,8 @@ import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import ConfirmDialog from 'primevue/confirmdialog'
 import ObjectView from './ObjectView.vue'
-import serviceOfferingsService from '@/services/serviceOfferingsService'
+import api from '@/services/api'
+import { getService } from '@/services'
 
 const props = defineProps({
   field: {
@@ -154,10 +154,21 @@ const drawerMode = ref('create')
 const editItemId = ref(null)
 const objectViewRef = ref(null)
 
-// Default values for new items (pre-fill service_uuid)
-const defaultValues = computed(() => ({
-  service_uuid: props.parentUuid
-}))
+// Default values for new items (pre-fill the foreign key based on relation_filter)
+const defaultValues = computed(() => {
+  const filterField = props.field.relation_filter
+  if (filterField) {
+    return { [filterField]: props.parentUuid }
+  }
+  return {}
+})
+
+// Get the object type label key prefix (e.g., 'serviceOfferings', 'symptoms', 'causes')
+const objectLabelPrefix = computed(() => {
+  const objectType = props.field.relation_object
+  // Convert snake_case to camelCase for i18n keys
+  return objectType.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+})
 
 // Parse display columns from relation_display
 const displayColumns = computed(() => {
@@ -165,25 +176,48 @@ const displayColumns = computed(() => {
   return displayFields.map(field => {
     const fieldName = field.trim()
     const isDate = ['start_date', 'end_date', 'created_at', 'updated_at'].includes(fieldName)
+    // Try object-specific key first, then common key, then fallback to field name
+    const camelFieldName = fieldName.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
     return {
       field: fieldName,
-      header: t(`serviceOfferings.${fieldName.replace(/_([a-z])/g, (_, c) => c.toUpperCase())}`) || fieldName,
+      header: t(`${objectLabelPrefix.value}.${camelFieldName}`, t(`common.${camelFieldName}`, fieldName)),
       type: isDate ? 'date' : 'text',
       minWidth: isDate ? '120px' : '150px'
     }
   })
 })
 
-// Load items
+// Get the API endpoint for the relation object
+const getApiEndpoint = () => {
+  const objectType = props.field.relation_object
+  // Convert object type to API endpoint (e.g., 'service_offerings' -> '/service-offerings')
+  return '/' + objectType.replace(/_/g, '-')
+}
+
+// Load items using the filter field
 const loadItems = async () => {
   if (!props.parentUuid) return
   
   loading.value = true
   try {
-    items.value = await serviceOfferingsService.getByServiceUuid(props.parentUuid)
+    const endpoint = getApiEndpoint()
+    const filterField = props.field.relation_filter
+    
+    // Use search endpoint with filter
+    const response = await api.post(`${endpoint}/search`, {
+      filters: {
+        [filterField]: { value: props.parentUuid, matchMode: 'equals' }
+      },
+      first: 0,
+      rows: 1000,
+      sortField: 'created_at',
+      sortOrder: -1
+    })
+    
+    items.value = response.data?.data || response.data || []
   } catch (error) {
-    console.error('Error loading service offerings:', error)
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load service offerings', life: 3000 })
+    console.error(`Error loading ${props.field.relation_object}:`, error)
+    toast.add({ severity: 'error', summary: 'Error', detail: `Failed to load ${props.field.relation_object}`, life: 3000 })
   } finally {
     loading.value = false
   }
@@ -246,19 +280,21 @@ const onDrawerSaved = async () => {
 
 // Delete item
 const confirmDelete = (item) => {
+  const displayName = item.name || item.label || item.code || item.uuid
   confirm.require({
-    message: `Are you sure you want to delete "${item.name}"?`,
-    header: 'Confirm Delete',
+    message: t('common.confirmDeleteMessage', { name: displayName }),
+    header: t('common.confirmDelete'),
     icon: 'pi pi-exclamation-triangle',
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
-        await serviceOfferingsService.delete(item.uuid)
-        toast.add({ severity: 'success', summary: t('common.success'), detail: t('serviceOfferings.messages.deleted'), life: 3000 })
+        const endpoint = getApiEndpoint()
+        await api.delete(`${endpoint}/${item.uuid}`)
+        toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.deleted'), life: 3000 })
         await loadItems()
       } catch (error) {
-        console.error('Error deleting service offering:', error)
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete service offering', life: 3000 })
+        console.error(`Error deleting ${props.field.relation_object}:`, error)
+        toast.add({ severity: 'error', summary: 'Error', detail: t('common.deleteFailed'), life: 3000 })
       }
     }
   })
