@@ -345,6 +345,9 @@ export default {
     reputational: 'Impact réputationnel',
     financial: 'Impact financier',
     serviceOfferings: 'Offres de service',
+    requestCatalogItems: 'Articles du catalogue',
+    symptoms: 'Symptômes',
+    causes: 'Causes',
     messages: {
       created: 'Service créé avec succès',
       updated: 'Service mis à jour avec succès',
