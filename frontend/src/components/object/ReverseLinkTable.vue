@@ -180,7 +180,7 @@ const displayColumns = computed(() => {
     const camelFieldName = fieldName.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
     return {
       field: fieldName,
-      header: t(`${objectLabelPrefix.value}.${camelFieldName}`, t(`common.${camelFieldName}`, fieldName)),
+      header: t(`${objectLabelPrefix.value}.${camelFieldName}`),
       type: isDate ? 'date' : 'text',
       minWidth: isDate ? '120px' : '150px'
     }
