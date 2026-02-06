@@ -29,9 +29,8 @@ model configuration_items {
   model                      configuration_items?            @relation("CiModel", fields: [rel_model_uuid], references: [uuid])
   instances                  configuration_items[]           @relation("CiModel")
   status                     workflow_statuses?              @relation(fields: [rel_status_uuid], references: [uuid])
-  tickets                    tickets[]
-  service_offering_scope     rel_service_offerings_cis[]
-  request_catalog_item_scope rel_request_catalog_items_cis[]
+  tickets                tickets[]
+  service_offering_scope rel_service_offerings_cis[]
 
   @@index([ci_type])
   @@index([rel_status_uuid])
@@ -67,7 +66,10 @@ model services {
   parent            services?           @relation("ServiceParent", fields: [parent_uuid], references: [uuid])
   children          services[]          @relation("ServiceParent")
   status            workflow_statuses?  @relation("ServiceLifecycle", fields: [rel_status_uuid], references: [uuid])
-  service_offerings service_offerings[]
+  service_offerings    service_offerings[]
+  request_catalog_items request_catalog_items[]
+  symptoms              symptoms[]
+  causes                causes[]
 
   @@index([rel_status_uuid])
   @@map("services")
@@ -96,54 +98,33 @@ model service_offerings {
   status          workflow_statuses? @relation("ServiceOfferingLifecycle", fields: [rel_status_uuid], references: [uuid])
 
   // Reverse relations
-  subscriptions         service_offering_subscriptions[]
-  sla_commitments       sla_commitments[]
-  ci_scope              rel_service_offerings_cis[]
-  request_catalog_items request_catalog_items[]
+  subscriptions   service_offering_subscriptions[]
+  sla_commitments sla_commitments[]
+  ci_scope        rel_service_offerings_cis[]
 
   @@index([rel_status_uuid])
   @@map("service_offerings")
   @@schema("data")
 }
 
-// Request Catalog Items - Elements that users can request from service offerings
+// Request Catalog Items - Elements that users can request from services
 model request_catalog_items {
-  uuid                      String   @id @default(uuid()) @db.Uuid
-  name                      String   @db.VarChar(255)
-  description               String?  @db.Text
-  rel_service_offering_uuid String   @db.Uuid
-  icon                      String?  @db.VarChar(50)
-  form_fields               Json?    @db.JsonB // Dynamic form fields definition for user input
-  is_active                 Boolean  @default(true)
-  display_order             Int      @default(0)
-  created_at                DateTime @default(now()) @db.Timestamptz(6)
-  updated_at                DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  uuid             String   @id @default(uuid()) @db.Uuid
+  name             String   @db.VarChar(255)
+  description      String?  @db.Text
+  rel_service_uuid String?  @db.Uuid
+  icon             String?  @db.VarChar(50)
+  form_fields      Json?    @db.JsonB // Dynamic form fields definition for user input
+  is_active        Boolean  @default(true)
+  display_order    Int      @default(0)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
   // Relations
-  service_offering service_offerings               @relation(fields: [rel_service_offering_uuid], references: [uuid], onDelete: Cascade)
-  ci_scope         rel_request_catalog_items_cis[]
+  service services? @relation(fields: [rel_service_uuid], references: [uuid], onDelete: Cascade)
 
-  @@index([rel_service_offering_uuid])
+  @@index([rel_service_uuid])
   @@map("request_catalog_items")
-  @@schema("data")
-}
-
-// Relation: Request Catalog Items to Configuration Items (N:N)
-model rel_request_catalog_items_cis {
-  uuid                          String   @id @default(uuid()) @db.Uuid
-  rel_request_catalog_item_uuid String   @db.Uuid
-  rel_ci_uuid                   String   @db.Uuid
-  created_at                    DateTime @default(now()) @db.Timestamptz(6)
-  updated_at                    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
-
-  // Relations
-  request_catalog_item request_catalog_items @relation(fields: [rel_request_catalog_item_uuid], references: [uuid], onDelete: Cascade)
-  configuration_item   configuration_items   @relation(fields: [rel_ci_uuid], references: [uuid], onDelete: Cascade)
-
-  @@unique([rel_request_catalog_item_uuid, rel_ci_uuid])
-  @@index([rel_request_catalog_item_uuid])
-  @@index([rel_ci_uuid])
-  @@map("rel_request_catalog_items_cis")
   @@schema("data")
 }
 
@@ -470,26 +451,36 @@ model ticket_status {
 }
 
 model symptoms {
-  uuid       String   @id @default(uuid()) @db.Uuid
-  code       String   @unique @db.VarChar(50)
-  label      String   @db.VarChar(255) // Default label (translations in translated_fields)
-  is_active  Boolean  @default(true)
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  uuid             String   @id @default(uuid()) @db.Uuid
+  code             String   @unique @db.VarChar(50)
+  label            String   @db.VarChar(255) // Default label (translations in translated_fields)
+  rel_service_uuid String?  @db.Uuid
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
+  // Relations
+  service services? @relation(fields: [rel_service_uuid], references: [uuid], onDelete: Cascade)
+
+  @@index([rel_service_uuid])
   @@map("symptoms")
   @@schema("configuration")
 }
 
 // Cause Catalog - Root causes for incidents/problems
 model causes {
-  uuid       String   @id @default(uuid()) @db.Uuid
-  code       String   @unique @db.VarChar(50)
-  label      String   @db.VarChar(255) // Default label (translations in translated_fields)
-  is_active  Boolean  @default(true)
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  uuid             String   @id @default(uuid()) @db.Uuid
+  code             String   @unique @db.VarChar(50)
+  label            String   @db.VarChar(255) // Default label (translations in translated_fields)
+  rel_service_uuid String?  @db.Uuid
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
+  // Relations
+  service services? @relation(fields: [rel_service_uuid], references: [uuid], onDelete: Cascade)
+
+  @@index([rel_service_uuid])
   @@map("causes")
   @@schema("configuration")
 }
