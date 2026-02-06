@@ -107,8 +107,28 @@ const getByUuid = async (uuid, locale = 'en') => {
  * Create new request catalog item
  */
 const create = async (data) => {
+  const { rel_service_uuid, _translations, ...itemData } = data;
+  
+  // Remove null values and set defaults
+  const cleanedData = Object.fromEntries(
+    Object.entries(itemData).filter(([_, v]) => v !== null && v !== undefined)
+  );
+  
+  // Ensure display_order has a default value
+  if (cleanedData.display_order === undefined) {
+    cleanedData.display_order = 0;
+  }
+  
+  // Build create data with proper Prisma relation syntax
+  const createData = {
+    ...cleanedData,
+    ...(rel_service_uuid && {
+      service: { connect: { uuid: rel_service_uuid } }
+    })
+  };
+
   const item = await prisma.request_catalog_items.create({
-    data,
+    data: createData,
   });
 
   return item;
@@ -119,9 +139,21 @@ const create = async (data) => {
  */
 const update = async (uuid, data) => {
   try {
+    const { rel_service_uuid, _translations, ...itemData } = data;
+    
+    // Build update data with proper Prisma relation syntax
+    const updateData = {
+      ...itemData,
+      ...(rel_service_uuid !== undefined && {
+        service: rel_service_uuid 
+          ? { connect: { uuid: rel_service_uuid } }
+          : { disconnect: true }
+      })
+    };
+
     const item = await prisma.request_catalog_items.update({
       where: { uuid },
-      data,
+      data: updateData,
     });
 
     return item;

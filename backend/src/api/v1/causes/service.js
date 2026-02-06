@@ -199,10 +199,18 @@ const getByUuid = async (uuid, locale = 'en') => {
  * Create new cause
  */
 const create = async (data) => {
-  const { _translations, ...causeData } = data;
+  const { _translations, rel_service_uuid, ...causeData } = data;
+  
+  // Build create data with proper Prisma relation syntax
+  const createData = {
+    ...causeData,
+    ...(rel_service_uuid && {
+      service: { connect: { uuid: rel_service_uuid } }
+    })
+  };
   
   const cause = await prisma.causes.create({
-    data: causeData,
+    data: createData,
   });
 
   // Save translations if provided
@@ -233,12 +241,22 @@ const create = async (data) => {
  * Update cause
  */
 const update = async (uuid, data) => {
-  const { _translations, ...causeData } = data;
+  const { _translations, rel_service_uuid, ...causeData } = data;
+  
+  // Build update data with proper Prisma relation syntax
+  const updateData = {
+    ...causeData,
+    ...(rel_service_uuid !== undefined && {
+      service: rel_service_uuid 
+        ? { connect: { uuid: rel_service_uuid } }
+        : { disconnect: true }
+    })
+  };
   
   try {
     const cause = await prisma.causes.update({
       where: { uuid },
-      data: causeData,
+      data: updateData,
     });
 
     // Update translations if provided
