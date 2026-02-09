@@ -30,8 +30,11 @@
       :value="items" 
       :loading="loading"
       stripedRows
+      rowHover
       size="small"
-      class="p-datatable-sm"
+      class="p-datatable-sm cursor-pointer-rows"
+      @row-click="onRowClick"
+      @contextmenu.prevent
     >
       <!-- Dynamic columns based on relation_display -->
       <Column 
@@ -58,29 +61,6 @@
         </template>
       </Column>
 
-      <!-- Actions column -->
-      <Column header="" style="width: 100px" frozen alignFrozen="right">
-        <template #body="{ data }">
-          <div class="flex gap-1 justify-end">
-            <Button 
-              icon="pi pi-pencil" 
-              text 
-              rounded 
-              size="small"
-              severity="secondary"
-              @click="openEditDrawer(data)"
-            />
-            <Button 
-              icon="pi pi-trash" 
-              text 
-              rounded 
-              size="small"
-              severity="danger"
-              @click="confirmDelete(data)"
-            />
-          </div>
-        </template>
-      </Column>
     </DataTable>
 
     <!-- Create/Edit Drawer with ObjectView -->
@@ -264,6 +244,10 @@ const openEditDrawer = (item) => {
   drawerVisible.value = true
 }
 
+const onRowClick = (event) => {
+  openEditDrawer(event.data)
+}
+
 // Drawer event handlers
 const onDrawerHide = () => {
   objectViewRef.value = null
@@ -309,5 +293,9 @@ watch(() => props.parentUuid, () => {
 <style scoped>
 .reverse-link-table {
   padding: 1rem;
+}
+
+.cursor-pointer-rows :deep(tr) {
+  cursor: pointer;
 }
 </style>
