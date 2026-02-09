@@ -399,6 +399,7 @@ export default {
     commitments: 'Commitments',
     slaDefinition: 'SLA Definition',
     serviceOffering: 'Service Offering',
+    targetPercentage: 'Target Percentage',
     messages: {
       created: 'SLA created successfully',
       updated: 'SLA updated successfully',
@@ -838,7 +839,8 @@ export default {
       persons: 'Persons',
       locations: 'Locations',
       entities: 'Entities',
-      services: 'Services'
+      services: 'Services',
+      service_offerings: 'Service Offerings'
     }
   },
   audit: {
@@ -916,6 +918,7 @@ export default {
     code: 'Code',
     label: 'Label',
     service: 'Service',
+    isActive: 'Active',
     messages: {
       created: 'Symptom created successfully',
       updated: 'Symptom updated successfully',
@@ -928,6 +931,7 @@ export default {
     code: 'Code',
     label: 'Label',
     service: 'Service',
+    isActive: 'Active',
     messages: {
       created: 'Cause created successfully',
       updated: 'Cause updated successfully',
@@ -943,6 +947,7 @@ export default {
     icon: 'Icon',
     displayOrder: 'Display Order',
     formFields: 'Form Fields',
+    isActive: 'Active',
     messages: {
       created: 'Catalog item created successfully',
       updated: 'Catalog item updated successfully',
