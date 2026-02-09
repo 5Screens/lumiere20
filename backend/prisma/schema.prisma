@@ -178,7 +178,6 @@ model slas {
   priority_code     String?  @db.VarChar(50) // P1, P2, P3, P4 or null for all priorities
   target_value      Float // Target value (e.g., 2 for 2 hours, 99.9 for 99.9% availability)
   target_unit       String   @db.VarChar(20) // 'hours', 'minutes', 'days', 'percent'
-  target_percentage Float    @default(100) // Percentage of cases that must meet the target (e.g., 80 for 80%)
   rel_calendar_uuid String   @db.Uuid // Calendar to use for time calculations
   is_active         Boolean  @default(true)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
@@ -199,6 +198,7 @@ model commitments {
   uuid                      String    @id @default(uuid()) @db.Uuid
   rel_service_offering_uuid String    @db.Uuid
   rel_sla_definition_uuid   String    @db.Uuid
+  target_percentage         Float     @default(100) // Percentage of cases that must meet the target (e.g., 80 for 80%)
   start_date                DateTime  @default(now()) @db.Date
   end_date                  DateTime? @db.Date
   is_active                 Boolean   @default(true)

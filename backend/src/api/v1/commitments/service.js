@@ -24,7 +24,7 @@ const search = async (params) => {
       take: limit,
       include: {
         sla_definition: {
-          select: { uuid: true, name: true, metric_type: true, target_value: true, target_unit: true, target_percentage: true },
+          select: { uuid: true, name: true, metric_type: true, target_value: true, target_unit: true },
         },
         service_offering: {
           select: { uuid: true, name: true },
@@ -57,7 +57,7 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'created_at', sortOrde
       orderBy,
       include: {
         sla_definition: {
-          select: { uuid: true, name: true, metric_type: true, target_value: true, target_unit: true, target_percentage: true },
+          select: { uuid: true, name: true, metric_type: true, target_value: true, target_unit: true },
         },
         service_offering: {
           select: { uuid: true, name: true },
@@ -112,7 +112,7 @@ const create = async (data) => {
     data: createData,
     include: {
       sla_definition: {
-        select: { uuid: true, name: true, metric_type: true, target_value: true, target_unit: true, target_percentage: true },
+        select: { uuid: true, name: true, metric_type: true, target_value: true, target_unit: true },
       },
       service_offering: {
         select: { uuid: true, name: true },
@@ -147,7 +147,7 @@ const update = async (uuid, data) => {
       data: updateData,
       include: {
         sla_definition: {
-          select: { uuid: true, name: true, metric_type: true, target_value: true, target_unit: true, target_percentage: true },
+          select: { uuid: true, name: true, metric_type: true, target_value: true, target_unit: true },
         },
         service_offering: {
           select: { uuid: true, name: true },

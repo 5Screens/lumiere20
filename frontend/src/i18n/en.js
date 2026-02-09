@@ -76,6 +76,7 @@ export default {
     groups: 'Groups',
     
     slas: 'SLAs',
+    calendars: 'Calendars',
     
     // Admin items
     languages: 'Languages',
@@ -393,7 +394,6 @@ export default {
     priorityCode: 'Priority',
     targetValue: 'Target Value',
     targetUnit: 'Target Unit',
-    targetPercentage: 'Target Percentage',
     calendar: 'Calendar',
     commitments: 'Commitments',
     slaDefinition: 'SLA Definition',
@@ -405,10 +405,26 @@ export default {
       deletedMultiple: '{count} SLAs deleted successfully'
     }
   },
+  calendars: {
+    title: 'Calendars',
+    name: 'Name',
+    description: 'Description',
+    timezone: 'Timezone',
+    parent: 'Parent Calendar',
+    schedule: 'Schedule',
+    holidays: 'Holidays',
+    messages: {
+      created: 'Calendar created successfully',
+      updated: 'Calendar updated successfully',
+      deleted: 'Calendar deleted successfully',
+      deletedMultiple: '{count} calendars deleted successfully'
+    }
+  },
   commitments: {
     title: 'Commitments',
     sla: 'SLA',
     serviceOffering: 'Service Offering',
+    targetPercentage: 'Target Percentage',
     startDate: 'Start Date',
     endDate: 'End Date',
     slaDefinition: 'SLA Definition',

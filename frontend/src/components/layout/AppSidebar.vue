@@ -426,6 +426,11 @@ const menuItems = computed(() => [
             label: t('menu.ticketTypes') || 'Ticket Types',
             icon: 'pi pi-ticket',
             command: () => openTab('ticket-types', 'Ticket Types', 'menu.ticketTypes', 'pi pi-ticket', 'ticket_types')
+          },
+          {
+            label: t('menu.calendars') || 'Calendars',
+            icon: 'pi pi-calendar',
+            command: () => openTab('calendars', 'Calendars', 'menu.calendars', 'pi pi-calendar', 'calendars', 'ObjectsCrud')
           }
         ]
       }
