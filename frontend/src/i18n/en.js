@@ -75,6 +75,8 @@ export default {
     persons: 'Persons',
     groups: 'Groups',
     
+    slas: 'SLAs',
+    
     // Admin items
     languages: 'Languages',
     metadata: 'Metadata',

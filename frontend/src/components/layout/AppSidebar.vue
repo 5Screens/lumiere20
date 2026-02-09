@@ -340,6 +340,11 @@ const menuItems = computed(() => [
             label: t('menu.knowledgeSetup') || 'Knowledge Setup',
             icon: 'pi pi-book',
             command: () => openTab('knowledge-setup', 'Knowledge Setup', 'menu.knowledgeSetup', 'pi pi-book', 'object_setup', 'ObjectsCrud', null, null, 'knowledge')
+          },
+          {
+            label: t('menu.slas') || 'SLAs',
+            icon: 'pi pi-clock',
+            command: () => openTab('slas', 'SLAs', 'menu.slas', 'pi pi-clock', 'slas', 'ObjectsCrud')
           }
         ]
       },
