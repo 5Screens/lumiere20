@@ -99,7 +99,7 @@ model service_offerings {
 
   // Reverse relations
   subscriptions   service_offering_subscriptions[]
-  sla_commitments sla_commitments[]
+  commitments commitments[]
   ci_scope        rel_service_offerings_cis[]
 
   @@index([rel_status_uuid])
@@ -163,14 +163,14 @@ model calendars {
   children calendars[] @relation("CalendarParent")
 
   // Reverse relations
-  sla_definitions sla_definitions[]
+  slas slas[]
 
   @@map("calendars")
   @@schema("data")
 }
 
 // SLA Definitions - Define SLA templates with targets
-model sla_definitions {
+model slas {
   uuid              String   @id @default(uuid()) @db.Uuid
   name              String   @db.VarChar(255)
   description       String?  @db.Text
@@ -188,14 +188,14 @@ model sla_definitions {
   calendar calendars @relation(fields: [rel_calendar_uuid], references: [uuid])
 
   // Reverse relations
-  commitments sla_commitments[]
+  commitments commitments[]
 
-  @@map("sla_definitions")
+  @@map("slas")
   @@schema("data")
 }
 
 // SLA Commitments - Link SLA definitions to service offerings
-model sla_commitments {
+model commitments {
   uuid                      String    @id @default(uuid()) @db.Uuid
   rel_service_offering_uuid String    @db.Uuid
   rel_sla_definition_uuid   String    @db.Uuid
@@ -207,10 +207,10 @@ model sla_commitments {
 
   // Relations
   service_offering service_offerings @relation(fields: [rel_service_offering_uuid], references: [uuid], onDelete: Cascade)
-  sla_definition   sla_definitions   @relation(fields: [rel_sla_definition_uuid], references: [uuid], onDelete: Cascade)
+  sla_definition   slas   @relation(fields: [rel_sla_definition_uuid], references: [uuid], onDelete: Cascade)
 
   @@unique([rel_service_offering_uuid, rel_sla_definition_uuid])
-  @@map("sla_commitments")
+  @@map("commitments")
   @@schema("data")
 }
 

@@ -115,7 +115,7 @@ const getById = async (uuid) => {
           entity: true,
         },
       },
-      sla_commitments: true,
+      commitments: true,
       ci_scope: {
         include: {
           configuration_item: true,
