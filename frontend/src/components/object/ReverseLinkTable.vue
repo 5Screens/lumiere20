@@ -31,6 +31,7 @@
       :loading="loading"
       stripedRows
       rowHover
+      removableSort
       size="small"
       class="p-datatable-sm cursor-pointer-rows"
       @row-click="onRowClick"
@@ -43,6 +44,7 @@
         :field="col.field" 
         :header="col.header"
         :style="{ minWidth: col.minWidth }"
+        sortable
       >
         <template #body="{ data }">
           <!-- Status column -->
