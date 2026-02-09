@@ -84,6 +84,7 @@
           :options="getFieldOptions(field)" 
           optionLabel="label" 
           optionValue="value" 
+          :placeholder="$t('common.select')"
           :disabled="field.is_readonly || isFieldDisabled(field)"
           fluid
         >
@@ -99,7 +100,7 @@
               />
               <span>{{ getOptionByValue(field, slotProps.value)?.label }}</span>
             </div>
-            <span v-else>{{ slotProps.placeholder }}</span>
+            <span v-else class="text-surface-500">{{ slotProps.placeholder || '\u00A0' }}</span>
           </template>
           <template #option="slotProps">
             <div 
