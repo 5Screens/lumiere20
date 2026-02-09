@@ -61,6 +61,40 @@
         </template>
       </Column>
 
+      <!-- Actions column -->
+      <Column header="" style="width: 120px" frozen alignFrozen="right">
+        <template #body="{ data }">
+          <div class="flex gap-1 justify-end">
+            <Button 
+              icon="pi pi-pencil" 
+              text 
+              rounded 
+              size="small"
+              severity="secondary"
+              v-tooltip.left="t('common.edit')"
+              @click.stop="openEditDrawer(data)"
+            />
+            <Button 
+              icon="pi pi-copy" 
+              text 
+              rounded 
+              size="small"
+              severity="secondary"
+              v-tooltip.left="t('common.duplicate')"
+              @click.stop="duplicateItem(data)"
+            />
+            <Button 
+              icon="pi pi-trash" 
+              text 
+              rounded 
+              size="small"
+              severity="danger"
+              v-tooltip.left="t('common.delete')"
+              @click.stop="confirmDelete(data)"
+            />
+          </div>
+        </template>
+      </Column>
     </DataTable>
 
     <!-- Create/Edit Drawer with ObjectView -->
@@ -83,9 +117,6 @@
         @close="onDrawerClose"
       />
     </Drawer>
-
-    <!-- Delete confirmation -->
-    <ConfirmDialog />
   </div>
 </template>
 
@@ -100,7 +131,6 @@ import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
 import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
-import ConfirmDialog from 'primevue/confirmdialog'
 import ObjectView from './ObjectView.vue'
 import api from '@/services/api'
 import { getService } from '@/services'
@@ -246,6 +276,30 @@ const openEditDrawer = (item) => {
 
 const onRowClick = (event) => {
   openEditDrawer(event.data)
+}
+
+// Duplicate item: fetch full data, strip identifiers, POST a copy
+const duplicateItem = async (item) => {
+  try {
+    const endpoint = getApiEndpoint()
+    const response = await api.get(`${endpoint}/${item.uuid}`)
+    const source = response.data
+
+    // Remove fields that should not be copied
+    const { uuid, created_at, updated_at, ...copyData } = source
+
+    // Suffix code to avoid unique constraint
+    if (copyData.code) {
+      copyData.code = `${copyData.code}_COPY`
+    }
+
+    await api.post(endpoint, copyData)
+    toast.add({ severity: 'success', summary: t('common.success'), detail: t('common.duplicated'), life: 3000 })
+    await loadItems()
+  } catch (error) {
+    console.error(`Error duplicating ${props.field.relation_object}:`, error)
+    toast.add({ severity: 'error', summary: 'Error', detail: t('common.duplicateFailed'), life: 3000 })
+  }
 }
 
 // Drawer event handlers

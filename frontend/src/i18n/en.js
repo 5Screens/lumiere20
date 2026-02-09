@@ -153,6 +153,8 @@ export default {
     confirmDeleteMessage: 'Are you sure you want to delete "{name}"?',
     deleted: 'Deleted successfully',
     deleteFailed: 'Failed to delete',
+    duplicated: 'Duplicated successfully',
+    duplicateFailed: 'Failed to duplicate',
     add: 'Add',
     confirmDeleteMultiple: 'Are you sure you want to delete the {count} selected items?',
     yes: 'Yes',

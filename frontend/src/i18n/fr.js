@@ -156,6 +156,8 @@ export default {
     confirmDeleteMessage: 'Êtes-vous sûr de vouloir supprimer "{name}" ?',
     deleted: 'Supprimé avec succès',
     deleteFailed: 'Échec de la suppression',
+    duplicated: 'Dupliqué avec succès',
+    duplicateFailed: 'Échec de la duplication',
     add: 'Ajouter',
     confirmDeleteMultiple: 'Êtes-vous sûr de vouloir supprimer les {count} éléments sélectionnés ?',
     yes: 'Oui',
