@@ -129,12 +129,23 @@ const getById = async (uuid) => {
  * Create new service offering
  */
 const create = async (data) => {
-  // Convert date strings to Date objects for Prisma
+  // Extract relation UUIDs and date fields, build connect syntax for Prisma
+  const { service_uuid, operator_entity_uuid, rel_status_uuid, start_date, end_date, ...rest } = data;
+
   const processedData = {
-    ...data,
-    start_date: data.start_date ? new Date(data.start_date) : null,
-    end_date: data.end_date ? new Date(data.end_date) : null,
+    ...rest,
+    end_date: end_date ? new Date(end_date) : null,
+    service: { connect: { uuid: service_uuid } },
+    operator_entity: { connect: { uuid: operator_entity_uuid } },
   };
+
+  if (data.start_date) {
+    processedData.start_date = new Date(data.start_date);
+  }
+
+  if (rel_status_uuid) {
+    processedData.status = { connect: { uuid: rel_status_uuid } };
+  }
 
   return prisma.service_offerings.create({
     data: processedData,
@@ -154,13 +165,24 @@ const create = async (data) => {
  * Update service offering
  */
 const update = async (uuid, data) => {
-  // Convert date strings to Date objects for Prisma
-  const processedData = { ...data };
+  // Extract relation UUIDs and build connect syntax for Prisma
+  const { service_uuid, operator_entity_uuid, rel_status_uuid, ...rest } = data;
+  const processedData = { ...rest };
+
   if (data.start_date !== undefined) {
     processedData.start_date = data.start_date ? new Date(data.start_date) : null;
   }
   if (data.end_date !== undefined) {
     processedData.end_date = data.end_date ? new Date(data.end_date) : null;
+  }
+  if (service_uuid !== undefined) {
+    processedData.service = { connect: { uuid: service_uuid } };
+  }
+  if (operator_entity_uuid !== undefined) {
+    processedData.operator_entity = { connect: { uuid: operator_entity_uuid } };
+  }
+  if (rel_status_uuid !== undefined) {
+    processedData.status = rel_status_uuid ? { connect: { uuid: rel_status_uuid } } : { disconnect: true };
   }
 
   try {
