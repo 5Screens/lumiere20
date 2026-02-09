@@ -345,6 +345,11 @@ const menuItems = computed(() => [
             label: t('menu.slas') || 'SLAs',
             icon: 'pi pi-clock',
             command: () => openTab('slas', 'SLAs', 'menu.slas', 'pi pi-clock', 'slas', 'ObjectsCrud')
+          },
+          {
+            label: t('menu.commitments') || 'Commitments',
+            icon: 'pi pi-check-circle',
+            command: () => openTab('commitments', 'Commitments', 'menu.commitments', 'pi pi-check-circle', 'commitments', 'ObjectsCrud')
           }
         ]
       },

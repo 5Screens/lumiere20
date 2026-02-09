@@ -76,6 +76,7 @@ export default {
     groups: 'Groups',
     
     slas: 'SLAs',
+    commitments: 'Commitments',
     calendars: 'Calendars',
     
     // Admin items
