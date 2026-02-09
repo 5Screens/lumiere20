@@ -53,6 +53,11 @@ const search = async (params) => {
   if (filters?.is_active?.value !== undefined) {
     where.is_active = filters.is_active.value;
   }
+
+  // Handle rel_service_uuid filter
+  if (filters?.rel_service_uuid?.value) {
+    where.rel_service_uuid = filters.rel_service_uuid.value;
+  }
   
   // If there's a global search, we need to search in translations too
   if (globalFilter && globalFilter.trim()) {
