@@ -158,6 +158,26 @@ async function seedObjectMetadata() {
       display_field: 'name',
       secondary_field: 'icon',
     },
+    {
+      code: 'slas',
+      label_key: 'slas.title',
+      icon: 'pi-clock',
+      api_endpoint: '/api/v1/slas',
+      default_sort_field: 'name',
+      default_sort_order: 1,
+      display_field: 'name',
+      secondary_field: 'metric_type',
+    },
+    {
+      code: 'commitments',
+      label_key: 'commitments.title',
+      icon: 'pi-check-circle',
+      api_endpoint: '/api/v1/commitments',
+      default_sort_field: 'created_at',
+      default_sort_order: -1,
+      display_field: 'sla_definition',
+      secondary_field: 'is_active',
+    },
   ];
 
   // Define fields for each object type
@@ -366,6 +386,8 @@ async function seedObjectMetadata() {
       { field_name: 'operator_entity_uuid', label_key: 'serviceOfferings.operatorEntity', field_type: 'relation', relation_object: 'entities', relation_display: 'name', is_required: true, min_width: '14rem', display_order: 11, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
+      // Reverse link to commitments
+      { field_name: 'commitments', label_key: 'serviceOfferings.commitments', field_type: 'reverse_link', relation_object: 'commitments', relation_display: 'sla_definition,start_date,end_date,is_active', relation_filter: 'rel_service_offering_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 50, default_visible: true },
     ],
     causes: [
       { field_name: 'code', label_key: 'causes.code', field_type: 'text', is_required: true, min_width: '12rem', display_order: 1, default_visible: true },
@@ -383,6 +405,44 @@ async function seedObjectMetadata() {
       { field_name: 'display_order', label_key: 'requestCatalogItems.displayOrder', field_type: 'number', data_type: 'number', min_width: '8rem', display_order: 5, default_visible: true },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 6, default_visible: true },
       { field_name: 'form_fields', label_key: 'requestCatalogItems.formFields', field_type: 'json', show_in_table: false, min_width: '20rem', display_order: 7, default_visible: true },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10, default_visible: true },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11, default_visible: true },
+    ],
+    slas: [
+      { field_name: 'name', label_key: 'slas.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
+      { field_name: 'description', label_key: 'slas.description', field_type: 'textarea', min_width: '20rem', display_order: 2, default_visible: true },
+      { field_name: 'metric_type', label_key: 'slas.metricType', field_type: 'select', is_required: true, min_width: '12rem', display_order: 3, default_visible: true, options_source: JSON.stringify([
+        { label: 'Resolution Time', value: 'resolution_time' },
+        { label: 'Response Time', value: 'response_time' },
+        { label: 'Availability', value: 'availability' },
+      ])},
+      { field_name: 'priority_code', label_key: 'slas.priorityCode', field_type: 'select', min_width: '10rem', display_order: 4, default_visible: true, options_source: JSON.stringify([
+        { label: 'P1', value: 'P1' },
+        { label: 'P2', value: 'P2' },
+        { label: 'P3', value: 'P3' },
+        { label: 'P4', value: 'P4' },
+      ])},
+      { field_name: 'target_value', label_key: 'slas.targetValue', field_type: 'number', data_type: 'number', is_required: true, min_width: '10rem', display_order: 5, default_visible: true },
+      { field_name: 'target_unit', label_key: 'slas.targetUnit', field_type: 'select', is_required: true, min_width: '10rem', display_order: 6, default_visible: true, options_source: JSON.stringify([
+        { label: 'Hours', value: 'hours' },
+        { label: 'Minutes', value: 'minutes' },
+        { label: 'Days', value: 'days' },
+        { label: 'Percent', value: 'percent' },
+      ])},
+      { field_name: 'target_percentage', label_key: 'slas.targetPercentage', field_type: 'number', data_type: 'number', min_width: '10rem', display_order: 7, default_visible: true },
+      { field_name: 'rel_calendar_uuid', label_key: 'slas.calendar', field_type: 'relation', relation_object: 'calendars', relation_display: 'name', is_required: true, min_width: '14rem', display_order: 8, default_visible: true },
+      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 9, default_visible: true },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
+      // Reverse link to commitments
+      { field_name: 'commitments', label_key: 'slas.commitments', field_type: 'reverse_link', relation_object: 'commitments', relation_display: 'service_offering,start_date,end_date,is_active', relation_filter: 'rel_sla_definition_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 50, default_visible: true },
+    ],
+    commitments: [
+      { field_name: 'rel_sla_definition_uuid', label_key: 'commitments.sla', field_type: 'relation', relation_object: 'slas', relation_display: 'name', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
+      { field_name: 'rel_service_offering_uuid', label_key: 'commitments.serviceOffering', field_type: 'relation', relation_object: 'service_offerings', relation_display: 'name', is_required: true, min_width: '16rem', display_order: 2, default_visible: true, show_in_form: false },
+      { field_name: 'start_date', label_key: 'commitments.startDate', field_type: 'date', data_type: 'date', min_width: '10rem', display_order: 3, default_visible: true },
+      { field_name: 'end_date', label_key: 'commitments.endDate', field_type: 'date', data_type: 'date', min_width: '10rem', display_order: 4, default_visible: true },
+      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 5, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11, default_visible: true },
     ],

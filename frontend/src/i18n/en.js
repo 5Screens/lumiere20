@@ -380,6 +380,41 @@ export default {
       updated: 'Service offering updated successfully',
       deleted: 'Service offering deleted successfully',
       deletedMultiple: '{count} service offerings deleted successfully'
+    },
+    commitments: 'SLA Commitments',
+  },
+  slas: {
+    title: 'SLAs',
+    name: 'Name',
+    description: 'Description',
+    metricType: 'Metric Type',
+    priorityCode: 'Priority',
+    targetValue: 'Target Value',
+    targetUnit: 'Target Unit',
+    targetPercentage: 'Target Percentage',
+    calendar: 'Calendar',
+    commitments: 'Commitments',
+    slaDefinition: 'SLA Definition',
+    serviceOffering: 'Service Offering',
+    messages: {
+      created: 'SLA created successfully',
+      updated: 'SLA updated successfully',
+      deleted: 'SLA deleted successfully',
+      deletedMultiple: '{count} SLAs deleted successfully'
+    }
+  },
+  commitments: {
+    title: 'Commitments',
+    sla: 'SLA',
+    serviceOffering: 'Service Offering',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    slaDefinition: 'SLA Definition',
+    messages: {
+      created: 'Commitment created successfully',
+      updated: 'Commitment updated successfully',
+      deleted: 'Commitment deleted successfully',
+      deletedMultiple: '{count} commitments deleted successfully'
     }
   },
   locations: {

@@ -69,6 +69,8 @@ const servicesRoutes = require('./api/v1/services/routes');
 const serviceOfferingsRoutes = require('./api/v1/service_offerings/routes');
 const causesRoutes = require('./api/v1/causes/routes');
 const requestCatalogItemsRoutes = require('./api/v1/request_catalog_items/routes');
+const slasRoutes = require('./api/v1/slas/routes');
+const commitmentsRoutes = require('./api/v1/commitments/routes');
 
 // Public routes (no authentication required)
 app.use('/api/v1/auth', authRoutes);
@@ -104,6 +106,8 @@ app.use('/api/v1/services', authenticate, servicesRoutes);
 app.use('/api/v1/service-offerings', authenticate, serviceOfferingsRoutes);
 app.use('/api/v1/causes', authenticate, causesRoutes);
 app.use('/api/v1/request-catalog-items', authenticate, requestCatalogItemsRoutes);
+app.use('/api/v1/slas', authenticate, slasRoutes);
+app.use('/api/v1/commitments', authenticate, commitmentsRoutes);
 
 // Health check
 app.get('/', (req, res) => {

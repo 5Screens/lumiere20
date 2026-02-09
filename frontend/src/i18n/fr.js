@@ -383,6 +383,41 @@ export default {
       updated: 'Offre de service mise à jour avec succès',
       deleted: 'Offre de service supprimée avec succès',
       deletedMultiple: '{count} offres de service supprimées avec succès'
+    },
+    commitments: 'Engagements SLA',
+  },
+  slas: {
+    title: 'SLAs',
+    name: 'Nom',
+    description: 'Description',
+    metricType: 'Type de métrique',
+    priorityCode: 'Priorité',
+    targetValue: 'Valeur cible',
+    targetUnit: 'Unité cible',
+    targetPercentage: 'Pourcentage cible',
+    calendar: 'Calendrier',
+    commitments: 'Engagements',
+    slaDefinition: 'Définition SLA',
+    serviceOffering: 'Offre de service',
+    messages: {
+      created: 'SLA créé avec succès',
+      updated: 'SLA mis à jour avec succès',
+      deleted: 'SLA supprimé avec succès',
+      deletedMultiple: '{count} SLAs supprimés avec succès'
+    }
+  },
+  commitments: {
+    title: 'Engagements',
+    sla: 'SLA',
+    serviceOffering: 'Offre de service',
+    startDate: 'Date de début',
+    endDate: 'Date de fin',
+    slaDefinition: 'Définition SLA',
+    messages: {
+      created: 'Engagement créé avec succès',
+      updated: 'Engagement mis à jour avec succès',
+      deleted: 'Engagement supprimé avec succès',
+      deletedMultiple: '{count} engagements supprimés avec succès'
     }
   },
   locations: {
