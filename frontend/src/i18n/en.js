@@ -1131,6 +1131,28 @@ export default {
     saveError: 'Failed to save widget',
     deleteError: 'Failed to delete widget',
     codeExists: 'This widget code already exists'
+  },
+  weekDays: {
+    monday: 'Monday',
+    tuesday: 'Tuesday',
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
+    sunday: 'Sunday'
+  },
+  schedule: {
+    addSlot: 'Add time slot',
+    start: 'Start',
+    end: 'End',
+    closed: 'Closed'
+  },
+  holidays: {
+    add: 'Add holiday',
+    name: 'Holiday name',
+    selectDate: 'Select date',
+    empty: 'No holidays defined',
+    count: 'holiday | holidays'
   }
 }
 }

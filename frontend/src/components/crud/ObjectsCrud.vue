@@ -280,6 +280,20 @@
                 {{ stripHtml(col.is_translatable ? getTranslatedValue(data, col.field_name) : getFieldValue(data, col)) }}
               </span>
             </template>
+            <!-- Weekly Schedule (compact summary) -->
+            <template v-else-if="col.field_type === 'weekly_schedule'">
+              <span v-if="getFieldValue(data, col)" class="text-sm">
+                {{ formatScheduleSummary(getFieldValue(data, col)) }}
+              </span>
+              <span v-else>-</span>
+            </template>
+            <!-- Holidays List (count badge) -->
+            <template v-else-if="col.field_type === 'holidays_list'">
+              <Tag v-if="getFieldValue(data, col)?.length" severity="info" class="text-xs">
+                {{ getFieldValue(data, col).length }} {{ $t('holidays.count', getFieldValue(data, col).length) }}
+              </Tag>
+              <span v-else>-</span>
+            </template>
             <!-- Tag Style display -->
             <template v-else-if="col.field_type === 'tag_style'">
               <Tag 
@@ -2526,6 +2540,18 @@ const stripHtml = (html) => {
   const tmp = document.createElement('div')
   tmp.innerHTML = html
   return tmp.textContent || tmp.innerText || '-'
+}
+
+// Format weekly schedule as compact summary for table display
+const formatScheduleSummary = (schedule) => {
+  if (!schedule || typeof schedule !== 'object') return '-'
+  const dayAbbr = { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun' }
+  const activeDays = Object.keys(dayAbbr).filter(d => Array.isArray(schedule[d]) && schedule[d].length > 0)
+  if (activeDays.length === 0) return '-'
+  const labels = activeDays.map(d => dayAbbr[d])
+  const firstSlot = schedule[activeDays[0]]?.[0]
+  const timeRange = firstSlot ? `${firstSlot.start}-${firstSlot.end}` : ''
+  return `${labels.join(', ')} ${timeRange}`
 }
 
 // Format cell value based on field type
