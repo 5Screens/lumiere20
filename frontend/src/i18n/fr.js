@@ -1135,27 +1135,27 @@ portals: {
     deleteError: 'Erreur lors de la suppression du widget',
     codeExists: 'Ce code de widget existe déjà'
   },
-  weekDays: {
-    monday: 'Lundi',
-    tuesday: 'Mardi',
-    wednesday: 'Mercredi',
-    thursday: 'Jeudi',
-    friday: 'Vendredi',
-    saturday: 'Samedi',
-    sunday: 'Dimanche'
-  },
-  schedule: {
-    addSlot: 'Ajouter un créneau',
-    start: 'Début',
-    end: 'Fin',
-    closed: 'Fermé'
-  },
-  holidays: {
-    add: 'Ajouter un jour férié',
-    name: 'Nom du jour férié',
-    selectDate: 'Sélectionner une date',
-    empty: 'Aucun jour férié défini',
-    count: 'jour férié | jours fériés'
-  }
+},
+weekDays: {
+  monday: 'Lundi',
+  tuesday: 'Mardi',
+  wednesday: 'Mercredi',
+  thursday: 'Jeudi',
+  friday: 'Vendredi',
+  saturday: 'Samedi',
+  sunday: 'Dimanche'
+},
+schedule: {
+  addSlot: 'Ajouter un créneau',
+  start: 'Début',
+  end: 'Fin',
+  closed: 'Fermé'
+},
+holidays: {
+  add: 'Ajouter un jour férié',
+  name: 'Nom du jour férié',
+  selectDate: 'Sélectionner une date',
+  empty: 'Aucun jour férié défini',
+  count: 'jour férié | jours fériés'
 }
 }
