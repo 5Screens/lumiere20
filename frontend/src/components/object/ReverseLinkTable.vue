@@ -58,8 +58,12 @@
           <span v-else-if="col.type === 'date'">
             {{ formatDate(data[col.field]) }}
           </span>
+          <!-- Boolean columns -->
+          <span v-else-if="typeof data[col.field] === 'boolean'">{{ data[col.field] ? 'true' : 'false' }}</span>
+          <!-- Relation object columns (display name) -->
+          <span v-else-if="data[col.field] && typeof data[col.field] === 'object'">{{ data[col.field].name || data[col.field].label || data[col.field].code || '-' }}</span>
           <!-- Default text -->
-          <span v-else>{{ data[col.field] || '-' }}</span>
+          <span v-else>{{ data[col.field] ?? '-' }}</span>
         </template>
       </Column>
 
