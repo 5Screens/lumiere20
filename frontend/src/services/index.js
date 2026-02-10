@@ -20,6 +20,8 @@ import requestCatalogItemsService from './requestCatalogItemsService'
 import slasService from './slasService'
 import commitmentsService from './commitmentsService'
 import calendarsService from './calendarsService'
+import timezonesService from './timezonesService'
+import holidaysService from './holidaysService'
 
 // Service registry mapping objectType to service
 const services = {
@@ -42,6 +44,8 @@ const services = {
   slas: slasService,
   commitments: commitmentsService,
   calendars: calendarsService,
+  timezones: timezonesService,
+  holidays: holidaysService,
 }
 
 /**

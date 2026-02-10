@@ -72,6 +72,8 @@ const requestCatalogItemsRoutes = require('./api/v1/request_catalog_items/routes
 const slasRoutes = require('./api/v1/slas/routes');
 const commitmentsRoutes = require('./api/v1/commitments/routes');
 const calendarsRoutes = require('./api/v1/calendars/routes');
+const timezonesRoutes = require('./api/v1/timezones/routes');
+const holidaysRoutes = require('./api/v1/holidays/routes');
 
 // Public routes (no authentication required)
 app.use('/api/v1/auth', authRoutes);
@@ -110,6 +112,8 @@ app.use('/api/v1/request-catalog-items', authenticate, requestCatalogItemsRoutes
 app.use('/api/v1/slas', authenticate, slasRoutes);
 app.use('/api/v1/commitments', authenticate, commitmentsRoutes);
 app.use('/api/v1/calendars', authenticate, calendarsRoutes);
+app.use('/api/v1/timezones', authenticate, timezonesRoutes);
+app.use('/api/v1/holidays', authenticate, holidaysRoutes);
 
 // Health check
 app.get('/', (req, res) => {

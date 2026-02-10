@@ -78,6 +78,8 @@ export default {
     slas: 'SLAs',
     commitments: 'Commitments',
     calendars: 'Calendars',
+    timezones: 'Timezones',
+    holidays: 'Holidays',
     
     // Admin items
     languages: 'Languages',
@@ -1148,11 +1150,33 @@ schedule: {
   end: 'End',
   closed: 'Closed'
 },
+timezones: {
+  title: 'Timezones',
+  code: 'Code',
+  label: 'Label',
+  utcOffset: 'UTC Offset',
+  messages: {
+    created: 'Timezone created successfully',
+    updated: 'Timezone updated successfully',
+    deleted: 'Timezone deleted successfully',
+    deletedMultiple: '{count} timezones deleted successfully'
+  }
+},
 holidays: {
+  title: 'Holidays',
+  name: 'Name',
+  date: 'Date',
+  countryCode: 'Country Code',
+  isRecurring: 'Recurring',
   add: 'Add holiday',
-  name: 'Holiday name',
   selectDate: 'Select date',
   empty: 'No holidays defined',
-  count: 'holiday | holidays'
+  count: 'holiday | holidays',
+  messages: {
+    created: 'Holiday created successfully',
+    updated: 'Holiday updated successfully',
+    deleted: 'Holiday deleted successfully',
+    deletedMultiple: '{count} holidays deleted successfully'
+  }
 }
 }

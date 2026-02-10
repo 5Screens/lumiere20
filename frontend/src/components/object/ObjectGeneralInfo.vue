@@ -197,15 +197,6 @@
           :disabled="field.is_readonly"
         />
         
-        <!-- Holidays List editor -->
-        <HolidaysListEditor 
-          v-else-if="field.field_type === 'holidays_list'"
-          :id="field.field_name" 
-          :modelValue="modelValue[field.field_name]"
-          @update:modelValue="updateField(field.field_name, $event)"
-          :disabled="field.is_readonly"
-        />
-        
         <!-- Person Multiple (watchers) -->
         <PersonSelector 
           v-else-if="field.field_type === 'person_multiple'"
@@ -257,7 +248,6 @@ import RelationSelector from '@/components/form/RelationSelector.vue'
 import PersonSelector from '@/components/form/PersonSelector.vue'
 import AttachmentsPicker from '@/components/form/AttachmentsPicker.vue'
 import WeeklyScheduleEditor from '@/components/form/WeeklyScheduleEditor.vue'
-import HolidaysListEditor from '@/components/form/HolidaysListEditor.vue'
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'

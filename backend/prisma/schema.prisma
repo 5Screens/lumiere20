@@ -145,25 +145,77 @@ model user_sets {
   @@schema("data")
 }
 
-// Calendars - Define time schedules (working hours, holidays, etc.)
-model calendars {
-  uuid        String   @id @default(uuid()) @db.Uuid
-  name        String   @db.VarChar(255)
-  description String?  @db.Text
-  timezone    String   @db.VarChar(100) // e.g., 'Europe/Paris', 'UTC'
-  parent_uuid String?  @db.Uuid // Reference to parent calendar (e.g., CEST for SUPPORT_WORKING_HOURS)
-  schedule    Json     @db.JsonB // Weekly schedule: {"monday": [{"start": "09:00", "end": "18:00"}], ...}
-  holidays    Json?    @db.JsonB // List of holidays: [{"date": "2026-01-01", "name": "New Year"}, ...]
-  is_active   Boolean  @default(true)
-  created_at  DateTime @default(now()) @db.Timestamptz(6)
-  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+// Timezones - Reference table for timezone definitions
+model timezones {
+  uuid       String   @id @default(uuid()) @db.Uuid
+  code       String   @unique @db.VarChar(100) // e.g., 'Europe/Paris', 'UTC'
+  label      String   @db.VarChar(255) // e.g., 'Paris (UTC+1)'
+  utc_offset String   @db.VarChar(10) // e.g., '+01:00', '+00:00'
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Reverse relations
+  calendars calendars[]
+
+  @@map("timezones")
+  @@schema("data")
+}
+
+// Holidays - Reference table for holiday definitions
+model holidays {
+  uuid         String   @id @default(uuid()) @db.Uuid
+  date         DateTime @db.Date
+  name         String   @db.VarChar(255)
+  country_code String?  @db.VarChar(10) // e.g., 'FR', 'US'
+  is_recurring Boolean  @default(false) // Fixed holidays that recur every year
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Reverse relations
+  holidays_calendars holidays_calendars[]
+
+  @@map("holidays")
+  @@schema("data")
+}
+
+// Join table: holidays <-> calendars (many-to-many)
+model holidays_calendars {
+  uuid             String   @id @default(uuid()) @db.Uuid
+  rel_holiday_uuid  String   @db.Uuid
+  rel_calendar_uuid String   @db.Uuid
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
 
   // Relations
-  parent   calendars?  @relation("CalendarParent", fields: [parent_uuid], references: [uuid])
+  holiday  holidays  @relation(fields: [rel_holiday_uuid], references: [uuid], onDelete: Cascade)
+  calendar calendars @relation(fields: [rel_calendar_uuid], references: [uuid], onDelete: Cascade)
+
+  @@unique([rel_holiday_uuid, rel_calendar_uuid])
+  @@map("holidays_calendars")
+  @@schema("data")
+}
+
+// Calendars - Define time schedules (working hours, holidays, etc.)
+model calendars {
+  uuid              String   @id @default(uuid()) @db.Uuid
+  name              String   @db.VarChar(255)
+  description       String?  @db.Text
+  rel_timezone_uuid String?  @db.Uuid
+  parent_uuid       String?  @db.Uuid // Reference to parent calendar
+  schedule          Json     @db.JsonB // Weekly schedule: {"monday": [{"start": "09:00", "end": "18:00"}], ...}
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  timezone timezones? @relation(fields: [rel_timezone_uuid], references: [uuid])
+  parent   calendars? @relation("CalendarParent", fields: [parent_uuid], references: [uuid])
   children calendars[] @relation("CalendarParent")
 
   // Reverse relations
-  slas slas[]
+  slas               slas[]
+  holidays_calendars holidays_calendars[]
 
   @@map("calendars")
   @@schema("data")

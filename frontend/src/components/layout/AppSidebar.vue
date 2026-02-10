@@ -436,6 +436,16 @@ const menuItems = computed(() => [
             label: t('menu.calendars') || 'Calendars',
             icon: 'pi pi-calendar',
             command: () => openTab('calendars', 'Calendars', 'menu.calendars', 'pi pi-calendar', 'calendars', 'ObjectsCrud')
+          },
+          {
+            label: t('menu.timezones') || 'Timezones',
+            icon: 'pi pi-clock',
+            command: () => openTab('timezones', 'Timezones', 'menu.timezones', 'pi pi-clock', 'timezones', 'ObjectsCrud')
+          },
+          {
+            label: t('menu.holidays') || 'Holidays',
+            icon: 'pi pi-sun',
+            command: () => openTab('holidays', 'Holidays', 'menu.holidays', 'pi pi-sun', 'holidays', 'ObjectsCrud')
           }
         ]
       }

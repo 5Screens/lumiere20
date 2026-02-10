@@ -287,13 +287,6 @@
               </span>
               <span v-else>-</span>
             </template>
-            <!-- Holidays List (count badge) -->
-            <template v-else-if="col.field_type === 'holidays_list'">
-              <Tag v-if="getFieldValue(data, col)?.length" severity="info" class="text-xs">
-                {{ getFieldValue(data, col).length }} {{ $t('holidays.count', getFieldValue(data, col).length) }}
-              </Tag>
-              <span v-else>-</span>
-            </template>
             <!-- Tag Style display -->
             <template v-else-if="col.field_type === 'tag_style'">
               <Tag 

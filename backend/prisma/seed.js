@@ -25,6 +25,7 @@ const { seedServiceWorkflows } = require('./seeds/service-workflows.seed');
 const { seedObjectSetup } = require('./seeds/object-setup');
 const { seedSymptoms } = require('./seeds/symptoms.seed');
 const { seedTicketTypeFieldsTranslations } = require('./seeds/ticket-type-fields-translations.seed');
+const { seedTimezones } = require('./seeds/timezones.seed');
 
 async function main() {
   console.log('========================================');
@@ -107,8 +108,13 @@ async function main() {
     await seedServiceWorkflows(prisma);
     console.log('');
 
-    // 15. Object Setup (business objects metadata configuration)
-    console.log('[15/17] Seeding object setup...');
+    // 15. Timezones (reference data for calendars)
+    console.log('[15/18] Seeding timezones...');
+    await seedTimezones();
+    console.log('');
+
+    // 16. Object Setup (business objects metadata configuration)
+    console.log('[16/18] Seeding object setup...');
     await seedObjectSetup();
     console.log('');
 

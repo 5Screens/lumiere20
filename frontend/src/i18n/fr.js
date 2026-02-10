@@ -80,6 +80,8 @@ export default {
     slas: 'SLAs',
     commitments: 'Engagements',
     calendars: 'Calendriers',
+    timezones: 'Fuseaux horaires',
+    holidays: 'Jours fériés',
     
     // Admin items
     languages: 'Langues',
@@ -1151,11 +1153,33 @@ schedule: {
   end: 'Fin',
   closed: 'Fermé'
 },
+timezones: {
+  title: 'Fuseaux horaires',
+  code: 'Code',
+  label: 'Libellé',
+  utcOffset: 'Décalage UTC',
+  messages: {
+    created: 'Fuseau horaire créé avec succès',
+    updated: 'Fuseau horaire mis à jour avec succès',
+    deleted: 'Fuseau horaire supprimé avec succès',
+    deletedMultiple: '{count} fuseaux horaires supprimés avec succès'
+  }
+},
 holidays: {
+  title: 'Jours fériés',
+  name: 'Nom',
+  date: 'Date',
+  countryCode: 'Code pays',
+  isRecurring: 'Récurrent',
   add: 'Ajouter un jour férié',
-  name: 'Nom du jour férié',
   selectDate: 'Sélectionner une date',
   empty: 'Aucun jour férié défini',
-  count: 'jour férié | jours fériés'
+  count: 'jour férié | jours fériés',
+  messages: {
+    created: 'Jour férié créé avec succès',
+    updated: 'Jour férié mis à jour avec succès',
+    deleted: 'Jour férié supprimé avec succès',
+    deletedMultiple: '{count} jours fériés supprimés avec succès'
+  }
 }
 }

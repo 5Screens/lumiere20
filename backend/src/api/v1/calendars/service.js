@@ -11,8 +11,8 @@ const search = async (params) => {
   const orderBy = buildPrismaOrderBy(sortField, sortOrder);
 
   const where = buildPrismaWhereFromFilters(filters, {
-    globalSearchFields: ['name', 'description', 'timezone'],
-    uuidColumns: ['parent_uuid'],
+    globalSearchFields: ['name', 'description'],
+    uuidColumns: ['parent_uuid', 'rel_timezone_uuid'],
   });
 
   const [data, total] = await Promise.all([
@@ -25,12 +25,27 @@ const search = async (params) => {
         parent: {
           select: { uuid: true, name: true },
         },
+        timezone: {
+          select: { uuid: true, code: true, label: true, utc_offset: true },
+        },
+        holidays_calendars: {
+          include: {
+            holiday: {
+              select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+            },
+          },
+        },
       },
     }),
     prisma.calendars.count({ where }),
   ]);
 
-  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  const enriched = data.map((c) => ({
+    ...c,
+    holidays: c.holidays_calendars.map((hc) => hc.holiday),
+  }));
+
+  return { data: enriched, total, page, limit, totalPages: Math.ceil(total / limit) };
 };
 
 /**
@@ -55,23 +70,41 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'name', sortOrder = 1,
         parent: {
           select: { uuid: true, name: true },
         },
+        timezone: {
+          select: { uuid: true, code: true, label: true, utc_offset: true },
+        },
+        holidays_calendars: {
+          include: {
+            holiday: {
+              select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+            },
+          },
+        },
       },
     }),
     prisma.calendars.count({ where }),
   ]);
 
-  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  const enriched = data.map((c) => ({
+    ...c,
+    holidays: c.holidays_calendars.map((hc) => hc.holiday),
+  }));
+
+  return { data: enriched, total, page, limit, totalPages: Math.ceil(total / limit) };
 };
 
 /**
  * Get calendar by UUID
  */
 const getByUuid = async (uuid) => {
-  return prisma.calendars.findUnique({
+  const calendar = await prisma.calendars.findUnique({
     where: { uuid },
     include: {
       parent: {
         select: { uuid: true, name: true },
+      },
+      timezone: {
+        select: { uuid: true, code: true, label: true, utc_offset: true },
       },
       children: {
         select: { uuid: true, name: true },
@@ -79,15 +112,29 @@ const getByUuid = async (uuid) => {
       slas: {
         select: { uuid: true, name: true, metric_type: true },
       },
+      holidays_calendars: {
+        include: {
+          holiday: {
+            select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+          },
+        },
+      },
     },
   });
+
+  if (!calendar) return null;
+
+  return {
+    ...calendar,
+    holidays: calendar.holidays_calendars.map((hc) => hc.holiday),
+  };
 };
 
 /**
  * Create new calendar
  */
 const create = async (data) => {
-  const { parent_uuid, ...rest } = data;
+  const { parent_uuid, rel_timezone_uuid, holiday_uuids, ...rest } = data;
 
   const createData = { ...rest };
 
@@ -95,21 +142,48 @@ const create = async (data) => {
     createData.parent = { connect: { uuid: parent_uuid } };
   }
 
-  return prisma.calendars.create({
+  if (rel_timezone_uuid) {
+    createData.timezone = { connect: { uuid: rel_timezone_uuid } };
+  }
+
+  if (holiday_uuids && holiday_uuids.length > 0) {
+    createData.holidays_calendars = {
+      create: holiday_uuids.map((hUuid) => ({
+        rel_holiday_uuid: hUuid,
+      })),
+    };
+  }
+
+  const calendar = await prisma.calendars.create({
     data: createData,
     include: {
       parent: {
         select: { uuid: true, name: true },
       },
+      timezone: {
+        select: { uuid: true, code: true, label: true, utc_offset: true },
+      },
+      holidays_calendars: {
+        include: {
+          holiday: {
+            select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+          },
+        },
+      },
     },
   });
+
+  return {
+    ...calendar,
+    holidays: calendar.holidays_calendars.map((hc) => hc.holiday),
+  };
 };
 
 /**
  * Update calendar
  */
 const update = async (uuid, data) => {
-  const { parent_uuid, ...rest } = data;
+  const { parent_uuid, rel_timezone_uuid, holiday_uuids, ...rest } = data;
   const updateData = { ...rest };
 
   if (parent_uuid !== undefined) {
@@ -118,16 +192,53 @@ const update = async (uuid, data) => {
       : { disconnect: true };
   }
 
+  if (rel_timezone_uuid !== undefined) {
+    updateData.timezone = rel_timezone_uuid
+      ? { connect: { uuid: rel_timezone_uuid } }
+      : { disconnect: true };
+  }
+
   try {
-    return await prisma.calendars.update({
+    // Update holidays many-to-many if provided
+    if (holiday_uuids !== undefined) {
+      await prisma.holidays_calendars.deleteMany({
+        where: { rel_calendar_uuid: uuid },
+      });
+
+      if (holiday_uuids.length > 0) {
+        await prisma.holidays_calendars.createMany({
+          data: holiday_uuids.map((hUuid) => ({
+            rel_holiday_uuid: hUuid,
+            rel_calendar_uuid: uuid,
+          })),
+        });
+      }
+    }
+
+    const calendar = await prisma.calendars.update({
       where: { uuid },
       data: updateData,
       include: {
         parent: {
           select: { uuid: true, name: true },
         },
+        timezone: {
+          select: { uuid: true, code: true, label: true, utc_offset: true },
+        },
+        holidays_calendars: {
+          include: {
+            holiday: {
+              select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+            },
+          },
+        },
       },
     });
+
+    return {
+      ...calendar,
+      holidays: calendar.holidays_calendars.map((hc) => hc.holiday),
+    };
   } catch (error) {
     if (error.code === 'P2025') {
       return null;
