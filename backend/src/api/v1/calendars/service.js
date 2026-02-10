@@ -122,7 +122,7 @@ const getByUuid = async (uuid) => {
  * Create new calendar
  */
 const create = async (data) => {
-  const { rel_timezone_uuid, holiday_uuids, holidays, holidays_calendars, _translations, ...rest } = data;
+  const { rel_timezone_uuid, holiday_uuids, holidays, holidays_calendars, _translations, parent_uuid, slas, uuid, created_at, updated_at, timezone, ...rest } = data;
 
   const createData = { ...rest };
 
@@ -164,7 +164,7 @@ const create = async (data) => {
  * Update calendar
  */
 const update = async (uuid, data) => {
-  const { rel_timezone_uuid, holiday_uuids, holidays, holidays_calendars, _translations, ...rest } = data;
+  const { rel_timezone_uuid, holiday_uuids, holidays, holidays_calendars, _translations, parent_uuid, slas, uuid: _uuid, created_at, updated_at, timezone, ...rest } = data;
   const updateData = { ...rest };
 
   if (rel_timezone_uuid !== undefined) {
