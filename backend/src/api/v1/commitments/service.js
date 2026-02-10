@@ -92,11 +92,24 @@ const getByUuid = async (uuid) => {
 /**
  * Create new commitment
  */
+const ALLOWED_FIELDS = ['target_percentage', 'is_active'];
+
+const pickAllowedFields = (data) => {
+  const picked = {};
+  for (const key of ALLOWED_FIELDS) {
+    if (data[key] !== undefined) {
+      picked[key] = data[key];
+    }
+  }
+  return picked;
+};
+
 const create = async (data) => {
-  const { rel_service_offering_uuid, rel_sla_definition_uuid, start_date, end_date, ...rest } = data;
+  const { rel_service_offering_uuid, rel_sla_definition_uuid, start_date, end_date } = data;
+  const filtered = pickAllowedFields(data);
 
   const createData = {
-    ...rest,
+    ...filtered,
     service_offering: { connect: { uuid: rel_service_offering_uuid } },
     sla_definition: { connect: { uuid: rel_sla_definition_uuid } },
   };
@@ -125,8 +138,8 @@ const create = async (data) => {
  * Update commitment
  */
 const update = async (uuid, data) => {
-  const { rel_service_offering_uuid, rel_sla_definition_uuid, ...rest } = data;
-  const updateData = { ...rest };
+  const { rel_service_offering_uuid, rel_sla_definition_uuid } = data;
+  const updateData = pickAllowedFields(data);
 
   if (data.start_date !== undefined) {
     updateData.start_date = data.start_date ? new Date(data.start_date) : null;

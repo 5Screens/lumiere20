@@ -87,11 +87,24 @@ const getByUuid = async (uuid) => {
 /**
  * Create new SLA
  */
+const ALLOWED_FIELDS = ['name', 'description', 'metric_type', 'priority_code', 'target_value', 'target_unit', 'is_active'];
+
+const pickAllowedFields = (data) => {
+  const picked = {};
+  for (const key of ALLOWED_FIELDS) {
+    if (data[key] !== undefined) {
+      picked[key] = data[key];
+    }
+  }
+  return picked;
+};
+
 const create = async (data) => {
-  const { rel_calendar_uuid, ...rest } = data;
+  const { rel_calendar_uuid } = data;
+  const filtered = pickAllowedFields(data);
 
   const createData = {
-    ...rest,
+    ...filtered,
     calendar: { connect: { uuid: rel_calendar_uuid } },
   };
 
@@ -109,8 +122,8 @@ const create = async (data) => {
  * Update SLA
  */
 const update = async (uuid, data) => {
-  const { rel_calendar_uuid, ...rest } = data;
-  const updateData = { ...rest };
+  const { rel_calendar_uuid } = data;
+  const updateData = pickAllowedFields(data);
 
   if (rel_calendar_uuid !== undefined) {
     updateData.calendar = rel_calendar_uuid
