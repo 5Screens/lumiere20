@@ -12,7 +12,7 @@ const search = async (params) => {
 
   const where = buildPrismaWhereFromFilters(filters, {
     globalSearchFields: ['name', 'description'],
-    uuidColumns: ['parent_uuid', 'rel_timezone_uuid'],
+    uuidColumns: ['rel_timezone_uuid'],
   });
 
   const [data, total] = await Promise.all([
@@ -22,9 +22,6 @@ const search = async (params) => {
       skip,
       take: limit,
       include: {
-        parent: {
-          select: { uuid: true, name: true },
-        },
         timezone: {
           select: { uuid: true, code: true, label: true, utc_offset: true },
         },
@@ -67,9 +64,6 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'name', sortOrder = 1,
       take: limit,
       orderBy,
       include: {
-        parent: {
-          select: { uuid: true, name: true },
-        },
         timezone: {
           select: { uuid: true, code: true, label: true, utc_offset: true },
         },
@@ -100,14 +94,8 @@ const getByUuid = async (uuid) => {
   const calendar = await prisma.calendars.findUnique({
     where: { uuid },
     include: {
-      parent: {
-        select: { uuid: true, name: true },
-      },
       timezone: {
         select: { uuid: true, code: true, label: true, utc_offset: true },
-      },
-      children: {
-        select: { uuid: true, name: true },
       },
       slas: {
         select: { uuid: true, name: true, metric_type: true },
@@ -134,13 +122,9 @@ const getByUuid = async (uuid) => {
  * Create new calendar
  */
 const create = async (data) => {
-  const { parent_uuid, rel_timezone_uuid, holiday_uuids, ...rest } = data;
+  const { rel_timezone_uuid, holiday_uuids, holidays, holidays_calendars, _translations, ...rest } = data;
 
   const createData = { ...rest };
-
-  if (parent_uuid) {
-    createData.parent = { connect: { uuid: parent_uuid } };
-  }
 
   if (rel_timezone_uuid) {
     createData.timezone = { connect: { uuid: rel_timezone_uuid } };
@@ -157,9 +141,6 @@ const create = async (data) => {
   const calendar = await prisma.calendars.create({
     data: createData,
     include: {
-      parent: {
-        select: { uuid: true, name: true },
-      },
       timezone: {
         select: { uuid: true, code: true, label: true, utc_offset: true },
       },
@@ -183,14 +164,8 @@ const create = async (data) => {
  * Update calendar
  */
 const update = async (uuid, data) => {
-  const { parent_uuid, rel_timezone_uuid, holiday_uuids, ...rest } = data;
+  const { rel_timezone_uuid, holiday_uuids, holidays, holidays_calendars, _translations, ...rest } = data;
   const updateData = { ...rest };
-
-  if (parent_uuid !== undefined) {
-    updateData.parent = parent_uuid
-      ? { connect: { uuid: parent_uuid } }
-      : { disconnect: true };
-  }
 
   if (rel_timezone_uuid !== undefined) {
     updateData.timezone = rel_timezone_uuid
@@ -219,9 +194,6 @@ const update = async (uuid, data) => {
       where: { uuid },
       data: updateData,
       include: {
-        parent: {
-          select: { uuid: true, name: true },
-        },
         timezone: {
           select: { uuid: true, code: true, label: true, utc_offset: true },
         },

@@ -459,7 +459,6 @@ async function seedObjectMetadata() {
       { field_name: 'name', label_key: 'calendars.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
       { field_name: 'description', label_key: 'calendars.description', field_type: 'textarea', min_width: '20rem', display_order: 2, default_visible: true },
       { field_name: 'rel_timezone_uuid', label_key: 'calendars.timezone', field_type: 'relation', relation_object: 'timezones', relation_display: 'code', min_width: '14rem', display_order: 3, default_visible: true },
-      { field_name: 'parent_uuid', label_key: 'calendars.parent', field_type: 'relation', relation_object: 'calendars', relation_display: 'name', min_width: '14rem', display_order: 4, default_visible: true },
       { field_name: 'schedule', label_key: 'calendars.schedule', field_type: 'weekly_schedule', min_width: '20rem', display_order: 5, show_in_table: false, default_visible: true },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 7, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
