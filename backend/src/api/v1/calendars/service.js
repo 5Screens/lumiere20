@@ -53,7 +53,7 @@ const search = async (params) => {
 
   const enriched = data.map((c) => ({
     ...c,
-    holidays: c.holidays_calendars.map((hc) => hc.holiday),
+    holidays: c.holidays_calendars.map((hc) => hc.rel_holiday_uuid),
   }));
 
   return { data: enriched, total, page, limit, totalPages: Math.ceil(total / limit) };
@@ -95,7 +95,7 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'name', sortOrder = 1,
 
   const enriched = data.map((c) => ({
     ...c,
-    holidays: c.holidays_calendars.map((hc) => hc.holiday),
+    holidays: c.holidays_calendars.map((hc) => hc.rel_holiday_uuid),
   }));
 
   return { data: enriched, total, page, limit, totalPages: Math.ceil(total / limit) };
@@ -128,7 +128,7 @@ const getByUuid = async (uuid) => {
 
   return {
     ...calendar,
-    holidays: calendar.holidays_calendars.map((hc) => hc.holiday),
+    holidays: calendar.holidays_calendars.map((hc) => hc.rel_holiday_uuid),
   };
 };
 
@@ -136,7 +136,10 @@ const getByUuid = async (uuid) => {
  * Create new calendar
  */
 const create = async (data) => {
-  const { rel_timezone_uuid, holiday_uuids, holidays, holidays_calendars, _translations, parent_uuid, slas, uuid, created_at, updated_at, timezone, ...rest } = data;
+  const { rel_timezone_uuid, holiday_uuids: rawHolidayUuids, holidays, holidays_calendars, _translations, parent_uuid, slas, uuid, created_at, updated_at, timezone, ...rest } = data;
+
+  // Support both holiday_uuids (legacy) and holidays (from relation_multiple field)
+  const holiday_uuids = rawHolidayUuids || (Array.isArray(holidays) ? holidays.filter(h => typeof h === 'string') : undefined);
 
   const createData = { ...rest };
 
@@ -170,7 +173,7 @@ const create = async (data) => {
 
   return {
     ...calendar,
-    holidays: calendar.holidays_calendars.map((hc) => hc.holiday),
+    holidays: calendar.holidays_calendars.map((hc) => hc.rel_holiday_uuid),
   };
 };
 
@@ -178,7 +181,11 @@ const create = async (data) => {
  * Update calendar
  */
 const update = async (uuid, data) => {
-  const { rel_timezone_uuid, holiday_uuids, holidays, holidays_calendars, _translations, parent_uuid, slas, uuid: _uuid, created_at, updated_at, timezone, ...rest } = data;
+  const { rel_timezone_uuid, holiday_uuids: rawHolidayUuids, holidays, holidays_calendars, _translations, parent_uuid, slas, uuid: _uuid, created_at, updated_at, timezone, ...rest } = data;
+
+  // Support both holiday_uuids (legacy) and holidays (from relation_multiple field)
+  const holiday_uuids = rawHolidayUuids !== undefined ? rawHolidayUuids : (Array.isArray(holidays) ? holidays.filter(h => typeof h === 'string') : undefined);
+
   const updateData = { ...rest };
 
   if (rel_timezone_uuid !== undefined) {
@@ -223,7 +230,7 @@ const update = async (uuid, data) => {
 
     return {
       ...calendar,
-      holidays: calendar.holidays_calendars.map((hc) => hc.holiday),
+      holidays: calendar.holidays_calendars.map((hc) => hc.rel_holiday_uuid),
     };
   } catch (error) {
     if (error.code === 'P2025') {
