@@ -120,7 +120,7 @@
             <Column field="options_source" :header="$t('extendedFields.options')" style="min-width: 150px">
               <template #body="{ data }">
                 <!-- Relation field info -->
-                <template v-if="data.field_type === 'relation'">
+                <template v-if="data.field_type === 'relation' || data.field_type === 'relation_multiple'">
                   <div 
                     class="text-xs text-surface-600 dark:text-surface-400 cursor-help"
                     v-tooltip.top="{ value: formatRelationTooltip(data), class: 'max-w-md' }"
@@ -604,6 +604,7 @@ const getFieldTypeSeverity = (fieldType) => {
     datetime: 'secondary',
     select: 'primary',
     relation: 'danger',
+    relation_multiple: 'danger',
     tag_style: 'contrast',
     icon_picker: 'contrast'
   }
