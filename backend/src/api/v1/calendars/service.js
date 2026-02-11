@@ -10,10 +10,24 @@ const search = async (params) => {
   const skip = (page - 1) * limit;
   const orderBy = buildPrismaOrderBy(sortField, sortOrder);
 
-  const where = buildPrismaWhereFromFilters(filters, {
-    globalSearchFields: ['name', 'description'],
-    uuidColumns: ['rel_timezone_uuid'],
-  });
+  // Handle rel_holiday_uuid filter via holidays_calendars join table
+  const filtersCopy = { ...filters };
+  let holidayFilter = null;
+  if (filtersCopy.rel_holiday_uuid) {
+    const holidayUuid = filtersCopy.rel_holiday_uuid.value;
+    if (holidayUuid) {
+      holidayFilter = { holidays_calendars: { some: { rel_holiday_uuid: holidayUuid } } };
+    }
+    delete filtersCopy.rel_holiday_uuid;
+  }
+
+  const where = {
+    ...buildPrismaWhereFromFilters(filtersCopy, {
+      globalSearchFields: ['name', 'description'],
+      uuidColumns: ['rel_timezone_uuid'],
+    }),
+    ...holidayFilter,
+  };
 
   const [data, total] = await Promise.all([
     prisma.calendars.findMany({

@@ -1167,6 +1167,7 @@ timezones: {
 holidays: {
   title: 'Holidays',
   name: 'Name',
+  calendars: 'Calendars',
   date: 'Date',
   countryCode: 'Country Code',
   isRecurring: 'Recurring',

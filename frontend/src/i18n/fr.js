@@ -1170,6 +1170,7 @@ timezones: {
 holidays: {
   title: 'Jours fériés',
   name: 'Nom',
+  calendars: 'Calendriers',
   date: 'Date',
   countryCode: 'Code pays',
   isRecurring: 'Récurrent',
