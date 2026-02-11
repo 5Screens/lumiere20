@@ -197,11 +197,15 @@
           :disabled="field.is_readonly"
         />
         
-        <!-- Person Multiple (watchers) -->
-        <PersonSelector 
-          v-else-if="field.field_type === 'person_multiple'"
+        <!-- Relation Multiple (generic multi-select for any object type) -->
+        <RelationSelector 
+          v-else-if="field.field_type === 'relation_multiple'"
           :id="field.field_name" 
           :modelValue="modelValue[field.field_name]"
+          :relationObject="field.relation_object"
+          :displayField="field.relation_display"
+          :relationFilter="field.relation_filter"
+          :context="modelValue"
           @update:modelValue="updateField(field.field_name, $event)"
           :disabled="field.is_readonly"
           :multiple="true"
@@ -245,7 +249,6 @@ import IconSelector from '@/components/form/IconSelector.vue'
 import TranslatableInput from '@/components/form/TranslatableInput.vue'
 import StatusPicker from '@/components/form/StatusPicker.vue'
 import RelationSelector from '@/components/form/RelationSelector.vue'
-import PersonSelector from '@/components/form/PersonSelector.vue'
 import AttachmentsPicker from '@/components/form/AttachmentsPicker.vue'
 import WeeklyScheduleEditor from '@/components/form/WeeklyScheduleEditor.vue'
 

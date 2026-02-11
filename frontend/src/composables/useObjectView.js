@@ -162,6 +162,8 @@ export function useObjectView(options) {
     for (const field of formFields.value) {
       if (field.field_type === 'boolean') {
         defaults[field.field_name] = false
+      } else if (field.field_type === 'relation_multiple') {
+        defaults[field.field_name] = []
       } else {
         defaults[field.field_name] = null
       }

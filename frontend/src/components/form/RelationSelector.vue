@@ -8,14 +8,19 @@
       @item-select="onItemSelect"
       @clear="onClear"
       @click="handleInputClick"
+      @blur="onBlur"
+      @hide="onHide"
       :optionLabel="getDisplayValue"
       :placeholder="placeholder || $t('common.select')"
       :minLength="0"
       :loading="loading"
       :disabled="disabled"
       :virtualScrollerOptions="{ itemSize: 56 }"
+      :multiple="multiple"
+      :dataKey="'uuid'"
       dropdown
-      showClear
+      :showClear="!multiple"
+      forceSelection
       appendTo="body"
       class="flex-1"
       :pt="{ input: { class: 'w-full' } }"
@@ -45,8 +50,9 @@
       </template>
     </AutoComplete>
     
-    <!-- View details button -->
+    <!-- View details button (single mode only) -->
     <button
+      v-if="!multiple"
       type="button"
       class="p-1.5 rounded-full transition-colors shrink-0"
       :class="selectedItem ? 'cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800' : 'cursor-not-allowed'"
@@ -92,9 +98,9 @@ const referenceDataStore = useReferenceDataStore()
 const PAGE_SIZE = 20
 
 const props = defineProps({
-  // Current value (UUID)
+  // Current value (UUID or array of UUIDs in multiple mode)
   modelValue: {
-    type: String,
+    type: [String, Array],
     default: null
   },
   // Type of relation: 'persons', 'groups', 'locations', 'entities', 'configuration_items', 'ci_categories', etc.
@@ -137,6 +143,11 @@ const props = defineProps({
   icon: {
     type: String,
     default: null
+  },
+  // Multiple selection mode
+  multiple: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -149,6 +160,10 @@ const loading = ref(false)
 const autocompleteRef = ref(null)
 const objectTypeMeta = ref(null)
 const detailsDrawerVisible = ref(false)
+
+// Multiple mode state
+const savedSelections = ref([])
+const isSearching = ref(false)
 
 // Pagination state
 const currentQuery = ref('')
@@ -321,12 +336,57 @@ const getOptionIcon = (option) => {
 }
 
 const onItemSelect = (event) => {
-  const item = event.value
-  emit('update:modelValue', item?.uuid || null)
+  if (props.multiple) {
+    const newlySelected = event?.value
+    const fromAutocomplete = Array.isArray(selectedItem.value) ? selectedItem.value : []
+    const preserved = Array.isArray(savedSelections.value) ? savedSelections.value : []
+
+    const byUuid = new Map()
+    for (const item of preserved) {
+      if (item?.uuid) byUuid.set(item.uuid, item)
+    }
+    for (const item of fromAutocomplete) {
+      if (item?.uuid) byUuid.set(item.uuid, item)
+    }
+    if (newlySelected?.uuid) {
+      byUuid.set(newlySelected.uuid, newlySelected)
+    }
+
+    const merged = Array.from(byUuid.values())
+    selectedItem.value = merged
+    savedSelections.value = merged
+    isSearching.value = false
+
+    emit('update:modelValue', merged.map(i => i.uuid))
+  } else {
+    const item = event.value
+    emit('update:modelValue', item?.uuid || null)
+  }
 }
 
 const onClear = () => {
-  emit('update:modelValue', null)
+  if (props.multiple && isSearching.value) {
+    selectedItem.value = [...savedSelections.value]
+    isSearching.value = false
+    return
+  }
+  isSearching.value = false
+  savedSelections.value = []
+  emit('update:modelValue', props.multiple ? [] : null)
+}
+
+// Handle blur in multiple mode - restore selections if user was searching
+const onBlur = () => {
+  if (!props.multiple || !isSearching.value) return
+  selectedItem.value = [...savedSelections.value]
+  isSearching.value = false
+}
+
+// Handle dropdown hide in multiple mode
+const onHide = () => {
+  if (!props.multiple || !isSearching.value) return
+  selectedItem.value = [...savedSelections.value]
+  isSearching.value = false
 }
 
 // Handle click on input to show suggestions like the dropdown button
@@ -355,6 +415,14 @@ const openDetailsDrawer = () => {
 
 const onSearch = async (event) => {
   const query = event?.query || ''
+
+  if (props.multiple) {
+    isSearching.value = true
+    const currentSelections = Array.isArray(selectedItem.value) ? selectedItem.value : []
+    if (currentSelections.length > 0) {
+      savedSelections.value = [...currentSelections]
+    }
+  }
   
   currentQuery.value = query
   currentPage.value = 1
@@ -391,10 +459,11 @@ const onSearch = async (event) => {
   }
 }
 
-// Load initial value by UUID
+// Load initial value by UUID (single or multiple)
 const loadInitialValue = async () => {
-  if (!props.modelValue) {
-    selectedItem.value = null
+  if (!props.modelValue || (Array.isArray(props.modelValue) && props.modelValue.length === 0)) {
+    selectedItem.value = props.multiple ? [] : null
+    savedSelections.value = []
     return
   }
   
@@ -402,18 +471,44 @@ const loadInitialValue = async () => {
     const endpoint = effectiveEndpoint.value
     if (!endpoint) return
     
-    const response = await api.get(`${endpoint}/${props.modelValue}`)
-    if (response.data) {
-      selectedItem.value = response.data
+    if (props.multiple && Array.isArray(props.modelValue)) {
+      // Load multiple items by UUID
+      const items = await Promise.all(
+        props.modelValue.map(uuid => api.get(`${endpoint}/${uuid}`).then(r => r.data).catch(() => null))
+      )
+      const loaded = items.filter(Boolean)
+      selectedItem.value = loaded
+      savedSelections.value = loaded
+    } else {
+      const response = await api.get(`${endpoint}/${props.modelValue}`)
+      if (response.data) {
+        selectedItem.value = response.data
+      }
     }
   } catch (error) {
     console.error(`[RelationSelector] Error loading initial value:`, error)
-    selectedItem.value = null
+    selectedItem.value = props.multiple ? [] : null
+    savedSelections.value = []
   }
 }
 
 // Watch modelValue changes to reload initial value
 watch(() => props.modelValue, (newVal, oldVal) => {
+  if (props.multiple) {
+    if (isSearching.value) return
+
+    const newUuids = Array.isArray(newVal) ? newVal : []
+    const currentUuids = (Array.isArray(selectedItem.value) ? selectedItem.value : [])
+      .map(i => i?.uuid)
+      .filter(Boolean)
+
+    const isDifferent = newUuids.length !== currentUuids.length || newUuids.some(u => !currentUuids.includes(u))
+    if (isDifferent) {
+      loadInitialValue()
+    }
+    return
+  }
+
   if (newVal !== oldVal) {
     if (newVal && (!selectedItem.value || selectedItem.value.uuid !== newVal)) {
       loadInitialValue()
@@ -421,7 +516,7 @@ watch(() => props.modelValue, (newVal, oldVal) => {
       selectedItem.value = null
     }
   }
-}, { immediate: false })
+}, { immediate: false, deep: true })
 
 // Load object type metadata and initial value on mount
 onMounted(async () => {
