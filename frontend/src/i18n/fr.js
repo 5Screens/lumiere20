@@ -425,7 +425,8 @@ export default {
       updated: 'Calendrier mis à jour avec succès',
       deleted: 'Calendrier supprimé avec succès',
       deletedMultiple: '{count} calendriers supprimés avec succès'
-    }
+    },
+    isActive: 'Actif',
   },
   commitments: {
     title: 'Engagements',
@@ -1158,6 +1159,7 @@ timezones: {
   code: 'Code',
   label: 'Libellé',
   utcOffset: 'Décalage UTC',
+  calendars: 'Calendriers',
   messages: {
     created: 'Fuseau horaire créé avec succès',
     updated: 'Fuseau horaire mis à jour avec succès',

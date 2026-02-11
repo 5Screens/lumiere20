@@ -1155,12 +1155,14 @@ timezones: {
   code: 'Code',
   label: 'Label',
   utcOffset: 'UTC Offset',
+  calendars: 'Calendars',
   messages: {
     created: 'Timezone created successfully',
     updated: 'Timezone updated successfully',
     deleted: 'Timezone deleted successfully',
     deletedMultiple: '{count} timezones deleted successfully'
-  }
+  },
+  isactive: 'Active',
 },
 holidays: {
   title: 'Holidays',

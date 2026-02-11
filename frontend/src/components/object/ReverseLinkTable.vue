@@ -6,6 +6,7 @@
         {{ t(field.label_key) }}
       </h3>
       <Button 
+        v-if="!field.is_readonly"
         :label="t('common.add')" 
         icon="pi pi-plus" 
         size="small"
@@ -34,7 +35,7 @@
       removableSort
       size="small"
       class="p-datatable-sm cursor-pointer-rows"
-      @row-click="onRowClick"
+      @row-click="!field.is_readonly && onRowClick($event)"
       @contextmenu.prevent
     >
       <!-- Dynamic columns based on relation_display -->
@@ -68,7 +69,7 @@
       </Column>
 
       <!-- Actions column -->
-      <Column header="" style="width: 120px" frozen alignFrozen="right">
+      <Column v-if="!field.is_readonly" header="" style="width: 120px" frozen alignFrozen="right">
         <template #body="{ data }">
           <div class="flex gap-1 justify-end">
             <Button 

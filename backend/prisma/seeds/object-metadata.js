@@ -445,6 +445,8 @@ async function seedObjectMetadata() {
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 4, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
+      // Reverse link to calendars
+      { field_name: 'calendars', label_key: 'timezones.calendars', field_type: 'reverse_link', relation_object: 'calendars', relation_display: 'name,is_active', relation_filter: 'rel_timezone_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, is_readonly: true, display_order: 50, default_visible: true },
     ],
     holidays: [
       { field_name: 'name', label_key: 'holidays.name', field_type: 'text', is_required: true, is_translatable: true, min_width: '16rem', display_order: 1, default_visible: true },
