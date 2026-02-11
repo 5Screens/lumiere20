@@ -53,9 +53,11 @@ const search = async (params) => {
     where.is_active = filters.is_active.value;
   }
 
-  // Handle rel_service_uuid filter
+  // Handle service filter via junction table
   if (filters?.rel_service_uuid?.value) {
-    where.rel_service_uuid = filters.rel_service_uuid.value;
+    where.rel_causes_services = {
+      some: { rel_service_uuid: filters.rel_service_uuid.value }
+    };
   }
   
   // If there's a global search, we need to search in translations too
@@ -91,8 +93,8 @@ const search = async (params) => {
       skip,
       take: limit,
       include: {
-        service: {
-          select: { uuid: true, name: true }
+        rel_causes_services: {
+          include: { service: { select: { uuid: true, name: true } } }
         }
       }
     }),
@@ -109,7 +111,12 @@ const search = async (params) => {
   });
 
   const translationsMap = buildTranslationsMap(translations);
-  const transformedData = data.map(s => transformWithTranslations(s, translationsMap, locale));
+  const transformedData = data.map(s => {
+    const transformed = transformWithTranslations(s, translationsMap, locale);
+    transformed.services = s.rel_causes_services.map(r => r.service);
+    delete transformed.rel_causes_services;
+    return transformed;
+  });
 
   return { data: transformedData, total, page, limit, totalPages: Math.ceil(total / limit) };
 };
@@ -133,8 +140,8 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'code', sortOrder = 1,
       take: limit,
       orderBy,
       include: {
-        service: {
-          select: { uuid: true, name: true }
+        rel_causes_services: {
+          include: { service: { select: { uuid: true, name: true } } }
         }
       }
     }),
@@ -151,7 +158,12 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'code', sortOrder = 1,
   });
 
   const translationsMap = buildTranslationsMap(translations);
-  const transformedData = data.map(s => transformWithTranslations(s, translationsMap, locale));
+  const transformedData = data.map(s => {
+    const transformed = transformWithTranslations(s, translationsMap, locale);
+    transformed.services = s.rel_causes_services.map(r => r.service);
+    delete transformed.rel_causes_services;
+    return transformed;
+  });
 
   return { data: transformedData, total, page, limit, totalPages: Math.ceil(total / limit) };
 };
@@ -163,8 +175,8 @@ const getByUuid = async (uuid, locale = 'en') => {
   const cause = await prisma.causes.findUnique({
     where: { uuid },
     include: {
-      service: {
-        select: { uuid: true, name: true }
+      rel_causes_services: {
+        include: { service: { select: { uuid: true, name: true } } }
       }
     }
   });
@@ -191,6 +203,8 @@ const getByUuid = async (uuid, locale = 'en') => {
   return {
     ...cause,
     label: allTranslationsMap.label?.[locale] || cause.label,
+    services: cause.rel_causes_services.map(r => r.service),
+    rel_causes_services: undefined,
     _translations: allTranslationsMap
   };
 };
@@ -199,18 +213,17 @@ const getByUuid = async (uuid, locale = 'en') => {
  * Create new cause
  */
 const create = async (data) => {
-  const { _translations, rel_service_uuid, ...causeData } = data;
-  
-  // Build create data with proper Prisma relation syntax
-  const createData = {
-    ...causeData,
-    ...(rel_service_uuid && {
-      service: { connect: { uuid: rel_service_uuid } }
-    })
-  };
+  const { _translations, service_uuids, ...causeData } = data;
   
   const cause = await prisma.causes.create({
-    data: createData,
+    data: {
+      ...causeData,
+      ...(service_uuids?.length > 0 && {
+        rel_causes_services: {
+          create: service_uuids.map(uuid => ({ rel_service_uuid: uuid }))
+        }
+      })
+    },
   });
 
   // Save translations if provided
@@ -241,22 +254,27 @@ const create = async (data) => {
  * Update cause
  */
 const update = async (uuid, data) => {
-  const { _translations, rel_service_uuid, ...causeData } = data;
-  
-  // Build update data with proper Prisma relation syntax
-  const updateData = {
-    ...causeData,
-    ...(rel_service_uuid !== undefined && {
-      service: rel_service_uuid 
-        ? { connect: { uuid: rel_service_uuid } }
-        : { disconnect: true }
-    })
-  };
+  const { _translations, service_uuids, ...causeData } = data;
   
   try {
+    // If service_uuids provided, replace all service links
+    if (service_uuids !== undefined) {
+      await prisma.rel_causes_services.deleteMany({
+        where: { rel_cause_uuid: uuid }
+      });
+      if (service_uuids?.length > 0) {
+        await prisma.rel_causes_services.createMany({
+          data: service_uuids.map(svcUuid => ({
+            rel_cause_uuid: uuid,
+            rel_service_uuid: svcUuid
+          }))
+        });
+      }
+    }
+
     const cause = await prisma.causes.update({
       where: { uuid },
-      data: updateData,
+      data: causeData,
     });
 
     // Update translations if provided

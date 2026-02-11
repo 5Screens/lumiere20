@@ -920,6 +920,7 @@ export default {
     code: 'Code',
     label: 'Label',
     service: 'Service',
+    services: 'Services',
     isActive: 'Active',
     messages: {
       created: 'Symptom created successfully',
@@ -933,6 +934,7 @@ export default {
     code: 'Code',
     label: 'Label',
     service: 'Service',
+    services: 'Services',
     isActive: 'Active',
     messages: {
       created: 'Cause created successfully',

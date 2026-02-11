@@ -54,9 +54,11 @@ const search = async (params) => {
     where.is_active = filters.is_active.value;
   }
 
-  // Handle rel_service_uuid filter
+  // Handle service filter via junction table
   if (filters?.rel_service_uuid?.value) {
-    where.rel_service_uuid = filters.rel_service_uuid.value;
+    where.rel_symptoms_services = {
+      some: { rel_service_uuid: filters.rel_service_uuid.value }
+    };
   }
   
   // If there's a global search, we need to search in translations too
@@ -91,6 +93,11 @@ const search = async (params) => {
       orderBy,
       skip,
       take: limit,
+      include: {
+        rel_symptoms_services: {
+          include: { service: { select: { uuid: true, name: true } } }
+        }
+      }
     }),
     prisma.symptoms.count({ where }),
   ]);
@@ -105,7 +112,12 @@ const search = async (params) => {
   });
 
   const translationsMap = buildTranslationsMap(translations);
-  const transformedData = data.map(s => transformWithTranslations(s, translationsMap, locale));
+  const transformedData = data.map(s => {
+    const transformed = transformWithTranslations(s, translationsMap, locale);
+    transformed.services = s.rel_symptoms_services.map(r => r.service);
+    delete transformed.rel_symptoms_services;
+    return transformed;
+  });
 
   return { data: transformedData, total, page, limit, totalPages: Math.ceil(total / limit) };
 };
@@ -128,6 +140,11 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'code', sortOrder = 1,
       skip,
       take: limit,
       orderBy,
+      include: {
+        rel_symptoms_services: {
+          include: { service: { select: { uuid: true, name: true } } }
+        }
+      }
     }),
     prisma.symptoms.count({ where }),
   ]);
@@ -142,7 +159,12 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'code', sortOrder = 1,
   });
 
   const translationsMap = buildTranslationsMap(translations);
-  const transformedData = data.map(s => transformWithTranslations(s, translationsMap, locale));
+  const transformedData = data.map(s => {
+    const transformed = transformWithTranslations(s, translationsMap, locale);
+    transformed.services = s.rel_symptoms_services.map(r => r.service);
+    delete transformed.rel_symptoms_services;
+    return transformed;
+  });
 
   return { data: transformedData, total, page, limit, totalPages: Math.ceil(total / limit) };
 };
@@ -153,6 +175,11 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'code', sortOrder = 1,
 const getByUuid = async (uuid, locale = 'en') => {
   const symptom = await prisma.symptoms.findUnique({
     where: { uuid },
+    include: {
+      rel_symptoms_services: {
+        include: { service: { select: { uuid: true, name: true } } }
+      }
+    }
   });
 
   if (!symptom) return null;
@@ -177,6 +204,8 @@ const getByUuid = async (uuid, locale = 'en') => {
   return {
     ...symptom,
     label: allTranslationsMap.label?.[locale] || symptom.label,
+    services: symptom.rel_symptoms_services.map(r => r.service),
+    rel_symptoms_services: undefined,
     _translations: allTranslationsMap
   };
 };
@@ -185,10 +214,17 @@ const getByUuid = async (uuid, locale = 'en') => {
  * Create new symptom
  */
 const create = async (data) => {
-  const { _translations, ...symptomData } = data;
+  const { _translations, service_uuids, ...symptomData } = data;
   
   const symptom = await prisma.symptoms.create({
-    data: symptomData,
+    data: {
+      ...symptomData,
+      ...(service_uuids?.length > 0 && {
+        rel_symptoms_services: {
+          create: service_uuids.map(uuid => ({ rel_service_uuid: uuid }))
+        }
+      })
+    },
   });
 
   // Save translations if provided
@@ -219,9 +255,24 @@ const create = async (data) => {
  * Update symptom
  */
 const update = async (uuid, data) => {
-  const { _translations, ...symptomData } = data;
+  const { _translations, service_uuids, ...symptomData } = data;
   
   try {
+    // If service_uuids provided, replace all service links
+    if (service_uuids !== undefined) {
+      await prisma.rel_symptoms_services.deleteMany({
+        where: { rel_symptom_uuid: uuid }
+      });
+      if (service_uuids?.length > 0) {
+        await prisma.rel_symptoms_services.createMany({
+          data: service_uuids.map(svcUuid => ({
+            rel_symptom_uuid: uuid,
+            rel_service_uuid: svcUuid
+          }))
+        });
+      }
+    }
+
     const symptom = await prisma.symptoms.update({
       where: { uuid },
       data: symptomData,

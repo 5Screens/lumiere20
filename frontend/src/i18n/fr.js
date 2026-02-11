@@ -924,6 +924,7 @@ export default {
     code: 'Code',
     label: 'Libellé',
     service: 'Service',
+    services: 'Services',
     isActive: 'Actif',
     messages: {
       created: 'Symptôme créé avec succès',
@@ -937,6 +938,7 @@ export default {
     code: 'Code',
     label: 'Libellé',
     service: 'Service',
+    services: 'Services',
     isActive: 'Actif',
     messages: {
       created: 'Cause créée avec succès',

@@ -370,7 +370,7 @@ async function seedObjectMetadata() {
     symptoms: [
       { field_name: 'code', label_key: 'symptoms.code', field_type: 'text', is_required: true, min_width: '12rem', display_order: 1, default_visible: true },
       { field_name: 'label', label_key: 'symptoms.label', field_type: 'text', is_required: true, is_translatable: true, min_width: '20rem', display_order: 2, default_visible: true },
-      { field_name: 'rel_service_uuid', label_key: 'symptoms.service', field_type: 'relation', relation_object: 'services', relation_display: 'name', min_width: '14rem', display_order: 3, default_visible: true, show_in_form: false },
+      { field_name: 'services', label_key: 'symptoms.services', field_type: 'relation_multiple', relation_object: 'services', relation_display: 'name', min_width: '14rem', display_order: 3, default_visible: true, show_in_table: false },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 4, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11, default_visible: true },
@@ -397,9 +397,9 @@ async function seedObjectMetadata() {
       { field_name: 'service_offerings', label_key: 'services.serviceOfferings', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status,start_date,end_date', relation_filter: 'service_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 50, default_visible: true },
       // Reverse link to request catalog items
       { field_name: 'request_catalog_items', label_key: 'services.requestCatalogItems', field_type: 'reverse_link', relation_object: 'request_catalog_items', relation_display: 'name,icon,is_active,display_order', relation_filter: 'rel_service_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 51, default_visible: true },
-      // Reverse link to symptoms
+      // Reverse link to symptoms (N:N via rel_symptoms_services, backend handles junction)
       { field_name: 'symptoms', label_key: 'services.symptoms', field_type: 'reverse_link', relation_object: 'symptoms', relation_display: 'code,label,is_active', relation_filter: 'rel_service_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 52, default_visible: true },
-      // Reverse link to causes
+      // Reverse link to causes (N:N via rel_causes_services, backend handles junction)
       { field_name: 'causes', label_key: 'services.causes', field_type: 'reverse_link', relation_object: 'causes', relation_display: 'code,label,is_active', relation_filter: 'rel_service_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 53, default_visible: true },
     ],
     service_offerings: [
@@ -422,7 +422,7 @@ async function seedObjectMetadata() {
     causes: [
       { field_name: 'code', label_key: 'causes.code', field_type: 'text', is_required: true, min_width: '12rem', display_order: 1, default_visible: true },
       { field_name: 'label', label_key: 'causes.label', field_type: 'text', is_required: true, is_translatable: true, min_width: '20rem', display_order: 2, default_visible: true },
-      { field_name: 'rel_service_uuid', label_key: 'causes.service', field_type: 'relation', relation_object: 'services', relation_display: 'name', min_width: '14rem', display_order: 3, default_visible: true, show_in_form: false },
+      { field_name: 'services', label_key: 'causes.services', field_type: 'relation_multiple', relation_object: 'services', relation_display: 'name', min_width: '14rem', display_order: 3, default_visible: true, show_in_table: false },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 4, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11, default_visible: true },

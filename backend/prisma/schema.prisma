@@ -68,8 +68,8 @@ model services {
   status            workflow_statuses?  @relation("ServiceLifecycle", fields: [rel_status_uuid], references: [uuid])
   service_offerings    service_offerings[]
   request_catalog_items request_catalog_items[]
-  symptoms              symptoms[]
-  causes                causes[]
+  rel_symptoms_services    rel_symptoms_services[]
+  rel_causes_services       rel_causes_services[]
 
   @@index([rel_status_uuid])
   @@map("services")
@@ -503,37 +503,69 @@ model ticket_status {
 }
 
 model symptoms {
-  uuid             String   @id @default(uuid()) @db.Uuid
-  code             String   @unique @db.VarChar(50)
-  label            String   @db.VarChar(255) // Default label (translations in translated_fields)
-  rel_service_uuid String?  @db.Uuid
-  is_active        Boolean  @default(true)
-  created_at       DateTime @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  uuid       String   @id @default(uuid()) @db.Uuid
+  code       String   @unique @db.VarChar(50)
+  label      String   @db.VarChar(255) // Default label (translations in translated_fields)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
-  // Relations
-  service services? @relation(fields: [rel_service_uuid], references: [uuid], onDelete: Cascade)
+  // Reverse relations
+  rel_symptoms_services rel_symptoms_services[]
 
-  @@index([rel_service_uuid])
   @@map("symptoms")
   @@schema("configuration")
 }
 
 // Cause Catalog - Root causes for incidents/problems
 model causes {
+  uuid       String   @id @default(uuid()) @db.Uuid
+  code       String   @unique @db.VarChar(50)
+  label      String   @db.VarChar(255) // Default label (translations in translated_fields)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Reverse relations
+  rel_causes_services rel_causes_services[]
+
+  @@map("causes")
+  @@schema("configuration")
+}
+
+// Join table: symptoms <-> services (many-to-many)
+model rel_symptoms_services {
   uuid             String   @id @default(uuid()) @db.Uuid
-  code             String   @unique @db.VarChar(50)
-  label            String   @db.VarChar(255) // Default label (translations in translated_fields)
-  rel_service_uuid String?  @db.Uuid
-  is_active        Boolean  @default(true)
+  rel_symptom_uuid String   @db.Uuid
+  rel_service_uuid String   @db.Uuid
   created_at       DateTime @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
   // Relations
-  service services? @relation(fields: [rel_service_uuid], references: [uuid], onDelete: Cascade)
+  symptom symptoms @relation(fields: [rel_symptom_uuid], references: [uuid], onDelete: Cascade)
+  service services @relation(fields: [rel_service_uuid], references: [uuid], onDelete: Cascade)
 
+  @@unique([rel_symptom_uuid, rel_service_uuid])
+  @@index([rel_symptom_uuid])
   @@index([rel_service_uuid])
-  @@map("causes")
+  @@map("rel_symptoms_services")
+  @@schema("configuration")
+}
+
+// Join table: causes <-> services (many-to-many)
+model rel_causes_services {
+  uuid           String   @id @default(uuid()) @db.Uuid
+  rel_cause_uuid String   @db.Uuid
+  rel_service_uuid String @db.Uuid
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  cause   causes   @relation(fields: [rel_cause_uuid], references: [uuid], onDelete: Cascade)
+  service services @relation(fields: [rel_service_uuid], references: [uuid], onDelete: Cascade)
+
+  @@unique([rel_cause_uuid, rel_service_uuid])
+  @@index([rel_cause_uuid])
+  @@index([rel_service_uuid])
+  @@map("rel_causes_services")
   @@schema("configuration")
 }
 
