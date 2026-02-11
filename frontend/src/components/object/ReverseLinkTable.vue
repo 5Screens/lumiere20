@@ -284,7 +284,7 @@ const onRowClick = (event) => {
   openEditDrawer(event.data)
 }
 
-// Duplicate item: fetch full data, strip identifiers, POST a copy
+// Duplicate item: fetch full data, clean it, open in create drawer
 const duplicateItem = async (item) => {
   try {
     const endpoint = getApiEndpoint()
@@ -292,7 +292,16 @@ const duplicateItem = async (item) => {
     const source = response.data
 
     // Remove fields that should not be copied
-    const { uuid, created_at, updated_at, ...copyData } = source
+    const { uuid, created_at, updated_at, ...rest } = source
+
+    // Remove nested relation objects, keep only scalar fields and rel_*_uuid foreign keys
+    const copyData = {}
+    for (const [key, value] of Object.entries(rest)) {
+      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+        continue
+      }
+      copyData[key] = value
+    }
 
     // Suffix code to avoid unique constraint
     if (copyData.code) {
@@ -304,7 +313,8 @@ const duplicateItem = async (item) => {
     await loadItems()
   } catch (error) {
     console.error(`Error duplicating ${props.field.relation_object}:`, error)
-    toast.add({ severity: 'error', summary: 'Error', detail: t('common.duplicateFailed'), life: 3000 })
+    const apiMessage = error.response?.data?.error
+    toast.add({ severity: 'error', summary: t('common.error'), detail: apiMessage || t('common.duplicateFailed'), life: 5000 })
   }
 }
 
