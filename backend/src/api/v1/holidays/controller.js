@@ -6,7 +6,8 @@ const logger = require('../../../config/logger');
  */
 const search = async (req, res) => {
   try {
-    const result = await service.search(req.body);
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+    const result = await service.search({ ...req.body, locale });
     res.json(result);
   } catch (error) {
     logger.error('Error searching holidays:', error);
@@ -19,7 +20,8 @@ const search = async (req, res) => {
  */
 const getAll = async (req, res) => {
   try {
-    const result = await service.getAll(req.query);
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+    const result = await service.getAll({ ...req.query, locale });
     res.json(result);
   } catch (error) {
     logger.error('Error getting holidays:', error);
@@ -32,7 +34,8 @@ const getAll = async (req, res) => {
  */
 const getByUuid = async (req, res) => {
   try {
-    const holiday = await service.getByUuid(req.params.uuid);
+    const locale = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
+    const holiday = await service.getByUuid(req.params.uuid, locale);
     if (!holiday) {
       return res.status(404).json({ error: 'Holiday not found' });
     }
