@@ -1,4 +1,5 @@
 const service = require('./service');
+const prisma = require('../../../config/prisma');
 const logger = require('../../../config/logger');
 
 /**
@@ -108,6 +109,51 @@ const removeMany = async (req, res) => {
   }
 };
 
+/**
+ * Sync calendars linked to a holiday
+ * POST /api/v1/holidays/:uuid/sync-calendars
+ */
+const syncCalendars = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    const { add = [], remove: toRemove = [] } = req.body;
+
+    if (toRemove.length > 0) {
+      await prisma.holidays_calendars.deleteMany({
+        where: {
+          rel_holiday_uuid: uuid,
+          rel_calendar_uuid: { in: toRemove }
+        }
+      });
+      logger.info(`Holiday ${uuid}: unlinked ${toRemove.length} calendars`);
+    }
+
+    if (add.length > 0) {
+      const existing = await prisma.holidays_calendars.findMany({
+        where: { rel_holiday_uuid: uuid, rel_calendar_uuid: { in: add } },
+        select: { rel_calendar_uuid: true }
+      });
+      const existingSet = new Set(existing.map(e => e.rel_calendar_uuid));
+      const toCreate = add.filter(id => !existingSet.has(id));
+
+      if (toCreate.length > 0) {
+        await prisma.holidays_calendars.createMany({
+          data: toCreate.map(calUuid => ({
+            rel_holiday_uuid: uuid,
+            rel_calendar_uuid: calUuid
+          }))
+        });
+        logger.info(`Holiday ${uuid}: linked ${toCreate.length} calendars`);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('Error syncing calendars for holiday:', error);
+    res.status(500).json({ error: 'Failed to sync calendars' });
+  }
+};
+
 module.exports = {
   search,
   getAll,
@@ -116,4 +162,5 @@ module.exports = {
   update,
   remove,
   removeMany,
+  syncCalendars,
 };

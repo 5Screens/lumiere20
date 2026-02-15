@@ -49,5 +49,7 @@ router.post('/', validate(createSchema), controller.create);
 router.put('/:uuid', validate(updateSchema), controller.update);
 router.delete('/:uuid', controller.remove);
 router.post('/delete-many', controller.removeMany);
+router.post('/:uuid/sync-symptoms', controller.syncSymptoms);
+router.post('/:uuid/sync-causes', controller.syncCauses);
 
 module.exports = router;

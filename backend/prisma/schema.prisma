@@ -1017,6 +1017,7 @@ model object_fields {
   relation_object  String? @db.VarChar(100) // For relation: target object type code
   relation_display String? @db.VarChar(100) // For relation: field to display (e.g., 'name')
   relation_filter  String? @db.Text // For relation: JSON filter (e.g., '{"is_active":true}')
+  sync_url         String? @db.VarChar(255) // For reverse_link_mn: API endpoint to sync links
 
   // Formatting
   format_pattern String? @db.VarChar(100) // Date format, number format, etc.

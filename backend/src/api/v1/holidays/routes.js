@@ -15,5 +15,6 @@ router.get('/:uuid', controller.getByUuid);
 router.post('/', controller.create);
 router.put('/:uuid', controller.update);
 router.delete('/:uuid', controller.remove);
+router.post('/:uuid/sync-calendars', controller.syncCalendars);
 
 module.exports = router;

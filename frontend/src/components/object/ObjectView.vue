@@ -90,15 +90,21 @@
             />
           </TabPanel>
 
-          <!-- Reverse Link Tabs (e.g., service offerings for services) -->
+          <!-- Reverse Link Tabs (1:N uses ReverseLinkTable, N:N uses ReverseLinkManyToMany) -->
           <TabPanel 
             v-for="rlField in reverseLinkFields" 
             :key="rlField.field_name" 
             :value="rlField.field_name" 
             class="h-full overflow-auto"
           >
+            <ReverseLinkManyToMany 
+              v-if="item?.uuid && rlField.field_type === 'reverse_link_mn'"
+              :field="rlField"
+              :parentUuid="item.uuid"
+              :parentType="objectType"
+            />
             <ReverseLinkTable 
-              v-if="item?.uuid"
+              v-else-if="item?.uuid"
               :field="rlField"
               :parentUuid="item.uuid"
               :parentType="objectType"
@@ -166,6 +172,7 @@ import ObjectGeneralInfo from './ObjectGeneralInfo.vue'
 import ObjectExtendedInfo from './ObjectExtendedInfo.vue'
 import RelatedTicketsList from './RelatedTicketsList.vue'
 import ReverseLinkTable from './ReverseLinkTable.vue'
+import ReverseLinkManyToMany from './ReverseLinkManyToMany.vue'
 import UuidDisplay from '@/components/form/UuidDisplay.vue'
 
 // Props

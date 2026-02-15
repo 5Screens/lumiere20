@@ -257,7 +257,17 @@ export default {
     addToFilter: 'Add to filter',
     filterAdded: 'Filter added',
     filterAddedDetail: 'The value has been added to the column filter',
-    viewDetails: 'View details'
+    viewDetails: 'View details',
+    mnSelectedCount: '{selected} of {total} selected',
+    mnFilterSelected: 'Selected',
+    mnFilterNotSelected: 'Not selected',
+    mnSelectAll: 'Select all',
+    mnDeselectAll: 'Deselect all',
+    mnConfirm: 'Confirm',
+    mnRevert: 'Revert',
+    mnUnsavedChanges: 'Unsaved link changes',
+    mnSaved: 'Links updated successfully',
+    mnSaveFailed: 'Failed to update links'
   },
   tabs: {
     backToList: 'Back to list',

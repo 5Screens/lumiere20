@@ -1,4 +1,5 @@
 const service = require('./service');
+const prisma = require('../../../config/prisma');
 const logger = require('../../../config/logger');
 
 /**
@@ -143,6 +144,96 @@ const removeMany = async (req, res, next) => {
   }
 };
 
+/**
+ * Sync symptoms linked to a service
+ * POST /api/v1/services/:uuid/sync-symptoms
+ */
+const syncSymptoms = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { add = [], remove: toRemove = [] } = req.body;
+
+    if (toRemove.length > 0) {
+      await prisma.rel_symptoms_services.deleteMany({
+        where: {
+          rel_service_uuid: uuid,
+          rel_symptom_uuid: { in: toRemove }
+        }
+      });
+      logger.info(`Service ${uuid}: unlinked ${toRemove.length} symptoms`);
+    }
+
+    if (add.length > 0) {
+      const existing = await prisma.rel_symptoms_services.findMany({
+        where: { rel_service_uuid: uuid, rel_symptom_uuid: { in: add } },
+        select: { rel_symptom_uuid: true }
+      });
+      const existingSet = new Set(existing.map(e => e.rel_symptom_uuid));
+      const toCreate = add.filter(id => !existingSet.has(id));
+
+      if (toCreate.length > 0) {
+        await prisma.rel_symptoms_services.createMany({
+          data: toCreate.map(symptomUuid => ({
+            rel_service_uuid: uuid,
+            rel_symptom_uuid: symptomUuid
+          }))
+        });
+        logger.info(`Service ${uuid}: linked ${toCreate.length} symptoms`);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('Error syncing symptoms for service:', error);
+    next(error);
+  }
+};
+
+/**
+ * Sync causes linked to a service
+ * POST /api/v1/services/:uuid/sync-causes
+ */
+const syncCauses = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { add = [], remove: toRemove = [] } = req.body;
+
+    if (toRemove.length > 0) {
+      await prisma.rel_causes_services.deleteMany({
+        where: {
+          rel_service_uuid: uuid,
+          rel_cause_uuid: { in: toRemove }
+        }
+      });
+      logger.info(`Service ${uuid}: unlinked ${toRemove.length} causes`);
+    }
+
+    if (add.length > 0) {
+      const existing = await prisma.rel_causes_services.findMany({
+        where: { rel_service_uuid: uuid, rel_cause_uuid: { in: add } },
+        select: { rel_cause_uuid: true }
+      });
+      const existingSet = new Set(existing.map(e => e.rel_cause_uuid));
+      const toCreate = add.filter(id => !existingSet.has(id));
+
+      if (toCreate.length > 0) {
+        await prisma.rel_causes_services.createMany({
+          data: toCreate.map(causeUuid => ({
+            rel_service_uuid: uuid,
+            rel_cause_uuid: causeUuid
+          }))
+        });
+        logger.info(`Service ${uuid}: linked ${toCreate.length} causes`);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('Error syncing causes for service:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   search,
   getAll,
@@ -151,4 +242,6 @@ module.exports = {
   update,
   remove,
   removeMany,
+  syncSymptoms,
+  syncCauses,
 };

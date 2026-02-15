@@ -397,10 +397,10 @@ async function seedObjectMetadata() {
       { field_name: 'service_offerings', label_key: 'services.serviceOfferings', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status,start_date,end_date', relation_filter: 'service_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 50, default_visible: true },
       // Reverse link to request catalog items
       { field_name: 'request_catalog_items', label_key: 'services.requestCatalogItems', field_type: 'reverse_link', relation_object: 'request_catalog_items', relation_display: 'name,icon,is_active,display_order', relation_filter: 'rel_service_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 51, default_visible: true },
-      // Reverse link to symptoms (N:N via rel_symptoms_services, backend handles junction)
-      { field_name: 'symptoms', label_key: 'services.symptoms', field_type: 'reverse_link', relation_object: 'symptoms', relation_display: 'code,label,is_active', relation_filter: 'rel_service_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 52, default_visible: true },
-      // Reverse link to causes (N:N via rel_causes_services, backend handles junction)
-      { field_name: 'causes', label_key: 'services.causes', field_type: 'reverse_link', relation_object: 'causes', relation_display: 'code,label,is_active', relation_filter: 'rel_service_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 53, default_visible: true },
+      // Reverse link to symptoms (N:N via rel_symptoms_services)
+      { field_name: 'symptoms', label_key: 'services.symptoms', field_type: 'reverse_link_mn', relation_object: 'symptoms', relation_display: 'code,label,is_active', relation_filter: 'rel_service_uuid', sync_url: '/services/{parentUuid}/sync-symptoms', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 52, default_visible: true },
+      // Reverse link to causes (N:N via rel_causes_services)
+      { field_name: 'causes', label_key: 'services.causes', field_type: 'reverse_link_mn', relation_object: 'causes', relation_display: 'code,label,is_active', relation_filter: 'rel_service_uuid', sync_url: '/services/{parentUuid}/sync-causes', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 53, default_visible: true },
     ],
     service_offerings: [
       { field_name: 'name', label_key: 'serviceOfferings.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
@@ -457,7 +457,7 @@ async function seedObjectMetadata() {
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
       // Reverse link to calendars (N:N via holidays_calendars)
-      { field_name: 'calendars', label_key: 'holidays.calendars', field_type: 'reverse_link', relation_object: 'calendars', relation_display: 'name,is_active', relation_filter: 'rel_holiday_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, is_readonly: true, display_order: 50, default_visible: true },
+      { field_name: 'calendars', label_key: 'holidays.calendars', field_type: 'reverse_link_mn', relation_object: 'calendars', relation_display: 'name,is_active', relation_filter: 'rel_holiday_uuid', sync_url: '/holidays/{parentUuid}/sync-calendars', show_in_table: false, show_in_form: false, show_in_detail: true, display_order: 50, default_visible: true },
     ],
     calendars: [
       { field_name: 'name', label_key: 'calendars.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },

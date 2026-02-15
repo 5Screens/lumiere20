@@ -88,7 +88,7 @@ export function useObjectView(options) {
   // Get reverse link fields (for displaying related objects in separate tabs)
   const reverseLinkFields = computed(() => {
     if (!objectTypeMetadata.value?.fields) return []
-    return objectTypeMetadata.value.fields.filter(f => f.field_type === 'reverse_link' && f.show_in_detail)
+    return objectTypeMetadata.value.fields.filter(f => (f.field_type === 'reverse_link' || f.field_type === 'reverse_link_mn') && f.show_in_detail)
   })
 
   // Get display name for header

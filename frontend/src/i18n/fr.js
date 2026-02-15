@@ -260,7 +260,17 @@ export default {
     addToFilter: 'Ajouter au filtre',
     filterAdded: 'Filtre ajouté',
     filterAddedDetail: 'La valeur a été ajoutée au filtre de la colonne',
-    viewDetails: 'Voir les détails'
+    viewDetails: 'Voir les détails',
+    mnSelectedCount: '{selected} sur {total} sélectionnés',
+    mnFilterSelected: 'Sélectionné',
+    mnFilterNotSelected: 'Non sélectionné',
+    mnSelectAll: 'Sélectionner tout',
+    mnDeselectAll: 'Désélectionner tout',
+    mnConfirm: 'Confirmer',
+    mnRevert: 'Annuler',
+    mnUnsavedChanges: 'Modifications de liens non enregistrées',
+    mnSaved: 'Liens mis à jour avec succès',
+    mnSaveFailed: 'Échec de la mise à jour des liens'
   },
   tabs: {
     backToList: 'Retour à la liste',
