@@ -472,15 +472,21 @@ const loadInitialValue = async () => {
     if (!endpoint) return
     
     if (props.multiple && Array.isArray(props.modelValue)) {
-      // Load multiple items by UUID
+      // Load multiple items by UUID (modelValue can be UUIDs or objects with uuid)
       const items = await Promise.all(
-        props.modelValue.map(uuid => api.get(`${endpoint}/${uuid}`).then(r => r.data).catch(() => null))
+        props.modelValue.map(entry => {
+          const id = typeof entry === 'string' ? entry : entry?.uuid
+          if (!id) return Promise.resolve(null)
+          return api.get(`${endpoint}/${id}`).then(r => r.data).catch(() => null)
+        })
       )
       const loaded = items.filter(Boolean)
       selectedItem.value = loaded
       savedSelections.value = loaded
     } else {
-      const response = await api.get(`${endpoint}/${props.modelValue}`)
+      const id = typeof props.modelValue === 'string' ? props.modelValue : props.modelValue?.uuid
+      if (!id) return
+      const response = await api.get(`${endpoint}/${id}`)
       if (response.data) {
         selectedItem.value = response.data
       }
@@ -497,7 +503,9 @@ watch(() => props.modelValue, (newVal, oldVal) => {
   if (props.multiple) {
     if (isSearching.value) return
 
-    const newUuids = Array.isArray(newVal) ? newVal : []
+    const newUuids = (Array.isArray(newVal) ? newVal : [])
+      .map(v => typeof v === 'string' ? v : v?.uuid)
+      .filter(Boolean)
     const currentUuids = (Array.isArray(selectedItem.value) ? selectedItem.value : [])
       .map(i => i?.uuid)
       .filter(Boolean)
