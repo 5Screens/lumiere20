@@ -255,17 +255,23 @@ const create = async (data) => {
  * Update symptom
  */
 const update = async (uuid, data) => {
-  const { _translations, service_uuids, ...symptomData } = data;
+  const { _translations, service_uuids, services, ...symptomData } = data;
+  
+  // Support both service_uuids (array of UUIDs) and services (array of objects or UUIDs)
+  let resolvedServiceUuids = service_uuids;
+  if (resolvedServiceUuids === undefined && services !== undefined) {
+    resolvedServiceUuids = services.map(s => (typeof s === 'string' ? s : s.uuid));
+  }
   
   try {
-    // If service_uuids provided, replace all service links
-    if (service_uuids !== undefined) {
+    // If service UUIDs provided, replace all service links
+    if (resolvedServiceUuids !== undefined) {
       await prisma.rel_symptoms_services.deleteMany({
         where: { rel_symptom_uuid: uuid }
       });
-      if (service_uuids?.length > 0) {
+      if (resolvedServiceUuids?.length > 0) {
         await prisma.rel_symptoms_services.createMany({
-          data: service_uuids.map(svcUuid => ({
+          data: resolvedServiceUuids.map(svcUuid => ({
             rel_symptom_uuid: uuid,
             rel_service_uuid: svcUuid
           }))

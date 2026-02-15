@@ -254,17 +254,23 @@ const create = async (data) => {
  * Update cause
  */
 const update = async (uuid, data) => {
-  const { _translations, service_uuids, ...causeData } = data;
+  const { _translations, service_uuids, services, ...causeData } = data;
+  
+  // Support both service_uuids (array of UUIDs) and services (array of objects or UUIDs)
+  let resolvedServiceUuids = service_uuids;
+  if (resolvedServiceUuids === undefined && services !== undefined) {
+    resolvedServiceUuids = services.map(s => (typeof s === 'string' ? s : s.uuid));
+  }
   
   try {
-    // If service_uuids provided, replace all service links
-    if (service_uuids !== undefined) {
+    // If service UUIDs provided, replace all service links
+    if (resolvedServiceUuids !== undefined) {
       await prisma.rel_causes_services.deleteMany({
         where: { rel_cause_uuid: uuid }
       });
-      if (service_uuids?.length > 0) {
+      if (resolvedServiceUuids?.length > 0) {
         await prisma.rel_causes_services.createMany({
-          data: service_uuids.map(svcUuid => ({
+          data: resolvedServiceUuids.map(svcUuid => ({
             rel_cause_uuid: uuid,
             rel_service_uuid: svcUuid
           }))
