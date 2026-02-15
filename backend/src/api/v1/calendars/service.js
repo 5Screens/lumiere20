@@ -42,7 +42,7 @@ const search = async (params) => {
         holidays_calendars: {
           include: {
             holiday: {
-              select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+              select: { uuid: true, name: true, date: true, country_codes: true, is_recurring: true },
             },
           },
         },
@@ -84,7 +84,7 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'name', sortOrder = 1,
         holidays_calendars: {
           include: {
             holiday: {
-              select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+              select: { uuid: true, name: true, date: true, country_codes: true, is_recurring: true },
             },
           },
         },
@@ -117,7 +117,7 @@ const getByUuid = async (uuid) => {
       holidays_calendars: {
         include: {
           holiday: {
-            select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+            select: { uuid: true, name: true, date: true, country_codes: true, is_recurring: true },
           },
         },
       },
@@ -164,7 +164,7 @@ const create = async (data) => {
       holidays_calendars: {
         include: {
           holiday: {
-            select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+            select: { uuid: true, name: true, date: true, country_codes: true, is_recurring: true },
           },
         },
       },
@@ -221,7 +221,7 @@ const update = async (uuid, data) => {
         holidays_calendars: {
           include: {
             holiday: {
-              select: { uuid: true, name: true, date: true, country_code: true, is_recurring: true },
+              select: { uuid: true, name: true, date: true, country_codes: true, is_recurring: true },
             },
           },
         },

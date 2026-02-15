@@ -451,7 +451,7 @@ async function seedObjectMetadata() {
     holidays: [
       { field_name: 'name', label_key: 'holidays.name', field_type: 'text', is_required: true, is_translatable: true, min_width: '16rem', display_order: 1, default_visible: true },
       { field_name: 'date', label_key: 'holidays.date', field_type: 'date', data_type: 'date', is_required: true, min_width: '12rem', display_order: 2, default_visible: true },
-      { field_name: 'country_code', label_key: 'holidays.countryCode', field_type: 'text', min_width: '8rem', display_order: 3, default_visible: true },
+      { field_name: 'country_codes', label_key: 'holidays.countryCodes', field_type: 'tags', min_width: '10rem', display_order: 3, default_visible: true },
       { field_name: 'is_recurring', label_key: 'holidays.isRecurring', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 4, default_visible: true },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 5, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },

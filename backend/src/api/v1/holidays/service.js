@@ -47,7 +47,7 @@ const search = async (params) => {
 
   // Build base where clause from filters (excluding global)
   let where = buildPrismaWhereFromFilters(filters, {
-    globalSearchFields: ['name', 'country_code'],
+    globalSearchFields: ['name'],
   });
 
   // If there's a global search, also search in translations
@@ -68,7 +68,7 @@ const search = async (params) => {
       ...where,
       OR: [
         { name: { contains: searchTerm, mode: 'insensitive' } },
-        { country_code: { contains: searchTerm, mode: 'insensitive' } },
+        { country_codes: { has: searchTerm.toUpperCase() } },
         ...(translatedUuids.length > 0 ? [{ uuid: { in: translatedUuids } }] : [])
       ]
     };

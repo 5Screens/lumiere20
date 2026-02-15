@@ -167,7 +167,7 @@ model holidays {
   uuid         String   @id @default(uuid()) @db.Uuid
   date         DateTime @db.Date
   name         String   @db.VarChar(255)
-  country_code String?  @db.VarChar(10) // e.g., 'FR', 'US'
+  country_codes String[] @default([]) // e.g., ['FR', 'ES', 'PT']
   is_recurring Boolean  @default(false) // Fixed holidays that recur every year
   is_active    Boolean  @default(true)
   created_at   DateTime @default(now()) @db.Timestamptz(6)
