@@ -337,6 +337,11 @@ const menuItems = computed(() => [
             command: () => openTab('symptoms', 'Symptoms', 'menu.symptoms', 'pi pi-info-circle', 'symptoms')
           },
           {
+            label: t('menu.causes') || 'Causes',
+            icon: 'pi pi-search',
+            command: () => openTab('causes', 'Causes', 'menu.causes', 'pi pi-search', 'causes')
+          },
+          {
             label: t('menu.knowledgeSetup') || 'Knowledge Setup',
             icon: 'pi pi-book',
             command: () => openTab('knowledge-setup', 'Knowledge Setup', 'menu.knowledgeSetup', 'pi pi-book', 'object_setup', 'ObjectsCrud', null, null, 'knowledge')

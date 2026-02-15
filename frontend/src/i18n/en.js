@@ -64,6 +64,7 @@ export default {
     problemCategories: 'Problem management',
     incidentSetup: 'Incident management',
     symptoms: 'Symptoms',
+    causes: 'Causes',
     knowledgeSetup: 'Knowledge management',
     defectSetup: 'Defect management',
     projectSetup: 'Project management',
