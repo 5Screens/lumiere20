@@ -1,5 +1,5 @@
 <template>
-  <div class="reverse-link-mn p-4">
+  <div class="reverse-link-mn p-4 flex flex-col h-full">
     <!-- Header with title and counter -->
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-surface-700 dark:text-surface-200">
@@ -56,15 +56,16 @@
     </div>
 
     <!-- Items list with checkboxes -->
-    <div v-else class="border border-surface-200 dark:border-surface-700 rounded-lg overflow-hidden">
+    <div v-else class="overflow-hidden flex-1 min-h-0 flex flex-col">
       <DataTable 
         :value="filteredItems" 
         :scrollable="true"
-        scrollHeight="400px"
+        scrollHeight="flex"
         stripedRows
         rowHover
         size="small"
-        class="p-datatable-sm cursor-pointer-rows"
+        class="p-datatable-sm flex-1"
+        :pt="{ bodyRow: { class: 'cursor-pointer' } }"
         @row-click="toggleItem($event.data)"
       >
         <!-- Checkbox column -->
@@ -368,8 +369,3 @@ watch(() => props.parentUuid, () => {
 }, { immediate: true })
 </script>
 
-<style scoped>
-.cursor-pointer-rows :deep(tr) {
-  cursor: pointer;
-}
-</style>

@@ -95,7 +95,7 @@
             v-for="rlField in reverseLinkFields" 
             :key="rlField.field_name" 
             :value="rlField.field_name" 
-            class="h-full overflow-auto"
+            :class="rlField.field_type === 'reverse_link_mn' ? 'h-full flex flex-col overflow-hidden' : 'h-full overflow-auto'"
           >
             <ReverseLinkManyToMany 
               v-if="item?.uuid && rlField.field_type === 'reverse_link_mn'"
