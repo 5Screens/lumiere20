@@ -75,17 +75,19 @@ const getByUuid = async (uuid) => {
  * Create new user set
  */
 const create = async (data) => {
-  return prisma.user_sets.create({ data });
+  const { _translations, ...userData } = data;
+  return prisma.user_sets.create({ data: userData });
 };
 
 /**
  * Update user set
  */
 const update = async (uuid, data) => {
+  const { _translations, ...userData } = data;
   try {
     return await prisma.user_sets.update({
       where: { uuid },
-      data,
+      data: userData,
     });
   } catch (error) {
     if (error.code === 'P2025') {
