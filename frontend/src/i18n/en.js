@@ -399,6 +399,14 @@ export default {
       deletedMultiple: '{count} service offerings deleted successfully'
     },
     commitments: 'SLA Commitments',
+    subscribedEntities: 'Subscribed Entities',
+    subscribedLocations: 'Subscribed Locations',
+    subscribedGroups: 'Subscribed Groups',
+    subscribedUserSets: 'Subscribed User Sets',
+  },
+  subscriptions: {
+    startDate: 'Start Date',
+    endDate: 'End Date',
   },
   slas: {
     title: 'SLAs',

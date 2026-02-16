@@ -234,6 +234,110 @@ const removeMany = async (uuids) => {
   return result.count;
 };
 
+/**
+ * Get subscriptions for a service offering, optionally filtered by subscriber_type
+ */
+const getSubscriptions = async (serviceOfferingUuid, subscriberType = null) => {
+  const where = { rel_service_offering_uuid: serviceOfferingUuid };
+  if (subscriberType) {
+    where.subscriber_type = subscriberType;
+  }
+
+  return prisma.service_offering_subscriptions.findMany({
+    where,
+    include: {
+      user_set: true,
+      location: true,
+      entity: true,
+      group: true,
+    },
+    orderBy: { created_at: 'desc' },
+  });
+};
+
+/**
+ * Sync subscriptions for a service offering
+ * Body: { subscriber_type, add: [uuid...], remove: [uuid...], update: [{ uuid, start_date, end_date, is_active }] }
+ */
+const syncSubscriptions = async (serviceOfferingUuid, { subscriber_type, add = [], remove: toRemove = [], update: toUpdate = [] }) => {
+  // Map subscriber_type to the correct FK field
+  const fkFieldMap = {
+    entity: 'rel_entity_uuid',
+    location: 'rel_location_uuid',
+    group: 'rel_group_uuid',
+    user_set: 'rel_user_set_uuid',
+  };
+
+  const fkField = fkFieldMap[subscriber_type];
+  if (!fkField) {
+    throw new Error(`Invalid subscriber_type: ${subscriber_type}`);
+  }
+
+  // Remove subscriptions
+  if (toRemove.length > 0) {
+    await prisma.service_offering_subscriptions.deleteMany({
+      where: {
+        rel_service_offering_uuid: serviceOfferingUuid,
+        subscriber_type,
+        [fkField]: { in: toRemove },
+      },
+    });
+  }
+
+  // Add subscriptions (avoid duplicates)
+  if (add.length > 0) {
+    const existing = await prisma.service_offering_subscriptions.findMany({
+      where: {
+        rel_service_offering_uuid: serviceOfferingUuid,
+        subscriber_type,
+        [fkField]: { in: add },
+      },
+      select: { [fkField]: true },
+    });
+    const existingSet = new Set(existing.map(e => e[fkField]));
+    const toCreate = add.filter(id => !existingSet.has(id));
+
+    if (toCreate.length > 0) {
+      await prisma.service_offering_subscriptions.createMany({
+        data: toCreate.map(subscriberUuid => ({
+          rel_service_offering_uuid: serviceOfferingUuid,
+          subscriber_type,
+          [fkField]: subscriberUuid,
+        })),
+      });
+    }
+  }
+
+  // Update existing subscriptions (start_date, end_date, is_active)
+  if (toUpdate.length > 0) {
+    for (const upd of toUpdate) {
+      const updateData = {};
+      if (upd.start_date !== undefined) {
+        updateData.start_date = upd.start_date ? new Date(upd.start_date) : new Date();
+      }
+      if (upd.end_date !== undefined) {
+        updateData.end_date = upd.end_date ? new Date(upd.end_date) : null;
+      }
+      if (upd.is_active !== undefined) {
+        updateData.is_active = upd.is_active;
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        await prisma.service_offering_subscriptions.updateMany({
+          where: {
+            rel_service_offering_uuid: serviceOfferingUuid,
+            subscriber_type,
+            [fkField]: upd.uuid,
+          },
+          data: updateData,
+        });
+      }
+    }
+  }
+
+  return { success: true };
+};
+
 module.exports = {
   search,
   getAll,
@@ -243,4 +347,6 @@ module.exports = {
   update,
   remove,
   removeMany,
+  getSubscriptions,
+  syncSubscriptions,
 };

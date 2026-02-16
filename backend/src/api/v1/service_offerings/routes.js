@@ -42,5 +42,7 @@ router.post('/', validate(createSchema), controller.create);
 router.put('/:uuid', validate(updateSchema), controller.update);
 router.delete('/:uuid', controller.remove);
 router.post('/delete-many', controller.removeMany);
+router.get('/:uuid/subscriptions', controller.getSubscriptions);
+router.post('/:uuid/sync-subscriptions', controller.syncSubscriptions);
 
 module.exports = router;

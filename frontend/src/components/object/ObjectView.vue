@@ -95,10 +95,16 @@
             v-for="rlField in reverseLinkFields" 
             :key="rlField.field_name" 
             :value="rlField.field_name" 
-            :class="rlField.field_type === 'reverse_link_mn' ? 'h-full flex flex-col overflow-hidden' : 'h-full overflow-auto'"
+            :class="(rlField.field_type === 'reverse_link_mn' || rlField.field_type === 'reverse_link_subscription') ? 'h-full flex flex-col overflow-hidden' : 'h-full overflow-auto'"
           >
+            <SubscriptionManyToMany 
+              v-if="item?.uuid && rlField.field_type === 'reverse_link_subscription'"
+              :field="rlField"
+              :parentUuid="item.uuid"
+              :parentType="objectType"
+            />
             <ReverseLinkManyToMany 
-              v-if="item?.uuid && rlField.field_type === 'reverse_link_mn'"
+              v-else-if="item?.uuid && rlField.field_type === 'reverse_link_mn'"
               :field="rlField"
               :parentUuid="item.uuid"
               :parentType="objectType"
@@ -173,6 +179,7 @@ import ObjectExtendedInfo from './ObjectExtendedInfo.vue'
 import RelatedTicketsList from './RelatedTicketsList.vue'
 import ReverseLinkTable from './ReverseLinkTable.vue'
 import ReverseLinkManyToMany from './ReverseLinkManyToMany.vue'
+import SubscriptionManyToMany from './SubscriptionManyToMany.vue'
 import UuidDisplay from '@/components/form/UuidDisplay.vue'
 
 // Props

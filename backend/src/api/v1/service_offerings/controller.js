@@ -157,6 +157,55 @@ const removeMany = async (req, res, next) => {
   }
 };
 
+/**
+ * Get subscriptions for a service offering
+ * GET /api/v1/service-offerings/:uuid/subscriptions
+ */
+const getSubscriptions = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { subscriber_type } = req.query;
+    const items = await service.getSubscriptions(uuid, subscriber_type || null);
+    res.json(items);
+  } catch (error) {
+    logger.error('Error getting subscriptions for service offering:', error);
+    next(error);
+  }
+};
+
+/**
+ * Sync subscriptions for a service offering
+ * POST /api/v1/service-offerings/:uuid/sync-subscriptions
+ */
+const syncSubscriptions = async (req, res, next) => {
+  try {
+    const { uuid } = req.params;
+    const { subscriber_type, add = [], remove = [], update = [] } = req.body;
+
+    if (!subscriber_type) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: 'subscriber_type is required',
+      });
+    }
+
+    const validTypes = ['entity', 'location', 'group', 'user_set'];
+    if (!validTypes.includes(subscriber_type)) {
+      return res.status(400).json({
+        error: 'Validation error',
+        message: `subscriber_type must be one of: ${validTypes.join(', ')}`,
+      });
+    }
+
+    const result = await service.syncSubscriptions(uuid, { subscriber_type, add, remove, update });
+    logger.info(`Service offering ${uuid}: synced ${subscriber_type} subscriptions (add: ${add.length}, remove: ${remove.length}, update: ${update.length})`);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error syncing subscriptions for service offering:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   search,
   getAll,
@@ -166,4 +215,6 @@ module.exports = {
   update,
   remove,
   removeMany,
+  getSubscriptions,
+  syncSubscriptions,
 };
