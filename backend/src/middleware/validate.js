@@ -1,4 +1,5 @@
 const { z } = require('zod');
+const logger = require('../config/logger');
 
 /**
  * Validation middleware factory
@@ -38,6 +39,16 @@ const validate = (schema) => {
           });
         }
         req.body = result.data;
+      }
+
+      // Log search requests for debugging
+      if (req.method === 'POST' && req.originalUrl.endsWith('/search')) {
+        const { filters, page, limit, sortField, sortOrder } = req.body;
+        const filterKeys = filters ? Object.keys(filters) : [];
+        logger.info(`[SEARCH] ${req.originalUrl} | page=${page} limit=${limit} sort=${sortField}/${sortOrder} filters=[${filterKeys.join(',')}]`);
+        if (filterKeys.length > 0) {
+          logger.info(`[SEARCH] Filter details: ${JSON.stringify(filters)}`);
+        }
       }
       
       next();
