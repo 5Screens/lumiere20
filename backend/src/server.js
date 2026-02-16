@@ -74,6 +74,7 @@ const commitmentsRoutes = require('./api/v1/commitments/routes');
 const calendarsRoutes = require('./api/v1/calendars/routes');
 const timezonesRoutes = require('./api/v1/timezones/routes');
 const holidaysRoutes = require('./api/v1/holidays/routes');
+const userSetsRoutes = require('./api/v1/user_sets/routes');
 
 // Public routes (no authentication required)
 app.use('/api/v1/auth', authRoutes);
@@ -112,6 +113,7 @@ app.use('/api/v1/request-catalog-items', authenticate, requestCatalogItemsRoutes
 app.use('/api/v1/slas', authenticate, slasRoutes);
 app.use('/api/v1/commitments', authenticate, commitmentsRoutes);
 app.use('/api/v1/calendars', authenticate, calendarsRoutes);
+app.use('/api/v1/user-sets', authenticate, userSetsRoutes);
 app.use('/api/v1/timezones', authenticate, timezonesRoutes);
 app.use('/api/v1/holidays', authenticate, holidaysRoutes);
 

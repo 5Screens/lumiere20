@@ -22,6 +22,7 @@ import commitmentsService from './commitmentsService'
 import calendarsService from './calendarsService'
 import timezonesService from './timezonesService'
 import holidaysService from './holidaysService'
+import userSetsService from './userSetsService'
 
 // Service registry mapping objectType to service
 const services = {
@@ -46,6 +47,7 @@ const services = {
   calendars: calendarsService,
   timezones: timezonesService,
   holidays: holidaysService,
+  user_sets: userSetsService,
 }
 
 /**

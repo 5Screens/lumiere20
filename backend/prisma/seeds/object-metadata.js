@@ -208,6 +208,16 @@ async function seedObjectMetadata() {
       display_field: 'name',
       secondary_field: 'date',
     },
+    {
+      code: 'user_sets',
+      label_key: 'userSets.title',
+      icon: 'pi-filter',
+      api_endpoint: '/api/v1/user-sets',
+      default_sort_field: 'name',
+      default_sort_order: 1,
+      display_field: 'name',
+      secondary_field: 'description',
+    },
   ];
 
   // Define fields for each object type
@@ -442,6 +452,14 @@ async function seedObjectMetadata() {
       { field_name: 'form_fields', label_key: 'requestCatalogItems.formFields', field_type: 'json', show_in_table: false, min_width: '20rem', display_order: 7, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11, default_visible: true },
+    ],
+    user_sets: [
+      { field_name: 'name', label_key: 'userSets.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
+      { field_name: 'description', label_key: 'userSets.description', field_type: 'textarea', min_width: '20rem', display_order: 2, default_visible: true },
+      { field_name: 'criteria', label_key: 'userSets.criteria', field_type: 'json', min_width: '20rem', display_order: 3, default_visible: true },
+      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 4, default_visible: true },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
     ],
     timezones: [
       { field_name: 'code', label_key: 'timezones.code', field_type: 'text', is_required: true, min_width: '14rem', display_order: 1, default_visible: true },

@@ -81,6 +81,7 @@ export default {
     calendars: 'Calendars',
     timezones: 'Timezones',
     holidays: 'Holidays',
+    userSets: 'User Sets',
     
     // Admin items
     languages: 'Languages',
@@ -1201,6 +1202,18 @@ holidays: {
     updated: 'Holiday updated successfully',
     deleted: 'Holiday deleted successfully',
     deletedMultiple: '{count} holidays deleted successfully'
+  }
+},
+userSets: {
+  title: 'User Sets',
+  name: 'Name',
+  description: 'Description',
+  criteria: 'Filter Criteria',
+  messages: {
+    created: 'User set created successfully',
+    updated: 'User set updated successfully',
+    deleted: 'User set deleted successfully',
+    deletedMultiple: '{count} user sets deleted successfully'
   }
 }
 }

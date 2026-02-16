@@ -83,6 +83,7 @@ export default {
     calendars: 'Calendriers',
     timezones: 'Fuseaux horaires',
     holidays: 'Jours fériés',
+    userSets: 'Ensembles d\'utilisateurs',
     
     // Admin items
     languages: 'Langues',
@@ -1204,6 +1205,18 @@ holidays: {
     updated: 'Jour férié mis à jour avec succès',
     deleted: 'Jour férié supprimé avec succès',
     deletedMultiple: '{count} jours fériés supprimés avec succès'
+  }
+},
+userSets: {
+  title: 'Ensembles d\'utilisateurs',
+  name: 'Nom',
+  description: 'Description',
+  criteria: 'Critères de filtrage',
+  messages: {
+    created: 'Ensemble d\'utilisateurs créé avec succès',
+    updated: 'Ensemble d\'utilisateurs mis à jour avec succès',
+    deleted: 'Ensemble d\'utilisateurs supprimé avec succès',
+    deletedMultiple: '{count} ensembles d\'utilisateurs supprimés avec succès'
   }
 }
 }
