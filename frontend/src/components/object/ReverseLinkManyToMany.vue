@@ -116,6 +116,30 @@
         </Column>
       </DataTable>
     </div>
+
+    <!-- Action buttons: Confirm / Revert -->
+    <div v-if="hasChanges" class="flex items-center justify-end gap-2 mt-4">
+      <span class="text-sm text-orange-500 mr-2">
+        <i class="pi pi-exclamation-circle mr-1" />
+        {{ t('common.mnUnsavedChanges') }}
+      </span>
+      <Button 
+        :label="t('common.mnRevert')" 
+        icon="pi pi-undo" 
+        size="small" 
+        severity="secondary" 
+        outlined
+        @click="revert"
+      />
+      <Button 
+        :label="t('common.mnConfirm')" 
+        icon="pi pi-check" 
+        size="small" 
+        severity="success"
+        :loading="saving"
+        @click="confirmChanges"
+      />
+    </div>
   </div>
 </template>
 
@@ -170,7 +194,7 @@ const originalUuids = ref(new Set())
 const searchQuery = ref('')
 const filterMode = ref(null)
 const first = ref(0)
-const pageSize = ref(50)
+const pageSize = ref(25)
 const sortField = ref(null)
 const sortOrder = ref(1)
 
@@ -342,8 +366,8 @@ const openItemInTab = (data) => {
   if (!data) return
   const objectType = props.field.relation_object
   const displayName = data[primaryField.value] || data.uuid?.substring(0, 8)
-  const parentTabId = props.tabId
-  if (!parentTabId) return
+  const rootParentId = tabsStore.getRootParentId(props.tabId)
+  if (!rootParentId) return
 
   tabsStore.openTab({
     id: `${objectType}-edit-${data.uuid}`,
@@ -352,7 +376,7 @@ const openItemInTab = (data) => {
     component: 'ObjectView',
     objectType: objectType,
     objectId: data.uuid,
-    parentId: parentTabId,
+    parentId: rootParentId,
     mode: 'edit'
   })
 }

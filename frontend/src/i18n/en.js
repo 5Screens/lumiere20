@@ -268,7 +268,8 @@ export default {
     mnRevert: 'Revert',
     mnUnsavedChanges: 'Unsaved link changes',
     mnSaved: 'Links updated successfully',
-    mnSaveFailed: 'Failed to update links'
+    mnSaveFailed: 'Failed to update links',
+    openInTab: 'Open in tab'
   },
   tabs: {
     backToList: 'Back to list',

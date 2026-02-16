@@ -271,7 +271,8 @@ export default {
     mnRevert: 'Annuler',
     mnUnsavedChanges: 'Modifications de liens non enregistrées',
     mnSaved: 'Liens mis à jour avec succès',
-    mnSaveFailed: 'Échec de la mise à jour des liens'
+    mnSaveFailed: 'Échec de la mise à jour des liens',
+    openInTab: 'Ouvrir dans un onglet'
   },
   tabs: {
     backToList: 'Retour à la liste',

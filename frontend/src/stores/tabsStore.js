@@ -370,6 +370,23 @@ export const useTabsStore = defineStore('tabs', {
     activeChildTab: (state) => state.tabs.find(tab => tab.id_tab === state.activeChildTabId),
 
     /**
+     * Returns the root parent tab id for a given tab id (walks up the parent chain)
+     */
+    getRootParentId: (state) => (tabId) => {
+      const tab = state.tabs.find(t => t.id_tab === tabId)
+      if (!tab) return tabId
+      if (!tab.parentId) return tabId
+      // Walk up to find the root parent
+      let current = tab
+      while (current.parentId) {
+        const parent = state.tabs.find(t => t.id_tab === current.parentId)
+        if (!parent) return current.parentId
+        current = parent
+      }
+      return current.id_tab
+    },
+
+    /**
      * Returns the currently displayed tab (child or parent)
      */
     currentTab: (state) => {

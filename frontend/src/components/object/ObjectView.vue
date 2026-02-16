@@ -118,6 +118,7 @@
               :field="rlField"
               :parentUuid="item.uuid"
               :parentType="objectType"
+              :tabId="tabId"
             />
           </TabPanel>
         </TabPanels>

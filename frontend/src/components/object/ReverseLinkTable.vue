@@ -14,6 +14,31 @@
       />
     </div>
 
+    <!-- Custom Split Context Menu -->
+    <div 
+      v-if="contextMenuVisible" 
+      ref="contextMenuEl"
+      class="fixed z-[9999] bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-lg shadow-lg overflow-hidden"
+      :style="{ left: contextMenuPos.x + 'px', top: contextMenuPos.y + 'px' }"
+    >
+      <div class="flex items-stretch">
+        <button 
+          class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors cursor-pointer"
+          @click="openInDrawer(contextItem)"
+        >
+          <i class="pi pi-pencil text-xs" />
+          <span>{{ t('common.edit') }}</span>
+        </button>
+        <button 
+          class="flex items-center px-2 py-2 border-l border-surface-200 dark:border-surface-700 hover:bg-primary/10 transition-colors cursor-pointer"
+          @click="openItemInTab(contextItem)"
+          v-tooltip.top="t('common.openInTab')"
+        >
+          <i class="pi pi-external-link text-xs" />
+        </button>
+      </div>
+    </div>
+
     <!-- Loading state -->
     <div v-if="loading" class="flex items-center justify-center py-8">
       <ProgressSpinner style="width: 40px; height: 40px" />
@@ -36,7 +61,7 @@
       size="small"
       class="p-datatable-sm cursor-pointer-rows"
       @row-click="!field.is_readonly && onRowClick($event)"
-      @contextmenu.prevent
+      @rowContextmenu="onRowContextMenu"
     >
       <!-- Dynamic columns based on relation_display -->
       <Column 
@@ -128,10 +153,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
+import { useTabsStore } from '@/stores/tabsStore'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -154,16 +180,46 @@ const props = defineProps({
   parentType: {
     type: String,
     required: true
+  },
+  tabId: {
+    type: String,
+    default: null
   }
 })
 
 const { t, locale } = useI18n()
 const toast = useToast()
 const confirm = useConfirm()
+const tabsStore = useTabsStore()
 
 // State
 const loading = ref(false)
 const items = ref([])
+
+// Context menu
+const contextMenuVisible = ref(false)
+const contextMenuEl = ref(null)
+const contextMenuPos = ref({ x: 0, y: 0 })
+const contextItem = ref(null)
+
+// Close context menu on outside click
+const onDocumentClick = (e) => {
+  if (contextMenuEl.value && !contextMenuEl.value.contains(e.target)) {
+    contextMenuVisible.value = false
+  }
+}
+
+watch(contextMenuVisible, (val) => {
+  if (val) {
+    setTimeout(() => document.addEventListener('click', onDocumentClick), 0)
+  } else {
+    document.removeEventListener('click', onDocumentClick)
+  }
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocumentClick)
+})
 
 // Drawer state
 const drawerVisible = ref(false)
@@ -283,6 +339,42 @@ const openEditDrawer = (item) => {
 
 const onRowClick = (event) => {
   openEditDrawer(event.data)
+}
+
+// Context menu handler
+const onRowContextMenu = (event) => {
+  event.originalEvent.preventDefault()
+  contextItem.value = event.data
+  contextMenuPos.value = { x: event.originalEvent.clientX, y: event.originalEvent.clientY }
+  contextMenuVisible.value = true
+}
+
+// Open in drawer (left part of split menu)
+const openInDrawer = (data) => {
+  contextMenuVisible.value = false
+  if (data) openEditDrawer(data)
+}
+
+// Open item in a new tab
+const openItemInTab = (data) => {
+  contextMenuVisible.value = false
+  if (!data) return
+  const objectType = props.field.relation_object
+  const displayName = data.name || data.label || data.code || data.uuid?.substring(0, 8)
+  // Find the root parent tab (the list tab), not the current child tab
+  const rootParentId = tabsStore.getRootParentId(props.tabId)
+  if (!rootParentId) return
+
+  tabsStore.openTab({
+    id: `${objectType}-edit-${data.uuid}`,
+    label: displayName,
+    icon: 'pi pi-file',
+    component: 'ObjectView',
+    objectType: objectType,
+    objectId: data.uuid,
+    parentId: rootParentId,
+    mode: 'edit'
+  })
 }
 
 // Duplicate item: fetch full data, clean it, open in create drawer
