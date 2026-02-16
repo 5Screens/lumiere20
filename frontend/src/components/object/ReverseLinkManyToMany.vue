@@ -6,7 +6,7 @@
         {{ t(field.label_key) }}
       </h3>
       <span class="text-sm text-surface-500 dark:text-surface-400">
-        {{ t('common.mnSelectedCount', { selected: selectedUuids.size, total: allItems.length }) }}
+        {{ t('common.mnSelectedCount', { selected: selectedUuids.size, total: totalRecords }) }}
       </span>
     </div>
 
@@ -39,34 +39,51 @@
         size="small" 
         severity="secondary" 
         outlined
-        @click="selectAll"
+        @click="selectAllPage"
       />
       <Button 
         :label="t('common.mnDeselectAll')" 
         size="small" 
         severity="secondary" 
         outlined
-        @click="deselectAll"
+        @click="deselectAllPage"
       />
     </div>
 
     <!-- Loading state -->
-    <div v-if="loading" class="flex items-center justify-center py-8">
+    <div v-if="initialLoading" class="flex items-center justify-center py-8">
       <ProgressSpinner style="width: 40px; height: 40px" />
     </div>
 
     <!-- Items list with checkboxes -->
     <div v-else class="overflow-hidden flex-1 min-h-0 flex flex-col">
+      <!-- Context Menu -->
+      <ContextMenu ref="cm" :model="contextMenuItems" />
+
       <DataTable 
-        :value="filteredItems" 
+        :value="items" 
         :scrollable="true"
         scrollHeight="flex"
         stripedRows
         rowHover
         size="small"
         class="p-datatable-sm flex-1"
+        :lazy="true"
+        :paginator="true"
+        :rows="pageSize"
+        :totalRecords="totalRecords"
+        :loading="loading"
+        :first="first"
+        :sortField="sortField"
+        :sortOrder="sortOrder"
         :pt="{ bodyRow: { class: 'cursor-pointer' } }"
+        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
+        :currentPageReportTemplate="`{first} - {last} / {totalRecords}`"
+        contextMenu
+        @page="onPage"
+        @sort="onSort"
         @row-click="toggleItem($event.data)"
+        @rowContextmenu="onRowContextMenu"
       >
         <!-- Checkbox column -->
         <Column header="" style="width: 50px">
@@ -99,30 +116,6 @@
         </Column>
       </DataTable>
     </div>
-
-    <!-- Action buttons: Confirm / Revert -->
-    <div v-if="hasChanges" class="flex items-center justify-end gap-2 mt-4">
-      <span class="text-sm text-orange-500 mr-2">
-        <i class="pi pi-exclamation-circle mr-1" />
-        {{ t('common.mnUnsavedChanges') }}
-      </span>
-      <Button 
-        :label="t('common.mnRevert')" 
-        icon="pi pi-undo" 
-        size="small" 
-        severity="secondary" 
-        outlined
-        @click="revert"
-      />
-      <Button 
-        :label="t('common.mnConfirm')" 
-        icon="pi pi-check" 
-        size="small" 
-        severity="success"
-        :loading="saving"
-        @click="confirmChanges"
-      />
-    </div>
   </div>
 </template>
 
@@ -130,6 +123,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
+import { useTabsStore } from '@/stores/tabsStore'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -139,6 +133,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import SelectButton from 'primevue/selectbutton'
 import ProgressSpinner from 'primevue/progressspinner'
+import ContextMenu from 'primevue/contextmenu'
 import api from '@/services/api'
 
 const props = defineProps({
@@ -153,25 +148,52 @@ const props = defineProps({
   parentType: {
     type: String,
     required: true
+  },
+  tabId: {
+    type: String,
+    default: null
   }
 })
 
 const { t, locale } = useI18n()
 const toast = useToast()
+const tabsStore = useTabsStore()
 
 // State
+const initialLoading = ref(false)
 const loading = ref(false)
 const saving = ref(false)
-const allItems = ref([])
+const items = ref([])
+const totalRecords = ref(0)
 const selectedUuids = ref(new Set())
 const originalUuids = ref(new Set())
 const searchQuery = ref('')
 const filterMode = ref(null)
+const first = ref(0)
+const pageSize = ref(50)
+const sortField = ref(null)
+const sortOrder = ref(1)
+
+// Context menu
+const cm = ref(null)
+const contextItem = ref(null)
+
+// Debounce timer for search
+let searchDebounce = null
 
 // Filter options
 const filterOptions = computed(() => [
   { label: t('common.mnFilterSelected'), value: 'selected' },
   { label: t('common.mnFilterNotSelected'), value: 'not_selected' }
+])
+
+// Context menu items
+const contextMenuItems = computed(() => [
+  {
+    label: t('common.edit'),
+    icon: 'pi pi-pencil',
+    command: () => openItemInTab(contextItem.value)
+  }
 ])
 
 // Get the object type label key prefix
@@ -202,40 +224,14 @@ const primaryField = computed(() => {
   return fields[0].trim()
 })
 
-// Filtered items based on search and filter mode
-const filteredItems = computed(() => {
-  let result = allItems.value
-
-  // Apply search filter
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase()
-    result = result.filter(item => {
-      const primary = item[primaryField.value]
-      if (primary && String(primary).toLowerCase().includes(query)) return true
-      // Also search in secondary display fields
-      const displayFields = props.field.relation_display?.split(',') || []
-      return displayFields.some(f => {
-        const val = item[f.trim()]
-        return val && String(val).toLowerCase().includes(query)
-      })
-    })
-  }
-
-  // Apply selection filter
-  if (filterMode.value === 'selected') {
-    result = result.filter(item => selectedUuids.value.has(item.uuid))
-  } else if (filterMode.value === 'not_selected') {
-    result = result.filter(item => !selectedUuids.value.has(item.uuid))
-  }
-
-  return result
-})
-
 // Check if there are unsaved changes
 const hasChanges = computed(() => {
   if (selectedUuids.value.size !== originalUuids.value.size) return true
   for (const uuid of selectedUuids.value) {
     if (!originalUuids.value.has(uuid)) return true
+  }
+  for (const uuid of originalUuids.value) {
+    if (!selectedUuids.value.has(uuid)) return true
   }
   return false
 })
@@ -251,23 +247,48 @@ const getSyncUrl = () => {
   return props.field.sync_url.replace('{parentUuid}', props.parentUuid)
 }
 
-// Load all items and currently linked items
-const loadData = async () => {
-  if (!props.parentUuid) return
+// Build search filters for the API
+const buildSearchFilters = () => {
+  const filters = {}
+  if (searchQuery.value.trim()) {
+    filters[primaryField.value] = { value: searchQuery.value.trim(), matchMode: 'contains' }
+  }
+  if (filterMode.value === 'selected') {
+    filters.uuid = { value: [...selectedUuids.value], matchMode: 'in' }
+  } else if (filterMode.value === 'not_selected') {
+    filters.uuid = { value: [...selectedUuids.value], matchMode: 'notIn' }
+  }
+  return filters
+}
 
+// Fetch a page of items from the server
+const fetchItems = async () => {
   loading.value = true
   try {
     const endpoint = getApiEndpoint()
-
-    // Load ALL items of the related object type
-    const allResponse = await api.post(`${endpoint}/search`, {
-      filters: {},
-      first: 0,
-      rows: 10000,
-      sortField: primaryField.value,
-      sortOrder: 1
+    const response = await api.post(`${endpoint}/search`, {
+      filters: buildSearchFilters(),
+      first: first.value,
+      rows: pageSize.value,
+      sortField: sortField.value || primaryField.value,
+      sortOrder: sortOrder.value
     })
-    allItems.value = allResponse.data?.data || allResponse.data || []
+    items.value = response.data?.data || response.data || []
+    totalRecords.value = response.data?.totalRecords ?? response.data?.total ?? items.value.length
+  } catch (error) {
+    console.error(`Error fetching ${props.field.relation_object}:`, error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Load linked items and initial page
+const loadData = async () => {
+  if (!props.parentUuid) return
+
+  initialLoading.value = true
+  try {
+    const endpoint = getApiEndpoint()
 
     // Load currently linked items using the relation_filter
     const linkedResponse = await api.post(`${endpoint}/search`, {
@@ -284,12 +305,56 @@ const loadData = async () => {
 
     selectedUuids.value = new Set(linkedSet)
     originalUuids.value = new Set(linkedSet)
+
+    // Fetch first page
+    await fetchItems()
   } catch (error) {
     console.error(`Error loading ${props.field.relation_object}:`, error)
     toast.add({ severity: 'error', summary: 'Error', detail: `Failed to load ${props.field.relation_object}`, life: 3000 })
   } finally {
-    loading.value = false
+    initialLoading.value = false
   }
+}
+
+// Pagination handler
+const onPage = (event) => {
+  first.value = event.first
+  pageSize.value = event.rows
+  fetchItems()
+}
+
+// Sort handler
+const onSort = (event) => {
+  sortField.value = event.sortField
+  sortOrder.value = event.sortOrder
+  first.value = 0
+  fetchItems()
+}
+
+// Context menu handler
+const onRowContextMenu = (event) => {
+  contextItem.value = event.data
+  cm.value.show(event.originalEvent)
+}
+
+// Open item in a new tab
+const openItemInTab = (data) => {
+  if (!data) return
+  const objectType = props.field.relation_object
+  const displayName = data[primaryField.value] || data.uuid?.substring(0, 8)
+  const parentTabId = props.tabId
+  if (!parentTabId) return
+
+  tabsStore.openTab({
+    id: `${objectType}-edit-${data.uuid}`,
+    label: displayName,
+    icon: 'pi pi-file',
+    component: 'ObjectView',
+    objectType: objectType,
+    objectId: data.uuid,
+    parentId: parentTabId,
+    mode: 'edit'
+  })
 }
 
 // Toggle item selection
@@ -303,17 +368,17 @@ const toggleItem = (item) => {
   selectedUuids.value = newSet
 }
 
-// Select all visible items
-const selectAll = () => {
+// Select all items on current page
+const selectAllPage = () => {
   const newSet = new Set(selectedUuids.value)
-  filteredItems.value.forEach(item => newSet.add(item.uuid))
+  items.value.forEach(item => newSet.add(item.uuid))
   selectedUuids.value = newSet
 }
 
-// Deselect all visible items
-const deselectAll = () => {
+// Deselect all items on current page
+const deselectAllPage = () => {
   const newSet = new Set(selectedUuids.value)
-  filteredItems.value.forEach(item => newSet.delete(item.uuid))
+  items.value.forEach(item => newSet.delete(item.uuid))
   selectedUuids.value = newSet
 }
 
@@ -365,9 +430,32 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString(locale.value)
 }
 
+// Expose hasChanges, confirmChanges, revert for parent ObjectView
+defineExpose({
+  hasChanges,
+  confirmChanges,
+  revert,
+  saving
+})
+
 // Watch for parent changes
 watch(() => props.parentUuid, () => {
   loadData()
 }, { immediate: true })
+
+// Watch search query with debounce
+watch(searchQuery, () => {
+  clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => {
+    first.value = 0
+    fetchItems()
+  }, 400)
+})
+
+// Watch filter mode changes
+watch(filterMode, () => {
+  first.value = 0
+  fetchItems()
+})
 </script>
 

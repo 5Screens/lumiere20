@@ -99,15 +99,19 @@
           >
             <SubscriptionManyToMany 
               v-if="item?.uuid && rlField.field_type === 'reverse_link_subscription'"
+              :ref="el => setMnRef(rlField.field_name, el)"
               :field="rlField"
               :parentUuid="item.uuid"
               :parentType="objectType"
+              :tabId="tabId"
             />
             <ReverseLinkManyToMany 
               v-else-if="item?.uuid && rlField.field_type === 'reverse_link_mn'"
+              :ref="el => setMnRef(rlField.field_name, el)"
               :field="rlField"
               :parentUuid="item.uuid"
               :parentType="objectType"
+              :tabId="tabId"
             />
             <ReverseLinkTable 
               v-else-if="item?.uuid"
@@ -159,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, toRef, onMounted, computed, watch, onBeforeUnmount } from 'vue'
+import { ref, reactive, toRef, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { useObjectView } from '@/composables/useObjectView'
 import { useTabsStore } from '@/stores/tabsStore'
 
@@ -225,6 +229,25 @@ const activeTab = ref('general')
 const generalInfoRef = ref(null)
 const confirmDialogVisible = ref(false)
 const originalItemSnapshot = ref(null)
+const mnRefs = reactive({})
+
+// Store ref for each ManyToMany / Subscription component
+const setMnRef = (fieldName, el) => {
+  if (el) {
+    mnRefs[fieldName] = el
+  } else {
+    delete mnRefs[fieldName]
+  }
+}
+
+// Check if any ManyToMany child has unsaved changes
+const hasMnChanges = computed(() => {
+  for (const key of Object.keys(mnRefs)) {
+    const ref = mnRefs[key]
+    if (ref?.hasChanges?.value) return true
+  }
+  return false
+})
 
 // Use the composable with refs
 const {
@@ -287,8 +310,11 @@ const deepEqual = (a, b) => {
   return true
 }
 
-// Computed: check if item has been modified
+// Computed: check if item has been modified (form fields OR ManyToMany children)
 const isDirty = computed(() => {
+  // Check ManyToMany children first
+  if (hasMnChanges.value) return true
+
   if (!item.value || !originalItemSnapshot.value) {
     // In create mode, consider dirty if any field has a value
     if (props.mode === 'create' && item.value) {
@@ -317,10 +343,25 @@ const resetDirtyState = () => {
 
 // Methods
 const onSave = async () => {
-  const success = await saveItem(generalInfoRef, props.tabId)
-  if (success) {
+  // Save ManyToMany children first if they have changes
+  for (const key of Object.keys(mnRefs)) {
+    const ref = mnRefs[key]
+    if (ref?.hasChanges?.value) {
+      await ref.confirmChanges()
+    }
+  }
+
+  // Save the main form if it has changes
+  const formDirty = originalItemSnapshot.value ? !deepEqual(item.value, originalItemSnapshot.value) : false
+  if (formDirty || props.mode === 'create') {
+    const success = await saveItem(generalInfoRef, props.tabId)
+    if (success) {
+      resetDirtyState()
+      emit('saved', item.value)
+    }
+  } else {
+    // Only MN changes were saved, just reset
     resetDirtyState()
-    emit('saved', item.value)
   }
 }
 
@@ -334,6 +375,13 @@ const onCancel = () => {
 
 const confirmClose = () => {
   confirmDialogVisible.value = false
+  // Revert ManyToMany children
+  for (const key of Object.keys(mnRefs)) {
+    const ref = mnRefs[key]
+    if (ref?.hasChanges?.value) {
+      ref.revert()
+    }
+  }
   closeTab()
 }
 
