@@ -71,11 +71,13 @@
         <!-- Checkbox column -->
         <Column header="" style="width: 50px">
           <template #body="{ data }">
-            <Checkbox 
-              :modelValue="selectedUuids.has(data.uuid)"
-              :binary="true"
-              @click.stop="toggleItem(data)"
-            />
+            <div @click.stop>
+              <Checkbox 
+                :modelValue="selectedUuids.has(data.uuid)"
+                :binary="true"
+                @update:modelValue="toggleItem(data)"
+              />
+            </div>
           </template>
         </Column>
 

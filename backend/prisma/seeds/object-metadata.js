@@ -523,7 +523,7 @@ async function seedObjectMetadata() {
     commitments: [
       { field_name: 'rel_sla_definition_uuid', label_key: 'commitments.sla', field_type: 'relation', relation_object: 'slas', relation_display: 'name', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
       { field_name: 'rel_service_offering_uuid', label_key: 'commitments.serviceOffering', field_type: 'relation', relation_object: 'service_offerings', relation_display: 'name', is_required: true, min_width: '16rem', display_order: 2, default_visible: true, show_in_form: false },
-      { field_name: 'target_percentage', label_key: 'commitments.targetPercentage', field_type: 'number', data_type: 'number', min_width: '10rem', display_order: 3, default_visible: true },
+      { field_name: 'target_percentage', label_key: 'commitments.targetPercentage', field_type: 'number', data_type: 'number', is_required: true, min_width: '10rem', display_order: 3, default_visible: true },
       { field_name: 'start_date', label_key: 'commitments.startDate', field_type: 'date', data_type: 'date', min_width: '10rem', display_order: 4, default_visible: true },
       { field_name: 'end_date', label_key: 'commitments.endDate', field_type: 'date', data_type: 'date', min_width: '10rem', display_order: 5, default_visible: true },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 6, default_visible: true },
