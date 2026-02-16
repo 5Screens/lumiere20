@@ -73,7 +73,7 @@
         :rows="pageSize"
         :totalRecords="totalRecords"
         :loading="loading"
-        :first="first"
+        v-model:first="first"
         :sortField="sortField"
         :sortOrder="sortOrder"
         :pt="{ bodyRow: { class: 'cursor-pointer' } }"
@@ -375,15 +375,16 @@ const fetchItems = async () => {
   loading.value = true
   try {
     const endpoint = getApiEndpoint()
+    const page = Math.floor(first.value / pageSize.value) + 1
     const response = await api.post(`${endpoint}/search`, {
       filters: buildSearchFilters(),
-      first: first.value,
-      rows: pageSize.value,
+      page,
+      limit: pageSize.value,
       sortField: sortField.value || primaryField.value,
       sortOrder: sortOrder.value
     })
     items.value = response.data?.data || response.data || []
-    totalRecords.value = response.data?.totalRecords ?? response.data?.total ?? items.value.length
+    totalRecords.value = response.data?.total ?? items.value.length
   } catch (error) {
     console.error(`Error fetching ${props.field.relation_object}:`, error)
   } finally {
