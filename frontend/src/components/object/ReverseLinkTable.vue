@@ -14,30 +14,8 @@
       />
     </div>
 
-    <!-- Custom Split Context Menu -->
-    <div 
-      v-if="contextMenuVisible" 
-      ref="contextMenuEl"
-      class="fixed z-[9999] bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-lg shadow-lg overflow-hidden"
-      :style="{ left: contextMenuPos.x + 'px', top: contextMenuPos.y + 'px' }"
-    >
-      <div class="flex items-stretch">
-        <button 
-          class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors cursor-pointer"
-          @click="openInDrawer(contextItem)"
-        >
-          <i class="pi pi-pencil text-xs" />
-          <span>{{ t('common.edit') }}</span>
-        </button>
-        <button 
-          class="flex items-center px-2 py-2 border-l border-surface-200 dark:border-surface-700 hover:bg-primary/10 transition-colors cursor-pointer"
-          @click="openItemInTab(contextItem)"
-          v-tooltip.top="t('common.openInTab')"
-        >
-          <i class="pi pi-external-link text-xs" />
-        </button>
-      </div>
-    </div>
+    <!-- Context Menu -->
+    <ContextMenu ref="cm" :model="contextMenuItems" />
 
     <!-- Loading state -->
     <div v-if="loading" class="flex items-center justify-center py-8">
@@ -60,6 +38,8 @@
       removableSort
       size="small"
       class="p-datatable-sm cursor-pointer-rows"
+      contextMenu
+      v-model:contextMenuSelection="contextItem"
       @row-click="!field.is_readonly && onRowClick($event)"
       @rowContextmenu="onRowContextMenu"
     >
@@ -153,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
@@ -164,6 +144,7 @@ import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
 import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
+import ContextMenu from 'primevue/contextmenu'
 import ObjectView from './ObjectView.vue'
 import api from '@/services/api'
 import { getService } from '@/services'
@@ -197,29 +178,22 @@ const loading = ref(false)
 const items = ref([])
 
 // Context menu
-const contextMenuVisible = ref(false)
-const contextMenuEl = ref(null)
-const contextMenuPos = ref({ x: 0, y: 0 })
+const cm = ref(null)
 const contextItem = ref(null)
 
-// Close context menu on outside click
-const onDocumentClick = (e) => {
-  if (contextMenuEl.value && !contextMenuEl.value.contains(e.target)) {
-    contextMenuVisible.value = false
+// Context menu items
+const contextMenuItems = computed(() => [
+  {
+    label: t('common.edit'),
+    icon: 'pi pi-pencil',
+    command: () => openEditDrawer(contextItem.value)
+  },
+  {
+    label: t('common.openInTab'),
+    icon: 'pi pi-external-link',
+    command: () => openItemInTab(contextItem.value)
   }
-}
-
-watch(contextMenuVisible, (val) => {
-  if (val) {
-    setTimeout(() => document.addEventListener('click', onDocumentClick), 0)
-  } else {
-    document.removeEventListener('click', onDocumentClick)
-  }
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', onDocumentClick)
-})
+])
 
 // Drawer state
 const drawerVisible = ref(false)
@@ -343,21 +317,11 @@ const onRowClick = (event) => {
 
 // Context menu handler
 const onRowContextMenu = (event) => {
-  event.originalEvent.preventDefault()
-  contextItem.value = event.data
-  contextMenuPos.value = { x: event.originalEvent.clientX, y: event.originalEvent.clientY }
-  contextMenuVisible.value = true
-}
-
-// Open in drawer (left part of split menu)
-const openInDrawer = (data) => {
-  contextMenuVisible.value = false
-  if (data) openEditDrawer(data)
+  cm.value.show(event.originalEvent)
 }
 
 // Open item in a new tab
 const openItemInTab = (data) => {
-  contextMenuVisible.value = false
   if (!data) return
   const objectType = props.field.relation_object
   const displayName = data.name || data.label || data.code || data.uuid?.substring(0, 8)
