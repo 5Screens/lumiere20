@@ -59,6 +59,15 @@ const search = async (params) => {
       some: { rel_service_uuid: filters.rel_service_uuid.value }
     };
   }
+
+  // Handle uuid in/notIn filter (used by ReverseLinkManyToMany selected/not_selected filter)
+  if (filters?.uuid?.value && Array.isArray(filters.uuid.value)) {
+    if (filters.uuid.matchMode === 'in') {
+      where.uuid = { in: filters.uuid.value };
+    } else if (filters.uuid.matchMode === 'notIn') {
+      where.uuid = { notIn: filters.uuid.value };
+    }
+  }
   
   // If there's a global search, we need to search in translations too
   if (globalFilter && globalFilter.trim()) {

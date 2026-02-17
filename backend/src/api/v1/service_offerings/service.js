@@ -20,6 +20,24 @@ const search = async ({ filters, page = 1, limit = 50, sortField = 'updated_at',
     if (filters.service_uuid?.value) {
       where.service_uuid = filters.service_uuid.value;
     }
+    // Filter by subscriber via service_offering_subscriptions
+    const subscriberFilterMap = {
+      rel_subscriber_entity_uuid: { type: 'entity', fk: 'rel_entity_uuid' },
+      rel_subscriber_location_uuid: { type: 'location', fk: 'rel_location_uuid' },
+      rel_subscriber_group_uuid: { type: 'group', fk: 'rel_group_uuid' },
+      rel_subscriber_user_set_uuid: { type: 'user_set', fk: 'rel_user_set_uuid' },
+    };
+    for (const [filterKey, mapping] of Object.entries(subscriberFilterMap)) {
+      if (filters[filterKey]?.value) {
+        where.subscriptions = {
+          some: {
+            subscriber_type: mapping.type,
+            [mapping.fk]: filters[filterKey].value,
+          },
+        };
+        break;
+      }
+    }
   }
 
   const [data, total] = await Promise.all([

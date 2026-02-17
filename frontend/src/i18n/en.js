@@ -345,6 +345,7 @@ export default {
     headquarters: 'Headquarters',
     createdAt: 'Created at',
     updatedAt: 'Updated at',
+    serviceSubscriptions: 'Service Subscriptions',
     messages: {
       created: 'Entity created successfully',
       updated: 'Entity updated successfully',
@@ -477,6 +478,7 @@ export default {
     fieldServiceGroup: 'Field Service Group',
     createdAt: 'Created at',
     updatedAt: 'Updated at',
+    serviceSubscriptions: 'Service Subscriptions',
     messages: {
       created: 'Location created successfully',
       updated: 'Location updated successfully',
@@ -497,6 +499,7 @@ export default {
     manager: 'Manager',
     createdAt: 'Created at',
     updatedAt: 'Updated at',
+    serviceSubscriptions: 'Service Subscriptions',
     messages: {
       created: 'Group created successfully',
       updated: 'Group updated successfully',
@@ -1210,6 +1213,7 @@ userSets: {
   name: 'Name',
   description: 'Description',
   criteria: 'Filter Criteria',
+  serviceSubscriptions: 'Service Subscriptions',
   messages: {
     created: 'User set created successfully',
     updated: 'User set updated successfully',

@@ -348,6 +348,7 @@ export default {
     headquarters: 'Siège social',
     createdAt: 'Créé le',
     updatedAt: 'Modifié le',
+    serviceSubscriptions: 'Souscriptions de service',
     messages: {
       created: 'Entité créée avec succès',
       updated: 'Entité mise à jour avec succès',
@@ -481,6 +482,7 @@ export default {
     fieldServiceGroup: 'Groupe de service terrain',
     createdAt: 'Créé le',
     updatedAt: 'Modifié le',
+    serviceSubscriptions: 'Souscriptions de service',
     messages: {
       created: 'Localisation créée avec succès',
       updated: 'Localisation mise à jour avec succès',
@@ -501,6 +503,7 @@ export default {
     manager: 'Manager',
     createdAt: 'Créé le',
     updatedAt: 'Modifié le',
+    serviceSubscriptions: 'Souscriptions de service',
     messages: {
       created: 'Groupe créé avec succès',
       updated: 'Groupe mis à jour avec succès',
@@ -1213,6 +1216,7 @@ userSets: {
   name: 'Nom',
   description: 'Description',
   criteria: 'Critères de filtrage',
+  serviceSubscriptions: 'Souscriptions de service',
   messages: {
     created: 'Ensemble d\'utilisateurs créé avec succès',
     updated: 'Ensemble d\'utilisateurs mis à jour avec succès',

@@ -242,6 +242,8 @@ async function seedObjectMetadata() {
       { field_name: 'rel_headquarters_location', label_key: 'entities.headquarters', field_type: 'relation', relation_object: 'locations', relation_display: 'name', show_in_table: false, display_order: 8, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11, default_visible: true },
+      // Reverse link to service offering subscriptions
+      { field_name: 'service_subscriptions', label_key: 'entities.serviceSubscriptions', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status', relation_filter: 'rel_subscriber_entity_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, is_readonly: true, display_order: 50, default_visible: true },
     ],
     locations: [
       { field_name: 'name', label_key: 'locations.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
@@ -262,6 +264,8 @@ async function seedObjectMetadata() {
       { field_name: 'field_service_group_uuid', label_key: 'locations.fieldServiceGroup', field_type: 'relation', relation_object: 'groups', relation_display: 'group_name', show_in_table: false, display_order: 16, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
+      // Reverse link to service offering subscriptions
+      { field_name: 'service_subscriptions', label_key: 'locations.serviceSubscriptions', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status', relation_filter: 'rel_subscriber_location_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, is_readonly: true, display_order: 50, default_visible: true },
     ],
     groups: [
       { field_name: 'group_name', label_key: 'groups.groupName', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
@@ -273,6 +277,8 @@ async function seedObjectMetadata() {
       { field_name: 'rel_manager', label_key: 'groups.manager', field_type: 'relation', relation_object: 'persons', relation_display: 'last_name', show_in_table: false, display_order: 7, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 10, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 11, default_visible: true },
+      // Reverse link to service offering subscriptions
+      { field_name: 'service_subscriptions', label_key: 'groups.serviceSubscriptions', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status', relation_filter: 'rel_subscriber_group_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, is_readonly: true, display_order: 50, default_visible: true },
     ],
     persons: [
       { field_name: 'first_name', label_key: 'persons.firstName', field_type: 'text', is_required: true, min_width: '10rem', display_order: 1, default_visible: true },
@@ -418,9 +424,7 @@ async function seedObjectMetadata() {
       { field_name: 'rel_status_uuid', label_key: 'workflow.status', field_type: 'workflow_status', show_in_table: true, default_visible: true, min_width: '10rem', display_order: 3 },
       { field_name: 'environment', label_key: 'serviceOfferings.environment', field_type: 'select', min_width: '10rem', display_order: 4, default_visible: true, options_source: '/object-setup/options?object_type=service_offering&metadata=ENVIRONMENT' },
       { field_name: 'business_criticality', label_key: 'serviceOfferings.businessCriticality', field_type: 'select', min_width: '10rem', display_order: 5, default_visible: true, options_source: '/object-setup/options?object_type=service&metadata=BUSINESS_CRITICALITY' },
-      { field_name: 'start_date', label_key: 'serviceOfferings.startDate', field_type: 'date', data_type: 'date', min_width: '10rem', display_order: 6, default_visible: true },
-      { field_name: 'end_date', label_key: 'serviceOfferings.endDate', field_type: 'date', data_type: 'date', min_width: '10rem', display_order: 7, default_visible: true },
-      { field_name: 'price_model', label_key: 'serviceOfferings.priceModel', field_type: 'select', min_width: '10rem', display_order: 8, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service_offering&metadata=PRICE_MODEL' },
+      { field_name: 'price_model', label_key: 'serviceOfferings.priceModel', field_type: 'select', min_width: '10rem', display_order: 6, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service_offering&metadata=PRICE_MODEL' },
       { field_name: 'currency', label_key: 'serviceOfferings.currency', field_type: 'select', min_width: '6rem', display_order: 9, show_in_table: false, default_visible: true, options_source: '/object-setup/options?object_type=service_offering&metadata=CURRENCY' },
       { field_name: 'service_uuid', label_key: 'serviceOfferings.service', field_type: 'relation', relation_object: 'services', relation_display: 'name', is_required: true, min_width: '14rem', display_order: 10, default_visible: true, show_in_form: false },
       { field_name: 'operator_entity_uuid', label_key: 'serviceOfferings.operatorEntity', field_type: 'relation', relation_object: 'entities', relation_display: 'name', is_required: true, min_width: '14rem', display_order: 11, default_visible: true },
@@ -460,6 +464,8 @@ async function seedObjectMetadata() {
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 4, default_visible: true },
       { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
+      // Reverse link to service offering subscriptions
+      { field_name: 'service_subscriptions', label_key: 'userSets.serviceSubscriptions', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status', relation_filter: 'rel_subscriber_user_set_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, is_readonly: true, display_order: 50, default_visible: true },
     ],
     timezones: [
       { field_name: 'code', label_key: 'timezones.code', field_type: 'text', is_required: true, min_width: '14rem', display_order: 1, default_visible: true },
