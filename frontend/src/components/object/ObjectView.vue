@@ -244,8 +244,8 @@ const setMnRef = (fieldName, el) => {
 // Check if any ManyToMany child has unsaved changes
 const hasMnChanges = computed(() => {
   for (const key of Object.keys(mnRefs)) {
-    const ref = mnRefs[key]
-    if (ref?.hasChanges?.value) return true
+    // defineExpose unwraps computed refs, so access directly (no .value)
+    if (mnRefs[key]?.hasChanges) return true
   }
   return false
 })
