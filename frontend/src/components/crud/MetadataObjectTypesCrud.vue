@@ -22,18 +22,16 @@
       </Toolbar>
 
       <!-- Info message -->
-      <Message severity="info" :closable="false" class="mb-4">
-        <template #icon>
-          <i class="pi pi-info-circle" />
-        </template>
-        {{ $t('metadata.objectTypes.infoMessage') }}
-      </Message>
+      <div class="mb-4 flex items-center gap-3 px-4 py-3 rounded-lg border border-primary/30 bg-primary/10 text-primary">
+        <i class="pi pi-info-circle text-lg" />
+        <span class="text-sm">{{ $t('metadata.objectTypes.infoMessage') }}</span>
+      </div>
 
       <!-- DataTable -->
       <DataTable
         ref="dt"
         v-model:selection="selectedItem"
-        :value="objectTypes"
+        :value="filteredObjectTypes"
         dataKey="uuid"
         :loading="loading"
         scrollable
@@ -180,7 +178,6 @@ import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Tag from 'primevue/tag'
-import Message from 'primevue/message'
 
 // Props
 const props = defineProps({
