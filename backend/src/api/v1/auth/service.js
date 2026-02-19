@@ -60,7 +60,7 @@ const login = async (data) => {
   // Find user by email (include role relation to get role code)
   const user = await prisma.persons.findFirst({
     where: { email: email.toLowerCase() },
-    include: { role_ref: true }
+    include: { role: true }
   });
 
   if (!user) {
@@ -85,7 +85,7 @@ const login = async (data) => {
   }
 
   // Generate JWT token (use role code, not UUID)
-  const roleCode = user.role_ref?.code || 'user';
+  const roleCode = user.role?.code || 'user';
   const token = jwt.sign(
     {
       uuid: user.uuid,
@@ -131,8 +131,8 @@ const getProfile = async (uuid) => {
       last_name: true,
       phone: true,
       is_active: true,
-      role: true,
-      role_ref: { select: { code: true, label: true } },
+      role_uuid: true,
+      role: { select: { code: true, label: true } },
       created_at: true,
       last_login: true
     }
@@ -146,8 +146,8 @@ const getProfile = async (uuid) => {
 
   return {
     ...user,
-    role_code: user.role_ref?.code || null,
-    role_label: user.role_ref?.label || null,
+    role_code: user.role?.code || null,
+    role_label: user.role?.label || null,
   };
 };
 
@@ -174,8 +174,8 @@ const updateProfile = async (uuid, data) => {
       last_name: true,
       phone: true,
       is_active: true,
-      role: true,
-      role_ref: { select: { code: true, label: true } }
+      role_uuid: true,
+      role: { select: { code: true, label: true } }
     }
   });
 

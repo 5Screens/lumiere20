@@ -65,12 +65,12 @@ async function seedDefaultAdmin() {
       email: DEFAULT_ADMIN.email,
       first_name: DEFAULT_ADMIN.first_name,
       last_name: DEFAULT_ADMIN.last_name,
-      role: adminRole?.uuid || null,
+      role_uuid: adminRole?.uuid || null,
       password_hash,
       password_needs_reset: DEFAULT_ADMIN.password_needs_reset,
       is_active: DEFAULT_ADMIN.is_active,
       notification: DEFAULT_ADMIN.notification,
-      language: frLanguage?.uuid || null
+      language_uuid: frLanguage?.uuid || null
     }
   });
   

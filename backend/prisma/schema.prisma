@@ -669,8 +669,8 @@ model persons {
   business_phone             String?   @db.VarChar(50)
   business_mobile_phone      String?   @db.VarChar(50)
   personal_mobile_phone      String?   @db.VarChar(50)
-  language                   String?   @db.Uuid
-  role                       String?   @db.Uuid
+  language_uuid              String?   @db.Uuid
+  role_uuid                  String?   @db.Uuid
   roles                      Json?     @db.JsonB
   photo                      String?   @db.Text
   last_login                 DateTime? @db.Timestamptz(6)
@@ -682,8 +682,8 @@ model persons {
   ref_location          locations? @relation("PersonLocation", fields: [ref_location_uuid], references: [uuid])
   ref_approving_manager persons?   @relation("PersonApprovingManager", fields: [ref_approving_manager_uuid], references: [uuid])
   subordinates          persons[]  @relation("PersonApprovingManager")
-  language_ref          languages? @relation(fields: [language], references: [uuid])
-  role_ref              roles?     @relation(fields: [role], references: [uuid])
+  language              languages? @relation(fields: [language_uuid], references: [uuid])
+  role                  roles?     @relation(fields: [role_uuid], references: [uuid])
 
   // Reverse relations
   entities_budget_approver       entities[]              @relation("EntityBudgetApprover")

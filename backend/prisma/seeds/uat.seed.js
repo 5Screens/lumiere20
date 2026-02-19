@@ -414,12 +414,12 @@ const seedUat = async (prisma) => {
       email,
       first_name,
       last_name,
-      role: userRole?.uuid || null,
+      role_uuid: userRole?.uuid || null,
       password_hash,
       password_needs_reset: false,
       is_active: true,
       notification: true,
-      language: frLanguage?.uuid || null,
+      language_uuid: frLanguage?.uuid || null,
       internal_id: `UAT-${String(i).padStart(6, '0')}`
     });
   }

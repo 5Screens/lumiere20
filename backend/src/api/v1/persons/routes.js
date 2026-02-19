@@ -27,8 +27,8 @@ const createSchema = z.object({
   business_phone: z.string().max(50).optional().nullable(),
   business_mobile_phone: z.string().max(50).optional().nullable(),
   personal_mobile_phone: z.string().max(50).optional().nullable(),
-  language: z.string().uuid().optional().nullable(),
-  role: z.string().uuid().optional().nullable(),
+  language_uuid: z.string().uuid().optional().nullable(),
+  role_uuid: z.string().uuid().optional().nullable(),
   roles: z.record(z.any()).optional().nullable(),
   photo: z.string().optional().nullable(),
 });
@@ -54,8 +54,8 @@ const updateSchema = z.object({
   business_phone: z.string().max(50).optional().nullable(),
   business_mobile_phone: z.string().max(50).optional().nullable(),
   personal_mobile_phone: z.string().max(50).optional().nullable(),
-  language: z.string().uuid().optional().nullable(),
-  role: z.string().uuid().optional().nullable(),
+  language_uuid: z.string().uuid().optional().nullable(),
+  role_uuid: z.string().uuid().optional().nullable(),
   roles: z.record(z.any()).optional().nullable(),
   photo: z.string().optional().nullable(),
 });

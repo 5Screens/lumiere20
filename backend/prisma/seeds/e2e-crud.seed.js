@@ -99,9 +99,9 @@ async function seedE2eCrud() {
         first_name: person.first_name,
         last_name: person.last_name,
         is_active: person.is_active,
-        role: roleUuid
+        role_uuid: roleUuid
       },
-      create: { ...personData, role: roleUuid }
+      create: { ...personData, role_uuid: roleUuid }
     });
     personUuids[person.email] = result.uuid;
     console.log(`    - Person '${person.email}' created/updated (${result.uuid})`);
