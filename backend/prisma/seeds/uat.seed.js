@@ -401,6 +401,10 @@ const seedUat = async (prisma) => {
 
   const password_hash = await bcrypt.hash(password, 10);
 
+  // Lookup role and language UUIDs
+  const userRole = await prisma.roles.findUnique({ where: { code: 'user' } });
+  const frLanguage = await prisma.languages.findUnique({ where: { code: 'fr' } });
+
   const persons = [];
   for (let i = 1; i <= count; i += 1) {
     const { first_name, last_name } = buildName(i);
@@ -410,12 +414,12 @@ const seedUat = async (prisma) => {
       email,
       first_name,
       last_name,
-      role: 'user',
+      role: userRole?.uuid || null,
       password_hash,
       password_needs_reset: false,
       is_active: true,
       notification: true,
-      language: 'fr',
+      language: frLanguage?.uuid || null,
       internal_id: `UAT-${String(i).padStart(6, '0')}`
     });
   }

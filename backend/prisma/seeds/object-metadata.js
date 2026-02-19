@@ -218,6 +218,26 @@ async function seedObjectMetadata() {
       display_field: 'name',
       secondary_field: 'description',
     },
+    {
+      code: 'languages',
+      label_key: 'languages.title',
+      icon: 'pi-language',
+      api_endpoint: '/api/v1/languages',
+      default_sort_field: 'name',
+      default_sort_order: 1,
+      display_field: 'name',
+      secondary_field: 'code',
+    },
+    {
+      code: 'roles',
+      label_key: 'roles.title',
+      icon: 'pi-shield',
+      api_endpoint: '/api/v1/roles',
+      default_sort_field: 'display_order',
+      default_sort_order: 1,
+      display_field: 'label',
+      secondary_field: 'code',
+    },
   ];
 
   // Define fields for each object type
@@ -285,23 +305,13 @@ async function seedObjectMetadata() {
       { field_name: 'last_name', label_key: 'persons.lastName', field_type: 'text', is_required: true, min_width: '10rem', display_order: 2, default_visible: true },
       { field_name: 'email', label_key: 'common.email', field_type: 'text', is_required: true, min_width: '16rem', display_order: 3, default_visible: true },
       { field_name: 'job_role', label_key: 'persons.jobRole', field_type: 'text', min_width: '12rem', display_order: 4, default_visible: true },
-      { field_name: 'role', label_key: 'persons.role', field_type: 'select', min_width: '8rem', display_order: 5, default_visible: true, options_source: JSON.stringify([
-        { label: 'User', value: 'user' },
-        { label: 'Admin', value: 'admin' },
-        { label: 'Manager', value: 'manager' },
-        { label: 'Technician', value: 'technician' }
-      ])},
+      { field_name: 'role', label_key: 'persons.role', field_type: 'relation', relation_object: 'roles', relation_display: 'label', min_width: '10rem', display_order: 5, default_visible: true },
       { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '6rem', display_order: 6, default_visible: true },
       { field_name: 'phone', label_key: 'common.phone', field_type: 'text', min_width: '10rem', display_order: 7, default_visible: true },
       { field_name: 'business_phone', label_key: 'persons.businessPhone', field_type: 'text', min_width: '10rem', display_order: 8, default_visible: true },
       { field_name: 'business_mobile_phone', label_key: 'persons.businessMobile', field_type: 'text', min_width: '10rem', display_order: 9, default_visible: true },
       { field_name: 'personal_mobile_phone', label_key: 'persons.personalMobile', field_type: 'text', min_width: '10rem', display_order: 10, default_visible: true },
-      { field_name: 'language', label_key: 'persons.language', field_type: 'select', min_width: '8rem', display_order: 11, default_visible: true, options_source: JSON.stringify([
-        { label: 'Français', value: 'fr' },
-        { label: 'English', value: 'en' },
-        { label: 'Español', value: 'es' },
-        { label: 'Português', value: 'pt' }
-      ])},
+      { field_name: 'language', label_key: 'persons.language', field_type: 'relation', relation_object: 'languages', relation_display: 'name', min_width: '10rem', display_order: 11, default_visible: true },
       { field_name: 'time_zone', label_key: 'persons.timeZone', field_type: 'text', min_width: '10rem', display_order: 12, default_visible: true },
       { field_name: 'internal_id', label_key: 'persons.internalId', field_type: 'text', min_width: '10rem', display_order: 13, default_visible: true },
       { field_name: 'critical_user', label_key: 'persons.criticalUser', field_type: 'boolean', data_type: 'boolean', min_width: '6rem', display_order: 14, default_visible: true },
@@ -466,6 +476,24 @@ async function seedObjectMetadata() {
       { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
       // Reverse link to service offering subscriptions
       { field_name: 'service_subscriptions', label_key: 'userSets.serviceSubscriptions', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status', relation_filter: 'rel_subscriber_user_set_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, is_readonly: true, display_order: 50, default_visible: true },
+    ],
+    languages: [
+      { field_name: 'code', label_key: 'languages.code', field_type: 'text', is_required: true, min_width: '6rem', display_order: 1, default_visible: true },
+      { field_name: 'name', label_key: 'languages.name', field_type: 'text', is_required: true, min_width: '12rem', display_order: 2, default_visible: true },
+      { field_name: 'name_en', label_key: 'languages.nameEn', field_type: 'text', is_required: true, min_width: '12rem', display_order: 3, default_visible: true },
+      { field_name: 'flag_code', label_key: 'languages.flagCode', field_type: 'text', is_required: true, min_width: '6rem', display_order: 4, default_visible: true },
+      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '6rem', display_order: 5, default_visible: true },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
+    ],
+    roles: [
+      { field_name: 'code', label_key: 'roles.code', field_type: 'text', is_required: true, min_width: '10rem', display_order: 1, default_visible: true },
+      { field_name: 'label', label_key: 'roles.label', field_type: 'text', is_required: true, is_translatable: true, min_width: '14rem', display_order: 2, default_visible: true },
+      { field_name: 'description', label_key: 'roles.description', field_type: 'textarea', is_translatable: true, min_width: '20rem', display_order: 3, default_visible: true },
+      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '6rem', display_order: 4, default_visible: true },
+      { field_name: 'display_order', label_key: 'roles.displayOrder', field_type: 'number', data_type: 'number', min_width: '8rem', display_order: 5, default_visible: true },
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
     ],
     timezones: [
       { field_name: 'code', label_key: 'timezones.code', field_type: 'text', is_required: true, min_width: '14rem', display_order: 1, default_visible: true },

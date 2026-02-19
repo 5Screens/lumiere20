@@ -5,6 +5,63 @@
 
 const prisma = require('../../../config/prisma');
 const logger = require('../../../config/logger');
+const { buildPrismaWhereFromFilters, buildPrismaOrderBy } = require('../../../utils/primeVueFilters');
+
+/**
+ * Search languages with PrimeVue filters
+ */
+const search = async (params) => {
+  const { filters, sortField, sortOrder, page = 1, limit = 25 } = params;
+  
+  const skip = (page - 1) * limit;
+  const orderBy = buildPrismaOrderBy(sortField, sortOrder);
+  
+  // Extract global filter
+  const globalFilter = filters?.global?.value;
+  
+  // Build base where clause
+  let where = {};
+  
+  // Handle is_active filter
+  if (filters?.is_active?.value !== undefined) {
+    where.is_active = filters.is_active.value;
+  }
+
+  // Handle uuid in/notIn filter
+  if (filters?.uuid?.value && Array.isArray(filters.uuid.value)) {
+    if (filters.uuid.matchMode === 'in') {
+      where.uuid = { in: filters.uuid.value };
+    } else if (filters.uuid.matchMode === 'notIn') {
+      where.uuid = { notIn: filters.uuid.value };
+    }
+  }
+  
+  // Global search
+  if (globalFilter && globalFilter.trim()) {
+    const searchTerm = globalFilter.trim().toLowerCase();
+    
+    where = {
+      ...where,
+      OR: [
+        { code: { contains: searchTerm, mode: 'insensitive' } },
+        { name: { contains: searchTerm, mode: 'insensitive' } },
+        { name_en: { contains: searchTerm, mode: 'insensitive' } },
+      ]
+    };
+  }
+
+  const [data, total] = await Promise.all([
+    prisma.languages.findMany({
+      where,
+      orderBy,
+      skip,
+      take: limit,
+    }),
+    prisma.languages.count({ where }),
+  ]);
+
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+};
 
 /**
  * Get all languages
@@ -202,7 +259,20 @@ const remove = async (uuid) => {
   }
 };
 
+/**
+ * Delete multiple languages
+ */
+const removeMany = async (uuids) => {
+  const result = await prisma.languages.deleteMany({
+    where: {
+      uuid: { in: uuids },
+    },
+  });
+  return result.count;
+};
+
 module.exports = {
+  search,
   getAll,
   getActive,
   getByCode,
@@ -211,5 +281,6 @@ module.exports = {
   update,
   toggleActive,
   bulkToggleActive,
-  remove
+  remove,
+  removeMany
 };

@@ -57,9 +57,10 @@ const register = async (data) => {
 const login = async (data) => {
   const { email, password } = data;
 
-  // Find user by email
+  // Find user by email (include role relation to get role code)
   const user = await prisma.persons.findFirst({
-    where: { email: email.toLowerCase() }
+    where: { email: email.toLowerCase() },
+    include: { role_ref: true }
   });
 
   if (!user) {
@@ -83,12 +84,13 @@ const login = async (data) => {
     throw error;
   }
 
-  // Generate JWT token
+  // Generate JWT token (use role code, not UUID)
+  const roleCode = user.role_ref?.code || 'user';
   const token = jwt.sign(
     {
       uuid: user.uuid,
       email: user.email,
-      role: user.role || 'user'
+      role: roleCode
     },
     authConfig.jwtSecret,
     { expiresIn: authConfig.jwtExpiresIn }
@@ -108,7 +110,7 @@ const login = async (data) => {
       email: user.email,
       first_name: user.first_name,
       last_name: user.last_name,
-      role: user.role || 'user'
+      role: roleCode
     },
     token
   };
@@ -130,6 +132,7 @@ const getProfile = async (uuid) => {
       phone: true,
       is_active: true,
       role: true,
+      role_ref: { select: { code: true, label: true } },
       created_at: true,
       last_login: true
     }
@@ -141,7 +144,11 @@ const getProfile = async (uuid) => {
     throw error;
   }
 
-  return user;
+  return {
+    ...user,
+    role_code: user.role_ref?.code || null,
+    role_label: user.role_ref?.label || null,
+  };
 };
 
 /**
@@ -167,7 +174,8 @@ const updateProfile = async (uuid, data) => {
       last_name: true,
       phone: true,
       is_active: true,
-      role: true
+      role: true,
+      role_ref: { select: { code: true, label: true } }
     }
   });
 

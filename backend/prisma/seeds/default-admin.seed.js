@@ -15,12 +15,12 @@ const DEFAULT_ADMIN = {
   email: 'admin@lumiere.local',
   first_name: 'Admin',
   last_name: 'Lumiere',
-  role: 'admin',
+  role_code: 'admin',
   password: 'Lumiere2024!',
   password_needs_reset: true,
   is_active: true,
   notification: true,
-  language: 'fr'
+  language_code: 'fr'
 };
 
 /**
@@ -39,6 +39,22 @@ async function seedDefaultAdmin() {
     return;
   }
   
+  // Lookup role UUID by code
+  const adminRole = await prisma.roles.findUnique({
+    where: { code: DEFAULT_ADMIN.role_code }
+  });
+  if (!adminRole) {
+    console.log(`Warning: Role '${DEFAULT_ADMIN.role_code}' not found. Run 'roles' seed first.`);
+  }
+
+  // Lookup language UUID by code
+  const frLanguage = await prisma.languages.findUnique({
+    where: { code: DEFAULT_ADMIN.language_code }
+  });
+  if (!frLanguage) {
+    console.log(`Warning: Language '${DEFAULT_ADMIN.language_code}' not found. Run 'languages' seed first.`);
+  }
+
   // Hash password
   const saltRounds = 10;
   const password_hash = await bcrypt.hash(DEFAULT_ADMIN.password, saltRounds);
@@ -49,12 +65,12 @@ async function seedDefaultAdmin() {
       email: DEFAULT_ADMIN.email,
       first_name: DEFAULT_ADMIN.first_name,
       last_name: DEFAULT_ADMIN.last_name,
-      role: DEFAULT_ADMIN.role,
+      role: adminRole?.uuid || null,
       password_hash,
       password_needs_reset: DEFAULT_ADMIN.password_needs_reset,
       is_active: DEFAULT_ADMIN.is_active,
       notification: DEFAULT_ADMIN.notification,
-      language: DEFAULT_ADMIN.language
+      language: frLanguage?.uuid || null
     }
   });
   

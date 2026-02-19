@@ -33,6 +33,7 @@ const seedMap = {
   'uat-knowledge': () => require('./uat.knowledge.seed').seedUatKnowledge(prisma),
   'uat-knowledge-cm2': () => require('./uat.knowledge.cm2.seed').seedUatKnowledgeCm2(prisma),
   'holidays': () => require('./holidays.seed').seedHolidays(),
+  'roles': () => require('./roles.seed').seedRoles(),
 };
 
 async function main() {

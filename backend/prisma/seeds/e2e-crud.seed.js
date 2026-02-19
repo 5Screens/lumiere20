@@ -7,28 +7,28 @@ const { prisma } = require('../client');
  * Naming convention: All E2E test data uses 'E2E-' prefix for easy identification
  */
 
-// Test persons for relations
+// Test persons for relations (role_code will be resolved to UUID at seed time)
 const e2ePersons = [
   {
     email: 'e2e-requester@test.local',
     first_name: 'E2E',
     last_name: 'Requester',
     is_active: true,
-    role: 'user'
+    role_code: 'user'
   },
   {
     email: 'e2e-assignee@test.local',
     first_name: 'E2E',
     last_name: 'Assignee',
     is_active: true,
-    role: 'technician'
+    role_code: 'technician'
   },
   {
     email: 'e2e-writer@test.local',
     first_name: 'E2E',
     last_name: 'Writer',
     is_active: true,
-    role: 'user'
+    role_code: 'user'
   }
 ];
 
@@ -82,16 +82,26 @@ async function seedE2eCrud() {
   console.log('  Creating E2E test persons...');
   const personUuids = {};
   
+  // Lookup role UUIDs
+  const rolesMap = {};
+  const roleCodes = [...new Set(e2ePersons.map(p => p.role_code))];
+  for (const code of roleCodes) {
+    const role = await prisma.roles.findUnique({ where: { code } });
+    if (role) rolesMap[code] = role.uuid;
+  }
+
   for (const person of e2ePersons) {
+    const { role_code, ...personData } = person;
+    const roleUuid = rolesMap[role_code] || null;
     const result = await prisma.persons.upsert({
       where: { email: person.email },
       update: {
         first_name: person.first_name,
         last_name: person.last_name,
         is_active: person.is_active,
-        role: person.role
+        role: roleUuid
       },
-      create: person
+      create: { ...personData, role: roleUuid }
     });
     personUuids[person.email] = result.uuid;
     console.log(`    - Person '${person.email}' created/updated (${result.uuid})`);

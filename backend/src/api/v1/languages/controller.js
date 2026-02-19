@@ -7,6 +7,19 @@ const service = require('./service');
 const logger = require('../../../config/logger');
 
 /**
+ * Search languages with PrimeVue filters
+ */
+const search = async (req, res, next) => {
+  try {
+    const result = await service.search(req.body);
+    res.json(result);
+  } catch (error) {
+    logger.error('Controller error - search languages:', error);
+    next(error);
+  }
+};
+
+/**
  * Get all languages
  */
 const getAll = async (req, res, next) => {
@@ -204,7 +217,25 @@ const remove = async (req, res, next) => {
   }
 };
 
+/**
+ * Delete multiple languages
+ */
+const removeMany = async (req, res, next) => {
+  try {
+    const { uuids } = req.body;
+    if (!Array.isArray(uuids) || uuids.length === 0) {
+      return res.status(400).json({ error: 'uuids array is required' });
+    }
+    const count = await service.removeMany(uuids);
+    res.json({ deleted: count });
+  } catch (error) {
+    logger.error('Controller error - removeMany languages:', error);
+    next(error);
+  }
+};
+
 module.exports = {
+  search,
   getAll,
   getActive,
   getByCode,
@@ -213,5 +244,6 @@ module.exports = {
   update,
   toggleActive,
   bulkToggleActive,
-  remove
+  remove,
+  removeMany
 };

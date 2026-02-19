@@ -7,6 +7,12 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 
+// POST /api/v1/languages/search - Search languages with PrimeVue filters
+router.post('/search', controller.search);
+
+// POST /api/v1/languages/delete-many - Delete multiple languages
+router.post('/delete-many', controller.removeMany);
+
 // GET /api/v1/languages - Get all languages
 router.get('/', controller.getAll);
 
