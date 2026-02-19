@@ -1046,6 +1046,9 @@ model object_fields {
   relation_filter  String? @db.Text // For relation: JSON filter (e.g., '{"is_active":true}')
   sync_url         String? @db.VarChar(255) // For reverse_link_mn: API endpoint to sync links
 
+  // Conditional visibility
+  visible_when     String? @db.Text // Expression to control field visibility (e.g., 'is_filter_by_role', 'reopen_count > 1', 'status == "open" AND priority == "high"')
+
   // Formatting
   format_pattern String? @db.VarChar(100) // Date format, number format, etc.
 

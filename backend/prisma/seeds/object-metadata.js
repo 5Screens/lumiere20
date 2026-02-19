@@ -470,12 +470,49 @@ async function seedObjectMetadata() {
     user_sets: [
       { field_name: 'name', label_key: 'userSets.name', field_type: 'text', is_required: true, min_width: '16rem', display_order: 1, default_visible: true },
       { field_name: 'description', label_key: 'userSets.description', field_type: 'textarea', min_width: '20rem', display_order: 2, default_visible: true },
-      { field_name: 'criteria', label_key: 'userSets.criteria', field_type: 'json', min_width: '20rem', display_order: 3, default_visible: true },
-      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 4, default_visible: true },
-      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 20, default_visible: true },
-      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 21, default_visible: true },
+      { field_name: 'is_active', label_key: 'common.isActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 3, default_visible: true },
+
+      // --- Filter: role ---
+      { field_name: 'is_filter_by_role', label_key: 'userSets.isFilterByRole', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 10, default_visible: true, show_in_table: false },
+      { field_name: 'filter_role_uuid', label_key: 'userSets.filterRole', field_type: 'relation_multiple', relation_object: 'roles', relation_display: 'label', min_width: '14rem', display_order: 11, default_visible: true, show_in_table: false, visible_when: 'is_filter_by_role' },
+
+      // --- Filter: language ---
+      { field_name: 'is_filter_by_language', label_key: 'userSets.isFilterByLanguage', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 12, default_visible: true, show_in_table: false },
+      { field_name: 'filter_language_uuid', label_key: 'userSets.filterLanguage', field_type: 'relation_multiple', relation_object: 'languages', relation_display: 'name', min_width: '14rem', display_order: 13, default_visible: true, show_in_table: false, visible_when: 'is_filter_by_language' },
+
+      // --- Filter: entity ---
+      { field_name: 'is_filter_by_entity', label_key: 'userSets.isFilterByEntity', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 14, default_visible: true, show_in_table: false },
+      { field_name: 'filter_ref_entity_uuid', label_key: 'userSets.filterEntity', field_type: 'relation_multiple', relation_object: 'entities', relation_display: 'name', min_width: '14rem', display_order: 15, default_visible: true, show_in_table: false, visible_when: 'is_filter_by_entity' },
+
+      // --- Filter: location ---
+      { field_name: 'is_filter_by_location', label_key: 'userSets.isFilterByLocation', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 16, default_visible: true, show_in_table: false },
+      { field_name: 'filter_ref_location_uuid', label_key: 'userSets.filterLocation', field_type: 'relation_multiple', relation_object: 'locations', relation_display: 'name', min_width: '14rem', display_order: 17, default_visible: true, show_in_table: false, visible_when: 'is_filter_by_location' },
+
+      // --- Filter: approving manager ---
+      { field_name: 'is_filter_by_approving_manager', label_key: 'userSets.isFilterByApprovingManager', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 18, default_visible: true, show_in_table: false },
+      { field_name: 'filter_ref_approving_manager_uuid', label_key: 'userSets.filterApprovingManager', field_type: 'relation_multiple', relation_object: 'persons', relation_display: 'last_name', min_width: '14rem', display_order: 19, default_visible: true, show_in_table: false, visible_when: 'is_filter_by_approving_manager' },
+
+      // --- Filter: is_active (person) ---
+      { field_name: 'is_filter_by_is_active', label_key: 'userSets.isFilterByIsActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 20, default_visible: true, show_in_table: false },
+      { field_name: 'filter_is_active', label_key: 'userSets.filterIsActive', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 21, default_visible: true, show_in_table: false, visible_when: 'is_filter_by_is_active' },
+
+      // --- Filter: critical_user ---
+      { field_name: 'is_filter_by_critical_user', label_key: 'userSets.isFilterByCriticalUser', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 22, default_visible: true, show_in_table: false },
+      { field_name: 'filter_critical_user', label_key: 'userSets.filterCriticalUser', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 23, default_visible: true, show_in_table: false, visible_when: 'is_filter_by_critical_user' },
+
+      // --- Filter: external_user ---
+      { field_name: 'is_filter_by_external_user', label_key: 'userSets.isFilterByExternalUser', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 24, default_visible: true, show_in_table: false },
+      { field_name: 'filter_external_user', label_key: 'userSets.filterExternalUser', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 25, default_visible: true, show_in_table: false, visible_when: 'is_filter_by_external_user' },
+
+      // --- Filter: email ---
+      { field_name: 'is_filter_by_email', label_key: 'userSets.isFilterByEmail', field_type: 'boolean', data_type: 'boolean', min_width: '8rem', display_order: 26, default_visible: true, show_in_table: false },
+      { field_name: 'filter_email', label_key: 'userSets.filterEmail', field_type: 'text', min_width: '14rem', display_order: 27, default_visible: true, show_in_table: false, visible_when: 'is_filter_by_email' },
+
+      // --- Timestamps ---
+      { field_name: 'created_at', label_key: 'common.createdAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 90, default_visible: true },
+      { field_name: 'updated_at', label_key: 'common.updatedAt', field_type: 'datetime', data_type: 'date', is_editable: false, show_in_form: false, min_width: '12rem', display_order: 91, default_visible: true },
       // Reverse link to service offering subscriptions
-      { field_name: 'service_subscriptions', label_key: 'userSets.serviceSubscriptions', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status', relation_filter: 'rel_subscriber_user_set_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, is_readonly: true, display_order: 50, default_visible: true },
+      { field_name: 'service_subscriptions', label_key: 'userSets.serviceSubscriptions', field_type: 'reverse_link', relation_object: 'service_offerings', relation_display: 'name,environment,status', relation_filter: 'rel_subscriber_user_set_uuid', show_in_table: false, show_in_form: false, show_in_detail: true, is_readonly: true, display_order: 100, default_visible: true },
     ],
     languages: [
       { field_name: 'code', label_key: 'languages.code', field_type: 'text', is_required: true, min_width: '6rem', display_order: 1, default_visible: true },

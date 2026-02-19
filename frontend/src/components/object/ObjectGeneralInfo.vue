@@ -251,6 +251,7 @@ import StatusPicker from '@/components/form/StatusPicker.vue'
 import RelationSelector from '@/components/form/RelationSelector.vue'
 import AttachmentsPicker from '@/components/form/AttachmentsPicker.vue'
 import WeeklyScheduleEditor from '@/components/form/WeeklyScheduleEditor.vue'
+import { evaluateVisibleWhen } from '@/composables/useVisibleWhen'
 
 // Utils
 import { getTagStyle } from '@/utils/tagStyles'
@@ -427,7 +428,7 @@ const isFieldDisabled = (field) => {
 const ciTypes = computed(() => referenceDataStore.ciTypes)
 const ciCategories = computed(() => referenceDataStore.ciCategories)
 
-// Filter form fields based on CI type properties
+// Filter form fields based on CI type properties and visible_when expressions
 const filteredFormFields = computed(() => {
   // For configuration_items: check CI type's has_model property
   const currentCiType = ciTypes.value.find(ct => ct.code === props.modelValue?.ci_type)
@@ -446,6 +447,10 @@ const filteredFormFields = computed(() => {
     // Show is_model_for_ci_type_uuid only if category is MODELS (for ci_types)
     if (field.field_name === 'is_model_for_ci_type_uuid') {
       return isModelsCategorySelected
+    }
+    // Evaluate visible_when expression against current form data
+    if (field.visible_when) {
+      return evaluateVisibleWhen(field.visible_when, props.modelValue)
     }
     return true
   })
