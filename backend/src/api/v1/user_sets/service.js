@@ -114,7 +114,7 @@ const search = async (params) => {
     prisma.user_sets.count({ where }),
   ]);
 
-  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  return { data: data.map(enrichRecord), total, page, limit, totalPages: Math.ceil(total / limit) };
 };
 
 /**
@@ -139,7 +139,7 @@ const getAll = async ({ page = 1, limit = 50, sortField = 'name', sortOrder = 1,
     prisma.user_sets.count({ where }),
   ]);
 
-  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  return { data: data.map(enrichRecord), total, page, limit, totalPages: Math.ceil(total / limit) };
 };
 
 /**
