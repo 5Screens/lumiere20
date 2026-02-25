@@ -64,7 +64,7 @@ const activeActions = computed(() => (props.data.actions || []).filter(a => a.is
 
 const foreignObjectHeight = computed(() => {
   const baseHeight = 24
-  const actionsHeight = activeActions.value.length * 20 + (activeActions.value.length > 0 ? 6 : 0)
+  const actionsHeight = activeActions.value.length * 18 + (activeActions.value.length > 0 ? 6 : 0)
   return baseHeight + actionsHeight
 })
 
@@ -148,7 +148,7 @@ const actionLabel = (actionType) => t(`workflow.actions.types.${actionType}`)
   border-radius: 3px;
   background: var(--p-surface-50);
   border-left: 2px solid var(--p-primary-400);
-  min-height: 16px;
+  min-height: 14px;
 }
 
 [data-theme="dark"] .transition-action-badge {

@@ -265,7 +265,7 @@ const hasActions = computed(() => activeOnEnter.value.length > 0 || activeOnExit
   border-radius: 4px;
   background: var(--p-surface-50);
   border-left: 3px solid var(--p-primary-400);
-  min-height: 20px;
+  min-height: 16px;
 }
 
 [data-theme="dark"] .action-badge {
