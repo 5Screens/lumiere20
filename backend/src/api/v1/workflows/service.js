@@ -133,6 +133,9 @@ const getByUuid = async (uuid, locale = 'en') => {
             include: {
               transition: true
             }
+          },
+          actions: {
+            orderBy: { sort_order: 'asc' }
           }
         },
         orderBy: { created_at: 'asc' }
@@ -144,6 +147,9 @@ const getByUuid = async (uuid, locale = 'en') => {
             include: {
               from_status: true
             }
+          },
+          actions: {
+            orderBy: { sort_order: 'asc' }
           }
         },
         orderBy: { created_at: 'asc' }
@@ -209,7 +215,9 @@ const getByUuid = async (uuid, locale = 'en') => {
     category: {
       ...status.category,
       label: categoryTranslations.currentLocaleMap[status.category.uuid]?.label || status.category.code
-    }
+    },
+    on_enter_actions: (status.actions || []).filter(a => a.trigger === 'on_enter'),
+    on_exit_actions: (status.actions || []).filter(a => a.trigger === 'on_exit')
   }));
   
   // Transform transitions
@@ -227,7 +235,8 @@ const getByUuid = async (uuid, locale = 'en') => {
         ...source.from_status,
         name: statusTranslations.currentLocaleMap[source.from_status.uuid]?.name || source.from_status.name
       }
-    }))
+    })),
+    actions: transition.actions || []
   }));
   
   return {
@@ -532,7 +541,7 @@ const remove = async (uuid) => {
  * Save all workflow changes (statuses and transitions) in a single transaction
  */
 const saveAll = async (uuid, data, locale = 'en') => {
-  const { name, description, entity_type, is_active, statuses, transitions } = data;
+  const { name, description, entity_type, is_active, statuses, transitions, actions } = data;
   
   // Get current workflow state
   const currentWorkflow = await prisma.workflows.findUnique({
@@ -541,7 +550,8 @@ const saveAll = async (uuid, data, locale = 'en') => {
       statuses: true,
       transitions: {
         include: { sources: true }
-      }
+      },
+      actions: true
     }
   });
   
@@ -766,6 +776,42 @@ const saveAll = async (uuid, data, locale = 'en') => {
           }
         }
       }
+    }
+    
+    // ============================================
+    // WORKFLOW ACTIONS
+    // ============================================
+    if (actions && Array.isArray(actions)) {
+      // Delete all existing actions for this workflow and recreate
+      await tx.workflow_actions.deleteMany({
+        where: { rel_workflow_uuid: uuid }
+      });
+      
+      for (const action of actions) {
+        // Resolve status/transition UUIDs (may be temp UUIDs for new elements)
+        const resolvedStatusUuid = action.rel_status_uuid
+          ? (statusUuidMap[action.rel_status_uuid] || action.rel_status_uuid)
+          : null;
+        const resolvedTransitionUuid = action.rel_transition_uuid
+          ? (statusUuidMap[action.rel_transition_uuid] || action.rel_transition_uuid)
+          : null;
+        
+        await tx.workflow_actions.create({
+          data: {
+            rel_workflow_uuid: uuid,
+            rel_status_uuid: resolvedStatusUuid,
+            rel_transition_uuid: resolvedTransitionUuid,
+            trigger: action.trigger,
+            action_type: action.action_type,
+            label: action.label || null,
+            config: action.config || {},
+            sort_order: action.sort_order || 0,
+            is_active: action.is_active !== undefined ? action.is_active : true
+          }
+        });
+      }
+      
+      logger.info(`[WORKFLOWS] Saved ${actions.length} actions for workflow ${uuid}`);
     }
   });
   

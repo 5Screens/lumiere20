@@ -1123,6 +1123,7 @@ model workflows {
   // Relations
   statuses    workflow_statuses[]
   transitions workflow_transitions[]
+  actions     workflow_actions[]
 
   @@index([entity_type])
   @@index([rel_entity_type_uuid])
@@ -1150,6 +1151,7 @@ model workflow_statuses {
   // Reverse relations
   transitions_to      workflow_transitions[]        @relation("TransitionTo")
   transition_sources  workflow_transition_sources[]
+  actions             workflow_actions[]
   configuration_items configuration_items[]
   tickets             tickets[]
   services            services[]                    @relation("ServiceLifecycle")
@@ -1176,6 +1178,7 @@ model workflow_transitions {
 
   // Reverse relations
   sources workflow_transition_sources[]
+  actions workflow_actions[]
 
   @@index([rel_workflow_uuid])
   @@index([rel_to_status_uuid])
@@ -1198,6 +1201,33 @@ model workflow_transition_sources {
   @@index([rel_transition_uuid])
   @@index([rel_from_status_uuid])
   @@map("workflow_transition_sources")
+  @@schema("workflow")
+}
+
+// Workflow actions - automated steps attached to statuses (on_enter/on_exit) or transitions
+model workflow_actions {
+  uuid                  String   @id @default(uuid()) @db.Uuid
+  rel_workflow_uuid     String   @db.Uuid
+  rel_status_uuid       String?  @db.Uuid // If attached to a status
+  rel_transition_uuid   String?  @db.Uuid // If attached to a transition
+  trigger               String   @db.VarChar(20) // 'on_enter', 'on_exit' (for statuses) or 'on_transition' (for transitions)
+  action_type           String   @db.VarChar(50) // 'look_up_record', 'create_record', 'update_record', 'delete_record', 'log', 'ask_for_approval', 'wait_for_condition', 'wait_for_duration', 'if_condition', 'for_each', 'parallel', 'assign_values', 'send_email', 'send_notification', 'rest_step'
+  label                 String?  @db.VarChar(255) // User-defined label for this action step
+  config                Json     @default("{}") @db.JsonB // Action-specific configuration (varies by action_type)
+  sort_order            Int      @default(0) // Execution order within the trigger context
+  is_active             Boolean  @default(true)
+  created_at            DateTime @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  workflow   workflows              @relation(fields: [rel_workflow_uuid], references: [uuid], onDelete: Cascade)
+  status     workflow_statuses?     @relation(fields: [rel_status_uuid], references: [uuid], onDelete: Cascade)
+  transition workflow_transitions?  @relation(fields: [rel_transition_uuid], references: [uuid], onDelete: Cascade)
+
+  @@index([rel_workflow_uuid])
+  @@index([rel_status_uuid, trigger, sort_order])
+  @@index([rel_transition_uuid, sort_order])
+  @@map("workflow_actions")
   @@schema("workflow")
 }
 

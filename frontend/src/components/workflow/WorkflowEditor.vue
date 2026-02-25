@@ -119,6 +119,10 @@
             @update="updateStatus"
             @delete="deleteStatus"
             @add-transition="showAddTransitionDialog = true"
+            @add-action="onAddAction"
+            @edit-action="onEditAction"
+            @delete-action="onDeleteAction"
+            @toggle-action-active="onToggleActionActive"
           />
           
           <!-- Transition Panel -->
@@ -128,6 +132,10 @@
             :statuses="workflow?.statuses || []"
             @update="updateTransition"
             @delete="deleteTransition"
+            @add-action="onAddAction"
+            @edit-action="onEditAction"
+            @delete-action="onDeleteAction"
+            @toggle-action-active="onToggleActionActive"
           />
           
           <!-- Empty state -->
@@ -374,6 +382,26 @@ const deleteTransition = (transitionUuid) => {
   selectedElement.value = null
   panelOpen.value = false
   buildFlowFromWorkflow()
+}
+
+// ============================================
+// ACTION HANDLERS
+// ============================================
+const onAddAction = (actionData) => {
+  store.addAction(actionData)
+}
+
+const onEditAction = (action) => {
+  // TODO: open edit action dialog
+  console.log('Edit action:', action)
+}
+
+const onDeleteAction = (actionUuid) => {
+  store.deleteAction(actionUuid)
+}
+
+const onToggleActionActive = (actionUuid, isActive) => {
+  store.updateAction(actionUuid, { is_active: isActive })
 }
 
 const saveWorkflow = async () => {

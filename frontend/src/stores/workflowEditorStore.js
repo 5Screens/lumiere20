@@ -173,6 +173,163 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
     isDirty.value = true
   }
 
+  // ============================================
+  // WORKFLOW ACTIONS
+  // ============================================
+
+  /**
+   * Add an action to a status or transition
+   * @param {Object} actionData - { trigger, action_type, label, config, rel_status_uuid?, rel_transition_uuid? }
+   */
+  const addAction = (actionData) => {
+    const { trigger, rel_status_uuid, rel_transition_uuid } = actionData
+
+    // Determine the current actions list to calculate sort_order
+    let currentActions = []
+    if (rel_status_uuid) {
+      const status = workflow.value.statuses.find(s => s.uuid === rel_status_uuid)
+      if (status) {
+        const key = trigger === 'on_enter' ? 'on_enter_actions' : 'on_exit_actions'
+        if (!status[key]) status[key] = []
+        currentActions = status[key]
+      }
+    } else if (rel_transition_uuid) {
+      const transition = workflow.value.transitions.find(t => t.uuid === rel_transition_uuid)
+      if (transition) {
+        if (!transition.actions) transition.actions = []
+        currentActions = transition.actions
+      }
+    }
+
+    const newAction = {
+      uuid: uuidv4(),
+      rel_workflow_uuid: workflow.value.uuid,
+      rel_status_uuid: rel_status_uuid || null,
+      rel_transition_uuid: rel_transition_uuid || null,
+      trigger: trigger,
+      action_type: actionData.action_type,
+      label: actionData.label || '',
+      config: actionData.config || {},
+      sort_order: currentActions.length,
+      is_active: true,
+      _isNew: true
+    }
+
+    currentActions.push(newAction)
+    isDirty.value = true
+    return newAction
+  }
+
+  /**
+   * Update an existing action
+   */
+  const updateAction = (actionUuid, actionData) => {
+    // Search in all statuses and transitions
+    for (const status of workflow.value.statuses) {
+      for (const key of ['on_enter_actions', 'on_exit_actions']) {
+        const list = status[key] || []
+        const idx = list.findIndex(a => a.uuid === actionUuid)
+        if (idx !== -1) {
+          list[idx] = { ...list[idx], ...actionData }
+          isDirty.value = true
+          return
+        }
+      }
+    }
+    for (const transition of workflow.value.transitions) {
+      const list = transition.actions || []
+      const idx = list.findIndex(a => a.uuid === actionUuid)
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...actionData }
+        isDirty.value = true
+        return
+      }
+    }
+  }
+
+  /**
+   * Delete an action by UUID
+   */
+  const deleteAction = (actionUuid) => {
+    for (const status of workflow.value.statuses) {
+      for (const key of ['on_enter_actions', 'on_exit_actions']) {
+        if (!status[key]) continue
+        const idx = status[key].findIndex(a => a.uuid === actionUuid)
+        if (idx !== -1) {
+          status[key].splice(idx, 1)
+          // Re-index sort_order
+          status[key].forEach((a, i) => { a.sort_order = i })
+          isDirty.value = true
+          return
+        }
+      }
+    }
+    for (const transition of workflow.value.transitions) {
+      if (!transition.actions) continue
+      const idx = transition.actions.findIndex(a => a.uuid === actionUuid)
+      if (idx !== -1) {
+        transition.actions.splice(idx, 1)
+        transition.actions.forEach((a, i) => { a.sort_order = i })
+        isDirty.value = true
+        return
+      }
+    }
+  }
+
+  /**
+   * Reorder actions within a list (after drag & drop)
+   * @param {string} ownerUuid - status or transition UUID
+   * @param {string} trigger - 'on_enter', 'on_exit', or 'on_transition'
+   * @param {Array} orderedUuids - new order of action UUIDs
+   */
+  const reorderActions = (ownerUuid, trigger, orderedUuids) => {
+    let list = null
+
+    if (trigger === 'on_enter' || trigger === 'on_exit') {
+      const status = workflow.value.statuses.find(s => s.uuid === ownerUuid)
+      if (status) {
+        const key = trigger === 'on_enter' ? 'on_enter_actions' : 'on_exit_actions'
+        list = status[key]
+      }
+    } else {
+      const transition = workflow.value.transitions.find(t => t.uuid === ownerUuid)
+      if (transition) list = transition.actions
+    }
+
+    if (list) {
+      const reordered = orderedUuids.map((uuid, i) => {
+        const action = list.find(a => a.uuid === uuid)
+        if (action) action.sort_order = i
+        return action
+      }).filter(Boolean)
+      // Replace in-place
+      list.length = 0
+      list.push(...reordered)
+      isDirty.value = true
+    }
+  }
+
+  /**
+   * Collect all actions from statuses and transitions for the save payload
+   */
+  const collectAllActions = () => {
+    const allActions = []
+    for (const status of (workflow.value?.statuses || [])) {
+      for (const action of (status.on_enter_actions || [])) {
+        allActions.push({ ...action, rel_status_uuid: status.uuid, rel_transition_uuid: null })
+      }
+      for (const action of (status.on_exit_actions || [])) {
+        allActions.push({ ...action, rel_status_uuid: status.uuid, rel_transition_uuid: null })
+      }
+    }
+    for (const transition of (workflow.value?.transitions || [])) {
+      for (const action of (transition.actions || [])) {
+        allActions.push({ ...action, rel_status_uuid: null, rel_transition_uuid: transition.uuid })
+      }
+    }
+    return allActions
+  }
+
   // Save all changes to backend
   const saveWorkflow = async () => {
     if (!workflow.value?.uuid) return false
@@ -203,6 +360,16 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
           to_status_uuid: t._isNew ? t.rel_to_status_uuid : (t.to_status?.uuid || t.rel_to_status_uuid),
           source_status_uuids: t.sources.map(s => s._isNew ? s.rel_from_status_uuid : (s.from_status?.uuid || s.rel_from_status_uuid)),
           _translations: t._translations
+        })),
+        actions: collectAllActions().map(a => ({
+          rel_status_uuid: a.rel_status_uuid,
+          rel_transition_uuid: a.rel_transition_uuid,
+          trigger: a.trigger,
+          action_type: a.action_type,
+          label: a.label || null,
+          config: a.config || {},
+          sort_order: a.sort_order || 0,
+          is_active: a.is_active !== undefined ? a.is_active : true
         }))
       })
       
@@ -255,6 +422,10 @@ export const useWorkflowEditorStore = defineStore('workflowEditor', () => {
     addTransition,
     updateTransition,
     deleteTransition,
+    addAction,
+    updateAction,
+    deleteAction,
+    reorderActions,
     saveWorkflow,
     resetChanges,
     clear
