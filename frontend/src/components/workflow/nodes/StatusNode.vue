@@ -1,40 +1,70 @@
 <template>
-  <div 
-    class="status-node"
-    :class="{ 
-      'selected': selected,
-      'orphan': isOrphan,
-      'allow-all-inbound': data.allow_all_inbound
-    }"
-    :style="nodeStyle"
-  >
-    <!-- Allow all inbound indicator -->
-    <div v-if="data.allow_all_inbound" class="allow-all-indicator">
-      <span class="allow-all-chip">{{ $t('workflow.anyState') }}</span>
-      <i class="pi pi-arrow-right allow-all-arrow" />
+  <div class="status-node-wrapper" :style="nodeStyle">
+    <div 
+      class="status-node"
+      :class="{ 
+        'selected': selected,
+        'orphan': isOrphan,
+        'allow-all-inbound': data.allow_all_inbound
+      }"
+    >
+      <!-- Allow all inbound indicator -->
+      <div v-if="data.allow_all_inbound" class="allow-all-indicator">
+        <span class="allow-all-chip">{{ $t('workflow.anyState') }}</span>
+        <i class="pi pi-arrow-right allow-all-arrow" />
+      </div>
+      
+      <!-- Node content -->
+      <div class="node-content">
+        <span class="node-label">{{ data.name }}</span>
+      </div>
+      
+      <!-- Initial state indicator -->
+      <div v-if="data.is_initial" class="initial-indicator">
+        <i class="pi pi-play" />
+      </div>
+      
+      <!-- Connection handles -->
+      <Handle type="target" :position="Position.Left" class="handle handle-left" />
+      <Handle type="target" :position="Position.Top" class="handle handle-top" />
+      <Handle type="source" :position="Position.Right" class="handle handle-right" />
+      <Handle type="source" :position="Position.Bottom" class="handle handle-bottom" />
     </div>
-    
-    <!-- Node content -->
-    <div class="node-content">
-      <span class="node-label">{{ data.name }}</span>
+
+    <!-- Action badges panel -->
+    <div v-if="hasActions" class="actions-badges">
+      <!-- On Enter actions -->
+      <div v-if="activeOnEnter.length" class="actions-section">
+        <div
+          v-for="action in activeOnEnter"
+          :key="action.uuid"
+          class="action-badge"
+          :title="action.label || $t(`workflow.actions.types.${action.action_type}`)"
+        >
+          <i :class="getActionIcon(action.action_type)" class="action-badge-icon" :style="{ color: getActionColor(action.action_type) }" />
+          <span class="action-badge-label">{{ action.label || $t(`workflow.actions.types.${action.action_type}`) }}</span>
+        </div>
+      </div>
+      <!-- On Exit actions -->
+      <div v-if="activeOnExit.length" class="actions-section">
+        <div
+          v-for="action in activeOnExit"
+          :key="action.uuid"
+          class="action-badge action-badge--exit"
+          :title="action.label || $t(`workflow.actions.types.${action.action_type}`)"
+        >
+          <i :class="getActionIcon(action.action_type)" class="action-badge-icon" :style="{ color: getActionColor(action.action_type) }" />
+          <span class="action-badge-label">{{ action.label || $t(`workflow.actions.types.${action.action_type}`) }}</span>
+        </div>
+      </div>
     </div>
-    
-    <!-- Initial state indicator -->
-    <div v-if="data.is_initial" class="initial-indicator">
-      <i class="pi pi-play" />
-    </div>
-    
-    <!-- Connection handles -->
-    <Handle type="target" :position="Position.Left" class="handle handle-left" />
-    <Handle type="target" :position="Position.Top" class="handle handle-top" />
-    <Handle type="source" :position="Position.Right" class="handle handle-right" />
-    <Handle type="source" :position="Position.Bottom" class="handle handle-bottom" />
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
+import { getActionIcon, getActionColor } from '../utils/actionMeta'
 
 const props = defineProps({
   data: {
@@ -58,13 +88,21 @@ const nodeStyle = computed(() => ({
 }))
 
 const isOrphan = computed(() => {
-  // This would need to be passed from parent or computed based on edges
-  // For now, we'll rely on the parent component to set a class
   return false
 })
+
+const activeOnEnter = computed(() => (props.data.on_enter_actions || []).filter(a => a.is_active))
+const activeOnExit = computed(() => (props.data.on_exit_actions || []).filter(a => a.is_active))
+const hasActions = computed(() => activeOnEnter.value.length > 0 || activeOnExit.value.length > 0)
 </script>
 
 <style scoped>
+.status-node-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .status-node {
   position: relative;
   min-width: 120px;
@@ -192,5 +230,72 @@ const isOrphan = computed(() => {
 
 .handle-bottom {
   bottom: -4px;
+}
+
+/* Action badges panel */
+.actions-badges {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--p-surface-0);
+  border: 1px solid var(--p-surface-200);
+  border-radius: 6px;
+  padding: 3px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+[data-theme="dark"] .actions-badges {
+  background: var(--p-surface-800);
+  border-color: var(--p-surface-600);
+}
+
+.actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.action-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--p-surface-50);
+  border-left: 3px solid var(--p-primary-400);
+  min-height: 20px;
+}
+
+[data-theme="dark"] .action-badge {
+  background: var(--p-surface-700);
+  border-left-color: var(--p-primary-300);
+}
+
+.action-badge--exit {
+  border-left-color: var(--p-orange-400);
+}
+
+[data-theme="dark"] .action-badge--exit {
+  border-left-color: var(--p-orange-300);
+}
+
+.action-badge-icon {
+  font-size: 8px;
+  flex-shrink: 0;
+}
+
+.action-badge-label {
+  font-size: 8px;
+  color: var(--p-surface-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+[data-theme="dark"] .action-badge-label {
+  color: var(--p-surface-200);
 }
 </style>

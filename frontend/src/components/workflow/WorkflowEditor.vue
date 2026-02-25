@@ -264,7 +264,9 @@ const buildFlowFromWorkflow = () => {
       name: status.name,
       category: status.category,
       allow_all_inbound: status.allow_all_inbound,
-      is_initial: status.is_initial
+      is_initial: status.is_initial,
+      on_enter_actions: status.on_enter_actions || [],
+      on_exit_actions: status.on_exit_actions || []
     }
   }))
   
@@ -280,7 +282,8 @@ const buildFlowFromWorkflow = () => {
         data: {
           uuid: transition.uuid,
           name: transition.name,
-          sourceUuid: source.from_status.uuid
+          sourceUuid: source.from_status.uuid,
+          actions: transition.actions || []
         }
       })
     }
